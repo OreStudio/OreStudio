@@ -431,7 +431,7 @@ function PartiesPanel({ data, translator }: PanelProps): ReactNode {
  * that are theirs and a tenant administrator sees the administration as well.
  */
 function ActiveModules(): ReactNode {
-    return <ActiveCards mode="application" />;
+    return <ActiveCards />;
 }
 
 function UpcomingModules({ holds }: { readonly holds: (code: Permission) => boolean }): ReactNode {

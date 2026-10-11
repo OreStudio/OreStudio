@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 402E9624-50BC-4ABE-B65D-2C0E34764E48
+:END:
+#+title: Story: Draw the menu by reads alone
+#+description: The menu structure page says an area and a card are drawn by the read their screens need, and nothing else. One difference remains: the installation screens (Tenants, Services, Grid, Message queue and Telemetry) are drawn by the session mode. Close that gap, settle the two open points about Rescue access and Market data, and prove that every screen sits in one area with the trail Home, the area, the screen.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:navigation:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Who sees an area or a card depends on the reads a person holds and on nothing else, so the menu reads the same way for every person and a new screen needs no change to it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Scaffolded. The review of every card, breadcrumb and menu is the first task to run. |
+| Waiting on    | Nothing.                               |
+| Next          | Start the review task.                 |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The installation screens have a read of their own that a tenant's wildcard does not grant, the server guards them by that read, and the menu and cards draw them by it, not by the session mode
+- The open points on the menu structure page are decided and written there: where Rescue access belongs, and whether Market data gets its own area
+- A test walks every screen and checks it has one area, one address, and the trail Home, the area, the screen
+- The table How today's menu differs on the menu structure page is empty
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:09C615C1-56B2-4FA7-A144-252EB5D89BEA][Scaffold story: Draw the menu by reads alone]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:93BE66B8-042D-4EDB-A42E-BD3A27626D3E][Give the installation screens a read of their own]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Draw the menu by reads alone |
+| [[id:BBF2EB3F-BC2E-416E-8F57-DEDA19600A95][Review every card, breadcrumb and menu against the menu structure page]] | DONE | 2026-10-11 | 2026-10-11 | List every difference between the menu, the area cards, the breadcrumbs and addresses of the web screens and the menu structure page, then fix each one in the code or the page. |
+| [[id:8E1666B4-BF28-4E11-929C-C5C7D0216208][Settle the open points on the menu structure page]] | DONE | 2026-10-11 | 2026-10-11 | Decide where Rescue access belongs and whether Market data gets its own area, and write both decisions on the page. |
+| [[id:9931C2FF-95F9-4434-ACC1-30566EE27C34][Walk every screen for its area, address and trail]] | BACKLOG | | | A test walks every screen of the web app and checks it has one area, one address and the trail Home, the area, the screen. |
+
+* Decisions
+
+* Out of scope
+
+- A menu or a card for a kind of user. The page forbids it, and a read decides.
+- New screens. The story moves the screens that exist to the area the page gives them.
+- The Qt application's menus.

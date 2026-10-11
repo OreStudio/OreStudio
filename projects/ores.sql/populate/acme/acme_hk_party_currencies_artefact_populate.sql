@@ -54,6 +54,12 @@ begin
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'HKD', 0),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'USD', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CNY', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'JPY', 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'JPY', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'AUD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'NZD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CNH', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'SGD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'KRW', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'INR', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'TWD', 0);
 end $$;

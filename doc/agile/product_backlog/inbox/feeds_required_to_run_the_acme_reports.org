@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: E2FA0F12-2972-468B-93E8-2097E9E40113
+:END:
+#+title: The market data feeds the ACME reports need, by asset class
+#+description: A list across asset classes of every market data feed the ACME reports need to run, what the synthetic themes cover today, and what is missing.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:reporting:acme:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+List every market data feed that the ACME reports need in order to run, across the asset classes the ACME entities trade. The list says what each feed is, which reports read it, which entities need it, what the synthetic themes produce today, and what is missing. The feed work uses the list as its scope. Trades are out of scope.
+
+The ACME entities trade rates, credit and FX. London, New York and Hong Kong run desks in these three classes. The holding company has no desk. The design that fixes which entity runs which report is in the investigation [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]]. The books and currencies it implies are in the Acme manual chapter.
+
+* Why
+
+A report is ready to run only when its static data is published. It runs correctly only when the market data it reads exists for the as-of date. The synthetic themes were built for the first reports and cover FX spot and one short-rate process per currency. The report design now needs more asset classes and more currencies. Without the list, each gap shows up as a failed run.
+
+The reports that read market data, and what they read:
+
+| Report | Reads |
+|--------+-------|
+| Yield Curves | Deposits, FRAs, swaps, OIS and bond yields for every currency a book is named for |
+| FX Spot Rates | FX spots for every currency pair that a book trades or that converts to a reporting currency |
+| Volatility Surfaces | FX option volatilities and interest rate option volatilities |
+| Credit Curves | CDS spreads and recovery rates for each counterparty and for the credit indices |
+| Model Calibration | Interest rate and FX option volatilities, and the curves |
+| NPV, Cashflows | The curves, FX spots and the index fixings for floating coupons |
+| Delta and Gamma, Bucketed DV01 | The same inputs as NPV, bumped |
+| Vega | The volatility surfaces |
+| Exposure, CVA/DVA/FVA | The curves, FX spots, volatilities, credit curves and the funding spread |
+| Stressed VaR | The history of every risk factor over the stress window |
+| P&L Attribution | The previous day's marks beside today's |
+| Intraday Risk Monitor, Headline Position | Live ticks of the curves and spots |
+| SA-CCR, Leverage, LCR, Large Exposures | FX spots to convert into a reporting currency, and the prices of the liquidity buffer bonds |
+| FRTB SA Capital | The sensitivities, so the curves, spots, volatilities and credit spreads |
+| Group Consolidated Exposure, Board Risk Dashboard | FX spots into GBP |
+| MiFID II, CFTC and HKMA reporting | No market data feed. They read trade and reference data |
+| Data Quality, Audit Trail, System Health | None |
+
+** Rates
+
+- *Overnight and term fixings.* The daily fixing of each currency's overnight rate, and of each term index a floating coupon uses. Needed for cashflows, NPV of seasoned swaps and the stress window history. Currencies: GBP, EUR, USD, CHF, JPY, CAD, AUD, NZD, SEK, NOK, DKK, HKD, SGD, CNH, KRW, INR, TWD and the emerging markets of the books.
+- *Discount and projection curves.* Deposit, FRA and swap pillars for each currency, plus the OIS curve. London needs GBP, EUR, USD and CHF. New York needs USD and CAD. Hong Kong needs JPY and HKD. Every currency of an FX book needs a curve to discount an FX forward.
+- *Basis.* Tenor basis for the currencies with several tenors, and cross-currency basis against USD for each currency that has a forward. Needed for XVA and for a correct FX forward value.
+- *Interest rate option volatilities.* Cap and floor volatilities and swaption volatilities for GBP, EUR and USD, where London holds option books. New York and Hong Kong hold no option books under the design.
+- *Government and corporate bond prices.* The prices and yields of the liquidity buffer bonds in the banking branch, and of the bonds a credit desk holds. Needed for the liquidity coverage report and for the banking branch valuation.
+- *Central bank meeting dates.* The dated short end for USD, which exists today, and the same for the other currencies where a policy rate drives the curve.
+
+** FX
+
+- *Spot.* Every pair a book trades, and every cross that a conversion needs. London trades Cable and Sterling, the G10 majors, the Scandies and the CEEMEA emerging markets. New York trades the G10 and Latin America. Hong Kong trades the G10 and Asia. The pairs are listed in the design page and the manual chapter.
+- *Forward points.* The points for each pair, out to one year at least, so an FX forward and a swap value from a market and not from interest rate parity.
+- *Option volatilities.* At-the-money volatility, risk reversal and butterfly at the standard tenors for the pairs where London holds options: Cable, the G10 majors and the Scandies.
+- *Non-deliverable fixings.* The daily fixing of each non-deliverable currency a book trades, for example KRW, INR, TWD, BRL, CLP and COP, so an NDF settles.
+- *Spot history.* The daily history of every pair over the stress window, for Stressed VaR.
+
+** Credit
+
+- *CDS spreads.* A spread curve for each of the counterparties in the party counterparty lists. These are the banks and the sister entities named in the Acme counterparty data. Needed for the credit curves report and for CVA.
+- *Recovery rates.* One per counterparty, or the standard recovery by seniority.
+- *Credit indices.* The investment grade and high yield indices for each region the credit desks trade: Europe in London, North America in New York and Asia in Hong Kong. London trades both grades.
+- *Bond spreads.* The spreads of the issuers behind the liquidity buffer.
+- *Own credit and funding.* The group's own CDS or bond spread for DVA, and the funding spread for FVA. Both are needed for the CVA, DVA and FVA report.
+
+** Other asset classes
+
+- *Equity, commodity, inflation.* No ACME desk trades these. The Volatility Surfaces text names an equity surface. The design runs no equity feed, and a later desk would add one.
+- *Calendars and holidays.* Not a feed, but the fixings and the curves need them. Reference data already holds them.
+
+** Across asset classes
+
+- *The as-of cut.* An end-of-day set that is signed off and kept, one per business day and per business centre: London, New York and Hong Kong close at different times. The EOD reports read the cut. The intraday reports read the live ticks.
+- *History.* The daily history of every risk factor, for Stressed VaR and for P&L Attribution. A stress window needs a long history. The synthetic themes do not store it.
+
+* What exists today
+
+Taken from the synthetic tables and the 2026 and 2016 themes. I did not check the market data service for other sources.
+
+- *FX spot.* A generator for the USD-hub pairs of EUR, GBP, CHF, JPY, SEK, AUD, CAD, NZD, ZAR, MXN, INR, NOK and DKK. Each reads its start level from a real Federal Reserve H.10 quote.
+- *Interest rate curves.* One Cox-Ingersoll-Ross short-rate process per currency for the G10, the Nordic and a set of Asian and emerging-market currencies, with deposit, FRA and swap pillars. USD also has the dated FOMC short end.
+- *Cross-rates matrix topology.* A topology for the cross rates between the group's currencies.
+- *Not covered.* Volatility surfaces of any kind, credit curves, CDS spreads and recovery rates, cross-currency and tenor basis, FX forward points, fixings and their history, bond prices, funding spreads, and the as-of cut with its history.
+
+Currency gaps against the ACME books and the manual chapter:
+
+- No FX spot: HKD, SGD, KRW, TWD, BRL, CNH, PLN, CZK, HUF, TRY, ILS, CLP and COP.
+- No interest rate curve: BRL, CZK, HUF, ILS, TRY, CLP, COP and CNH. The ORE conventions carry no index for CLP, COP and CNH, so those three need a convention first.
+- The curve generation model limits the index family to a fixed list. A new family needs a model change.
+
+A first attempt to add the FX spots and the missing curves was written and set aside, because other work is refactoring the feeds. It is not kept in the repository. It took the start levels of BRL, HKD, KRW, SGD and TWD from the Federal Reserve H.10 release, which does not quote the other missing currencies, so those need another source or a fixed illustrative level.
+
+* References
+
+- [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]] — the design that fixes the reports, books and currencies of each entity.
+- [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] — the reports index.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] — the business catalogue, with the measures and the ORE configuration of each report.
+- The seeds that hold the current feeds: =projects/ores.sql/populate/synthetic/= and =projects/ores.sql/populate/marketdata/=.
+
+* See also
+
+- [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] — the story that publishes the static data. Market data comes from the feeds this capture lists.
+- [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] — the story that set the books and the currencies.

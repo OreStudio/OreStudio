@@ -20,7 +20,7 @@ const EXTRA = {};
 const PENDING = [];
 let stale = STATE_P === 'stale';
 let flashId = null;
-let listQuery = { offset: 0, limit: 15, search: '', state: '', book: '', cp: '' };
+let listQuery = { offset: 0, limit: 15, search: '', state: '', book: '', cp: '', type: '' };
 let selected = new Set();
 const main = shell({
     title: CODE ? 'Trade ' + CODE : 'Trades', name: 'trade-page',
@@ -40,7 +40,7 @@ const wrap = (...kids) => h('div', { class: 'dyn' }, kids);
 
 /* ---------- the server, as the list sees it ---------- */
 function listTrades(q) {
-    let rows = TRADES.filter(t => (!q.state || t.state === q.state) && (!q.book || t.book === q.book) && (!q.cp || t.cp === q.cp));
+    let rows = TRADES.filter(t => (!q.state || t.state === q.state) && (!q.book || t.book === q.book) && (!q.cp || t.cp === q.cp) && (!q.type || t.type === q.type));
     if (q.search) {
         const s = q.search.toLowerCase();
         rows = SERVER === 'today'
@@ -50,16 +50,19 @@ function listTrades(q) {
     rows = rows.slice().sort((a, b) => b.updated.localeCompare(a.updated));
     return { rows: rows.slice(q.offset, q.offset + q.limit), total: rows.length };
 }
+/* The request as the standard entity protocol states it: a page, a stated order, and a
+ * filter record with equals members, one-of members and one search. A book is a scoped
+ * read of the trades in the book and the books below it. */
 function requestLine(q, total) {
     const f = {};
     if (q.search) f[SERVER === 'today' ? 'id_one_of' : 'search'] = q.search;
     if (q.state) f.state = q.state;
-    if (q.book) f.book = q.book;
-    if (q.cp) f.counterparty = q.cp;
-    return 'trading.v1.trades.list  offset=' + q.offset + ' limit=' + q.limit + ' filter=' + JSON.stringify(f) + '  →  total=' + total;
+    if (q.cp) f.counterparty_id = q.cp;
+    if (q.type) f.trade_type_code = q.type;
+    const subject = q.book ? 'trading.v1.trades.list_by_book_id' : 'trading.v1.trades.list';
+    return subject + '  offset=' + q.offset + ' limit=' + q.limit + ' order={field:"",descending:false}' + (q.book ? ' book_id=' + q.book + ' scope=subtree' : '') + ' filter=' + JSON.stringify(f) + '  →  total=' + total;
 }
 const stateChip = s => chip(s, { live: 'ok', draft: 'warn', expired: '', cancelled: 'bad' }[s]);
-function authChip(t) { return t.state !== 'live' ? null : t.auth ? chip('authorised', 'ok', 'Operations released it. This is metadata, not a term of the trade.') : chip('unauthorised', 'warn', 'Operations has not released it yet.'); }
 const tradeHref = (code, tab) => qs({ trade: code, tab: tab || null, state: null });
 
 /* ---------- the list ---------- */
@@ -67,21 +70,23 @@ function renderList() {
     const q = listQuery;
     const head = pageHead({
         title: 'Trades', lead: 'The trades of ' + PARTY + ' and the books it holds.',
-        actions: [refreshButton({ stale, onClick: refresh }), workflowMenu([
-            { title: 'Book a trade', line: 'Record a new deal, live or as a draft.', href: '../book-a-trade/', allowed: !!CAN.book },
+        actions: [refreshButton({ stale, onClick: refresh }), CAN.book ? h('a', { class: 'btn primary', href: '../book-a-trade/' }, '+ Book a trade') : null, workflowMenu([
             { title: 'Import a portfolio from ORE', line: 'Bring an ORE portfolio file into a book.', href: '../ore-portfolio/?mode=import', allowed: !!CAN.import },
             { title: 'Export a portfolio to ORE', line: 'Write trades out as the portfolio the engine reads.', href: '../ore-portfolio/?mode=export' + (selected.size ? '&trades=' + [...selected].join(',') : ''), allowed: !!CAN.export },
             { title: 'Group trades', line: selected.size >= 2 ? 'Hold the ' + selected.size + ' chosen trades as one deal, or as a package that confirms trade by trade.' : 'Choose two or more trades first.', run: () => selected.size >= 2 ? location.href = '../structure-page/?mode=group&trades=' + [...selected].join(',') : toast('Choose two or more trades in the list first.'), allowed: !!CAN.structure }
         ])]
     });
+    /* A combo box offers only the values that exist in the data. */
+    const have = key => [...new Set(TRADES.map(x => x[key]))];
     const filters = SERVER === 'today'
         ? h('div', { class: 'filters' }, searchInput('Trade id', 'Trade id'),
             h('span', { class: 'faint small' }, 'Today the server filters by trade id only.'))
         : h('div', { class: 'filters' },
             searchInput('Search by trade id, type or counterparty', 'Search'),
-            select([['', 'All states'], ['live', 'Live'], ['draft', 'Draft'], ['expired', 'Expired'], ['cancelled', 'Cancelled']], q.state, v => { q.state = v; q.offset = 0; renderList(); }),
-            select([['', 'All books']].concat(BOOKS.map(b => [b.code, b.name])), q.book, v => { q.book = v; q.offset = 0; renderList(); }),
-            select([['', 'All counterparties']].concat(COUNTERPARTIES.map(c => [c.code, c.name])), q.cp, v => { q.cp = v; q.offset = 0; renderList(); }));
+            select([['', 'All counterparties']].concat(COUNTERPARTIES.filter(c => have('cp').includes(c.code)).map(c => [c.code, c.name])), q.cp, v => { q.cp = v; q.offset = 0; renderList(); }),
+            select([['', 'All trade types']].concat(have('type').map(c => [c, tradeType(c).description]).sort((x, y) => x[1].localeCompare(y[1]))), q.type, v => { q.type = v; q.offset = 0; renderList(); }),
+            select([['', 'All books']].concat(BOOKS.filter(b => have('book').includes(b.code)).map(b => [b.code, b.name])), q.book, v => { q.book = v; q.offset = 0; renderList(); }),
+            select([['', 'All states']].concat(['live', 'draft', 'expired', 'cancelled'].filter(s => have('state').includes(s)).map(s => [s, s.charAt(0).toUpperCase() + s.slice(1)])), q.state, v => { q.state = v; q.offset = 0; renderList(); }));
     if (STATE_P === 'loading') return put(wrap(head, filters, h('div', { class: 'notice' }, 'Loading…')));
     if (STATE_P === 'error') return put(wrap(head, h('div', { class: 'notice bad' }, h('b', null, 'The trades could not be read. '), 'trading.v1.trades.list answered 503 (request 4f1c9a02). ', h('button', { class: 'btn small', onclick: () => location.href = qs({ state: null }) }, 'Retry'))));
     const { rows, total } = STATE_P === 'empty' ? { rows: [], total: 0 } : listTrades(q);
@@ -92,9 +97,9 @@ function renderList() {
             sel ? h('td', { class: 'sel' }, h('input', { type: 'checkbox', checked: selected.has(t.code), 'aria-label': 'Choose ' + t.code, onchange: e => { e.target.checked ? selected.add(t.code) : selected.delete(t.code); renderList(); } })) : null,
             h('td', { class: 'nw' }, h('a', { href: tradeHref(t.code) }, t.code)), h('td', null, tradeType(t.type).description),
             h('td', null, h('a', { href: '#', 'data-ref': 'counterparty:' + t.cp }, cpty(t.cp).name)), h('td', null, h('a', { href: '#', 'data-ref': 'book:' + t.book }, book(t.book).name)),
-            h('td', { class: 'nw' }, stateChip(t.state), ' ', authChip(t)), h('td', { class: 'nw' }, t.date), h('td', { class: 'num nw' }, money(t.notional, t.ccy)),
+            h('td', { class: 'nw' }, stateChip(t.state)), h('td', { class: 'nw' }, t.date), h('td', { class: 'num nw' }, money(t.notional, t.ccy)),
             h('td', { class: 'num mono nw' }, 'v' + t.ver + ' · ext ' + t.ext))) :
-            h('tr', null, h('td', { colspan: sel ? 9 : 8 }, STATE_P === 'empty' || q.search || q.state || q.book || q.cp ? ['No trade matches. ', h('button', { class: 'btn small', onclick: () => { listQuery = { offset: 0, limit: q.limit, search: '', state: '', book: '', cp: '' }; location.href = qs({ state: null }); } }, 'Clear filters')] : 'There are no trades yet.')))));
+            h('tr', null, h('td', { colspan: sel ? 9 : 8 }, STATE_P === 'empty' || q.search || q.state || q.book || q.cp || q.type ? ['No trade matches. ', h('button', { class: 'btn small', onclick: () => { listQuery = { offset: 0, limit: q.limit, search: '', state: '', book: '', cp: '', type: '' }; location.href = qs({ state: null }); } }, 'Clear filters')] : 'There are no trades yet.')))));
     put(wrap(head, selected.size ? h('div', { class: 'notice acc' }, selected.size + ' chosen. ', h('button', { class: 'btn small', onclick: () => { selected.clear(); renderList(); } }, 'Clear')) : null,
         stale ? h('div', { class: 'strip' }, 'Something changed that this page cannot show. Press Refresh to read it again.') : null,
         filters, table, pager({ offset: q.offset, limit: q.limit, total, onChange: v => { Object.assign(q, v); renderList(); } }),
@@ -138,8 +143,7 @@ function renderPage() {
     const head = pageHead({
         title: tt.description, id: t.id,
         lead: null,
-        actions: [CAN.authorise && t.state === 'live' ? h('button', { class: 'btn', onclick: () => authorise(t) }, t.auth ? 'Withdraw authorisation' : 'Authorise') : null,
-            refreshButton({ stale, onClick: refresh }),
+        actions: [refreshButton({ stale, onClick: refresh }),
             workflowMenu([
                 { title: 'Record a lifecycle event', line: 'Exercise, terminate, cancel, novate or move book.', run: () => lifecycle(t), allowed: !!CAN.event },
                 { title: 'Group with other trades', line: 'Hold this trade with others as one deal, or as a package.', href: '../structure-page/?mode=group&trades=' + t.code, allowed: !!CAN.structure && !t.structure },
@@ -147,7 +151,7 @@ function renderPage() {
                 { title: 'Export to ORE', line: 'Write this trade out as an ORE portfolio.', href: '../ore-portfolio/?mode=export&trades=' + t.code, allowed: !!CAN.export }
             ])]
     });
-    const sub = h('div', { class: 'filters', style: 'margin-top:-.25rem' }, h('span', { class: 'chip' }, t.code), stateChip(t.state), authChip(t),
+    const sub = h('div', { class: 'filters', style: 'margin-top:-.25rem' }, h('span', { class: 'chip' }, t.code), stateChip(t.state),
         chip('v' + t.ver, 'v', 'Internal version: moves on every recorded change'), chip('external v' + t.ext, 'v', 'External version: moves only when the agreed terms change'),
         t.structure ? h('a', { class: 'chip acc', href: dealHref(t.structure) }, 'in ' + t.structure) : null);
     const content = TAB === 'instrument' ? instrumentTab(t) : TAB === 'identifiers' ? identifiersTab(t) : TAB === 'links' ? linksTab(t) : TAB === 'history' ? historyTab(t) : detailsTab(t);
@@ -163,7 +167,7 @@ function detailsTab(t) {
         f('Booking nature', t.nature), f('Entry channel', t.channel), f('Counterparty scope', t.scope)] };
     const booking = { id: 'booking', title: 'Booking', table: 'trade_booking', version: t.ver, fields: [
         { key: 'trade_date', label: 'Trade date', value: t.date, type: 'date' }, { key: 'execution_time', label: 'Execution time', value: t.date + ' 10:42', type: 'text' },
-        { key: 'netting_set', label: 'Netting set', value: 'NWCAP-CSA-1', type: 'text' }, f('Book', book(t.book).name), f('State', t.state), f('Operational authorisation', t.state !== 'live' ? '' : t.auth ? 'Authorised' : 'Unauthorised')] };
+        { key: 'netting_set', label: 'Netting set', value: 'NWCAP-CSA-1', type: 'text' }, f('Book', book(t.book).name), f('State', t.state)] };
     const idCard = card(identity, { readOnlyNote: true });
     const cp = idCard.querySelector('dl div:nth-child(3) dd');
     if (cp) { cp.replaceChildren(h('a', { href: '#', 'data-ref': 'counterparty:' + t.cp }, cpty(t.cp).name), h('div', { class: 'why' }, fixed)); }
@@ -247,7 +251,6 @@ function openAmend(t, c) {
             if (a.real) { t.ver += 1; if (folded) t.ext += 1; }
             const e = { id: 'x' + Date.now(), at: iso(NOW), kind: 'amended', activity: act, version: t.ver, ext: t.ext, actor: ME, reason, note,
                 economic: folded, diffs: diff.map(([fd, o, v]) => [fd.label || 'rows', String(o), String(v)]), noVersion: !a.real };
-            if (a.real && t.auth) { t.auth = false; }
             (EXTRA[t.code] = EXTRA[t.code] || []).push(e); flashId = e.id;
         });
         stale = true; renderPage();
@@ -267,18 +270,9 @@ function effect(t, a, diff, econChange, folded, c) {
         if (a.confirmable) lines.push('A new confirmation is issued to ' + cpty(t.cp).name + '.');
         if (t.structure && econChange && STRUCT_KIND[t.structure]) lines.push(STRUCT_KIND[t.structure].whole ? 'This trade is a leg of ' + t.structure + ', which confirms as one document. The deal\'s external version moves, and the customer receives one confirmation for the deal.' : 'This trade is a leg of the package ' + t.structure + '. The package confirms trade by trade, so only this trade\'s confirmation changes.');
         if (t.structure && econChange && STRUCT_KIND[t.structure] && STRUCT_KIND[t.structure].parent && !STRUCT_KIND[STRUCT_KIND[t.structure].parent].parent) lines.push('The ' + STRUCT_KIND[t.structure].kind.toLowerCase() + ' is inside ' + STRUCT_KIND[t.structure].parent + ', which confirms as one document. Whether this trade still confirms on its own is not decided: see the capture.');
-        if (t.auth) lines.push('Operational authorisation is withdrawn. Operations must release the trade again. This moves neither version.');
     }
-    return h('div', { class: 'notice ' + (econChange && c.digestGap ? 'warn' : 'acc'), 'data-effect': true }, h('b', null, 'What this will do'), lines.map(l => h('div', { class: 'econ-line' + (folded ? ' moves' : '') }, l)));
-}
-function authorise(t) {
-    PENDING.push(() => {
-        t.auth = !t.auth;
-        const e = { id: 'x' + Date.now(), at: iso(NOW), kind: 'event', activity: 'authorisation', version: t.ver, ext: t.ext, actor: ME, reason: 'trade.no_change', note: t.auth ? 'Released by Operations' : 'Release withdrawn', diffs: [], noVersion: true };
-        (EXTRA[t.code] = EXTRA[t.code] || []).push(e); flashId = e.id;
-    });
-    stale = true; renderPage();
-    toast('Done. Neither version moves: authorisation is our workflow state, not a term of the trade.');
+    return h('div', { class: 'notice ' + (econChange && c.digestGap ? 'warn' : 'acc'), 'data-effect': true }, h('b', null, 'What this will do'), lines.map(l => h('div', { class: 'econ-line' + (folded ? ' moves' : '') }, l)),
+        h('div', { class: 'mono small faint' }, 'trading.v1.' + c.table + 's.put  precondition: version ' + t.ver + '  change intent: reason, commentary'));
 }
 
 /* ---------- the lifecycle workflow ---------- */
@@ -327,12 +321,11 @@ function lifecycle(t) {
             t.state = { execute: 'live', discard: 'cancelled', reinstate: 'live', cancel: 'cancelled', expire: 'expired', novate: 'cancelled', bookmove: 'cancelled' }[ev[0]] || t.state;
             if (a.real) t.ver += 1;
             if (a.economic) t.ext += 1;
-            if (t.state !== 'live') t.auth = null; else if (t.auth === null) t.auth = false;
             const e = { id: 'x' + Date.now(), at: iso(NOW), kind: t.state === 'cancelled' ? 'cancelled' : 'event', activity: ev[3], version: t.ver, ext: t.ext, actor: ME, reason, note: note || ev[2], economic: a.economic, diffs: [['state', 'live', t.state]] };
             (EXTRA[t.code] = EXTRA[t.code] || []).push(e); flashId = e.id;
             if (['novate', 'bookmove'].includes(ev[0])) {
                 const n = Object.assign({}, t, { id: tradeId(300 + slot), code: newCode, cp: ev[0] === 'novate' ? newCp : t.cp, book: ev[0] === 'bookmove' ? newBook : t.book,
-                    state: 'live', auth: false, ext: 1, ver: 1, structure: null, rebookedTo: null, rebookedFrom: t.code, updated: iso(NOW) });
+                    state: 'live', ext: 1, ver: 1, structure: null, rebookedTo: null, rebookedFrom: t.code, updated: iso(NOW) });
                 t.rebookedTo = n.code; t.rebookKind = ev[0] === 'novate' ? 'Novation' : 'Book move'; n.rebookKind = t.rebookKind;
                 TRADES.push(n); store('booked', (store('booked') || []).concat([n]));
             }

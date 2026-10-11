@@ -48,8 +48,7 @@ on a trade and ends when the amendment is saved, awaits confirmation, or is refu
 5. *Save.* The system writes the activity and the component versions that the activity
    causes, and shows the new versions.
 6. *See what follows.* A confirmable change issues a new confirmation to the counterparty,
-   and the amended terms wait for it. A change to a live trade withdraws its operational
-   authorisation, and Operations must release it again. Authorisation moves neither version.
+   and the amended terms wait for it.
 7. *Handle a refusal.* The system refuses a stale write, a change the state does not
    allow, and a field that fails a check. The trade stays as it was.
 
@@ -100,8 +99,7 @@ is written with a plain =s=. A table whose plural is irregular, such as
   journey is built. The captures are linked below.
 - The party and the counterparty are fixed for the life of a trade. A change to either is a
   cancel and rebook, which the lifecycle journey covers, and not an amendment. See [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]].
-- The confirmation the counterparty gives, and the authorisation Operations gives, have no
-  operation and no journey. The escalation of some reasons to a head of desk belongs to the
+- The confirmation the counterparty gives has no operation and no journey. The escalation of some reasons to a head of desk belongs to the
   story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]].
 
 * Related journeys

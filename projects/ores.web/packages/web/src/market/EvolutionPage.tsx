@@ -44,7 +44,7 @@ import type {
 } from '@ores/contracts';
 import { curves, type CurveRange } from '../api/curves.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Crumbs } from '../refdata/shared.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 import { Button, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import {
     canBeShown,
@@ -422,13 +422,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
     return (
         <div className="space-y-6">
             <div>
-                <Crumbs
-                    parts={[
-                        { label: t('shell.menu.home'), to: '/' },
-                        { label: t('market.area') },
-                        { label: t('market.evolution.screen') },
-                    ]}
-                />
+                <AreaTrail area="marketdata" screen={t('market.evolution.title')} />
                 <PageHeader
                     title={t('market.evolution.title')}
                     description={t('market.evolution.description')}

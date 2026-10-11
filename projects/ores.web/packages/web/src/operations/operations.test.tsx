@@ -177,6 +177,7 @@ function renderRoute(
     grid: GridView = gridView(),
     bus: BusView = busView(),
     logs: LogsView = logsView(),
+    permissionCodes: readonly string[] = [],
 ): string {
     return withProviders(
         <AppRoutes
@@ -198,6 +199,7 @@ function renderRoute(
         grid,
         bus,
         logs,
+        permissionCodes,
     );
 }
 
@@ -384,15 +386,10 @@ function logsView(overrides: Partial<LogsView> = {}): LogsView {
 
 describe('the operations area', () => {
     it('lists its screens, and links every one of them', () => {
-        const html = withProviders(
-            <OperationsArea mode="system-administration" />,
-            '/',
-            [],
-            gridView(),
-            busView(),
-            logsView(),
-            ['iam::sessions:read'],
-        );
+        const html = withProviders(<OperationsArea />, '/', [], gridView(), busView(), logsView(), [
+            'iam::sessions:read',
+            'installation::deployment:read',
+        ]);
 
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/operations/services"');
@@ -435,7 +432,7 @@ describe('the operations area', () => {
     it('is drawn in the menu of every mode', () => {
         expect(MENU.map((item) => item.to)).toContain('/operations');
         expect(MENU.find((item) => item.to === '/operations')?.permission).toBeUndefined();
-        expect(MENU.find((item) => item.to === '/operations')?.scope).toBeUndefined();
+        expect(MENU.find((item) => item.to === '/operations')?.permission).toBeUndefined();
     });
 });
 
@@ -760,13 +757,29 @@ describe('the route to the services screen', () => {
     });
 
     it('is offered to system administration through the operations hub', () => {
-        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+        const html = renderRoute(
+            '/operations',
+            sessionWith({ mode: 'system-administration' }),
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            ['installation::deployment:read'],
+        );
 
         expect(html).toContain('href="/operations/services"');
     });
 
     it('offers the last screen, which the fifth unit built', () => {
-        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+        const html = renderRoute(
+            '/operations',
+            sessionWith({ mode: 'system-administration' }),
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            ['installation::deployment:read'],
+        );
 
         expect(html).toContain('href="/operations/logs"');
     });
@@ -1040,7 +1053,15 @@ describe('the route to the compute grid', () => {
     });
 
     it('is offered to system administration through the operations hub', () => {
-        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+        const html = renderRoute(
+            '/operations',
+            sessionWith({ mode: 'system-administration' }),
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            ['installation::deployment:read'],
+        );
 
         expect(html).toContain('href="/operations/grid"');
     });
@@ -1180,7 +1201,15 @@ describe('the route to the message bus', () => {
     });
 
     it('is offered to system administration through the operations hub', () => {
-        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+        const html = renderRoute(
+            '/operations',
+            sessionWith({ mode: 'system-administration' }),
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            ['installation::deployment:read'],
+        );
 
         expect(html).toContain('href="/operations/bus"');
     });
@@ -1333,7 +1362,15 @@ describe('the route to the telemetry logs', () => {
     });
 
     it('is offered to system administration through the operations hub', () => {
-        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+        const html = renderRoute(
+            '/operations',
+            sessionWith({ mode: 'system-administration' }),
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            ['installation::deployment:read'],
+        );
 
         expect(html).toContain('href="/operations/logs"');
     });

@@ -26,6 +26,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
+import { PageTrail } from '../shell/AreaTrail.js';
 import { Button, Notice, PageHeader } from '../ui/Primitives.js';
 import { areasOf, countCovered, grantedBy } from './catalogue.js';
 import { CanIPanel, RolesAllow } from './Allowances.js';
@@ -69,6 +70,7 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
 
     return (
         <div className="space-y-6">
+            <PageTrail screen={t('access.mine.title')} />
             <PageHeader
                 title={t('access.mine.title')}
                 description={t('access.mine.lead', { tenant: tenantName })}

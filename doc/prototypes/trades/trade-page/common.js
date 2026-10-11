@@ -81,7 +81,7 @@ function person(username) {
 const ROLE = ['trader', 'operations', 'reader'].includes(P.get('as')) ? P.get('as') : 'trader';
 const CAN = {
     trader: { book: 1, amend: 1, structure: 1 },
-    operations: { event: 1, import: 1, export: 1, authorise: 1, amend: 1 },
+    operations: { event: 1, import: 1, export: 1, amend: 1 },
     reader: {}
 }[ROLE];
 const ME = { trader: 'ada.lovelace', operations: 'grace.hopper', reader: 'tomas' }[ROLE];
@@ -128,8 +128,7 @@ const ACTIVITY_TYPES = [
     { code: 'novation', label: 'Novation', category: 'lifecycle_event', economic: true, confirmable: true, real: true },
     { code: 'cancellation', label: 'Cancellation', category: 'cancellation', economic: true, confirmable: true, real: true },
     { code: 'reinstatement', label: 'Reinstatement', category: 'cancellation', economic: true, confirmable: true, real: true },
-    { code: 'confirmation', label: 'Counterparty confirmation', category: 'lifecycle_event', economic: false, confirmable: false, real: false },
-    { code: 'authorisation', label: 'Operational authorisation', category: 'lifecycle_event', economic: false, confirmable: false, real: false }
+    { code: 'confirmation', label: 'Counterparty confirmation', category: 'lifecycle_event', economic: false, confirmable: false, real: false }
 ];
 const activityType = code => ACTIVITY_TYPES.find(a => a.code === code);
 const REASON_CODES = [
@@ -141,19 +140,19 @@ const REASON_CODES = [
 /* Seven trades are written out by hand because the journeys walk through them.
  * The rest are generated so that the list has a size worth paging. */
 const FEATURED = [
-    { n: 1, type: 'Swap', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-14', notional: 50000000, ccy: 'EUR', ext: 3, ver: 5, structure: 'PKG-0004' },
-    { n: 2, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: false, date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 2, structure: 'STR-0007' },
-    { n: 3, type: 'Bond', cp: 'CSTL', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-08-02', notional: 25000000, ccy: 'EUR', ext: 1, ver: 1 },
-    { n: 4, type: 'BondRepo', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-09-30', notional: 20000000, ccy: 'EUR', ext: 2, ver: 3, structure: 'PKG-0021' },
-    { n: 5, type: 'CompositeTrade', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: false, date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1 },
-    { n: 6, type: 'Swap', cp: 'CSTL', book: 'VIRT-DRAFT', state: 'draft', auth: null, date: '2026-10-10', notional: 5000000, ccy: 'EUR', ext: 1, ver: 2, nature: 'Pre-agreement draft' },
-    { n: 7, type: 'FxForward', cp: 'NWCAP', book: 'EMEA-FX', state: 'cancelled', auth: null, date: '2026-07-21', notional: 8000000, ccy: 'GBP', ext: 2, ver: 4, rebookedTo: 'ACME-100208' },
-    { n: 8, type: 'FxForward', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: false, date: '2026-10-09', notional: 8000000, ccy: 'GBP', ext: 1, ver: 1, rebookedFrom: 'ACME-100207', structure: 'STR-0010' },
-    { n: 9, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: true, date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0007' },
-    { n: 11, type: 'Swap', cp: 'CSTL', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-02', notional: 40000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0009' },
-    { n: 12, type: 'Swaption', cp: 'CSTL', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-02', notional: 40000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0009' },
-    { n: 13, type: 'Bond', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-08-20', notional: 15000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'PKG-0021' },
-    { n: 10, type: 'CapFloor', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'PKG-0004' }
+    { n: 1, type: 'Swap', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', date: '2026-09-14', notional: 50000000, ccy: 'EUR', ext: 3, ver: 5, structure: 'PKG-0004' },
+    { n: 2, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 2, structure: 'STR-0007' },
+    { n: 3, type: 'Bond', cp: 'CSTL', book: 'EMEA-CREDIT', state: 'live', date: '2026-08-02', notional: 25000000, ccy: 'EUR', ext: 1, ver: 1 },
+    { n: 4, type: 'BondRepo', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', date: '2026-09-30', notional: 20000000, ccy: 'EUR', ext: 2, ver: 3, structure: 'PKG-0021' },
+    { n: 5, type: 'CompositeTrade', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1 },
+    { n: 6, type: 'Swap', cp: 'CSTL', book: 'VIRT-DRAFT', state: 'draft', date: '2026-10-10', notional: 5000000, ccy: 'EUR', ext: 1, ver: 2, nature: 'Pre-agreement draft' },
+    { n: 7, type: 'FxForward', cp: 'NWCAP', book: 'EMEA-FX', state: 'cancelled', date: '2026-07-21', notional: 8000000, ccy: 'GBP', ext: 2, ver: 4, rebookedTo: 'ACME-100208' },
+    { n: 8, type: 'FxForward', cp: 'MRDN', book: 'EMEA-FX', state: 'live', date: '2026-10-09', notional: 8000000, ccy: 'GBP', ext: 1, ver: 1, rebookedFrom: 'ACME-100207', structure: 'STR-0010' },
+    { n: 9, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0007' },
+    { n: 11, type: 'Swap', cp: 'CSTL', book: 'EMEA-RATES', state: 'live', date: '2026-09-02', notional: 40000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0009' },
+    { n: 12, type: 'Swaption', cp: 'CSTL', book: 'EMEA-RATES', state: 'live', date: '2026-09-02', notional: 40000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0009' },
+    { n: 13, type: 'Bond', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', date: '2026-08-20', notional: 15000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'PKG-0021' },
+    { n: 10, type: 'CapFloor', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'PKG-0004' }
 ];
 const USED_TYPES = ['Swap', 'CrossCurrencySwap', 'Swaption', 'CapFloor', 'FxForward', 'FxOption', 'FxBarrierOption', 'Bond', 'BondRepo', 'BondOption',
     'CallableBond', 'EquityOption', 'EquityForward', 'CreditDefaultSwap', 'CompositeTrade'];
@@ -174,7 +173,7 @@ function buildTrades() {
             id: tradeId(i), code: 'ACME-' + (100200 + i), type, product: tt.product, table: tt.instrument,
             cp: f.cp || open[(i * 3) % open.length].code,
             book: f.book || BOOK_FOR[tt.product],
-            state, auth: state === 'live' ? (f.auth !== undefined ? f.auth : i % 4 !== 0) : null,
+            state,
             date: f.date || day,
             notional: f.notional || (1 + (i * 37) % 20) * 1000000,
             ccy: f.ccy || CCYS[i % CCYS.length],
@@ -272,7 +271,7 @@ function instrumentCards(t) {
             }];
     }
 }
-function tradeTypeName(table) { return table.replace(/_instrument$/, '').replace(/_/g, ' ').replace(/^./, c => c.toUpperCase()); }
+function tradeTypeName(table) { return table.replace(/_instrument$/, '').replace(/_/g, ' ').replace(/^./, c => c.toUpperCase()).replace(/^Fx\b/, 'FX'); }
 
 /* The cards of the other aspects. */
 function otherCards(t) {
@@ -323,10 +322,6 @@ function historyOf(t) {
         id: 'a0', at: day(t.ver * 6 + 4.1, 9, 5), kind: 'imported', activity: 'new_booking', version: 1, ext: 1, actor: 'ores.ore.service',
         reason: 'trade.client_request', note: 'Imported from an ORE portfolio file', diffs: [['ore_trade_id', '', 'Trade_' + t.code.slice(-4)]]
     });
-    if (t.ver >= 4) entries.push({
-        id: 'a4', at: day(t.ver * 2, 15, 30), kind: 'event', activity: 'authorisation', version: 3, ext: Math.min(2, t.ext), actor: 'grace.hopper',
-        reason: 'trade.no_change', note: 'Released by Operations', diffs: [], noVersion: true
-    });
     if (t.ver >= 5) entries.push({
         id: 'a5', at: day(2, 10, 20), kind: 'amended', activity: 'amendment_economic', version: 5, ext: t.ext, actor: 'ada.lovelace',
         reason: 'trade.restructure', note: 'New fixed rate agreed on the call', diffs: [['fixed_rate', '2.7500 %', '2.8500 %']], economic: true
@@ -339,7 +334,7 @@ function historyOf(t) {
 }
 
 /* ---------- the shell ---------- */
-const AREAS = [['Home', '#'], ['Reference data', '#'], ['Trades', '../trade-page/'], ['Organisation', '#'], ['Requests', '#'], ['Operations', '#']];
+const AREAS = [['Home', '#'], ['Reference data', '#'], ['Organisation', '#'], ['Market data', '#'], ['Trades', '../trade-page/'], ['Requests', '#'], ['Operations', '#']];
 const SIBLINGS = [
     ['trade-page', 'Trades and the trade page'], ['book-a-trade', 'Book a trade'], ['ore-portfolio', 'ORE import and export'], ['structure-page', 'A structure or package']
 ];
@@ -498,7 +493,7 @@ function timeline(entries, { isService, flash } = {}) {
                 h('div', { class: 'dot' }, h('i', { title: e.current ? 'Current version' : '' })),
                 h('div', { class: 'main' }, avatar(e.actor, 'm'), h('div', null,
                     h('div', { class: 'line1' }, chip(KINDS[e.kind], e.kind === 'cancelled' ? 'bad' : e.kind === 'event' ? 'flow' : e.kind === 'booked' ? 'acc' : 'warn'),
-                        h('b', null, a ? a.label : e.activity), e.noVersion ? chip('no version', '', 'Operational authorisation moves neither version.') : chip('v' + e.version, 'v'),
+                        h('b', null, a ? a.label : e.activity), e.noVersion ? chip('no version', '', 'This entry moves neither version.') : chip('v' + e.version, 'v'),
                         a && a.economic && a.real ? chip('economic', 'acc', 'Moves the external version') : null,
                         a && a.confirmable ? chip('confirmable', '', 'A new confirmation is issued') : null,
                         e.economic && e.ext ? chip('external v' + e.ext, 'v') : null,

@@ -645,7 +645,6 @@ export const en: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Accounts',
         description: 'Identities that can sign in or act as a service.',
         search: 'Search',
         searchPlaceholder: 'Username, name, or email',
@@ -1806,9 +1805,7 @@ export const en: SourceCatalogue = {
     },
 
     market: {
-        area: 'Market data',
         evolution: {
-            screen: 'Watch a curve evolve',
             title: 'Watch a curve or surface evolve',
             description:
                 'Name an object and a range. Read the instants by nodes over the range, and the object as it stands now.',
@@ -3287,7 +3284,6 @@ export const en: SourceCatalogue = {
                 fxFeeds: 'FX price feeds',
                 fxFeedsBody:
                     'Compose the synthetic FX feeds: the pair, the engine and the mixture each one draws from.',
-                evolution: 'Watch a curve evolve',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3535,6 +3531,8 @@ export const en: SourceCatalogue = {
         rolesRead: 'read roles and their grants',
         rolesAssign: 'give roles to people',
         sessionsRead: "read people's sign-ins",
+        deploymentRead:
+            'see the whole deployment: its tenants, services, grid, message bus and logs',
         curveSnapshotsRead: 'see the market data curves',
         fxFeedsRead: 'see the synthetic FX price feeds',
     },

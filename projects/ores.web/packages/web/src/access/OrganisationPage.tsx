@@ -32,7 +32,7 @@ import { PageHeader } from '../ui/Primitives.js';
  * that every area and Home draw from, and each is drawn for the person who
  * holds the read of its screen.
  */
-export function OrganisationPage({ mode }: { readonly mode: SessionMode }): ReactNode {
+export function OrganisationPage(): ReactNode {
     const { t } = useTranslation();
     return (
         <div className="space-y-6">
@@ -40,7 +40,7 @@ export function OrganisationPage({ mode }: { readonly mode: SessionMode }): Reac
                 <AreaTrail area="organisation" />
                 <PageHeader title={t('access.hub.title')} description={t('access.hub.lead')} />
             </div>
-            <AreaCards area="organisation" mode={mode} />
+            <AreaCards area="organisation" />
         </div>
     );
 }

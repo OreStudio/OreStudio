@@ -55,7 +55,10 @@ The proposal follows the bond and rates reworks:
   to.
 
 The money columns become exact decimals, and the ORE binding keeps the
-digits for the credit members, as it now does for the FRA. The rework is
+digits for the credit money members (the upfront fee and the option strike),
+as it now does for the FRA. A continuous quantity stays a binary float: the
+recovery rate, the tranche points and the participation rate, as the
+data-oriented design rule says. The rework is
 staged into eight units; the last proves the eight credit documents
 (eight trades) over the round trip.
 
@@ -126,9 +129,10 @@ columns. The columns by use:
 | =tranche_attachment=, =tranche_detachment= | the CDO |
 | =tenor=, =index_series=, =seniority=, =restructuring=, =description=, =option_type= | no mapper |
 
-The money columns mix types: =recovery_rate= is =double precision= while the
-other money columns are =numeric(38, 12)=. The mapper fills it from a float,
-so a recovery rate of 0.4 is stored as the float nearest to it.
+The recovery rate is a continuous quantity, so =double precision= is its
+right type. The tranche points are the disagreement: their columns are
+=numeric(38, 12)= and their domain type is =double=. A column and its domain
+type must agree.
 
 *** The legs
 
@@ -161,12 +165,17 @@ vanilla swap and a callable swap there.
 *** The ORE binding
 
 The credit members that carry a money value are bare floats in the binding:
-=FixedRecoveryRate= (four structs), =UpfrontFee= (three), =Strike=,
-=AttachmentPoint=, =DetachmentPoint= and =ParticipationRate=. A bare float
-keeps only the nearest binary value, so the mapper stores 0.025 as
-0.02500000037252903 and writes it back as a nine-digit float. The FRA
-rework put a lexical leaf in the binding through the reapply script. The
-credit members need the same.
+=UpfrontFee= (in two structs) and the index option's =Strike=. A bare float
+keeps only the nearest binary value, so the mapper reads the strike through a
+double and writes it back as a nine-digit float. The FRA rework put a lexical
+leaf in the binding through the reapply script. The credit money members need
+the same.
+
+The other numeric members are continuous quantities: =FixedRecoveryRate=
+(four structs), =AttachmentPoint=, =DetachmentPoint= and =ParticipationRate=.
+They stay bare floats, because the exact-money check keeps a recovery rate or
+a tranche fraction as a binary float. =ProtectionFee= and the upfront fee of
+the CDO have their own typed leaves.
 
 *** The programming surface
 
@@ -195,8 +204,8 @@ repository or service test is specific to credit beyond the generated ones.
 | C6 | The agreement's underlying trade is dropped on import, and an issuer id replaces the credit curve id | no member of =rpaData= is read beyond the curve id or issuer id, the dates and the recovery rate |
 | C7 | The mapper drops most credit elements of the schema | the dropped elements table |
 | C8 | One leg stands for the premium leg of a swap and for a credit linked swap's four payment groups; three groups are dropped | =forward_credit_linked_swap= reads =front()= of the contingent payments only |
-| C9 | =recovery_rate= is =double precision= and the others are =numeric(38, 12)= | the table's column types |
-| C10 | The credit money members are bare floats, so the mapper stores float artifacts | 0.025 is stored as 0.02500000037252903 |
+| C9 | The tranche points disagree: the column is =numeric(38, 12)= and the domain type is =double= | the model and the generated domain type |
+| C10 | The credit money members (upfront fee, option strike) are bare floats, so the mapper reads them through a double | =UpfrontFee= and =Strike= are =xsd::optional<float>= members; the strike is read with the double overload of =exact_decimal= |
 | C11 | A basket of names in an index swap or a CDO has no home | =BasketData= is read nowhere |
 | C12 | =ores_trading_rpa_instruments_tbl= and its generated surface are written by nothing | the inbox capture; 47 tracked files are named for it, including the shell commands and 17 shell test cases |
 | C13 | The family has no common-date mapping, so the blotter cannot read its dates | the view lists the rates family only |
@@ -241,7 +250,9 @@ the header by the generated delete cascade.
 The option on an index writes two rows: the index swap's own row, because the
 option wraps =IndexCreditDefaultSwapData=, and its option row. The strike and
 exercise dates are the shared =instrument_strikes= and =instrument_options=
-rows, as for a swaption. Every money column is =numeric(38, 12)=.
+rows, as for a swaption. Every money column is =numeric(38, 12)=. A continuous
+quantity (the recovery rate, the tranche points, the participation rate) is
+=double precision=.
 
 *** The shared children
 
@@ -321,7 +332,7 @@ The units are ordered so each ends in a check and none depends on a later one.
 | Unit | Task | Check |
 |------+------+-------|
 | 1 | Analyse the credit family and propose its relational data model | this page |
-| 2 | Carry the credit digits: lexical leaves for the credit members, =recovery_rate= as a decimal | a mapper test per member; the goldens that change are numeric text |
+| 2 | Carry the credit digits: lexical leaves for the credit money members, and the tranche columns agree with their domain type | a mapper test per money member; the goldens that change are numeric text |
 | 3 | Retire the unproduced =rpa_instruments= table | the tree builds and passes without its 47 files |
 | 4 | Author the credit family header and its fact tables | codegen drift clean; the generated eventing tests pass |
 | 5 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
@@ -356,8 +367,10 @@ a rates wire variant, and it can land before the new tables exist.
 - *The agreement's facts get a table of their own.* Reason: its
   participation rate and protection fee are required by the schema and belong
   to no other product.
-- *Every money column is an exact decimal.* Reason: the rates rework showed a
-  float column stores an artifact of the document's value.
+- *Every money column is an exact decimal, and a continuous quantity is a
+  binary float.* Reason: the rates rework showed a float column stores an
+  artifact of a money value, and the exact-money check keeps a recovery rate
+  or a tranche fraction as a float.
 
 * Out of scope
 

@@ -365,20 +365,123 @@ def _revert_edits(text: str, edits: list[tuple[str, str]]) -> str:
     return text
 
 
+# The credit products state some money members as bare floats too. Each entry
+# is (struct, member) of an `xsd::optional<float>` member. A money member is
+# turned into a `moneyFloat`, so the document's digits reach the mapper and
+# leave it again. A required plain `float` member is not handled: no credit
+# money member is one, and the patch refuses a shape it does not know.
+# A continuous quantity (a recovery rate, a tranche point, a participation
+# rate) stays a binary float: the data-oriented design rule keeps those as
+# floats, so they are not listed here.
+MONEY_MEMBERS = [
+    ("creditDefaultSwapData", "UpfrontFee"),
+    ("indexCreditDefaultSwapData", "UpfrontFee"),
+    ("indexCreditDefaultSwapOptionData", "Strike"),
+]
+
+
+def _struct_span(text: str, struct: str) -> tuple[int, int]:
+    m = re.search(r"^struct " + re.escape(struct) + r" \{\n.*?^\};\n", text, re.S | re.M)
+    if not m:
+        raise AnchorError(f"domain.hpp: the struct {struct} is missing")
+    return m.start(), m.end()
+
+
+def _serializer_span(text: str, struct: str) -> tuple[int, int]:
+    pattern = re.compile(r"_serialize_" + re.escape(struct) + r"\([^;{]*?\)\s*\{")
+    m = pattern.search(text)
+    if not m:
+        raise AnchorError(f"domain.cpp: the serializer of {struct} is missing")
+    end = text.index("\n}\n", m.end()) + 3
+    return m.start(), end
+
+
+def _member_forms(member: str) -> dict[str, tuple[str, str]]:
+    """The (old, new) text of each place an optional member appears."""
+    return {
+        "hpp": (
+            f"    xsd::optional<float> {member};\n",
+            f"    xsd::optional<domain::moneyFloat> {member};\n",
+        ),
+        "ser": (
+            f'_serialize_float(w, "{member}", *v.{member});',
+            f'_serialize_moneyFloat(w, "{member}", *v.{member});',
+        ),
+        "get": ("= float());", "= domain::moneyFloat());"),
+    }
+
+
+def _swap_in(text: str, span: tuple[int, int], old: str, new: str, what: str) -> str:
+    start, end = span
+    chunk = text[start:end]
+    if chunk.count(old) != 1:
+        raise AnchorError(f"{what}: the money-member anchor {old.strip()!r} occurs {chunk.count(old)} times")
+    return text[:start] + chunk.replace(old, new, 1) + text[end:]
+
+
+def _apply_members_hpp(text: str, reverse: bool = False) -> str:
+    for struct, member in MONEY_MEMBERS:
+        old, new = _member_forms(member)["hpp"]
+        if reverse:
+            old, new = new, old
+        start, end = _struct_span(text, struct)
+        chunk = text[start:end]
+        if reverse is False and old not in chunk and new in chunk:
+            continue
+        text = _swap_in(text, (start, end), old, new, f"domain.hpp {struct}.{member}")
+    return text
+
+
+def _apply_members_cpp(text: str, reverse: bool = False) -> str:
+    for struct, member in MONEY_MEMBERS:
+        forms = _member_forms(member)
+        ser_old, ser_new = forms["ser"]
+        if reverse:
+            ser_old, ser_new = ser_new, ser_old
+        span = _serializer_span(text, struct)
+        if not reverse and ser_old not in text[span[0]:span[1]] and ser_new in text[span[0]:span[1]]:
+            continue
+        text = _swap_in(text, span, ser_old, ser_new, f"domain.cpp {struct}.{member} serializer")
+
+        info_old = f"(xsdcpp::get_field_t)&_get_{struct}_{member},\n     &domain::_float_Info,\n"
+        info_new = f"(xsdcpp::get_field_t)&_get_{struct}_{member},\n     &domain::_moneyFloat_Info,\n"
+        if reverse:
+            info_old, info_new = info_new, info_old
+        if text.count(info_old) != 1:
+            raise AnchorError(f"domain.cpp: the element info of {struct}.{member} occurs {text.count(info_old)} times")
+        text = text.replace(info_old, info_new, 1)
+
+        m = re.search(
+            r"void\* _get_" + re.escape(struct) + "_" + re.escape(member) + r"\([^)]*\) \{\n.*?\n\}\n",
+            text,
+            re.S,
+        )
+        if not m:
+            raise AnchorError(f"domain.cpp: the getter of {struct}.{member} is missing")
+        g_old, g_new = forms["get"]
+        if reverse:
+            g_old, g_new = g_new, g_old
+        body = m.group(0)
+        if body.count(g_old) != 1:
+            raise AnchorError(f"domain.cpp: the getter of {struct}.{member} has an unknown shape")
+        text = text[: m.start()] + body.replace(g_old, g_new, 1) + text[m.end():]
+    return text
+
+
 def patch_money_hpp(text: str) -> str:
-    return _apply_edits(text, _MONEY_HPP_EDITS, "domain.hpp")
+    return _apply_members_hpp(_apply_edits(text, _MONEY_HPP_EDITS, "domain.hpp"))
 
 
 def unpatch_money_hpp(text: str) -> str:
-    return _revert_edits(text, _MONEY_HPP_EDITS)
+    return _revert_edits(_apply_members_hpp(text, reverse=True), _MONEY_HPP_EDITS)
 
 
 def patch_money_cpp(text: str) -> str:
-    return _apply_edits(text, _MONEY_CPP_EDITS, "domain.cpp")
+    return _apply_members_cpp(_apply_edits(text, _MONEY_CPP_EDITS, "domain.cpp"))
 
 
 def unpatch_money_cpp(text: str) -> str:
-    return _revert_edits(text, _MONEY_CPP_EDITS)
+    return _revert_edits(_apply_members_cpp(text, reverse=True), _MONEY_CPP_EDITS)
 
 
 # ---------------------------------------------------------------------------

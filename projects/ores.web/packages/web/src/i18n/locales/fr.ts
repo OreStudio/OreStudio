@@ -653,7 +653,6 @@ const fr: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Comptes',
         description: 'Identités pouvant se connecter ou agir en tant que service.',
         search: 'Rechercher',
         searchPlaceholder: "Nom d'utilisateur, nom ou email",
@@ -1827,9 +1826,7 @@ const fr: SourceCatalogue = {
     },
 
     market: {
-        area: 'Données de marché',
         evolution: {
-            screen: 'Suivre l’évolution d’une courbe',
             title: 'Suivre l’évolution d’une courbe ou d’une surface',
             description:
                 'Nommez un objet et une période. Lisez les instants par nœuds sur la période, et l’objet tel qu’il est maintenant.',
@@ -3337,7 +3334,6 @@ const fr: SourceCatalogue = {
                 fxFeeds: 'Flux de prix FX',
                 fxFeedsBody:
                     'Composez les flux FX synthétiques : la paire, le moteur et le mélange de chacun.',
-                evolution: 'Suivre l’évolution d’une courbe',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
@@ -3590,6 +3586,8 @@ const fr: SourceCatalogue = {
         rolesRead: 'lire les rôles et leurs droits',
         rolesAssign: 'attribuer des rôles aux personnes',
         sessionsRead: 'lire les connexions des personnes',
+        deploymentRead:
+            'voir tout le déploiement : ses locataires, ses services, sa grille, son bus de messages et ses journaux',
         curveSnapshotsRead: 'voir les courbes de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
     },

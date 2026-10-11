@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2BC74BA9-1A41-44BF-9DEB-847405468164
+:END:
+#+title: The trade screens read through the standard entity protocol,…
+#+description: The trade screens read through the standard entity protocol, and the trade list cannot filter the way a person searches today. trades_filter has only id_one_of. The model must declare a search member over the trade identifier, the trade type description and the counterparty name, and filterable columns for the counterparty, the trade type, the booking nature and the entry channel. The state of a trade lives on the trade state component and the book on the booking component, so a filter by either needs a decision: a filterable column on the read the list uses, or the standard scoped read list_by_book_id for a book and its subtree. The child tables of a trade (identifiers, party roles, portfolios, additional fields and the instrument parts) have no filter at all, and a trade page needs a read by trade id for each. Declare the columns in the entity models, regenerate, and expose the trading entities in the BFF record registry. The trade prototypes show the request the screens will send.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

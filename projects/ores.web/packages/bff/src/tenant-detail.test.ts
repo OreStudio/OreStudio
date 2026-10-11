@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
+import { MY_ROLES_SUBJECT, myRolesAnswer } from './deployment-roles.testing.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -148,6 +149,9 @@ function buildTestServer(
             body: unknown,
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
+            if (subject === MY_ROLES_SUBJECT) {
+                return schema.parse(myRolesAnswer(mode));
+            }
             calls.push({ subject, body });
             const answer = answers[subject];
             if (answer instanceof Error) {

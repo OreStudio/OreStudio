@@ -193,7 +193,7 @@ tbody tr.open:hover { background: var(--overlay); }
     <li><strong>Nothing reads or writes a scenario yet.</strong> The BFF has no scenario store. ores.web cannot rely on compass, so the BFF parses the docs that compass creates and writes the results into them itself, behind an interface that a database store can replace later.</li>
     <li><strong>The queue has no owner.</strong> A scenario names a target dialog and an environment and no tester. The queue shows every scenario in state PENDING. Assignment comes with the tester role.</li>
     <li><strong>A browser cannot capture the screen.</strong> The step takes a pasted or dropped image. The BFF has no upload route that saves it beside the scenario doc.</li>
-    <li><strong>The web package renders no org text.</strong> Step instructions are org. The parser in ores.org-js is the one to port.</li>
+    <li><strong>The web package renders no org text.</strong> Step instructions are org. A shared package parses it for the BFF and the web package.</li>
     <li><strong>A deployed server has no work tree.</strong> The module reads and writes the checkout the BFF runs in. Whether it runs in production is open.</li>
   </ul>
 </div>

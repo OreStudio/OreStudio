@@ -76,7 +76,9 @@ The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =t
 | History | List the activities of a trade | =trading.v1.trade_activities.list= filters only by activity id | missing |
 | As of | Read the trade and its parts as of a date | the =as_of= field of the list requests (checked on trades, trade states and the bond instrument) | exists |
 
-Status is one of =exists=, =partial=, or =missing=. A subject that contains
+Status is one of =exists=, =partial=, or =missing=.
+A screen reads and writes through the standard entity operations of the [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]. Where a row below says =missing=, the fix is a change to the entity's model (a filterable or searchable column, or a scoped read) and not a new operation.
+ A subject that contains
 =<instrument>= stands for the one instrument table the trade type routes to. The plural
 is written with a plain =s=. A table whose plural is irregular, such as
 =trade_activities=, has its own subject: check the protocol header, not the pattern.

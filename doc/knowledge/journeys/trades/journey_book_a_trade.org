@@ -33,8 +33,9 @@ a trade type and ends when the trade is booked, saved as a draft, or refused.
 
 * Steps
 
-1. *Choose the trade type.* The person names the kind of deal. The system offers the
-   trade types from the catalogue. The trade type decides which instrument terms the deal
+1. *Choose the trade type.* The person names the kind of deal in a combo box, grouped by
+   product. The system lists the trade types from the catalogue, and lists the ones with no
+   instrument table without letting the person choose them. The trade type decides which instrument terms the deal
    has, because each trade type routes to one instrument table.
 2. *Say who is on the deal.* The person names the party, the counterparty and the book.
    The system offers only the counterparties the party may trade with. A book must be a
@@ -59,16 +60,14 @@ a trade type and ends when the trade is booked, saved as a draft, or refused.
 
 * Screens
 
-This journey is a use case. It has no screen of its own. Booking starts from the trade
-list and opens a new trade page, which is the page of one trade in the
-[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]. The page holds the trade's cards (parties and book, how it was struck,
-instrument terms, identifiers) and the person fills them in. A guided sequence of
-steps is the one allowed exception in that specification, and it is allowed only if it
-makes booking easier or quicker. A prototype decides that. The prototype must also keep
-the trade as the subject: the person must be able to leave the sequence and land on the
-same trade page.
+This journey is a use case. It has no screen of its own. Booking is the Add of the trade
+list: a Book a trade button opens a new-trade page, which the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] describes. The
+page has four tabs (Trade, Instrument, Identifiers and Review), and the person fills them in. The
+trade type is a combo box, and the Instrument tab has a tab for each part of that instrument.
+A guided sequence is allowed only when it makes booking quicker, and a trader booking a deal
+knows the whole deal, so the page is not a sequence.
 
-The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =book-a-trade=, as a page and as a sequence. No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =book-a-trade=, as one page in tabs. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
@@ -107,8 +106,7 @@ is written with a plain =s=. A table whose plural is irregular, such as
   yet.
 - The four-eyes rule for a trade, if any, is not stated for booking. The activity types
   carry a =requires_confirmation= flag, which is the counterparty's confirmation and not an
-  internal approval. No journey covers the counterparty's confirmation or Operations'
-  authorisation of a new live trade. The story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] owns any escalation.
+  internal approval. No journey covers the counterparty's confirmation. The story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] owns any escalation.
 
 * Related journeys
 

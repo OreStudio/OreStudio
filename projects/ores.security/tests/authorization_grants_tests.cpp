@@ -57,3 +57,14 @@ TEST_CASE("the_grants_need_no_order", tags) {
     CHECK(covers({"trading::trades:read", "*"}, "iam::accounts:create"));
     CHECK(covers({"z::x:read", "refdata::*"}, "refdata::parties:read"));
 }
+
+TEST_CASE("the_wildcard_does_not_cover_an_installation_code", tags) {
+    CHECK_FALSE(covers({"*"}, "installation::deployment:read"));
+    CHECK_FALSE(covers({"*", "refdata::*"}, "installation::deployment:read"));
+}
+
+TEST_CASE("an_installation_code_is_covered_by_itself_and_by_its_component_wildcard", tags) {
+    CHECK(covers({"installation::deployment:read"}, "installation::deployment:read"));
+    CHECK(covers({"installation::*"}, "installation::deployment:read"));
+    CHECK_FALSE(covers({"installation::*"}, "iam::accounts:read"));
+}

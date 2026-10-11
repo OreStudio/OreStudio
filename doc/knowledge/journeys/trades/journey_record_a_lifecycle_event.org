@@ -85,8 +85,6 @@ is written with a plain =s=. A table whose plural is irregular, such as
   the amendment journey. One operation should serve both.
 - A novation or a book move books a second trade and a trade link with the cancellation.
   No operation does the three writes in one transaction.
-- Operations' authorisation of a trade (release and withdraw) has no journey. It moves no
-  version, and it is a lifecycle matter. It is filed as a capture.
 - The model lists =lifecycle_event= as reference data and =activity_type= as the type of an
   event. The two overlap. A decision on which one the screen offers is needed.
 

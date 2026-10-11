@@ -8,7 +8,7 @@
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
 #+branch: feature/list-the-series-identities-a-party-can-see
-#+pr:
+#+pr: 3126
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3126][#3126]] | [marketdata] List the series identities a party can see |
 
 * Review
 

@@ -94,7 +94,13 @@ export const PARTY_FIELDS: readonly FieldSpec[] = [
         kind: { kind: 'record', resource: 'business-centres', value: 'code', label: 'name' },
         flag: 'businessCentre',
     },
-    { field: 'image_id', history: 'Image ID', kind: { kind: 'image' }, optional: true },
+    {
+        field: 'image_id',
+        history: 'Image ID',
+        kind: { kind: 'image' },
+        optional: true,
+        labelKey: 'refdata.parties.logo',
+    },
     {
         field: 'is_registration_default',
         history: 'Is Registration Default',
@@ -273,7 +279,15 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const root = useAreaRoot('refdata');
     const { tab, bar } = useRecordTabs({
         label: name,
-        tabs: ['details', 'identifiers', 'contacts', 'memberships', 'structure', 'history'],
+        tabs: [
+            'details',
+            'identifiers',
+            'contacts',
+            'memberships',
+            'centres',
+            'counterparties',
+            'history',
+        ],
     });
     const identifiers = useRecords(IDENTIFIERS, id);
     const contacts = useRecords(CONTACTS, id);
@@ -321,6 +335,7 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                         remove: t('refdata.parties.removePart.party-identifiers'),
                     }}
                     entityType="ores.refdata.party_identifier"
+                    historyKey={(row) => show(row['id_value'])}
                     specs={IDENTIFIER_FIELDS}
                     parentField="party_id"
                     parent={id}
@@ -354,6 +369,7 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                         remove: t('refdata.parties.removePart.party-contacts'),
                     }}
                     entityType="ores.refdata.party_contact_information"
+                    historyKey={(row) => show(row['contact_type'])}
                     specs={CONTACT_FIELDS}
                     parentField="party_id"
                     parent={id}
@@ -435,63 +451,64 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     />
                 </div>
             )}
-            {tab === 'structure' && (
-                <div className="space-y-4">
-                    <LinkPanel
-                        title={t('refdata.parties.counterparties')}
-                        junction="party-counterparties"
-                        parentField="party_id"
-                        parentValue={id}
-                        childField="counterparty_id"
-                        choices={choices(counterparties.data, 'id', 'full_name')}
-                    />
-                    <PartsPanel
-                        resource={UNITS}
-                        titles={{
-                            add: t('refdata.parties.addPart.business-units'),
-                            one: t('refdata.parties.editPart.business-units'),
-                            remove: t('refdata.parties.removePart.business-units'),
-                        }}
-                        entityType="ores.refdata.business_unit"
-                        specs={UNIT_FIELDS}
-                        parentField="party_id"
-                        parent={id}
-                        keep={['parent_business_unit_id']}
-                        rows={units.data ?? []}
-                        error={units.error?.message}
-                        lead={t('refdata.parties.unitsLead')}
-                        columns={[
-                            {
-                                header: t('refdata.fields.unit_name'),
-                                cell: (row) => show(row['unit_name']),
-                            },
-                            {
-                                header: t('refdata.fields.unit_code'),
-                                cell: (row) => show(row['unit_code']),
-                                mono: true,
-                            },
-                            {
-                                header: t('refdata.fields.business_centre_code'),
-                                cell: (row) => (
-                                    <FlaggedCode
-                                        source="businessCentre"
-                                        code={show(row['business_centre_code'])}
-                                    />
-                                ),
-                            },
-                            {
-                                header: t('refdata.fields.status'),
-                                cell: (row) => show(row['status']),
-                            },
-                        ]}
-                        sort={(row) => show(row['unit_code'])}
-                    />
-                </div>
+            {tab === 'centres' && (
+                <PartsPanel
+                    resource={UNITS}
+                    titles={{
+                        add: t('refdata.parties.addPart.business-units'),
+                        one: t('refdata.parties.editPart.business-units'),
+                        remove: t('refdata.parties.removePart.business-units'),
+                    }}
+                    entityType="ores.refdata.business_unit"
+                    historyKey={(row) => show(row['unit_code'])}
+                    specs={UNIT_FIELDS}
+                    parentField="party_id"
+                    parent={id}
+                    keep={['parent_business_unit_id']}
+                    rows={units.data ?? []}
+                    error={units.error?.message}
+                    lead={t('refdata.parties.unitsLead')}
+                    columns={[
+                        {
+                            header: t('refdata.fields.unit_name'),
+                            cell: (row) => show(row['unit_name']),
+                        },
+                        {
+                            header: t('refdata.fields.unit_code'),
+                            cell: (row) => show(row['unit_code']),
+                            mono: true,
+                        },
+                        {
+                            header: t('refdata.fields.business_centre_code'),
+                            cell: (row) => (
+                                <FlaggedCode
+                                    source="businessCentre"
+                                    code={show(row['business_centre_code'])}
+                                />
+                            ),
+                        },
+                        {
+                            header: t('refdata.fields.status'),
+                            cell: (row) => show(row['status']),
+                        },
+                    ]}
+                    sort={(row) => show(row['unit_code'])}
+                />
+            )}
+            {tab === 'counterparties' && (
+                <LinkPanel
+                    title={t('refdata.parties.counterparties')}
+                    junction="party-counterparties"
+                    parentField="party_id"
+                    parentValue={id}
+                    childField="counterparty_id"
+                    choices={choices(counterparties.data, 'id', 'full_name')}
+                />
             )}
             {tab === 'history' && (
                 <HistoryPanel
                     entityType="ores.refdata.party"
-                    entityId={id}
+                    entityId={show(row['short_code'])}
                     {...(may.write
                         ? { onRevert: (version: HistoryVersion) => setReverting(version) }
                         : {})}

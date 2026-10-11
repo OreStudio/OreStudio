@@ -2782,7 +2782,8 @@ const fr: SourceCatalogue = {
                 identifiers: 'Identifiants',
                 contacts: 'Contacts',
                 memberships: 'Appartenances',
-                structure: 'Structure',
+                centres: 'Centres d’affaires',
+                counterparties: 'Contreparties',
             },
         },
         fields: {
@@ -3023,10 +3024,11 @@ const fr: SourceCatalogue = {
             editTitle: 'Modifier {name}',
             identifiersLead:
                 'Les schémas sous lesquels cette partie est connue. Changer une valeur retire l’ancienne et enregistre la nouvelle.',
-            unitsLead: 'Les unités d’affaires dont cette partie est composée.',
+            unitsLead:
+                'Les unités d’affaires de cette partie, et le centre d’affaires dont dépend chacune.',
             countries: 'Pays où elle opère',
             currencies: 'Devises dans lesquelles elle opère',
-            counterparties: 'Contreparties qu’elle peut voir',
+            counterparties: 'Contreparties avec lesquelles elle peut traiter',
             addPart: {
                 'party-identifiers': 'Ajouter un identifiant',
                 'party-contacts': 'Ajouter un contact',
@@ -3042,6 +3044,8 @@ const fr: SourceCatalogue = {
                 'party-contacts': 'Supprimer le contact',
                 'business-units': 'Supprimer l’unité d’affaires',
             },
+            logo: 'Logo',
+            address: 'Adresse',
         },
     },
 

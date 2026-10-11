@@ -2764,7 +2764,8 @@ const pt: SourceCatalogue = {
                 identifiers: 'Identificadores',
                 contacts: 'Contactos',
                 memberships: 'Pertenças',
-                structure: 'Estrutura',
+                centres: 'Centros de negócios',
+                counterparties: 'Contrapartes',
             },
         },
         fields: {
@@ -3003,10 +3004,10 @@ const pt: SourceCatalogue = {
             editTitle: 'Editar {name}',
             identifiersLead:
                 'Os esquemas sob os quais esta parte é conhecida. Alterar um valor retira o antigo e regista o novo.',
-            unitsLead: 'As unidades de negócio de que esta parte é feita.',
+            unitsLead: 'As unidades de negócio desta parte, e o centro de negócios de cada uma.',
             countries: 'Países em que opera',
             currencies: 'Moedas em que opera',
-            counterparties: 'Contrapartes que pode ver',
+            counterparties: 'Contrapartes com que pode negociar',
             addPart: {
                 'party-identifiers': 'Adicionar identificador',
                 'party-contacts': 'Adicionar contacto',
@@ -3022,6 +3023,8 @@ const pt: SourceCatalogue = {
                 'party-contacts': 'Eliminar contacto',
                 'business-units': 'Eliminar unidade de negócio',
             },
+            logo: 'Logótipo',
+            address: 'Morada',
         },
     },
 

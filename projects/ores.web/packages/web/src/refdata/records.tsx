@@ -79,6 +79,11 @@ export interface FieldSpec {
     /** The field holds a code of this source, drawn with its flag. */
     readonly flag?: FlagSource;
     readonly when?: (values: FieldValues) => boolean;
+    /**
+     * The key of the field's label, when the common one does not fit: a party's
+     * picture is its logo, where a currency's is its flag.
+     */
+    readonly labelKey?: string;
     /** Where a record named by this field is opened, so its name on a page is a link. */
     readonly pathOf?: (value: string) => string;
 }
@@ -88,6 +93,11 @@ function asked(spec: FieldSpec, values: FieldValues): boolean {
 }
 
 export type FieldValues = Readonly<Record<string, string>>;
+
+/** The label of a field: the one the screen names for it, else the common one. */
+function labelOf(t: (key: string) => string, spec: FieldSpec): string {
+    return t(spec.labelKey ?? `refdata.fields.${spec.field}`);
+}
 
 /** A field's value as text; an absent value is empty. */
 export function show(value: unknown): string {
@@ -250,7 +260,7 @@ export function FieldInput({
 }): ReactNode {
     const { t } = useTranslation();
     const choices = useChoices(spec.kind, spec.flag);
-    const label = t(`refdata.fields.${spec.field}`);
+    const label = labelOf(t, spec);
     if (spec.kind.kind === 'image') {
         return <ImageField label={label} imageId={value} disabled={disabled} onChange={onChange} />;
     }
@@ -548,7 +558,16 @@ export function RecordDialog({
                 {invalid.length > 0 && (
                     <p className="text-xs text-ink-faint">
                         {t('refdata.records.needs', {
-                            fields: invalid.map((field) => t(`refdata.fields.${field}`)).join(', '),
+                            fields: invalid
+                                .map((field) => {
+                                    const spec = specs.find(
+                                        (candidate) => candidate.field === field,
+                                    );
+                                    return spec === undefined
+                                        ? t(`refdata.fields.${field}`)
+                                        : labelOf(t, spec);
+                                })
+                                .join(', '),
                         })}
                     </p>
                 )}
@@ -633,9 +652,7 @@ export function RecordDetails({
             <dl className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 {specs.map((spec) => (
                     <div key={spec.field}>
-                        <dt className="text-xs text-ink-faint">
-                            {t(`refdata.fields.${spec.field}`)}
-                        </dt>
+                        <dt className="text-xs text-ink-faint">{labelOf(t, spec)}</dt>
                         <dd className="mt-0.5 text-sm">
                             <DetailValue spec={spec} value={row[spec.field]} />
                         </dd>
@@ -1303,6 +1320,7 @@ export function PartsPanel({
     initial,
     lead,
     titles,
+    historyKey,
 }: {
     readonly resource: string;
     readonly entityType: string;
@@ -1322,6 +1340,11 @@ export function PartsPanel({
     readonly lead?: string;
     /** How the dialogs name one part: adding it, opening it, and deleting it. */
     readonly titles: { readonly add: string; readonly one: string; readonly remove: string };
+    /**
+     * The key the server reads a part's versions by, when it is not the part's
+     * identifier. A party's versions are kept under its short code, for one.
+     */
+    readonly historyKey?: (row: RecordRow) => string;
 }): ReactNode {
     const { t } = useTranslation();
     const may = useRecordPermissions(resource);
@@ -1452,7 +1475,7 @@ export function PartsPanel({
                 <Dialog title={titles.one} onClose={() => setOpen(null)} wide>
                     <HistoryPanel
                         entityType={entityType}
-                        entityId={open.id}
+                        entityId={historyKey === undefined ? open.id : historyKey(open.row)}
                         {...(may.write
                             ? {
                                   onRevert: (version: HistoryVersion) => {

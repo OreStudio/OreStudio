@@ -2743,7 +2743,8 @@ export const en: SourceCatalogue = {
                 identifiers: 'Identifiers',
                 contacts: 'Contacts',
                 memberships: 'Memberships',
-                structure: 'Structure',
+                centres: 'Business centres',
+                counterparties: 'Counterparties',
             },
         },
         fields: {
@@ -2981,10 +2982,11 @@ export const en: SourceCatalogue = {
             editTitle: 'Edit {name}',
             identifiersLead:
                 'The schemes this party is known by. Changing a value retires the old one and records the new one.',
-            unitsLead: 'The business units this party is made of.',
+            unitsLead:
+                'The business units of this party, and the business centre each one works from.',
             countries: 'Countries it operates in',
             currencies: 'Currencies it operates in',
-            counterparties: 'Counterparties it can see',
+            counterparties: 'Counterparties it may trade with',
             addPart: {
                 'party-identifiers': 'Add identifier',
                 'party-contacts': 'Add contact',
@@ -3000,6 +3002,8 @@ export const en: SourceCatalogue = {
                 'party-contacts': 'Delete contact',
                 'business-units': 'Delete business unit',
             },
+            logo: 'Logo',
+            address: 'Address',
         },
     },
 

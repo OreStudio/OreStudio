@@ -179,11 +179,69 @@ describe('a party page', () => {
             'Identifiers',
             'Contacts',
             'Memberships',
-            'Structure',
+            'Business centres',
+            'Counterparties',
             'History',
         ]) {
             expect(words, tab).toContain(tab);
         }
+        expect(words).not.toContain('Structure');
+    });
+
+    it('shows a string on every tab and never the key of one that is missing', () => {
+        for (const tab of [
+            'details',
+            'identifiers',
+            'contacts',
+            'memberships',
+            'centres',
+            'counterparties',
+            'history',
+        ]) {
+            const words = textOf(open(['refdata::parties:read', 'refdata::parties:write'], tab));
+
+            expect(words.match(/\b(refdata|parties|access)\.[a-zA-Z_.-]+/g) ?? [], tab).toEqual([]);
+        }
+    });
+
+    it('opens the memberships with one panel for countries and one for currencies', () => {
+        const words = textOf(open(['refdata::parties:read'], 'memberships'));
+
+        expect(words.match(/Countries it operates in/g)).toHaveLength(1);
+        expect(words.match(/Currencies it operates in/g)).toHaveLength(1);
+    });
+
+    it('lists the counterparties it may trade with on their own tab', () => {
+        const words = textOf(open(['refdata::parties:read'], 'counterparties'));
+
+        expect(words).toContain('Counterparties it may trade with');
+    });
+
+    it('calls the picture of a party its logo', () => {
+        const words = textOf(open(['refdata::parties:read'], 'details'));
+
+        expect(words).toContain('Logo');
+        expect(words).not.toContain('Flag');
+    });
+
+    it('asks for the versions of a party under its short code', () => {
+        const words = textOf(
+            page(`/refdata/parties/${ID}?tab=history`, ['refdata::parties:read'], (client) =>
+                client.setQueryData(
+                    ['history', 'ores.refdata.party', 'ACME_UK'],
+                    [
+                        {
+                            version: 7,
+                            modifiedBy: 'priya',
+                            recordedAt: '2026-10-04 22:10:00Z',
+                            fields: [{ name: 'Full Name', value: 'Acme UK Limited' }],
+                        },
+                    ],
+                ),
+            ),
+        );
+
+        expect(words).toContain('v7');
     });
 
     it('is reached from Home through Reference data and the list', () => {

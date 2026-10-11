@@ -28,8 +28,8 @@ Every tenant can read the open data of an account, such as the name, picture and
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Split accounts into open and confidential data]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Now          | Design in review (PR #3115).           |
+| Waiting on   | Review of the design.                  |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-11                               |
 
@@ -87,7 +87,7 @@ The accounts table answers three different questions with one rule.
 - *Does this exist?* An insert checks a reference. The answer is yes or no.
 - *What do we know about this person?* A reader opens a profile. The answer is private data.
 
-The party rule is right for the third question. It is wrong for the first two. The tenant rule is right for the third question and for people. It is wrong for the services of the system tenant in the first.
+The party rule is right for the third question. It is wrong for the second. For the first, it is right for the people of a tenant and wrong for the services. A reader sees the name and picture of a person only when the product owner's rule lets the reader see that person: the parties the reader has access to, and the system party. A history entry by a person outside those parties shows the username only, as it does today. The tenant rule is wrong for the services of the system tenant in the first question.
 
 ** The design
 
@@ -95,20 +95,27 @@ Group the data by who may read it and why, not by the entity.
 
 *** Two tables
 
-- *Open table.* The data that names and recognises an account: id, tenant, version, username, account type, status, full name, picture and picture code. It holds no contact data and no private data.
-- *Confidential table.* The rest: email, default party, job title, reports-to link. It keeps the tenant rule, the party rule and its read codes.
-- Both carry the same id and the same audit columns. A write goes to both in one transaction.
+- *Open table.* The data that names and recognises an account: id, tenant, version, username, account type, status, full name, picture, picture code and the column =shared=. It holds no contact data and no private data. The party rule applies to its rows that a tenant owns. It does not apply to its shared rows.
+- *Confidential table.* The rest: email, default party, job title, reports-to link. It keeps the tenant rule, the party rule and its read codes. It has no shared rows.
+- The column =shared= is a boolean, false by default. The seed sets it to true for the service accounts and for the super admin. The shared policy admits a row only when it is owned by the system tenant and =shared= is true. A later human account in the system tenant stays hidden until a person sets the column.
 - The columns of each table are settled in the review of this design. Job title and reports-to may move to the open table if the organisation read needs them.
+
+**** One write, two tables
+
+- The open table is the account. It carries the =version= and the temporal columns =valid_from= and =valid_to=. Optimistic locking checks this version. Every foreign key and soft foreign key points at the open table.
+- The confidential table is a one-to-one side table keyed by the account id. It has its own temporal columns, so its history is kept. It has no version of its own for locking.
+- One function writes both tables in one transaction, and it checks the version of the open table once. A write that changes only confidential columns still increments the version of the open table, so one version describes one account.
+- The migration copies each existing row into both tables, with the same id, version and temporal columns. It is in scope for this story. The reads and writes switch to the new tables in the same change, so no reader sees a half-moved account.
 
 *** One standard for data read across tenants
 
 The standard has six building blocks. Reference data already uses blocks 1 to 3.
 
 1. *Owner.* A shared row has =tenant_id = system=.
-2. *Policy.* A permissive, select-only policy admits =tenant_id = current tenant or tenant_id = system=. A write stays inside the tenant.
-3. *Read.* The generated read declares =:tenant_read_scope: shared= and states no tenant predicate. The policy decides.
+2. *Policy.* The existing shared-reference tables use one permissive policy. Its =using= clause admits the rows of the current tenant and the shared rows of the system tenant. Its =with check= clause admits only the current tenant, so a write stays inside the tenant. The open table takes this shape. Its tenant policy is permissive today, not restrictive, so widening =using= is enough. The party rule is the only restrictive policy. It stays on the confidential table and on the tenant-owned rows of the open table, and it passes shared rows.
+3. *Read.* The generated read declares =:tenant_read_scope: shared=. The template then leaves out =where("tenant_id"_c == tid)=, and the policy decides. The accounts read states that predicate today in the paged read and in the count. Both change with the template.
 4. *Guard.* The read has a =:read= code, or an allow-list row with a reason, as the authorised-reads rules require.
-5. *Existence check.* A reference to a row that other tenants own, or that the party rule hides, is checked by a security definer function that returns only yes or no. It names no column, so it leaks no data.
+5. *Existence check.* A reference to a row that the party rule hides is checked by a security definer function that returns only yes or no. It names no column, so it leaks no data. The function takes the account id and nothing else. It derives the tenant from =app.current_tenant_id=, and it answers true for an account of that tenant or a shared account of the system tenant. A caller cannot name another tenant, so the function is not an oracle across tenants. The function sets a fixed =search_path=. The grant is revoked from =public= and given to the service roles by name.
 6. *Page.* One page states the blocks, and the checklist for a new shared table.
 
 *** What each use case gets
@@ -116,8 +123,8 @@ The standard has six building blocks. Reference data already uses blocks 1 to 3.
 | # | Answer |
 |---+--------|
 | 1 | The open table. The services are system-owned rows. They are admitted by block 2 and read with block 3, so every tenant sees them. |
-| 2 | Block 5. =ores_iam_account_exists_fn(tenant, id)= replaces the =exists (select ... from ores_iam_accounts_tbl)= in every soft-foreign-key trigger. The party rule no longer matters for a reference check. |
-| 3 | The open table has no party rule, and a service account has no party. The update of a service account no longer depends on the actor's parties. |
+| 2 | Block 5. =ores_iam_account_exists_fn(id)= replaces the =exists (select ... from ores_iam_accounts_tbl)= in every soft-foreign-key trigger. The party rule no longer matters for a reference check. |
+| 3 | A service account is a shared row of the open table. The party rule does not apply to shared rows, so the update of a service account no longer depends on the actor's parties. |
 | 4, 5 | The people of a tenant stay tenant-owned. The party rule keeps applying to them in the confidential table. |
 | 6 | No change. |
 | 7 | No change. Block 2 is select-only. |
@@ -132,8 +139,9 @@ The product owner settled these on 2026-10-11.
 
 ** Open points for the reviewer
 
-- The system party is a party of each tenant. Its members are visible to everyone in that tenant. The review checks that the service accounts of the system tenant need no link to it, because block 2 already admits them.
-- Which soft-foreign-key checks use block 5? The generated triggers come from models, so the change is in the template and every generated trigger changes with it.
+- The system party is a party of each tenant. Its members are visible to everyone in that tenant. The services of the system tenant need no link to it, because block 2 admits them.
+- Which soft-foreign-key checks use block 5? The generated triggers come from models, so the change is in the template and every generated trigger changes with it. The implementation lists every trigger and function that reads the accounts table, in every domain, not only inbox and refdata. A test proves each one for a service actor in a tenant.
+- *Fallback.* The attach photos failure blocks tenant setup now. If the change grows beyond one delivery, the product owner decides before anything splits. The smallest fix for that case is a write of the service pictures with no actor, which another environment already holds as a hotfix.
 
 * Test Scenarios
 

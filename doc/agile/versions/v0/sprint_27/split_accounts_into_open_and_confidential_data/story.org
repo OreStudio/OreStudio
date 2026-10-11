@@ -23,15 +23,15 @@ Every tenant can read the open data of an account, such as the name, picture and
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Findings recorded. Design not started. |
-| Waiting on    | Nothing.                               |
+| Now           | Design in review (PR #3115).           |
+| Waiting on    | Review of the design.                  |
 | Next          | Design the split and the shared-read pattern. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
 
-- One written standard names the building blocks for data that every tenant reads. Reference data and open account data use the same blocks.
-- The account is two tables. The open table holds the data a history needs to name an author. The confidential table holds the rest and is never shared.
+- One written standard names the building blocks for data that every tenant reads. Reference data and the shared rows of the open account table use the same blocks.
+- The account is two tables. The open table holds the data a history needs to name an author. Only its shared rows, the service accounts and the super admin, are read by every tenant. The confidential table holds the rest and is never shared.
 - A tenant administrator and a member see the name, picture and type of every service account in a history. The toggle that hides system activity works for them.
 - The party visibility rule no longer hides service accounts. Tenant setup completes the attach photos step. A service writes a record that names a person.
 - The authorised-reads rules, the multi-tenancy page and the UX standards describe the new pattern.

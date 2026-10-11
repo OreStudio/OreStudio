@@ -226,7 +226,8 @@ describe('the FX feed screens', () => {
             );
         });
         expect(html).not.toContain('>Edit<');
-        expect(html).toContain('Read only');
+        expect(html).not.toContain('Read only');
+        expect(html).not.toContain('Editable');
     });
 
     it('draws the mixture with its weight sum and the distribution it implies', () => {

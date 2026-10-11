@@ -451,6 +451,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 version={feed.version}
                 detail={t(`refdata.choices.process_type.${show(feed['process_type'])}`)}
                 flag="pair"
+                access={null}
                 own={
                     <>
                         <FeedStatus running={running} />

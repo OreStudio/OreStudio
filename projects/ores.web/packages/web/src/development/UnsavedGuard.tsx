@@ -58,7 +58,9 @@ export function LeaveDialog({
 
 /**
  * Whether a move from one place to another leaves the page. A change of the
- * query or the hash, such as a tab of the page, stays on it.
+ * query or the hash, such as a tab of the page, stays on it. The rule looks at
+ * the path only. If the runner ever keeps state of its own in the query, such as
+ * a filter, a change of that state must be told apart here.
  */
 export function leavesPage(
     current: { readonly pathname: string },
@@ -95,7 +97,9 @@ function useUnloadGuard(dirty: boolean): void {
  * the browser's own prompt.
  *
  * The question inside the app needs a data router, because a blocker works
- * only there. Under a plain router, as in a test that renders markup, the
+ * only there. The check for one reads `UNSAFE_DataRouterContext`, which React
+ * Router marks as unstable, so a test pins that it still exists: a release that
+ * removes it must fail a test and not silently turn the question off. Under a plain router, as in a test that renders markup, the
  * guard asks nothing in the app and the unload guard still works.
  */
 export function UnsavedGuard({ dirty }: { readonly dirty: boolean }): ReactNode {

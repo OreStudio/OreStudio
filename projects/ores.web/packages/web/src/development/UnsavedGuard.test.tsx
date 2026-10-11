@@ -20,7 +20,7 @@
  */
 
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, UNSAFE_DataRouterContext } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { LeaveDialog, UnsavedGuard, leavesPage } from './UnsavedGuard.js';
@@ -68,5 +68,12 @@ describe('what counts as leaving the page', () => {
         expect(
             leavesPage({ pathname: '/development/tests/1' }, { pathname: '/development/tests/1' }),
         ).toBe(false);
+    });
+});
+
+describe('what the guard relies on in React Router', () => {
+    it('still exports the context that tells a data router from a plain one', () => {
+        expect(UNSAFE_DataRouterContext).toBeDefined();
+        expect(typeof UNSAFE_DataRouterContext.Provider).toBe('object');
     });
 });

@@ -8,7 +8,7 @@
 #+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-whole-history-of-a-party
-#+pr:
+#+pr: 3102
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3102][#3102]] | [agile] Scaffold the story to show the whole history of a party |
 
 * Review
 

@@ -42,7 +42,7 @@ A quant composes an FX feed and sees the paths it implies before saving it.
 - The feed list reads one page at a time, searched and ordered on the server.
 - A feed page shows its details, its mixture and its history. A writer adds,
   edits, reverts and deletes a feed; a reader sees no change offered.
-- The mixture tab edits the Gaussians as one set, shows the weight sum, the
+- The Price behaviour tab, named as in Qt, edits the Gaussians as one set, shows the weight sum, the
   return distribution and a batch of sample paths drawn from the values on
   the screen, and saves the set in one call.
 - The mixture of one feed is read by its parent, never by reading every
@@ -52,7 +52,7 @@ A quant composes an FX feed and sees the paths it implies before saving it.
   list in one action; each refusal is named with the server's reason.
 - A Ticks tab plots the last 50, 200 or 500 ticks of a feed, with the last
   price and the move over them, read again every two seconds while it runs.
-- The mixture tab explains the engine, each column and each row in the
+- The Price behaviour tab explains the engine, each column and each row in the
   engine's own terms, warns that the arithmetic engine can go below zero,
   offers volatility profiles, and gives a mean reverting feed its half-life
   and band. The engine, tick rate, price source, enabled and auto start

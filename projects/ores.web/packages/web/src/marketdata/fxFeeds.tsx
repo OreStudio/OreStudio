@@ -366,7 +366,7 @@ function FxFeedsList(): ReactNode {
                     check={check}
                     onClose={() => setAdding(false)}
                     onSaved={(write) =>
-                        void navigate(`${fxFeedPath(show(write['id']))}?tab=mixture`)
+                        void navigate(`${fxFeedPath(show(write['id']))}?tab=behaviour`)
                     }
                 />
             )}
@@ -396,7 +396,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
     const mixture = useRecords(COMPONENTS, id);
     const { tab, bar } = useRecordTabs({
         label: pair,
-        tabs: ['details', 'mixture', 'ticks', 'history'],
+        tabs: ['details', 'behaviour', 'ticks', 'history'],
     });
     const running = useRunningFeeds()?.has(show(feed['source_name']));
     const runs = useFeedRuns();
@@ -450,7 +450,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                     extra={[[t('refdata.fields.ore_key'), show(feed['ore_key'])]]}
                 />
             )}
-            {tab === 'mixture' && <MixturePanel feed={feed} />}
+            {tab === 'behaviour' && <MixturePanel feed={feed} />}
             {tab === 'ticks' && <TicksPanel feedId={id} running={running} />}
             {tab === 'history' && (
                 <HistoryPanel

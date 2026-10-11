@@ -2880,7 +2880,7 @@ export const en: SourceCatalogue = {
                 memberships: 'Memberships',
                 centres: 'Business centres',
                 counterparties: 'Counterparties',
-                mixture: 'Mixture',
+                behaviour: 'Price behaviour',
                 ticks: 'Ticks',
             },
         },
@@ -3298,7 +3298,6 @@ export const en: SourceCatalogue = {
             save: 'Save mixture',
             discard: 'Discard changes',
             removeAfter: 'To delete a saved component, save or discard your changes first.',
-            componentTitle: 'Mixture component',
             removeTitle: 'Delete this component?',
         },
         preview: {

@@ -213,7 +213,7 @@ row.
    =put_many=, so it lands whole or not at all. The config is a separate
    resource with its own =put=, and no operation writes both. The screen
    saves the config from its dialog and the mixture from its tab, and a new
-   feed opens on the mixture tab after its config is saved. The candidate is
+   feed opens on the Price behaviour tab after its config is saved. The candidate is
    an apply operation that writes the config and its mixture together.
 6. *The pair is not validated against a declared reference.* The base and quote
    codes are text, the pair catalogue is read on the page, and no operation

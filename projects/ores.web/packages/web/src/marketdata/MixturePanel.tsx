@@ -21,19 +21,15 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
-import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
-import { HistoryPanel } from '../refdata/HistoryPanel.js';
+import { Button, Field, Input, Notice, Select } from '../ui/Primitives.js';
 import {
     NEW_RECORD_REASON,
     RemoveRecordDialog,
-    RevertDialog,
     show,
     useRecordPermissions,
     useRecords,
-    type FieldSpec,
 } from '../refdata/records.js';
 import { ReasonFields, useReason } from '../refdata/shared.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
@@ -57,19 +53,6 @@ import {
 } from './mixture.js';
 
 export const COMPONENTS = 'gmm-components';
-
-/** A component's fields, for its history and its revert; the mixture table edits the rest. */
-const COMPONENT_FIELDS: readonly FieldSpec[] = [
-    {
-        field: 'component_index',
-        history: 'Component Index',
-        kind: { kind: 'int', min: 0 },
-    },
-    { field: 'description', history: 'Description', kind: { kind: 'text' }, blank: true },
-    { field: 'mean', history: 'Mean', kind: { kind: 'decimal' } },
-    { field: 'stdev', history: 'Stdev', kind: { kind: 'decimal' } },
-    { field: 'weight', history: 'Weight', kind: { kind: 'decimal' } },
-];
 
 /** How many ticks and paths a preview draws, as the server bounds them. */
 const MAX_TICKS = 5000;
@@ -134,14 +117,7 @@ function MixtureEditor({
     const saved = draftOf(rows);
     const [draft, setDraft] = useState<readonly DraftComponent[]>(saved);
     const [commentary, setCommentary] = useState('');
-    const [open, setOpen] = useState<{
-        readonly row: RecordRow;
-        readonly view: 'history' | 'remove';
-    } | null>(null);
-    const [reverting, setReverting] = useState<{
-        readonly row: RecordRow;
-        readonly version: HistoryVersion;
-    } | null>(null);
+    const [removing, setRemoving] = useState<RecordRow | null>(null);
     const plan = savePlan(feedId, saved, draft);
     const dirty = plan.changes.length > 0 || draft.length !== saved.length;
     const onlyNew = plan.changes.every((change) => change.version === null);
@@ -186,7 +162,7 @@ function MixtureEditor({
     });
 
     return (
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="space-y-4">
             <section className="space-y-3">
                 <p className="text-sm text-ink-muted">{t('marketdata.mixture.lead')}</p>
                 <Notice tone={processType === 'arithmetic' ? 'warn' : 'info'}>
@@ -301,18 +277,6 @@ function MixtureEditor({
                                                     {t('marketdata.mixture.up')}
                                                 </Button>
                                             )}
-                                            {row !== undefined && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    icon="history"
-                                                    onClick={() =>
-                                                        setOpen({ row, view: 'history' })
-                                                    }
-                                                >
-                                                    {t('refdata.records.tabs.history')}
-                                                </Button>
-                                            )}
                                             {row === undefined && may.write && (
                                                 <Button
                                                     size="sm"
@@ -332,7 +296,7 @@ function MixtureEditor({
                                                     size="sm"
                                                     variant="ghost"
                                                     icon="delete"
-                                                    onClick={() => setOpen({ row, view: 'remove' })}
+                                                    onClick={() => setRemoving(row)}
                                                 >
                                                     {t('refdata.records.delete')}
                                                 </Button>
@@ -418,45 +382,15 @@ function MixtureEditor({
                 )}
             </section>
             <Preview feed={feed} draft={draft} />
-            {open?.view === 'history' && (
-                <Dialog
-                    title={t('marketdata.mixture.componentTitle')}
-                    onClose={() => setOpen(null)}
-                    wide
-                >
-                    <HistoryPanel
-                        entityType="ores.synthetic.gmm_component"
-                        entityId={show(open.row['id'])}
-                        {...(may.write
-                            ? {
-                                  onRevert: (version: HistoryVersion) => {
-                                      setReverting({ row: open.row, version });
-                                      setOpen(null);
-                                  },
-                              }
-                            : {})}
-                    />
-                </Dialog>
-            )}
-            {open?.view === 'remove' && (
+            {removing !== null && (
                 <RemoveRecordDialog
                     resource={COMPONENTS}
                     title={t('marketdata.mixture.removeTitle')}
                     warning={t('refdata.records.deletePartWarning')}
-                    recordKey={{ id: show(open.row['id']) }}
-                    version={open.row.version}
-                    onClose={() => setOpen(null)}
-                    onRemoved={() => setOpen(null)}
-                />
-            )}
-            {reverting !== null && (
-                <RevertDialog
-                    resource={COMPONENTS}
-                    specs={COMPONENT_FIELDS}
-                    row={reverting.row}
-                    version={reverting.version}
-                    keep={['id', 'fx_spot_config_id']}
-                    onClose={() => setReverting(null)}
+                    recordKey={{ id: show(removing['id']) }}
+                    version={removing.version}
+                    onClose={() => setRemoving(null)}
+                    onRemoved={() => setRemoving(null)}
                 />
             )}
         </div>
@@ -554,7 +488,7 @@ function Preview({
     const density = drawable && mixing ? densityOf(gaussians) : undefined;
 
     return (
-        <section className="space-y-4">
+        <section className="grid items-start gap-4 xl:grid-cols-2">
             <div className="space-y-2 rounded-md border border-line p-3">
                 <h3 className="text-sm font-medium">{t('marketdata.preview.distribution')}</h3>
                 {!mixing ? (

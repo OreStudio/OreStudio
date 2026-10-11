@@ -2903,7 +2903,7 @@ const pt: SourceCatalogue = {
                 memberships: 'Pertenças',
                 centres: 'Centros de negócios',
                 counterparties: 'Contrapartes',
-                mixture: 'Mistura',
+                behaviour: 'Comportamento do preço',
                 ticks: 'Cotações',
             },
         },
@@ -3324,7 +3324,6 @@ const pt: SourceCatalogue = {
             discard: 'Descartar alterações',
             removeAfter:
                 'Para apagar uma componente guardada, guarde ou descarte primeiro as suas alterações.',
-            componentTitle: 'Componente da mistura',
             removeTitle: 'Apagar esta componente?',
         },
         preview: {

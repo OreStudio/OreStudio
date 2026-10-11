@@ -2923,7 +2923,7 @@ const fr: SourceCatalogue = {
                 memberships: 'Appartenances',
                 centres: 'Centres d’affaires',
                 counterparties: 'Contreparties',
-                mixture: 'Mélange',
+                behaviour: 'Comportement du prix',
                 ticks: 'Cotations',
             },
         },
@@ -3349,7 +3349,6 @@ const fr: SourceCatalogue = {
             discard: 'Annuler les modifications',
             removeAfter:
                 "Pour supprimer une composante enregistrée, enregistrez ou annulez d'abord vos modifications.",
-            componentTitle: 'Composante du mélange',
             removeTitle: 'Supprimer cette composante ?',
         },
         preview: {

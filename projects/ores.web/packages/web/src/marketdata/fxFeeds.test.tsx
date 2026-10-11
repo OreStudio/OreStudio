@@ -201,7 +201,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain('synthetic.eurusd');
         expect(html).toContain('FX/RATE/EUR/USD');
         expect(html).toContain('A fixed price');
-        expect(html).toContain('>Mixture<');
+        expect(html).toContain('>Price behaviour<');
         expect(html).toContain('Edit');
         expect(html).toContain('Delete');
     });
@@ -219,7 +219,7 @@ describe('the FX feed screens', () => {
     });
 
     it('draws the mixture with its weight sum and the distribution it implies', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['records', 'gmm-components', FEED_ID],
@@ -237,7 +237,7 @@ describe('the FX feed screens', () => {
     });
 
     it('says what a feed with no mixture lacks', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'gmm-components', FEED_ID], []);
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -329,7 +329,7 @@ describe('the FX feed screens', () => {
     });
 
     it('explains the geometric engine and names the profile of each deviation', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['records', 'gmm-components', FEED_ID],
@@ -343,7 +343,7 @@ describe('the FX feed screens', () => {
     });
 
     it('warns that the arithmetic engine can take the price below zero', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
                 ...feed,
                 process_type: 'arithmetic',
@@ -356,7 +356,7 @@ describe('the FX feed screens', () => {
     });
 
     it('reads a mean reverting mixture as κ and σ, with its half-life and band', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
                 ...feed,
                 process_type: 'ornstein_uhlenbeck',

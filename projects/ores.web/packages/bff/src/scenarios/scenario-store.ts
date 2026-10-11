@@ -19,6 +19,7 @@
  *
  */
 
+import type { ImageKind } from './image.js';
 import type { Scenario, RunInput, ScenarioState, StepRef, DocLink } from './scenario-doc.js';
 
 /**
@@ -58,8 +59,8 @@ export interface ScenarioSummary {
     /** The date of the doc's `#+created:` line, or empty. */
     readonly created: string;
     readonly state: ScenarioState;
-    /** A scenario waits for a tester until it is PASSED or FAILED. */
-    readonly phase: 'waiting' | 'done';
+    /** A scenario waits for a tester until it is PASSED, FAILED or abandoned. */
+    readonly phase: 'waiting' | 'done' | 'abandoned';
     readonly target: string;
     readonly story: DocLink | null;
     readonly task: DocLink | null;
@@ -76,6 +77,12 @@ export interface RecordResult {
 /** An image the store kept: its name, which the step's note links to. */
 export interface SavedImage {
     readonly name: string;
+}
+
+/** An image kept beside a scenario doc, with what its bytes are. */
+export interface ImageFile {
+    readonly bytes: Uint8Array;
+    readonly kind: ImageKind;
 }
 
 export interface ScenarioStore {
@@ -96,6 +103,12 @@ export interface ScenarioStore {
      * decides the kind of image from its bytes.
      */
     saveImage(id: string, step: number, bytes: Uint8Array): Promise<SavedImage>;
+    /**
+     * An image kept beside the scenario doc, by its file name, or null. Only a
+     * regular file that is a PNG, JPEG, GIF or WebP image is served, so a
+     * scenario's folder gives away nothing else.
+     */
+    readImage(id: string, name: string): Promise<ImageFile | null>;
 }
 
 /** The id is not a document id. A path is never an id. */

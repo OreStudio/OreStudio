@@ -33,7 +33,7 @@ import { QA_SCENARIOS_KEY } from './TestsQueue.js';
 function screen(options: {
     readonly scenarios?: readonly ScenarioSummary[];
     readonly failure?: string;
-    readonly tab?: 'tests' | 'done';
+    readonly tab?: 'tests' | 'done' | 'abandoned';
 }): string {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false } },
@@ -52,7 +52,13 @@ function screen(options: {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter initialEntries={[options.tab === 'done' ? '/?tab=done' : '/']}>
+                <MemoryRouter
+                    initialEntries={[
+                        options.tab === undefined || options.tab === 'tests'
+                            ? '/'
+                            : `/?tab=${options.tab}`,
+                    ]}
+                >
                     <DevelopmentArea />
                 </MemoryRouter>
             </TranslationProvider>
@@ -118,7 +124,16 @@ const ANCIENT = summary({
     sprint: 'sprint_22',
     created: '2026-05-01',
 });
-const ALL = [PASSED, IDLE, FAILED, WAITING, OLDER, LOOSE, ANCIENT];
+const GONE = summary({
+    id: '99999999-9999-4999-8999-999999999999',
+    title: 'A scenario for the Qt client',
+    phase: 'abandoned',
+    state: 'ABANDONED',
+    steps: { total: 6, pending: 6, pass: 0, fail: 0, dropped: 0 },
+    sprint: 'sprint_23',
+    created: '2026-07-08',
+});
+const ALL = [PASSED, IDLE, FAILED, WAITING, OLDER, LOOSE, ANCIENT, GONE];
 
 describe('the Development menu entry', () => {
     it('is in the menu for everybody, with no permission and no scope', () => {
@@ -128,11 +143,12 @@ describe('the Development menu entry', () => {
 });
 
 describe('the Tests tab', () => {
-    it('names the area, offers Tests and Done, and draws no tab for the next story', () => {
+    it('names the area, offers Tests, Done and Abandoned, and draws no tab for the next story', () => {
         const html = screen({ scenarios: [] });
         expect(html).toContain('role="tablist"');
         expect(html).toContain('>Tests</button>');
         expect(html).toContain('>Done</button>');
+        expect(html).toContain('>Abandoned</button>');
         expect(html).toContain('Development');
         for (const later of ['Board', 'Stories', 'Tasks']) {
             expect(html).not.toContain(`>${later}</button>`);
@@ -274,6 +290,29 @@ describe('the Done tab', () => {
     it('says nothing has been tested yet when nothing is done', () => {
         const html = screen({ scenarios: [WAITING], tab: 'done' });
         expect(html).toContain('Nothing has been tested yet.');
+        expect(html).not.toContain('<details');
+    });
+});
+
+describe('the Abandoned tab', () => {
+    it('shows only what has been abandoned', () => {
+        const html = screen({ scenarios: ALL, tab: 'abandoned' });
+        expect(html).toContain('A scenario for the Qt client');
+        for (const title of ['Retake the currency screenshots', 'Create a counterparty']) {
+            expect(html).not.toContain(title);
+        }
+    });
+
+    it('groups by sprint, marks the state, and draws no completion column', () => {
+        const html = screen({ scenarios: ALL, tab: 'abandoned' });
+        expect(html).toContain('Sprint 23');
+        expect(html).toContain('>Abandoned</span>');
+        expect(html).not.toContain('>Completed</th>');
+    });
+
+    it('says nothing has been abandoned when nothing has', () => {
+        const html = screen({ scenarios: [WAITING], tab: 'abandoned' });
+        expect(html).toContain('Nothing has been abandoned.');
         expect(html).not.toContain('<details');
     });
 });

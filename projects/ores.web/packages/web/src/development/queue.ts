@@ -27,7 +27,7 @@ import type { ScenarioSummary } from '@ores/contracts';
  * A scenario waits until it is PASSED or FAILED. A waiting scenario with some
  * steps done is in progress, so a tester sees which ones were started.
  */
-export type QueueState = 'pending' | 'inProgress' | 'passed' | 'failed';
+export type QueueState = 'pending' | 'inProgress' | 'passed' | 'failed' | 'abandoned';
 
 /** The steps with an outcome: passed, failed or dropped. */
 export function stepsDone(scenario: ScenarioSummary): number {
@@ -37,6 +37,7 @@ export function stepsDone(scenario: ScenarioSummary): number {
 export function stateOf(scenario: ScenarioSummary): QueueState {
     if (scenario.state === 'PASSED') return 'passed';
     if (scenario.state === 'FAILED') return 'failed';
+    if (scenario.state === 'ABANDONED') return 'abandoned';
     return stepsDone(scenario) > 0 ? 'inProgress' : 'pending';
 }
 
@@ -56,7 +57,7 @@ export function openFromRow(event: { readonly defaultPrevented: boolean }, open:
     if (!event.defaultPrevented) open();
 }
 
-/** Whether a scenario still waits for a tester, or is finished. */
+/** Whether a scenario waits for a tester, is finished, or has been abandoned. */
 export type Phase = ScenarioSummary['phase'];
 
 /** The number in a sprint folder name such as `sprint_27`, or null. */

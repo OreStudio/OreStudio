@@ -34,8 +34,17 @@ import { z } from 'zod';
 export const stepStatusSchema = z.enum(['PENDING', 'PASS', 'FAIL', 'DROPPED']);
 export type StepStatus = z.infer<typeof stepStatusSchema>;
 
-export const scenarioStateSchema = z.enum(['PENDING', 'PASSED', 'FAILED']);
+/**
+ * The state of a scenario. A tester's run ends it as PASSED or FAILED. A person
+ * sets ABANDONED in the doc, for a scenario that will not be run, such as one
+ * written for a client that no longer exists. A retest brings an abandoned
+ * scenario back.
+ */
+export const scenarioStateSchema = z.enum(['PENDING', 'PASSED', 'FAILED', 'ABANDONED']);
 export type ScenarioState = z.infer<typeof scenarioStateSchema>;
+
+/** The states a run can give a scenario. */
+export type RunState = Exclude<ScenarioState, 'ABANDONED'>;
 
 /**
  * The state a scenario has once its steps have these statuses. It closes when
@@ -46,7 +55,7 @@ export type ScenarioState = z.infer<typeof scenarioStateSchema>;
  * The server decides with this when it saves a run, and the browser shows the
  * same answer while a tester marks steps, so the two cannot differ.
  */
-export function scenarioStateOf(statuses: readonly StepStatus[]): ScenarioState {
+export function scenarioStateOf(statuses: readonly StepStatus[]): RunState {
     const ran = statuses.some((status) => status === 'PASS' || status === 'FAIL');
     if (statuses.includes('PENDING') || !ran) return 'PENDING';
     return statuses.includes('FAIL') ? 'FAILED' : 'PASSED';
@@ -77,8 +86,11 @@ export const scenarioSummarySchema = z.object({
     /** The date from the doc's `#+created:` line, such as `2026-10-11`, or empty. */
     created: z.string(),
     state: scenarioStateSchema,
-    /** A scenario waits for a tester until it is PASSED or FAILED. */
-    phase: z.enum(['waiting', 'done']),
+    /**
+     * A scenario waits for a tester until it is PASSED or FAILED, or until a
+     * person abandons it.
+     */
+    phase: z.enum(['waiting', 'done', 'abandoned']),
     target: z.string(),
     story: docLinkSchema.nullable(),
     task: docLinkSchema.nullable(),
@@ -185,3 +197,14 @@ export type ImageUploadRequest = z.infer<typeof imageUploadRequestSchema>;
 /** The name the server gave the image. It is saved beside the scenario doc. */
 export const imageUploadResponseSchema = z.object({ name: z.string() });
 export type ImageUploadResponse = z.infer<typeof imageUploadResponseSchema>;
+
+/**
+ * Whether a name is the name of an image file that sits beside a scenario doc:
+ * letters, digits, dots, dashes and underscores, ending in a picture extension.
+ * It holds no slash and does not start with a dot, so it can name no other
+ * folder and no hidden file. The extension is a first filter. What the bytes
+ * are decides whether the server serves the file.
+ */
+export function isImageName(name: string): boolean {
+    return /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:png|jpe?g|gif|webp)$/i.test(name);
+}

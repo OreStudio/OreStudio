@@ -132,6 +132,19 @@ describe('listing scenarios', () => {
         expect(list.find((s) => s.id === MULTI)?.created).toBe('2026-07-13');
     });
 
+    it('puts an abandoned scenario in its own phase, neither waiting nor done', async () => {
+        put(
+            'sprint_24/scenario_abandoned.org',
+            fixture('single_client_scenario.org')
+                .replace(SINGLE, 'C0000000-0000-4000-8000-0000000000CC')
+                .replace(/(\| State\s+\| )\w+/, '$1ABANDONED'),
+        );
+        const list = await store().list();
+        const gone = list.find((s) => s.id === 'C0000000-0000-4000-8000-0000000000CC');
+        expect(gone).toMatchObject({ state: 'ABANDONED', phase: 'abandoned' });
+        expect(list.find((s) => s.id === MULTI)?.phase).toBe('done');
+    });
+
     it('leaves the sprint null for a scenario outside any sprint folder', async () => {
         put(
             'recipes/scenario_loose.org',
@@ -561,5 +574,87 @@ describe('the sprint of a path', () => {
         expect(sprintOf('sprint_/scenario_a.org')).toBeNull();
         expect(sprintOf('my_sprint_27/scenario_a.org')).toBeNull();
         expect(sprintOf('sprint_27.org')).toBeNull();
+    });
+});
+
+describe('reading an image kept beside a scenario', () => {
+    const dir = () => join(root, 'sprint_23/story');
+    const timed = () => new FileScenarioStore(root, { rescanAfterMs: 0, now: NOON });
+
+    it('gives back the bytes and the kind of an image the store kept', async () => {
+        const saved = await timed().saveImage(MULTI, 2, PNG);
+        const image = await timed().readImage(MULTI, saved.name);
+        expect(image?.kind).toBe('png');
+        expect(Buffer.from(image?.bytes ?? [])).toEqual(Buffer.from(PNG));
+    });
+
+    it('gives back an image another tool left beside the doc', async () => {
+        writeFileSync(join(dir(), 'scenario_multi_20260710_091044.png'), JPEG);
+        const image = await timed().readImage(MULTI, 'scenario_multi_20260710_091044.png');
+        expect(image?.kind).toBe('jpg');
+    });
+
+    it('answers null for a file that is not there', async () => {
+        expect(await timed().readImage(MULTI, 'nothing.png')).toBeNull();
+    });
+
+    it('answers null for a name that is a path, however it is written', async () => {
+        writeFileSync(join(root, 'outside_the_folder.png'), PNG);
+        for (const name of [
+            '../../outside_the_folder.png',
+            '../../../outside_the_folder.png',
+            'sprint_23/../../outside_the_folder.png',
+            '/etc/passwd',
+            '..%2foutside_the_folder.png',
+            '.hidden.png',
+        ]) {
+            expect(await timed().readImage(MULTI, name), name).toBeNull();
+        }
+    });
+
+    it('answers null for a file with a picture name that is not a picture', async () => {
+        writeFileSync(join(dir(), 'fake.png'), '<script>alert(1)</script>');
+        writeFileSync(join(dir(), 'vector.png'), '<svg xmlns="http://www.w3.org/2000/svg"/>');
+        expect(await timed().readImage(MULTI, 'fake.png')).toBeNull();
+        expect(await timed().readImage(MULTI, 'vector.png')).toBeNull();
+    });
+
+    it('answers null for a file with another extension, even if it is a picture', async () => {
+        writeFileSync(join(dir(), 'real.dat'), PNG);
+        expect(await timed().readImage(MULTI, 'real.dat')).toBeNull();
+    });
+
+    it('does not follow a link, so a link cannot lead out of the folder', async () => {
+        writeFileSync(join(outside, 'secret.png'), PNG);
+        symlinkSync(join(outside, 'secret.png'), join(dir(), 'linked.png'));
+        expect(await timed().readImage(MULTI, 'linked.png')).toBeNull();
+    });
+
+    it('answers null for a folder with a picture name', async () => {
+        mkdirSync(join(dir(), 'folder.png'));
+        expect(await timed().readImage(MULTI, 'folder.png')).toBeNull();
+    });
+
+    it('answers null for an id no scenario has and for a story, and refuses a bad id', async () => {
+        writeFileSync(join(dir(), 'a.png'), PNG);
+        expect(await timed().readImage('E0000000-0000-4000-8000-000000000003', 'a.png')).toBeNull();
+        expect(await timed().readImage(STORY, 'a.png')).toBeNull();
+        await expect(timed().readImage('../x', 'a.png')).rejects.toBeInstanceOf(InvalidDocIdError);
+    });
+
+    it('serves from the folder of the scenario it is asked about, and from no other', async () => {
+        put(
+            'sprint_24/scenario_other.org',
+            fixture('single_client_scenario.org').replace(
+                SINGLE,
+                'C0000000-0000-4000-8000-0000000000DD',
+            ),
+        );
+        writeFileSync(join(root, 'sprint_24/only_here.png'), PNG);
+        const s = timed();
+        expect(
+            (await s.readImage('C0000000-0000-4000-8000-0000000000DD', 'only_here.png'))?.kind,
+        ).toBe('png');
+        expect(await s.readImage(MULTI, 'only_here.png')).toBeNull();
     });
 });

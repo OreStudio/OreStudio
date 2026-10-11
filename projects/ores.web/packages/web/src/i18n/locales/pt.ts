@@ -1126,6 +1126,7 @@ const pt: SourceCatalogue = {
             label: 'Áreas de desenvolvimento',
             tests: 'Testes',
             done: 'Concluídos',
+            abandoned: 'Abandonados',
         },
         tests: {
             sprint: 'Sprint {number}',
@@ -1133,6 +1134,7 @@ const pt: SourceCatalogue = {
             created: 'Criado em',
             nothingWaiting: 'Nada está aguardando.',
             nothingDone: 'Nada foi testado ainda.',
+            nothingAbandoned: 'Nada foi abandonado.',
             scenario: 'Cenário',
             target: 'Alvo',
             progress: 'Progresso',
@@ -1144,6 +1146,7 @@ const pt: SourceCatalogue = {
                 inProgress: 'Em andamento',
                 passed: 'Aprovado',
                 failed: 'Reprovado',
+                abandoned: 'Abandonado',
             },
         },
         scenario: {
@@ -1173,6 +1176,7 @@ const pt: SourceCatalogue = {
                 PENDING: 'Pendente',
                 PASSED: 'Aprovado',
                 FAILED: 'Reprovado',
+                ABANDONED: 'Abandonado',
             },
             stepStates: {
                 PENDING: 'Pendente',
@@ -1186,6 +1190,8 @@ const pt: SourceCatalogue = {
             lastSaved: 'Última gravação',
             retest: 'Retestar',
             closedHelp: 'Este cenário está fechado. Um reteste limpa cada passo e recomeça.',
+            abandonedHelp:
+                'Este cenário foi abandonado e não será executado. Um reteste limpa cada passo e o traz de volta.',
             save: 'Gravar',
             saveHelp:
                 'Gravar escreve o resultado de cada passo e o estado geral no documento do cenário.',
@@ -1207,6 +1213,13 @@ const pt: SourceCatalogue = {
             imageSaving: 'Gravando a imagem...',
             imageNotImage: 'Só imagens PNG, JPEG, GIF e WebP podem ser anexadas.',
             imageTooLarge: 'Essa imagem passa de {limit} MB.',
+            pasteButton: 'Colar da área de transferência',
+            clipboard: {
+                unavailable:
+                    'Este navegador não pode ler a área de transferência desta página. Cole com Ctrl+V.',
+                denied: 'O navegador não permitiu que esta página lesse a área de transferência. Permita na barra de endereços, ou cole com Ctrl+V.',
+                empty: 'A área de transferência não tem imagem. Faça antes uma captura de tela para a área de transferência.',
+            },
             savedClosed: 'Gravado e fechado como {state}.',
             savedOpen:
                 'Gravado. {pending} passos ainda precisam ser marcados. O cenário continua aberto.',

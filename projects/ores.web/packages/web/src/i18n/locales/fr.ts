@@ -1134,6 +1134,7 @@ const fr: SourceCatalogue = {
             label: 'Zones de développement',
             tests: 'Tests',
             done: 'Terminés',
+            abandoned: 'Abandonnés',
         },
         tests: {
             sprint: 'Sprint {number}',
@@ -1141,6 +1142,7 @@ const fr: SourceCatalogue = {
             created: 'Créé le',
             nothingWaiting: "Rien n'est en attente.",
             nothingDone: "Rien n'a encore été testé.",
+            nothingAbandoned: "Rien n'a été abandonné.",
             scenario: 'Scénario',
             target: 'Cible',
             progress: 'Avancement',
@@ -1152,6 +1154,7 @@ const fr: SourceCatalogue = {
                 inProgress: 'En cours',
                 passed: 'Réussi',
                 failed: 'Échoué',
+                abandoned: 'Abandonné',
             },
         },
         scenario: {
@@ -1181,6 +1184,7 @@ const fr: SourceCatalogue = {
                 PENDING: 'En attente',
                 PASSED: 'Réussi',
                 FAILED: 'Échoué',
+                ABANDONED: 'Abandonné',
             },
             stepStates: {
                 PENDING: 'En attente',
@@ -1194,6 +1198,8 @@ const fr: SourceCatalogue = {
             lastSaved: 'Dernier enregistrement',
             retest: 'Retester',
             closedHelp: 'Ce scénario est clos. Un nouveau test efface chaque étape et recommence.',
+            abandonedHelp:
+                'Ce scénario est abandonné et ne sera pas exécuté. Un nouveau test efface chaque étape et le remet en jeu.',
             save: 'Enregistrer',
             saveHelp:
                 "L'enregistrement écrit le résultat de chaque étape et l'état global dans le document du scénario.",
@@ -1215,6 +1221,13 @@ const fr: SourceCatalogue = {
             imageSaving: "Enregistrement de l'image...",
             imageNotImage: 'Seules les images PNG, JPEG, GIF et WebP peuvent être jointes.',
             imageTooLarge: 'Cette image dépasse {limit} Mo.',
+            pasteButton: 'Coller depuis le presse-papiers',
+            clipboard: {
+                unavailable:
+                    'Ce navigateur ne peut pas lire le presse-papiers depuis cette page. Collez avec Ctrl+V.',
+                denied: "Le navigateur n'a pas permis à cette page de lire le presse-papiers. Autorisez-le dans la barre d'adresse, ou collez avec Ctrl+V.",
+                empty: "Le presse-papiers ne contient aucune image. Faites d'abord une capture d'écran vers le presse-papiers.",
+            },
             savedClosed: 'Enregistré et clos comme {state}.',
             savedOpen: 'Enregistré. {pending} étapes restent à marquer. Le scénario reste ouvert.',
         },

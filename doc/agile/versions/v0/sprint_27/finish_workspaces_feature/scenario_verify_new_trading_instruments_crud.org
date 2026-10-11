@@ -8,9 +8,9 @@
 #+filetags: :trading:codegen:finish_workspaces_feature:inbox:product_backlog:
 #+target_dialog:
 #+created: 2026-08-06
-#+updated: 2026-08-06
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][Convert remaining ~19 hand-crafted trading instrument sub-types to codegen models]] in [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
@@ -55,7 +55,7 @@ This page documents a test scenario verifying [[id:F560ADDF-260A-4ECC-81EB-1C83A
 | Parent story  | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]]   |
 | Target dialog | (Qt dialog class under test, if any.)   |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -113,3 +113,5 @@ notes back as a =*** Result= child heading directly under it.
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

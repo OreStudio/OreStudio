@@ -44,7 +44,7 @@ import {
  */
 
 export type StepStatus = 'PENDING' | 'PASS' | 'FAIL' | 'DROPPED';
-export type ScenarioState = 'PENDING' | 'PASSED' | 'FAILED';
+export type ScenarioState = 'PENDING' | 'PASSED' | 'FAILED' | 'ABANDONED';
 
 /** Names one step. A single-client scenario has a null client. */
 export interface StepRef {
@@ -169,7 +169,7 @@ function stepStatus(raw: string): StepStatus {
 
 function scenarioState(raw: string): ScenarioState {
     const word = raw.trim().split(/\s+/)[0]?.toUpperCase() ?? '';
-    if (word === 'PASSED' || word === 'FAILED') return word;
+    if (word === 'PASSED' || word === 'FAILED' || word === 'ABANDONED') return word;
     return 'PENDING';
 }
 
@@ -180,6 +180,17 @@ function scenarioState(raw: string): ScenarioState {
 function closedState(raw: string): ScenarioState | null {
     const state = scenarioState(raw);
     return state === 'PENDING' ? null : state;
+}
+
+/**
+ * The state of a scenario from its State row and its Results status. A person
+ * who writes ABANDONED in the State row has the last word. Otherwise a closed
+ * Results status outranks the State row, because the Qt runner wrote only the
+ * Results table.
+ */
+function stateOf(stateRow: string, resultsStatus: string): ScenarioState {
+    const row = scenarioState(stateRow);
+    return row === 'ABANDONED' ? row : (closedState(resultsStatus) ?? row);
 }
 
 /**
@@ -276,9 +287,7 @@ export function parseScenario(text: string): Scenario {
         title,
         description: doc.keywords.get('description') ?? '',
         created: (doc.keywords.get('created') ?? '').trim(),
-        state:
-            closedState(resultFields.get('status') ?? '') ??
-            scenarioState(fields.get('state') ?? ''),
+        state: stateOf(fields.get('state') ?? '', resultFields.get('status') ?? ''),
         target: plainText(
             linkText(fields.get('target screen') ?? '') ||
                 linkText(fields.get('target dialog') ?? '') ||

@@ -38,6 +38,19 @@ describe('the state of a scenario in the queue', () => {
         ).toBe('inProgress');
     });
 
+    it('is abandoned for a scenario a person has abandoned, whatever its steps say', () => {
+        expect(stateOf(summary({ state: 'ABANDONED', phase: 'abandoned' }))).toBe('abandoned');
+        expect(
+            stateOf(
+                summary({
+                    state: 'ABANDONED',
+                    phase: 'abandoned',
+                    steps: { total: 4, pending: 1, pass: 3, fail: 0, dropped: 0 },
+                }),
+            ),
+        ).toBe('abandoned');
+    });
+
     it('is passed or failed once the scenario is closed', () => {
         expect(stateOf(summary({ state: 'PASSED', phase: 'done' }))).toBe('passed');
         expect(stateOf(summary({ state: 'FAILED', phase: 'done' }))).toBe('failed');
@@ -131,6 +144,24 @@ describe('grouping the queue by sprint', () => {
             ['sprint_27', 1],
             ['sprint_22', 1],
         ]);
+    });
+
+    it('keeps an abandoned scenario out of waiting and done, and groups it on its own', () => {
+        const all = [
+            at('w', 'sprint_27', '2026-10-01'),
+            at('d', 'sprint_27', '2026-10-02', { phase: 'done', state: 'PASSED' }),
+            at('a1', 'sprint_23', '2026-07-01', { phase: 'abandoned', state: 'ABANDONED' }),
+            at('a2', 'sprint_23', '2026-07-09', { phase: 'abandoned', state: 'ABANDONED' }),
+        ];
+        expect(sprintGroups(all, 'waiting').flatMap((g) => g.scenarios.map((s) => s.id))).toEqual([
+            'w',
+        ]);
+        expect(sprintGroups(all, 'done').flatMap((g) => g.scenarios.map((s) => s.id))).toEqual([
+            'd',
+        ]);
+        expect(sprintGroups(all, 'abandoned').flatMap((g) => g.scenarios.map((s) => s.id))).toEqual(
+            ['a2', 'a1'],
+        );
     });
 
     it('is empty for no scenarios', () => {

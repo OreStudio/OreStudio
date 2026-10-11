@@ -1123,6 +1123,7 @@ export const en: SourceCatalogue = {
             label: 'Development areas',
             tests: 'Tests',
             done: 'Done',
+            abandoned: 'Abandoned',
         },
         tests: {
             sprint: 'Sprint {number}',
@@ -1130,6 +1131,7 @@ export const en: SourceCatalogue = {
             created: 'Created',
             nothingWaiting: 'Nothing is waiting.',
             nothingDone: 'Nothing has been tested yet.',
+            nothingAbandoned: 'Nothing has been abandoned.',
             scenario: 'Scenario',
             target: 'Target',
             progress: 'Progress',
@@ -1141,6 +1143,7 @@ export const en: SourceCatalogue = {
                 inProgress: 'In progress',
                 passed: 'Passed',
                 failed: 'Failed',
+                abandoned: 'Abandoned',
             },
         },
         scenario: {
@@ -1170,6 +1173,7 @@ export const en: SourceCatalogue = {
                 PENDING: 'Pending',
                 PASSED: 'Passed',
                 FAILED: 'Failed',
+                ABANDONED: 'Abandoned',
             },
             stepStates: {
                 PENDING: 'Pending',
@@ -1183,6 +1187,8 @@ export const en: SourceCatalogue = {
             lastSaved: 'Last saved',
             retest: 'Retest',
             closedHelp: 'This scenario is closed. A retest clears every step and starts again.',
+            abandonedHelp:
+                'This scenario is abandoned and will not be run. A retest clears every step and brings it back.',
             save: 'Save',
             saveHelp: "Save writes each step's result and the overall state into the scenario doc.",
             back: 'Back to the tests',
@@ -1203,6 +1209,13 @@ export const en: SourceCatalogue = {
             imageSaving: 'Saving the image...',
             imageNotImage: 'Only PNG, JPEG, GIF and WebP images can be attached.',
             imageTooLarge: 'That image is over {limit} MB.',
+            pasteButton: 'Paste from clipboard',
+            clipboard: {
+                unavailable:
+                    'This browser cannot read the clipboard from this page. Paste with Ctrl+V instead.',
+                denied: 'The browser did not let this page read the clipboard. Allow it in the address bar, or paste with Ctrl+V.',
+                empty: 'The clipboard holds no image. Take a screenshot to the clipboard first.',
+            },
             savedClosed: 'Saved and closed as {state}.',
             savedOpen: 'Saved. {pending} steps are still to mark. The scenario stays open.',
         },

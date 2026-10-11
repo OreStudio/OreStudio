@@ -31,7 +31,12 @@ import { useTabs } from '../ui/Tabs.js';
 import { DocPanel } from './DocPanel.js';
 import { closeDoc, openDoc, shownDoc } from './docStack.js';
 import { UnsavedGuard } from './UnsavedGuard.js';
-import { MAX_IMAGE_MEGABYTES, imageProblem } from './images.js';
+import {
+    ClipboardProblem,
+    MAX_IMAGE_MEGABYTES,
+    imageProblem,
+    imagesFromClipboard,
+} from './images.js';
 import {
     isDirty,
     openRunner,
@@ -184,6 +189,23 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
         }
     };
 
+    // The button reads the clipboard, where Ctrl+V needs a field with the focus.
+    // The browser asks the tester for leave the first time.
+    const onClipboard = async (): Promise<void> => {
+        if (uploading.current || save.isPending || runner.closed) return;
+        try {
+            await onImages(await imagesFromClipboard(navigator.clipboard));
+        } catch (error) {
+            setImageError(
+                error instanceof ClipboardProblem
+                    ? t(`development.runner.clipboard.${error.reason}`)
+                    : error instanceof Error
+                      ? error.message
+                      : String(error),
+            );
+        }
+    };
+
     return (
         <>
             <UnsavedGuard dirty={isDirty(runner, scenario)} />
@@ -197,6 +219,7 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
                 onImages={(files) => void onImages(files)}
                 imageBusy={imageBusy}
                 imageError={imageError}
+                onClipboard={() => void onClipboard()}
                 confirmingRetest={confirmingRetest}
                 onAskRetest={() => setConfirmingRetest(true)}
                 onConfirmRetest={() => {

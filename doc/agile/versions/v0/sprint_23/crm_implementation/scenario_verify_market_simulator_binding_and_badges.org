@@ -8,9 +8,9 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+target_dialog: MarketSimulatorWindow
 #+created: 2026-07-18
-#+updated: 2026-07-18
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
@@ -23,7 +23,7 @@ This page documents a test scenario verifying [[id:A4F67A24-D6B1-42D8-A842-4A094
 | Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
 | Target dialog | MarketSimulatorWindow                   |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -115,3 +115,5 @@ vintage-valid=green).
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

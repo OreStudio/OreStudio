@@ -21,7 +21,16 @@
 
 import { describe, expect, it } from 'vitest';
 import { MAX_IMAGE_BYTES } from '@ores/contracts';
-import { carriesFiles, filesOf, imageProblem, type Transfer } from './images.js';
+import {
+    ClipboardProblem,
+    attachedImages,
+    carriesFiles,
+    filesOf,
+    imageProblem,
+    imagesFromClipboard,
+    type ClipboardLike,
+    type Transfer,
+} from './images.js';
 
 const png = new File([new Uint8Array([1])], 'shot.png', { type: 'image/png' });
 const jpg = new File([new Uint8Array([2])], 'shot.jpg', { type: 'image/jpeg' });
@@ -94,5 +103,107 @@ describe('a file that should not be sent', () => {
 
     it('is no problem for an ordinary screenshot', () => {
         expect(imageProblem({ type: 'image/png', size: 200_000 })).toBeNull();
+    });
+});
+
+describe('the images a note links', () => {
+    it('lists each image a note links, in order, once, as the Qt tool wrote them', () => {
+        const notes =
+            'It stayed blank.\n[[file:scenario_a_step2_20261011_014118.png]]\n[[file:scenario_a_step2_20261011_014118_2.png]]\n[[file:scenario_a_step2_20261011_014118.png]]';
+        expect(attachedImages(notes)).toEqual([
+            'scenario_a_step2_20261011_014118.png',
+            'scenario_a_step2_20261011_014118_2.png',
+        ]);
+    });
+
+    it('leaves out a link to a text file, a doc, a path or an SVG', () => {
+        const notes =
+            '[[file:notes.txt]] [[id:ABC][a doc]] [[file:../x.png]] [[file:a/b.png]] [[file:v.svg]] [[https://x.example/y.png]]';
+        expect(attachedImages(notes)).toEqual([]);
+    });
+
+    it('finds nothing in a note with no link, and in an empty note', () => {
+        expect(attachedImages('plain text')).toEqual([]);
+        expect(attachedImages('')).toEqual([]);
+    });
+
+    it('finds an image link beside other text on a line', () => {
+        expect(attachedImages('see [[file:a.png]] and [[file:b.JPG]] too')).toEqual([
+            'a.png',
+            'b.JPG',
+        ]);
+    });
+});
+
+describe('the images on the clipboard', () => {
+    const item = (
+        types: string[],
+        blob: Blob = new Blob([new Uint8Array([1, 2])], { type: types[0] ?? '' }),
+    ) => ({
+        types,
+        getType: async () => blob,
+    });
+    const clipboard = (items: ReturnType<typeof item>[]): ClipboardLike => ({
+        read: async () => items,
+    });
+    const problem = async (promise: Promise<unknown>) =>
+        promise.then(
+            () => null,
+            (error: unknown) => (error instanceof ClipboardProblem ? error.reason : error),
+        );
+
+    it('gives a screenshot on the clipboard as a PNG file', async () => {
+        const files = await imagesFromClipboard(clipboard([item(['image/png'])]));
+        expect(files).toHaveLength(1);
+        expect(files[0]?.type).toBe('image/png');
+        expect(files[0]?.name).toBe('clipboard.png');
+        expect(files[0]?.size).toBe(2);
+    });
+
+    it('takes the image of an item that holds text as well', async () => {
+        const files = await imagesFromClipboard(
+            clipboard([
+                item(
+                    ['text/html', 'image/png'],
+                    new Blob([new Uint8Array([9])], { type: 'image/png' }),
+                ),
+            ]),
+        );
+        expect(files.map((f) => f.name)).toEqual(['clipboard.png']);
+    });
+
+    it('names a file by what it is, and takes more than one image', async () => {
+        const jpeg = item(['image/jpeg'], new Blob([new Uint8Array([1])], { type: 'image/jpeg' }));
+        const webp = item(['image/webp'], new Blob([new Uint8Array([1])], { type: 'image/webp' }));
+        const files = await imagesFromClipboard(clipboard([jpeg, webp]));
+        expect(files.map((f) => f.name)).toEqual(['clipboard.jpg', 'clipboard.webp']);
+    });
+
+    it('says the clipboard holds no image when it holds only text, or nothing', async () => {
+        expect(await problem(imagesFromClipboard(clipboard([item(['text/plain'])])))).toBe('empty');
+        expect(await problem(imagesFromClipboard(clipboard([])))).toBe('empty');
+    });
+
+    it('says the browser refused when the tester or the browser denies the clipboard', async () => {
+        const denied: ClipboardLike = {
+            read: async () => {
+                throw Object.assign(new Error('denied'), { name: 'NotAllowedError' });
+            },
+        };
+        expect(await problem(imagesFromClipboard(denied))).toBe('denied');
+    });
+
+    it('says the clipboard holds no image when the read fails for another reason', async () => {
+        const broken: ClipboardLike = {
+            read: async () => {
+                throw Object.assign(new Error('no data'), { name: 'DataError' });
+            },
+        };
+        expect(await problem(imagesFromClipboard(broken))).toBe('empty');
+    });
+
+    it('says the clipboard cannot be read when the browser has none', async () => {
+        expect(await problem(imagesFromClipboard(undefined))).toBe('unavailable');
+        expect(await problem(imagesFromClipboard({} as ClipboardLike))).toBe('unavailable');
     });
 });

@@ -40,6 +40,8 @@ A tester never loses a mark or a note by leaving the runner page without meaning
 - Nothing is asked when nothing is unsaved, after a save, or for a change of tab, which stays on the page.
 - A link inside the Story or Task tab opens the linked doc in the tab, with a Back button, so the runner page and its marks stay as they are.
 - A scenario for the QA runner covers the question and the links.
+- A scenario can be abandoned, with =ABANDONED= in its State row. It leaves the Tests tab and shows on its own Abandoned tab, and a retest brings it back. The 12 waiting scenarios for the Qt client, created before September, are abandoned, each with a dated note saying why.
+- A step has a button that pastes an image from the clipboard, because a screenshot taken to the clipboard, such as one from GNOME, can be pasted with Ctrl+V only when a field has the focus. The images a note links show as thumbnails under it, and a click opens the picture.
 - The Tests queue splits what waits from what is done, in a Tests tab and a Done tab, because the finished scenarios are the bulk and are rarely wanted.
 - Each tab groups its scenarios by sprint, newest sprint first, in sections that open and close. Every sprint with something waiting is open on the Tests tab, and only the newest sprint is open on the Done tab.
 - Within a sprint the scenarios run from the newest created date to the oldest, and each row shows the created date.
@@ -67,6 +69,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The Abandoned status is a state a person sets in the doc. The runner never sets it. Compass does not know it yet, and the scenario template still says =PENDING | PASSED FAILED=. The 12 legacy docs have it in their =#+todo:= line.
+- The abandoned set is the 12 scenarios that waited and were created before 2026-09-01. Four more wait, and they are not legacy: three were created on 2026-10-06 to 2026-10-08 for stories that are DONE, and one is dated 2026-09-29 for a web journey. They are left for a decision, and so is the scenario that is being run.
+- A saved image is served by =GET /api/qa/scenarios/:id/files/:name=. It serves a file only when its name is a plain picture name, it is a regular file beside the scenario's doc, not a link, and its bytes are a PNG, JPEG, GIF or WebP image. An SVG is never served. The headers keep a browser from reading it as anything else.
+- The paste button reads the clipboard through the browser, which asks the tester for leave the first time. Under plain HTTP on an address that is not local the browser has no clipboard to read, and the page says to paste with Ctrl+V.
 
 - This task took in the fixes found by running the scenario, as the work meant to do: it is one branch and one pull request. Running the scenario showed that the queue listed 135 scenarios from six sprints in two long cards. The server now reads the sprint folder from a scenario's path and its =#+created:= date from the doc, all 135 of which have one. The queue splits into a Tests tab and a Done tab, groups each by sprint, and sorts a sprint by created date.
 - The old scenarios mark up their target in org, such as =CounterpartyDetailDialog= and *My access*, and the queue showed the markers. The reader of the doc now gives the target as plain text.

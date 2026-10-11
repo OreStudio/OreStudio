@@ -44,7 +44,8 @@ const TONES = {
     inProgress: 'accent',
     passed: 'up',
     failed: 'down',
-} as const satisfies Record<QueueState, 'neutral' | 'accent' | 'up' | 'down'>;
+    abandoned: 'muted',
+} as const satisfies Record<QueueState, 'neutral' | 'accent' | 'up' | 'down' | 'muted'>;
 
 /**
  * The width of each column, so the tables of the sprints line up under one
@@ -56,8 +57,8 @@ const DONE_WIDTHS = ['w-[30%]', 'w-[25%]', 'w-[12%]', 'w-[9%]', 'w-[9%]', 'w-[15
 /**
  * The scenarios of one phase, grouped by sprint. The Tests tab shows the
  * scenarios that wait for a tester, which is what a tester comes for. The Done
- * tab shows the finished ones, which are rarely wanted, so only the newest
- * sprint is open there. A sprint is a section that opens and closes, with the
+ * tab shows the finished ones, and the Abandoned tab the ones that will not be
+ * run. They are rarely wanted, so only the newest sprint is open there. A sprint is a section that opens and closes, with the
  * number of its scenarios in its heading. A row opens the scenario's runner.
  *
  * The tab names this screen, so it carries no heading of its own.
@@ -78,7 +79,9 @@ export function TestsQueue({ phase }: { readonly phase: Phase }): ReactNode {
             <p className="rounded-md border border-line bg-surface-raised px-4 py-3 text-sm text-ink-muted">
                 {phase === 'waiting'
                     ? t('development.tests.nothingWaiting')
-                    : t('development.tests.nothingDone')}
+                    : phase === 'done'
+                      ? t('development.tests.nothingDone')
+                      : t('development.tests.nothingAbandoned')}
             </p>
         );
     }

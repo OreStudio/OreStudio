@@ -22,6 +22,7 @@
 import { randomUUID } from 'node:crypto';
 import {
     chmod,
+    lstat,
     open,
     readdir,
     readFile,
@@ -35,7 +36,7 @@ import { basename, dirname, join, sep } from 'node:path';
 import { MAX_IMAGE_BYTES } from '@ores/contracts';
 import { parseOrg } from '@ores/org';
 import { parseScenario, recordRun, type RunInput, type Scenario } from './scenario-doc.js';
-import { detectImage } from './image.js';
+import { detectImage, isImageName } from './image.js';
 import {
     InvalidDocIdError,
     InvalidImageError,
@@ -43,6 +44,7 @@ import {
     ScenarioNotFoundError,
     StepNumberError,
     type DocText,
+    type ImageFile,
     type RecordResult,
     type SavedImage,
     type ScenarioStore,
@@ -64,6 +66,8 @@ interface IndexEntry {
     readonly size: number;
 }
 
+/** The largest image file the store serves. A screenshot of a whole screen is a few megabytes. */
+const MAX_SERVED_IMAGE_BYTES = 16 * 1024 * 1024;
 const HEAD_BYTES = 4096;
 const MAX_HEAD_BYTES = 65_536;
 const SCAN_BATCH = 64;
@@ -229,6 +233,25 @@ export class FileScenarioStore implements ScenarioStore {
         throw new Error('No free name for the image.');
     }
 
+    async readImage(id: string, name: string): Promise<ImageFile | null> {
+        const key = normalise(id);
+        const found = await this.resolve(key);
+        if (found === null || found.entry.type !== 'test_scenario' || !isImageName(name)) {
+            return null;
+        }
+        const doc = await this.absolute(found.entry.path);
+        const file = join(dirname(doc), name);
+        const info = await lstat(file).catch((error: NodeJS.ErrnoException) => {
+            if (error.code === 'ENOENT') return null;
+            throw error;
+        });
+        // A link is not a regular file here, so a link cannot lead out of the folder.
+        if (info === null || !info.isFile() || info.size > MAX_SERVED_IMAGE_BYTES) return null;
+        const bytes = await readFile(file);
+        const kind = detectImage(bytes);
+        return kind === null ? null : { bytes, kind };
+    }
+
     private async write(key: string, input: RunInput): Promise<RecordResult> {
         const found = await this.resolve(key);
         if (found === null || found.entry.type !== 'test_scenario') {
@@ -386,7 +409,12 @@ function summarise(id: string, path: string, scenario: Scenario): ScenarioSummar
         sprint: sprintOf(path),
         created: scenario.created,
         state: scenario.state,
-        phase: scenario.state === 'PENDING' ? 'waiting' : 'done',
+        phase:
+            scenario.state === 'PENDING'
+                ? 'waiting'
+                : scenario.state === 'ABANDONED'
+                  ? 'abandoned'
+                  : 'done',
         target: scenario.target,
         story: scenario.story,
         task: scenario.task,

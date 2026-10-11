@@ -49,5 +49,5 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 * Out of scope
 
 - Searching or filtering the list beyond what a short list needs.
-- Showing a series with no declared shape as anything but a refused read.
+- A series with no declared shape stays a refused read.
 - Changing which party a person works for.

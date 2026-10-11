@@ -22,7 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import { runFeeds } from './feedRuns.js';
 import { bandWidth, halfLifeMinutes, PROFILES, processTypeOf, profileOf } from './processHelp.js';
-import { instantOf } from './TicksPanel.js';
+import { emaOf, instantOf, statsOf, ticksCsv } from './ticks.js';
 
 describe('the quant help', () => {
     it('gives the half-life in minutes at the feed rate, and none when κ does not revert', () => {
@@ -57,6 +57,39 @@ describe('the quant help', () => {
 const A = '11111111-1111-4111-8111-111111111111';
 const B = '22222222-2222-4222-8222-222222222222';
 const C = '33333333-3333-4333-8333-333333333333';
+
+describe('the ticks', () => {
+    const ticks = [
+        { at: '2026-10-11 09:00:00Z', value: 1.1 },
+        { at: '2026-10-11 09:01:00Z', value: 1.3 },
+        { at: '2026-10-11 09:02:00Z', value: 1.2 },
+    ];
+
+    it('says the last tick, the move from the first, and the high and low', () => {
+        const stats = statsOf(ticks);
+        expect(stats?.last).toEqual(ticks[2]);
+        expect(stats?.move).toBeCloseTo(0.1);
+        expect(stats?.high).toBe(1.3);
+        expect(stats?.low).toBe(1.1);
+        expect(stats?.count).toBe(3);
+        expect(statsOf([])).toBeUndefined();
+    });
+
+    it('averages each value 2/(period+1) of the way from the last average', () => {
+        expect(emaOf([1, 3, 3], 3)).toEqual([1, 2, 2.5]);
+        expect(emaOf([])).toEqual([]);
+    });
+
+    it('writes the ticks as CSV with the feed on every row', () => {
+        expect(ticksCsv('synthetic.eurusd', ticks.slice(0, 2))).toBe(
+            [
+                'source_name,observation_time,value',
+                'synthetic.eurusd,2026-10-11 09:00:00Z,1.1',
+                'synthetic.eurusd,2026-10-11 09:01:00Z,1.3',
+            ].join('\n'),
+        );
+    });
+});
 
 describe('starting and stopping many feeds', () => {
     it('calls for every feed, even after a refusal, and says why each refused one was refused, by its name', async () => {

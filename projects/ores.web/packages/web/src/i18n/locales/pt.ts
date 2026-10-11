@@ -3246,12 +3246,19 @@ const pt: SourceCatalogue = {
         ticks: {
             lead: 'Os últimos preços do fluxo, os mais recentes à direita. O servidor web guarda os últimos 500 de cada fluxo em execução desde que começou a ouvir, por isso um fluxo arrancado antes mostra só o que veio depois.',
             count: 'Cotações mostradas',
-            last: 'Último {price} às {at}',
-            move: '({move} em {count} cotações)',
             waiting: 'O fluxo está em execução. O gráfico aparece quando chegarem duas cotações.',
             notRunning:
                 'O fluxo não está em execução, e não chegou nenhuma cotação. Arranque o fluxo para ver os seus preços.',
             chart: 'Os últimos preços do fluxo',
+            last: 'Último preço',
+            at: 'Hora',
+            move: 'Variação ({count} cotações)',
+            high: 'Máximo',
+            low: 'Mínimo',
+            ema: 'Média móvel (EMA {period})',
+            export: 'Exportar CSV',
+            process: 'Processo',
+            rate: '{rate} cotações por hora',
         },
         process: {
             about: {

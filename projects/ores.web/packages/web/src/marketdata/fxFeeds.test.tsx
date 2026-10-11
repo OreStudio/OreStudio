@@ -287,6 +287,7 @@ describe('the FX feed screens', () => {
         });
         expect(running).toContain('>Running<');
         expect(running).toContain('>Stop<');
+        expect(running).toContain('EUR/USD · version 3 · Geometric');
         const stopped = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], []);
@@ -300,6 +301,7 @@ describe('the FX feed screens', () => {
         const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
             client.setQueryData(['feed-ticks', FEED_ID, 200], {
                 sourceName: 'synthetic.eurusd',
                 ticks: [
@@ -310,9 +312,19 @@ describe('the FX feed screens', () => {
             });
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('Last 1.08300 at 09:02:00');
-        expect(html).toContain('+0.00300 over 3 ticks');
+        expect(html).toContain('>1.08300<');
+        expect(html).toContain('>09:02:00<');
+        expect(html).toContain('Move (3 ticks)');
+        expect(html).toContain('+0.00300');
+        expect(html).toContain('>High<');
+        expect(html).toContain('>1.08000<');
         expect(html).toContain('<svg');
+        expect(html).toContain('fill-opacity="0.08"');
+        expect(html).toContain('Moving average (EMA 20)');
+        expect(html).toContain('Export CSV');
+        expect(html).toContain('3600 ticks per hour');
+        expect(html).toContain('μ 0');
+        expect(html).toContain('σ 0.01');
     });
 
     it('says a stopped feed with no ticks heard must be started', () => {

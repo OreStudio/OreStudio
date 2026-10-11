@@ -136,6 +136,10 @@ What the review gets right, and the screen can take:
   the engine.
 - *Export.* The ticks shown, as CSV, made in the browser.
 
+The screen took all six: the strip with the high and the low, the price
+chart with its grid and fill, the EMA over 20 ticks, the mixture beside the
+plot, the engine in the subtitle, and the CSV export.
+
 What it gets wrong, and the screen does not take:
 
 - *Telemetry the server does not have.* Engine latency, process latency, the

@@ -415,6 +415,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 title={show(feed['source_name'])}
                 recordKey={pair}
                 version={feed.version}
+                detail={t(`refdata.choices.process_type.${show(feed['process_type'])}`)}
                 flag="pair"
                 own={
                     <>
@@ -451,7 +452,9 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 />
             )}
             {tab === 'behaviour' && <MixturePanel feed={feed} />}
-            {tab === 'ticks' && <TicksPanel feedId={id} running={running} />}
+            {tab === 'ticks' && (
+                <TicksPanel feed={feed} running={running} mixture={mixture.data ?? []} />
+            )}
             {tab === 'history' && (
                 <HistoryPanel
                     entityType="ores.synthetic.fx_spot_generation_config"

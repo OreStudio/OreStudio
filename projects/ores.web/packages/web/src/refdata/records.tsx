@@ -1342,6 +1342,7 @@ export function RecordHeader({
     mark,
     access,
     subdued,
+    detail,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
@@ -1363,6 +1364,8 @@ export function RecordHeader({
     readonly access?: boolean | null;
     /** Draws the key and version line small, for a key that is an identifier. */
     readonly subdued?: boolean;
+    /** What else the key and version line says, such as a feed's engine. */
+    readonly detail?: string;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -1376,14 +1379,15 @@ export function RecordHeader({
                     : mark !== undefined
                       ? { mark }
                       : {})}
-                description={
+                description={[
                     version === null
                         ? recordKey
                         : t('refdata.records.lead', {
                               code: recordKey,
                               version: String(version),
-                          })
-                }
+                          }),
+                    ...(detail === undefined ? [] : [detail]),
+                ].join(' · ')}
                 actions={
                     <div className="flex items-center gap-2">
                         {access !== null && (

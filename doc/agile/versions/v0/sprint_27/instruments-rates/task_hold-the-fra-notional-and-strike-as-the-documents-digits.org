@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: BF42B31F-48A4-443A-8E06-AC2C9F228DD0
+:END:
+#+title: Task: Hold the FRA notional and strike as the document's digits
+#+description: The ORE binding declares the FRA notional and strike as bare floats, so the mapper stores a float artifact for a value the document wrote exactly. Keep the digits through import and export. (Follow-up of the rates corpus proof; same family as the leaf digits patch.)
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/hold-the-fra-notional-and-strike-as-the-documents-digits
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A FRA's notional and strike are stored as the exact decimal the document wrote, and the exporter writes the same digits back. 0.0065 is stored as 0.0065, not as 0.006500000134110451.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The ORE binding keeps the digits of the FRA notional and strike, through the reapply script, not by hand.
+- The forward mapper stores the document's digits for both, and the reverse mapper hands them back.
+- A mapper test holds the digits of a FRA strike and notional through the round trip.
+- The golden files that change are regenerated and every changed line is a numeric leaf.
+- The corpus proof and the ORE suite pass.
+
+* Plan
+
+1. *The binding.* Make the FRA's =Strike= and =Notional= a lexical leaf,
+   =moneyFloat=, instead of a bare float. The change is made by
+   =scripts/reapply_ore_lexical_form.py= on =domain.hpp= and =domain.cpp=, so
+   a regenerated binding keeps it. The script refuses to patch when an anchor
+   is missing or not unique.
+2. *The mapper.* The forward mapper already reads a lexical leaf through
+   =exact_decimal=, so it now stores the document's digits. The reverse mapper
+   hands the stored digits back with =set_exact=.
+3. *Tests.* Correct the FRA forward test, which pinned the float artifact, and
+   add a test that the digits survive the reverse mapping.
+4. *Goldens.* Regenerate the one golden that changes and check that the change
+   is numeric text only.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| FRA strike of IR_FRA.xml, stored | 0.005 (was 0.005 widened from a float) | =ores.ore.core.tests mapper_roundtrip_fra_forward= | the PR head |
+| ORE core suite | 649 cases, 482,964 assertions, all pass | =ores.ore.core.tests= | the PR head |
+| Golden files changed | 1 (IR_FRA.xml, one numeric line) | =git diff -U0 -- assets= | the PR head |
+| Reapply script self-tests | both pass on three files | =scripts/reapply_ore_lexical_form.py --self-test= and =--self-test-missing-anchor= | the PR head |
+
+* Notes
+
+- The binding has 152 bare float members. Only the FRA's two are changed
+  here, because the FRA is the case that stored a wrong value. The others
+  are not audited by this task.
+- The new leaf is a plain =xsd::base<float>= with its own setter, element
+  info and serializer, so the existing leaf types are not touched.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The FRA forward test pinned the float artifact as the expected strike | xml_ir_mapper_roundtrip_tests.cpp | accept | It now expects the document's 0.005. |
+| 2 | The serializer anchor for the FRA body occurs in two structs | reapply_ore_lexical_form.py | accept | The anchor starts at the FRA's =Index= line, and the script refuses a non-unique anchor. |
+
+* Result
+
+A FRA's strike and notional are stored as the digits the document wrote and
+exported as the same digits. IR_FRA.xml states a strike of 0.005; the mapper
+stored the float nearest to it and the exporter wrote 0.00499999989. The
+binding now holds both members as a lexical leaf, through the reapply script,
+the mapper reads and writes the digits, and the one golden that changed
+holds the document's text.
+
+Acceptance met: the binding keeps the digits through the script, both mapper
+directions carry them, a test holds them through the reverse mapping, the
+golden change is one numeric line, and the ORE suite passes.
+
+Other bare float members of the binding are not covered, and no task is
+open for them.

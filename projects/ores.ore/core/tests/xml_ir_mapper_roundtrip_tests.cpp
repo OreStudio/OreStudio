@@ -172,10 +172,9 @@ TEST_CASE("mapper_roundtrip_fra_forward", tags) {
 
     REQUIRE(legs.size() == 1);
     CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
-    // The FRA's Strike is a bare float leaf in the binding, not an xsd::base
-    // binding, so it states no text and the float's own decimal is the value.
+    // The strike is the decimal the document wrote, not the float nearest to it.
     CHECK(leg_rate(result, 1, "fixed") ==
-          ores::utility::decimal::decimal::from_double(static_cast<double>(0.005f)).value());
+          ores::utility::decimal::decimal::from_string("0.005").value());
     CHECK(legs[0].currency == "EUR");
     BOOST_LOG_SEV(lg, info) << "FRA forward-mapper test passed";
 }
@@ -200,6 +199,23 @@ TEST_CASE("mapper_roundtrip_fra_reverse", tags) {
     CHECK(std::string(fra.Index) == "EUR-EURIBOR-6M");
     CHECK(static_cast<float>(fra.Strike) == Approx(0.005f).epsilon(0.00001f));
     BOOST_LOG_SEV(lg, info) << "FRA reverse-mapper test passed";
+}
+
+TEST_CASE("mapper_fra_holds_the_digits_of_its_strike_and_notional", tags) {
+    const auto t = load_first_trade("IR_FRA.xml");
+    const auto result = swap_instrument_mapper::forward_fra(t);
+    const auto& instr = std::get<ores::trading::domain::fra_instrument>(result.facts);
+
+    CHECK(instr.notional == ores::utility::decimal::decimal::from_string("100000000").value());
+
+    const auto reconstructed = swap_instrument_mapper::reverse_fra(
+        result.header, instr, result.legs, result.leg_amounts, result.leg_rates);
+
+    REQUIRE(reconstructed.ForwardRateAgreementData);
+    const auto& fra = *reconstructed.ForwardRateAgreementData;
+    CHECK(fra.Strike.lexical() == "0.005");
+    CHECK(ores::utility::decimal::decimal::from_string(fra.Notional.lexical()) ==
+          ores::utility::decimal::decimal::from_string("100000000"));
 }
 
 // =============================================================================

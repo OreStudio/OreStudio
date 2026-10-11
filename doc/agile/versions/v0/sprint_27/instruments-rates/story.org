@@ -23,7 +23,7 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | All thirteen tasks are merged or closed. The rates family sits on its header and fact tables, and the corpus round-trips with equal family rows. |
+| Now           | All fourteen tasks are merged or closed. The rates family sits on its header and fact tables, and the corpus round-trips with equal family rows. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-10-11                               |
@@ -54,6 +54,7 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 | [[id:4A53F30C-42AB-41D1-9C3C-55321FC38920][Generate the blotter's common-date view]] | DONE | | 2026-10-10 | Finding R9: each product states its dates under its own name - start_date, maturity_date, expiry_date, end_date - so a deal grid cannot read one date column across the family. The view maps each product's dates to one set of names, and it is generated because the mapping is a property of the models. This first family creates the view; each later family adds its mapping. (Staging unit 7; finding R9.) |
 | [[id:1EFA46D4-8562-4C63-A1D3-4CF33551BEB2][Prove the rates round trip over the corpus]] | DONE | 2026-10-10 | 2026-10-11 | Run the ORE round trip over the family's corpus at the new shape, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.) |
 | [[id:E5BD501A-CB63-465A-9F5A-02F62A417F9A][Carry the FlexiSwap and BalanceGuaranteedSwap fields]] | DONE | 2026-10-10 | 2026-10-10 | Add the fields the model lacks for these two products, so the export writes the elements the ORE schema requires. |
+| [[id:BF42B31F-48A4-443A-8E06-AC2C9F228DD0][Hold the FRA notional and strike as the document's digits]] | DONE | 2026-10-11 | 2026-10-11 | The ORE binding declares the FRA notional and strike as bare floats, so the mapper stores a float artifact for a value the document wrote exactly. Keep the digits through import and export. (Follow-up of the rates corpus proof; same family as the leaf digits patch.) |
 
 * Decisions
 
@@ -61,6 +62,12 @@ Distilled from =design.org=, which carries the argument and the
 evidence. The design stays in this folder as the record of why these
 decisions are what they are.
 
+
+- *A money member of the ORE binding keeps the digits the document wrote.*
+  The FRA's strike and notional are a lexical leaf, patched in by the
+  reapply script, and the mappers read and write the digits. Reason: a bare
+  float holds only the nearest binary value, so 0.005 was stored and exported
+  as 0.00499999989.
 
 - *The round trip is proved by comparing stored rows over the corpus.*
   The test imports each rates trade, exports it alone, imports it again and

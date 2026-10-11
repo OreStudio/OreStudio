@@ -4346,14 +4346,16 @@ enum class longShort {
 
 ORES_ORE_CORE_EXPORT std::string to_string(longShort);
 
+struct moneyFloat : xsd::base<float> {};
+
 struct forwardRateAgreementData {
     domain::date StartDate{};
     domain::date EndDate{};
     domain::currencyCode Currency{};
     domain::forwardRateAgreementData_Index_t Index{};
     domain::longShort LongShort{};
-    float Strike{};
-    float Notional{};
+    domain::moneyFloat Strike{};
+    domain::moneyFloat Notional{};
 };
 
 struct fxForwardData {

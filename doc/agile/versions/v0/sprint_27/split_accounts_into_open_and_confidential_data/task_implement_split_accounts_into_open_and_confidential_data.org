@@ -122,16 +122,18 @@ The standard has six building blocks. Reference data already uses blocks 1 to 3.
 | 6 | No change. |
 | 7 | No change. Block 2 is select-only. |
 
-** Decisions for the review
+** Decisions
 
-- Are the people of a tenant visible by name and picture to every member of that tenant, or only to the members of their parties? The first is simple. The second keeps the party rule in force and means the open table has two row classes. This design assumes the second until the review settles it.
-- The shared rows of the system tenant also include the super admin account, which is a =user=. A history already names it when it acts in a tenant. The design admits the system tenant's rows whole, as the shared-reference tables do. The review confirms this, or limits the policy to non-=user= types.
+The product owner settled these on 2026-10-11.
+
+- *Who a person sees.* A person sees everyone in the parties they have access to, and everyone in the system party. The party rule keeps applying to the people of a tenant. The system party is the one party every person may see. The open table has two row classes: the people of a tenant, under the party rule plus the system party, and the system-owned rows, which every tenant reads.
+- *The super admin.* Every tenant may see the super admin account. It stays a =user= account, because humans sign in with it. The shared policy admits the system tenant's rows whole, as the shared-reference tables do. It does not limit them to non-=user= types.
+- *One delivery.* The existence function, the table split, the shared-read standard and the documents ship together in one change. The existence function does not ship first.
+
+** Open points for the reviewer
+
+- The system party is a party of each tenant. Its members are visible to everyone in that tenant. The review checks that the service accounts of the system tenant need no link to it, because block 2 already admits them.
 - Which soft-foreign-key checks use block 5? The generated triggers come from models, so the change is in the template and every generated trigger changes with it.
-
-** Out of this design
-
-The inbox and the refdata services fail today for use case 2. Block 5 fixes them, and it does not need the table split. It may ship first, as its own change, once the review agrees the function.
-
 
 * Test Scenarios
 

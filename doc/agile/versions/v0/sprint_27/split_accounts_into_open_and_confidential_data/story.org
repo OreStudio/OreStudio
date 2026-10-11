@@ -85,10 +85,10 @@ A restrictive policy only narrows. Both the tenant policy and the party policy m
 
 - The split is by data domain, not by code path. Open data is what a reader needs to name and recognise an author. Confidential data is everything else. The columns of each table are decided in the design task.
 - The open table is a shared table. It follows the same building blocks as the shared reference tables, with no second mechanism. The confidential table is not shared and keeps the tenant policy and the party policy.
-- A shared table holds rows that every tenant reads. The people of a tenant are not rows that every tenant may read. The design task must state which rows of the open table are system-owned and shared, and which stay with their tenant. Until it does, the open table is shared for system-owned rows only.
+- A person sees everyone in the parties they have access to, and everyone in the system party. The super admin account stays a =user= account and every tenant may see it. The people of a tenant are not rows that every tenant may read; only system-owned rows are shared.
 - One standard covers all data read across tenants. Accounts do not get a second exception.
 - A soft foreign key checks that an account exists. It does not read the account. A security definer function that answers yes or no serves it, and the party rule does not apply.
-- The party-policy fix for provisioning may land earlier than this story. Either way, it must not widen what a member reads of people.
+- The existence function, the table split, the standard and the documents ship in one change.
 
 * Out of scope
 

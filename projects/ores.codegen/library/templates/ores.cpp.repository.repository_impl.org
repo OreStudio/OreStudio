@@ -1548,7 +1548,6 @@ std::vector<{{name_singular}}_history_row>
     BOOST_LOG_SEV(lg(), debug) << "Reading every version of the {{name_words}}. {{history_parent.column_title}}: "
                                << {{history_parent.column}};
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#history_parent.query_needs_str}}
     const auto {{history_parent.column}}_str = {{#history_parent.is_uuid}}boost::uuids::to_string({{history_parent.column}}){{/history_parent.is_uuid}}{{#history_parent.is_date}}ores::platform::time::datetime::to_iso8601_date({{history_parent.column}}){{/history_parent.is_date}}{{#history_parent.is_timestamp}}ores::platform::time::datetime::to_iso8601({{history_parent.column}}){{/history_parent.is_timestamp}};
 {{/history_parent.query_needs_str}}
@@ -1583,7 +1582,7 @@ std::vector<{{name_singular}}_history_row>
                     !rows.empty() &&
                     rows.back().link.{{history_child.column}} == row.link.{{history_child.column}} &&
                     rows.back().link.version == row.link.version + 1;
-                if (entity.valid_to.value() != max.value() && !replaced)
+                if (entity.valid_to.str() != MAX_TIMESTAMP_NAIVE && !replaced)
                     row.closed_at = timestamp_to_timepoint(entity.valid_to);
                 rows.push_back(std::move(row));
             }

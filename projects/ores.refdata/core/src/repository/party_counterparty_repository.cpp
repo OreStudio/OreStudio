@@ -368,7 +368,6 @@ party_counterparty_repository::read_all_by_party(const boost::uuids::uuid& party
     BOOST_LOG_SEV(lg(), debug) << "Reading every version of the party counterparties. Party: "
                                << party_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
@@ -395,7 +394,7 @@ party_counterparty_repository::read_all_by_party(const boost::uuids::uuid& party
                 const bool replaced =
                     !rows.empty() && rows.back().link.counterparty_id == row.link.counterparty_id &&
                     rows.back().link.version == row.link.version + 1;
-                if (entity.valid_to.value() != max.value() && !replaced)
+                if (entity.valid_to.str() != MAX_TIMESTAMP_NAIVE && !replaced)
                     row.closed_at = timestamp_to_timepoint(entity.valid_to);
                 rows.push_back(std::move(row));
             }

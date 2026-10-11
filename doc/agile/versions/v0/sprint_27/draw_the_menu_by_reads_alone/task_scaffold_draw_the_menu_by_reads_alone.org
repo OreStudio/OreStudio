@@ -8,7 +8,7 @@
 #+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
 #+owner: marco
 #+branch: feature/draw-the-menu-by-reads-alone
-#+pr:
+#+pr: 3141
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3141][#3141]] | [agile] Scaffold story: Draw the menu by reads alone |
 
 * Review
 

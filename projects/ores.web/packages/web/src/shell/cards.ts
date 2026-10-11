@@ -20,6 +20,7 @@
  */
 
 import type { IconName } from '../ui/Icon.js';
+import { DEPLOYMENT_READ } from '@ores/contracts';
 import { PATHS } from './paths.js';
 import type { MenuItem } from './areas.js';
 
@@ -31,7 +32,7 @@ import type { MenuItem } from './areas.js';
  * same line about it and the same glyph wherever it is offered. A screen that
  * needs a read says so here, and the read decides who sees the card.
  */
-export interface CardDef extends Pick<MenuItem, 'permission' | 'scope'> {
+export interface CardDef extends Pick<MenuItem, 'permission'> {
     readonly titleKey: string;
     readonly bodyKey: string;
     readonly to: string;
@@ -184,7 +185,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.servicesBody',
         to: '/operations/services',
         icon: 'server',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.services.title',
     },
     grid: {
@@ -192,7 +193,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.gridBody',
         to: '/operations/grid',
         icon: 'apps',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.grid.title',
     },
     bus: {
@@ -200,7 +201,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.busBody',
         to: '/operations/bus',
         icon: 'bus',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.bus.title',
     },
     logs: {
@@ -208,7 +209,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.logsBody',
         to: '/operations/logs',
         icon: 'log',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.logs.title',
     },
     signIns: {
@@ -231,7 +232,7 @@ export const CARDS = {
         bodyKey: 'home.system.tenantsLead',
         to: '/tenants',
         icon: 'party',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'tenants.title',
     },
     myAccess: {

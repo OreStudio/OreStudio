@@ -55,8 +55,8 @@ describe('what a screen needs', () => {
     it('offers the organisation in the menu to those who can use one of its lists', () => {
         const item = MENU.find((entry) => entry.to === '/organisation');
         expect(item).toBeDefined();
-        expect(offered(item!, member, 'application')).toBe(true);
-        expect(offered(item!, nobody, 'application')).toBe(false);
+        expect(offered(item!, member)).toBe(true);
+        expect(offered(item!, nobody)).toBe(false);
     });
 
     it('offers only the tabs a reader can use, in the order declared', () => {

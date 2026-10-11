@@ -44,6 +44,12 @@ entity added later would be readable by every role that holds it without
 anybody deciding so. =*= and =component::*= exist, for the administrator roles
 only.
 
+One component is outside =*=. A code of the =installation= component, such as
+=installation::deployment:read=, says a session acts on the deployment as a
+whole, across every tenant. A tenant's administrator holds =*=, so =*= does not
+cover an installation code. Only the code itself, or =installation::*=, grants
+one, and the super administrator role holds the code by name.
+
 Every person account holds *Member*. Member holds the reads every person's
 screens need and nothing more: the reference data vocabulary, and the
 furniture every screen uses, such as badges, change reasons, feature flags and

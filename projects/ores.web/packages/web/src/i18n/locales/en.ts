@@ -3523,6 +3523,8 @@ export const en: SourceCatalogue = {
         rolesRead: 'read roles and their grants',
         rolesAssign: 'give roles to people',
         sessionsRead: "read people's sign-ins",
+        deploymentRead:
+            'see the whole deployment: its tenants, services, grid, message bus and logs',
         curveSnapshotsRead: 'see the market data curves',
         fxFeedsRead: 'see the synthetic FX price feeds',
     },

@@ -3578,6 +3578,8 @@ const fr: SourceCatalogue = {
         rolesRead: 'lire les rôles et leurs droits',
         rolesAssign: 'attribuer des rôles aux personnes',
         sessionsRead: 'lire les connexions des personnes',
+        deploymentRead:
+            'voir tout le déploiement : ses locataires, ses services, sa grille, son bus de messages et ses journaux',
         curveSnapshotsRead: 'voir les courbes de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
     },

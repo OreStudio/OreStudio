@@ -505,7 +505,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <OperationsArea mode={view.mode} />
+                        <OperationsArea />
                     ),
                     'workspace',
                 )}
@@ -672,7 +672,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <OrganisationPage mode={view.mode} />
+                        <OrganisationPage />
                     ),
                     'workspace',
                 )}
@@ -714,7 +714,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <RefdataPage mode={view.mode} />
+                        <RefdataPage />
                     ),
                     'workspace',
                 )}
@@ -726,7 +726,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <MarketDataPage mode={view.mode} />
+                        <MarketDataPage />
                     ),
                     'workspace',
                 )}

@@ -175,7 +175,7 @@ The test for a screen is one question: which topic would a person look in?
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
 | Development | The tests a tester can run, the board and the backlog, and the documents they open | Always |
-| Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
+| Tenants | The tenants, their parties and people, and onboarding | The read of the deployment |
 
 Requests is the one entry that is not a topic. It is an inbox: the work that
 waits for a person, with the notification bell beside it. It is not in
@@ -184,7 +184,7 @@ because four-eyes approval will cover reference data as well as access. Every
 person has their own requests, so the entry is drawn for everyone.
 
 Tenants is last because it serves only the installation, and it is drawn only
-for a session that acts on the deployment (see [[*How today's menu differs][How today's menu differs]]).
+for a person who holds the read of the deployment (see [[*The deployment read][The deployment read]]).
 
 *** Reference data
 
@@ -291,22 +291,29 @@ The earlier addresses (=/parties=, =/people=, =/hierarchy=, =/staff=, =/roles=,
 =/rescue=, =/audit=, =/classifications=, =/reporting-lines=) redirect to the new
 ones, so a saved link still works.
 
+** The deployment read
+
+Some screens read the installation as a whole, across every tenant: Tenants, and
+the Running services, Compute grid, Message bus and Telemetry logs cards of
+Operations. They are drawn, and the server serves them, for a person who holds
+=installation::deployment:read=. The session mode is not consulted.
+
+- The code is in the =installation= component. The wildcard =*= does not cover an
+  installation code, because a tenant's administrator holds =*= and would then
+  see the installation. Only the code itself, or =installation::*=, grants one.
+  The rule is stated once for the services (=grants= in =ores.security=) and once
+  for the browser and the BFF (=permissionCovers= in =@ores/contracts=).
+- The super administrator role holds the code by name. Another role is given it
+  the same way, and a person asks for that role through a request.
+- The BFF reads the caller's roles for each call and refuses a caller who does
+  not hold the code. A grant the caller lost stops the next read.
+
 ** How today's menu differs
 
-The menu, the Reference data cards, the addresses and the cards follow this
-page. One difference is left.
-
-| Where | Today | The rule |
-|-------+-------+----------|
-| Tenants, and the Services, Grid, Message queue and Telemetry cards | Drawn only where the session acts on the deployment (the =installation= scope), because the server guards these reads by the session mode | Drawn by a read |
+The menu, the cards, the addresses and the breadcrumbs follow this page.
 
 ** Open points
 
-- The installation screens read the whole installation, and the server guards
-  them by the session mode. They need a read of their own, so that the read
-  decides who sees them. A tenant's administrator holds every read, so a read
-  that the wildcard grants would show them the installation. The new read must
-  be one that the wildcard of a tenant does not grant.
 - Whether Rescue access belongs in Organisation, because it acts on a person, or
   in Operations with Sign-ins, because it answers a problem with signing in.
   This page puts it in Organisation.

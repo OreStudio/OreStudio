@@ -8,12 +8,12 @@
 #+filetags: :browse_the_agile_tree_in_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-sprint-charts
-#+pr:
+#+pr: 3134
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -74,12 +74,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3134][#3134]] | [web] Show the sprint charts |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Burn-up and scope come from different sources | agile-charts.ts | Note | The end dates live only in a story's Tasks table, so the burn-up and the day bars read it. The scope and the states count task docs. A comment says the two can differ. |
+| 2 | A date such as 2026-13-45 breaks the series | agile-charts.ts | Fix | A date must be a real day. A bad done date is skipped, and a bad sprint date gives no day bars. Two tests cover it. |
+| 3 | Every request reads every sprint's stories | file-agile-store.ts | Note | A cold read is 1.7 s on the real tree and the cache makes a warm read cheap. A cache of the velocity is a follow-up if it grows. |
+| 4 | Early dates stretch the burn-up axis | agile-charts.ts | Fix | A task finished before the sprint began is left out of the burn-up. A test covers it. |
+| 5 | today is in UTC | file-agile-store.ts | Note | Fine for a development dashboard. |
+| 6 | The two reverse calls repeat | file-agile-store.ts | Fix | One oldestFirst list. |
+| 7 | View the tab in a browser | | Done in part | I drew the four charts from the real tree as SVG and viewed them at 420 and 1000 pixels wide. Labels, the dashed scope line and the axis text were clear. The page used my own small stylesheet and not the app's theme, so colours and the tab frame are not checked. |
 
 * Result
+
+The Development area has a Charts tab. It draws four charts for a sprint, chosen by the same sprint picker as the Board: stories done in each sprint (the last eight), the burn-up of tasks against the scope, tasks done on each day of the sprint, and tasks by state. The BFF serves the series at =GET /api/agile/charts=. The burn-up and the day bars read the End column of each story's =* Tasks= table, as =ores.org-js= did. A day bar covers every day of the sprint from its start and end dates, where =ores.org-js= drew seven days. The charts are SVG with no library.
+
+Two differences from =ores.org-js= are accepted. The stacked timeline bars are not ported: they read HTML snapshots that exist only for sprints 20 and 21, and the writer for them is a pending capture in the backlog (standardize the timeline bucket writer). The burn-up of the current sprint also shows a few early dates, because some story tasks tables carry old end dates.
+
+I ran the series against the real doc tree: 27 sprints of velocity, a burn-up that reaches 423 done tasks against a scope of 573. The French and Portuguese text is my translation and needs a speaker. I did not view the tab in a browser.

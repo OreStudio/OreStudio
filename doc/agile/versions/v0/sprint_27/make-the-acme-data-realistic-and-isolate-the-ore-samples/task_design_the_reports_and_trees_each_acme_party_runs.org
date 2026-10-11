@@ -8,7 +8,7 @@
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
 #+branch: feature/design-the-reports-and-trees-each-acme-party-runs
-#+pr: 3128
+#+pr: 3136
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -30,7 +30,7 @@ Today every ACME party holds the same 31 report definitions. No party has a risk
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
 | Now          | Design agreed in [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]]. Each party now gets its own report definitions. |
 | Waiting on   | The attach-photos fix, to prove a complete provision. |
-| Next         | The configuration for each report, then the portfolio trees, currencies and market data feeds. |
+| Next         | Close the task once the photo defect is fixed and a complete provision is proved. The configuration work moved to its own story and the feeds to other work. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -70,8 +70,14 @@ Steps:
    publishing side of three of the four documents does not exist yet, so this
    step needs its own tasks.
 4. Rework the portfolio tree, the root portfolio and the currencies per party.
-5. Add the market data feeds for the currencies the new books need.
-6. Remove the count comments from the seeds the task touches.
+   Done: one Global Portfolio per trading entity with a trading branch and a
+   banking branch, the books by market convention, an XVA desk in London, and
+   the party currencies from the books.
+5. The market data feeds for the new currencies are not part of this task. Other
+   work is refactoring the feeds, so this task leaves them alone and only keeps
+   the report data correct.
+6. Remove the count comments from the seeds the task touches. Done for the report
+   definitions seed.
 7. Prove on a clean provision, and record what was not proved.
 
 * Measurements
@@ -88,53 +94,32 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Report definitions per party after a clean provision | Group 10, UK 24, US 22, HK 22, both system parties 0 | =compass sql= count of =ores_reporting_report_definitions_tbl= by party, after =compass db recreate -y -k= and =bootstrap setup --profile acme_demo= | the commit that adds the per-party datasets |
 | Definitions each party must not hold | System Health only at the group. Strategic reports only at the group. MiFID II only UK, CFTC only US, HKMA only HK. Vega and Volatility Surfaces only UK. Stressed VaR and P&L Attribution at the three trading entities | the same query, with a filter on the report name | the same commit |
-| Roots of the official portfolio tree after the same provision | Group 1, UK 2, US 1, HK 1 | =compass sql= count of portfolios with no parent, by party | the same commit |
+| Roots of the official portfolio tree after the first change | Group 1, UK 2, US 1, HK 1 | =compass sql= count of portfolios with no parent, by party | the same commit |
 
 * Notes
 
-Audit of the local database and the publish functions, 2026-10-11. The
-database schema was stale against the checkout, so the functions were read from
-the files.
+Tree and currency rework, 2026-10-11.
 
-- Every ACME party holds all the seeded definitions, including the
-  holding-company reports and the UK-only, US-only and HK-only reports.
-- The definition publish filters by =tiers= and =jurisdiction=. The party
-  provisioning plan in =party_provisioning_plan.hpp= sets only =party_id=, so
-  the filter never runs. Both fields exist in =publish_bundle_params= and no
-  code sets them.
-- No party has a risk report config. The config publish skips a definition
-  that lacks four ORE bindings: pricing engines, today's market, curve
-  configuration and conventions. Only synthetic definitions carry them.
-- No seeded definition names a portfolio, book or netting set. An empty scope
-  means everything the tenant can see.
-- Every seeded risk config has base currency GBP, whatever the party. The
-  publish uses the root portfolio's currency when it has one.
-- Every party has a USD root portfolio, and two roots: Global Portfolio and
-  Regulatory Capital. The publish takes the first by name.
-- The official trees hold no trades. Trades are out of scope here.
+- The three trading entities share one builder. London's tree no longer
+  replicates the test fixture: its Americas and APAC portfolios, its risk
+  management units and its Regulatory Capital root are gone. The staff keep their
+  usernames and photos, and only the unit code of the three London desks moved.
+- After a clean provision each trading entity has one root named Global
+  Portfolio with two branches, in its own currency: GBP, USD and HKD. The holding
+  company keeps its treasury portfolio as its root. Every sample sandbox
+  anchors under the root.
+- The sweep books moved to the banking branch, because a sweep is cash
+  management and not trading intent. The IG bond books became the liquidity
+  buffer, also in the banking branch.
+- The party currencies follow the books and the FX pairs.
 
-Provisioning change, 2026-10-11.
+Market data feeds, 2026-10-11.
 
-- A profile's party stage published =party_essentials= to every party, and that
-  bundle held the generic report definitions. The profile's first publish also
-  named =risk_management=, which published the same definitions and the fixture
-  portfolio tree to the system party. Both are why every party held the same
-  reports.
-- The fix is data only. The generic definitions and run settings moved to a new
-  bundle, =party_reporting=. The two non-Acme profiles name it. The Acme demo
-  profile does not, and no longer publishes =risk_management=.
-- The tree finding changed with it. Before, every Acme party held the fixture
-  tree. After, each party holds the tree its own bundle defines, which is the
-  tree this task reworks next.
-- The generator =generate_sql.py= produced differences in the books and staff
-  photos scripts that this task did not cause. The committed scripts carry book
-  purpose columns that the generator does not write. Another story fixes the
-  book purpose, so those scripts were restored and left alone.
-- The tenant setup still stops at the photo step, because of the account
-  visibility defect. The report definitions and the trees publish before that
-  step, so the proof above does not depend on the fix. The market feeds start
-  after it, so the feeds are not proved.
-- The entity-writes check reports five writers that this task did not touch.
+- The product owner ruled that this task does not change the feeds, because other
+  work is refactoring them. A first version of the feed change was written and
+  removed from the branch before it was pushed.
+- The party currencies now follow the books and the FX pairs, so some currencies
+  have no feed yet. That is for the feed work to close.
 
 * Test Scenarios
 
@@ -151,6 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3136][#3136]] | [sql,seeder] Give each ACME entity a trading and a banking branch |
 | [[https://github.com/OreStudio/OreStudio/pull/3128][#3128]] | [sql,doc] Give each ACME party the reports it would run |
 
 * Review
@@ -161,6 +147,13 @@ via its "Verifies task" field.
 | 2 | The report script headers do not name the report generator | generate_sql.py | Accepted | The four report scripts name generate_report_data.py and the catalogue. The other scripts keep their header. |
 | 3 | D6 is not checked, and Stressed VaR and Volatility Surfaces may conflict | generate_report_data.py | Accepted | The generator checks the stated prerequisites. The conflict is recorded in the design page for a reviewer. |
 | 4 | The holding company branch is hard to read | generate_report_data.py | Accepted | One expression with the rule numbers beside it. |
+| 5 | Sweep detection by name is fragile (PR 3136) | generate_data.py | Accepted | The sweep books are a named set, and the purpose is explicit for every book. |
+| 6 | The USD sweep book in London takes the GBP leaf currency (PR 3136) | generate_data.py | Accepted | A real defect. The USD sweep has its own USD leaf. |
+| 7 | The sweep purpose is unset in the JSON (PR 3136) | generate_data.py | Accepted | Every book states its purpose in the JSON. |
+| 8 | A second root business unit per entity (PR 3136) | generate_data.py | Not changed | The old fixture had the same shape with its risk management unit, and the group already has a Treasury unit. The unit is not an organisation root of the portfolio tree. |
+| 9 | Cost centre and rates centre renames (PR 3136) | generate_data.py | Answered | No code, seed or report reads the old cost centre names or the Singapore rates centre. |
+| 10 | The currency lists must match the tree (PR 3136) | generate_party_data.py | Accepted | The generator refuses a book in a currency its entity does not work in. |
+| 11 | Failing checks not run on main (PR 3136) | none | Answered | Stated in the PR as a limitation. They are the same failures as the previous pull request. |
 
 * Result
 

@@ -8,12 +8,12 @@
 #+filetags: :browse_the_agile_tree_in_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-work-trees-on-the-board
-#+pr:
+#+pr: 3135
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -74,12 +74,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3135][#3135]] | [web] Show the work trees on the board |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | isSession can miss through a symlinked checkout | work-trees.ts | Fix | The two paths are compared by their real paths. A test covers a tree named through a link. |
+| 2 | A detached tree has an empty branch in the chip title | BoardTab.tsx | Note | Harmless. A detached label needs a new text, which waits. |
+| 3 | Scroll runs only when the current story changes | BoardTab.tsx | Note | Intended. |
+| 4 | A failed trees query hides the strip | BoardTab.tsx | Note | The same as the other agile reads, which are quiet. |
+| 5 | Is the case of ids the same on both sides | agile-model.ts | Note | Yes. The board upper-cases a story id as the journal parser does, and a test covers it. |
+| 6 | The French and Portuguese text needs a speaker | locales | Note | Open until someone reads it. |
+| 7 | The shortTitle comment says more than the code does | board.ts | Fix | The comment now says what the function does. |
 
 * Result
+
+The Board tab shows a strip of every work tree of the repository, each as a chip with its label, the state and title of its task, or Idle, and a marker on the tree the BFF reads. The story that this tree is on has an accent outline and a Current tag, and the board scrolls to it. The BFF serves the trees at =GET /api/agile/trees=. It asks git for =worktree list --porcelain= with fixed arguments from the doc root, and it reads the tail of each tree's =.journal.org=, so no other tree's agile docs are read and no caller names a path. A journal that is a link reads as none. The current story is the journal's story when the board has it, otherwise the story with a task on the tree's branch and the latest update. The list is sorted by label and capped at 40, and it is empty when git cannot run.
+
+I ran the source on this repository: 11 work trees, mine marked as the session with its task. The French and Portuguese text is my translation and needs a speaker. I did not view the strip in a browser.

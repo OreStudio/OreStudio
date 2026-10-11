@@ -23,6 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import type { Account, MyParties } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { WhereIWorkPage } from './WhereIWorkPage.js';
@@ -74,16 +75,18 @@ function render(parties: MyParties, props: Partial<Parameters<typeof WhereIWorkP
     client.setQueryData(['account', 'ashley.moore'], self);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
-            <TranslationProvider>
-                <WhereIWorkPage
-                    tenantName="Acme Corporation"
-                    username="ashley.moore"
-                    email="ashley.moore@acme.example"
-                    actingPartyId={US}
-                    onSwitchParty={async () => undefined}
-                    {...props}
-                />
-            </TranslationProvider>
+            <MemoryRouter>
+                <TranslationProvider>
+                    <WhereIWorkPage
+                        tenantName="Acme Corporation"
+                        username="ashley.moore"
+                        email="ashley.moore@acme.example"
+                        actingPartyId={US}
+                        onSwitchParty={async () => undefined}
+                        {...props}
+                    />
+                </TranslationProvider>
+            </MemoryRouter>
         </QueryClientProvider>,
     );
 }
@@ -148,15 +151,17 @@ describe('Where I work', () => {
         } as MyParties);
         const html = renderToStaticMarkup(
             <QueryClientProvider client={client}>
-                <TranslationProvider>
-                    <WhereIWorkPage
-                        tenantName="Acme Corporation"
-                        username="ashley.moore"
-                        email="ashley.moore@acme.example"
-                        actingPartyId={US}
-                        onSwitchParty={async () => undefined}
-                    />
-                </TranslationProvider>
+                <MemoryRouter>
+                    <TranslationProvider>
+                        <WhereIWorkPage
+                            tenantName="Acme Corporation"
+                            username="ashley.moore"
+                            email="ashley.moore@acme.example"
+                            actingPartyId={US}
+                            onSwitchParty={async () => undefined}
+                        />
+                    </TranslationProvider>
+                </MemoryRouter>
             </QueryClientProvider>,
         );
 

@@ -38,7 +38,6 @@
 #include "ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/rate_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
-#include "ores.trading.core/messaging/rpa_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/swap_leg_registrar.hpp"
 #include "ores.trading.core/messaging/swaption_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/vanilla_swap_instrument_registrar.hpp"
@@ -129,11 +128,6 @@ register_rates_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(inflation_swap_instrument_subs.begin()),
                 std::make_move_iterator(inflation_swap_instrument_subs.end()));
-
-    auto rpa_instrument_subs = register_rpa_instrument_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(rpa_instrument_subs.begin()),
-                std::make_move_iterator(rpa_instrument_subs.end()));
 
     auto swap_leg_subs = register_swap_leg_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),

@@ -24,8 +24,8 @@ import { fieldTable, findSection, idLink, parseOrg, sectionChildren, type OrgDoc
 /**
  * The agile tree as a model. It reads the org docs compass creates for a
  * sprint, its stories and their tasks. Nothing here touches the disk, so a
- * test hands in text. The field rules and the state vocabulary come from the
- * ores.dsh_kanban contract, which this model replaces.
+ * test hands in text. The state vocabulary is closed, and a doc that names
+ * no known state is UNKNOWN.
  */
 
 /** The closed state vocabulary, in board order. */

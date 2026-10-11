@@ -401,16 +401,6 @@ currencyCode parse_currency_code(const std::string& s) {
 }
 
 /**
- * Sets a money leaf to a stored decimal. The leaf keeps the decimal's own
- * digits, so the exporter writes them and not the nearest float's.
- */
-template <typename Leaf>
-void set_exact(Leaf& leaf, const ores::utility::decimal::decimal& value) {
-    static_cast<float&>(leaf) = static_cast<float>(value.to_double());
-    leaf.lexical(value.to_string());
-}
-
-/**
  * One notional child of a leg, with the provenance every imported row carries.
  */
 trading::domain::swap_leg_amount make_leg_amount(int leg_number,

@@ -653,7 +653,6 @@ const fr: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Comptes',
         description: 'Identités pouvant se connecter ou agir en tant que service.',
         search: 'Rechercher',
         searchPlaceholder: "Nom d'utilisateur, nom ou email",
@@ -1240,6 +1239,7 @@ const fr: SourceCatalogue = {
             tests: 'Tests',
             board: 'Tableau',
             backlog: 'Backlog',
+            charts: 'Graphiques',
         },
         backlog: {
             buckets: {
@@ -1255,7 +1255,25 @@ const fr: SourceCatalogue = {
             capture: 'Capture',
             story: { one: 'Récit, {count} tâche', other: 'Récit, {count} tâches' },
         },
+        charts: {
+            velocity: 'Vélocité',
+            velocityNote: 'Récits terminés dans chaque sprint.',
+            burnup: 'Burn-up',
+            burnupNote:
+                'Tâches terminées, cumulées selon le jour de fin. La ligne en pointillés compte toutes les tâches du sprint.',
+            perDay: 'Tâches terminées par jour',
+            perDayNote:
+                "Tâches terminées chaque jour du sprint. Les jours après aujourd'hui sont pâles.",
+            byState: 'Tâches par état',
+            byStateNote: 'Toutes les tâches du sprint, selon leur état.',
+            noDates: "Ce sprint n'a pas de date de début.",
+            noDone: "Aucune tâche n'a encore de date de fin.",
+        },
         board: {
+            current: 'En cours ici',
+            trees: 'Arbres de travail',
+            idle: 'Inactif',
+            thisTree: 'Cet arbre',
             search: 'Chercher des récits, tâches, environnements',
             searchLabel: 'Chercher dans le tableau',
             clear: 'Effacer',
@@ -1808,9 +1826,7 @@ const fr: SourceCatalogue = {
     },
 
     market: {
-        area: 'Données de marché',
         evolution: {
-            screen: 'Suivre l’évolution d’une courbe',
             title: 'Suivre l’évolution d’une courbe ou d’une surface',
             description:
                 'Nommez un objet et une période. Lisez les instants par nœuds sur la période, et l’objet tel qu’il est maintenant.',
@@ -1867,7 +1883,15 @@ const fr: SourceCatalogue = {
                 derived: 'Dérivé',
                 manual: 'Manuel',
             },
-            gap: 'Aucune liste de séries n’est encore lue, donc l’objet est désigné par son identité.',
+            picker: {
+                label: 'Série',
+                placeholder: 'Choisissez une série, ou saisissez son identité ci-dessous',
+                loading: 'Lecture des séries que vous pouvez voir...',
+                empty: 'Votre partie ne voit aucune série. Les données de marché que le provisionnement a semées peuvent ne pas figurer tant que leur identité n’est pas projetée. Vous pouvez saisir une identité ci-dessous.',
+                truncated:
+                    'La liste contient les {count} premières séries que votre partie peut voir. Travaillez dans une partie qui en contient moins pour voir les autres.',
+                noShape: 'aucune forme déclarée',
+            },
         },
     },
 
@@ -3314,7 +3338,6 @@ const fr: SourceCatalogue = {
                 fxFeeds: 'Flux de prix FX',
                 fxFeedsBody:
                     'Composez les flux FX synthétiques : la paire, le moteur et le mélange de chacun.',
-                evolution: 'Suivre l’évolution d’une courbe',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
@@ -3567,6 +3590,8 @@ const fr: SourceCatalogue = {
         rolesRead: 'lire les rôles et leurs droits',
         rolesAssign: 'attribuer des rôles aux personnes',
         sessionsRead: 'lire les connexions des personnes',
+        deploymentRead:
+            'voir tout le déploiement : ses locataires, ses services, sa grille, son bus de messages et ses journaux',
         curveSnapshotsRead: 'voir les courbes de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
     },

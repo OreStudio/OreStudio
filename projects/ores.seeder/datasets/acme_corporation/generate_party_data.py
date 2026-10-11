@@ -78,10 +78,17 @@ COUNTRIES = {
     "acme_hk": ["HK", "SG", "JP"],
 }
 
+# The currencies of an entity are its functional currency, the currencies its
+# rates books are named for, and every currency in the pairs its FX books trade
+# (OFFICE_TREE in generate_data.py): Cable and Sterling, the G10 majors, the
+# Scandies and the emerging markets in London, the G10 and Latin America in New
+# York, and the G10 and Asia in Hong Kong. Hong Kong trades the offshore
+# renminbi, CNH.
 CURRENCIES = {
-    "acme_uk": ["GBP", "EUR", "USD"],
-    "acme_us": ["USD", "CAD"],
-    "acme_hk": ["HKD", "USD", "CNY", "JPY"],
+    "acme_uk": ["GBP", "EUR", "USD", "CHF", "JPY", "CAD", "AUD", "NZD", "SEK", "NOK", "DKK",
+                "ZAR", "TRY", "PLN", "CZK", "HUF", "ILS"],
+    "acme_us": ["USD", "CAD", "EUR", "GBP", "JPY", "MXN", "BRL", "CLP", "COP"],
+    "acme_hk": ["HKD", "USD", "JPY", "AUD", "NZD", "CNH", "SGD", "KRW", "INR", "TWD"],
 }
 
 # Banks a treasury approves besides those it holds a master agreement with.
@@ -158,7 +165,20 @@ def counterparties():
     return records
 
 
+def check_books_are_covered():
+    """Every book of an entity is in a currency that entity works in."""
+    with open(os.path.join(SCRIPT_DIR, "books.json")) as f:
+        books = json.load(f)
+    for book in books:
+        company = book["company_code"]
+        if company in CURRENCIES and book["functional_currency"] not in CURRENCIES[company]:
+            raise SystemExit(
+                f"{company} has book {book['name']} in {book['functional_currency']}, "
+                "which is not one of its currencies")
+
+
 def main():
+    check_books_are_covered()
     write("party_contacts", contacts())
     write("party_countries", links(COUNTRIES, "country_alpha2_code"))
     write("party_currencies", links(CURRENCIES, "currency_iso_code"))

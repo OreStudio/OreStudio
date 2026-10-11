@@ -34,10 +34,11 @@ on a trade and ends when the amendment is saved, awaits confirmation, or is refu
 * Steps
 
 1. *Open the trade.* The person opens the trade they want to change.
-2. *Say what kind of change it is.* The person chooses the activity: an amendment of the
-   terms, a correction of an operational error, or another type the trade's state allows.
-   The system offers only the activity types the state machine allows from the trade's
-   present state.
+2. *Say what kind of change it is.* The person chooses the activity first: an amendment of
+   the economic terms, a change of reference details, a correction of a misbooking, or a
+   null amend. The kind of change bounds what the person may edit. A person who chooses an
+   economic amendment cannot edit a field that is not economic. The system offers only the
+   activity types the state machine allows from the trade's present state.
 3. *Change the terms.* The person edits the part of the trade that changed: an
    instrument term, a leg, a booking field or an identifier. The person changes one part
    at a time and gives a reason each time.
@@ -46,8 +47,8 @@ on a trade and ends when the amendment is saved, awaits confirmation, or is refu
    that is not economic does not.
 5. *Save.* The system writes the activity and the component versions that the activity
    causes, and shows the new versions.
-6. *Wait for confirmation, if needed.* When the activity type requires confirmation, the
-   change waits. The person sees that it waits.
+6. *See what follows.* A confirmable change issues a new confirmation to the counterparty,
+   and the amended terms wait for it.
 7. *Handle a refusal.* The system refuses a stale write, a change the state does not
    allow, and a field that fails a check. The trade stays as it was.
 
@@ -58,7 +59,7 @@ dialog that asks for the change and the reason, as the [[id:BD492939-118E-4B55-A
 shows the result. There is no separate amend screen. A prototype must show the
 activity type, the state check and the economic mark inside that dialog.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =trade-page=: Edit on the Instrument card. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
@@ -96,7 +97,10 @@ is written with a plain =s=. A table whose plural is irregular, such as
 - The economic digest does not read the option's exercise prices or a composite trade's
   legs. A change to either does not move the external version. Fix both before this
   journey is built. The captures are linked below.
-- The confirmation step for activities that require it has no operation and no journey. The story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] owns it.
+- The party and the counterparty are fixed for the life of a trade. A change to either is a
+  cancel and rebook, which the lifecycle journey covers, and not an amendment. See [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]].
+- The confirmation the counterparty gives has no operation and no journey. The escalation of some reasons to a head of desk belongs to the
+  story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]].
 
 * Related journeys
 

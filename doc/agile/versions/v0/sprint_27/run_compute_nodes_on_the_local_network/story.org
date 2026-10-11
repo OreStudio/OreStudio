@@ -21,11 +21,11 @@ Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.2
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | All three hosts run compute nodes and have executed work from the serving environment. The grid screen shows every node, grouped by machine. On goedel the nodes survive a crash and a reboot. |
-| Waiting on    | Review of the pull request. |
-| Next          | Prove the reboot on newton and the laptop. Close the stale capture on the ORE package. |
+| Now           | Done and merged in PR 3120. All three hosts run compute nodes under Quadlet units, 22 wrappers in all, 5 of them on the serving machine. The grid screen shows every node, grouped by machine. On goedel the nodes survive a crash and a reboot. |
+| Waiting on    | Nothing. |
+| Next          | Follow-up outside this story: prove the reboot on newton and the laptop, and close the stale capture on the ORE package. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -50,11 +50,12 @@ Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.2
 | Host | Address | Wrappers | Rule |
 |------+---------+----------+------|
 | goedel | 192.168.1.199 | 3 | 4 cores, one wrapper per core but one |
-| laptop | 192.168.1.11 | 7 | 8 cores, one wrapper per core but one |
+| laptop | 192.168.1.11 | 3 | 8 cores, set with =ORES_COMPUTE_REPLICAS=3= because it has 2.7 GiB |
 | newton | 192.168.1.22 | 11 | one wrapper per core but one |
 | wiener | 192.168.1.172 | 5 | the serving machine, unchanged |
 
-The grid shows 26 running wrappers. Podman was present on the laptop and
+The grid shows 22 running wrappers. The laptop first ran 7, one per core but
+one, and was cut to 3 at the owner's request. Podman was present on the laptop and
 newton was up at the second deploy, after the first one stopped on both. The
 deploy then needed no further step on either host. This story installed
 nothing.
@@ -152,8 +153,8 @@ with a message when the user manager is down or podman is older than 4.4.
 Tested on goedel. A =podman kill= of one wrapper was followed by a restart
 within 20 seconds. After =sudo reboot= the three containers were running when
 the machine had been up for 0 minutes, healthy a minute later, and their node
-samples were arriving. The laptop and newton still run the plain containers
-from the earlier deploy and move to units on their next deploy.
+samples were arriving. All three hosts were then redeployed and run Quadlet
+units. The reboot itself was not repeated on newton or the laptop.
 
 * Hosts and packages
 
@@ -205,10 +206,10 @@ Packages the host needed, as root:
 Then, as the user, =loginctl enable-linger marco=. Linger is on, and the user
 manager runs.
 
-WSL settings to review: the distribution has 2.7 GiB of memory and now runs 7
-wrappers. The ORE engine runs one process per work unit, so raise =memory= in
-=.wslconfig=, or set =ORES_COMPUTE_REPLICAS= for the host, if jobs are to run
-there at the same time. A Windows reboot does not start the wrappers until the
+WSL settings to review: the distribution has 2.7 GiB of memory, so the host runs
+3 wrappers, set with =ORES_COMPUTE_REPLICAS=3= in the local profile. The ORE
+engine runs one process per work unit, so raise =memory= in =.wslconfig= to run
+more at the same time. A Windows reboot does not start the wrappers until the
 distribution itself is running, and Quadlet cannot change that.
 
 ** newton (192.168.1.22)

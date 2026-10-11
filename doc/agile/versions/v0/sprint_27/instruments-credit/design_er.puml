@@ -1,0 +1,162 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Credit family — proposed relational model (target)
+
+hide circle
+skinparam linetype ortho
+
+package "The anchor" {
+  entity ores_trading_trades_tbl #E8E8E8 {
+    * tenant_id : uuid <<PK>>
+    * id : uuid <<PK>>
+    --
+    * party_id : uuid
+    * trade_type_code : text
+  }
+}
+
+package "The family header" {
+  entity ores_trading_credit_instruments_tbl #D6EAF8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK>>
+    --
+    * trade_type_code : text <<8 codes, 6 routed>>
+    * party_id : uuid
+    * trade_activity_id : uuid
+    * reference_entity : text
+    start_date : date <<common date>>
+    maturity_date : date <<common date>>
+    description : text
+  }
+}
+
+package "Product facts (one row per trade, keyed by trade_id)" {
+  entity credit_default_swap_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    credit_curve_id : text
+    issuer_id : text
+    reference_obligation : text
+    settles_accrual : boolean
+    rebates_accrual : boolean
+    pays_at_default_time : boolean
+    protection_payment_time : text
+    protection_start_date : date
+    upfront_date : date
+    upfront_fee : numeric(38,12)
+    fixed_recovery_rate : double precision
+    cash_settlement_days : integer
+  }
+  entity index_credit_default_swap_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    * credit_curve_id : text
+    issuer_id : text
+    accrual and payment flags
+    protection_start_date : date
+    upfront_date : date
+    upfront_fee : numeric(38,12)
+    cash_settlement_days : integer
+  }
+  entity index_credit_default_swap_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    knock_out : boolean
+    index_term : text
+    strike_type : text
+    front_end_protection_start_date : date
+  }
+  entity synthetic_cdo_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    * qualifier : text
+    * protection_start_date : date
+    * attachment_point : double precision
+    * detachment_point : double precision
+    accrual and payment flags
+    upfront_date : date
+    upfront_fee : numeric(38,12)
+    fixed_recovery_rate : double precision
+  }
+  entity credit_linked_swap_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    * credit_curve_id : text
+    settles_accrual : boolean
+    default_payment_time : text
+    fixed_recovery_rate : double precision
+  }
+  entity risk_participation_agreement_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    * participation_rate : double precision
+    * protection_fee : numeric(38,12)
+    * credit_curve_id : text
+    issuer_id : text
+    settles_accrual : boolean
+    fixed_recovery_rate : double precision
+  }
+}
+
+package "Shared children, keyed by trade_id (already in the tree)" {
+  entity swap_legs #D5F5E3 {
+    * trade_id : uuid <<PK>>
+    * leg_number : integer <<PK>>
+    --
+    leg_group : text <<new, nullable>>
+  }
+  entity swap_leg_amounts #D5F5E3
+  entity swap_leg_rates #D5F5E3
+  entity instrument_options #D5F5E3
+  entity instrument_strikes #D5F5E3
+  entity instrument_schedules #D5F5E3
+}
+
+package "New credit child" {
+  entity credit_basket_constituents #FADBD8 {
+    * trade_id : uuid <<PK>>
+    * sequence_number : integer <<PK>>
+    --
+    * name : text
+    weight : numeric(38,12)
+  }
+}
+
+ores_trading_trades_tbl ||--o| ores_trading_credit_instruments_tbl
+ores_trading_credit_instruments_tbl ||--o| credit_default_swap_instruments
+ores_trading_credit_instruments_tbl ||--o| index_credit_default_swap_instruments
+ores_trading_credit_instruments_tbl ||--o| index_credit_default_swap_option_instruments
+ores_trading_credit_instruments_tbl ||--o| synthetic_cdo_instruments
+ores_trading_credit_instruments_tbl ||--o| credit_linked_swap_instruments
+ores_trading_credit_instruments_tbl ||--o| risk_participation_agreement_instruments
+ores_trading_trades_tbl ||--o{ swap_legs
+swap_legs ||--o{ swap_leg_amounts
+swap_legs ||--o{ swap_leg_rates
+ores_trading_trades_tbl ||--o| instrument_options
+ores_trading_trades_tbl ||--o{ instrument_strikes
+ores_trading_trades_tbl ||--o{ credit_basket_constituents
+
+note bottom of ores_trading_credit_instruments_tbl
+  CreditDefaultSwapOption and CBO have no importer.
+  They stay out of the header's accepted codes
+  until a mapper writes them.
+end note
+
+@enduml

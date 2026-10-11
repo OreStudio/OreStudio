@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 8E1666B4-BF28-4E11-929C-C5C7D0216208
+:END:
+#+title: Task: Settle the open points on the menu structure page
+#+description: Decide where Rescue access belongs and whether Market data gets its own area, and write both decisions on the page.
+#+type: task
+#+level: s1
+#+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
+#+owner: marco
+#+branch: feature/settle-the-open-points-on-the-menu-structure-page
+#+pr: 3147
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The menu structure page has no open point.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The Open points section is decided and written, and the screens and cards follow it
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+- Read each open point against the code and the other pages. Decide the ones that are decisions, and move the one that is only unbuilt out of the open points.
+- Write each decision where a reader looks for it: the reason in the area's text or in the table of where a screen belongs, not in a list of questions.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Rescue access stays in Organisation. It unlocks one person's account, which is a write on an account. Sign-ins only reads sessions, and it is the audit of how the installation is used. Both the code and the page already agreed, so no screen or card moves. This is a decision I made from the two screens; if you want it in Operations, it is a change of one table row and one card list.
+- Market data is its own area, and the point was out of date. The page said it had no web screens. It has two, FX price feeds and Watch a curve evolve, and the menu already draws the area. The page now says why: the data changes by the minute, and a person who looks for a curve does not look in reference data.
+- The Trades point was never a decision. It states what is not built. It is now a section called Not built yet.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3147][#3147]] | [agile] Settle the open points on the menu structure page |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A promise about the future in the Market data section | menu_structure.org | Accept | The sentence moved to Not built yet, so the area text describes only what exists. |
+| 2 | Uneven table padding in the task | task file | Decline | Org realigns tables on save. |
+| 3 | The Result relies on the earlier review task | task file | Accept | The Result now names that task and its PR. |
+| 4 | The Review table is empty | task file | Accept | Filled with these decisions. |
+
+* Result
+
+The menu structure page has no open point. Two decisions are written where a reader looks for them, and one statement of what is unbuilt is named as that.
+
+- Rescue access stays in Organisation, with the reason in the table of where a screen belongs.
+- Market data is its own area, with a short section beside Reference data that gives the reason and the screens it holds.
+- The Trades area is listed under Not built yet.
+
+Evidence: the page publishes with no failure, and the code already follows it. The task "Review every card, breadcrumb and menu against the menu structure page" (PR 3142) checked the menu, the area cards and the addresses, and its table is the trace.
+
+Not done here: the test that walks every screen, which is the story's last task.

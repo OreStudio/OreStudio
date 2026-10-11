@@ -60,6 +60,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '25523799-1194-5c84-b415-40b6cd952335', 0, 'IR Swaps New York', '4951bc79-5e32-5677-ad77-77deea521a90', 'acme_us.ir_swaps', 'USNY', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '4e9fdb9b-1d8e-5318-9c00-27a522595f6f', 0, 'Credit Trading New York', '4951bc79-5e32-5677-ad77-77deea521a90', 'acme_us.credit_trading', 'USNY', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '2075badb-b410-5488-98ea-4c63eca7b475', 0, 'FX Rates New York', '4951bc79-5e32-5677-ad77-77deea521a90', 'acme_us.fx_rates', 'USNY', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'db742acf-6ce8-53ed-bce7-c7c4e2cf1fe3', 0, 'Treasury New York', null, 'acme_us.treasury', 'USNY', 'DIVISION'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '8141f088-c156-5003-8a86-3811f0e7e251', 0, 'Middle Office New York', null, 'acme_us.middle_office', 'USNY', 'COST_CENTRE'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '369a24e9-5568-5903-a163-910ca818e3dd', 0, 'Market Risk New York', null, 'acme_us.market_risk', 'USNY', 'COST_CENTRE');
 end $$;

@@ -32,6 +32,7 @@ import { tabsFor } from '../access/screens.js';
 import { actorPathFor } from '../access/PeoplePage.js';
 import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { Timeline } from '../timeline/Timeline.js';
+import { PageTrail } from '../shell/AreaTrail.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
@@ -63,6 +64,7 @@ export function ProfilePage({ session }: { readonly session: SessionView }): Rea
 
     return (
         <div className="space-y-4">
+            <PageTrail screen={t('profile.title.mine')} />
             <PageHeader title={t('profile.title.mine')} description={t('profile.lead.mine')} />
             {access.isError && (
                 <Notice tone="warn">

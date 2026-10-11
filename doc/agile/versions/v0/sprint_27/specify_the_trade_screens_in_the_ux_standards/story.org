@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 281AE643-2EAF-42B9-801C-C87874409C07
+:END:
+#+title: Story: Specify the trade screens in the UX standards
+#+description: Add the Trades area to the menu page, add the trade, structure and package to the entity screen specification, and bring the trade prototypes to the standard entity protocol: filters from the model, a combo box for the trade type, and booking as one page with the instrument in tabs.
+#+type: story
+#+level: s2
+#+filetags: :trading:ux:prototype:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The menu page and the entity screen specification state how the trade screens look and behave, including the standard entity protocol they read and write through. The trade prototypes follow both.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The menu page names the Trades area, its screens, its addresses and where each screen belongs.
+- The entity screen specification covers the trade page, booking, the structure and package screens, and the entity protocol.
+- Booking is one page in tabs, with a combo box for the trade type and a tab for each part of the instrument.
+- The trade list filters through the standard filter record, and the prototypes show the request.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DE756DB1-F003-4C18-AA69-8F72E844C71E][Scaffold story: Specify the trade screens in the UX standards]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EA454CCD-B716-4DDC-A16C-6DAA06B75579][Update the menu page, the entity specification and the trade prototypes]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Specify the trade screens in the UX standards |
+
+* Decisions
+
+- Trades is its own area. A trade is held by the tenant and is not a shared list, so it is not reference data.
+- Book a trade is the Add of the trade list, and booking is one page in tabs. A sequence is allowed only when it makes the task quicker, and it does not here.
+- The trade type is a combo box, and the Instrument tab has a tab for each part of the instrument.
+- The trade screens use the standard entity protocol. What they need beyond it is a change to the model, and not a new operation.
+- Authorisation is out of scope for now.
+
+* Out of scope
+
+- Authorisation, and the capture that waits for it.
+- The model changes the trade list needs. They are on the review journey as gaps.

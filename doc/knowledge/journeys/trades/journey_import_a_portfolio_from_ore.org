@@ -27,23 +27,34 @@ person has seen what was and was not imported.
 * Actor and trigger
 
 The actor is an operations user. The trigger is a new ORE portfolio, a migration, or a
-test population. The journey starts with a file and a book and ends when the import is
+test population. The journey starts with a directory and ends when the import is
 confirmed, rolled back or refused.
 
 * Steps
 
-1. *Choose the file and the book.* The person chooses an ORE portfolio file and the book
-   that receives the trades.
-2. *Read the file.* The system reads the file and lists the trades it holds with the
-   trade type of each. It names the trades it cannot read, and why.
-3. *Check the references.* The system checks each counterparty, netting set and
-   portfolio the file names. A counterparty name that matches no alias is refused. A
-   netting set that does not exist is created.
-4. *Confirm.* The person confirms. The system books each trade with its anchor, booking,
-   state, ORE identifier, envelope fields and instrument.
-5. *Read the result.* The system reports how many trades it imported, how many it refused
+1. *Choose the directory.* The person chooses an ORE directory. The browser packs it and
+   uploads it to storage. The person may name folders to skip, such as =Output=.
+2. *Find the files.* The system searches the directory and every folder below it. It opens
+   each XML file and reads its root element: a file is a portfolio when the root element is
+   =Portfolio=. The name of the file does not decide, because few portfolio files are named
+   =portfolio=. A client must not guess from names, so the list comes from the system. It lists
+   every portfolio file it finds, with the book each one becomes, its trade count and
+   its size. It says how many files it searched and how many it skipped in excluded
+   folders. The person chooses the files to bring in. All are chosen at first, and the
+   person may choose all or none.
+3. *Choose how to import.* The person names the parent portfolio, says what to do with
+   portfolios and books that already exist, sets a default counterparty for a trade whose
+   counterparty is unknown, and chooses the activity of the first booking.
+4. *Read the plan.* The system lists the trades of the chosen files with the trade type of
+   each. It names the trades it cannot read, and why. A counterparty name that matches no
+   alias is refused unless a default counterparty is set. A netting set that does not exist
+   is created.
+5. *Confirm.* The person confirms. The system books each trade with its anchor, booking,
+   state, ORE identifier, envelope fields and instrument, under the portfolios and books
+   the folders give.
+6. *Read the result.* The system reports how many trades it imported, how many it refused
    and why. A partial import is stated as partial.
-6. *Roll back.* The person may roll the import back. The system removes what the import
+7. *Roll back.* The person may roll the import back. The system removes what the import
    created.
 
 * Screens
@@ -52,7 +63,7 @@ This journey is a use case. The workflow is the Import action in the Workflows m
 trade list, as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] places workflows. It opens a dialog or a short sequence.
 The result is the trade list filtered to the trades the import created.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =ore-portfolio=. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
@@ -64,25 +75,33 @@ This journey adds no entity of its own. It reads and writes the trade and the re
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Read the file | Plan the import | =workflow.v1.ops.ore_import= | exists |
+| Choose the directory | Upload the packed directory to storage | the platform bucket =ores= at =ore/imports/{request_id}.tar.gz= | exists |
+| Find the files | List the portfolio files of an uploaded directory, found by root element, with the folders to skip and the files that are not portfolios | none; =ore_directory_scanner= does it inside the import | missing |
+| Choose how to import | Choose the files to import | no field in =import_choices= | missing |
+| Choose how to import | Set the parent portfolio, the re-import mode, the default counterparty and the activity | =import_choices_json= | partial |
+| Read the plan | Plan the import | =workflow.v1.ops.ore_import= | exists |
 | Confirm | Execute the import | =ore.v1.ops.ore_import_execute= | exists |
 | Roll back | Roll the import back | =ore.v1.ops.ore_import_rollback= | exists |
-| Choose the book | Offer the books | =refdata.v1.books.list= | exists |
 
-Status is one of =exists=, =partial=, or =missing=. A subject that contains
-=<instrument>= stands for the one instrument table the trade type routes to. The plural
-is written with a plain =s=. A table whose plural is irregular, such as
-=trade_activities=, has its own subject: check the protocol header, not the pattern.
+Status is one of =exists=, =partial=, or =missing=.
 
 * What is missing
 
-- The file reaches the server how? The old client read the file locally. A browser must
-  upload it, and the upload path for this journey is not defined.
-- The preview (the list of trades before confirm) is not an operation. The plan inside
-  =ore_import= may serve it. Check before the journey is built.
-- =BondForward= has no standalone round trip test. Add one before the import is relied
-  on for bond forwards.
-- The old wizard also imported currencies and books. This journey covers trades only.
+- The server finds the portfolio files only inside the import, and the person cannot see them
+  first. The scanner already classifies by the root element (=Portfolio=, =CurrencyConfig=), and
+  puts every other file in =ignored_files=. The new operation returns that result. A step that lists every matching file of an uploaded directory is needed.
+- =import_choices= has no list of files. Its choices are the folders to skip, the parent
+  portfolio, the re-import mode and the trade defaults. The import brings in every file the
+  scan finds. A list of chosen files is a change to the choices and to the scan.
+- The default counterparty, the trade date and the activity are choices of the import
+  (=trade_defaults=). Whether the plan can say beforehand which trades they rescue is not
+  checked.
+- The import creates portfolios and books from the folders. The old client asked for one
+  book. The person no longer picks the book, so a screen must show the book each file
+  becomes.
+- =BondForward= has no standalone round trip test. Add one before the import is relied on
+  for bond forwards.
+- The old wizard also imported currencies. This journey covers trades only.
 
 * Related journeys
 

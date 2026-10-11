@@ -3127,37 +3127,6 @@ package "trading" #E8F5E9 {
     supports.
     end note
 
-    entity ores_trading_rpa_instruments_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        --
-        * version : integer
-        * party_id : uuid <<FK>>
-        * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * maturity_date : date
-        * reference_counterparty : text
-        * participation_rate : double
-        * protection_fee : numeric(38, 12)
-          description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_rpa_instruments_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    RPA Instrument Table
-    Represents a Risk Participation Agreement where one bank (protection
-    buyer) pays a fee to another (protection seller) to assume a portion of
-    credit risk on a reference counterparty.
-    end note
-
     entity ores_trading_scripted_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -4066,8 +4035,6 @@ ores_trading_trades_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "ha
 ores_trading_trade_activities_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
-ores_trading_trades_tbl ||--o{ ores_trading_rpa_instruments_tbl : "has"
-ores_trading_trade_activities_tbl ||--o{ ores_trading_rpa_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_structure_members_tbl : "has"

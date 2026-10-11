@@ -50,7 +50,7 @@ check declares its own path patterns, one of them matched too.
 | cpp | =*.cpp=, =*.hpp=, =*.h=, =*.ipp=, =*.c=, =*.cc=, =*.cxx=, =*.cmake=, =CMakeLists.txt=, =CMakePresets.json=, =vcpkg*.json= | compiled sources, headers and the build description |
 | services | =projects/*/service/*=, =projects/ores.service/*=, =build/config/*=, =docker/*=, =compose*.yml= | a service, its launcher and what starts it |
 | web | =projects/ores.web/*=, =*.ts=, =*.tsx=, =package.json=, =pnpm-lock.yaml=, =.prettierrc.yaml= | the ores.web client and its packages |
-| plugins | =projects/ores.dsh_environment/*=, =projects/ores.dsh_kanban/*= | the DSH profile plugins |
+| plugins | =projects/ores.dsh_environment/*= | the DSH profile plugin |
 | tooling | =projects/ores.compass/*=, =build/scripts/*= | the project's own tools and their checks |
 | ci | =.github/*=, =projects/ores.codegen/library/templates/*= | the check configuration itself |
 
@@ -125,8 +125,8 @@ Nothing on a pull request. Eleven workflows keep their own triggers:
 | =stale.yml= | daily | closes stale issues and pull requests |
 | =claude.yml= | an =@claude= comment | the on-demand review |
 
-The thirteen retired triggers were =codegen-drift=, =codegen-sweep=,
-=doc-lint=, =dsh-environment=, =dsh-kanban=,
+The twelve retired triggers were =codegen-drift=, =codegen-sweep=,
+=doc-lint=, =dsh-environment=,
 =entity-writes=, =event-registrar-composition=, =header-hygiene=,
 =populate-reference-drift=, =rls-system-tenant-widenings=,
 =shell-script-drift=, =template-drift= and =typescript=. Each keeps its

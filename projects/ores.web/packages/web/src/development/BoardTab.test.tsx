@@ -23,13 +23,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import type { WorkTree } from '@ores/contracts';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { board, story } from './boardFixture.js';
-import { StoryDetail } from './BoardTab.js';
+import { StoryDetail, TreeStrip } from './BoardTab.js';
 import { DevelopmentArea } from './DevelopmentArea.js';
-import { AGILE_SPRINTS_KEY, boardKey } from './queries.js';
+import { AGILE_SPRINTS_KEY, AGILE_TREES_KEY, boardKey } from './queries.js';
 
-function screen(data: ReturnType<typeof board> | undefined, failure?: string): string {
+function screen(
+    data: ReturnType<typeof board> | undefined,
+    failure?: string,
+    trees: readonly WorkTree[] = [],
+): string {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false } },
     });
@@ -43,6 +48,7 @@ function screen(data: ReturnType<typeof board> | undefined, failure?: string): s
         });
     } else if (data !== undefined) {
         client.setQueryData(boardKey(undefined), data);
+        client.setQueryData(AGILE_TREES_KEY, trees);
         client.setQueryData(AGILE_SPRINTS_KEY, [
             { version: 'v0', name: 'sprint_2', title: 'Sprint 2', path: 'p' },
             { version: 'v0', name: 'sprint_1', title: 'Sprint 1', path: 'p' },
@@ -169,5 +175,56 @@ describe('the story detail', () => {
         expect(detail).toContain('Build the cards');
         expect(detail).toContain('Build the detail');
         expect(detail).toContain('Blocked');
+    });
+});
+
+describe('the work tree strip and the current story', () => {
+    const entry = (taskTitle: string): WorkTree['current'] => ({
+        storyId: 'S1',
+        storyTitle: 'Draw the board',
+        taskId: 'T1',
+        taskTitle,
+        state: 'STARTED',
+        branch: 'feature/x',
+        pr: 0,
+    });
+    const trees: WorkTree[] = [
+        {
+            label: 'eager_maxwell',
+            branch: 'feature/x',
+            isSession: true,
+            current: entry('Show the work trees on the board'),
+        },
+        { label: 'solid_dirac', branch: 'feature/y', isSession: false, current: null },
+    ];
+
+    it('draws a chip for each tree, with its task or Idle, and marks this tree', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <TreeStrip trees={trees} />
+            </TranslationProvider>,
+        );
+        expect(html).toContain('eager_maxwell');
+        expect(html).toContain('Show the work trees on the');
+        expect(html).toContain('solid_dirac');
+        expect(html).toContain('Idle');
+        expect(html.match(/This tree/g)).toHaveLength(1);
+    });
+
+    it('draws the strip on the board and marks the card of the story this tree is on', () => {
+        const html = screen(
+            board([
+                story({ id: 'S1', title: 'Draw the board' }),
+                story({ id: 'S2', title: 'Other' }),
+            ]),
+            undefined,
+            trees,
+        );
+        expect(html).toContain('aria-label="Work trees"');
+        expect(html.match(/>Current</g)).toHaveLength(1);
+    });
+
+    it('draws no strip when there are no trees', () => {
+        expect(screen(board([story({})]))).not.toContain('aria-label="Work trees"');
     });
 });

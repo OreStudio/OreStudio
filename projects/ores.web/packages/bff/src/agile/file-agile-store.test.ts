@@ -161,6 +161,40 @@ describe('a board', () => {
     });
 });
 
+describe('the charts', () => {
+    it('count the stories done in every sprint, oldest first, and read the newest sprint', async () => {
+        await sprint('sprint_26');
+        await sprint('sprint_27');
+        await put(
+            'agile/versions/v0/sprint_26/old/story.org',
+            org('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', { title: 'Story: Old' }, 'DONE'),
+        );
+        await put(
+            'agile/versions/v0/sprint_27/alpha/story.org',
+            `${org('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', { title: 'Story: Alpha' }, 'STARTED')}\n* Tasks\n\n| Task | State | Start | End | Description |\n|---+---+---+---+---|\n| One | DONE | 2026-10-05 | 2026-10-06 | x |\n`,
+        );
+        await put(
+            'agile/versions/v0/sprint_27/alpha/task_one.org',
+            org('c1', { title: 'Task: One' }, 'DONE'),
+        );
+        const charts = await new FileAgileStore(root, { now: NOW }).charts();
+        expect(charts?.velocity).toEqual([
+            { sprint: 'sprint_26', done: 1 },
+            { sprint: 'sprint_27', done: 0 },
+        ]);
+        expect(charts?.burnup).toEqual([{ date: '2026-10-06', done: 1 }]);
+        expect(charts?.scope).toBe(1);
+        expect(charts?.perDay).toHaveLength(8);
+    });
+
+    it('are null for a sprint that does not exist, and refuse a name that is a path', async () => {
+        await sprint('sprint_27');
+        const store = new FileAgileStore(root, { now: NOW });
+        expect(await store.charts('sprint_5')).toBeNull();
+        await expect(store.charts('../etc')).rejects.toBeInstanceOf(InvalidSprintNameError);
+    });
+});
+
 describe('the backlog', () => {
     it('lists the four buckets, each newest first, with captures and story folders', async () => {
         await put(
@@ -226,4 +260,11 @@ describe.skipIf(!existsSync(join(REAL_DOC, 'agile', 'versions')))('the real agil
             true,
         );
     });
+
+    it('draws charts for the newest sprint, with a velocity over many sprints', async () => {
+        const charts = await new FileAgileStore(REAL_DOC).charts();
+        expect(charts?.velocity.length).toBeGreaterThan(5);
+        expect(charts?.scope).toBeGreaterThan(0);
+        expect(charts?.byState.length).toBeGreaterThan(0);
+    }, 30_000);
 });

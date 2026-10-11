@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 9931C2FF-95F9-4434-ACC1-30566EE27C34
+:END:
+#+title: Task: Walk every screen for its area, address and trail
+#+description: A test walks every screen of the web app and checks it has one area, one address and the trail Home, the area, the screen.
+#+type: task
+#+level: s1
+#+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
+#+owner: marco
+#+branch: feature/walk-every-screen-for-its-area-address-and-trail
+#+pr: 3150
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new screen with the wrong area, a second address or the wrong trail fails a test.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A test walks every screen and checks its area, its address and its trail against one table
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+- Render the application at each address and read the breadcrumb it draws, so the test checks what a person sees and not the code that builds it.
+- Take the screens from the one card registry, so a new card is walked without a new line: its address is under its area, and its trail is Home, the area, the screen.
+- Walk the area pages, the pages of a person themselves and the screens that have no card.
+- Read the route declarations of =AppRoutes.tsx= and fail on a route the walk does not know, so a new screen cannot skip it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The walk found three real faults before it passed, all fixed in this task.
+- The two workflow cards listed on Parties (Onboard a party, Onboard a counterparty) drew no trail at all. A workflow has no area page of its own, so the card screen found no area. It now takes the area of the screen the workflow acts on.
+- Seven screens drew a bare "Loading…" with no trail and no header until their data came: Running services, Compute grid, Classifications, My access, Where I work, Roles and Hierarchy. A waiting or failed read now keeps the trail and the header, through a shared frame (=ScreenFrame=). The entity screen specification puts the loading line in the place of the content.
+- A walk that opens a record's page needs that record's data, so the record pages (those with a =:code= or =:id= in the address) are named as exempt and not walked. Each starts from its list's trail, which the walk covers.
+- The test reads =AppRoutes.tsx= as text for the list of routes. A route written some other way than a =path= prop would not be found.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3150][#3150]] | [web] Walk every screen for its area, address and trail |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The test repeats the card screen's area rule | walk.test.tsx, CardScreen.tsx | Accept | One helper, screenAreaOf in cards.ts, serves both, and the casts are in one place. |
+| 2 | The Hierarchy trail is written by hand with a literal address | ReportingLinesPage.tsx | Accept | It and the Staff list for a member now take their trail from the shared area parts, so the address and the area name come from one place. Classifications already did. |
+| 3 | The frame and the loaded screen declare the trail twice | the seven pages | Decline | The two copies sit a few lines apart in one component, and the Hierarchy and Staff pages now share one value. A test that loads data for all seven would cost more than the risk. |
+| 4 | CardScreen no longer excludes the tenants area | CardScreen.tsx | Answer | No card of the tenants area uses CardScreen. The guard was a leftover from when the shared trail did not know the area. The Add tenant journey has its own trail, and the walk checks it. |
+| 5 | The route scan is fragile | walk.test.tsx | Accept in part | A case now fails when a declared address still holds an unresolved template. The count guard stays loose, because the route count changes with every screen. |
+| 6 | The error priority on My access changed | MyAccessPage.tsx | Accept | A test pins it: a failed read shows its message under the trail and header while the other read waits, and a waiting screen shows the trail too. |
+
+* Result
+
+A test walks the application and holds every screen to the Menu structure page.
+
+- =shell/walk.test.tsx= opens each card screen, each area page, the pages of a person themselves and the screens with no card. It checks the address is under its area, there is one address for each card, and the trail is Home, the area, the screen.
+- It reads the route declarations of the application and fails on a route it does not know, apart from record pages, redirects and the sign-in doors.
+- It found and the task fixed the trail of the two workflow cards on Parties and the seven waiting screens that drew no trail.
+
+Evidence: the web suite passes (106 files, 1195 tests), the typecheck and Prettier are clean, and putting back the old card screen makes the walk fail on exactly the two workflow cards.
+
+Not done here: a walk of the record pages, which need seeded data.

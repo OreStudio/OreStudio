@@ -453,7 +453,9 @@ authorization_service::page_permissions(const std::vector<account_access_entry>&
         return std::any_of(entry.permission_codes.begin(),
                            entry.permission_codes.end(),
                            [&](const std::string& held) {
-                               return held == "*" || held == code || held == component + "::*";
+                               // The wildcard does not cover an installation code.
+                               return (held == "*" && component != "installation") || held == code ||
+                                      held == component + "::*";
                            });
     };
 
@@ -593,7 +595,7 @@ authorization_service::read_roles_page(const boost::uuids::uuid& caller_id,
     };
     const auto grants_in = [&](const std::vector<std::string>& codes, const std::string& area) {
         return std::any_of(codes.begin(), codes.end(), [&](const std::string& code) {
-            return code == "*" || code.rfind(area + "::", 0) == 0;
+            return (code == "*" && area != "installation") || code.rfind(area + "::", 0) == 0;
         });
     };
 

@@ -57,11 +57,12 @@ describe('telling a service from a person', () => {
 
     it('counts every account type except a user as system activity', () => {
         expect(
-            kindsOf(
-                ['iam::accounts:read'],
-                accounts,
-                ['refdata_service', 'model_runner', 'assistant', 'tenant_admin'],
-            ),
+            kindsOf(['iam::accounts:read'], accounts, [
+                'refdata_service',
+                'model_runner',
+                'assistant',
+                'tenant_admin',
+            ]),
         ).toBe('refdata_service=true,model_runner=true,assistant=true,tenant_admin=false');
     });
 

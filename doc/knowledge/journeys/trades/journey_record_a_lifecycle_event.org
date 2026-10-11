@@ -34,11 +34,16 @@ awaiting confirmation, or refused.
 
 1. *Open the trade.* The person opens the trade the event concerns.
 2. *Choose the event.* The person chooses an event type. The system offers only the
-   events the trade's state allows.
+   events the trade's state allows. A trade is draft, live, expired or cancelled, and expiry
+   and cancellation are reversible, because either may have been recorded in error. See
+   [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]].
 3. *Give the facts of the event.* The person gives the date and the terms the event
    changes, such as the exercised amount or the new counterparty.
 4. *Review the effect.* The system shows the trades the event touches, the state each one
-   moves to and the versions it writes.
+   moves to and the versions it writes. A novation and a book move are a cancel and rebook:
+   the original trade is cancelled, a new trade with a fresh id is booked, and a trade link
+   joins the two in one transaction. The system never deletes a version. A person undoes an
+   event with its mirror event.
 5. *Record.* The system writes the activity and the versions in one transaction.
 6. *Confirm, if needed.* When the event requires confirmation, it waits for it.
 
@@ -49,7 +54,7 @@ actions, and the activity shows in the History timeline. The Qt event window mai
 lookup of event types, which is reference data. This journey records an event on one
 trade.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =trade-page=: Workflows, Record a lifecycle event. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
@@ -78,8 +83,8 @@ is written with a plain =s=. A table whose plural is irregular, such as
 
 - No operation writes an activity with the versions it causes. This is the same gap as in
   the amendment journey. One operation should serve both.
-- The effect of each event on other trades (a novation moves a trade to a new
-  counterparty) has no operation.
+- A novation or a book move books a second trade and a trade link with the cancellation.
+  No operation does the three writes in one transaction.
 - The model lists =lifecycle_event= as reference data and =activity_type= as the type of an
   event. The two overlap. A decision on which one the screen offers is needed.
 

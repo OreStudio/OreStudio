@@ -1,0 +1,388 @@
+:PROPERTIES:
+:ID: 18B4807E-B087-4FF9-A639-D1A5FCD9E6F4
+:END:
+#+title: Design: A relational model for the credit family
+#+description: The argument from the one wide credit instrument table to the instrument table rule of the trade shape investigation: what the credit family is, what the current surfaces hold, the findings, and the proposed header, product facts and shared children.
+#+type: design
+#+level: s2
+#+filetags: :trading:data_model:data_oriented_design:codegen:instrument:credit:design:instruments_credit:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+todo: DRAFT STARTED | LANDED SUPERSEDED ABANDONED
+#+outcome:
+
+#+begin_note
+*This document describes a transition, not the current state.* It argues
+from the credit table as it is today to the model we intend, and it expires
+when the work lands. It is scoped to the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the
+instrument table rule]] story and lives with it, so it leaves the default
+grounding path when this sprint closes.
+
+Do not link to it from durable documentation. The link runs one way, from
+here to the durable document this produces, never back.
+#+end_note
+
+* Summary
+
+The credit family is eight trade type codes held in one table,
+=credit_instruments=, of 25 columns. The ORE importer writes six of the
+codes. Two codes, =CreditDefaultSwapOption= and =CBO=, have no importer, so
+the table holds nothing for them.
+
+The table is wide because it is the union of what the six products share
+and what each keeps for itself. Six columns are never written by any
+mapper. Two are written and never read. Four more belong to one product: =option_strike=, =option_expiry_date=,
+=tranche_attachment= and =tranche_detachment=. The mapper drops most of the elements the ORE schema
+gives these products: the upfront fee, the accrual flags, the payment time,
+the basket, the knock-out flag, the strike type and, for the risk
+participation agreement, the participation rate, the protection fee and the
+whole underlying trade. The two required elements of the agreement are
+written as nothing at all, so its export is not a valid ORE document.
+
+The proposal follows the bond and rates reworks:
+
+- one *family header*, =credit_instruments=, holding what the eight codes
+  share: the trade, the party, the trade type, the reference entity and the
+  two common dates;
+- six *product fact tables*, each keyed by the trade, holding what one
+  product keeps for itself;
+- *shared children* that already exist, reused: =swap_legs= with its amounts
+  and rates for the premium and payment legs, =instrument_options= and
+  =instrument_strikes= for the option on an index;
+- one new child, =credit_basket_constituents=, for the names of a basket;
+- one new nullable column, =leg_group= on =swap_legs=, to say which payment
+  group of a credit linked swap or which side of an agreement a leg belongs
+  to.
+
+The money columns become exact decimals, and the ORE binding keeps the
+digits for the credit money members (the upfront fee and the option strike),
+as it now does for the FRA. A continuous quantity stays a binary float: the
+recovery rate, the tranche points and the participation rate, as the
+data-oriented design rule says. The rework is
+staged into eight units; the last proves the eight credit documents
+(eight trades) over the round trip.
+
+* Detail
+
+** Context: the bond pilot, the rates rework and the instrument table rule
+
+Three bodies of prior work bound this one, and their conclusions are
+assumed.
+
+- Section 14 of
+  [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]]
+  states the instrument table rule: a family header names the rows it owns,
+  every instrument is keyed by its trade, and the family's trade types route
+  through the catalogue.
+- The bond pilot, and then the rates rework, settled the shape: a header, product
+  facts keyed by the trade, trade-owned legs, and the shared =instrument_*=
+  children for the list shapes. The rates story added three things credit
+  reuses: the common-date view, the generated eventing tests, and the
+  digits the ORE binding keeps.
+- The rates analysis left credit one job on purpose. =RiskParticipationAgreement=
+  is a credit product. The rates repair routed it to the credit table and
+  stopped there; the table that was meant to hold its facts is now written
+  by nothing.
+
+The question this page asks is the one the rates page asked: *what does a
+family header hold?* For credit the answer is short. The six products share
+a reference entity and little else.
+
+** What counts as the credit family
+
+The trade type catalogue routes eight codes to =credit_instrument=.
+
+| Code | ORE data element | Importer | In the corpus |
+|------+------------------+----------+---------------|
+| CreditDefaultSwap | =CreditDefaultSwapData= | yes | 1 document |
+| IndexCreditDefaultSwap | =IndexCreditDefaultSwapData= | yes | 2 documents |
+| IndexCreditDefaultSwapOption | =IndexCreditDefaultSwapOptionData= | yes | 1 document |
+| SyntheticCDO | =CdoData= | yes | 1 document |
+| CreditLinkedSwap | =CreditLinkedSwapData= | yes | 1 document |
+| RiskParticipationAgreement | =RiskParticipationAgreementData= | yes | 2 documents |
+| CreditDefaultSwapOption | none | no | none |
+| CBO | =CboData= | no | none |
+
+The =Example_Trades= corpus holds eight credit documents with one trade
+each. The two index credit default swap documents are the plain one and the
+one with a bespoke basket. The other example directories carry 24 more
+documents with credit trades; the corpus proof walks =Example_Trades= only,
+as the rates proof did.
+
+Two codes are in the catalogue and in the table's check but nothing imports
+them. =CreditDefaultSwapOption= has no ORE data element at all in the binding.
+=CBO= has one, =CboData=, with investments and a structure, and no mapper.
+
+** The current model, surface by surface
+
+*** The instrument table
+
+=ores_trading_credit_instruments_tbl= keyed by =(tenant_id, trade_id)=, 25
+columns. The columns by use:
+
+| Columns | Written by |
+|---------+------------|
+| =reference_entity=, =currency=, =notional=, =spread=, =recovery_rate=, =day_count_fraction_code=, =payment_frequency_code=, =start_date=, =maturity_date= | every product through the one leg, where it has a leg |
+| =index_name= | index credit default swap and its option; never read back |
+| =linked_asset_code= | credit linked swap; never read back |
+| =option_strike=, =option_expiry_date= | the option |
+| =tranche_attachment=, =tranche_detachment= | the CDO |
+| =tenor=, =index_series=, =seniority=, =restructuring=, =description=, =option_type= | no mapper |
+
+The recovery rate is a continuous quantity, so =double precision= is its
+right type. The tranche points are the disagreement: their columns are
+=numeric(38, 12)= and their domain type is =double=. A column and its domain
+type must agree.
+
+*** The legs
+
+The credit table holds one leg's worth of terms in its own columns:
+currency, notional, spread, day counter and payment frequency. A credit
+default swap has a premium leg, and a credit linked swap has four groups of
+payment legs (independent, contingent, default and recovery). The mapper
+reads the first contingent leg of a credit linked swap and drops the rest.
+The reverse writes one fixed leg, always as the payer.
+
+*** The ORE shape the table has to hold
+
+The elements below are in the ORE schema and in no column of the table.
+
+| Product | Elements the mapper drops |
+|---------+---------------------------|
+| CreditDefaultSwap | =ReferenceObligation=, =SettlesAccrual=, =RebatesAccrual=, =PaysAtDefaultTime=, =ProtectionPaymentTime=, =ProtectionStart=, =UpfrontDate=, =UpfrontFee=, =TradeDate=, =CashSettlementDays= |
+| IndexCreditDefaultSwap | the same accrual and payment elements, =UpfrontDate=, =UpfrontFee=, =CashSettlementDays=, =BasketData= |
+| IndexCreditDefaultSwapOption | =KnockOut=, =IndexTerm=, =StrikeType=, =FrontEndProtectionStartDate=, the exercise rules beyond the first date |
+| SyntheticCDO | the accrual and payment elements, =UpfrontDate=, =UpfrontFee=, =BasketData= |
+| CreditLinkedSwap | =SettlesAccrual=, =DefaultPaymentTime=, three of the four payment groups |
+| RiskParticipationAgreement | =ParticipationRate= (required), =ProtectionFee= (required), =Underlying= (required), =SettlesAccrual=; =IssuerId= replaces the credit curve id when both are present |
+
+The agreement is the worst case. Its schema requires =ParticipationRate=,
+=ProtectionFee= and =Underlying=. The reverse mapper writes none of them, so
+the exported document is not valid. The underlying holds legs, an optional
+option and an optional treasury lock: the two corpus documents carry a
+vanilla swap and a callable swap there.
+
+*** The ORE binding
+
+The credit members that carry a money value are bare floats in the binding:
+=UpfrontFee= (in two structs) and the index option's =Strike=. A bare float
+keeps only the nearest binary value, so the mapper reads the strike through a
+double and writes it back as a nine-digit float. The FRA rework put a lexical
+leaf in the binding through the reapply script. The credit money members need
+the same.
+
+The other numeric members are continuous quantities: =FixedRecoveryRate=
+(four structs), =AttachmentPoint=, =DetachmentPoint= and =ParticipationRate=.
+They stay bare floats, because the exact-money check keeps a recovery rate or
+a tranche fraction as a binary float. =ProtectionFee= and the upfront fee of
+the CDO have their own typed leaves.
+
+*** The programming surface
+
+The table has a full generated surface: repository, service, messaging
+handlers, eventing, the shell commands, the history mapper and the
+TypeScript wire protocol. 50 tracked files are named for it. The
+hand-written code is the ORE mapper, =credit_instrument_mapper.cpp= (391 lines), and the
+dispatch in the trade mapper and the exporter.
+
+*** Test coverage
+
+The credit surface has 33 test cases: seven mapper round-trip cases, eight
+golden documents, one generated eventing test and 17 shell command cases.
+The simulation suites concern another part of ORE and are not counted. No
+repository or service test is specific to credit beyond the generated ones.
+
+** Findings for the family
+
+| # | Finding | Evidence |
+|---+---------+----------|
+| C1 | One 25-column table holds eight codes; most columns belong to one or two products | the column use table above |
+| C2 | Six columns are written by no mapper: =tenor=, =index_series=, =seniority=, =restructuring=, =description=, =option_type= | no assignment in =credit_instrument_mapper.cpp= |
+| C3 | =index_name= and =linked_asset_code= are written and never read back | the forward writes them; the reverse reads =reference_entity= only |
+| C4 | =CreditDefaultSwapOption= and =CBO= route to the table and no importer writes them | the catalogue rows; no =forward_= function for either |
+| C5 | The agreement's required elements are not exported, so the export is invalid ORE | =reverse_rpa= writes the curve id, the dates and the recovery rate only |
+| C6 | The agreement's underlying trade is dropped on import, and an issuer id replaces the credit curve id | no member of =rpaData= is read beyond the curve id or issuer id, the dates and the recovery rate |
+| C7 | The mapper drops most credit elements of the schema | the dropped elements table |
+| C8 | One leg stands for the premium leg of a swap and for a credit linked swap's four payment groups; three groups are dropped | =forward_credit_linked_swap= reads =front()= of the contingent payments only |
+| C9 | The tranche points disagree: the column is =numeric(38, 12)= and the domain type is =double= | the model and the generated domain type |
+| C10 | The credit money members (upfront fee, option strike) are bare floats, so the mapper reads them through a double | =UpfrontFee= and =Strike= are =xsd::optional<float>= members; the strike is read with the double overload of =exact_decimal= |
+| C11 | A basket of names in an index swap or a CDO has no home | =BasketData= is read nowhere |
+| C12 | =ores_trading_rpa_instruments_tbl= and its generated surface are written by nothing | the inbox capture; 47 tracked files are named for it, including the shell commands and 17 shell test cases |
+| C13 | The family has no common-date mapping, so the blotter cannot read its dates | the view lists the rates family only |
+| C14 | The table holds no check that a row's codes match its facts, because there are no facts | the table has one =trade_type= check over eight codes, two of which nothing writes |
+
+** The proposed entity-relationship model
+
+The diagram is in =design_er.puml= and =design_er.png= beside this page.
+
+*** The family header
+
+=credit_instruments= (the table keeps its name and loses its product
+columns). It holds:
+
+| Column | Why it is on the header |
+|--------+-------------------------|
+| =tenant_id=, =trade_id= | the key; the trade is the instrument |
+| =trade_type_code= | the check lists the codes the importer writes |
+| =party_id=, =trade_activity_id= | the identity every instrument carries |
+| =reference_entity= | all six products state the entity the risk is on |
+| =start_date=, =maturity_date= | the common dates |
+| =description= | the family's free text |
+
+The check lists six codes. =CreditDefaultSwapOption= and =CBO= leave the
+catalogue's routing until a mapper writes them: the catalogue rule is that an
+empty =instrument= means no table holds the type yet.
+
+*** The product facts
+
+Six tables, one row per trade, keyed by =(tenant_id, trade_id)= and pinned to
+the header by the generated delete cascade.
+
+| Table | Holds |
+|-------+-------|
+| =credit_default_swap_instruments= | credit curve id, issuer id, reference obligation, the three accrual and payment flags, payment time, protection start, upfront date and fee, recovery rate, cash settlement days |
+| =index_credit_default_swap_instruments= | credit curve id, issuer id, the flags, payment time, protection start, upfront date and fee, cash settlement days |
+| =index_credit_default_swap_option_instruments= | knock-out flag, index term, strike type, front-end protection start |
+| =synthetic_cdo_instruments= | qualifier, protection start, attachment and detachment points, the flags, upfront date and fee, recovery rate |
+| =credit_linked_swap_instruments= | credit curve id, settles accrual, default payment time, recovery rate |
+| =risk_participation_agreement_instruments= | participation rate, protection fee, credit curve id, issuer id, settles accrual, recovery rate |
+
+The option on an index writes two rows: the index swap's own row, because the
+option wraps =IndexCreditDefaultSwapData=, and its option row. The strike and
+exercise dates are the shared =instrument_strikes= and =instrument_options=
+rows, as for a swaption. Every money column is =numeric(38, 12)=. A continuous
+quantity (the recovery rate, the tranche points, the participation rate) is
+=double precision=.
+
+*** The shared children
+
+Reused as they are, because every one is already keyed by the trade:
+
+- =swap_legs=, =swap_leg_amounts=, =swap_leg_rates=: the premium leg of a
+  swap and the payment groups of a credit linked swap. The leg's currency,
+  day counter and payment frequency are columns of the leg, its notional an
+  amount row and its spread or coupon a rate row.
+- =instrument_options=, =instrument_strikes=, =instrument_schedules=: the
+  index option's exercise rules and strike.
+
+One column is new. =swap_legs.leg_group= is nullable text, =NULL= for a swap
+and one of =premium=, =independent=, =contingent=, =default=, =recovery=,
+=underlying= for a credit leg. It says which group of a credit linked swap
+or which side of an agreement a leg belongs to.
+
+One child table is new. =credit_basket_constituents= is keyed by the trade and
+a sequence number and holds the name of a basket member and, where the
+document states one, its weight. It serves the index swap and the CDO.
+
+*** Why not a table per leg group
+
+The groups of a credit linked swap have the same columns as a swap leg. A
+second leg table would repeat =swap_legs=, which the rates story made
+trade-keyed for exactly this reuse. A group column costs one nullable column
+and no table.
+
+** The blotter's common-date view
+
+The header maps =start_date= and =maturity_date= to the common names with
+=:common_date:=. The agreement's =ProtectionStart= and =ProtectionEnd= are
+those dates. No credit product has an expiry; the option's first exercise
+date is the =expiry_date= and lives on =instrument_options=, which the view
+does not read yet, so the option's expiry stays out of the view until that
+child maps its date.
+
+** Mapping the current model onto the target
+
+| Today | Becomes |
+|-------+---------|
+| =reference_entity= | the header |
+| =start_date=, =maturity_date= | the header |
+| =description= | the header |
+| =currency=, =notional=, =spread=, =day_count_fraction_code=, =payment_frequency_code= | a =swap_legs= row with its amount and rate rows |
+| =recovery_rate= | the fixed recovery rate of the product's fact table, as a decimal |
+| =option_strike=, =option_expiry_date= | =instrument_strikes= and =instrument_options= |
+| =tranche_attachment=, =tranche_detachment= | =synthetic_cdo_instruments= |
+| =index_name=, =linked_asset_code= | dropped: the credit curve id of the product's table holds the name |
+| =tenor=, =index_series=, =seniority=, =restructuring=, =option_type= | dropped: no mapper writes them |
+| =rpa_instruments= and its surface | retired; the facts move to =risk_participation_agreement_instruments= |
+
+No migration is written. The project recreates the database.
+
+** What each surface must change
+
+- *Models.* One header model loses its product columns and gains the delete
+  cascade; six fact models and one child model are new; =swap_legs= gains
+  =leg_group=; the =rpa_instrument= model and its files are removed.
+- *Catalogue.* The two importer-less codes leave the routing; the header's
+  common dates are mapped.
+- *Mapper.* The six forward and reverse mappings write the header, the fact
+  row, the legs and the basket. The agreement writes its required elements
+  and its underlying.
+- *ORE binding.* The credit money members become lexical leaves through the
+  reapply script.
+- *Generated surface.* The repository, service, messaging, eventing, shell
+  commands, history mapper and TypeScript protocol of the seven new entities
+  are generated.
+- *Tests.* The mapper suite, the goldens and the corpus proof hold the
+  family.
+
+** Staging
+
+The units are ordered so each ends in a check and none depends on a later one.
+
+| Unit | Task | Check |
+|------+------+-------|
+| 1 | Analyse the credit family and propose its relational data model | this page |
+| 2 | Carry the credit digits: lexical leaves for the credit money members, and the tranche columns agree with their domain type | a mapper test per money member; the goldens that change are numeric text |
+| 3 | Retire the unproduced =rpa_instruments= table | the tree builds and passes without its 47 files |
+| 4 | Author the credit family header and its fact tables | codegen drift clean; the generated eventing tests pass |
+| 5 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
+| 6 | Close the credit round trip: the agreement's required elements and underlying, the dropped elements | the mapper round trip per product |
+| 7 | Map the credit dates into the common-date view | a probe across a swap and a credit trade |
+| 8 | Prove the credit round trip over the corpus | eight documents, eight trades, equal family rows |
+
+Retiring the agreement table is its own unit because it touches 47 files and
+a rates wire variant, and it can land before the new tables exist.
+
+** Open questions
+
+- *Two sets of option rows on one trade.* The agreement's underlying can be a
+  callable swap, which has its own =instrument_options= rows. The index option
+  writes an option row on the same trade, which the shared table keys by the
+  trade. The design does not yet say how an underlying's option is told apart
+  from the trade's own. Unit 6 settles it: either a group or role column on
+  =instrument_options=, or a rule that a trade holds one of the two. The
+  corpus holds an agreement on a callable swap and an index option, never both
+  on one trade, so the rule is a safe default.
+
+* Decisions
+
+- *The family header holds the reference entity and the two dates.* The
+  six products share nothing else. Reason: a header column must hold for
+  every code, and these three do.
+- *Credit reuses the swap leg tables.* A =leg_group= column says which group a
+  leg is in. Reason: the legs are keyed by the trade, so a second leg table
+  repeats the first.
+- *The two codes with no importer leave the routing.* Reason: the catalogue
+  rule says a type with no writer has no table.
+- *The agreement's facts get a table of their own.* Reason: its
+  participation rate and protection fee are required by the schema and belong
+  to no other product.
+- *Every money column is an exact decimal, and a continuous quantity is a
+  binary float.* Reason: the rates rework showed a float column stores an
+  artifact of a money value, and the exact-money check keeps a recovery rate
+  or a tranche fraction as a float.
+
+* Out of scope
+
+- The =CBO= product and a =CreditDefaultSwapOption= importer. They need a
+  mapper and a corpus document first.
+- The agreement's treasury lock underlying (=TreasuryLockData=).
+- The inflation family and the rates children the agreement's underlying
+  borrows beyond legs and options.
+- The credit simulation suites, which concern the simulation part of ORE.
+
+* See also
+
+- [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], section 14.
+- The rates design, =instruments-rates/design.org=, for the staging this one copies.
+- The inbox capture "Retire the unproduced rpa_instruments table".

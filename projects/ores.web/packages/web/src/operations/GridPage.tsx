@@ -54,6 +54,7 @@ import {
 } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
@@ -504,11 +505,20 @@ export function GridPage(): ReactNode {
     const { t } = useTranslation();
     const grid = useQuery({ queryKey: GRID_QUERY_KEY, queryFn: api.grid });
 
-    if (grid.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (grid.isError) {
-        return <Notice tone="error">{grid.error.message}</Notice>;
+    if (grid.isPending || grid.isError) {
+        return (
+            <ScreenFrame
+                trail={<AreaTrail area="operations" screen={t('operations.screens.grid')} />}
+                title={t('operations.grid.title')}
+                description={t('operations.grid.description')}
+            >
+                {grid.isError ? (
+                    <Notice tone="error">{grid.error.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
 
     const view = grid.data;

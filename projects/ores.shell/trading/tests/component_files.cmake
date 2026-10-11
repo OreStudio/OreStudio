@@ -68,7 +68,6 @@ set(files
     "price_type_commands_tests.cpp"
     "rate_instrument_commands_tests.cpp"
     "return_type_commands_tests.cpp"
-    "rpa_instrument_commands_tests.cpp"
     "scripted_instrument_commands_tests.cpp"
     "settlement_type_commands_tests.cpp"
     "structure_commands_tests.cpp"

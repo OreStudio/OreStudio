@@ -76,5 +76,6 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e3634928-0046-5a26-9a8d-a6e3768d50d7', 0, 'CVA Hedges Portfolio', 'b0f505f1-decf-59c1-b95b-45bf45ec84af', '085c07ce-c725-576f-bf3a-2d62bd2d806f', 'Risk', 'GBP', false),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '936a0cda-9950-51cc-b2cc-c35d2d79e513', 0, 'Banking Book', '93925bc5-1800-5c69-a18b-f683dae17f2e', '4b569cd9-9fc6-5b3a-b37b-100e62df7611', 'Risk', 'GBP', true),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '6a315fc0-aa29-5662-a159-c493b93758aa', 0, 'Liquidity Buffer Portfolio', '936a0cda-9950-51cc-b2cc-c35d2d79e513', '4b569cd9-9fc6-5b3a-b37b-100e62df7611', 'Risk', 'GBP', false),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '31fe270f-6977-5b5a-a997-a24fb350bd91', 0, 'Cash Management Portfolio', '936a0cda-9950-51cc-b2cc-c35d2d79e513', '4b569cd9-9fc6-5b3a-b37b-100e62df7611', 'Risk', 'GBP', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4ceebabb-8e84-5d46-80fa-ff4cfcfe06f2', 0, 'GBP Cash Management Portfolio', '936a0cda-9950-51cc-b2cc-c35d2d79e513', '4b569cd9-9fc6-5b3a-b37b-100e62df7611', 'Risk', 'GBP', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2387b76d-50d3-5a09-bf4e-58f75c7c4f34', 0, 'USD Cash Management Portfolio', '936a0cda-9950-51cc-b2cc-c35d2d79e513', '4b569cd9-9fc6-5b3a-b37b-100e62df7611', 'Risk', 'USD', false);
 end $$;

@@ -165,7 +165,20 @@ def counterparties():
     return records
 
 
+def check_books_are_covered():
+    """Every book of an entity is in a currency that entity works in."""
+    with open(os.path.join(SCRIPT_DIR, "books.json")) as f:
+        books = json.load(f)
+    for book in books:
+        company = book["company_code"]
+        if company in CURRENCIES and book["functional_currency"] not in CURRENCIES[company]:
+            raise SystemExit(
+                f"{company} has book {book['name']} in {book['functional_currency']}, "
+                "which is not one of its currencies")
+
+
 def main():
+    check_books_are_covered()
     write("party_contacts", contacts())
     write("party_countries", links(COUNTRIES, "country_alpha2_code"))
     write("party_currencies", links(CURRENCIES, "currency_iso_code"))

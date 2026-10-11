@@ -201,12 +201,22 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "31fe270f-6977-5b5a-a997-a24fb350bd91",
-    "name": "Cash Management Portfolio",
+    "id": "4ceebabb-8e84-5d46-80fa-ff4cfcfe06f2",
+    "name": "GBP Cash Management Portfolio",
     "parent_portfolio_code": "acme_uk.global_markets.banking_book",
-    "portfolio_code": "acme_uk.global_markets.banking_book.cash_management",
+    "portfolio_code": "acme_uk.global_markets.banking_book.cash_management_gbp",
     "owner_unit_code": "acme_uk.treasury",
     "aggregation_ccy": "GBP",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "2387b76d-50d3-5a09-bf4e-58f75c7c4f34",
+    "name": "USD Cash Management Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets.banking_book",
+    "portfolio_code": "acme_uk.global_markets.banking_book.cash_management_usd",
+    "owner_unit_code": "acme_uk.treasury",
+    "aggregation_ccy": "USD",
     "is_virtual": false
   },
   {
@@ -331,10 +341,10 @@
   },
   {
     "company_code": "acme_us",
-    "id": "6a451993-3411-5630-b413-8d760004b041",
-    "name": "Cash Management Portfolio",
+    "id": "9d6c24e0-750e-5fcd-a1a9-05501c1e1469",
+    "name": "USD Cash Management Portfolio",
     "parent_portfolio_code": "acme_us.global_markets.banking_book",
-    "portfolio_code": "acme_us.global_markets.banking_book.cash_management",
+    "portfolio_code": "acme_us.global_markets.banking_book.cash_management_usd",
     "owner_unit_code": "acme_us.treasury",
     "aggregation_ccy": "USD",
     "is_virtual": false
@@ -461,10 +471,10 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "f15731ad-fe87-5611-b2d1-a5e2cb3b1da2",
-    "name": "Cash Management Portfolio",
+    "id": "ed2324e4-cf78-5533-904a-5791977f86b7",
+    "name": "HKD Cash Management Portfolio",
     "parent_portfolio_code": "acme_hk.global_markets.banking_book",
-    "portfolio_code": "acme_hk.global_markets.banking_book.cash_management",
+    "portfolio_code": "acme_hk.global_markets.banking_book.cash_management_hkd",
     "owner_unit_code": "acme_hk.treasury",
     "aggregation_ccy": "HKD",
     "is_virtual": false

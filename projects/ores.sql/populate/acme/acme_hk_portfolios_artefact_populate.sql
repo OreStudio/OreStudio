@@ -69,5 +69,5 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '9d267f9c-60fd-5efa-b0b6-629364eaf8c2', 0, 'Asia EM FX Portfolio', '94115253-8f1d-5d49-8912-3657b14a3530', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Risk', 'USD', false),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '0c385bf9-a2e7-5fd2-a762-45b26f9470b1', 0, 'Banking Book', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 'Risk', 'HKD', true),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ab31236b-458a-579b-a1e4-c40a43331492', 0, 'Liquidity Buffer Portfolio', '0c385bf9-a2e7-5fd2-a762-45b26f9470b1', 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 'Risk', 'HKD', false),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f15731ad-fe87-5611-b2d1-a5e2cb3b1da2', 0, 'Cash Management Portfolio', '0c385bf9-a2e7-5fd2-a762-45b26f9470b1', 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 'Risk', 'HKD', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ed2324e4-cf78-5533-904a-5791977f86b7', 0, 'HKD Cash Management Portfolio', '0c385bf9-a2e7-5fd2-a762-45b26f9470b1', 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 'Risk', 'HKD', false);
 end $$;

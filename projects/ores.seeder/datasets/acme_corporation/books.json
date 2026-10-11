@@ -36,7 +36,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -49,7 +50,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -62,7 +64,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "FRPA"
+    "rates_centre_code": "FRPA",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -75,7 +78,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "FRPA"
+    "rates_centre_code": "FRPA",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -88,7 +92,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -101,7 +106,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -114,7 +120,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "CHZU"
+    "rates_centre_code": "CHZU",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -127,7 +134,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -140,7 +148,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -153,7 +162,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -166,7 +176,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -179,7 +190,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -192,7 +204,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -205,7 +218,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -218,7 +232,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -231,7 +246,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -244,7 +260,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_uk",
@@ -262,29 +279,31 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "7525f46b-ed70-556e-83a4-2842cc68a208",
+    "id": "d1724ac0-2f44-55f2-8e24-7a3dbff95450",
     "name": "GBP Nostro Sweep",
-    "portfolio_code": "acme_uk.global_markets.banking_book.cash_management",
+    "portfolio_code": "acme_uk.global_markets.banking_book.cash_management_gbp",
     "functional_currency": "GBP",
     "gl_account_ref": "GL-TREAS-002",
     "cost_center": "CC-UK-TREAS",
     "book_status": "Active",
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "SweepTarget"
   },
   {
     "company_code": "acme_uk",
-    "id": "7e9ee4ff-aad1-5c59-960f-49426ec29e48",
+    "id": "a2ff65c1-b6ff-5c48-966a-613a7d00fdb9",
     "name": "USD Cash Management Sweep",
-    "portfolio_code": "acme_uk.global_markets.banking_book.cash_management",
-    "functional_currency": "GBP",
+    "portfolio_code": "acme_uk.global_markets.banking_book.cash_management_usd",
+    "functional_currency": "USD",
     "gl_account_ref": "GL-TREAS-003",
     "cost_center": "CC-UK-TREAS",
     "book_status": "Active",
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "SweepTarget"
   },
   {
     "company_code": "acme_us",
@@ -297,7 +316,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_us",
@@ -310,7 +330,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "CATO"
+    "rates_centre_code": "CATO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_us",
@@ -323,7 +344,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_us",
@@ -336,7 +358,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_us",
@@ -349,7 +372,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_us",
@@ -362,7 +386,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_us",
@@ -380,16 +405,17 @@
   },
   {
     "company_code": "acme_us",
-    "id": "ee4012ac-649d-5f5c-be97-f89109e3767a",
+    "id": "7b7fa530-b86f-5fb3-b10c-4ff4fb88154b",
     "name": "USD Cash Management Sweep",
-    "portfolio_code": "acme_us.global_markets.banking_book.cash_management",
+    "portfolio_code": "acme_us.global_markets.banking_book.cash_management_usd",
     "functional_currency": "USD",
     "gl_account_ref": "GL-TREAS-002",
     "cost_center": "CC-US-TREAS",
     "book_status": "Active",
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
-    "rates_centre_code": "USNY"
+    "rates_centre_code": "USNY",
+    "book_purpose_type": "SweepTarget"
   },
   {
     "company_code": "acme_hk",
@@ -402,7 +428,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "JPTO"
+    "rates_centre_code": "JPTO",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_hk",
@@ -415,7 +442,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "HKHK"
+    "rates_centre_code": "HKHK",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_hk",
@@ -428,7 +456,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "HKHK"
+    "rates_centre_code": "HKHK",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_hk",
@@ -441,7 +470,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "HKHK"
+    "rates_centre_code": "HKHK",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_hk",
@@ -454,7 +484,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "HKHK"
+    "rates_centre_code": "HKHK",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_hk",
@@ -467,7 +498,8 @@
     "book_status": "Active",
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
-    "rates_centre_code": "HKHK"
+    "rates_centre_code": "HKHK",
+    "book_purpose_type": "Trading"
   },
   {
     "company_code": "acme_hk",
@@ -485,15 +517,16 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "e1ad81c0-2a14-5b98-a0dc-54c9861ca234",
+    "id": "db77f54f-896a-561e-bc0a-26f2b51da918",
     "name": "HKD Cash Management Sweep",
-    "portfolio_code": "acme_hk.global_markets.banking_book.cash_management",
+    "portfolio_code": "acme_hk.global_markets.banking_book.cash_management_hkd",
     "functional_currency": "HKD",
     "gl_account_ref": "GL-TREAS-002",
     "cost_center": "CC-HK-TREAS",
     "book_status": "Active",
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
-    "rates_centre_code": "HKHK"
+    "rates_centre_code": "HKHK",
+    "book_purpose_type": "SweepTarget"
   }
 ]

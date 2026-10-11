@@ -216,8 +216,9 @@ OFFICE_TREE = {
         "xva": [("cva_hedges", "CVA Hedges", "GBP", "GBLO", ["CVA Hedge Book"])],
         "banking": [
             ("liquidity_buffer", "Liquidity Buffer", "GBP", "GBLO", ["Liquidity Buffer Bonds"]),
-            ("cash_management", "Cash Management", "GBP", "GBLO",
-             ["GBP Nostro Sweep", "USD Cash Management Sweep"]),
+            ("cash_management_gbp", "GBP Cash Management", "GBP", "GBLO", ["GBP Nostro Sweep"]),
+            ("cash_management_usd", "USD Cash Management", "USD", "USNY",
+             ["USD Cash Management Sweep"]),
         ],
     },
     "acme_us": {
@@ -238,7 +239,8 @@ OFFICE_TREE = {
         "xva": [],
         "banking": [
             ("liquidity_buffer", "Liquidity Buffer", "USD", "USNY", ["Liquidity Buffer Bonds"]),
-            ("cash_management", "Cash Management", "USD", "USNY", ["USD Cash Management Sweep"]),
+            ("cash_management_usd", "USD Cash Management", "USD", "USNY",
+             ["USD Cash Management Sweep"]),
         ],
     },
     "acme_hk": {
@@ -259,13 +261,15 @@ OFFICE_TREE = {
         "xva": [],
         "banking": [
             ("liquidity_buffer", "Liquidity Buffer", "HKD", "HKHK", ["Liquidity Buffer Bonds"]),
-            ("cash_management", "Cash Management", "HKD", "HKHK", ["HKD Cash Management Sweep"]),
+            ("cash_management_hkd", "HKD Cash Management", "HKD", "HKHK",
+             ["HKD Cash Management Sweep"]),
         ],
     },
 }
 
-# The cost centre and ledger area of each kind of book, by the leaf it sits in.
-BANKING_AREAS = {"liquidity_buffer": "TREAS", "cash_management": "TREAS"}
+# The books that are sweep targets. A sweep is cash management, so it sits in the
+# banking branch and is the target the sweeps of other books flow into.
+SWEEP_BOOKS = {"GBP Nostro Sweep", "USD Cash Management Sweep", "HKD Cash Management Sweep"}
 
 # reports_to_role selects which of build_office's three independent
 # leadership lines (see its own segregation-of-duties comment) this
@@ -594,7 +598,7 @@ def build_tree_org(office, business_units, portfolios, books, add_account,
     root_code = f"{company_code}.global_markets"
     gl_counters = {}
 
-    def book(name, leaf_code, ccy, rates_centre, area, regulatory_type, purpose=None):
+    def book(name, leaf_code, ccy, rates_centre, area, regulatory_type, purpose="Trading"):
         gl_counters[area] = gl_counters.get(area, 0) + 1
         record = {
             "company_code": company_code,
@@ -606,11 +610,10 @@ def build_tree_org(office, business_units, portfolios, books, add_account,
             "cost_center": f"CC-{company_code.removeprefix('acme_').upper()}-{area}",
             "book_status": "Active",
             "regulatory_book_type": regulatory_type,
-            "is_sweepable": "Sweep" in name,
+            "is_sweepable": name in SWEEP_BOOKS,
             "rates_centre_code": rates_centre,
+            "book_purpose_type": purpose,
         }
-        if purpose:
-            record["book_purpose_type"] = purpose
         books.append(record)
 
     def portfolio(code, name, parent_code, owner_code, ccy, is_virtual):
@@ -685,8 +688,8 @@ def build_tree_org(office, business_units, portfolios, books, add_account,
         leaf_code = f"{banking_code}.{suffix}"
         portfolio(leaf_code, f"{label} Portfolio", banking_code, treasury_code, ccy, False)
         for name in names:
-            purpose = "Funding" if "Sweep" not in name else None
-            book(name, leaf_code, ccy, rates_centre, BANKING_AREAS[suffix], "Banking", purpose)
+            purpose = "SweepTarget" if name in SWEEP_BOOKS else "Funding"
+            book(name, leaf_code, ccy, rates_centre, "TREAS", "Banking", purpose)
 
 
 FACES_DIR = os.path.join(SCRIPT_DIR, "..", "..", "..", "..", "external", "facestudio", "faces")

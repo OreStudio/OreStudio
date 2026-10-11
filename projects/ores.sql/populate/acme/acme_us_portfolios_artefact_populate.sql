@@ -69,5 +69,5 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '002482e9-6e12-5951-8f34-2b5d58c31ec4', 0, 'LatAm FX Portfolio', 'e1b393f8-d984-5ae7-b3ae-0c16ac371aa7', '2075badb-b410-5488-98ea-4c63eca7b475', 'Risk', 'USD', false),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '6e748ef2-4ed1-598a-9ad7-307eb8544c48', 0, 'Banking Book', '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', 'db742acf-6ce8-53ed-bce7-c7c4e2cf1fe3', 'Risk', 'USD', true),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e2b428ce-6d29-533e-adcd-e14f1ccced5a', 0, 'Liquidity Buffer Portfolio', '6e748ef2-4ed1-598a-9ad7-307eb8544c48', 'db742acf-6ce8-53ed-bce7-c7c4e2cf1fe3', 'Risk', 'USD', false),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6a451993-3411-5630-b413-8d760004b041', 0, 'Cash Management Portfolio', '6e748ef2-4ed1-598a-9ad7-307eb8544c48', 'db742acf-6ce8-53ed-bce7-c7c4e2cf1fe3', 'Risk', 'USD', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9d6c24e0-750e-5fcd-a1a9-05501c1e1469', 0, 'USD Cash Management Portfolio', '6e748ef2-4ed1-598a-9ad7-307eb8544c48', 'db742acf-6ce8-53ed-bce7-c7c4e2cf1fe3', 'Risk', 'USD', false);
 end $$;

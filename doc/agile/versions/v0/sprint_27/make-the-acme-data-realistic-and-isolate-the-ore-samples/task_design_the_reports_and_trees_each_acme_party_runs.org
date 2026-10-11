@@ -147,6 +147,13 @@ via its "Verifies task" field.
 | 2 | The report script headers do not name the report generator | generate_sql.py | Accepted | The four report scripts name generate_report_data.py and the catalogue. The other scripts keep their header. |
 | 3 | D6 is not checked, and Stressed VaR and Volatility Surfaces may conflict | generate_report_data.py | Accepted | The generator checks the stated prerequisites. The conflict is recorded in the design page for a reviewer. |
 | 4 | The holding company branch is hard to read | generate_report_data.py | Accepted | One expression with the rule numbers beside it. |
+| 5 | Sweep detection by name is fragile (PR 3136) | generate_data.py | Accepted | The sweep books are a named set, and the purpose is explicit for every book. |
+| 6 | The USD sweep book in London takes the GBP leaf currency (PR 3136) | generate_data.py | Accepted | A real defect. The USD sweep has its own USD leaf. |
+| 7 | The sweep purpose is unset in the JSON (PR 3136) | generate_data.py | Accepted | Every book states its purpose in the JSON. |
+| 8 | A second root business unit per entity (PR 3136) | generate_data.py | Not changed | The old fixture had the same shape with its risk management unit, and the group already has a Treasury unit. The unit is not an organisation root of the portfolio tree. |
+| 9 | Cost centre and rates centre renames (PR 3136) | generate_data.py | Answered | No code, seed or report reads the old cost centre names or the Singapore rates centre. |
+| 10 | The currency lists must match the tree (PR 3136) | generate_party_data.py | Accepted | The generator refuses a book in a currency its entity does not work in. |
+| 11 | Failing checks not run on main (PR 3136) | none | Answered | Stated in the PR as a limitation. They are the same failures as the previous pull request. |
 
 * Result
 

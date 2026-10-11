@@ -64,5 +64,5 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '430901a0-7313-50a0-8502-1fb0a95a53b7', 0, 'LatAm Spot Forward', '002482e9-6e12-5951-8f34-2b5d58c31ec4', 'USD', 'GL-FX-002', 'CC-US-FX', 'Active', 'Trading', false, 'USNY', 'Trading', 'Automatic'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1ae4ac0e-418a-5d9a-a701-17bdacb7b2ad', 0, 'LatAm NDF', '002482e9-6e12-5951-8f34-2b5d58c31ec4', 'USD', 'GL-FX-003', 'CC-US-FX', 'Active', 'Trading', false, 'USNY', 'Trading', 'Automatic'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b6019678-726e-5ca1-a4bb-036507a3f78b', 0, 'Liquidity Buffer Bonds', 'e2b428ce-6d29-533e-adcd-e14f1ccced5a', 'USD', 'GL-TREAS-001', 'CC-US-TREAS', 'Active', 'Banking', false, 'USNY', 'Funding', 'Automatic'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ee4012ac-649d-5f5c-be97-f89109e3767a', 0, 'USD Cash Management Sweep', '6a451993-3411-5630-b413-8d760004b041', 'USD', 'GL-TREAS-002', 'CC-US-TREAS', 'Active', 'Banking', true, 'USNY', 'SweepTarget', 'Automatic');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7b7fa530-b86f-5fb3-b10c-4ff4fb88154b', 0, 'USD Cash Management Sweep', '9d6c24e0-750e-5fcd-a1a9-05501c1e1469', 'USD', 'GL-TREAS-002', 'CC-US-TREAS', 'Active', 'Banking', true, 'USNY', 'SweepTarget', 'Automatic');
 end $$;

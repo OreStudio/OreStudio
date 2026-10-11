@@ -64,5 +64,5 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1762a42e-5813-534e-b202-68fbd5f9a462', 0, 'Asia EM Spot Forward', '9d267f9c-60fd-5efa-b0b6-629364eaf8c2', 'USD', 'GL-FX-002', 'CC-HK-FX', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '4be94f90-623f-5e30-925b-f7ab9b9e41a6', 0, 'Asia EM NDF', '9d267f9c-60fd-5efa-b0b6-629364eaf8c2', 'USD', 'GL-FX-003', 'CC-HK-FX', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 0, 'Liquidity Buffer Bonds', 'ab31236b-458a-579b-a1e4-c40a43331492', 'HKD', 'GL-TREAS-001', 'CC-HK-TREAS', 'Active', 'Banking', false, 'HKHK', 'Funding', 'Automatic'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e1ad81c0-2a14-5b98-a0dc-54c9861ca234', 0, 'HKD Cash Management Sweep', 'f15731ad-fe87-5611-b2d1-a5e2cb3b1da2', 'HKD', 'GL-TREAS-002', 'CC-HK-TREAS', 'Active', 'Banking', true, 'HKHK', 'SweepTarget', 'Automatic');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'db77f54f-896a-561e-bc0a-26f2b51da918', 0, 'HKD Cash Management Sweep', 'ed2324e4-cf78-5533-904a-5791977f86b7', 'HKD', 'GL-TREAS-002', 'CC-HK-TREAS', 'Active', 'Banking', true, 'HKHK', 'SweepTarget', 'Automatic');
 end $$;

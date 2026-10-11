@@ -47,6 +47,38 @@ facet emits. It derives its =entity_type= key identically to the
 stamps on each row change (=product_component_entity_singular=), so
 the two sides of the pipeline can never drift out of sync.
 
+** Junctions
+
+A junction is stored with its history: each link has a version, an author, a
+reason and a validity range, and a closing ends the range and deletes nothing.
+Until a junction asked for it, nothing read that history back. A junction model
+states =:history: true= in its =* Flags= to get the surface below. It is opt-in,
+because a provider nothing wires into its component's registrar is dead code.
+
+- A link has two keys, so a provider cannot be read by one link's id. A junction's
+  provider is read by the id of its *parent side* (the side that states
+  =:list_by:=, the left when both or neither does) and answers every version of
+  every link of that parent, closed links included. The facet adds the repository
+  read =read_all_by_<parent>=, which returns a =<junction>_history_row=.
+- The history row is the domain type plus =closed_at=. A link is closed by
+  ending its validity, not by writing a version, so a version that ended because
+  the link was closed carries =closed_at=, and a version that a later version
+  replaced does not. The store records when a link ended and not who ended it,
+  so a closing has no author.
+- The field mapper names the link by both keys in its first field, =ID=, so the
+  versions of one link pair up in a stream that holds many. The provider numbers
+  and diffs each link on its own, because a version number is a link's.
+- The provider needs the junction's own read code
+  (=<component>::<name>:read=), or the code the model names with
+  =:history_read_permission:=. A history holds every version of the rows its
+  reads serve, so it must not be easier to read than they are.
+- A junction column is rendered by type. A type the table in =core.py=
+  (=_HISTORY_VALUE_EXPRESSIONS=) does not name is refused when the model is
+  generated, so a history never leaves a field out without saying so.
+
+The per-component =registrar.cpp= still lists each provider by hand. Add the
+include and the call when a junction states =:history: true=.
+
 Replaces the pattern of hand-wiring one ~10-line
 =register_history_provider()= lambda per entity directly into each
 component's =registrar.cpp=. That hand-maintained surface has already

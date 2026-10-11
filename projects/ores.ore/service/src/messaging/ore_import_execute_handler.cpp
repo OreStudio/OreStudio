@@ -1509,12 +1509,11 @@ std::string save_forward(Nats& nats,
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
-std::string
-save_bond_instrument(Nats& nats,
-                     const ores::trading::domain::bond_instrument_data& data,
-                     std::unordered_map<std::string, std::vector<bond_security_terms>>&
-                         security_terms,
-                     std::vector<std::string>& warnings) {
+std::string save_bond_instrument(
+    Nats& nats,
+    const ores::trading::domain::bond_instrument_data& data,
+    std::unordered_map<std::string, std::vector<bond_security_terms>>& security_terms,
+    std::vector<std::string>& warnings) {
     using ores::trading::messaging::put_ascot_request;
     using ores::trading::messaging::put_bond_future_request;
     using ores::trading::messaging::put_bond_instrument_request;
@@ -2725,8 +2724,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
                     if (!bond_issues_loaded) {
                         bond_issues_loaded = true;
-                        security_terms =
-                            read_bond_issues_by_security(delegated_nats, instr_error);
+                        security_terms = read_bond_issues_by_security(delegated_nats, instr_error);
                         if (!instr_error.empty())
                             return false;
                     }
@@ -3096,9 +3094,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     }
 
     for (const auto& warning : import_warnings)
-        BOOST_LOG_SEV(lg(), warn)
-            << "ore.import.execute warning | corr=" << req.correlation_id
-            << " warning=" << warning;
+        BOOST_LOG_SEV(lg(), warn) << "ore.import.execute warning | corr=" << req.correlation_id
+                                  << " warning=" << warning;
 
     std::vector<wf_log_entry> step_log;
     if (!result.saved_trade_ids.empty()) {

@@ -219,3 +219,60 @@ export function describedAs(description: string): { readonly name: string; reado
         ? { name: description.trim(), note: '' }
         : { name: description.slice(0, at).trim(), note: description.slice(at + 1).trim() };
 }
+
+/**
+ * Each component's share of the draws, as the draw normalises the weights:
+ * its weight over the sum. Undefined while a weight is not a number, or when
+ * the weights add up to nothing.
+ */
+export function sharesOf(draft: readonly DraftComponent[]): readonly (number | undefined)[] {
+    const gaussians = gaussiansOf(draft);
+    const total = gaussians === undefined ? 0 : weightSum(gaussians);
+    return draft.map((_, index) => {
+        const weight = gaussians?.[index]?.weight;
+        return weight === undefined || total <= 0 ? undefined : weight / total;
+    });
+}
+
+/** The fields of a component the mixture table shows and the save compares. */
+export const COMPONENT_VALUES = ['description', 'mean', 'stdev', 'weight'] as const;
+
+export type ComponentValue = (typeof COMPONENT_VALUES)[number];
+
+/** What a row of the draft is against the saved mixture: new, or the fields it changed and whether it moved. */
+export interface RowChange {
+    readonly added: boolean;
+    readonly moved: boolean;
+    readonly fields: ReadonlySet<ComponentValue>;
+}
+
+/** How each row of the draft differs from what is saved, in the draft's order. */
+export function changesOf(
+    saved: readonly DraftComponent[],
+    draft: readonly DraftComponent[],
+): readonly RowChange[] {
+    const before = new Map(saved.map((component, index) => [component.id, { component, index }]));
+    return draft.map((component, index) => {
+        const was = before.get(component.id);
+        if (was === undefined) {
+            return { added: true, moved: false, fields: new Set() };
+        }
+        const fields = new Set(
+            COMPONENT_VALUES.filter((field) =>
+                field === 'description'
+                    ? was.component.description !== component.description
+                    : Number(was.component[field]) !== Number(component[field]),
+            ),
+        );
+        return { added: false, moved: was.index !== index, fields };
+    });
+}
+
+/** The saved components the draft no longer holds, in their saved order. */
+export function removedFrom(
+    saved: readonly DraftComponent[],
+    draft: readonly DraftComponent[],
+): readonly DraftComponent[] {
+    const kept = new Set(draft.map((component) => component.id));
+    return saved.filter((component) => !kept.has(component.id));
+}

@@ -26,7 +26,10 @@ import {
     gaussiansOf,
     newComponent,
     problemsOf,
+    changesOf,
+    removedFrom,
     savePlan,
+    sharesOf,
     weightSum,
     type DraftComponent,
 } from './mixture.js';
@@ -197,5 +200,40 @@ describe('the save plan', () => {
         expect(plan.removals).toEqual([{ key: 'a', version: 2 }]);
         expect(plan.changes.map((change) => change.write['component_index'])).toEqual([0]);
         expect(plan.changes[0]?.version).toBe(5);
+    });
+});
+
+describe('what the screen marks', () => {
+    it('gives each component its share of the draws, as the draw normalises the weights', () => {
+        const shares = sharesOf([saved('a', 0, 0.97), saved('b', 1, 0.5)]);
+        expect(shares[0]).toBeCloseTo(0.97 / 1.47);
+        expect(shares[1]).toBeCloseTo(0.5 / 1.47);
+        expect(sharesOf([saved('a', 0, 0)])).toEqual([undefined]);
+        expect(sharesOf([{ ...saved('a', 0, 1), weight: 'x' }])).toEqual([undefined]);
+    });
+
+    it('marks a new row, a moved row and the fields a row changed', () => {
+        const before = [saved('a', 0, 0.8), saved('b', 1, 0.2)];
+        const draft = [
+            { ...saved('b', 1, 0.2), weight: '0.25' },
+            saved('a', 0, 0.8),
+            newComponent('n'),
+        ];
+        const changes = changesOf(before, draft);
+        expect(changes[0]).toEqual({ added: false, moved: true, fields: new Set(['weight']) });
+        expect(changes[1]).toEqual({ added: false, moved: true, fields: new Set() });
+        expect(changes[2]?.added).toBe(true);
+    });
+
+    it('reads 0.10 typed for a saved 0.1 as no change', () => {
+        const before = [saved('a', 0, 0.1)];
+        expect(changesOf(before, [{ ...saved('a', 0, 0.1), weight: '0.10' }])[0]?.fields.size).toBe(
+            0,
+        );
+    });
+
+    it('names the saved components the draft deleted', () => {
+        const before = [saved('a', 0, 0.8), saved('b', 1, 0.2)];
+        expect(removedFrom(before, [before[1] as DraftComponent]).map((c) => c.id)).toEqual(['a']);
     });
 });

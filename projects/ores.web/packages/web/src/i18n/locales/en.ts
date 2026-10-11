@@ -3315,8 +3315,24 @@ export const en: SourceCatalogue = {
                 'A name, then a colon and a note, as in "Primary: calibrated to ~8% annualised vol." The name shows highlighted and the note subdued.',
             upRow: 'Move component {index} up',
             downRow: 'Move component {index} down',
-            unsaved:
-                '{count} components to write and {removed} to delete. Nothing reaches the feed until you save.',
+            saveButton: 'Save…',
+            saveTitle: 'Save the mixture',
+            saveSummary: '{added} added, {changed} changed and {removed} deleted.',
+            runningNote:
+                'The feed is running, and a running feed keeps the mixture it started with. It draws from the saved mixture only once it is started again.',
+            restart: 'Restart the feed after saving, so it uses the new mixture from then on',
+            stoppedNote:
+                'The feed is not running. It draws from the saved mixture the next time it starts.',
+            share: 'Share',
+            clean: 'No unsaved changes.',
+            unsaved: '{count} unsaved changes',
+            undo: 'Undo',
+            marks: {
+                added: 'New',
+                changed: 'Changed',
+                moved: 'Moved',
+                deleted: 'Deleted',
+            },
         },
         preview: {
             distribution: 'Return distribution',

@@ -3340,8 +3340,25 @@ const pt: SourceCatalogue = {
                 'Um nome, depois dois pontos e uma nota, como "Principal: calibrada para ~8% de volatilidade anualizada". O nome aparece destacado e a nota atenuada.',
             upRow: 'Subir a componente {index}',
             downRow: 'Descer a componente {index}',
-            unsaved:
-                '{count} componentes por escrever e {removed} por apagar. Nada chega ao fluxo até guardar.',
+            saveButton: 'Guardar…',
+            saveTitle: 'Guardar a mistura',
+            saveSummary: '{added} adicionadas, {changed} alteradas e {removed} apagadas.',
+            runningNote:
+                'O fluxo está em execução, e um fluxo em execução mantém a mistura com que arrancou. Só tira da mistura guardada quando arrancar de novo.',
+            restart:
+                'Reiniciar o fluxo depois de guardar, para que use a nova mistura a partir daí',
+            stoppedNote:
+                'O fluxo não está em execução. Tira da mistura guardada da próxima vez que arrancar.',
+            share: 'Parte',
+            clean: 'Sem alterações por guardar.',
+            unsaved: '{count} alterações por guardar',
+            undo: 'Desfazer',
+            marks: {
+                added: 'Nova',
+                changed: 'Alterada',
+                moved: 'Movida',
+                deleted: 'Apagada',
+            },
         },
         preview: {
             distribution: 'Distribuição dos retornos',

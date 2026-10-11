@@ -19,25 +19,29 @@
  *
  */
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Field, Input, Notice, cx } from '../ui/Primitives.js';
+import { Button, Field, Input, Notice, Tag, cx } from '../ui/Primitives.js';
 import { NEW_RECORD_REASON, show, useRecordPermissions, useRecords } from '../refdata/records.js';
-import { ReasonFields, useReason } from '../refdata/shared.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import { ComponentDialog } from './ComponentDialog.js';
+import { SaveMixtureDialog } from './SaveMixtureDialog.js';
 import { bandWidth, halfLifeMinutes, processTypeOf, profileOf } from './processHelp.js';
 import {
+    changesOf,
     densityOf,
     describedAs,
     draftOf,
     gaussiansOf,
     newComponent,
     problemsOf,
+    removedFrom,
     savePlan,
+    sharesOf,
     weightSum,
+    type ComponentValue,
     type DraftComponent,
 } from './mixture.js';
 
@@ -79,7 +83,13 @@ function figure(value: number): string {
  * distribution and a batch of sample paths drawn from the values on the screen;
  * nothing reaches the feed until Save writes the set in one call.
  */
-export function MixturePanel({ feed }: { readonly feed: RecordRow }): ReactNode {
+export function MixturePanel({
+    feed,
+    running,
+}: {
+    readonly feed: RecordRow;
+    readonly running: boolean;
+}): ReactNode {
     const { t } = useTranslation();
     const feedId = show(feed['id']);
     const rows = useRecords(COMPONENTS, feedId);
@@ -89,40 +99,53 @@ export function MixturePanel({ feed }: { readonly feed: RecordRow }): ReactNode 
     if (rows.isError) {
         return <Notice tone="error">{rows.error.message}</Notice>;
     }
-    return <MixtureEditor key={rows.dataUpdatedAt} feed={feed} rows={rows.data} />;
+    return (
+        <MixtureEditor key={rows.dataUpdatedAt} feed={feed} rows={rows.data} running={running} />
+    );
 }
+
+/** A cell the draft changed is tinted, so what is not saved yet is seen at a glance. */
+const CHANGED_CELL = 'bg-warn/10 text-warn';
 
 function MixtureEditor({
     feed,
     rows,
+    running,
 }: {
     readonly feed: RecordRow;
     readonly rows: readonly RecordRow[];
+    readonly running: boolean;
 }): ReactNode {
     const { t } = useTranslation();
-    const queries = useQueryClient();
     const may = useRecordPermissions(COMPONENTS);
     const feedId = show(feed['id']);
     const saved = draftOf(rows);
     const [draft, setDraft] = useState<readonly DraftComponent[]>(saved);
-    const [commentary, setCommentary] = useState('');
     const [open, setOpen] = useState<{
         readonly component: DraftComponent;
         readonly index: number;
     } | null>(null);
+    const [saving, setSaving] = useState(false);
     const plan = savePlan(feedId, saved, draft);
-    const dirty = plan.changes.length > 0 || plan.removals.length > 0;
-    const onlyNew =
-        plan.removals.length === 0 && plan.changes.every((change) => change.version === null);
-    const reason = useReason('amend', true);
-    const missing = !onlyNew && reason.needsCommentary && commentary.trim() === '';
+    const changes = changesOf(saved, draft);
+    const removed = removedFrom(saved, draft);
+    const counts = {
+        added: changes.filter((change) => change.added).length,
+        changed: changes.filter(
+            (change) => !change.added && (change.moved || change.fields.size > 0),
+        ).length,
+        removed: removed.length,
+    };
+    const dirty = counts.added + counts.changed + counts.removed > 0;
     const problems = problemsOf(draft);
     const gaussians = gaussiansOf(draft);
     const sum = gaussians === undefined ? undefined : weightSum(gaussians);
+    const shares = sharesOf(draft);
     const processType = processTypeOf(feed['process_type']);
     const ou = processType === 'ornstein_uhlenbeck';
     const columnHelp = (field: 'mean' | 'stdev' | 'weight'): string =>
         t(`marketdata.process.columns.${processType}.${field}`);
+    const columns = ou ? 7 : 8;
 
     const move = (index: number, by: number): void => {
         const next = [...draft];
@@ -131,6 +154,12 @@ function MixtureEditor({
             next.splice(index + by, 0, moved);
             setDraft(next);
         }
+    };
+    const restore = (component: DraftComponent): void => {
+        const at = saved.findIndex((one) => one.id === component.id);
+        const next = [...draft];
+        next.splice(Math.min(at, next.length), 0, component);
+        setDraft(next);
     };
     const done = (component: DraftComponent): void => {
         setDraft(
@@ -141,39 +170,54 @@ function MixtureEditor({
         setOpen(null);
     };
 
-    const save = useMutation({
-        mutationFn: async () => {
-            const intent = onlyNew
-                ? { reasonCode: NEW_RECORD_REASON, commentary: '' }
-                : { reasonCode: reason.code, commentary: commentary.trim() };
-            if (plan.removals.length > 0) {
-                await api.removeSynthetic(
-                    COMPONENTS,
-                    plan.removals.map((removal) => ({
-                        key: removal.key,
-                        version: plan.removals.length === 1 ? removal.version : null,
-                    })),
-                    intent,
-                );
-            }
-            if (plan.changes.length > 0) {
-                await api.saveSynthetic(COMPONENTS, plan.changes, intent);
-            }
-        },
-        onSuccess: async () => {
-            setCommentary('');
-            await queries.invalidateQueries({ queryKey: ['records', COMPONENTS] });
-            await queries.invalidateQueries({ queryKey: ['history'] });
-        },
-    });
-
     return (
         <div className="space-y-4">
             <section className="space-y-3">
                 <p className="text-sm text-ink-muted">{t('marketdata.mixture.lead')}</p>
-                <Notice tone={processType === 'arithmetic' ? 'warn' : 'info'}>
-                    {t(`marketdata.process.about.${processType}`)}
-                </Notice>
+                <div className="flex flex-wrap items-center gap-2">
+                    {dirty ? (
+                        <Tag tone="warn">
+                            {t('marketdata.mixture.unsaved', {
+                                count: String(counts.added + counts.changed + counts.removed),
+                            })}
+                        </Tag>
+                    ) : (
+                        <span className="text-sm text-ink-faint">
+                            {t('marketdata.mixture.clean')}
+                        </span>
+                    )}
+                    {may.write && (
+                        <div className="ml-auto flex gap-2">
+                            <Button
+                                icon="add"
+                                onClick={() =>
+                                    setOpen({
+                                        component: newComponent(crypto.randomUUID()),
+                                        index: draft.length,
+                                    })
+                                }
+                            >
+                                {t('marketdata.mixture.add')}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                icon="cancel"
+                                disabled={!dirty}
+                                onClick={() => setDraft(saved)}
+                            >
+                                {t('marketdata.mixture.discard')}
+                            </Button>
+                            <Button
+                                variant="primary"
+                                icon="save"
+                                disabled={!dirty || problems.length > 0}
+                                onClick={() => setSaving(true)}
+                            >
+                                {t('marketdata.mixture.saveButton')}
+                            </Button>
+                        </div>
+                    )}
+                </div>
                 <div className="overflow-x-auto rounded-md border border-line">
                     <table className="w-full text-left text-sm">
                         <thead>
@@ -208,25 +252,44 @@ function MixtureEditor({
                                         ? t('marketdata.process.kappa')
                                         : t('refdata.fields.weight')}
                                 </th>
-                                {may.write && <th className="px-4 py-2" />}
+                                {!ou && (
+                                    <th
+                                        className="px-4 py-2 text-right font-medium"
+                                        title={
+                                            sum === undefined
+                                                ? t('marketdata.mixture.sumPending')
+                                                : t('marketdata.mixture.sum', {
+                                                      sum: sum.toFixed(4),
+                                                  })
+                                        }
+                                    >
+                                        {t('marketdata.mixture.share')}
+                                    </th>
+                                )}
+                                <th className="px-4 py-2" />
                             </tr>
                         </thead>
                         <tbody>
-                            {draft.length === 0 && (
+                            {draft.length === 0 && removed.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-4 py-3 text-ink-muted">
+                                    <td colSpan={columns} className="px-4 py-3 text-ink-muted">
                                         {t('marketdata.mixture.none')}
                                     </td>
                                 </tr>
                             )}
                             {draft.map((component, index) => {
                                 const { name, note } = describedAs(component.description);
+                                const change = changes[index];
+                                const changed = (field: ComponentValue): string =>
+                                    change?.fields.has(field) === true ? CHANGED_CELL : '';
+                                const share = shares[index];
                                 return (
                                     <tr
                                         key={component.id}
                                         className={cx(
                                             'border-b border-line-subtle last:border-b-0',
                                             may.write && 'cursor-pointer hover:bg-surface-hover',
+                                            change?.added === true && 'bg-up/5',
                                         )}
                                         title={t(`marketdata.process.row.${processType}`)}
                                         {...(may.write
@@ -236,7 +299,12 @@ function MixtureEditor({
                                         <td className="px-4 py-2 font-mono text-xs text-ink-muted">
                                             {index}
                                         </td>
-                                        <td className="max-w-md px-4 py-2">
+                                        <td
+                                            className={cx(
+                                                'max-w-md px-4 py-2',
+                                                changed('description'),
+                                            )}
+                                        >
                                             <div className="truncate" title={component.description}>
                                                 <span className="font-medium text-ink">
                                                     {name === ''
@@ -259,133 +327,131 @@ function MixtureEditor({
                                         {(['mean', 'stdev', 'weight'] as const).map((field) => (
                                             <td
                                                 key={field}
-                                                className="px-4 py-2 text-right font-mono text-xs"
+                                                className={cx(
+                                                    'px-4 py-2 text-right font-mono text-xs',
+                                                    changed(field),
+                                                )}
                                             >
                                                 {component[field]}
                                             </td>
                                         ))}
-                                        {may.write && (
-                                            <td
-                                                className="px-4 py-2 text-right whitespace-nowrap"
-                                                onClick={(event) => event.stopPropagation()}
-                                            >
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    disabled={index === 0}
-                                                    aria-label={t('marketdata.mixture.upRow', {
-                                                        index: String(index),
-                                                    })}
-                                                    onClick={() => move(index, -1)}
-                                                >
-                                                    ↑
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    disabled={index === draft.length - 1}
-                                                    aria-label={t('marketdata.mixture.downRow', {
-                                                        index: String(index),
-                                                    })}
-                                                    onClick={() => move(index, 1)}
-                                                >
-                                                    ↓
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    icon="delete"
-                                                    onClick={() =>
-                                                        setDraft(
-                                                            draft.filter((_, i) => i !== index),
-                                                        )
-                                                    }
-                                                >
-                                                    {t('refdata.records.delete')}
-                                                </Button>
+                                        {!ou && (
+                                            <td className="px-4 py-2 text-right font-mono text-xs text-ink-muted">
+                                                {share === undefined
+                                                    ? '—'
+                                                    : `${(share * 100).toFixed(1)}%`}
                                             </td>
                                         )}
+                                        <td
+                                            className="px-4 py-2 text-right whitespace-nowrap"
+                                            onClick={(event) => event.stopPropagation()}
+                                        >
+                                            {change?.added === true && (
+                                                <Tag tone="up" small>
+                                                    {t('marketdata.mixture.marks.added')}
+                                                </Tag>
+                                            )}
+                                            {change?.added !== true &&
+                                                (change?.fields.size ?? 0) > 0 && (
+                                                    <Tag tone="warn" small>
+                                                        {t('marketdata.mixture.marks.changed')}
+                                                    </Tag>
+                                                )}
+                                            {change?.moved === true && (
+                                                <Tag tone="warn" small>
+                                                    {t('marketdata.mixture.marks.moved')}
+                                                </Tag>
+                                            )}
+                                            {may.write && (
+                                                <>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        disabled={index === 0}
+                                                        aria-label={t('marketdata.mixture.upRow', {
+                                                            index: String(index),
+                                                        })}
+                                                        onClick={() => move(index, -1)}
+                                                    >
+                                                        ↑
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        disabled={index === draft.length - 1}
+                                                        aria-label={t(
+                                                            'marketdata.mixture.downRow',
+                                                            { index: String(index) },
+                                                        )}
+                                                        onClick={() => move(index, 1)}
+                                                    >
+                                                        ↓
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        icon="delete"
+                                                        onClick={() =>
+                                                            setDraft(
+                                                                draft.filter((_, i) => i !== index),
+                                                            )
+                                                        }
+                                                    >
+                                                        {t('refdata.records.delete')}
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </td>
                                     </tr>
                                 );
                             })}
+                            {removed.map((component) => (
+                                <tr
+                                    key={component.id}
+                                    className="border-b border-line-subtle bg-down/5 text-ink-faint last:border-b-0"
+                                >
+                                    <td className="px-4 py-2" />
+                                    <td className="max-w-md px-4 py-2">
+                                        <div className="truncate line-through">
+                                            {component.description === ''
+                                                ? t('marketdata.ticks.unnamed')
+                                                : component.description}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-2" />
+                                    {(['mean', 'stdev', 'weight'] as const).map((field) => (
+                                        <td
+                                            key={field}
+                                            className="px-4 py-2 text-right font-mono text-xs line-through"
+                                        >
+                                            {component[field]}
+                                        </td>
+                                    ))}
+                                    {!ou && <td className="px-4 py-2" />}
+                                    <td className="px-4 py-2 text-right whitespace-nowrap">
+                                        <Tag tone="down" small>
+                                            {t('marketdata.mixture.marks.deleted')}
+                                        </Tag>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            icon="revert"
+                                            onClick={() => restore(component)}
+                                        >
+                                            {t('marketdata.mixture.undo')}
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
-                {may.write && (
-                    <Button
-                        icon="add"
-                        onClick={() =>
-                            setOpen({
-                                component: newComponent(crypto.randomUUID()),
-                                index: draft.length,
-                            })
-                        }
-                    >
-                        {t('marketdata.mixture.add')}
-                    </Button>
-                )}
-                {ou ? (
-                    <MeanReversion feed={feed} first={gaussians?.[0]} />
-                ) : (
-                    <p className="text-sm">
-                        {sum === undefined
-                            ? t('marketdata.mixture.sumPending')
-                            : t('marketdata.mixture.sum', { sum: sum.toFixed(4) })}
-                    </p>
-                )}
+                {ou && <MeanReversion feed={feed} first={gaussians?.[0]} />}
                 {problems.map((problem) => (
                     <Notice key={problem} tone="warn">
                         {t(`marketdata.mixture.problems.${problem}`)}
                     </Notice>
                 ))}
-                {dirty && may.write && (
-                    <div className="space-y-3 rounded-md border border-line p-3">
-                        <p className="text-sm text-ink-muted">
-                            {t('marketdata.mixture.unsaved', {
-                                count: String(plan.changes.length),
-                                removed: String(plan.removals.length),
-                            })}
-                        </p>
-                        {onlyNew ? (
-                            <p className="text-xs text-ink-faint">
-                                {t('refdata.classifications.newRecordNote')}
-                            </p>
-                        ) : (
-                            <ReasonFields
-                                reason={reason}
-                                commentary={commentary}
-                                onCommentary={setCommentary}
-                                missing={missing}
-                            />
-                        )}
-                        {save.isError && <Notice tone="error">{save.error.message}</Notice>}
-                        <div className="flex gap-2">
-                            <Button
-                                variant="primary"
-                                icon="save"
-                                pending={save.isPending}
-                                disabled={
-                                    problems.length > 0 ||
-                                    missing ||
-                                    (!onlyNew && reason.code === '')
-                                }
-                                onClick={() => save.mutate()}
-                            >
-                                {t('marketdata.mixture.save')}
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                icon="cancel"
-                                onClick={() => {
-                                    setDraft(saved);
-                                    save.reset();
-                                }}
-                            >
-                                {t('marketdata.mixture.discard')}
-                            </Button>
-                        </div>
-                    </div>
-                )}
             </section>
             <Preview feed={feed} draft={draft} />
             {open !== null && (
@@ -396,6 +462,16 @@ function MixtureEditor({
                     processType={processType}
                     onDone={done}
                     onClose={() => setOpen(null)}
+                />
+            )}
+            {saving && (
+                <SaveMixtureDialog
+                    feedId={feedId}
+                    components={COMPONENTS}
+                    plan={plan}
+                    counts={counts}
+                    running={running}
+                    onClose={() => setSaving(false)}
                 />
             )}
         </div>
@@ -493,99 +569,107 @@ function Preview({
     const density = drawable && mixing ? densityOf(gaussians) : undefined;
 
     return (
-        <section className="grid items-start gap-4 xl:grid-cols-2">
-            <div className="space-y-2 rounded-md border border-line p-3">
-                <h3 className="text-sm font-medium">{t('marketdata.preview.distribution')}</h3>
-                {!mixing ? (
-                    <p className="text-sm text-ink-muted">
-                        {t('marketdata.preview.meanReverting')}
-                    </p>
-                ) : density === undefined || density.xs.length === 0 ? (
-                    <p className="text-sm text-ink-muted">{t('marketdata.preview.nothing')}</p>
-                ) : (
-                    <>
-                        <LineChart
-                            label={t('marketdata.preview.distribution')}
-                            xs={density.xs}
-                            format={figure}
-                            xFormat={figure}
-                            series={[
-                                ...density.parts.map((points, i) => ({
-                                    points,
-                                    colour: SERIES_COLOURS[(i + 1) % SERIES_COLOURS.length] ?? '',
-                                    dashed: true,
-                                })),
-                                {
-                                    points: density.mixture,
-                                    colour: 'var(--color-ink)',
-                                    strong: true,
-                                },
-                            ]}
-                        />
-                        <p className="text-xs text-ink-faint">{t('marketdata.preview.density')}</p>
-                    </>
-                )}
-            </div>
-            <div className="space-y-3 rounded-md border border-line p-3">
-                <h3 className="text-sm font-medium">{t('marketdata.preview.paths')}</h3>
-                {request === undefined ? (
-                    <p className="text-sm text-ink-muted">{t('marketdata.preview.waiting')}</p>
-                ) : sample.isError ? (
-                    <Notice tone="error">{sample.error.message}</Notice>
-                ) : sample.data === undefined || sample.data.length === 0 ? (
-                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-                ) : (
-                    <LineChart
-                        label={t('marketdata.preview.paths')}
-                        format={figure}
-                        xFormat={(tick) => String(tick)}
-                        series={sample.data.map((points, i) => ({
-                            points,
-                            colour: SERIES_COLOURS[i % SERIES_COLOURS.length] ?? '',
-                        }))}
-                    />
-                )}
-                <div className="grid gap-3 sm:grid-cols-4">
-                    <Field label={t('marketdata.preview.initialPrice')}>
-                        <Input
-                            inputMode="decimal"
-                            value={price}
-                            onChange={(event) => setPrice(event.target.value)}
-                        />
-                    </Field>
-                    <Field label={t('marketdata.preview.ticks')}>
-                        <Input
-                            inputMode="numeric"
-                            value={ticks}
-                            onChange={(event) => setTicks(event.target.value)}
-                        />
-                    </Field>
-                    <Field label={t('marketdata.preview.pathCount')}>
-                        <Input
-                            inputMode="numeric"
-                            value={paths}
-                            onChange={(event) => setPaths(event.target.value)}
-                        />
-                    </Field>
-                    <Field label={t('marketdata.preview.seed')}>
-                        <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm">{seed}</span>
-                            <Button
-                                size="sm"
-                                icon="refresh"
-                                onClick={() => setSeed(Math.floor(Math.random() * 1_000_000))}
-                            >
-                                {t('marketdata.preview.reseed')}
-                            </Button>
-                        </div>
-                    </Field>
+        <section className="space-y-3">
+            <div className="grid items-start gap-4 xl:grid-cols-2">
+                <div className="space-y-2 rounded-md border border-line p-3">
+                    <h3 className="text-sm font-medium">{t('marketdata.preview.distribution')}</h3>
+                    {!mixing ? (
+                        <p className="text-sm text-ink-muted">
+                            {t('marketdata.preview.meanReverting')}
+                        </p>
+                    ) : density === undefined || density.xs.length === 0 ? (
+                        <p className="text-sm text-ink-muted">{t('marketdata.preview.nothing')}</p>
+                    ) : (
+                        <>
+                            <LineChart
+                                label={t('marketdata.preview.distribution')}
+                                xs={density.xs}
+                                format={figure}
+                                xFormat={figure}
+                                series={[
+                                    ...density.parts.map((points, i) => ({
+                                        points,
+                                        colour:
+                                            SERIES_COLOURS[(i + 1) % SERIES_COLOURS.length] ?? '',
+                                        dashed: true,
+                                    })),
+                                    {
+                                        points: density.mixture,
+                                        colour: 'var(--color-ink)',
+                                        strong: true,
+                                    },
+                                ]}
+                            />
+                            <p className="text-xs text-ink-faint">
+                                {t('marketdata.preview.density')}
+                            </p>
+                        </>
+                    )}
                 </div>
-                <p className="text-xs text-ink-faint">
-                    {t('marketdata.preview.unsaved', {
-                        process: t(`refdata.choices.process_type.${processType}`),
-                    })}
-                </p>
+                <div className="space-y-3 rounded-md border border-line p-3">
+                    <h3 className="text-sm font-medium">{t('marketdata.preview.paths')}</h3>
+                    {request === undefined ? (
+                        <p className="text-sm text-ink-muted">{t('marketdata.preview.waiting')}</p>
+                    ) : sample.isError ? (
+                        <Notice tone="error">{sample.error.message}</Notice>
+                    ) : sample.data === undefined || sample.data.length === 0 ? (
+                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                    ) : (
+                        <LineChart
+                            label={t('marketdata.preview.paths')}
+                            format={figure}
+                            xFormat={(tick) => String(tick)}
+                            series={sample.data.map((points, i) => ({
+                                points,
+                                colour: SERIES_COLOURS[i % SERIES_COLOURS.length] ?? '',
+                            }))}
+                        />
+                    )}
+                    <div className="grid gap-3 sm:grid-cols-4">
+                        <Field label={t('marketdata.preview.initialPrice')}>
+                            <Input
+                                inputMode="decimal"
+                                value={price}
+                                onChange={(event) => setPrice(event.target.value)}
+                            />
+                        </Field>
+                        <Field label={t('marketdata.preview.ticks')}>
+                            <Input
+                                inputMode="numeric"
+                                value={ticks}
+                                onChange={(event) => setTicks(event.target.value)}
+                            />
+                        </Field>
+                        <Field label={t('marketdata.preview.pathCount')}>
+                            <Input
+                                inputMode="numeric"
+                                value={paths}
+                                onChange={(event) => setPaths(event.target.value)}
+                            />
+                        </Field>
+                        <Field label={t('marketdata.preview.seed')}>
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono text-sm">{seed}</span>
+                                <Button
+                                    size="sm"
+                                    icon="refresh"
+                                    onClick={() => setSeed(Math.floor(Math.random() * 1_000_000))}
+                                >
+                                    {t('marketdata.preview.reseed')}
+                                </Button>
+                            </div>
+                        </Field>
+                    </div>
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.preview.unsaved', {
+                            process: t(`refdata.choices.process_type.${processType}`),
+                        })}
+                    </p>
+                </div>
             </div>
+            <Notice tone={processType === 'arithmetic' ? 'warn' : 'info'}>
+                {t(`marketdata.process.about.${processTypeOf(processType)}`)}
+            </Notice>
         </section>
     );
 }

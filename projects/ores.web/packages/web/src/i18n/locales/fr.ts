@@ -3365,8 +3365,25 @@ const fr: SourceCatalogue = {
                 'Un nom, puis deux-points et une note, comme « Principale : calibrée à ~8 % de volatilité annualisée ». Le nom est mis en avant et la note atténuée.',
             upRow: 'Monter la composante {index}',
             downRow: 'Descendre la composante {index}',
-            unsaved:
-                '{count} composantes à écrire et {removed} à supprimer. Rien n’atteint le flux avant l’enregistrement.',
+            saveButton: 'Enregistrer…',
+            saveTitle: 'Enregistrer le mélange',
+            saveSummary: '{added} ajoutées, {changed} modifiées et {removed} supprimées.',
+            runningNote:
+                'Le flux est en marche, et un flux en marche garde le mélange avec lequel il a démarré. Il ne tire du mélange enregistré qu’une fois redémarré.',
+            restart:
+                'Redémarrer le flux après l’enregistrement, pour qu’il utilise le nouveau mélange dès lors',
+            stoppedNote:
+                'Le flux n’est pas en marche. Il tirera du mélange enregistré à son prochain démarrage.',
+            share: 'Part',
+            clean: 'Aucune modification non enregistrée.',
+            unsaved: '{count} modifications non enregistrées',
+            undo: 'Annuler',
+            marks: {
+                added: 'Nouvelle',
+                changed: 'Modifiée',
+                moved: 'Déplacée',
+                deleted: 'Supprimée',
+            },
         },
         preview: {
             distribution: 'Distribution des rendements',

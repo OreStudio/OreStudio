@@ -232,7 +232,15 @@ describe('the FX feed screens', () => {
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*aria-label="Move component 1 down"/);
         expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*aria-label="Move component 0 down"/);
         expect(html).toContain('>Delete<');
-        expect(html).toContain('Weight sum 0.9000');
+        expect(html).toContain('title="Weight sum 0.9000.');
+        expect(html).toContain('>Share</th>');
+        expect(html).toContain('>88.9%<');
+        expect(html).toContain('>11.1%<');
+        expect(html).toContain('No unsaved changes.');
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>.*?Save…/);
+        expect(html.indexOf('so the price stays positive')).toBeGreaterThan(
+            html.indexOf('Sample paths'),
+        );
         expect(html).toContain('Return distribution');
         expect(html).toContain('<svg');
         expect(html).toContain('Add component');

@@ -449,7 +449,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                     extra={[[t('refdata.fields.ore_key'), show(feed['ore_key'])]]}
                 />
             )}
-            {tab === 'behaviour' && <MixturePanel feed={feed} />}
+            {tab === 'behaviour' && <MixturePanel feed={feed} running={running === true} />}
             {tab === 'ticks' && (
                 <TicksPanel feed={feed} running={running} mixture={mixture.data ?? []} />
             )}

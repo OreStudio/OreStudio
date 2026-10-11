@@ -5567,7 +5567,9 @@ def entity_economic_declaration(
     """The entity's economic declaration; see :func:`economic_declaration`.
 
     A grouped entity declares an empty list of its own, because every field it
-    carries sits in a group that declares itself.
+    carries sits in a group that declares itself. An empty list is also what a
+    struct whose members are all ``:economic: false`` declares, and the digest
+    treats both the same: nothing of the struct's own is rendered.
     """
     owner = Path(path).name
     if entity.get("has_domain_groups"):
@@ -6300,6 +6302,13 @@ def _require_economic_component(
             f"{path.name}: * Digest/{where} names {component}, which no "
             "entity model declares.")
     text = org_of[component].read_text(encoding="utf-8")
+    # The text is searched, not the parsed model, because whether a column
+    # reaches the struct depends on flags that only the generation pipeline
+    # computes. A component whose columns are all false is accepted: it is
+    # listed and digests to nothing of its own. composite_instrument is such a
+    # component today, because its economics sit in legs the digest does not
+    # read. Refusing it would change what the digest covers, which is a
+    # decision of its own.
     declares = re.search(r"^:economic:\s+(true|false)\s*$", text, re.M)
     # A grouped entity carries every field in a group, and the group's own
     # model declares them.

@@ -323,3 +323,15 @@ def test_a_grouped_entity_counts_as_declared_through_its_groups(tmp_path):
     _require_economic_component(
         tmp_path / "catalogue.org", "Instrument components", "widget",
         {"widget"}, {"widget": org})
+
+
+def test_a_component_that_declares_only_false_is_listed_and_digests_to_nothing(tmp_path):
+    only_false = ENTITY.format(
+        id_economic=":economic: false\n",
+        amount_economic=":economic: false\n",
+        reference_economic=":economic: false\n")
+    path = _catalogue_in(tmp_path, only_false, "| widget | widget |")
+
+    catalogue = load_org_trade_type_catalogue_model(path)["trade_type_catalogue"]
+
+    assert catalogue["digest"][0]["components"] == [{"entity": "widget"}]

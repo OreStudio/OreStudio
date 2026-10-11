@@ -24,7 +24,14 @@ import { useState, type ReactNode } from 'react';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Phrase, PersonRef, slot, useActorPictures } from '../access/PersonRef.js';
+import { SystemToggle, useSystemFilter } from '../timeline/SystemToggle.js';
+import {
+    Phrase,
+    PersonRef,
+    slot,
+    useActorPictures,
+    usePeopleDirectory,
+} from '../access/PersonRef.js';
 import { DiffLines } from '../ui/Diff.js';
 import { Avatar } from '../ui/Images.js';
 import { Button, Notice, Tag } from '../ui/Primitives.js';
@@ -69,6 +76,8 @@ export function HistoryPanel({
 }): ReactNode {
     const { t } = useTranslation();
     const pictureOf = useActorPictures();
+    const { isService } = usePeopleDirectory();
+    const system = useSystemFilter(isService);
     const [toVersion, setToVersion] = useState<number | null>(null);
     const [fromVersion, setFromVersion] = useState<number | null>(null);
     const [onlyChanges, setOnlyChanges] = useState(false);
@@ -101,68 +110,79 @@ export function HistoryPanel({
                 aria-label={t('history.timeline')}
                 className="border-b border-line md:border-r md:border-b-0"
             >
-                {versions.map((version) => {
-                    const note = fieldValue(version, 'Change Commentary');
-                    const performedBy = fieldValue(version, 'Performed By');
-                    const selected = version.version === to.version;
-                    return (
-                        <li
-                            key={version.version}
-                            className={
-                                selected
-                                    ? 'border-t border-line-subtle bg-accent/10 first:border-t-0'
-                                    : 'border-t border-line-subtle first:border-t-0 hover:bg-surface-hover'
-                            }
-                        >
-                            <button
-                                type="button"
-                                aria-current={selected ? 'true' : undefined}
-                                className="grid w-full gap-0.5 px-4 pt-2.5 text-left"
-                                onClick={() => {
-                                    setToVersion(version.version);
-                                    setFromVersion(null);
-                                }}
+                {versions
+                    .filter(
+                        (version) =>
+                            version.version === to.version || system.shows(version.modifiedBy),
+                    )
+                    .map((version) => {
+                        const note = fieldValue(version, 'Change Commentary');
+                        const performedBy = fieldValue(version, 'Performed By');
+                        const selected = version.version === to.version;
+                        return (
+                            <li
+                                key={version.version}
+                                className={
+                                    selected
+                                        ? 'border-t border-line-subtle bg-accent/10 first:border-t-0'
+                                        : 'border-t border-line-subtle first:border-t-0 hover:bg-surface-hover'
+                                }
                             >
-                                <span className="flex items-center gap-2 text-sm font-semibold">
-                                    v{version.version} · <RelativeTime at={version.recordedAt} />
-                                    {version.version === newest.version && (
-                                        <Tag tone="accent">{t('history.current')}</Tag>
-                                    )}
-                                </span>
-                                <span>
-                                    <span className="inline-block rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[11px] text-warn">
-                                        {fieldValue(version, 'Change Reason Code')}
+                                <button
+                                    type="button"
+                                    aria-current={selected ? 'true' : undefined}
+                                    className="grid w-full gap-0.5 px-4 pt-2.5 text-left"
+                                    onClick={() => {
+                                        setToVersion(version.version);
+                                        setFromVersion(null);
+                                    }}
+                                >
+                                    <span className="flex items-center gap-2 text-sm font-semibold">
+                                        v{version.version} ·{' '}
+                                        <RelativeTime at={version.recordedAt} />
+                                        {version.version === newest.version && (
+                                            <Tag tone="accent">{t('history.current')}</Tag>
+                                        )}
                                     </span>
-                                </span>
-                                {note !== '' && (
-                                    <span className="text-xs text-ink-muted italic">“{note}”</span>
-                                )}
-                            </button>
-                            <div className="flex items-center gap-2 px-4 pt-1 pb-2.5 text-xs text-ink-muted">
-                                <Avatar
-                                    name={version.modifiedBy}
-                                    size="sm"
-                                    src={pictureOf(version.modifiedBy)}
-                                />
-                                <span>
-                                    <Phrase
-                                        text={t('history.modifiedBy', { who: slot(0) })}
-                                        names={[<PersonRef who={version.modifiedBy} />]}
-                                    />
-                                    {performedBy !== '' && performedBy !== version.modifiedBy && (
-                                        <>
-                                            {' · '}
-                                            <Phrase
-                                                text={t('history.performedBy', { who: slot(0) })}
-                                                names={[<PersonRef who={performedBy} />]}
-                                            />
-                                        </>
+                                    <span>
+                                        <span className="inline-block rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[11px] text-warn">
+                                            {fieldValue(version, 'Change Reason Code')}
+                                        </span>
+                                    </span>
+                                    {note !== '' && (
+                                        <span className="text-xs text-ink-muted italic">
+                                            “{note}”
+                                        </span>
                                     )}
-                                </span>
-                            </div>
-                        </li>
-                    );
-                })}
+                                </button>
+                                <div className="flex items-center gap-2 px-4 pt-1 pb-2.5 text-xs text-ink-muted">
+                                    <Avatar
+                                        name={version.modifiedBy}
+                                        size="sm"
+                                        src={pictureOf(version.modifiedBy)}
+                                    />
+                                    <span>
+                                        <Phrase
+                                            text={t('history.modifiedBy', { who: slot(0) })}
+                                            names={[<PersonRef who={version.modifiedBy} />]}
+                                        />
+                                        {performedBy !== '' &&
+                                            performedBy !== version.modifiedBy && (
+                                                <>
+                                                    {' · '}
+                                                    <Phrase
+                                                        text={t('history.performedBy', {
+                                                            who: slot(0),
+                                                        })}
+                                                        names={[<PersonRef who={performedBy} />]}
+                                                    />
+                                                </>
+                                            )}
+                                    </span>
+                                </div>
+                            </li>
+                        );
+                    })}
             </ol>
             <div className="grid content-start gap-3 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -207,6 +227,11 @@ export function HistoryPanel({
                         </span>
                     )}
                     <span className="flex items-center gap-2">
+                        <SystemToggle
+                            hiding={system.hiding}
+                            onChange={system.setHiding}
+                            canTell={system.canTell}
+                        />
                         {from !== undefined && (
                             <span className="inline-flex overflow-hidden rounded-md border border-line text-sm">
                                 {[false, true].map((only) => (

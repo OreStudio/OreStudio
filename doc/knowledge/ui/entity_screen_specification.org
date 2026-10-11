@@ -463,6 +463,22 @@ and below it a rail of entries, newest first.
   that happened, so there is nothing to revert", and no "putting a field back is
   not offered here". A sentence that says what is not there adds nothing.
 
+*** System activity
+
+- Every history draws one toggle, "Hide system activity". When it is on, the
+  toggle reads "Show system activity". It is drawn even when no service account
+  wrote an entry.
+- The toggle starts off. A history shows every entry until the reader hides some.
+- The toggle hides an entry only when its author is a service account. The tenant
+  administrator and the super administrator are people, so their entries stay.
+- The toggle also hides the entries in the chart, the legend and the day dividers.
+  The chart counts what the rail shows.
+- Only a reader who may read accounts can tell a service from a person. For any
+  other reader the toggle is disabled, and its tooltip says why. The screen does
+  not guess, because a wrong guess hides people.
+- The shared =Timeline= draws the toggle. A screen gives it =isService=, which
+  =usePeopleDirectory= supplies.
+
 *** The author
 
 - The author's photo stands at the left of the entry, beside the header and the

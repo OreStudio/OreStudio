@@ -45,7 +45,7 @@ import { useHolds, usePermissions } from './holds.js';
 import { PERMISSION } from './permissions.js';
 import { tabsFor } from './screens.js';
 import { actorPathFor } from './PeoplePage.js';
-import { useActorPictures } from './PersonRef.js';
+import { useActorPictures, usePeopleDirectory } from './PersonRef.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 import { AccountDoors } from '../pages/AccountDoors.js';
@@ -126,6 +126,7 @@ function Person({
     const [reverting, setReverting] = useState<TimelineEvent | null>(null);
     const writes = useAccountWrites();
     const actorPicture = useActorPictures();
+    const { isService } = usePeopleDirectory();
     /*
      * Each tab reads something of its own, and each of those reads is its own
      * permission. A member may open a colleague's page to see who they are,
@@ -243,6 +244,7 @@ function Person({
                             timeline={story.data}
                             actorPath={actorPathFor(holds('iam::accounts:read'))}
                             actorPicture={actorPicture}
+                            isService={isService}
                             marked={newEntries}
                             /*
                              * Two entries can be acted on. A grant is taken

@@ -29,6 +29,7 @@ import {
     type TimelineField,
 } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { SystemToggle, useSystemFilter } from './SystemToggle.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import { DiffLines } from '../ui/Diff.js';
 import { Icon } from '../ui/Icon.js';
@@ -67,6 +68,7 @@ export function Timeline({
     actorPicture,
     marked,
     hideUnchanged = false,
+    isService,
 }: {
     readonly timeline: Stream;
     readonly renderActions?: (event: TimelineEvent) => ReactNode;
@@ -97,10 +99,17 @@ export function Timeline({
      * the versions where that field moved.
      */
     readonly hideUnchanged?: boolean;
+    /**
+     * Whether an actor is a service account, or undefined for a reader who
+     * cannot tell. When it is given and a service wrote an entry, a toggle
+     * hides or shows what services did.
+     */
+    readonly isService?: ((actor: string) => boolean | undefined) | undefined;
     /** The entries that are new since the history was last read, by `timelineEntryKey`, which pulse for a moment. */
     readonly marked?: ReadonlySet<string>;
 }): ReactNode {
     const { t } = useTranslation();
+    const system = useSystemFilter(isService);
     if (timeline.events.length === 0) {
         return (
             <div className="grid gap-3">
@@ -121,13 +130,21 @@ export function Timeline({
               );
           })
         : timeline.events;
+    const shown = events.filter((event) => system.shows(event.actor));
     return (
         <div className="grid gap-3" data-timeline>
-            <EventChart events={events} />
+            <div className="flex justify-end">
+                <SystemToggle
+                    hiding={system.hiding}
+                    onChange={system.setHiding}
+                    canTell={system.canTell}
+                />
+            </div>
+            <EventChart events={shown} />
             <ol className="grid list-none gap-0 p-0">
-                {events.map((event, index) => (
+                {shown.map((event, index) => (
                     <Fragment key={entryKey(event, index)}>
-                        {startsADay(event, events[index - 1]) && <DayDivider at={event.at} />}
+                        {startsADay(event, shown[index - 1]) && <DayDivider at={event.at} />}
                         <Entry
                             event={event}
                             before={previous.get(earlier(event))}

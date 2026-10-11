@@ -27,7 +27,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { askedFor, sourceLabel, stateLabel } from './words.js';
 import { formatDateTime } from '../ui/Time.js';
-import { PersonRef, useActorPictures } from '../access/PersonRef.js';
+import { PersonRef, useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
@@ -50,6 +50,7 @@ import { Timeline, kindTone } from '../timeline/Timeline.js';
  */
 export function RequestStoryPage(): ReactNode {
     const actorPicture = useActorPictures();
+    const { isService } = usePeopleDirectory();
     const { t, language } = useTranslation();
     const { id = '' } = useParams();
     const story = useQuery({
@@ -109,6 +110,7 @@ export function RequestStoryPage(): ReactNode {
                 timeline={{ subject: 'request', id, events, gaps: [] }}
                 renderHead={(event) => <RequestEventHead event={event} />}
                 actorPicture={actorPicture}
+                isService={isService}
             />
         </div>
     );

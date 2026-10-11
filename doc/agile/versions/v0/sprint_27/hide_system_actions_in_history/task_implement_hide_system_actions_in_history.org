@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :hide_system_actions_in_history:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-hide-system-actions-in-history
+#+pr: 3106
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:57749440-463B-4F2D-99AC-B1348F4507C3][Hide what system accounts did in a history]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A history shows a toggle that hides or shows the entries made by service account
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:57749440-463B-4F2D-99AC-B1348F4507C3][Hide what system accounts did in a history]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3106][#3106]] | [web] Hide or show what service accounts did in a history |
 
 * Review
 
@@ -86,3 +86,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A history shows a "Hide system activity" toggle to a reader who may read accounts, when a service account wrote an entry. The Timeline and the version history panel share one toggle. The people directory tells a service from a person by the account type that the accounts read returns. A reader who may not read accounts is offered no toggle. Tenant admin and super admin are people, so the toggle never hides them.

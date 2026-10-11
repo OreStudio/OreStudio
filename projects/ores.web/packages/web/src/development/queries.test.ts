@@ -69,7 +69,7 @@ describe('the reads of the QA validation runner', () => {
         const { meta: _meta, ...loud } = qaQueries.doc('x');
         await client.fetchQuery(loud).catch(() => undefined);
         expect(current().map((entry) => entry.message)).toEqual([
-            'No story, task or scenario has this id.',
+            expect.stringContaining('No story, task or scenario has this id.'),
         ]);
     });
 

@@ -2,7 +2,7 @@
 :ID: BE03EF33-C2A7-4B0B-A444-BDA37F4663AE
 :END:
 #+title: Test Scenario: Test the QA validation runner in the browser
-#+description: Run the QA validation runner end to end in ores.web: find a scenario in the Tests queue, work through its steps, read the story and the task, attach a screenshot, save, and retest.
+#+description: Run the QA validation runner end to end in ores.web: find a scenario in the Tests queue, work through its steps, read the story and the task, attach a screenshot, save, and read a finished scenario as a report.
 #+type: test_scenario
 #+level: s1
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
@@ -53,9 +53,10 @@ This scenario tests the runner by running in it. The scenario you are reading is
 ** Open Development from the menu
 
 - In the top menu, click *Development*. The entry is there for everybody. It needs no permission.
-- The page shows a path of Home, then Development, and two tabs, *Tests* and *Done*.
-- The tabs have no heading of their own. There is no Board, Stories or Tasks tab.
-- The *Tests* tab shows the scenarios that wait for a tester, grouped by sprint, the newest sprint first. Each sprint has a heading with its number and a count, and every sprint that has something waiting is open.
+- The page shows a path of Home, then Development, and one tab, *Tests*.
+- The tab has no heading of its own. There is no Board, Stories, Tasks or Done tab.
+- The *Tests* tab shows the scenarios grouped by sprint, the newest sprint first. Each sprint has a heading with its number and counts. A sprint that has something active is open, and so is the newest sprint.
+- In a sprint the *Active* scenarios, which wait for a tester, are at the top. The *Done* scenarios are below them. Scenarios that were given up are in a closed *Abandoned* bucket at the bottom.
 
 *** Result
 
@@ -65,11 +66,10 @@ This scenario tests the runner by running in it. The scenario you are reading is
 
 ** Find this scenario on the Tests tab
 
-- In the *Sprint 27* section, find the row *Test the QA validation runner in the browser*.
+- In the *Sprint 27* section, under *Active*, find the row *Test the QA validation runner in the browser*.
 - The row shows the story and the task of the scenario under the title, the target =Development > Tests, and the scenario runner=, a progress bar with *0 of 17 steps*, the state *Pending*, and the date it was created, =2026-10-11=.
 - Inside a sprint the newest created date comes first, so this scenario is at the top of its sprint. The columns line up from one sprint to the next, and a date stays on one line.
-- Click the *Done* tab. It lists the finished scenarios the same way, by sprint, the newest sprint first. Only the newest sprint is open. Click the heading of an older sprint to open it, and click it again to close it. Each row shows *Passed* or *Failed*, the created date and a completion time.
-- Go back to the *Tests* tab.
+- Click the heading of an older sprint to open it, and click it again to close it. Its *Done* rows show *Passed* or *Failed*, the created date and a completion time. If a sprint has an *Abandoned* bucket, open it to see the scenarios nobody will run. This part is optional, and the step does not fail if no sprint has one.
 - Wait up to ten seconds for a first listing. It scans the whole =doc/= tree.
 
 *** Result
@@ -82,7 +82,8 @@ This scenario tests the runner by running in it. The scenario you are reading is
 
 - Click the title of the row, or anywhere else on it. The runner opens on the first step that is not marked.
 - The address now ends in =/development/tests/= and the scenario's id.
-- The tabs *Steps*, *Story* and *Task* sit above the runner.
+- The tabs *Steps*, *Report*, *Story* and *Task* sit above the runner. A scenario that is not done opens on *Steps*.
+- *Save* is in the *Progress* card above the step, beside *Back to the tests*.
 - Press *Back* until you reach step 1. Mark steps 1 to 4 with *Pass*. Each Pass moves to the next step. Press *Skip* to come back to this step.
 
 *** Result
@@ -207,7 +208,9 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Paste a screenshot from the clipboard with Ctrl+V.
 - The text *Saving the image...* shows for a moment, and *Save* is off while it does.
 - A line like =[[file:scenario_test_the_qa_validation_runner_in_the_browser_step13_20261011_123456.png]]= is added to the note on its own line.
-- Paste the screenshot a second time. A second line is added with a different time in its name.
+- Paste the screenshot a second time. Exactly one new line is added, with a different time in its name. A paste never adds two lines.
+- Press *Paste from clipboard*. The image on the clipboard is added the same way. If the browser refuses, a message says so.
+- The note shows the pictures as small thumbnails.
 - Text you paste into the note, such as =hello=, goes in as text and starts no upload.
 - Press *Pass*.
 
@@ -249,9 +252,10 @@ This scenario tests the runner by running in it. The scenario you are reading is
 
 ** Read a finished scenario
 
-- Press *Save*. Then open the Development menu entry and click the *Done* tab.
-- Open any finished scenario.
-- The runner shows the scenario's steps with their marks and notes. *Pass*, *Fail* and *Clear* are off, the *Note* box is off, and there is no *Save*.
+- Press *Save*. Then open the Development menu entry and open a *Done* bucket in an older sprint.
+- Open any finished scenario. It opens on the *Report* tab.
+- The report shows every step at once, with its mark, its note and its images as pictures. It has no expand or collapse. A strip of step markers at the top jumps to a step.
+- Click the *Steps* tab. The runner shows the scenario's steps with their marks and notes. *Pass*, *Fail* and *Clear* are off, the *Note* box is off, and there is no *Save*.
 - *Retest* is there. Press it. A dialog asks if you want to start a retest, and says that a retest clears every step.
 - Press *Cancel*. Nothing is cleared. Do not confirm the retest on this scenario.
 - Go back to this scenario from the Tests queue. The runner opens on this step. Press *Pass*.
@@ -268,7 +272,7 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - The state tag shows *Passed*, or *Failed* if you marked any step Fail. The scenario is not closed yet.
 - Press *Save*. The page says that the scenario was saved and closed.
 - *Retest* replaces *Save*. *Pass*, *Fail*, *Clear* and the note are off.
-- Open the Development menu entry. This scenario is gone from the *Tests* tab and is on the *Done* tab, in its sprint, with its state and a completion time. Write what you saw in =* Notes=.
+- Open the Development menu entry. This scenario has moved from *Active* to *Done* in its sprint, with its state and a completion time. Write what you saw in =* Notes=.
 - If the scenario does not close, write that in =* Notes= too.
 
 *** Result
@@ -289,4 +293,4 @@ This scenario tests the runner by running in it. The scenario you are reading is
 
 * Notes
 
-Things this scenario does not cover: an image shown as a picture (the runner shows only the file name), a tester role, assignment, and the =ores.org-js= and =ores.dsh_kanban= retirement.
+Things this scenario does not cover: a scenario with the state ABANDONED, a tester role, assignment, and the =ores.org-js= and =ores.dsh_kanban= retirement.

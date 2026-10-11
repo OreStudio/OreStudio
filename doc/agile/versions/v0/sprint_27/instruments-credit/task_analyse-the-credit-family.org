@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 4434DCEA-FBDA-4C19-BF98-0EF57E0A546C
+:END:
+#+title: Task: Analyse the credit family and propose its relational data model
+#+description: Credit is the third family after the bond pilot and the rates rework. Survey every credit-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model in the clean data-oriented shape, taking in the risk participation agreement the rates rework left for credit. (Staging unit 1.)
+#+type: task
+#+level: s1
+#+filetags: :instruments-credit:sprint_27:v0:
+#+owner: marco
+#+branch: feature/analyse-the-credit-family
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey every credit surface and propose the relational entity-relationship model that reworks the family to the instrument table rule of the trade shape investigation section 14, following the bond pilot and the rates rework.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- Every credit-related type and subtype is inventoried across the modeling orgs, SQL, domain C++, mappers, repositories, services, messaging and the ores.ore mapping.
+- The current model's divergences from the instrument table rule are recorded as findings, each with its evidence, including the risk participation agreement's required elements, which the export omits.
+- The proposed entity-relationship model is recorded as a diagram and table set: family header, product facts, shared children and securities.
+- The ORE binding's bare float members that the credit corpus uses are listed, so the digits work is planned.
+- The rework is staged into verifiable units; no code changes land on this task.
+
+* Plan
+
+1. *Survey.* Read the credit model, the generated surface, the ORE mapper,
+   the binding's credit structs, the catalogue and the corpus documents.
+2. *Findings.* Record each divergence from the instrument table rule with its
+   evidence.
+3. *The model.* Propose the header, the product facts and the shared children
+   in a table set and a diagram.
+4. *Staging.* Order the rework into units that each end in a check.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Credit trade types in the catalogue | 8 | =grep -c "| credit  *|" projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org= | 0956bd1dd2 |
+| Columns of the credit table | 25 | read =projects/ores.trading/modeling/ores.trading.credit_instrument.org= | 0956bd1dd2 |
+| Columns no mapper writes | 6 | =grep -c "instr.tenor" projects/ores.ore/core/src/domain/credit_instrument_mapper.cpp= and the five like it, all 0 | 0956bd1dd2 |
+| Credit documents in Example_Trades | 8 documents, 8 trades | =grep -lE "<TradeType>(CreditDefaultSwap\|...\|RiskParticipationAgreement)</TradeType>" external/ore/examples/Products/Example_Trades/*.xml= and =grep -h= with =wc -l= | 0956bd1dd2 |
+| Credit documents in all example directories | 32 | the same =grep -rlE= over =external/ore/examples= | 0956bd1dd2 |
+| Tracked files named for credit_instrument | 50 | =git ls-files= with =grep -ic credit_instrument= | 0956bd1dd2 |
+| Tracked files named for rpa_instrument | 47 | =git ls-files= with =grep -ic rpa_instrument= | 0956bd1dd2 |
+| Credit test cases | 33 | =grep -c TEST_CASE= over the mapper, golden, eventing and shell command tests | 0956bd1dd2 |
+| Mapper length | 391 lines | =wc -l projects/ores.ore/core/src/domain/credit_instrument_mapper.cpp= | 0956bd1dd2 |
+
+* Notes
+
+- The design is =design.org= beside this page, with =design_er.puml= and the
+  rendered =design_er.png=.
+- The rates repair already routed =RiskParticipationAgreement= to the credit
+  table. What is left of the agreement's problem is its required elements,
+  its underlying and the retired =rpa_instruments= table.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The credit family is surveyed and the rework is designed. The family is eight
+trade type codes in one 25-column table, and six of the eight have an
+importer. The design finds fourteen divergences from the instrument table
+rule, among them six columns no mapper writes, two importer-less codes, an
+exported risk participation agreement that is not valid ORE, and money values
+stored as float artifacts.
+
+The proposal is a six-code header with the reference entity and the two
+dates, six product fact tables keyed by the trade, the swap leg tables reused
+with a =leg_group= column, the shared option and strike children reused, and
+one new basket child. The rework is staged into seven units, from the digits
+to the proof over the eight corpus documents.
+
+Acceptance met: every credit type is inventoried, the divergences are
+findings with evidence, the model is a table set and a diagram, the bare
+float members the credit corpus uses are listed, and the rework is staged
+with no code change.

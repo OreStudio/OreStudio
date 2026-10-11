@@ -8,7 +8,7 @@
 #+filetags: :run_compute_nodes_on_the_local_network:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-run-compute-nodes-on-the-local-network
-#+pr: 3120
+#+pr: 3132
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -78,6 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3132][#3132]] | [agile] Close the story to run compute nodes on the local network hosts |
 | [[https://github.com/OreStudio/OreStudio/pull/3120][#3120]] | [compute] Run compute nodes on the local network hosts |
 
 * Review

@@ -52,6 +52,7 @@ import {
     newestVersionOf,
     type ScreenGap,
 } from './OperationsParts.js';
+import { GridSeriesSection } from './GridSeries.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
@@ -515,11 +516,6 @@ export function GridPage(): ReactNode {
     const hasSample = sampleTime(view.sampled_at) !== undefined;
     const gaps: readonly ScreenGap[] = [
         {
-            title: t('operations.grid.gap.history.title'),
-            body: t('operations.grid.gap.history.body'),
-            journey: t('operations.journeys.grid'),
-        },
-        {
             title: t('operations.grid.gap.noHost.title'),
             body: t('operations.grid.gap.noHost.body'),
             journey: t('operations.journeys.grid'),
@@ -561,6 +557,8 @@ export function GridPage(): ReactNode {
                     <Notice tone="warn">{t('operations.grid.summary.noSample')}</Notice>
                 </section>
             )}
+
+            <GridSeriesSection />
 
             <MachinesPanel nodes={view.nodes} />
             <NodesPanel nodes={view.nodes} />

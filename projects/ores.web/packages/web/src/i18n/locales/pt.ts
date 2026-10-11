@@ -1544,6 +1544,40 @@ const pt: SourceCatalogue = {
                 noSample:
                     'Ainda sem amostra. A instalação não guarda qualquer resumo da grelha, por isso os contadores não podem ser desenhados; a tabela de nós abaixo fica sozinha.',
             },
+            series: {
+                title: 'Ao longo do tempo',
+                lead: 'Como a grelha evoluiu no período. As horas estão em UTC.',
+                rangeLabel: 'Período',
+                ranges: { hour: 'Última hora', day: 'Último dia', week: 'Última semana' },
+                empty: 'Não há amostras neste período. O amostrador pode ainda não ter corrido, ou a grelha estava parada.',
+                gapNote: 'Uma faixa sombreada é um intervalo sem amostra. Não é uma medição de zero.',
+                load: {
+                    title: 'Carga',
+                    caption: 'Trabalho em curso por estado do resultado',
+                    inactive: 'Inativo',
+                    unsent: 'Por enviar',
+                    inProgress: 'Em curso',
+                },
+                fleet: {
+                    title: 'Frota',
+                    caption: 'Anfitriões, em linha e inativos',
+                    total: 'Anfitriões',
+                    online: 'Em linha',
+                    idle: 'Inativos',
+                },
+                throughput: {
+                    title: 'Débito',
+                    caption: 'Resultados concluídos em cada intervalo',
+                    finished: 'Concluídos',
+                },
+                outcomes: {
+                    title: 'Resultados',
+                    caption: 'Como os resultados terminaram em cada intervalo',
+                    success: 'Sucesso',
+                    clientError: 'Erro do cliente',
+                    noReply: 'Sem resposta',
+                },
+            },
             machines: {
                 title: 'Máquinas',
                 summary: '{up} de {total} máquinas ativas',
@@ -1589,10 +1623,6 @@ const pt: SourceCatalogue = {
                     'Aguarda os percursos de cálculo, que possuem os ecrãs dos anfitriões e das unidades de trabalho.',
             },
             gap: {
-                history: {
-                    title: 'Sem histórico',
-                    body: 'A leitura responde apenas com a amostra guardada mais recente, por isso o ecrã não pode mostrar uma tendência, e o progresso de um lote ao longo do tempo não é visível. O coletor continua a escrever amostras que nenhuma leitura devolve. O candidato é uma leitura das amostras da grelha num intervalo de tempo.',
-                },
                 noHost: {
                     title: 'Um nó sem linha de anfitrião',
                     body: 'A junção resolve o caso comum, e um nó que o registo de anfitriões não conhece mostra um identificador despido. O ecrã deve dizer que nenhum anfitrião nomeia o nó, em vez de imprimir o identificador como se fosse um nome.',

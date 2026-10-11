@@ -25,7 +25,7 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
-import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
+import type { GridNodeRow, GridSeriesView, GridView } from '@ores/wire-protocol/browser';
 import type { BusView } from '@ores/wire-protocol/browser';
 import type { LogsView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
@@ -69,6 +69,13 @@ import {
     hasPrevious,
     hasNext,
 } from './LogsPage.js';
+import {
+    GRID_SERIES_QUERY_KEY,
+    GridSeriesSection,
+    changeOf,
+    hasAnySample,
+    throughputSeries,
+} from './GridSeries.js';
 import { VersionsPage } from './VersionsPage.js';
 
 /**
@@ -127,6 +134,46 @@ const READY: BootstrapState = {
     version: 'v0.0.25 (test)',
 };
 
+/** The grid series as the browser reads it: four buckets, the third a gap. */
+function gridSeriesView(overrides: Partial<GridSeriesView['grid']> = {}): GridSeriesView {
+    const none = [0, 0, 0, 0];
+    return {
+        read_at: '2026-10-04 14:31:02Z',
+        range: '1h',
+        start_time: '2026-10-04 14:00:00Z',
+        bucket_seconds: 60,
+        bucket_count: 4,
+        grid: {
+            samples: [2, 3, 0, 1],
+            total_hosts: [2, 2, 0, 2],
+            online_hosts: [2, 1, 0, 2],
+            idle_hosts: [0, 1, 0, 1],
+            results_inactive: [0, 0, 0, 0],
+            results_unsent: [4, 2, 0, 1],
+            results_in_progress: [2, 2, 0, 1],
+            results_done: [10, 14, 0, 20],
+            total_workunits: [16, 16, 0, 18],
+            total_batches: [1, 1, 0, 1],
+            active_batches: [1, 1, 0, 1],
+            outcomes_success: [10, 13, 0, 18],
+            outcomes_client_error: [0, 1, 0, 1],
+            outcomes_no_reply: none,
+            ...overrides,
+        },
+        nodes: {
+            list: [],
+            samples: [],
+            tasks_completed: [],
+            tasks_failed: [],
+            tasks_since_last: [],
+            avg_task_duration_ms: [],
+            max_task_duration_ms: [],
+            input_bytes_fetched: [],
+            output_bytes_uploaded: [],
+        },
+    };
+}
+
 /** The source-language translator, for the units a bare function states. */
 const t = createTranslator('en', enFlat, enFlat).t;
 
@@ -138,6 +185,7 @@ function withProviders(
     bus: BusView = busView(),
     logs: LogsView = logsView(),
     permissionCodes: readonly string[] = [],
+    gridSeries: GridSeriesView | undefined = undefined,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], {
@@ -159,6 +207,9 @@ function withProviders(
     });
     client.setQueryData(SERVICES_QUERY_KEY, roster);
     client.setQueryData(GRID_QUERY_KEY, grid);
+    if (gridSeries !== undefined) {
+        client.setQueryData([GRID_SERIES_QUERY_KEY, gridSeries.range], gridSeries);
+    }
     client.setQueryData([BUS_QUERY_KEY, '1h'], bus);
     client.setQueryData([LOGS_QUERY_KEY, DEFAULT_LOGS_FILTER, 0], logs);
     return renderToStaticMarkup(
@@ -972,7 +1023,8 @@ describe('the compute grid screen', () => {
     it('states only the gaps the journey still records', () => {
         const html = withProviders(<GridPage />);
 
-        expect(html).toContain('No history');
+        // The history gap is closed: the screen now draws the trend.
+        expect(html).not.toContain('No history');
         expect(html).toContain('A node with no host row');
         expect(html).toContain('counters are one tenant');
         // Each gap names the journey that records it, as its lead promises.
@@ -1338,3 +1390,88 @@ describe('the route to the telemetry logs', () => {
         expect(html).toContain('href="/operations/logs"');
     });
 });
+
+describe('the grid over time', () => {
+    it('turns a total into the change since the previous bucket, and leaves a gap unknown', () => {
+        // Bucket 0 has no previous one, and the buckets either side of the gap
+        // have a neighbour that holds no figure: all three are unknown.
+        expect(changeOf([10, 14, 0, 20], [2, 3, 0, 1])).toEqual([null, 4, null, null]);
+        // A total that falls, as a database reset makes it, is no change.
+        expect(changeOf([10, 3], [1, 1])).toEqual([null, 0]);
+    });
+
+    it('reads throughput from the results finished, not from the total', () => {
+        const [finished] = throughputSeries(gridSeriesView(), t);
+
+        expect(finished?.key).toBe('finished');
+        expect(finished?.values).toEqual([null, 4, null, null]);
+    });
+
+    it('draws the four panels with the range choice, and marks the gap', () => {
+        const html = renderToStaticMarkup(
+            <QueryClientProviderFor series={gridSeriesView()}>
+                <GridSeriesSection />
+            </QueryClientProviderFor>,
+        );
+
+        for (const title of ['Load', 'Fleet', 'Throughput', 'Outcomes']) {
+            expect(html).toContain(`>${title}<`);
+        }
+        for (const range of ['Last hour', 'Last day', 'Last week']) {
+            expect(html).toContain(range);
+        }
+        // The hour is the range in force, and the shaded bands are explained.
+        expect(html).toMatch(/aria-pressed="true"[^>]*>Last hour/);
+        expect(html).toContain('A shaded band is a stretch with no sample');
+        expect(html).toContain('data-gap');
+    });
+
+    it('says a range with no sample is empty, and draws no chart for it', () => {
+        const empty = gridSeriesView({ samples: [0, 0, 0, 0] });
+        expect(hasAnySample(empty)).toBe(false);
+
+        const html = renderToStaticMarkup(
+            <QueryClientProviderFor series={empty}>
+                <GridSeriesSection />
+            </QueryClientProviderFor>,
+        );
+
+        expect(html).toContain('There are no samples in this range');
+        expect(html).not.toContain('<svg');
+    });
+
+    it('puts the section on the grid screen, above the machines', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            gridSeriesView(),
+        );
+
+        expect(html).toContain('Over time');
+        expect(html.indexOf('Over time')).toBeLessThan(html.indexOf('Machines'));
+    });
+});
+
+/** A provider stack that seeds only the grid series, for rendering the section alone. */
+function QueryClientProviderFor({
+    series,
+    children,
+}: {
+    readonly series: GridSeriesView;
+    readonly children: ReactNode;
+}): ReactNode {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData([GRID_SERIES_QUERY_KEY, series.range], series);
+    return (
+        <QueryClientProvider client={client}>
+            <TranslationProvider>
+                <MemoryRouter>{children}</MemoryRouter>
+            </TranslationProvider>
+        </QueryClientProvider>
+    );
+}

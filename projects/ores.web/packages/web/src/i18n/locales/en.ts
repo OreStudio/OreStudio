@@ -1533,6 +1533,40 @@ export const en: SourceCatalogue = {
                 noSample:
                     'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
             },
+            series: {
+                title: 'Over time',
+                lead: 'How the grid moved over the range. The times are UTC.',
+                rangeLabel: 'Range',
+                ranges: { hour: 'Last hour', day: 'Last day', week: 'Last week' },
+                empty: 'There are no samples in this range. The sampler may not have run yet, or the grid was stopped.',
+                gapNote: 'A shaded band is a stretch with no sample. It is not a measurement of zero.',
+                load: {
+                    title: 'Load',
+                    caption: 'Work in flight by result state',
+                    inactive: 'Inactive',
+                    unsent: 'Unsent',
+                    inProgress: 'In progress',
+                },
+                fleet: {
+                    title: 'Fleet',
+                    caption: 'Hosts, online and idle',
+                    total: 'Hosts',
+                    online: 'Online',
+                    idle: 'Idle',
+                },
+                throughput: {
+                    title: 'Throughput',
+                    caption: 'Results finished in each interval',
+                    finished: 'Finished',
+                },
+                outcomes: {
+                    title: 'Outcomes',
+                    caption: 'How the results finished in each interval',
+                    success: 'Success',
+                    clientError: 'Client error',
+                    noReply: 'No reply',
+                },
+            },
             machines: {
                 title: 'Machines',
                 summary: '{up} of {total} machines up',
@@ -1577,10 +1611,6 @@ export const en: SourceCatalogue = {
                     'Waits for the compute journeys, which own the host and workunit screens.',
             },
             gap: {
-                history: {
-                    title: 'No history',
-                    body: "The read answers with the newest stored sample only, so the screen cannot show a trend, and a batch's progress over time is not visible. The poller keeps writing samples that no read returns. The candidate is a read over grid samples in a time range.",
-                },
                 noHost: {
                     title: 'A node with no host row',
                     body: 'The join fixes the common case, and a node the host registry does not know shows a bare id. The screen must say that no host names the node, rather than printing the id as if it were a name.',

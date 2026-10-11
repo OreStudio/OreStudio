@@ -1553,6 +1553,40 @@ const fr: SourceCatalogue = {
                 noSample:
                     'Aucun échantillon pour l’instant. Le déploiement ne stocke aucun résumé de grille, donc les compteurs ne peuvent pas être dessinés ; le tableau des nœuds ci-dessous tient seul.',
             },
+            series: {
+                title: 'Dans le temps',
+                lead: 'Comment la grille a évolué sur la période. Les heures sont en UTC.',
+                rangeLabel: 'Période',
+                ranges: { hour: 'Dernière heure', day: 'Dernier jour', week: 'Dernière semaine' },
+                empty: 'Il n\'y a aucun échantillon sur cette période. L\'échantillonneur n\'a peut-être pas encore tourné, ou la grille était arrêtée.',
+                gapNote: 'Une bande grisée est une période sans échantillon. Ce n\'est pas une mesure de zéro.',
+                load: {
+                    title: 'Charge',
+                    caption: 'Travail en cours par état de résultat',
+                    inactive: 'Inactif',
+                    unsent: 'Non envoyé',
+                    inProgress: 'En cours',
+                },
+                fleet: {
+                    title: 'Parc',
+                    caption: 'Hôtes, en ligne et inactifs',
+                    total: 'Hôtes',
+                    online: 'En ligne',
+                    idle: 'Inactifs',
+                },
+                throughput: {
+                    title: 'Débit',
+                    caption: 'Résultats terminés à chaque intervalle',
+                    finished: 'Terminés',
+                },
+                outcomes: {
+                    title: 'Issues',
+                    caption: 'Comment les résultats se sont terminés à chaque intervalle',
+                    success: 'Succès',
+                    clientError: 'Erreur client',
+                    noReply: 'Sans réponse',
+                },
+            },
             machines: {
                 title: 'Machines',
                 summary: '{up} machines sur {total} en marche',
@@ -1598,10 +1632,6 @@ const fr: SourceCatalogue = {
                     'En attente des parcours de calcul, qui possèdent les écrans des hôtes et des unités de travail.',
             },
             gap: {
-                history: {
-                    title: 'Aucun historique',
-                    body: 'La lecture ne répond qu’avec l’échantillon stocké le plus récent, donc l’écran ne peut pas montrer de tendance, et la progression d’un lot dans le temps n’est pas visible. Le collecteur continue d’écrire des échantillons qu’aucune lecture ne renvoie. Le candidat est une lecture des échantillons de grille sur une plage de temps.',
-                },
                 noHost: {
                     title: 'Un nœud sans ligne d’hôte',
                     body: 'La jointure règle le cas courant, et un nœud que le registre des hôtes ne connaît pas montre un identifiant nu. L’écran doit dire qu’aucun hôte ne nomme le nœud, plutôt que d’afficher l’identifiant comme s’il était un nom.',

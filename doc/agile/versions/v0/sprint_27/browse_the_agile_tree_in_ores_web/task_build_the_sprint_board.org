@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Development area has a Board tab, built to the accepted variant A. It shows the sprint line with a sprint picker held in the address (=?sprint=sprint_N=), the day of the sprint clamped to the sprint, four tiles, a search box and epic filters, a column for each state with a card for each story, and the story detail with its fields, pull request links and expandable tasks. A link in the detail opens the story or task doc on the existing doc page. The board reads =/api/agile/board= and =/api/agile/sprints=. The English, French and Portuguese text is in the catalogue, and the French and Portuguese is my translation, which needs a speaker. The tests cover the filter, column and day rules, the tab and the detail as markup. I did not drive the tab in a browser, and the current-story mark waits for the work tree task.

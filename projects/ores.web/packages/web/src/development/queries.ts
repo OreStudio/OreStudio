@@ -20,6 +20,7 @@
  */
 
 import { queryOptions } from '@tanstack/react-query';
+import { agile } from '../api/agile.js';
 import { qa } from '../api/qa.js';
 
 /**
@@ -69,6 +70,29 @@ export const qaQueries = {
         queryOptions({
             queryKey: docKey(id),
             queryFn: () => qa.doc(id),
+            meta: QUIET,
+        }),
+};
+
+export function boardKey(sprint: string | undefined): readonly [string, string] {
+    return ['agile-board', sprint ?? ''];
+}
+
+export const AGILE_SPRINTS_KEY = ['agile-sprints'] as const;
+
+/** The reads of the agile browser. Quiet for the same reason as the QA reads. */
+export const agileQueries = {
+    sprints: () =>
+        queryOptions({
+            queryKey: AGILE_SPRINTS_KEY,
+            queryFn: () => agile.sprints(),
+            meta: QUIET,
+        }),
+
+    board: (sprint: string | undefined) =>
+        queryOptions({
+            queryKey: boardKey(sprint),
+            queryFn: () => agile.board(sprint),
             meta: QUIET,
         }),
 };

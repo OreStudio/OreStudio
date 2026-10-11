@@ -290,6 +290,15 @@ void ore_commands::process_import(std::ostream& out,
     auto party_uuid = parse_uuid(out, party_ref, "party ID");
     if (!party_uuid)
         return;
+    // The platform scopes every read and write to the session's party and
+    // ignores a party a caller names. An import for another party would land
+    // in the session's party, so refuse it here.
+    const auto& session_party = session.auth().default_party_id;
+    if (!session_party.empty() && party_ref != session_party) {
+        fail(out) << "The import runs in the session's party (" << session_party << "), not "
+                  << party_ref << ". Log in to that party first." << std::endl;
+        return;
+    }
     choices.party_id = *party_uuid;
 
     ores::ore::messaging::ore_import_request req;

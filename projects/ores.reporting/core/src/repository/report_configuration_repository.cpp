@@ -258,7 +258,8 @@ report_configuration_repository::read_latest_by_configuration_type_code(
               "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
-    // the lookup keeps the rows of the session's party when it has one.
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
     auto found = execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
         query,

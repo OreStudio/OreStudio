@@ -41,6 +41,7 @@
 #include <fstream>
 #include <iterator>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <system_error>
 
@@ -292,12 +293,18 @@ void ore_commands::process_import(std::ostream& out,
         return;
     // The platform scopes every read and write to the session's party and
     // ignores a party a caller names. An import for another party would land
-    // in the session's party, so refuse it here.
-    const auto& session_party = session.auth().default_party_id;
-    if (!session_party.empty() && party_ref != session_party) {
-        fail(out) << "The import runs in the session's party (" << session_party << "), not "
-                  << party_ref << ". Log in to that party first." << std::endl;
-        return;
+    // in the session's party, so refuse it here. The two are compared as
+    // UUIDs, so the spelling of the text does not matter.
+    if (!session.auth().default_party_id.empty()) {
+        std::ostringstream ignored;
+        const auto session_uuid =
+            parse_uuid(ignored, session.auth().default_party_id, "session party");
+        if (session_uuid && *session_uuid != *party_uuid) {
+            fail(out) << "The import runs in the session's party ("
+                      << session.auth().default_party_id << "), not " << party_ref
+                      << ". Log in to that party first." << std::endl;
+            return;
+        }
     }
     choices.party_id = *party_uuid;
 

@@ -227,7 +227,8 @@ run_grant_repository::read_latest_by_resource(context ctx, const std::string& re
         where("tenant_id"_c == tid && "resource"_c == resource && "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
-    // the lookup keeps the rows of the session's party when it has one.
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
     auto found = execute_read_query<run_grant_entity, domain::run_grant>(
         ctx,
         query,

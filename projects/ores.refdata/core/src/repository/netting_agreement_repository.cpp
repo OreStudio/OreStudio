@@ -235,7 +235,8 @@ netting_agreement_repository::read_latest_by_agreement_number(context ctx,
                              "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
-    // the lookup keeps the rows of the session's party when it has one.
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
     auto found = execute_read_query<netting_agreement_entity, domain::netting_agreement>(
         ctx,
         query,

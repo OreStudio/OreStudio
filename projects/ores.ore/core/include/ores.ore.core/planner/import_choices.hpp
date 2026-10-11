@@ -140,8 +140,11 @@ struct import_choices {
      * When set, every portfolio the import creates belongs to this sandbox and
      * every book it creates is a virtual book of it, so nothing enters the
      * official portfolio tree. The wrapping parent portfolio, if any, is a
-     * root of the sandbox; an existing parent portfolio must already belong
-     * to it. Left empty, the import lands in the official tree.
+     * root of the sandbox. An existing parent portfolio must belong to the
+     * sandbox too, which the database enforces (a portfolio and its parent
+     * share a sandbox). The choice does not apply when existing_target_book_id
+     * is set: the import then creates no portfolio or book. Left empty, the
+     * import lands in the official tree.
      */
     std::optional<boost::uuids::uuid> sandbox_id;
 

@@ -370,8 +370,16 @@ std::vector<domain::{{entity_singular}}>
 {{/read_tenant_filtered}}
 
 {{#domain_entity.has_party_column}}
+{{#parent_column}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{column}}.");
+{{/parent_column}}
+{{^parent_column}}
     // A key names a row of one party: another party can hold the same key, so
-    // the lookup keeps the rows of the session's party when it has one.
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
     auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
@@ -386,6 +394,7 @@ std::vector<domain::{{entity_singular}}>
 {{/domain_entity.party_column_optional}}
         });
     return found;
+{{/parent_column}}
 {{/domain_entity.has_party_column}}
 {{^domain_entity.has_party_column}}
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(

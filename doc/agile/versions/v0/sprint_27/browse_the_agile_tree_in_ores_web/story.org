@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 62313BC5-7E9D-4AAF-B74C-53AE63B3D943
+:END:
+#+title: Story: Browse the agile tree in ores.web
+#+description: Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the backlog buckets and any doc by link to the Development module in ores.web. Reach parity with ores.dsh_kanban and ores.org-js, then retire both and their publishing (the copy into the site in ores-build-site.el, the exclude patterns, and the memory, tag and modeling pages that name them). Check that no site page links to the old agile view.
+#+type: story
+#+level: s2
+#+filetags: :web:qa:testing:kanban:v0:sprint_27:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the backlog buckets and any doc by link to the Development module in ores.web. Reach parity with ores.dsh_kanban and ores.org-js, then retire both and their publishing (the copy into the site in ores-build-site.el, the exclude patterns, and the memory, tag and modeling pages that name them). Check that no site page links to the old agile view.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- A person browses the sprint, its stories and tasks, and the backlog buckets in ores.web, and opens any doc by link.
+- The browser module matches what =ores.dsh_kanban= and =ores.org-js= show. Anything it does not match is listed and accepted.
+- =ores.org-js= and =ores.dsh_kanban= are removed, with their publishing, their exclude patterns and the pages that name them.
+- No page on the site links to the old agile view.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:94820929-77DC-47B2-89D3-40B485AEA36B][Scaffold story: Browse the agile tree in ores.web]] | BACKLOG | | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-10-11 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the backlog buckets and any doc by link to the Development module in ores.web. Reach parity with ores.dsh_kanban and ores.org-js, then retire both and their publishing (the copy into the site in ores-build-site.el, the exclude patterns, and the memory, tag and modeling pages that name them). Check that no site page links to the old agile view.
+
+** Why
+
+Story 2 of the QA runner arc. It lets the team drop the old agile views and keep one browser module.
+
+** References
+
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]
+
+** See also
+
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]

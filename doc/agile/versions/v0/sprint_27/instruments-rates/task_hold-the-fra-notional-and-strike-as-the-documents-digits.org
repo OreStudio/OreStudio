@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/hold-the-fra-notional-and-strike-as-the-documents-digits
-#+pr:
+#+pr: 3129
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3129][#3129]] | [ore] Hold the FRA notional and strike as the document's digits |
 
 * Review
 

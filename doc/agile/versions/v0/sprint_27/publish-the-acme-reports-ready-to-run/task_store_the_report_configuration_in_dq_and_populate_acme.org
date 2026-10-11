@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 3A0C7559-31F3-4651-8596-262F5A0CACC5
+:END:
+#+title: Task: Store the report configuration documents in DQ and populate ACME's
+#+description: Add the DQ staging and publish for every configuration document an ACME report reads, then populate ACME's own datasets so each report definition publishes with all the configuration it needs, with no ORE import.
+#+type: task
+#+level: s1
+#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report definition is ready to run only when every configuration document its report type and analytics need is published and bound. Step one adds the DQ tables that store those documents and the publish that writes them to the owning component. Step two populates ACME's datasets, crafted for the reports each party runs and inspired by the ORE samples, and publishes the bindings, with declared dataset dependencies in the order configurations, then definitions with bindings, then risk configurations. The earlier analysis already says which documents each report reads, and this task builds on it and does not repeat it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- Every configuration kind that an ACME report reads has a DQ staging table, an artefact type and a publish function that writes the owning component's tables, party scoped and idempotent. The kinds are the four the risk type requires (pricing engines, today's market, curve configuration, conventions) and the extras the analysis names (simulation, sensitivity, stress test, counterparty information, netting set definitions).
+- Each ACME party has a dataset per kind, crafted for the reports that party runs. A dataset declares its dependency on the data it needs.
+- After a clean provision every ACME definition has a binding for each configuration type its report type requires, and the extras its analytics need. No ORE import runs.
+- The reports that read a kind nothing can store yet are listed with what they wait for, and the report design is reconciled with that list.
+
+* Plan
+
+Two parts, in this order, as the product owner decided on 2026-10-11.
+
+*Part 1. The DQ tables that store the data.*
+
+1. Take the inventory against the current tables. The existing analysis lists
+   what each report reads. Check each kind against what the schema holds today
+   and mark it as stored, stageable or unstorable. A kind with no owning table
+   gets its entity first.
+2. For each kind, add the DQ staging table and its artefact type, and the
+   publish function that writes the owning component's tables for the party a
+   publish names. The codegen flag that generates a staging table from an entity
+   model is the route, as the instrument conventions took.
+3. Add the publish of the bindings between a definition and its documents, and
+   change the risk configuration publish so it reads those bindings and no longer
+   assumes an ORE import wrote them.
+
+*Part 2. The ACME datasets.*
+
+4. Craft each party's documents for the reports that party runs, inspired by the
+   ORE samples and not copied from them. Start from the analysis of which reports
+   read which documents, and from the report design of which party runs which
+   report.
+5. Register a dataset per party and kind in the party's bundle. Declare the
+   dependencies: the configurations before the definitions with their bindings,
+   and those before the risk configurations.
+6. Prove it on a clean provision: every definition has all its bindings, and a
+   readiness query lists nothing missing.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+*The analysis already exists.* It is in these places.
+
+- [[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]]: for each of the seeded definitions, the
+  four documents every risk run reads and the extra documents some analytics
+  read (simulation, counterparty, netting, sensitivity, stress test), and which
+  of them can be stored.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][The ORE report configuration vocabulary]] and
+  [[id:0FC2B828-ED9C-4C8F-A8DD-84C1BB913A09][the ORE report configuration documents]]: what each document is, who owns
+  it, and the target model.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]]: the pricing configuration domain model.
+- [[id:A77947D9-FB2E-4518-A26B-21680DB0E1E1][World data versus party configuration]]: the pricing engines, curve
+  configurations, today's market and instrument conventions are party
+  configuration.
+- The sprint 26 story on ORE report configuration built the entities, the
+  document stores and the import. Its derivation of the seventeen configuration
+  types is in its evidence folder.
+
+*What a reader must correct in that analysis.* It assumed the documents arrive
+through an ORE import and that the configuration dataset depends on that import.
+The product owner ruled on 2026-10-11 that the documents are Acme's own crafted
+data and that no import step exists.
+
+*Open points the first step settles.*
+
+- The tables I found for the documents are pricing engines, today's market,
+  curve configuration, the instrument conventions, stress test and credit
+  simulation. I found no table for the simulation and the sensitivity analysis
+  documents, which several reports read. The analysis says savers exist for
+  them, so the inventory has to find where they are stored, or add the entities.
+- The analysis marks four reports as blocked, because they read a kind that
+  nothing stores yet: Stressed VaR and the Intraday Risk Monitor and the Board
+  Risk Dashboard read a historical return, and P&L Attribution reads a Basel
+  traffic light. The report design decided that Stressed VaR and P&L Attribution
+  run at every trading entity (rule D7). Either the two kinds get stored, or the
+  design and the blocked list are reconciled. The task must do one of the two.
+- Part of the earlier work is done in another environment. The story "Build the
+  retire or reset tenant journey" published the risk report configurations as a
+  dataset and wrote the function that expands a root portfolio into its books.
+  This task changes that publish, so it should tell that environment.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

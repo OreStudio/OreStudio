@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 0FFD3EF1-9AF8-43BA-899C-C5018F10272E
+:END:
+#+title: Story: Run compute nodes on the local network hosts
+#+description: Deploy the current environment's compute node to the machines on the local network, goedel, newton and 192.168.1.11, so each joins an existing environment's grid and runs work. Not every host is always up.
+#+type: story
+#+level: s2
+#+filetags: :compute:devops:grid:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.22) and 192.168.1.11, run compute nodes (ores.compute.wrapper) that join an existing environment's grid over NATS. Each host is reachable over SSH, and not every host is up at any one time, so the deploy must report a host that is down and carry on with the rest. The story builds on the work done for the WSL host: the compass env deploy command with the compute role, proven live on Newton in sprint 25, and the backlog items on the vendored ORE engine package and on compute tenancy. The story records, per host, the operating system, the container tooling found, and the packages the host still needs, so that nothing is installed without review.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | goedel runs a compute node and has executed work from the serving environment. The deploy skips a host that is down. |
+| Waiting on    | The laptop needs podman installed (see Hosts and packages). Newton is switched off. |
+| Next          | Install the laptop's packages and deploy it. Deploy newton when it is up. Make the nodes survive a reboot. |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- Each host that is up has a named env profile and a compute node deployed with the compass env deploy command and the compute role.
+- Each deployed node appears in the serving environment's compute host table, and its heartbeat reaches the grid screen.
+- A workunit dispatched to the grid runs on a deployed node and its result is visible in the serving environment, or the story records why it cannot.
+- A host that is down is reported by the deploy and does not stop the others.
+- The packages each host still needs are listed per host in the story, and none is installed without review.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FD10984F-F6F6-44F7-9864-8BFFE58000B4][Scaffold story: Run compute nodes on the local network hosts]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:720AE70D-4CC9-4573-987F-9B7F9F8243A1][Survey the hosts and the existing deploy tooling]] | STARTED | 2026-10-11 | | Initial task for: Run compute nodes on the local network hosts |
+
+* Results, 2026-10-11
+
+** goedel
+
+=compass env deploy goedel --role compute= deployed the node. It connected over
+mutual TLS to the serving NATS, fetched the signing key, subscribed to the
+compute JetStream consumer and registered itself in the host table as
+=plucky-orca-96115e17= (host id =13834e76-9611-5e17-a655-eccc393c5149=, the
+UUID v5 of =goedel:1=).
+
+A batch of 18 ORE jobs (the TA002 interest rate swap) was dispatched from the
+shell. All 18 results finished with outcome Success, spread over the six
+nodes of the grid. goedel executed 2 of them. The vendored 1.8.17.0 package
+ran inside the container with its bundled libraries.
+
+** Deploying to all hosts
+
+=compass env deploy all= deployed goedel, refused the laptop because podman is
+missing (before any transfer, so the laptop holds no leftover files), and
+reported newton as down. It then printed a summary and exited with status 1.
+
+** Defect found and fixed
+
+The remote run script passed =--log-directory= without =--log-filename=. The
+logging options validator was tightened after sprint 25, so the node exited at
+start with "Output directory supplied without a file name". The script now
+passes a file name and also logs to the console, so =podman logs= works. The
+runtime role's service loop had the same line, and it is fixed the same way.
+The runtime role was not deployed here, so that half is untested.
+
+* Hosts and packages
+
+Surveyed on 2026-10-11 over SSH, read-only. The serving environment is
+=solid_dirac= on 192.168.1.172: NATS on port 21005 with mutual TLS, the
+storage and package HTTP server on port 21000, wire format msgpack, subject
+prefix =ores.dev.solid_dirac=. Its NATS server certificate carries the LAN
+address 192.168.1.172 as an IP SAN, so a remote node can verify it. Both
+reachable hosts open TCP to ports 21005 and 21000 on the serving host.
+
+| Host | Address | State on 2026-10-11 | System | Resources |
+|------+---------+---------------------+--------+-----------|
+| goedel | 192.168.1.199 | up | Debian forky, native, GNOME desktop, glibc 2.43 | 4 cores, 7 GiB, 20 GiB free |
+| newton | 192.168.1.22 | down: no route to host | WSL2 host used in sprint 25 | not surveyed |
+| laptop | 192.168.1.11 | up | Debian forky in WSL2, mirrored network, systemd on, glibc 2.43 | 8 cores, 2.7 GiB, 956 GiB free |
+
+** goedel
+
+Ready for rootless podman. It has podman 5.8.6 with crun, conmon,
+fuse-overlayfs, pasta and slirp4netns, overlay storage, subuid and subgid
+ranges, user linger on and a user D-Bus. netavark is absent, which does not
+matter for host networking. It already runs its own Postgres on
+127.0.0.1:5432 and a NATS on 127.0.0.1:4222, and holds a repository checkout
+under =~/Development/OreStudio=. The compute container uses host networking
+and only connects outward, so it does not touch any of these.
+
+Packages to install: none.
+
+Passwordless sudo is not available to the user, which is why nothing is
+installed by this story.
+
+** laptop (192.168.1.11, WSL2)
+
+Missing the whole rootless container stack. =sudo= asks for a password, so
+nothing was installed.
+
+Packages to install, as root:
+
+- =podman= (Debian candidate 5.8.6), which brings in =conmon=, =crun=,
+  =uidmap= (for =newuidmap= and =newgidmap=), =passt= and =fuse-overlayfs= as
+  dependencies. Install them explicitly if the dependencies are not pulled.
+- =curl=, =rsync= and =jq=, which are not needed by the deploy but are used to
+  check a node by hand.
+
+Then, as the user:
+
+- =loginctl enable-linger marco= so the node survives logout.
+- =systemctl --user start dbus.socket=, which =compass env deploy laptop
+  --setup-host= does.
+
+WSL settings to review: the distribution has 2.7 GiB of memory. The ORE engine
+runs one process per work unit, so raise =memory= in =.wslconfig= if jobs are
+to run there.
+
+** newton (192.168.1.22)
+
+Down on 2026-10-11, so it was not surveyed. It was the host of the sprint 25
+proof, so it is expected to have podman. Survey it when it is up, with the
+commands in the survey task.
+
+* Findings in the backlog
+
+- The deploy tooling already exists: =compass env deploy host --role compute=
+  was proven live against Newton in sprint 25. This story reuses it.
+- The capture "Vendored ORE engine package missing its own shared libraries"
+  is stale. The vendored packages (1.8.16 and 1.8.17) now bundle =lib/=,
+  including =libOREAnalytics.so=, =libQuantExt.so= and =libQuantLib.so.1=.
+  The capture should be closed.
+- The captures "Compute repositories should query the system tenant" and "The
+  wrapper consumes one tenant's work" are still open. A node joins and
+  registers under the system tenant, which is the case this story needs. Work
+  for other tenants waits for those.
+- The compute image stages 1.2 GiB of libraries because the build is a debug
+  build, which makes the transfer to each host heavy.
+
+* Decisions
+
+- The nodes join the system tenant and register themselves on their first
+  heartbeat, as the sprint 25 proof did. No host row is created by hand. The
+  host id of a node is the UUID v5 of =hostname:1=, which is how the local
+  wrappers get theirs.
+- =compass env deploy all= probes each host with a 5 second ssh timeout before it
+  deploys, and it checks for podman on the remote before it transfers the
+  image. A host that fails either check is reported and the run carries on.
+- Nothing was installed on any host. The packages the laptop needs are a list
+  in this story for review.
+- The node runs with =--rm= and no restart policy, so it does not come back
+  after a reboot of the host. Making nodes permanent (a Quadlet or a user
+  systemd unit) is left as follow-up work.
+
+* Out of scope
+
+-

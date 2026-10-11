@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 720AE70D-4CC9-4573-987F-9B7F9F8243A1
+:END:
+#+title: Task: Survey the hosts and the existing deploy tooling
+#+description: Initial task for: Run compute nodes on the local network hosts
+#+type: task
+#+level: s1
+#+filetags: :run_compute_nodes_on_the_local_network:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-run-compute-nodes-on-the-local-network
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0FFD3EF1-9AF8-43BA-899C-C5018F10272E][Run compute nodes on the local network hosts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.22) and 192.168.1.11, run compute nodes (ores.compute.wrapper) that join an existing environment's grid over NATS. Each host is reachable over SSH, and not every host is up at any one time, so the deploy must report a host that is down and carry on with the rest. The story builds on the work done for the WSL host: the compass env deploy command with the compute role, proven live on Newton in sprint 25, and the backlog items on the vendored ORE engine package and on compute tenancy. The story records, per host, the operating system, the container tooling found, and the packages the host still needs, so that nothing is installed without review.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0FFD3EF1-9AF8-43BA-899C-C5018F10272E][Run compute nodes on the local network hosts]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- Each host that is up has a named env profile and a compute node deployed with the compass env deploy command and the compute role.
+- Each deployed node appears in the serving environment's compute host table, and its heartbeat reaches the grid screen.
+- A workunit dispatched to the grid runs on a deployed node and its result is visible in the serving environment, or the story records why it cannot.
+- A host that is down is reported by the deploy and does not stop the others.
+- The packages each host still needs are listed per host in the story, and none is installed without review.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

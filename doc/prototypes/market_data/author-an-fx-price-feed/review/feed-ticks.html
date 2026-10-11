@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed ticks &mdash; Gemini review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0d10; color: #f3f4f6; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-hidden">
+<div style="background:#312e81;color:#e0e7ff;padding:.5rem 1rem;font:500 13px/1.6 Inter,system-ui,sans-serif;text-align:center">Gemini review &middot; a generated alternative to the agreed prototype &middot; mock data, nothing is stored &middot; <a href="../index.html" style="color:#fff;text-decoration:underline">the agreed prototype &rarr;</a></div>
+    <!-- Top Navigation -->
+    <header class="bg-[#12151c] border-b border-[#1f2430] px-6 py-2.5 flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+                <span class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    ORE Studio
+                </span>
+                <span class="text-[#4b5563]">/</span>
+                <div class="flex items-center space-x-2 bg-[#181c25] px-2.5 py-1 rounded border border-[#262c3a]">
+                    <img src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/external/acme/Acme-corp.png" alt="Acme Logo" class="w-3.5 h-3.5 object-contain">
+                    <span class="text-xs font-medium text-gray-200">Acme Corporation</span>
+                </div>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 text-xs">
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Home</a>
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Parties</a>
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Organisation</a>
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Requests</a>
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Reference data</a>
+                <a href="#" class="px-2.5 py-1 rounded text-white bg-[#181c25] font-medium border border-[#262c3a]">Market data</a>
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Operations</a>
+            </nav>
+        </div>
+        <div class="flex items-center space-x-3 text-xs text-gray-400">
+            <div class="flex items-center gap-2 bg-[#181c25] px-2.5 py-1 rounded border border-[#262c3a] font-mono text-[11px]">
+                <span class="text-emerald-400">● Engine: 1.2ms</span>
+                <span class="text-gray-600">|</span>
+                <span class="text-gray-300">Process: RUNNING</span>
+            </div>
+            <div class="w-6 h-6 rounded-full bg-[#262c3a] flex items-center justify-center text-xs font-semibold text-gray-200">AC</div>
+        </div>
+    </header>
+
+    <!-- Subheader / Asset Control Bar -->
+    <div class="px-6 py-3 border-b border-[#1f2430] bg-[#0e1015] flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-1.5 bg-[#12151c] px-2.5 py-1.5 rounded border border-[#1f2430]">
+                <span class="text-base">🇺🇸</span>
+                <span class="text-base">🇨🇦</span>
+            </div>
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-lg font-bold text-white tracking-tight font-mono">synthetic.2026realistic.usdcad</h1>
+                    <span class="bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 text-[10px] font-mono px-2 py-0.5 rounded flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Simulating
+                    </span>
+                </div>
+                <p class="text-xs text-gray-400 font-mono">USD/CAD · version 1 · Gaussian mixture process</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button class="bg-[#181c25] hover:bg-[#262c3a] text-gray-200 text-xs font-medium px-3 py-1.5 rounded border border-[#262c3a] transition-colors">Editable</button>
+            <button class="bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 text-xs font-medium px-3 py-1.5 rounded border border-amber-900/50 transition-colors">Stop Process</button>
+            <button class="bg-[#181c25] hover:bg-[#262c3a] text-gray-200 text-xs font-medium px-3 py-1.5 rounded border border-[#262c3a] transition-colors">Edit</button>
+            <button class="bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium px-3 py-1.5 rounded border border-rose-900/50 transition-colors">Delete</button>
+        </div>
+    </div>
+
+    <!-- Tabs Bar -->
+    <div class="px-6 border-b border-[#1f2430] bg-[#0e1015] flex space-x-6 text-xs font-medium shrink-0">
+        <button class="py-2.5 text-gray-400 hover:text-gray-200 transition-colors">Details</button>
+        <button class="py-2.5 text-gray-400 hover:text-gray-200 transition-colors">Mixture</button>
+        <button class="py-2.5 text-indigo-400 border-b-2 border-indigo-500">Ticks</button>
+        <button class="py-2.5 text-gray-400 hover:text-gray-200 transition-colors">History & Audit</button>
+    </div>
+
+    <!-- Main Trading Workspace Grid -->
+    <div class="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
+        
+        <!-- Left / Center: Advanced Charting Terminal (9 cols) -->
+        <div class="xl:col-span-9 flex flex-col bg-[#0b0d10] p-6 overflow-y-auto">
+            
+            <!-- Terminal Toolbar & Stats -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4 bg-[#12151c] border border-[#1f2430] p-3 rounded-lg">
+                <div class="flex items-center space-x-4 text-xs font-mono">
+                    <div>
+                        <span class="text-gray-500 uppercase text-[10px] block">Ticks shown</span>
+                        <select class="bg-[#0b0d10] border border-[#262c3a] rounded px-2 py-1 text-white font-mono text-xs mt-0.5">
+                            <option>200</option>
+                            <option>500</option>
+                            <option>1000</option>
+                            <option>All session</option>
+                        </select>
+                    </div>
+                    <div class="h-6 w-[1px] bg-[#1f2430]"></div>
+                    <div>
+                        <span class="text-gray-500 uppercase text-[10px] block">Last Price</span>
+                        <span class="text-sm font-bold text-white font-mono">1.36329</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 uppercase text-[10px] block">Timestamp</span>
+                        <span class="text-xs text-gray-300 font-mono">11:25:06</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 uppercase text-[10px] block">Delta (190 ticks)</span>
+                        <span class="text-xs font-bold text-rose-400 font-mono">-0.00050</span>
+                    </div>
+                </div>
+
+                <!-- Timeframe & Study Toggles -->
+                <div class="flex items-center space-x-1 bg-[#0b0d10] p-1 rounded border border-[#1f2430] text-xs font-mono">
+                    <button class="px-2.5 py-1 rounded bg-[#181c25] text-white font-medium">Tick</button>
+                    <button class="px-2.5 py-1 rounded text-gray-400 hover:text-white">1s</button>
+                    <button class="px-2.5 py-1 rounded text-gray-400 hover:text-white">5s</button>
+                    <button class="px-2.5 py-1 rounded text-gray-400 hover:text-white">1m</button>
+                    <button class="px-2.5 py-1 rounded text-gray-400 hover:text-white">EMA</button>
+                </div>
+            </div>
+
+            <!-- Interactive Live Chart Canvas Container -->
+            <div class="flex-1 bg-[#12151c] border border-[#1f2430] rounded-xl p-4 flex flex-col justify-between relative min-h-[420px]">
+                
+                <!-- Chart Header Legend -->
+                <div class="flex items-center justify-between text-xs font-mono text-gray-400 z-10">
+                    <div class="flex items-center gap-3">
+                        <span class="text-white font-semibold">USD/CAD Synthetic Return Path</span>
+                        <span class="text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/50">Stochastic Engine Output</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span>High: <strong class="text-white">1.36442</strong></span>
+                        <span>Low: <strong class="text-white">1.36312</strong></span>
+                    </div>
+                </div>
+
+                <!-- SVG Trading Chart -->
+                <div class="relative flex-1 my-2">
+                    <svg class="w-full h-full overflow-visible font-mono text-[10px]" viewBox="0 0 900 300" preserveAspectRatio="none">
+                        <!-- Horizontal Grid Lines -->
+                        <line x1="0" y1="50" x2="900" y2="50" stroke="#1a202c" stroke-width="1" />
+                        <line x1="0" y1="125" x2="900" y2="125" stroke="#1a202c" stroke-width="1" />
+                        <line x1="0" y1="200" x2="900" y2="200" stroke="#1a202c" stroke-width="1" />
+                        <line x1="0" y1="275" x2="900" y2="275" stroke="#1a202c" stroke-width="1" />
+
+                        <!-- Price Axis Labels (Right side) -->
+                        <text x="885" y="45" fill="#64748b" text-anchor="end">1.36422</text>
+                        <text x="885" y="120" fill="#64748b" text-anchor="end">1.36375</text>
+                        <text x="885" y="195" fill="#64748b" text-anchor="end">1.36348</text>
+                        <text x="885" y="270" fill="#64748b" text-anchor="end">1.36321</text>
+
+                        <!-- Main Price Ticks Line Chart -->
+                        <path d="M 0 220 Q 80 180, 150 140 T 300 80 T 450 160 T 600 210 T 750 265 T 850 230 T 900 240" fill="none" stroke="#3b82f6" stroke-width="2" />
+                        <path d="M 0 220 Q 80 180, 150 140 T 300 80 T 450 160 T 600 210 T 750 265 T 850 230 T 900 240 L 900 300 L 0 300 Z" fill="rgba(59, 130, 246, 0.08)" />
+
+                        <!-- Moving Average Overlay (EMA 20) -->
+                        <path d="M 0 230 Q 80 190, 150 155 T 300 95 T 450 170 T 600 220 T 750 255 T 850 235 T 900 242" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" />
+                    </svg>
+                </div>
+
+                <!-- Chart Footer Time Axis -->
+                <div class="flex items-center justify-between text-xs font-mono text-gray-500 pt-2 border-t border-[#1a202c]">
+                    <span>11:18:47</span>
+                    <span>11:21:00</span>
+                    <span>11:23:15</span>
+                    <span class="text-gray-300">11:25:06</span>
+                </div>
+            </div>
+
+            <div class="text-[11px] text-gray-500 mt-3 font-mono">
+                The last prices the feed made, newest on the right. The web server keeps the last 500 of each running feed from when it began to listen.
+            </div>
+        </div>
+
+        <!-- Right: Synthetic Process Parameters & Diagnostics Sidebar (3 cols) -->
+        <div class="xl:col-span-3 bg-[#12151c] border-l border-[#1f2430] p-5 flex flex-col justify-between overflow-y-auto">
+            <div class="space-y-6">
+                
+                <!-- Section Header -->
+                <div class="flex items-center justify-between pb-3 border-b border-[#1f2430]">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-white font-mono">Process Parameters</h2>
+                    <span class="text-[10px] font-mono text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/50">Mixture v1</span>
+                </div>
+
+                <!-- Gaussian Components Breakdown -->
+                <div class="space-y-3 font-mono text-xs">
+                    <div class="text-[10px] uppercase text-gray-500 tracking-wider flex justify-between">
+                        <span>Component</span>
+                        <span>Weight (w)</span>
+                        <span>Dev (σ)</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="bg-[#0b0d10] p-2 rounded border border-[#1f2430] space-y-1">
+                            <div class="flex justify-between items-center text-white">
+                                <span class="font-sans font-medium text-xs">#0: 2026 Realistic</span>
+                                <span class="text-emerald-400">0.95</span>
+                            </div>
+                            <div class="flex justify-between text-[11px] text-gray-400">
+                                <span>Mean (μ): 0</span>
+                                <span>σ: 0.0000201</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#0b0d10] p-2 rounded border border-[#1f2430] space-y-1">
+                            <div class="flex justify-between items-center text-white">
+                                <span class="font-sans font-medium text-xs">#1: 2026 Realistic</span>
+                                <span class="text-indigo-400">0.05</span>
+                            </div>
+                            <div class="flex justify-between text-[11px] text-gray-400">
+                                <span>Mean (μ): 0</span>
+                                <span>σ: 0.0000804</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="py-2 px-2 bg-[#0b0d10] border border-[#1f2430] rounded flex items-center justify-between text-[11px]">
+                        <span class="text-gray-400">Weight Sum:</span>
+                        <span class="text-emerald-400 font-bold">1.0000 (Normalised)</span>
+                    </div>
+                </div>
+
+                <!-- Engine Telemetry Stats -->
+                <div class="pt-4 border-t border-[#1f2430] space-y-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-white font-mono">Engine Diagnostics</h3>
+                    <div class="bg-[#0b0d10] p-3 rounded border border-[#1f2430] space-y-2 text-xs font-mono">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Total Ticks Generated:</span>
+                            <span class="text-white">14,520</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Buffer Utilization:</span>
+                            <span class="text-indigo-400">500 / 500</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Random Seed:</span>
+                            <span class="text-white">42</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Process Latency:</span>
+                            <span class="text-emerald-400">0.14ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Footer -->
+            <div class="pt-4 border-t border-[#1f2430]">
+                <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded text-xs transition-colors shadow-sm">
+                    Export Tick History (CSV)
+                </button>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

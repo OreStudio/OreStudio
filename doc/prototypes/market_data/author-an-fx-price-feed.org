@@ -7,12 +7,12 @@
 #+level: cross
 #+filetags: :prototype:ui:market_data:synthetic:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-10-11
 
 | Item          | Where                                      |
 |---------------+--------------------------------------------|
 | Prototype     | [[file:author-an-fx-price-feed/][the prototype]]         |
-| Gemini review | none |
+| Gemini review | [[file:author-an-fx-price-feed/review/][the review]] |
 | Group         | [[file:index.org][Market data prototypes]] |
 
 * Summary
@@ -110,6 +110,49 @@ not one panel: the instrument and the audit row stand together, the price
 behaviour carries the clock and previews the process, and a GMM feed shows its
 weight sum before the save normalises it. The three variants and the four states
 stayed on the page as the record.
+
+** The Gemini review
+
+Gemini drew the built screen's Ticks tab again, from a screenshot, as a
+trading terminal: [[file:author-an-fx-price-feed/review/][the review]]. It is
+read against what the screen can show today, since the BFF keeps the newest
+500 ticks of each running feed and the server reports nothing else about a
+running feed.
+
+What the review gets right, and the screen can take:
+
+- *A stats strip over the plot.* The last price, its time, the move over the
+  ticks shown, and the high and the low of the window, each labelled, in a
+  bar of its own. The screen shows the first three in one sentence and not
+  the high and low.
+- *A price chart that reads as one.* A right-hand price axis, a time axis,
+  horizontal grid lines and a light fill under the line.
+- *An optional moving average.* An EMA drawn over the ticks, dashed, toggled
+  on. It is computed from the ticks the page already holds.
+- *The process beside its output.* A narrow column with the mixture the feed
+  runs (each component's weight, μ and σ) and the engine, so the plot is read
+  against what produced it without changing tab.
+- *The engine in the header.* The subtitle names the pair, the version and
+  the engine.
+- *Export.* The ticks shown, as CSV, made in the browser.
+
+What it gets wrong, and the screen does not take:
+
+- *Telemetry the server does not have.* Engine latency, process latency, the
+  total ticks generated and the random seed are invented. No operation
+  reports them, and a screen that shows them would show numbers nobody
+  measured.
+- *Choices the buffer cannot honour.* 1000 ticks and "All session" exceed
+  the 500 the BFF keeps. Time buckets (1s, 5s, 1m) resample a window of a few
+  minutes into a handful of points; they are worth having only once the
+  stored history can be read, which waits for the oresmd task.
+- *Words that say the wrong thing.* "Synthetic Return Path" labels a price,
+  not a return. "1.0000 (Normalised)" says the weights were normalised; the
+  save keeps them as typed and only the draw normalises them. "Editable" is a
+  button with no action. "History & Audit" is the History tab.
+- *Its own shell and colours.* A top bar, fonts and a palette of its own, and
+  a full-height layout that hides overflow. The screen keeps the
+  application's shell, tokens and page flow.
 
 ** What it does not settle
 

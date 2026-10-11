@@ -59,6 +59,28 @@ task and name that file in the Command column.
 
 * Notes
 
+- The "synthetic theme" is renamed to the synthetic feeds dataset: artefact
+  type =synthetic_feeds=, =ores_synthetic_publish_feeds_from_dq_fn= on
+  =synthetic.v1.ops.publish_feeds_from_dq=, dataset codes =synthetic.feeds.*=,
+  and the =start_market_feeds= step's =dataset= argument. It is the one way to
+  set up synthetic feeds.
+- =synthetic.feeds.bloomberg= replaces the 2026 Realistic dataset, in the
+  =synthetic_bloomberg= bundle: a USD spot for 26 currencies and an
+  overnight-benchmark curve for 28, which covers the currency gaps of
+  [[id:E2FA0F12-2972-468B-93E8-2097E9E40113][the ACME feeds capture]]. Each feed
+  row names its provider (=provider_code= on the FX and IR artefacts); the
+  collection names the provider when every row agrees. The 2016 ORE Samples
+  dataset is unchanged beyond the rename.
+- The IR index families gained =cdi=, =czeonia=, =buboron=, =telboron=,
+  =tlref=, =camara=, =ibr= and =hibor=, named as ORE's conventions name them,
+  with matching overnight index conventions.
+- A first attempt published Bloomberg as a system collection through a
+  second publish path. It was reverted: it duplicated the one path, and the
+  generated repositories do not read the system tenant, so no tenant could
+  bind to it.
+- The dead party provisioning plan (=party_provisioning_plan.hpp=, a
+  hard-coded bundle list nothing called) is deleted.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

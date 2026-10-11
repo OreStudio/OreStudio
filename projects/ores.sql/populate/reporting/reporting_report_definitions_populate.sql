@@ -22,7 +22,7 @@
  * Report Definition Seed Population Script — Tiered
  *
  * Registers the ore.report_definitions dataset and seeds the artefact table
- * with 30 report definitions across four audience tiers:
+ * with the report definitions, across four audience tiers:
  *
  *   Common      — every entity (data quality, system health, audit)
  *   Regulatory  — all regulated entities (SA-CCR, leverage, FRTB, LCR, etc.)
@@ -72,7 +72,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'ORE Analytics Report Definitions',
-        '30 tiered ORE report definitions covering common operational reports, regulatory capital, strategic consolidation, and trading-desk analytics. Tier-filtered during per-entity provisioning.',
+        'Tiered ORE report definitions covering common operational reports, regulatory capital, strategic consolidation, and trading-desk analytics. Tier-filtered during per-entity provisioning.',
         'ORESTUDIO',
         'Seed data for party provisioning wizard report setup',
         current_date,
@@ -82,7 +82,7 @@ BEGIN
 END $$;
 
 -- =============================================================================
--- Artefact Seed Data — 30 reports across 4 tiers
+-- Artefact Seed Data — reports across four tiers
 -- =============================================================================
 
 do $$
@@ -109,7 +109,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating 30 tiered report definitions for dataset: ore.report_definitions';
+    raise debug 'Populating tiered report definitions for dataset: ore.report_definitions';
 
     insert into ores_dq_report_definitions_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -118,7 +118,7 @@ begin
     )
     values
     -- =========================================================================
-    -- Common — every entity (3 reports)
+    -- Common — every entity
     -- =========================================================================
 
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -137,7 +137,7 @@ begin
      'risk', '0 6 * * 1-5', 'skip', 15, 'common', null),
 
     -- =========================================================================
-    -- Regulatory — all regulated entities (7 reports)
+    -- Regulatory — all regulated entities
     -- =========================================================================
 
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -181,7 +181,7 @@ begin
      'risk', '0 8 * * 1-5', 'skip', 55, 'regulatory', 'HK'),
 
     -- =========================================================================
-    -- Strategic — holding company only (4 reports)
+    -- Strategic — holding company only
     -- =========================================================================
 
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -205,7 +205,7 @@ begin
      'risk', '0 6 1 * *', 'skip', 75, 'strategic', null),
 
     -- =========================================================================
-    -- Trading — trading desks only (16 reports)
+    -- Trading — trading desks only
     -- =========================================================================
 
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -288,7 +288,7 @@ begin
      'Displays the most important Greeks across the entire deal set for a book or portfolio. The primary real-time risk overview report for traders and risk managers. Configurable measures (PV, Daily P&L, MTD P&L, YTD P&L, Delta P&L) and aggregation dimensions (Book, Portfolio, Currency Pair, Greek, Unit Hedge).',
      'risk', '*/10 * * * *', 'skip', 155, 'trading', null);
 
-    raise debug 'Inserted 30 tiered report definition artefacts for ore.report_definitions';
+    raise debug 'Inserted tiered report definition artefacts for ore.report_definitions';
 end;
 $$ language plpgsql;
 

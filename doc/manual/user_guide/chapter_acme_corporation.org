@@ -138,24 +138,24 @@ Acme Corporation Plc              (party, root — group holding company)
 
 Each operating company carries its own trading floor, modelled on a
 global investment bank's Markets division: a Global Markets division
-split into Rates, Credit, and FX trading desks, alongside a Risk
-Management division and Middle Office and Market Risk cost centres —
-the follow-the-sun pattern the previous section introduced, expressed
-concretely. ACME Corporation UK plc's Global Markets division goes
-further, with EMEA, Americas, and APAC business areas beneath it —
-the London entity is where Acme's global trading footprint is
-broadest, reflecting a UK head office coordinating trading across
-time zones rather than each region booking in total isolation. Today
-only the EMEA business area is actually staffed; the Americas and
-APAC business areas exist as structural placeholders for that
-footprint to grow into, with desks defined but no accounts or books
-under them yet.
+split into Rates, Credit, and FX trading desks, alongside Middle Office
+and Market Risk cost centres and a Treasury division, the
+follow-the-sun pattern the previous section introduced, expressed
+concretely. Each entity trades its own region: London the EMEA markets,
+New York the Americas and Hong Kong Asia-Pacific. ACME Corporation UK
+plc, the head office, runs the deepest book tree and alone holds an XVA
+desk, which hedges the CVA risk of the group's trading. Treasury and
+the XVA desk carry no accounts yet.
 
-Every desk owns one book, sitting beneath a physical portfolio scoped
-to that desk; every operating company's business units, portfolios,
-and books carry the =company_code= that ties them back to their
-owning legal entity, since each of the four entities needs its own
-independent organisational structure. Open the [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] window on a
+Each operating company has one Global Portfolio, split into a trading
+branch and a banking branch. The trading branch follows the desks, and
+each desk rolls up its currency or market books. The banking branch
+belongs to Treasury and holds the liquidity buffer and the cash
+management sweeps, the books that a bank keeps outside its trading book.
+Every operating company's business units, portfolios, and books carry
+the =company_code= that ties them back to their owning legal entity,
+since each of the four entities needs its own independent
+organisational structure. Open the [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] window on a
 freshly provisioned Acme Corporation tenant and the hierarchy above is
 what you see, four levels deep and fully populated.
 
@@ -250,9 +250,7 @@ leadership and the caveat about what this buys you today.
 
 Each operating company's staffed trading floor runs three desks —
 Rates, Credit, and FX — the instrument classes a follow-the-sun
-trading floor is built around (ACME Corporation UK plc's Americas and
-APAC business areas define four further desks structurally, but
-carry no staff yet, per the note above). A *Head of Desk* leads each
+trading floor is built around. A *Head of Desk* leads each
 staffed desk (nine across the three operating companies), with a
 *Senior Trader* and a *Junior Trader* beneath them (nine of each), and
 a single *Head of Trading* per operating company (three total) above

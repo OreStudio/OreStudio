@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 36B14D28-485B-44AE-B118-10B319B073D5
+:END:
+#+title: Junction staging keyed by name for report configurations
+#+description: The junction artefact template stages a code for the right side; report_configurations binds by name and was staged by hand.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let the junction model generate the DQ staging table for the link between a report definition and a configuration. The staging table holds the definition name, the configuration type code and the configuration name. The publish step resolves the names to ids.
+
+* Why
+
+A junction opts in to a staging table with =:ores.sql.schema.junction_artefact_create.enabled: true=. The party country junction is an example. Its staging table holds the dataset id, the tenant id, the right-side code and a version. The left side, the party, comes from the publish context and is not staged.
+
+The link between a report definition and a configuration does not fit this shape.
+- The model =ores.reporting.report_configuration= has type =ores.codegen.entity=, not =ores.codegen.junction=.
+- Both sides are uuids. A staged row cannot name a uuid, because the publish creates new ids for each party.
+- The staging table needs two name columns and one type code column. The template stages only one right-side code.
+
+So the staging table =dq_report_configurations_artefact_create.sql= was written by hand. The task for the configuration documents (3A0C7559-31F3-4651-8596-262F5A0CACC5) owns that file. The codegen gap protocol says a hand-written layer needs a gap story.
+
+Acceptance:
+- The junction model can stage a left name, a right type code and a right name.
+- The report configuration link is a junction model, or the entity model gains the same option.
+- Codegen writes the staging table and its drop script. The hand-written file is deleted.
+- The publish function for the bindings reads the generated table with no change in result.
+
+* References
+
+- projects/ores.codegen/library/templates/ores.sql.schema.junction_artefact_create.org
+- projects/ores.refdata/modeling/ores.refdata.party_country_junction.org
+- projects/ores.reporting/modeling/ores.reporting.report_configuration.org
+- projects/ores.sql/create/dq/dq_report_configurations_artefact_create.sql
+- projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]]

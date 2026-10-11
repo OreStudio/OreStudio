@@ -50,6 +50,7 @@ target_link_libraries(${lib_target_name}
         ores.dq.core.lib
         ores.iam.api.lib
         ores.ore.api.lib
+        ores.refdata.api.lib
         ores.reporting.api.lib
         ores.telemetry.core.lib
         sqlgen::sqlgen

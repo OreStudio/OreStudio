@@ -51,6 +51,29 @@ ORES_REFDATA_SERVICE_EXPORT std::vector<std::string>
 required_permissions(const std::vector<domain::book_change>& lines);
 
 /**
+ * @brief How a workflow step ended: completed, or failed with the reason.
+ */
+struct step_result {
+    bool completed = false;
+    std::string error;
+};
+
+/**
+ * @brief The re-check step's end: completed when no line is refused, and
+ * otherwise failed with the first refused line and its reason.
+ */
+ORES_REFDATA_SERVICE_EXPORT step_result recheck_step_result(const service::book_preview& preview);
+
+/**
+ * @brief The apply step's end.
+ *
+ * Completed when every line applied. A refusal is failed with the line and its
+ * reason, and the request has moved to apply_failed. A failure of the
+ * infrastructure is failed with a reason that says the apply may run again.
+ */
+ORES_REFDATA_SERVICE_EXPORT step_result apply_step_result(const service::book_apply& applied);
+
+/**
  * @brief The outcome of each line as the wire states it.
  */
 ORES_REFDATA_SERVICE_EXPORT std::vector<book_line_outcome>

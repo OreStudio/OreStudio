@@ -19,6 +19,7 @@
  */
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.refdata.api/generators/book_change_generator.hpp"
@@ -31,6 +32,7 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.refdata.core/service/book_service.hpp"
 #include "ores.refdata.service/service/book_proposal.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -64,6 +66,9 @@ world seed_world(ores::testing::scoped_database_helper& h) {
     // The maker is an account of the tenant, and the context acts as it, so
     // the raise finds the account it raises for.
     auto maker = ores::iam::generators::generate_synthetic_account(gctx);
+    // A person's account written into the shared test tenant would end its
+    // bootstrap, and later tests that write as the unit test would be refused.
+    maker.account_type = "service";
     maker.change_reason_code = "system.test";
     ores::iam::repository::account_repository{}.write(base, maker);
 
@@ -443,6 +448,7 @@ void approve_every_part(const world& w,
         if (open.empty())
             break;
         auto decider = ores::iam::generators::generate_synthetic_account(gctx);
+        decider.account_type = "service";
         decider.change_reason_code = "system.test";
         ores::iam::repository::account_repository{}.write(h.context(), decider);
         const auto r = lifecycle.decide(id, version, "approve", decider.id, "", open.front().code);
@@ -610,4 +616,51 @@ TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastru
     CHECK_FALSE(is_infrastructure_failure("Executing INSERT failed: ERROR:  Invalid currency: QQQ"));
     CHECK_FALSE(is_infrastructure_failure(
         "Executing INSERT failed: ERROR:  Invalid name: lost connection timed out"));
+}
+
+TEST_CASE("the_parties_of_a_request_are_found_without_a_party_scope", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto proposal = svc.raise({new_book_line(h, w)}, "Open the desk");
+    REQUIRE(proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+
+    // The apply workflow runs for the tenant and has no party, so it cannot read
+    // the lines. The function reads past the party policy for the parties alone.
+    const auto tenant_only = h.context().with_tenant(h.tenant_id(), "");
+    auto lg = ores::logging::make_logger("ores.refdata.tests");
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        tenant_only,
+        "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
+        {id},
+        lg,
+        "Reading the parties of a request");
+
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().front() == boost::uuids::to_string(w.party_id));
+    const auto visible =
+        ores::refdata::repository::book_change_repository{}.read_latest_by_request_id(
+            tenant_only, id, 0, 10);
+    CHECK(visible.empty());
+}
+
+TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto proposal = svc.raise({new_book_line(h, w)}, "Open the desk");
+    REQUIRE(proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+
+    auto lg = ores::logging::make_logger("ores.refdata.tests");
+    const auto other = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        other,
+        "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
+        {id},
+        lg,
+        "Reading the parties of another tenant's request");
+
+    CHECK(rows.empty());
 }

@@ -43,6 +43,34 @@ void approval_announcer::tell_open_parts(approval_lifecycle& lifecycle,
         tell_deciders(kind, raised, open.decide_permission_code);
 }
 
+void approval_announcer::tell_asker(const domain::approval_kind& kind,
+                                   const domain::approval_request& request,
+                                   const std::string& state,
+                                   const std::string& comment) {
+    try {
+        notification_center center(ctx_);
+        const auto sender = center.actor_account_id();
+        if (!sender)
+            return;
+        messaging::raise_notification_request n{
+            .kind_code = "inbox.approval_decided",
+            .link_route = "requests",
+            .link_id = boost::uuids::to_string(request.id),
+            .arguments = {{.name = "kind", .value = kind.name},
+                          {.name = "state", .value = state},
+                          {.name = "decider", .value = ctx_.actor().empty() ? ctx_.service_account() :
+                                                                               ctx_.actor()},
+                          {.name = "comment", .value = comment}},
+            .account_ids = {boost::uuids::to_string(request.requested_by)},
+            .audience_permission_code = ""};
+        center.raise(n, n.account_ids, *sender);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(request.id) << " is "
+                                  << state << ", but the person who asked was not told: "
+                                  << e.what();
+    }
+}
+
 void approval_announcer::tell_deciders(const domain::approval_kind& kind,
                                        const domain::approval_request& raised,
                                        const std::string& permission_code) {

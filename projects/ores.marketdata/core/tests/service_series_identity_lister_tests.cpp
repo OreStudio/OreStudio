@@ -33,6 +33,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <cctype>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -213,6 +215,36 @@ TEST_CASE("naming_a_party_narrows_the_list_to_it", tags) {
     const auto found = with_curve(only_second.series, curve);
     REQUIRE(found.size() == 1);
     CHECK(found[0].identity.party_id == boost::uuids::to_string(second));
+}
+
+TEST_CASE("a_party_is_named_whatever_way_its_uuid_is_spelled", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    const auto curve = fresh_curve_id();
+    market_series_repository{}.write(h.context(), series_at(h, party, zero_uri(curve)));
+
+    // Capitals and braces name the same party as the canonical spelling.
+    auto capitals = boost::uuids::to_string(party);
+    std::ranges::transform(capitals, capitals.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
+    for (const auto& spelling : {capitals, "{" + boost::uuids::to_string(party) + "}"}) {
+        list_series_identities_request request;
+        request.party_id = spelling;
+        const auto listed = series_identity_lister::list(h.context(), request);
+        CHECK(with_curve(listed.series, curve).size() == 1);
+    }
+}
+
+TEST_CASE("a_party_that_is_no_uuid_is_refused_and_not_answered_with_nothing", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    list_series_identities_request request;
+    request.party_id = "acme";
+    CHECK_THROWS_AS(series_identity_lister::list(h.context(), request), std::invalid_argument);
 }
 
 TEST_CASE("a_fixing_series_is_not_listed", tags) {

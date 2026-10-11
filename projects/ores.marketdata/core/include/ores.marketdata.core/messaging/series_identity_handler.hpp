@@ -137,6 +137,12 @@ public:
         list_series_identities_response resp;
         try {
             resp = service::series_identity_lister::list(req_ctx, *req);
+        } catch (const std::invalid_argument& e) {
+            // The party the caller named is not a UUID, so the request is wrong.
+            BOOST_LOG_SEV(series_identity_handler_lg(), warn)
+                << msg.subject << " rejected: " << e.what();
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(series_identity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

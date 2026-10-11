@@ -61,8 +61,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Lister suite | 5 cases, 26 assertions, pass | =ores.marketdata.core.tests "[series_identity_lister]"= with =.env= sourced | 3a456483da plus the change |
-| The four read suites together | 26 cases, pass in 8 of 8 consecutive runs | the same binary with =[series_snapshot_reader],[series_evolution_reader],[series_slice_reader],[series_identity_lister]= | 3a456483da plus the change |
+| Lister suite | 7 cases, pass | =ores.marketdata.core.tests "[series_identity_lister]"= with =.env= sourced | 3a456483da plus the change |
+| The four read suites together | 28 cases, pass in 6 of 6 consecutive runs after the review fixes | the same binary with =[series_snapshot_reader],[series_evolution_reader],[series_slice_reader],[series_identity_lister]= | 3a456483da plus the change |
 | Marketdata component drift | none | =check_component_drift.py --component marketdata= | 3a456483da plus the change |
 | Party isolation, first attempt | failed: party A saw both parties' series | the isolation case read =market_series= | 3a456483da plus the change |
 | Row level security on =market_series= | tenant policy only | =grep -n -i "policy" marketdata_market_series_create.sql= | 3a456483da |
@@ -91,7 +91,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The cap is applied after the full read | lister | Accept | The header now says the cut bounds the answer and not the read. |
+| 2 | A large =IN= list is possible | lister | No change | The series and axis repositories build an =IN= list from the ids, as the resolver does. The header says so. |
+| 3 | The party filter runs after the read | lister | No change | Correct, because the projection is party-isolated. The header says so. |
+| 4 | The sort key is rebuilt on every comparison | lister | Accept | The key is built once per row. |
+| 5 | A truncated list differs between callers | lister | No change | Expected. The picker task shows =truncated= and says to narrow by party. |
+| 6 | The cut logs a warning on every call | lister | Accept | It logs at info. |
+| 7 | The header comment wraps oddly | header | Accept | Re-wrapped. |
+| 8 | A party spelled in capitals or braces matches nothing | lister | Accept | The party is parsed and compared as a UUID. A value that is no UUID is refused as a bad request. Two tests. |
+| 9 | The handler repeats =resolve= | handler | Decline | It matches the existing handlers. A shared helper is worth doing when a third method arrives. |
+| 10 | Test fixes are mixed in with the feature | tests | Decline | The new tests exposed the shared pairs, and the commit message and the PR body say so. |
+| - | The handler and registrar are untested over NATS | handler | Decline | Task 2 calls the operation through the BFF against the running stack. |
 
 * Result
 

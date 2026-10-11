@@ -36,11 +36,16 @@ namespace ores::marketdata::service {
  * that turns a stored series into the typed words, and the party is stated on the
  * identity so a choice names the series of the party it was listed under.
  *
- * A party reads only its own series, so the list is the caller's view. The view is the
- * identity projection's, which is isolated by party; the series table is isolated by
- * tenant alone. A series
- * the curve reads cannot name is left out: a fixing, and a series whose URI does
- * not read.
+ * A party reads only its own series, so the list is the caller's view. The view is
+ * the identity projection's, which is isolated by party; the series table is
+ * isolated by tenant alone. A series the curve reads cannot name is left out: a
+ * fixing, and a series whose URI does not read.
+ *
+ * The lister reads every series the caller can see, then sorts and cuts the answer
+ * to max_series. The cut bounds the answer and not the read. The ids travel to the
+ * database as one list, as the resolver's do. A request that names a party is
+ * narrowed after the read, which is correct because the projection is already
+ * isolated by party.
  */
 class ORES_MARKETDATA_CORE_EXPORT series_identity_lister final {
 public:
@@ -54,6 +59,7 @@ public:
      * @param ctx Database context, already tenant- and party-scoped by the caller.
      * @param request Optionally the one party whose series are wanted.
      * @return The list. It never fails for want of series.
+     * @throws std::invalid_argument if the request names a party that is not a UUID.
      */
     static messaging::list_series_identities_response
     list(ores::database::context ctx, const messaging::list_series_identities_request& request);

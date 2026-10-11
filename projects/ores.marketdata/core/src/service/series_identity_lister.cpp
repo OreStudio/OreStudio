@@ -24,10 +24,12 @@
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_axis_repository.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <map>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -107,6 +109,18 @@ series_identity_lister::list(ores::database::context ctx,
                              const messaging::list_series_identities_request& request) {
     messaging::list_series_identities_response response;
 
+    // The party is compared as a UUID and not as text, so a request that spells it
+    // in capitals or in braces still names the party. A request that is no UUID is
+    // refused and not answered with an empty list.
+    std::optional<boost::uuids::uuid> wanted;
+    if (!request.party_id.empty()) {
+        try {
+            wanted = boost::uuids::string_generator{}(request.party_id);
+        } catch (const std::exception&) {
+            throw std::invalid_argument("'" + request.party_id + "' is not a party id");
+        }
+    }
+
     // What a party may see is the identity projection's rule: the projection is
     // isolated by party, while the series table is isolated by tenant alone. So the
     // projection names the visible series and the table supplies their rows.
@@ -118,10 +132,9 @@ series_identity_lister::list(ores::database::context ctx,
     auto visible = visible_ids.empty() ?
                        std::vector<domain::market_series>{} :
                        repository::market_series_repository{}.read_latest(ctx, visible_ids);
-    if (!request.party_id.empty()) {
-        std::erase_if(visible, [&](const domain::market_series& s) {
-            return boost::uuids::to_string(s.party_id) != request.party_id;
-        });
+    if (wanted) {
+        std::erase_if(visible,
+                      [&](const domain::market_series& s) { return s.party_id != *wanted; });
     }
 
     const auto axes = axes_of(ctx, visible);
@@ -138,26 +151,33 @@ series_identity_lister::list(ores::database::context ctx,
     }
 
     // A stable order, so the same party sees the same list: by what the series is,
-    // then by whose it is.
-    std::ranges::sort(response.series, [](const auto& a, const auto& b) {
-        const auto key = [](const messaging::listed_series& s) {
-            std::string fields;
-            for (const auto& f : s.identity.fields)
-                fields += f.name + "=" + f.text + ";";
-            return std::tuple(s.identity.asset,
-                              s.identity.scope,
-                              s.identity.instrument_type,
-                              s.identity.quote_type,
-                              fields,
-                              s.identity.party_id);
-        };
-        return key(a) < key(b);
-    });
+    // then by whose it is. The key is built once per row and not once per comparison.
+    std::vector<std::pair<
+        std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>,
+        messaging::listed_series>>
+        keyed;
+    keyed.reserve(response.series.size());
+    for (auto& row : response.series) {
+        std::string fields;
+        for (const auto& f : row.identity.fields)
+            fields += f.name + "=" + f.text + ";";
+        keyed.emplace_back(std::tuple(row.identity.asset,
+                                      row.identity.scope,
+                                      row.identity.instrument_type,
+                                      row.identity.quote_type,
+                                      std::move(fields),
+                                      row.identity.party_id),
+                           std::move(row));
+    }
+    std::ranges::sort(keyed, [](const auto& a, const auto& b) { return a.first < b.first; });
+    response.series.clear();
+    for (auto& entry : keyed)
+        response.series.push_back(std::move(entry.second));
 
     if (response.series.size() > max_series) {
         response.series.resize(max_series);
         response.truncated = true;
-        BOOST_LOG_SEV(lg(), warn) << "The series list was cut at " << max_series;
+        BOOST_LOG_SEV(lg(), info) << "The series list was cut at " << max_series;
     }
     response.success = true;
     BOOST_LOG_SEV(lg(), debug) << "Listed " << response.series.size() << " series identities";

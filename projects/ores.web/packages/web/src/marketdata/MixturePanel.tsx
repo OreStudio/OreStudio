@@ -24,7 +24,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice } from '../ui/Primitives.js';
+import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import {
     NEW_RECORD_REASON,
@@ -37,6 +37,14 @@ import {
 } from '../refdata/records.js';
 import { ReasonFields, useReason } from '../refdata/shared.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import {
+    PROFILES,
+    bandWidth,
+    halfLifeMinutes,
+    processTypeOf,
+    profileOf,
+    type Profile,
+} from './processHelp.js';
 import {
     densityOf,
     draftOf,
@@ -142,6 +150,10 @@ function MixtureEditor({
     const problems = problemsOf(draft);
     const gaussians = gaussiansOf(draft);
     const sum = gaussians === undefined ? undefined : weightSum(gaussians);
+    const processType = processTypeOf(feed['process_type']);
+    const ou = processType === 'ornstein_uhlenbeck';
+    const columnHelp = (field: 'mean' | 'stdev' | 'weight'): string =>
+        t(`marketdata.process.columns.${processType}.${field}`);
 
     const edit = (index: number, change: Partial<DraftComponent>): void =>
         setDraft(
@@ -177,6 +189,9 @@ function MixtureEditor({
         <div className="grid gap-4 xl:grid-cols-2">
             <section className="space-y-3">
                 <p className="text-sm text-ink-muted">{t('marketdata.mixture.lead')}</p>
+                <Notice tone={processType === 'arithmetic' ? 'warn' : 'info'}>
+                    {t(`marketdata.process.about.${processType}`)}
+                </Notice>
                 <div className="overflow-x-auto rounded-md border border-line">
                     <table className="w-full text-left text-sm">
                         <thead>
@@ -185,14 +200,22 @@ function MixtureEditor({
                                 <th className="px-3 py-2 font-medium">
                                     {t('refdata.fields.description')}
                                 </th>
-                                <th className="px-3 py-2 font-medium">
+                                <th
+                                    className="px-3 py-2 font-medium"
+                                    title={t('marketdata.process.profileHelp')}
+                                >
+                                    {t('marketdata.process.profile')}
+                                </th>
+                                <th className="px-3 py-2 font-medium" title={columnHelp('mean')}>
                                     {t('refdata.fields.mean')}
                                 </th>
-                                <th className="px-3 py-2 font-medium">
+                                <th className="px-3 py-2 font-medium" title={columnHelp('stdev')}>
                                     {t('refdata.fields.stdev')}
                                 </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('refdata.fields.weight')}
+                                <th className="px-3 py-2 font-medium" title={columnHelp('weight')}>
+                                    {ou
+                                        ? t('marketdata.process.kappa')
+                                        : t('refdata.fields.weight')}
                                 </th>
                                 <th className="px-3 py-2" />
                             </tr>
@@ -200,7 +223,7 @@ function MixtureEditor({
                         <tbody>
                             {draft.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-3 py-3 text-ink-muted">
+                                    <td colSpan={7} className="px-3 py-3 text-ink-muted">
                                         {t('marketdata.mixture.none')}
                                     </td>
                                 </tr>
@@ -211,6 +234,7 @@ function MixtureEditor({
                                     <tr
                                         key={component.id}
                                         className="border-b border-line-subtle last:border-b-0"
+                                        title={t(`marketdata.process.row.${processType}`)}
                                     >
                                         <td className="px-3 py-1.5 font-mono text-xs text-ink-muted">
                                             {index}
@@ -225,6 +249,33 @@ function MixtureEditor({
                                                     edit(index, { description: event.target.value })
                                                 }
                                             />
+                                        </td>
+                                        <td className="px-3 py-1.5">
+                                            <Select
+                                                aria-label={t('marketdata.process.profile')}
+                                                value={profileOf(component.stdev)}
+                                                disabled={!may.write}
+                                                onChange={(event) => {
+                                                    const chosen = event.target.value;
+                                                    if (chosen in PROFILES) {
+                                                        edit(index, {
+                                                            stdev: String(
+                                                                PROFILES[chosen as Profile],
+                                                            ),
+                                                        });
+                                                    }
+                                                }}
+                                            >
+                                                {(
+                                                    ['custom', ...Object.keys(PROFILES)] as const
+                                                ).map((profile) => (
+                                                    <option key={profile} value={profile}>
+                                                        {t(
+                                                            `marketdata.process.profiles.${profile}`,
+                                                        )}
+                                                    </option>
+                                                ))}
+                                            </Select>
                                         </td>
                                         {(['mean', 'stdev', 'weight'] as const).map((field) => (
                                             <td key={field} className="px-3 py-1.5">
@@ -301,11 +352,15 @@ function MixtureEditor({
                         {t('marketdata.mixture.add')}
                     </Button>
                 )}
-                <p className="text-sm">
-                    {sum === undefined
-                        ? t('marketdata.mixture.sumPending')
-                        : t('marketdata.mixture.sum', { sum: sum.toFixed(4) })}
-                </p>
+                {ou ? (
+                    <MeanReversion feed={feed} first={gaussians?.[0]} />
+                ) : (
+                    <p className="text-sm">
+                        {sum === undefined
+                            ? t('marketdata.mixture.sumPending')
+                            : t('marketdata.mixture.sum', { sum: sum.toFixed(4) })}
+                    </p>
+                )}
                 {problems.map((problem) => (
                     <Notice key={problem} tone="warn">
                         {t(`marketdata.mixture.problems.${problem}`)}
@@ -404,6 +459,44 @@ function MixtureEditor({
                     onClose={() => setReverting(null)}
                 />
             )}
+        </div>
+    );
+}
+
+/**
+ * What an Ornstein-Uhlenbeck feed's numbers mean in time and in price: the
+ * engine reads the first component only, its weight as κ and its deviation as
+ * σ, and reverts toward the initial price.
+ */
+function MeanReversion({
+    feed,
+    first,
+}: {
+    readonly feed: RecordRow;
+    readonly first: { readonly stdev: number; readonly weight: number } | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const minutes =
+        first === undefined
+            ? undefined
+            : halfLifeMinutes(first.weight, Number(feed['ticks_per_hour']));
+    const band = first === undefined ? undefined : bandWidth(first.weight, first.stdev);
+    return (
+        <div className="space-y-1 text-sm">
+            <p>
+                {minutes === undefined
+                    ? t('marketdata.process.noReversion')
+                    : t('marketdata.process.halfLife', {
+                          minutes: minutes.toFixed(1),
+                          days: (minutes / (24 * 60)).toFixed(2),
+                      })}
+            </p>
+            {band !== undefined && (
+                <p className="text-ink-muted">
+                    {t('marketdata.process.band', { band: band.toPrecision(3) })}
+                </p>
+            )}
+            <p className="text-xs text-ink-faint">{t('marketdata.process.firstOnly')}</p>
         </div>
     );
 }

@@ -2881,6 +2881,7 @@ export const en: SourceCatalogue = {
                 centres: 'Business centres',
                 counterparties: 'Counterparties',
                 mixture: 'Mixture',
+                ticks: 'Ticks',
             },
         },
         fields: {
@@ -3192,8 +3193,92 @@ export const en: SourceCatalogue = {
             addTitle: 'Add an FX price feed',
             pair: 'Pair',
             samePair: 'The base and quote currencies must differ.',
+            help: {
+                ticks_per_hour: 'How many prices the feed makes in an hour. 3600 is one a second.',
+                price_source: {
+                    fixed: 'The feed starts from the initial price you give.',
+                    vintage:
+                        'The feed starts from the price an imported market data vintage holds for the pair.',
+                },
+                enabled: 'A feed that is not enabled cannot start.',
+                auto_start: 'The feed starts when the synthetic service starts.',
+            },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
+        },
+        runs: {
+            status: 'Status',
+            running: 'Running',
+            stopped: 'Stopped',
+            start: 'Start',
+            stop: 'Stop',
+            choose: 'Choose',
+            chooseFeed: 'Choose {feed}',
+            startChosen: 'Start chosen ({count})',
+            stopChosen: 'Stop chosen ({count})',
+            startedCount: 'Started {count} feeds.',
+            stoppedCount: 'Stopped {count} feeds.',
+            refused: '{feed}: {message}',
+        },
+        ticks: {
+            lead: 'The last prices the feed made, newest on the right. The web server keeps the last 500 of each running feed from when it began to listen, so a feed started before that shows only what came since.',
+            count: 'Ticks shown',
+            last: 'Last {price} at {at}',
+            move: '({move} over {count} ticks)',
+            waiting: 'The feed runs. The plot shows when two ticks have arrived.',
+            notRunning:
+                'The feed is not running, and no ticks were heard. Start the feed to see its prices.',
+            chart: 'The last prices of the feed',
+        },
+        process: {
+            about: {
+                geometric:
+                    'Geometric: each update draws a log-return from the mixture, so the price stays positive. μ is the drift and σ the volatility of the log-return per update.',
+                arithmetic:
+                    'Arithmetic: each update draws an absolute price change from the mixture. The changes are symmetric and the price can go to zero or below, which an FX rate cannot do. Use it to test the process, not for realistic prices.',
+                ornstein_uhlenbeck:
+                    'Mean reverting (Ornstein-Uhlenbeck): the price is pulled back toward the initial price, its long-run level θ. One regime only: the engine reads the first component, its weight as the reversion speed κ and its σ as the volatility. μ is not used.',
+            },
+            columns: {
+                geometric: {
+                    mean: 'Drift (μ): the mean log-return per update. 0.0001 is 0.01% per update.',
+                    stdev: 'Volatility (σ): the standard deviation of the log-return per update. 0.001 is 0.1% per update.',
+                    weight: 'Weight: the share of this component when the mixture draws. The draw normalises the weights, so only their ratios count.',
+                },
+                arithmetic: {
+                    mean: 'Drift (μ): the mean price change per update, in price units, not a percentage.',
+                    stdev: 'Volatility (σ): the standard deviation of the price change per update, in price units.',
+                    weight: 'Weight: the share of this component when the mixture draws. The draw normalises the weights.',
+                },
+                ornstein_uhlenbeck: {
+                    mean: 'Not used by the mean reverting engine.',
+                    stdev: 'Volatility (σ): the size of each random push, before the reversion pulls the price back.',
+                    weight: 'Reversion speed (κ): the price halves its distance from θ in about ln(2)/κ updates. 0 does not revert.',
+                },
+            },
+            row: {
+                geometric:
+                    'A geometric component: μ is the trend and σ the noise of the log-return per update; its weight is its share of the draw. Two or more components make a regime mix, for example a calm one with a large weight and a volatile one with a small weight for jumps.',
+                arithmetic:
+                    'An arithmetic component: μ and σ are price changes per update, in price units; its weight is its share of the draw.',
+                ornstein_uhlenbeck:
+                    'A mean reverting component: its weight is κ and its σ the volatility. The band the price settles in is about σ/√(2κ) wide: a small κ with a larger σ gives a wider band.',
+            },
+            profile: 'Profile',
+            profileHelp: 'A preset that sets the volatility (σ). Custom keeps the value you typed.',
+            profiles: {
+                custom: 'Custom',
+                flat: 'Flat',
+                calm: 'Calm',
+                normal: 'Normal',
+                volatile: 'Volatile',
+            },
+            kappa: 'Reversion (κ)',
+            halfLife:
+                "Half-life t½: {minutes} minutes ({days} days) at this feed's ticks per hour.",
+            noReversion: 'κ is 0, so the price does not revert: it is a random walk with no drift.',
+            band: 'The price settles in a band about {band} wide around θ.',
+            firstOnly: 'The mean reverting engine reads only the first component.',
         },
         mixture: {
             lead: 'The Gaussians the feed draws each return from. Change the values and read what they imply before you save them.',

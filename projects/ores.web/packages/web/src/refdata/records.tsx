@@ -91,6 +91,11 @@ export interface FieldSpec {
     readonly labelKey?: string;
     /** Where a record named by this field is opened, so its name on a page is a link. */
     readonly pathOf?: (value: string) => string;
+    /**
+     * The words that explain the field, shown under it. A choice is explained
+     * by its option: the key names a block with one entry for each.
+     */
+    readonly help?: string;
 }
 
 function asked(spec: FieldSpec, values: FieldValues): boolean {
@@ -300,12 +305,23 @@ export function FieldInput({
     const { t } = useTranslation();
     const choices = useChoices(spec.kind, spec.flag);
     const label = labelOf(t, spec);
+    const help =
+        spec.help === undefined
+            ? {}
+            : {
+                  hint:
+                      spec.kind.kind === 'choice'
+                          ? value === ''
+                              ? ''
+                              : t(`${spec.help}.${value}`)
+                          : t(spec.help),
+              };
     if (spec.kind.kind === 'image') {
         return <ImageField label={label} imageId={value} disabled={disabled} onChange={onChange} />;
     }
     if (spec.kind.kind === 'record') {
         return (
-            <Field label={label} {...(error === undefined ? {} : { error })}>
+            <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
                 <RecordPicker
                     value={value}
                     choices={choices}
@@ -321,7 +337,7 @@ export function FieldInput({
     }
     if (spec.kind.kind === 'classification') {
         return (
-            <Field label={label} {...(error === undefined ? {} : { error })}>
+            <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
                 <Select
                     value={value}
                     disabled={disabled}
@@ -343,7 +359,7 @@ export function FieldInput({
     }
     if (spec.kind.kind === 'choice') {
         return (
-            <Field label={label}>
+            <Field label={label} {...help}>
                 <Select
                     value={value}
                     disabled={disabled}
@@ -361,7 +377,7 @@ export function FieldInput({
     }
     if (spec.kind.kind === 'bool') {
         return (
-            <Field label={label} {...(error === undefined ? {} : { error })}>
+            <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
                 <Select
                     value={value}
                     disabled={disabled}
@@ -377,7 +393,7 @@ export function FieldInput({
     }
     const numeric = spec.kind.kind === 'int' || spec.kind.kind === 'decimal';
     return (
-        <Field label={label} {...(error === undefined ? {} : { error })}>
+        <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
             <Input
                 value={value}
                 disabled={disabled}

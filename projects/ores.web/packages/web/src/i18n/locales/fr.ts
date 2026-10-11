@@ -2924,6 +2924,7 @@ const fr: SourceCatalogue = {
                 centres: 'Centres d’affaires',
                 counterparties: 'Contreparties',
                 mixture: 'Mélange',
+                ticks: 'Cotations',
             },
         },
         fields: {
@@ -3238,8 +3239,96 @@ const fr: SourceCatalogue = {
             addTitle: 'Ajouter un flux de prix FX',
             pair: 'Paire',
             samePair: 'Les devises de base et de cotation doivent être différentes.',
+            help: {
+                ticks_per_hour:
+                    'Le nombre de prix que le flux produit en une heure. 3600 en fait un par seconde.',
+                price_source: {
+                    fixed: 'Le flux part du prix initial que vous donnez.',
+                    vintage:
+                        "Le flux part du prix qu'un millésime de données de marché importé contient pour la paire.",
+                },
+                enabled: 'Un flux non activé ne peut pas démarrer.',
+                auto_start: 'Le flux démarre quand le service synthétique démarre.',
+            },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
+        },
+        runs: {
+            status: 'État',
+            running: 'En marche',
+            stopped: 'Arrêté',
+            start: 'Démarrer',
+            stop: 'Arrêter',
+            choose: 'Choisir',
+            chooseFeed: 'Choisir {feed}',
+            startChosen: 'Démarrer la sélection ({count})',
+            stopChosen: 'Arrêter la sélection ({count})',
+            startedCount: '{count} flux démarrés.',
+            stoppedCount: '{count} flux arrêtés.',
+            refused: '{feed} : {message}',
+        },
+        ticks: {
+            lead: "Les derniers prix du flux, les plus récents à droite. Le serveur web garde les 500 derniers de chaque flux en marche depuis qu'il a commencé à écouter, donc un flux démarré avant ne montre que ce qui est venu depuis.",
+            count: 'Cotations affichées',
+            last: 'Dernier {price} à {at}',
+            move: '({move} sur {count} cotations)',
+            waiting:
+                "Le flux est en marche. Le graphique s'affiche quand deux cotations sont arrivées.",
+            notRunning:
+                "Le flux n'est pas en marche, et aucune cotation n'a été reçue. Démarrez le flux pour voir ses prix.",
+            chart: 'Les derniers prix du flux',
+        },
+        process: {
+            about: {
+                geometric:
+                    'Géométrique : chaque mise à jour tire un rendement logarithmique du mélange, donc le prix reste positif. μ est la dérive et σ la volatilité du rendement logarithmique par mise à jour.',
+                arithmetic:
+                    "Arithmétique : chaque mise à jour tire une variation absolue du prix du mélange. Les variations sont symétriques et le prix peut atteindre zéro ou moins, ce qu'un taux de change ne peut pas faire. Utilisez-le pour tester le processus, pas pour des prix réalistes.",
+                ornstein_uhlenbeck:
+                    "Retour à la moyenne (Ornstein-Uhlenbeck) : le prix est ramené vers le prix initial, son niveau de long terme θ. Un seul régime : le moteur lit la première composante, son poids comme vitesse de retour κ et son σ comme volatilité. μ n'est pas utilisé.",
+            },
+            columns: {
+                geometric: {
+                    mean: 'Dérive (μ) : le rendement logarithmique moyen par mise à jour. 0,0001 vaut 0,01 % par mise à jour.',
+                    stdev: "Volatilité (σ) : l'écart type du rendement logarithmique par mise à jour. 0,001 vaut 0,1 % par mise à jour.",
+                    weight: 'Poids : la part de cette composante dans le tirage. Le tirage normalise les poids, donc seuls leurs rapports comptent.',
+                },
+                arithmetic: {
+                    mean: 'Dérive (μ) : la variation moyenne du prix par mise à jour, en unités de prix, pas en pourcentage.',
+                    stdev: "Volatilité (σ) : l'écart type de la variation du prix par mise à jour, en unités de prix.",
+                    weight: 'Poids : la part de cette composante dans le tirage. Le tirage normalise les poids.',
+                },
+                ornstein_uhlenbeck: {
+                    mean: 'Non utilisé par le moteur à retour à la moyenne.',
+                    stdev: 'Volatilité (σ) : la taille de chaque poussée aléatoire, avant que le retour ne ramène le prix.',
+                    weight: 'Vitesse de retour (κ) : le prix réduit de moitié son écart à θ en environ ln(2)/κ mises à jour. 0 ne revient pas.',
+                },
+            },
+            row: {
+                geometric:
+                    'Une composante géométrique : μ est la tendance et σ le bruit du rendement logarithmique par mise à jour ; son poids est sa part du tirage. Deux composantes ou plus forment un mélange de régimes, par exemple une calme à grand poids et une volatile à petit poids pour les sauts.',
+                arithmetic:
+                    'Une composante arithmétique : μ et σ sont des variations de prix par mise à jour, en unités de prix ; son poids est sa part du tirage.',
+                ornstein_uhlenbeck:
+                    "Une composante à retour à la moyenne : son poids est κ et son σ la volatilité. La bande où le prix se stabilise a une largeur d'environ σ/√(2κ) : un petit κ avec un σ plus grand donne une bande plus large.",
+            },
+            profile: 'Profil',
+            profileHelp:
+                'Un préréglage qui fixe la volatilité (σ). Personnalisé garde la valeur saisie.',
+            profiles: {
+                custom: 'Personnalisé',
+                flat: 'Plat',
+                calm: 'Calme',
+                normal: 'Normal',
+                volatile: 'Volatil',
+            },
+            kappa: 'Retour (κ)',
+            halfLife:
+                'Demi-vie t½ : {minutes} minutes ({days} jours) au nombre de cotations par heure de ce flux.',
+            noReversion:
+                "κ vaut 0, donc le prix ne revient pas : c'est une marche aléatoire sans dérive.",
+            band: "Le prix se stabilise dans une bande d'environ {band} autour de θ.",
+            firstOnly: 'Le moteur à retour à la moyenne ne lit que la première composante.',
         },
         mixture: {
             lead: 'Les gaussiennes dont le flux tire chaque rendement. Changez les valeurs et lisez ce qu’elles impliquent avant de les enregistrer.',

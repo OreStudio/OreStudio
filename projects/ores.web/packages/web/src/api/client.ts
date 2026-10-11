@@ -1152,6 +1152,43 @@ export const api = {
         });
     },
 
+    /** Starts one feed. The server refuses a feed whose source or pair another running feed holds. */
+    async startFeed(id: string): Promise<void> {
+        await request(`/api/synthetic/feeds/${encodeURIComponent(id)}/start`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: '{}',
+        });
+    },
+
+    /** The source names of the feeds running now. */
+    async runningFeeds(): Promise<readonly string[]> {
+        return z
+            .object({ sourceNames: z.array(z.string()) })
+            .parse(await request('/api/synthetic/running', { method: 'GET' })).sourceNames;
+    },
+
+    /** The newest ticks the BFF heard from one feed, oldest first. */
+    async feedTicks(
+        id: string,
+        limit: number,
+    ): Promise<{
+        readonly sourceName: string;
+        readonly ticks: readonly { readonly at: string; readonly value: number }[];
+    }> {
+        return z
+            .object({
+                sourceName: z.string(),
+                ticks: z.array(z.object({ at: z.string(), value: z.number() })),
+            })
+            .parse(
+                await request(
+                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?limit=${String(limit)}`,
+                    { method: 'GET' },
+                ),
+            );
+    },
+
     /** The materialised days of one calendar in one year. */
     async calendarDays(calendar: string, year: number): Promise<readonly CalendarDay[]> {
         return z

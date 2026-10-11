@@ -245,4 +245,132 @@ describe('the FX feed screens', () => {
         expect(html).toContain('No component yet.');
         expect(html).toContain('The mixture needs at least one component.');
     });
+
+    it('marks each feed running or stopped, and offers a writer start and stop for the chosen feeds', () => {
+        const html = render('/market-data/fx-feeds', (client) => {
+            client.setQueryData(pageKey({ key: 'fx-feeds' }, FIRST_PAGE), {
+                rows: [feed, { ...feed, id: 'other', source_name: 'synthetic.gbpusd' }],
+                total: 2,
+            });
+            client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('>Running<');
+        expect(html).toContain('>Stopped<');
+        expect(html).toContain('Choose synthetic.gbpusd');
+        expect(html).toContain('Start chosen (0)');
+        expect(html).toContain('Stop chosen (0)');
+    });
+
+    it('offers a reader the status but no start or stop', () => {
+        const html = render('/market-data/fx-feeds', (client) => {
+            client.setQueryData(pageKey({ key: 'fx-feeds' }, FIRST_PAGE), {
+                rows: [feed],
+                total: 1,
+            });
+            client.setQueryData(['synthetic-running'], []);
+            client.setQueryData(
+                ['my-access'],
+                access(['synthetic::fx_spot_generation_configs:read']),
+            );
+        });
+        expect(html).toContain('>Stopped<');
+        expect(html).not.toContain('Start chosen');
+        expect(html).not.toContain('aria-label="Choose ');
+    });
+
+    it('offers Stop on a running feed and Start on a stopped one', () => {
+        const running = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(running).toContain('>Running<');
+        expect(running).toContain('>Stop<');
+        const stopped = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['synthetic-running'], []);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(stopped).toContain('>Stopped<');
+        expect(stopped).toContain('>Start<');
+    });
+
+    it('plots the last ticks with the last price and the move over them', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=ticks`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
+            client.setQueryData(['feed-ticks', FEED_ID, 200], {
+                sourceName: 'synthetic.eurusd',
+                ticks: [
+                    { at: '2026-10-11 09:00:00Z', value: 1.08 },
+                    { at: '2026-10-11 09:01:00Z', value: 1.081 },
+                    { at: '2026-10-11 09:02:00Z', value: 1.083 },
+                ],
+            });
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('Last 1.08300 at 09:02:00');
+        expect(html).toContain('+0.00300 over 3 ticks');
+        expect(html).toContain('<svg');
+    });
+
+    it('says a stopped feed with no ticks heard must be started', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=ticks`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['synthetic-running'], []);
+            client.setQueryData(['feed-ticks', FEED_ID, 200], {
+                sourceName: 'synthetic.eurusd',
+                ticks: [],
+            });
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('Start the feed to see its prices.');
+    });
+
+    it('explains the geometric engine and names the profile of each deviation', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(
+                ['records', 'gmm-components', FEED_ID],
+                [{ ...component(0, 1), stdev: 0.001 }],
+            );
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('so the price stays positive');
+        expect(html).toContain('title="Drift (μ): the mean log-return per update.');
+        expect(html).toContain('<option value="normal" selected="">Normal</option>');
+    });
+
+    it('warns that the arithmetic engine can take the price below zero', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
+                ...feed,
+                process_type: 'arithmetic',
+            });
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('the price can go to zero or below');
+        expect(html).toContain('in price units, not a percentage');
+    });
+
+    it('reads a mean reverting mixture as κ and σ, with its half-life and band', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=mixture`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
+                ...feed,
+                process_type: 'ornstein_uhlenbeck',
+                ticks_per_hour: 60,
+            });
+            client.setQueryData(
+                ['records', 'gmm-components', FEED_ID],
+                [{ ...component(0, Math.log(2) / 30), stdev: 0.01 }],
+            );
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('Reversion (κ)');
+        expect(html).toContain('Half-life t½: 30.0 minutes (0.02 days)');
+        expect(html).toContain('The mean reverting engine reads only the first component.');
+        expect(html).not.toContain('Weight sum');
+    });
 });

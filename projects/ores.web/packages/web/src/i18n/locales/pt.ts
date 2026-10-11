@@ -2904,6 +2904,7 @@ const pt: SourceCatalogue = {
                 centres: 'Centros de negócios',
                 counterparties: 'Contrapartes',
                 mixture: 'Mistura',
+                ticks: 'Cotações',
             },
         },
         fields: {
@@ -3215,8 +3216,94 @@ const pt: SourceCatalogue = {
             addTitle: 'Adicionar um fluxo de preços FX',
             pair: 'Par',
             samePair: 'As moedas base e cotada têm de ser diferentes.',
+            help: {
+                ticks_per_hour: 'Quantos preços o fluxo produz numa hora. 3600 é um por segundo.',
+                price_source: {
+                    fixed: 'O fluxo parte do preço inicial que indicar.',
+                    vintage:
+                        'O fluxo parte do preço que uma versão importada de dados de mercado tem para o par.',
+                },
+                enabled: 'Um fluxo que não está ativo não pode arrancar.',
+                auto_start: 'O fluxo arranca quando o serviço sintético arranca.',
+            },
             removeWarning:
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
+        },
+        runs: {
+            status: 'Estado',
+            running: 'Em execução',
+            stopped: 'Parado',
+            start: 'Arrancar',
+            stop: 'Parar',
+            choose: 'Escolher',
+            chooseFeed: 'Escolher {feed}',
+            startChosen: 'Arrancar os escolhidos ({count})',
+            stopChosen: 'Parar os escolhidos ({count})',
+            startedCount: '{count} fluxos arrancados.',
+            stoppedCount: '{count} fluxos parados.',
+            refused: '{feed}: {message}',
+        },
+        ticks: {
+            lead: 'Os últimos preços do fluxo, os mais recentes à direita. O servidor web guarda os últimos 500 de cada fluxo em execução desde que começou a ouvir, por isso um fluxo arrancado antes mostra só o que veio depois.',
+            count: 'Cotações mostradas',
+            last: 'Último {price} às {at}',
+            move: '({move} em {count} cotações)',
+            waiting: 'O fluxo está em execução. O gráfico aparece quando chegarem duas cotações.',
+            notRunning:
+                'O fluxo não está em execução, e não chegou nenhuma cotação. Arranque o fluxo para ver os seus preços.',
+            chart: 'Os últimos preços do fluxo',
+        },
+        process: {
+            about: {
+                geometric:
+                    'Geométrico: cada atualização tira um retorno logarítmico da mistura, por isso o preço fica positivo. μ é a tendência e σ a volatilidade do retorno logarítmico por atualização.',
+                arithmetic:
+                    'Aritmético: cada atualização tira uma variação absoluta do preço da mistura. As variações são simétricas e o preço pode chegar a zero ou menos, o que uma taxa de câmbio não pode fazer. Use-o para testar o processo, não para preços realistas.',
+                ornstein_uhlenbeck:
+                    'Reversão à média (Ornstein-Uhlenbeck): o preço é puxado para o preço inicial, o seu nível de longo prazo θ. Um só regime: o motor lê a primeira componente, o seu peso como velocidade de reversão κ e o seu σ como volatilidade. μ não é usado.',
+            },
+            columns: {
+                geometric: {
+                    mean: 'Tendência (μ): o retorno logarítmico médio por atualização. 0,0001 é 0,01% por atualização.',
+                    stdev: 'Volatilidade (σ): o desvio padrão do retorno logarítmico por atualização. 0,001 é 0,1% por atualização.',
+                    weight: 'Peso: a parte desta componente no sorteio. O sorteio normaliza os pesos, por isso só contam as suas proporções.',
+                },
+                arithmetic: {
+                    mean: 'Tendência (μ): a variação média do preço por atualização, em unidades de preço, não em percentagem.',
+                    stdev: 'Volatilidade (σ): o desvio padrão da variação do preço por atualização, em unidades de preço.',
+                    weight: 'Peso: a parte desta componente no sorteio. O sorteio normaliza os pesos.',
+                },
+                ornstein_uhlenbeck: {
+                    mean: 'Não usado pelo motor de reversão à média.',
+                    stdev: 'Volatilidade (σ): o tamanho de cada impulso aleatório, antes de a reversão puxar o preço de volta.',
+                    weight: 'Velocidade de reversão (κ): o preço reduz para metade a distância a θ em cerca de ln(2)/κ atualizações. 0 não reverte.',
+                },
+            },
+            row: {
+                geometric:
+                    'Uma componente geométrica: μ é a tendência e σ o ruído do retorno logarítmico por atualização; o seu peso é a sua parte do sorteio. Duas ou mais componentes formam uma mistura de regimes, por exemplo uma calma com peso grande e uma volátil com peso pequeno para saltos.',
+                arithmetic:
+                    'Uma componente aritmética: μ e σ são variações de preço por atualização, em unidades de preço; o seu peso é a sua parte do sorteio.',
+                ornstein_uhlenbeck:
+                    'Uma componente de reversão à média: o seu peso é κ e o seu σ a volatilidade. A banda onde o preço assenta tem cerca de σ/√(2κ) de largura: um κ pequeno com um σ maior dá uma banda mais larga.',
+            },
+            profile: 'Perfil',
+            profileHelp:
+                'Uma predefinição que fixa a volatilidade (σ). Personalizado mantém o valor escrito.',
+            profiles: {
+                custom: 'Personalizado',
+                flat: 'Plano',
+                calm: 'Calmo',
+                normal: 'Normal',
+                volatile: 'Volátil',
+            },
+            kappa: 'Reversão (κ)',
+            halfLife:
+                'Meia-vida t½: {minutes} minutos ({days} dias) às cotações por hora deste fluxo.',
+            noReversion:
+                'κ é 0, por isso o preço não reverte: é um passeio aleatório sem tendência.',
+            band: 'O preço assenta numa banda de cerca de {band} em torno de θ.',
+            firstOnly: 'O motor de reversão à média lê só a primeira componente.',
         },
         mixture: {
             lead: 'As gaussianas de que o fluxo tira cada retorno. Altere os valores e leia o que implicam antes de os guardar.',

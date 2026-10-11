@@ -41,7 +41,10 @@ import {
     type FieldValues,
 } from '../refdata/records.js';
 import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
+import { Button, Notice } from '../ui/Primitives.js';
+import { FeedStatus, RunOutcomeText, useFeedRuns, useRunningFeeds } from './feedRuns.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
+import { TicksPanel } from './TicksPanel.js';
 
 const FEEDS = 'fx-feeds';
 
@@ -90,16 +93,19 @@ const FEED_FIELDS: readonly FieldSpec[] = [
         field: 'process_type',
         history: 'Process Type',
         kind: { kind: 'choice', options: PROCESS_TYPES },
+        help: 'marketdata.process.about',
     },
     {
         field: 'ticks_per_hour',
         history: 'Ticks Per Hour',
         kind: { kind: 'int', min: 1, max: 360000 },
+        help: 'marketdata.fxFeeds.help.ticks_per_hour',
     },
     {
         field: 'price_source',
         history: 'Price Source',
         kind: { kind: 'choice', options: PRICE_SOURCES },
+        help: 'marketdata.fxFeeds.help.price_source',
     },
     {
         field: 'gmm_initial_price',
@@ -119,8 +125,18 @@ const FEED_FIELDS: readonly FieldSpec[] = [
         kind: { kind: 'date' },
         when: (values) => values['price_source'] === 'vintage',
     },
-    { field: 'enabled', history: 'Enabled', kind: { kind: 'bool' } },
-    { field: 'auto_start', history: 'Auto Start', kind: { kind: 'bool' } },
+    {
+        field: 'enabled',
+        history: 'Enabled',
+        kind: { kind: 'bool' },
+        help: 'marketdata.fxFeeds.help.enabled',
+    },
+    {
+        field: 'auto_start',
+        history: 'Auto Start',
+        kind: { kind: 'bool' },
+        help: 'marketdata.fxFeeds.help.auto_start',
+    },
 ];
 
 /** The fields the server needs that the form does not edit. */
@@ -194,10 +210,61 @@ function FxFeedsList(): ReactNode {
     const [adding, setAdding] = useState(false);
     const source = useRecordSource(FEEDS);
     const check = useFeedCheck();
+    const may = useRecordPermissions(FEEDS);
+    const running = useRunningFeeds();
+    const runs = useFeedRuns();
+    const [chosen, setChosen] = useState<ReadonlyMap<string, string>>(new Map());
+    const choose = (row: RecordRow, on: boolean): void => {
+        const next = new Map(chosen);
+        if (on) {
+            next.set(show(row['id']), show(row['source_name']));
+        } else {
+            next.delete(show(row['id']));
+        }
+        setChosen(next);
+    };
+    const run = (action: 'start' | 'stop'): void => {
+        runs.run(
+            action,
+            [...chosen].map(([id, label]) => ({ id, label })),
+        );
+        setChosen(new Map());
+    };
     return (
         <>
+            {runs.outcome !== undefined && (
+                <Notice tone={runs.outcome.refused.length > 0 ? 'warn' : 'success'}>
+                    <RunOutcomeText outcome={runs.outcome} />
+                </Notice>
+            )}
             <RecordList
                 source={source}
+                {...(may.write
+                    ? {
+                          actions: (
+                              <>
+                                  <Button
+                                      disabled={chosen.size === 0}
+                                      pending={runs.pending}
+                                      onClick={() => run('start')}
+                                  >
+                                      {t('marketdata.runs.startChosen', {
+                                          count: String(chosen.size),
+                                      })}
+                                  </Button>
+                                  <Button
+                                      disabled={chosen.size === 0}
+                                      pending={runs.pending}
+                                      onClick={() => run('stop')}
+                                  >
+                                      {t('marketdata.runs.stopChosen', {
+                                          count: String(chosen.size),
+                                      })}
+                                  </Button>
+                              </>
+                          ),
+                      }
+                    : {})}
                 title={t('marketdata.fxFeeds.title')}
                 lead={t('marketdata.fxFeeds.lead')}
                 crumbs={[
@@ -208,6 +275,31 @@ function FxFeedsList(): ReactNode {
                 addLabel={t('marketdata.fxFeeds.add')}
                 onAdd={() => setAdding(true)}
                 columns={[
+                    ...(may.write
+                        ? [
+                              {
+                                  id: 'chosen',
+                                  header: t('marketdata.runs.choose'),
+                                  cell: (row: RecordRow) => (
+                                      <input
+                                          type="checkbox"
+                                          aria-label={t('marketdata.runs.chooseFeed', {
+                                              feed: show(row['source_name']),
+                                          })}
+                                          checked={chosen.has(show(row['id']))}
+                                          onChange={(event) => choose(row, event.target.checked)}
+                                      />
+                                  ),
+                              },
+                          ]
+                        : []),
+                    {
+                        id: 'status',
+                        header: t('marketdata.runs.status'),
+                        cell: (row) => (
+                            <FeedStatus running={running?.has(show(row['source_name']))} />
+                        ),
+                    },
                     {
                         id: 'pair',
                         header: t('marketdata.fxFeeds.pair'),
@@ -302,7 +394,12 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
     const may = useRecordPermissions(FEEDS);
     const check = useFeedCheck();
     const mixture = useRecords(COMPONENTS, id);
-    const { tab, bar } = useRecordTabs({ label: pair, tabs: ['details', 'mixture', 'history'] });
+    const { tab, bar } = useRecordTabs({
+        label: pair,
+        tabs: ['details', 'mixture', 'ticks', 'history'],
+    });
+    const running = useRunningFeeds()?.has(show(feed['source_name']));
+    const runs = useFeedRuns();
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
@@ -319,9 +416,32 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 recordKey={pair}
                 version={feed.version}
                 flag="pair"
+                own={
+                    <>
+                        <FeedStatus running={running} />
+                        {may.write && running !== undefined && (
+                            <Button
+                                size="sm"
+                                pending={runs.pending}
+                                onClick={() =>
+                                    runs.run(running ? 'stop' : 'start', [
+                                        { id, label: show(feed['source_name']) },
+                                    ])
+                                }
+                            >
+                                {running ? t('marketdata.runs.stop') : t('marketdata.runs.start')}
+                            </Button>
+                        )}
+                    </>
+                }
                 onEdit={may.write ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
+            {runs.outcome !== undefined && runs.outcome.refused.length > 0 && (
+                <Notice tone="warn">
+                    <RunOutcomeText outcome={runs.outcome} />
+                </Notice>
+            )}
             {bar}
             {tab === 'details' && (
                 <RecordDetails
@@ -331,6 +451,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 />
             )}
             {tab === 'mixture' && <MixturePanel feed={feed} />}
+            {tab === 'ticks' && <TicksPanel feedId={id} running={running} />}
             {tab === 'history' && (
                 <HistoryPanel
                     entityType="ores.synthetic.fx_spot_generation_config"

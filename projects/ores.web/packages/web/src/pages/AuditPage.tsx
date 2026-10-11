@@ -33,6 +33,7 @@ import { api, type AuditPeriod } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { actorPathFor } from '../access/PeoplePage.js';
+import { Icon } from '../ui/Icon.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Timeline, kindTone } from '../timeline/Timeline.js';
 import type { Timeline as TimelineStream } from '@ores/wire-protocol/browser';
@@ -177,8 +178,14 @@ function RescueLink({ username }: { readonly username: string | undefined }): Re
         return null;
     }
     return (
-        <LinkButton size="sm" to={`/rescue?username=${encodeURIComponent(username)}`}>
-            {t('shell.menu.rescue')}
+        <LinkButton
+            size="sm"
+            className="w-8 px-0!"
+            to={`/rescue?username=${encodeURIComponent(username)}`}
+            title={t('shell.menu.rescue')}
+            aria-label={t('shell.menu.rescue')}
+        >
+            <Icon name="unlock" size={16} />
         </LinkButton>
     );
 }

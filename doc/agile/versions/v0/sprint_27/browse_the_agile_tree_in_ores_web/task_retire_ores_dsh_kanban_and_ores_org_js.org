@@ -81,7 +81,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A prototype note still names ores.org-js | test-scenarios.org | Fix | The note says the project is retired. |
+| 2 | The reviewer could not compute the diff | | Note | The checkout is shallow. The reviewer read the final tree. |
+| 3 | Confirm the eight failing checks fail on main | | Note | They read SQL, shell recipes, generated inventories and C++ tests, none of which this PR touches. I did not run them on a clean main. |
+| 4 | Run a full site build before merge | ores-build-site.el | Partly done | Emacs loads the file in setup-only mode and defines the deploy function, and the site-page check built the changed pages. A full site build is not run. |
 
 * Result
 

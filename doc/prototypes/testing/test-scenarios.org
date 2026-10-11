@@ -78,7 +78,7 @@ PASSED. Anything else leaves it PENDING. The same rule ran in the Qt tool.
    no assignee.
 4. *No image upload.* A browser cannot capture the screen, so a step takes a
    pasted or dropped image. No BFF route saves it beside the scenario.
-5. *No org renderer in the web package.* The parser in =ores.org-js= is the one
+5. *No org renderer in the web package.* The parser in =ores.org-js= (retired) was the one
    to port.
 6. *A deployed server has no work tree.* Where scenarios and results live in
    production is open.

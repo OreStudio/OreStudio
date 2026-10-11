@@ -8,7 +8,7 @@
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
 #+branch: feature/curve-screen-series-picker
-#+pr:
+#+pr: 3108
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3108][#3108]] | [agile] Scaffold story: Pick a curve from the series a party can see |
 
 * Review
 

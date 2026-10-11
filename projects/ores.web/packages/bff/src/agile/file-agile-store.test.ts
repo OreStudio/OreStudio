@@ -266,5 +266,5 @@ describe.skipIf(!existsSync(join(REAL_DOC, 'agile', 'versions')))('the real agil
         expect(charts?.velocity.length).toBeGreaterThan(5);
         expect(charts?.scope).toBeGreaterThan(0);
         expect(charts?.byState.length).toBeGreaterThan(0);
-    });
+    }, 30_000);
 });

@@ -1153,6 +1153,24 @@ BEGIN
         'curve_configuration'
     );
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.risk_report_configs',
+        'ACME Corporation',
+        'Reporting',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'ACME Corporation Group Risk Report Configurations',
+        'The risk report configurations document of ACME Corporation Group, crafted for the reports the entity runs and published to the party a publish names.',
+        'ACMEBANK',
+        'ACME Corporation generated data',
+        current_date,
+        'Internal Use Only',
+        'risk_report_configs'
+    );
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.pricing_engines',
         'ACME Corporation',
         'Reporting',
@@ -1205,6 +1223,24 @@ BEGIN
         current_date,
         'Internal Use Only',
         'curve_configuration'
+    );
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.risk_report_configs',
+        'ACME Corporation',
+        'Reporting',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'ACME Corporation UK Risk Report Configurations',
+        'The risk report configurations document of ACME Corporation UK, crafted for the reports the entity runs and published to the party a publish names.',
+        'ACMEBANK',
+        'ACME Corporation generated data',
+        current_date,
+        'Internal Use Only',
+        'risk_report_configs'
     );
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_us.pricing_engines',
@@ -1261,6 +1297,24 @@ BEGIN
         'curve_configuration'
     );
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.risk_report_configs',
+        'ACME Corporation',
+        'Reporting',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'ACME Corporation US Risk Report Configurations',
+        'The risk report configurations document of ACME Corporation US, crafted for the reports the entity runs and published to the party a publish names.',
+        'ACMEBANK',
+        'ACME Corporation generated data',
+        current_date,
+        'Internal Use Only',
+        'risk_report_configs'
+    );
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.pricing_engines',
         'ACME Corporation',
         'Reporting',
@@ -1313,5 +1367,23 @@ BEGIN
         current_date,
         'Internal Use Only',
         'curve_configuration'
+    );
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.risk_report_configs',
+        'ACME Corporation',
+        'Reporting',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'ACME Corporation HK Risk Report Configurations',
+        'The risk report configurations document of ACME Corporation HK, crafted for the reports the entity runs and published to the party a publish names.',
+        'ACMEBANK',
+        'ACME Corporation generated data',
+        current_date,
+        'Internal Use Only',
+        'risk_report_configs'
     );
 END $$;

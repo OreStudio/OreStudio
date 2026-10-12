@@ -69,10 +69,14 @@ ENTITY_PRODUCTS = {
 GLOBAL_PARAMETERS = {"ContinueOnCalibrationError": "true"}
 
 
-# The configuration types a risk report binds, and the name of an entity's document
-# of each type. A binding names its document, so the name is fixed here and used by
-# the report data too.
+# The configuration types a risk report binds a document of, and the name of an
+# entity's document of each type. A binding names its document, so the name is fixed
+# here and used by the report data too. The conventions have no document of their own:
+# the binding means the conventions the entity sees, and the first binding creates the
+# configuration that says so. The run settings are named per report, by
+# generate_risk_config_data.py.
 DOCUMENT_NAMES = {
+    "conventions": "{label} conventions",
     "pricing_engines": "{label} pricing engines",
     "todays_market": "{label} today's market",
     "curve_configuration": "{label} curve configuration",

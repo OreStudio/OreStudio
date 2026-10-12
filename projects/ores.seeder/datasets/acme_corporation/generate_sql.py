@@ -106,6 +106,7 @@ CONFIGURATION_DOCUMENTS = [
     ("curve_configuration", "Curve Configuration",
      ["curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
       "curve_quotes"]),
+    ("risk_report_configs", "Risk Report Configurations", ["risk_report_configs"]),
 ]
 
 NETTING_COMPANIES = ["acme_group"] + COMPANIES
@@ -1056,6 +1057,8 @@ def sql_value(value):
         return str(value)
     if isinstance(value, float):
         return sql_num(value)
+    if isinstance(value, list):
+        return "array[" + ", ".join(sql_num(v) for v in value) + "]::numeric(5,4)[]"
     return sql_str(value)
 
 

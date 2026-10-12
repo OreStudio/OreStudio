@@ -34,6 +34,7 @@ export interface Result {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string | null;
     workunit_id: string;
     host_id: string;
     server_state: number;

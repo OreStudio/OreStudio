@@ -1536,7 +1536,32 @@ export const en: SourceCatalogue = {
                 noSample:
                     'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
             },
-            tabs: { label: 'Grid views', overview: 'Overview', nodes: 'Nodes', heatmap: 'Heatmap' },
+            tabs: {
+                label: 'Grid views',
+                overview: 'Overview',
+                usage: 'Usage',
+                nodes: 'Nodes',
+                heatmap: 'Heatmap',
+            },
+            usage: {
+                title: { tenant: 'Usage by tenant', party: 'Usage by party' },
+                note: 'A share is the group’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                empty: 'No work has run on the grid yet.',
+                unassigned: 'No party',
+                columns: {
+                    tenant: 'Tenant',
+                    party: 'Party',
+                    batches: 'Batches',
+                    workunits: 'Workunits',
+                    results: 'Results',
+                    inProgress: 'Running',
+                    unsent: 'Waiting',
+                    done: 'Finished',
+                    succeeded: 'Succeeded',
+                    failed: 'Failed',
+                    share: 'Share',
+                },
+            },
             heatmap: {
                 title: 'Node load',
                 lead: 'One row per node and one column per interval, coloured by what the node did. The times are UTC.',

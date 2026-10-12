@@ -433,11 +433,82 @@ export interface NodeSampleMessage {
     seconds_since_hb: number;
 }
 
+/**
+ * @brief Asks who uses the grid, with the work counted by group.
+ *
+ * It carries no fields, because the caller's session decides the scope and the
+ * grouping. A session in the system tenant reads the work of every tenant and
+ * gets one group for each tenant. Any other session reads its own tenant, and
+ * only the parties it acts for, and gets one group for each party.
+ */
+export interface GetGridUsageRequest {}
+
+/**
+ * @brief The work of the grid counted by group, as columns.
+ *
+ * Group i is described by keys[i] and by entry i of every other column. The
+ * group is a tenant when group_kind is "tenant" and a party when it is
+ * "party". A key that is empty stands for work with no party, which predates
+ * the party scope. The share of a group is its entry in a column divided by the
+ * sum of that column, which the caller computes.
+ */
+export interface GetGridUsageResponse {
+    /**
+     * @brief Whether the usage was read.
+     */
+    success: boolean;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    message: string;
+    /**
+     * @brief What a group is: "tenant" or "party".
+     */
+    group_kind: string;
+    /**
+     * @brief The id of each group, empty for work with no party.
+     */
+    keys: string[];
+    /**
+     * @brief Batches in each group.
+     */
+    batches: number[];
+    /**
+     * @brief Workunits in each group.
+     */
+    workunits: number[];
+    /**
+     * @brief Results in each group.
+     */
+    results: number[];
+    /**
+     * @brief Results waiting to run in each group.
+     */
+    results_unsent: number[];
+    /**
+     * @brief Results running in each group.
+     */
+    results_in_progress: number[];
+    /**
+     * @brief Results finished in each group.
+     */
+    results_done: number[];
+    /**
+     * @brief Results that finished with success in the last 24 hours.
+     */
+    outcomes_success: number[];
+    /**
+     * @brief Results that finished with an error or no reply in the last 24 hours.
+     */
+    outcomes_failed: number[];
+}
+
 export const subjects = {
     get_grid_stats_request: 'compute.v1.ops.get_grid_stats',
     get_grid_series_request: 'compute.v1.ops.get_grid_series',
     get_node_series_request: 'compute.v1.ops.get_node_series',
     node_sample_message: 'compute.v1.ops.node_sample',
+    get_grid_usage_request: 'compute.v1.ops.get_grid_usage',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -449,4 +520,5 @@ export const requiresSession = {
     get_grid_series_request: true,
     get_node_series_request: true,
     node_sample_message: false,
+    get_grid_usage_request: true,
 } as const;

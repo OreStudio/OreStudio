@@ -1556,7 +1556,32 @@ const fr: SourceCatalogue = {
                 noSample:
                     'Aucun échantillon pour l’instant. Le déploiement ne stocke aucun résumé de grille, donc les compteurs ne peuvent pas être dessinés ; le tableau des nœuds ci-dessous tient seul.',
             },
-            tabs: { label: 'Vues de la grille', overview: "Vue d'ensemble", nodes: 'Nœuds', heatmap: 'Carte de chaleur' },
+            tabs: {
+                label: 'Vues de la grille',
+                overview: "Vue d'ensemble",
+                usage: 'Utilisation',
+                nodes: 'Nœuds',
+                heatmap: 'Carte de chaleur',
+            },
+            usage: {
+                title: { tenant: 'Utilisation par locataire', party: 'Utilisation par partie' },
+                note: 'La part d’un groupe est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                empty: 'Aucun travail n’a encore été exécuté sur la grille.',
+                unassigned: 'Aucune partie',
+                columns: {
+                    tenant: 'Locataire',
+                    party: 'Partie',
+                    batches: 'Lots',
+                    workunits: 'Unités de travail',
+                    results: 'Résultats',
+                    inProgress: 'En cours',
+                    unsent: 'En attente',
+                    done: 'Terminés',
+                    succeeded: 'Réussis',
+                    failed: 'Échoués',
+                    share: 'Part',
+                },
+            },
             heatmap: {
                 title: 'Charge des nœuds',
                 lead: 'Une ligne par nœud et une colonne par intervalle, colorées selon l\'activité du nœud. Les heures sont en UTC.',

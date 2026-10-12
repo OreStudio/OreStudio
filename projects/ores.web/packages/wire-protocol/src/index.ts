@@ -371,12 +371,18 @@ export {
     gridSeriesReplySchema,
     gridSeriesRequestSchema,
     gridSeriesViewSchema,
+    gridUsageReplySchema,
+    gridUsageRequestSchema,
+    gridUsageViewSchema,
     nodeSeriesReplySchema,
     nodeSeriesRequestSchema,
 } from './operations.js';
 export type {
     GridSeriesReply,
     GridSeriesView,
+    GridUsageGroup,
+    GridUsageReply,
+    GridUsageView,
     NodeSeriesReply,
     SeriesRange,
 } from './operations.js';

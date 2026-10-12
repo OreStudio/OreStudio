@@ -96,6 +96,7 @@ import {
     tenantTypesResponseSchema,
     serviceRosterViewSchema,
     gridSeriesViewSchema,
+    gridUsageViewSchema,
     gridViewSchema,
     busViewSchema,
     logsViewSchema,
@@ -124,6 +125,7 @@ import {
     type SeedProfileChoice,
     type ServiceRosterRow,
     type GridSeriesView,
+    type GridUsageView,
     type GridView,
     type SeriesRange,
     type BusView,
@@ -1715,6 +1717,19 @@ export const api = {
         const query = new URLSearchParams({ range });
         return gridSeriesViewSchema.parse(
             await request(`/api/operations/grid/series?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Who uses the grid: the work counted by tenant for an operator, and by
+     * party for a tenant's administrator.
+     *
+     * The call names no scope. The server reads the session and decides which
+     * rows the caller may count and how to group them.
+     */
+    async gridUsage(): Promise<GridUsageView> {
+        return gridUsageViewSchema.parse(
+            await request('/api/operations/grid/usage', { method: 'GET' }),
         );
     },
 

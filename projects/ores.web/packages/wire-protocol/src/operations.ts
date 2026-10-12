@@ -62,6 +62,8 @@ import {
     subjects as computeTelemetrySubjects,
     type GetGridSeriesRequest,
     type GetGridSeriesResponse,
+    type GetGridUsageRequest,
+    type GetGridUsageResponse,
     type GetGridStatsRequest,
     type GetGridStatsResponse,
     type GetNodeSeriesRequest,
@@ -124,6 +126,7 @@ export const SUBJECTS = {
     serviceRoster: serviceSampleSubjects.get_service_roster_request,
     gridStats: computeTelemetrySubjects.get_grid_stats_request,
     gridSeries: computeTelemetrySubjects.get_grid_series_request,
+    gridUsage: computeTelemetrySubjects.get_grid_usage_request,
     nodeSeries: computeTelemetrySubjects.get_node_series_request,
     listHosts: hostSubjects.list_hosts_request,
     natsServerSamples: natsSubjects.get_nats_server_samples_request,
@@ -1885,6 +1888,71 @@ export const gridSeriesReplySchema = z.object({
 }) satisfies z.ZodType<GetGridSeriesResponse>;
 
 export type GridSeriesReply = z.infer<typeof gridSeriesReplySchema>;
+
+/** `get_grid_usage_request`: who uses the grid. It carries no fields; the session decides the scope. */
+export const gridUsageRequestSchema = z.object(
+    {},
+) satisfies z.ZodType<GetGridUsageRequest>;
+
+/** The columns of a usage: one count per group, in the order of its keys. */
+const gridUsageColumns = {
+    batches: countColumn,
+    workunits: countColumn,
+    results: countColumn,
+    results_unsent: countColumn,
+    results_in_progress: countColumn,
+    results_done: countColumn,
+    outcomes_success: countColumn,
+    outcomes_failed: countColumn,
+};
+
+/**
+ * `get_grid_usage_response`: the grid's work counted by group, as columns.
+ *
+ * The group is a tenant or a party, as `group_kind` says. A system-tenant
+ * session reads every tenant; any other session reads its own tenant and the
+ * parties it acts for. An empty key stands for work with no party.
+ */
+export const gridUsageReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    group_kind: text,
+    keys: z.array(z.string()).default([]),
+    ...gridUsageColumns,
+}) satisfies z.ZodType<GetGridUsageResponse>;
+
+export type GridUsageReply = z.infer<typeof gridUsageReplySchema>;
+
+/** One group of the usage: a tenant or a party, with its counts and its share of the grid. */
+export const gridUsageGroupSchema = z.object({
+    key: text,
+    /** What a person reads: the tenant's or party's name, or none when it could not be named. */
+    name: text.nullable().default(null),
+    batches: z.int().nonnegative(),
+    workunits: z.int().nonnegative(),
+    results: z.int().nonnegative(),
+    results_unsent: z.int().nonnegative(),
+    results_in_progress: z.int().nonnegative(),
+    results_done: z.int().nonnegative(),
+    outcomes_success: z.int().nonnegative(),
+    outcomes_failed: z.int().nonnegative(),
+    /** This group's results as a fraction of every result in the view, 0 when there are none. */
+    share: z.number().min(0).max(1),
+});
+
+export type GridUsageGroup = z.infer<typeof gridUsageGroupSchema>;
+
+/**
+ * The usage as the BFF serves it: one group for each tenant or party, with the
+ * names joined on and each group's share of the results.
+ */
+export const gridUsageViewSchema = z.object({
+    read_at: text.nullable().default(null),
+    group_kind: z.enum(['tenant', 'party']),
+    groups: z.array(gridUsageGroupSchema).default([]),
+});
+
+export type GridUsageView = z.infer<typeof gridUsageViewSchema>;
 
 /** `get_node_series_request`: the node samples between two instants, in buckets. */
 export const nodeSeriesRequestSchema = z.object({

@@ -148,6 +148,117 @@ export function throughputSeries(view: GridSeriesView, t: Translator['t']): read
     ];
 }
 
+/**
+ * How long a job waits in the queue before a storage token for it stops working.
+ *
+ * A node takes the storage token with the assignment, and the token lives one
+ * hour. A job that waits longer fails on its first step.
+ */
+export const QUEUE_WAIT_LIMIT_MINUTES = 60;
+
+/** The queue is worth a warning when it needs more than this share of the wait limit. */
+const QUEUE_CAUTION_MINUTES = QUEUE_WAIT_LIMIT_MINUTES / 2;
+
+/** The known intervals the rate is read over, newest last. */
+const OUTLOOK_INTERVALS = 10;
+
+/** The known intervals that must show no finished job before the grid is called stalled. */
+const MIN_INTERVALS_TO_STALL = 3;
+
+/** What the queue will do at the rate the grid finishes work. */
+export interface QueueOutlook {
+    /** The jobs waiting at the newest sample. */
+    readonly waiting: number;
+    /** The jobs a minute the grid finished over the last intervals, or null when unknown. */
+    readonly perMinute: number | null;
+    /**
+     * The minutes the waiting jobs need at that rate: 0 when nothing waits, null
+     * when the rate is unknown, and Infinity when jobs wait and none finish.
+     */
+    readonly drainMinutes: number | null;
+    /** How serious it is: a queue that clears well within the limit says nothing. */
+    readonly level: 'ok' | 'caution' | 'over';
+}
+
+/**
+ * The queue's outlook from the series: the jobs waiting now against the rate
+ * the grid finished jobs over the last intervals.
+ *
+ * It reads the newest bucket that holds a sample, and a rate over the last
+ * known intervals only, so a gap in the samples is never read as a stretch where
+ * nothing finished. The intervals are the newest known ones and are not
+ * contiguous after a gap, so a long gap lets older work feed the rate.
+ */
+export function queueOutlook(view: GridSeriesView): QueueOutlook {
+    const samples = view.grid.samples;
+    let newest = -1;
+    for (let index = samples.length - 1; index >= 0; index -= 1) {
+        if ((samples[index] ?? 0) > 0) {
+            newest = index;
+            break;
+        }
+    }
+    if (newest < 0) {
+        return { waiting: 0, perMinute: null, drainMinutes: null, level: 'ok' };
+    }
+    const waiting = view.grid.results_unsent[newest] ?? 0;
+    const changes = changeOf(view.grid.results_done, samples)
+        .slice(0, newest + 1)
+        .filter((change): change is number => change !== null)
+        .slice(-OUTLOOK_INTERVALS);
+    const minutes = (changes.length * view.bucket_seconds) / 60;
+    const perMinute =
+        changes.length === 0 || minutes <= 0
+            ? null
+            : changes.reduce((sum, change) => sum + change, 0) / minutes;
+    if (waiting === 0) {
+        return { waiting, perMinute, drainMinutes: 0, level: 'ok' };
+    }
+    // A rate over a single interval is too short to call a stalled grid: a queue
+    // that has only just started has not been picked up yet.
+    if (perMinute === null || (perMinute <= 0 && changes.length < MIN_INTERVALS_TO_STALL)) {
+        return { waiting, perMinute, drainMinutes: null, level: 'ok' };
+    }
+    const drainMinutes = perMinute <= 0 ? Infinity : waiting / perMinute;
+    const level =
+        drainMinutes > QUEUE_WAIT_LIMIT_MINUTES
+            ? 'over'
+            : drainMinutes > QUEUE_CAUTION_MINUTES
+              ? 'caution'
+              : 'ok';
+    return { waiting, perMinute, drainMinutes, level };
+}
+
+/** Minutes as a person reads them: minutes up to an hour and a half, hours after. */
+export function formatWait(minutes: number): string {
+    if (minutes < 90) {
+        return `${Math.max(1, Math.round(minutes))} min`;
+    }
+    const hours = minutes / 60;
+    return `${hours < 10 ? hours.toFixed(1) : Math.round(hours)} h`;
+}
+
+/** The warning for a queue that outgrows the grid, or nothing while it clears in good time. */
+export function QueueOutlookNotice({ view }: { readonly view: GridSeriesView }): ReactNode {
+    const { t } = useTranslation();
+    const outlook = queueOutlook(view);
+    if (outlook.level === 'ok') {
+        return null;
+    }
+    const params = {
+        count: outlook.waiting,
+        rate: outlook.perMinute === null ? 0 : Math.round(outlook.perMinute * 10) / 10,
+        time: formatWait(outlook.drainMinutes ?? 0),
+    };
+    const stalled = outlook.drainMinutes === Infinity;
+    const key = stalled ? 'stalled' : outlook.level === 'over' ? 'over' : 'caution';
+    return (
+        <Notice tone={outlook.level === 'over' ? 'error' : 'warn'}>
+            {t(`operations.grid.series.outlook.${key}`, params)}
+        </Notice>
+    );
+}
+
 /** How the results finished in each interval. */
 export function outcomeSeries(view: GridSeriesView, t: Translator['t']): readonly ChartSeries[] {
     const samples = view.grid.samples;
@@ -436,43 +547,46 @@ export function GridSeriesPanels({ view }: { readonly view: GridSeriesView }): R
     const axis = axisOf(view);
     const samples = view.grid.samples;
     return (
-        <div className="grid gap-4 lg:grid-cols-2">
-            <Panel title={t('operations.grid.series.load.title')}>
-                <SeriesChart
-                    kind="stacked-area"
-                    axis={axis}
-                    samples={samples}
-                    series={loadSeries(view, t)}
-                    caption={t('operations.grid.series.load.caption')}
-                />
-            </Panel>
-            <Panel title={t('operations.grid.series.fleet.title')}>
-                <SeriesChart
-                    kind="lines"
-                    axis={axis}
-                    samples={samples}
-                    series={fleetSeries(view, t)}
-                    caption={t('operations.grid.series.fleet.caption')}
-                />
-            </Panel>
-            <Panel title={t('operations.grid.series.throughput.title')}>
-                <SeriesChart
-                    kind="stacked-bars"
-                    axis={axis}
-                    samples={samples}
-                    series={throughputSeries(view, t)}
-                    caption={t('operations.grid.series.throughput.caption')}
-                />
-            </Panel>
-            <Panel title={t('operations.grid.series.outcomes.title')}>
-                <SeriesChart
-                    kind="stacked-bars"
-                    axis={axis}
-                    samples={samples}
-                    series={outcomeSeries(view, t)}
-                    caption={t('operations.grid.series.outcomes.caption')}
-                />
-            </Panel>
+        <div className="space-y-4">
+            <QueueOutlookNotice view={view} />
+            <div className="grid gap-4 lg:grid-cols-2">
+                <Panel title={t('operations.grid.series.load.title')}>
+                    <SeriesChart
+                        kind="stacked-area"
+                        axis={axis}
+                        samples={samples}
+                        series={loadSeries(view, t)}
+                        caption={t('operations.grid.series.load.caption')}
+                    />
+                </Panel>
+                <Panel title={t('operations.grid.series.fleet.title')}>
+                    <SeriesChart
+                        kind="lines"
+                        axis={axis}
+                        samples={samples}
+                        series={fleetSeries(view, t)}
+                        caption={t('operations.grid.series.fleet.caption')}
+                    />
+                </Panel>
+                <Panel title={t('operations.grid.series.throughput.title')}>
+                    <SeriesChart
+                        kind="stacked-bars"
+                        axis={axis}
+                        samples={samples}
+                        series={throughputSeries(view, t)}
+                        caption={t('operations.grid.series.throughput.caption')}
+                    />
+                </Panel>
+                <Panel title={t('operations.grid.series.outcomes.title')}>
+                    <SeriesChart
+                        kind="stacked-bars"
+                        axis={axis}
+                        samples={samples}
+                        series={outcomeSeries(view, t)}
+                        caption={t('operations.grid.series.outcomes.caption')}
+                    />
+                </Panel>
+            </div>
         </div>
     );
 }

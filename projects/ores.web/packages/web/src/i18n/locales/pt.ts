@@ -1733,6 +1733,13 @@ const pt: SourceCatalogue = {
                 },
             },
             series: {
+                outlook: {
+                    caution:
+                        'A fila é longa. {count} tarefas esperam e a grelha conclui cerca de {rate} por minuto, por isso precisam de cerca de {time}. Uma tarefa que espera mais de uma hora falha.',
+                    over: 'A fila excede a capacidade. {count} tarefas esperam e a grelha conclui cerca de {rate} por minuto, por isso precisam de cerca de {time}. Uma tarefa que espera mais de uma hora falha, pelo que as do fim da fila vão falhar.',
+                    stalled:
+                        '{count} tarefas esperam e nenhuma foi concluída recentemente. Uma tarefa que espera mais de uma hora falha.',
+                },
                 title: 'Ao longo do tempo',
                 lead: 'Como a grelha evoluiu no período. As horas estão em UTC.',
                 rangeLabel: 'Período',

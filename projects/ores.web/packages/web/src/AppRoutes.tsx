@@ -93,6 +93,7 @@ import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage, FxFeedsPage } from './marketdata/fxFeeds.js';
 import { IrFeedPage, IrFeedsPage } from './marketdata/irFeeds.js';
+import { ProvidersPage } from './marketdata/providers.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -786,6 +787,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <FxFeedPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/providers"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ProvidersPage />
                     ),
                     'workspace',
                 )}

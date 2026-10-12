@@ -72,10 +72,12 @@ cannot collide.
 A collection's scope decides who reads its feeds. A system collection belongs
 to the system tenant and its system party, as its feeds do, and row-level
 security lets every tenant read a system collection and every feed and part
-under it. Writing stays with the system tenant. Only the database admits
-this so far: the synthetic service's generated repositories read the
-caller's own tenant alone, so no service lists a system collection to a
-tenant, and no dataset publishes one yet.
+under it. Writing stays with the system tenant. The synthetic service's
+generated repositories state the same with =:system_tenant_visible: true= on
+each entity (the collection, its feeds and their parts, the folders and the
+provider), so a tenant's service call returns the system rows the policy admits.
+No dataset publishes a system collection yet, so a tenant sees only the
+provider catalogue so far.
 
 Only one enabled, bound system collection may run at a time: the conflict
 guard of the collection rejects a second. So one provider is chosen as the

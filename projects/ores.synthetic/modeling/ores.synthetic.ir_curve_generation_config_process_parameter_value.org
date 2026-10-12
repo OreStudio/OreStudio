@@ -210,7 +210,13 @@ keeps the default resolution: the config row is a genuine tenant row.
 :entity_plural_short:   process_parameter_values
 :entity_singular_words: IR curve generation config process parameter value
 :entity_plural_words:   IR curve generation config process parameter values
+:system_tenant_visible: true
 :END:
+
+The installation's system collections, their feeds and the provider catalogue ship
+under the system tenant, and every tenant reads them, which
+=:system_tenant_visible: true= states on the repository. The row-level security
+policy still decides which system rows a tenant sees and who may write them.
 
 ** Domain includes
 

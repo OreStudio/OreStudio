@@ -1668,7 +1668,8 @@ export const en: SourceCatalogue = {
                 },
                 unavailable: 'Could not be read',
                 age: {
-                    caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
+                    caution:
+                        'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
                     over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
                 },
                 empty: 'No work has run on the grid yet.',
@@ -3623,6 +3624,9 @@ export const en: SourceCatalogue = {
                 irFeeds: 'IR curve feeds',
                 irFeedsBody:
                     'Compose the synthetic IR curve feeds: the currency and index, the short-rate engine with its parameters, and the curve template.',
+                providers: 'Market data providers',
+                providersBody:
+                    'The providers the synthetic feeds simulate: vendors, exchanges and brokers.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3646,6 +3650,19 @@ export const en: SourceCatalogue = {
             },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
+        },
+        providers: {
+            title: 'Market data providers',
+            lead: 'The providers whose market data the synthetic feeds simulate. The catalogue belongs to the installation and every tenant reads it. Every provider here is simulated, so its name carries the synthetic mark.',
+            named: '{name} (synthetic)',
+            kind: 'Kind',
+            collections: 'Collections',
+            kinds: {
+                data_vendor: 'Data vendor',
+                exchange: 'Exchange',
+                broker: 'Broker',
+                generic: 'Generic',
+            },
         },
         irFeeds: {
             title: 'IR curve feeds',
@@ -4056,6 +4073,7 @@ export const en: SourceCatalogue = {
         observationsWrite: 'adjust market data points by hand',
         fxFeedsRead: 'see the synthetic FX price feeds',
         irFeedsRead: 'see the synthetic IR curve feeds',
+        providersRead: 'see the simulated market data providers',
     },
 
     unavailable: {

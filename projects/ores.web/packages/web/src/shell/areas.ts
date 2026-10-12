@@ -57,6 +57,7 @@ export const MENU: readonly MenuItem[] = [
         permission: [
             'synthetic::fx_spot_generation_configs:read',
             'synthetic::ir_curve_generation_configs:read',
+            'synthetic::market_data_providers:read',
             'marketdata::curve_snapshots:read',
         ],
     },

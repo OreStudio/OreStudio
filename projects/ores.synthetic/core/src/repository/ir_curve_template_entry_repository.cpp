@@ -28,6 +28,7 @@
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry_json_io.hpp" // IWYU pragma: keep.
@@ -202,9 +203,11 @@ std::vector<domain::ir_curve_template_entry>
 ir_curve_template_entry_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
         ctx,
@@ -219,8 +222,10 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::string& 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve template entry. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
         ctx,
@@ -235,8 +240,9 @@ std::vector<domain::ir_curve_template_entry>
 ir_curve_template_entry_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve template entry versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
@@ -252,8 +258,10 @@ std::optional<domain::ir_curve_template_entry> ir_curve_template_entry_repositor
     BOOST_LOG_SEV(lg(), debug) << "Reading IR curve template entry at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -313,8 +321,10 @@ std::vector<domain::ir_curve_template_entry> ir_curve_template_entry_repository:
     BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve template entries with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<ir_curve_template_entry_entity,
                                       domain::ir_curve_template_entry>(
@@ -334,8 +344,9 @@ std::uint32_t ir_curve_template_entry_repository::get_total_ir_curve_template_en
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active IR curve template entry count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<ir_curve_template_entry_entity>> | where("tenant_id"_c == tid);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<ir_curve_template_entry_entity>(
         ctx,
@@ -351,8 +362,10 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::vector<s
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
+                             "valid_to"_c == max.value());
     auto result =
         execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
             ctx,

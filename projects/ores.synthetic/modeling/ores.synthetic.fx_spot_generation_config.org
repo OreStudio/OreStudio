@@ -343,7 +343,13 @@ std::nullopt
 :entity_plural_short:   fx_spot_generation_configs
 :entity_singular_words: FX spot generation config
 :entity_plural_words:   FX spot generation configs
+:system_tenant_visible: true
 :END:
+
+The installation's system collections, their feeds and the provider catalogue ship
+under the system tenant, and every tenant reads them, which
+=:system_tenant_visible: true= states on the repository. The row-level security
+policy still decides which system rows a tenant sees and who may write them.
 
 ** Domain includes
 

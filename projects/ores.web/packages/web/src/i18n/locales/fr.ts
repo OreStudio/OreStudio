@@ -1688,7 +1688,8 @@ const fr: SourceCatalogue = {
                 },
                 unavailable: 'N’a pas pu être lu',
                 age: {
-                    caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
+                    caution:
+                        'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
                     over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
                 },
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',
@@ -3674,6 +3675,9 @@ const fr: SourceCatalogue = {
                 irFeeds: 'Flux de courbes de taux',
                 irFeedsBody:
                     "Composez les flux synthétiques de courbes de taux : la devise et l'indice, le moteur de taux court avec ses paramètres, et le modèle de courbe.",
+                providers: 'Fournisseurs de données de marché',
+                providersBody:
+                    'Les fournisseurs que les flux synthétiques simulent : fournisseurs de données, bourses et courtiers.',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
@@ -3698,6 +3702,19 @@ const fr: SourceCatalogue = {
             },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
+        },
+        providers: {
+            title: 'Fournisseurs de données de marché',
+            lead: 'Les fournisseurs dont les flux synthétiques simulent les données de marché. Le catalogue appartient à l’installation et chaque locataire le lit. Tout fournisseur ici est simulé, donc son nom porte la marque synthétique.',
+            named: '{name} (synthétique)',
+            kind: 'Type',
+            collections: 'Collections',
+            kinds: {
+                data_vendor: 'Fournisseur de données',
+                exchange: 'Bourse',
+                broker: 'Courtier',
+                generic: 'Générique',
+            },
         },
         irFeeds: {
             title: 'Flux de courbes de taux',
@@ -4119,6 +4136,7 @@ const fr: SourceCatalogue = {
         observationsWrite: 'ajuster à la main des points de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
         irFeedsRead: 'voir les flux de courbes de taux synthétiques',
+        providersRead: 'voir les fournisseurs de données de marché simulés',
     },
 
     unavailable: {

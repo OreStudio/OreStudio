@@ -48,6 +48,7 @@ const WORDS = {
     [PERMISSION.observationsWrite]: 'permissionWords.observationsWrite',
     [PERMISSION.fxFeedsRead]: 'permissionWords.fxFeedsRead',
     [PERMISSION.irFeedsRead]: 'permissionWords.irFeedsRead',
+    [PERMISSION.providersRead]: 'permissionWords.providersRead',
 } as const satisfies Record<Permission, string>;
 
 /** The translation key for what a permission allows. */

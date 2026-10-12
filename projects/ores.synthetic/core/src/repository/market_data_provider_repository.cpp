@@ -28,6 +28,7 @@
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.synthetic.api/domain/market_data_provider.hpp"
 #include "ores.synthetic.api/domain/market_data_provider_json_io.hpp" // IWYU pragma: keep.
@@ -191,9 +192,11 @@ std::vector<domain::market_data_provider>
 market_data_provider_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_data_provider_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<market_data_provider_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("code"_c);
 
     return execute_read_query<market_data_provider_entity, domain::market_data_provider>(
         ctx,
@@ -208,9 +211,10 @@ market_data_provider_repository::read_latest(context ctx, const std::string& cod
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market data provider. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_data_provider_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<market_data_provider_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<market_data_provider_entity, domain::market_data_provider>(
         ctx,
@@ -225,8 +229,9 @@ std::vector<domain::market_data_provider>
 market_data_provider_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market data provider versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<market_data_provider_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<market_data_provider_entity, domain::market_data_provider>(
@@ -242,8 +247,10 @@ std::optional<domain::market_data_provider> market_data_provider_repository::rea
     BOOST_LOG_SEV(lg(), debug) << "Reading market data provider at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<market_data_provider_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -302,8 +309,10 @@ std::vector<domain::market_data_provider> market_data_provider_repository::read_
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market data providers with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<market_data_provider_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<market_data_provider_entity, domain::market_data_provider>(
         ctx,
@@ -322,8 +331,9 @@ std::uint32_t market_data_provider_repository::get_total_provider_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market data provider count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_data_provider_entity>> | where("tenant_id"_c == tid);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<market_data_provider_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<market_data_provider_entity>(
         ctx,
@@ -339,9 +349,10 @@ market_data_provider_repository::read_latest(context ctx, const std::vector<std:
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_data_provider_entity>> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<market_data_provider_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
+                             "valid_to"_c == max.value());
     auto result = execute_read_query<market_data_provider_entity, domain::market_data_provider>(
         ctx,
         query,

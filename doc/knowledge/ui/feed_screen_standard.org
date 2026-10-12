@@ -367,6 +367,16 @@ is not drawn.
 - A column beside the plot shows the process that made the curves: the engine, the
   rate and each parameter with its saved value.
 
+** The providers screen
+
+The Market data area lists the providers whose market data the synthetic feeds
+simulate (=marketdata/providers.tsx=): a list of the catalogue, read only for a
+tenant, because the catalogue belongs to the installation. Each row shows the name
+with the synthetic mark ("Bloomberg (synthetic)"), the code, the kind (data vendor,
+exchange, broker or generic), how many collections stand for the provider, and a
+description. It is what the screen that subscribes a tenant to a provider's feeds
+will offer, and a leaf of the feed browser.
+
 ** History
 
 The History tab is one stream of the feed and every part it holds, drawn as
@@ -444,15 +454,12 @@ of its own, and a kind with a mixture-like process would share the FX one.
 
 ** Gaps
 
-- The Ticks tab shows only what the web server heard. The stored observations
-  need the feed's series identity, which
-  [[id:3CD588CB-1B74-40BA-896F-75CFF8157EAF][Name a feed by its oresmd URI]]
-  brings; then the tab reads its history from the store.
+- The Ticks tab shows only what the web server heard. The stored observations are
+  written under the feed's series identity, which a feed now names by its oresmd URI;
+  the tab does not read its history from the store yet.
 - The browser still computes some figures it only displays: the shares, the
   mean reverting half-life and band, the profiles and the distribution curve.
   Each moves to the server when a screen first needs it from there.
-- The Qt editor's simple mode, sliders for drift, volatility and jumps, waits
-  for [[id:AACBF6DA-53E9-46F4-BBD7-A476625E1732][Give the mixture a simple mode]].
 
 * See also
 

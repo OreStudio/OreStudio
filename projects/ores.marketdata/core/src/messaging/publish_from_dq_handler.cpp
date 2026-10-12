@@ -135,8 +135,16 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
         // The SQL function inserts series without their identity rows, because SQL
         // cannot run the codec the projection is read through. Until they are projected
         // the resolver and the series list cannot see the series, so the publish is not
-        // complete without it. The series belong to the tenant the command names.
-        if (result.records_inserted + result.records_updated > 0) {
+        // complete without it.
+        //
+        // The projection is not gated on the function's counts. They count the dataset's
+        // observation rows, so a republish whose observations are all skipped still says
+        // nothing about the series. Running it every time also repairs series an earlier
+        // publish left unprojected. It reads two tables and writes only what is missing.
+        //
+        // The series belong to the tenant the command names, which is the second
+        // parameter of the function and may differ from the workflow's own tenant.
+        {
             auto target_ctx =
                 ores::database::service::tenant_context::with_tenant(ctx_, cmd.tenant_id);
             const auto done =

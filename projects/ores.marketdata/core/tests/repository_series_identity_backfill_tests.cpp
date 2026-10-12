@@ -142,6 +142,29 @@ TEST_CASE("a_second_backfill_finds_nothing_to_project", tags) {
     CHECK(again.already_projected >= 1);
 }
 
+TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    // No codec reads this URI. It still gets a row, with its kind and no field value.
+    const auto odd = insert_without_identity(
+        h,
+        party,
+        "oresmd://ir/EUR?type=series&instrument=no_such_instrument&quote=rate&x=" +
+            fresh_curve_id());
+
+    const auto first = market_series_identity_projector::project_missing(h.context());
+    CHECK(first.unreadable >= 1);
+    CHECK(identity_rows(h, odd) == 1);
+
+    // Having a row, it is not missing, so the next call neither retries nor counts it.
+    const auto again = market_series_identity_projector::project_missing(h.context());
+    CHECK(again.projected == 0);
+    CHECK(again.unreadable == 0);
+    CHECK(identity_rows(h, odd) == 1);
+}
+
 TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected", tags) {
     auto lg(make_logger(test_suite));
 

@@ -64,6 +64,10 @@ public:
 
     /**
      * @brief What a backfill projected, found already projected and could not read.
+     *
+     * A series whose URI neither codec reads is still written, with its kind and no
+     * field value, so it counts in @c projected and in @c unreadable, and a later
+     * call finds it already projected.
      */
     struct backfill_result {
         std::size_t projected = 0;

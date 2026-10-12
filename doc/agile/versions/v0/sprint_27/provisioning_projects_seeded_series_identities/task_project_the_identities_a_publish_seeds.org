@@ -61,8 +61,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Acme series published from the FX Driver Rates dataset, with an identity row, before the change | 13 of 65 (the 13 I backfilled by hand) | a join of the series and identity tables, grouped by origin | a48c5f0e3c |
 | Acme IR Deposit Rates series with an identity row, before the change | 0 of 1 | the same query | a48c5f0e3c |
-| New backfill tests | 4 cases pass, 10 assertions | =ores.marketdata.core.tests "[series_identity][backfill]"= | a48c5f0e3c plus the change |
-| Identity, importer, read and repository suites together | 104 cases, 1003 assertions, pass in 3 of 3 runs | the same binary with the five tags | a48c5f0e3c plus the change |
+| New backfill tests | 5 cases pass, 15 assertions | =ores.marketdata.core.tests "[series_identity][backfill]"= | a48c5f0e3c plus the change |
+| Identity, importer, read and repository suites together | 105 cases, 964 assertions, pass in 3 of 3 runs after the review fixes | the same binary with the five tags | a48c5f0e3c plus the change |
 | Backfill command after the refactor, Acme Corporation Plc | "Projected 0 of 19 series" | =marketdata backfill-identity --party= in a shell | a48c5f0e3c plus the change |
 | Fresh tenant after =bundles publish= of the FX dataset, with an identity row | FX Driver Rates 13 of 13, IR Deposit Rates 1 of 1 | the same join, for the new tenant, with no backfill run | a48c5f0e3c plus the change |
 
@@ -89,7 +89,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The guard on the function's counts may miss a republish | publish_from_dq_handler.cpp | Accept | A real gap. The function counts observation rows, so a republish whose observations are all skipped says nothing about the series. The guard is gone and the projection always runs, which also repairs earlier unprojected series. Shown on the stack: Acme went from 25 of 78 series projected to 79 of 79 after one republish that skipped every observation. |
+| 2 | The full-tenant scan on every publish | projector.cpp | Decline | Two reads of the tenant's series and identity rows, once per dataset publish. Tenants hold hundreds of series. A SQL anti-join is possible if that changes. |
+| 3 | Updated series are not re-projected | projector.cpp | Decline | The function finds a series by its URI and updates only its observations, so a series' URI never changes. |
+| 4 | An unreadable URI is retried on every call | projector.hpp | Decline, with a test | =project= writes a row for it with its kind and no field value, so it is not missing next time. A new test pins that, and the header says so. |
+| 5 | Two tenant contexts in the handler | publish_from_dq_handler.cpp | Accept | A comment says the command's tenant is the function's target and may differ from the workflow's. |
+| 6 | Test gaps | tests | Accept in part | The unreadable URI test is added. The handler still has no unit test. |
+| - | Run the drift check | marketdata | Accept | It found that I had hand-edited a generated header. Fixed in the model. |
 
 * Result
 
@@ -110,6 +116,12 @@ function is unchanged, because the codec must stay the only reader of the URI gr
 *On the running stack.* A real publish of the FX driver rates dataset into a fresh tenant produced 13 FX series
 and 1 IR deposit series, and every one has its identity row. The Acme tenant, published before the change, had
 13 of 65 and 0 of 1.
+
+*A mistake the drift check caught.* I first edited =market_series_handler.hpp= by hand. It is generated from the
+model, so the check regenerated it and restored the old code. The change now lives in the model's backfill handler
+section and the header is regenerated from it. The check also regenerated six marketdata =*_service.cpp= files
+that differ from main by one blank line, because main's generator templates changed and marketdata was not
+regenerated. They are committed here so the drift check passes.
 
 *Left alone.* One system-tenant series, seeded by a SQL populate script, still has no identity row. It belongs
 to the system tenant and no screen lists it.

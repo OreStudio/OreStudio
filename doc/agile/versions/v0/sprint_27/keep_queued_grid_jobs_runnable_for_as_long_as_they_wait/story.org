@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 3E28909B-6E42-4D5B-8B34-06B80F6630C8
+:END:
+#+title: Story: Keep queued grid jobs runnable for as long as they wait
+#+description: A grid job can wait in the queue for hours, because the grid is shared and a burst can exceed its capacity. Today a job that waits more than an hour fails on its first step, because the storage token that travels with its assignment lives for one hour. Decide how a queued job stays runnable, how the queue is bounded, and what a person sees while work waits.
+#+type: story
+#+level: s2
+#+filetags: :compute:grid:queue:storage:jetstream:sprint_27:v0:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A job that waits in the grid queue for any length of time still runs when a node takes it, and the queue is bounded and visible, so a burst of work slows the grid and never fails it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-12                               |
+
+* Acceptance
+
+- A job that waited longer than the storage token lifetime runs to success when a node takes it.
+- The queue has a stated bound and a stated rule for what happens to a job that waits past it.
+- A person sees how long the oldest job has waited and how many wait, per tenant for the operator.
+- A restart or a recreate of the database does not leave assignments that fail on replay.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6FD6CBD3-468F-46F8-BC9C-9560CB8402F7][Scaffold story: Keep queued grid jobs runnable for as long as they wait]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EC9CFACA-5DCD-41F1-9822-3097C11F587F][Implement Keep queued grid jobs runnable for as long as they wait]] | BACKLOG | | | Initial task for: Keep queued grid jobs runnable for as long as they wait |
+
+* Findings
+
+** What happened
+
+On 2026-10-12 a soak run queued about 1000 jobs on the grid at 00:49. The grid ran them slowly. By 09:58 every job that a node took had failed in the first step, with the same message: =GET .../api/v1/storage/ores/compute/input/....tar.gz returned HTTP 401=.
+
+Measured on the dev database that morning:
+
+| What | Value | How |
+|------+-------+-----|
+| Client errors in the last 3 hours | 4276, all with HTTP 401 | =select outcome, error_message, count(*) from ores_compute_results_tbl= grouped over the received time |
+| Successes among them | 0 | the same query |
+| Age of those results at failure | every one more than 4 hours | the result's first version time against its received time |
+| Oldest unsent result | 9 hours 9 minutes | =min(valid_from)= of the unsent results |
+| Messages in the assignments stream | 17,520, newest 8 hours old | =nats stream ls= |
+
+** Why it happens
+
+Three facts combine.
+
+1. The dispatcher publishes one assignment for each result and puts a storage token in it. The token lets the node read the package and the input and write the output. The IAM handler gives the token one hour of life (=capability_lifetime= in =storage_capability_handler.hpp=).
+2. The assignments live in a JetStream stream. A node takes them in order and at its own pace. A stream keeps them for seven days, and it outlives a restart of the services and a recreate of the database.
+3. A node does not check the token before it starts. It downloads the input, receives HTTP 401 and reports a client error. The server treats that as the final outcome of the result. Nothing puts the result back in the queue.
+
+So a job that waits longer than one hour is certain to fail. A job fails in milliseconds, so the nodes look idle while the queue drains by failing.
+
+** What the grid will meet
+
+The grid is shared by many tenants and its capacity is fixed. Any burst of work larger than the capacity makes a queue. A report run, a stress run or a month-end batch can queue hours of work. So waiting is the normal state of work on this grid, and the design must treat it as normal.
+
+** Options
+
+*** Mint the token when the node takes the job
+
+The assignment carries no token. The node asks for one when it starts a job, for exactly that job. The token then lives one hour from the start, which is longer than any one job needs. A job can wait for any time.
+
+- For: removes the cause. The token covers the work and not the wait. A queued job holds no credential, which is safer.
+- Against: a node makes one more round trip per job. The assignment needs a new call, and the wrapper changes.
+- Open: how a node proves it may ask. The node holds no standing credential today.
+
+*** Give the token a life as long as the longest wait
+
+- For: no protocol change.
+- Against: a long-lived token for each queued job is a standing credential, and the wait has no upper bound. It only moves the cliff.
+
+*** Refuse an expired assignment and put the result back
+
+The node reads the expiry from the token, and the dispatcher publishes a fresh assignment for the result.
+
+- For: small change. It repairs the damage after the fact.
+- Against: it handles the failure and leaves the cause. Each expired job costs a round trip and a republish, and a long queue republishes the whole queue every hour.
+
+*** Publish the assignment late
+
+The dispatcher keeps a result unsent in the database and publishes its assignment only when capacity exists, for instance when a node reports idle. The stream then holds only work that a node can take soon.
+
+- For: the queue lives in the database, where it can be counted, ordered by priority, bounded and shown. The stream stays short, and a recreate leaves nothing behind.
+- Against: a larger change. The dispatcher needs a view of the idle capacity, which the node samples and the heartbeat already hold.
+
+** Related gaps
+
+- The task "Do not replay a compute assignment whose result is gone" in the acme report smoke test story: a recreate of the database leaves assignments that fail on replay. A queue that lives in the database removes that case.
+- The reaper puts a result back in the queue when its host goes stale. It reads only the system tenant's results today.
+- The grid screens show the unsent count and no age. A person cannot tell a queue of seconds from a queue of hours.
+
+* Decisions
+
+None yet. The recommendation, to settle in the first task: take the credential off the queue. Mint the token when a node takes the job. Keep the queue in the database, order it by priority and age, and publish an assignment only when a node can take it. Bound the queue per tenant, so one tenant's burst cannot starve the others, and state what happens to a job that waits past the bound.
+
+* Out of scope
+
+- Charging for the wait. The cost task in the story "Serve the grid's samples as time series" covers the cost of running a job.
+- Choosing which tenant's job runs first. The first task states a fair rule, and a weighted scheduler is a later story.

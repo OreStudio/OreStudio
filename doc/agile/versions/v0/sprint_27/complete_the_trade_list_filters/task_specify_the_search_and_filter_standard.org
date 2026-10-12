@@ -38,6 +38,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 - The entity protocol specification states when an entity is a read model over several entities, and that a screen filters through it, not through joins in the client.
 - The specification defines the enum filter member, the _from and _to range members with the end-of-day rule, and the by-parent read.
 - The specification states which instant a read model answers when its parts version on their own timelines.
+- The specification states when a scoped read states =as_of=. Only 9 of 78 scoped reads declare =list_by_as_of: true= today, so the rule needs a decision and an example.
+- The specification states that a foreign key declares =list_by= on its own section of the model, and that a filterable enum column compares the text of its =to_string=.
 - The entity screen specification and the modeling standard point to it, and each rule has an example from the trade list.
 
 * Plan

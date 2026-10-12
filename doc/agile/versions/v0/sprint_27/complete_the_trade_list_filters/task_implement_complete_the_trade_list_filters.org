@@ -83,7 +83,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No test for a filter on the by-trade read | repository_trade_filter_tests.cpp | accept | Added a trade_id_one_of that excludes the trade (empty, total 0) and one that includes it. |
+| 2 | The by-trade test does not show isolation explicitly | repository_trade_filter_tests.cpp | accept | The test now checks that the other trade's identifier is absent. |
+| 3 | The enum overload is tested for one namespace only | list_filter.hpp | decline | A missing to_string is a compile error, so no test can fail silently. |
+| 4 | The generated handler comment says a write permission | trade_identifier_handler.hpp | decline | It is generator boilerplate in all 78 scoped reads. Filed as a capture, not fixed in one entity. |
+| 5 | The unfiltered list_identifiers_by_trade_id pair may be unused | trade_identifier_service.hpp | decline | The generator emits the pair for every scoped read. Dropping it is a generator change. |
+| 6 | The by-trade read has no as_of | trade_identifier.org | accept | Only 9 of 78 scoped reads declare list_by_as_of. The specification task decides when a scoped read states it. The child-read task applies the rule. |
 
 * Result
 

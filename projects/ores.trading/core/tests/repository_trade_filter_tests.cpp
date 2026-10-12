@@ -25,6 +25,7 @@
 #include "ores.trading.api/generators/trade_activity_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
+#include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
@@ -260,6 +261,17 @@ TEST_CASE("a child table reads the rows of one trade by its trade id", tags) {
     const auto of_a = repo.read_latest_by_trade_id(f.ctx, boost::uuids::to_string(a), 0, 100);
     CHECK(of_a.size() == 2);
     CHECK(repo.get_total_identifier_count_by_trade_id(f.ctx, boost::uuids::to_string(a)) == 2);
-    for (const auto& i : of_a)
+    for (const auto& i : of_a) {
         CHECK(i.trade_id == a);
+        CHECK(i.id_value != "ID-B-1");
+    }
+
+    ores::trading::messaging::trade_identifiers_filter other;
+    other.trade_id_one_of = std::vector<uuid>{b};
+    const auto key = boost::uuids::to_string(a);
+    CHECK(repo.read_latest_by_trade_id(f.ctx, key, 0, 100, {}, other).empty());
+    CHECK(repo.get_total_identifier_count_by_trade_id(f.ctx, key, other) == 0);
+
+    other.trade_id_one_of = std::vector<uuid>{a, b};
+    CHECK(repo.read_latest_by_trade_id(f.ctx, key, 0, 100, {}, other).size() == 2);
 }

@@ -32,6 +32,8 @@ Acceptance:
 - Codegen writes the staging table and its drop script. The hand-written file is deleted.
 - The publish function for the bindings reads the generated table with no change in result.
 
+Status: another environment is working on the junction model now. Revisit this capture when that work merges, and delete the hand-written file then.
+
 * References
 
 - projects/ores.codegen/library/templates/ores.sql.schema.junction_artefact_create.org

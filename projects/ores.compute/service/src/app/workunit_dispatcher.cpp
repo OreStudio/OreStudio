@@ -23,6 +23,7 @@
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.compute.core/repository/result_repository.hpp"
 #include "ores.compute.core/repository/work_ledger_repository.hpp"
+#include "ores.compute.core/repository/work_tenant_repository.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -129,6 +130,10 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
             << tenant_queue_limit;
         return;
     }
+
+    // The poller of the grid samples counts the tenants that have dispatched work.
+    ores::compute::repository::work_tenant_repository().note(
+        ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
 
     ores::compute::service::result_service result_svc(tenant_ctx);
 

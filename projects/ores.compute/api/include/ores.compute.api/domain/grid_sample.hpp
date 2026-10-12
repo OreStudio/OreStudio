@@ -74,6 +74,14 @@ struct grid_sample final {
     std::chrono::system_clock::time_point sampled_at;
 
     /**
+     * @brief The party whose work the row counts. NULL for work with no party, which predates the
+     * party scope. The poller writes one row of job counters for each tenant and each party that
+     * has work, all at one instant, so a session that reads the rows it may see sums them for a
+     * tenant or for the parties it acts for.
+     */
+    std::optional<boost::uuids::uuid> party_id;
+
+    /**
      * @brief Total registered hosts.
      */
     int total_hosts = 0;

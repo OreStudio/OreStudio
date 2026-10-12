@@ -88,17 +88,27 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
     return result;
 }
 
-domain::grid_sample compute_telemetry_repository::compute_grid_stats(context ctx) {
+domain::grid_sample
+compute_telemetry_repository::compute_grid_stats(context ctx,
+                                                 std::optional<boost::uuids::uuid> party,
+                                                 bool fleet) {
     BOOST_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
     const auto tid = ctx.tenant_id().to_string();
 
-    static const std::string sql = "SELECT * FROM ores_compute_grid_stats_fn($1::uuid)";
+    static const std::string sql =
+        "SELECT * FROM ores_compute_grid_stats_fn($1::uuid, nullif($2::text, '')::uuid, $3::boolean)";
 
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {tid}, lg(), "computing grid stats");
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {tid, party ? boost::uuids::to_string(*party) : std::string{}, fleet ? "true" : "false"},
+        lg(),
+        "computing grid stats");
 
     domain::grid_sample sample;
     sample.sampled_at = std::chrono::system_clock::now();
+    sample.tenant_id = ctx.tenant_id();
+    sample.party_id = party;
 
     if (!rows.empty() && rows.front().size() >= 13) {
         const auto& row = rows.front();
@@ -165,6 +175,35 @@ std::chrono::system_clock::time_point from_epoch_seconds(long long seconds) {
 
 } // namespace
 
+std::vector<std::optional<boost::uuids::uuid>>
+compute_telemetry_repository::parties_with_work(context ctx) {
+    // Each table is read as the session sees it, so the policies decide which parties
+    // are listed. The empty party is always there, because work with no party is the
+    // work a tenant had before the party scope and the work a service submits.
+    static const std::string sql = R"(
+        SELECT party_id::text FROM (
+            SELECT party_id FROM ores_compute_batches_tbl
+            WHERE valid_to = ores_utility_infinity_timestamp_fn()
+          UNION
+            SELECT party_id FROM ores_compute_workunits_tbl
+            WHERE valid_to = ores_utility_infinity_timestamp_fn()
+          UNION
+            SELECT party_id FROM ores_compute_results_tbl
+            WHERE valid_to = ores_utility_infinity_timestamp_fn()
+        ) p
+        WHERE party_id IS NOT NULL
+    )";
+    const auto rows =
+        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "listing the parties with work");
+    std::vector<std::optional<boost::uuids::uuid>> parties;
+    parties.emplace_back(std::nullopt);
+    for (const auto& row : rows) {
+        if (!row.empty() && row.front())
+            parties.emplace_back(boost::lexical_cast<boost::uuids::uuid>(*row.front()));
+    }
+    return parties;
+}
+
 grid_series
 compute_telemetry_repository::grid_series_in_range(context ctx,
                                                    std::chrono::system_clock::time_point start,
@@ -176,28 +215,62 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading grid samples as " << count << " bucket(s) of "
                                << bucket_seconds << "s";
 
-    // The newest sample of each bucket, taken with array_agg so the read runs
-    // on a plain PostgreSQL and needs no TimescaleDB function. Column 0 is the
-    // bucket's index on the axis and column 1 the number of samples in it.
+    // The job counters are the session's own tenant's. The poller writes one row for
+    // each party at one instant, so the rows of an instant are summed, and the session
+    // reads only the parties it acts for. The newest instant of each bucket then gives
+    // the bucket's figures. The host counts are the installation's and sit on the system
+    // tenant's row, which every session reads, so they come from the rows that carry
+    // them. The newest sample is taken with array_agg so the read runs on a plain
+    // PostgreSQL and needs no TimescaleDB function. Column 0 is the bucket's index on
+    // the axis and column 1 the number of instants with job counters in it.
     static const std::string sql = R"(
-        SELECT floor((extract(epoch FROM sampled_at) - $1::bigint) / $3::int)::int,
-            count(*),
-            (array_agg(total_hosts ORDER BY sampled_at DESC))[1],
-            (array_agg(online_hosts ORDER BY sampled_at DESC))[1],
-            (array_agg(idle_hosts ORDER BY sampled_at DESC))[1],
-            (array_agg(results_inactive ORDER BY sampled_at DESC))[1],
-            (array_agg(results_unsent ORDER BY sampled_at DESC))[1],
-            (array_agg(results_in_progress ORDER BY sampled_at DESC))[1],
-            (array_agg(results_done ORDER BY sampled_at DESC))[1],
-            (array_agg(total_workunits ORDER BY sampled_at DESC))[1],
-            (array_agg(total_batches ORDER BY sampled_at DESC))[1],
-            (array_agg(active_batches ORDER BY sampled_at DESC))[1],
-            (array_agg(outcomes_success ORDER BY sampled_at DESC))[1],
-            (array_agg(outcomes_client_error ORDER BY sampled_at DESC))[1],
-            (array_agg(outcomes_no_reply ORDER BY sampled_at DESC))[1]
-        FROM ores_compute_grid_samples_tbl
-        WHERE sampled_at >= to_timestamp($1::bigint) AND sampled_at < to_timestamp($2::bigint)
-        GROUP BY 1
+        WITH jobs AS (
+            SELECT sampled_at,
+                sum(results_inactive) AS results_inactive,
+                sum(results_unsent) AS results_unsent,
+                sum(results_in_progress) AS results_in_progress,
+                sum(results_done) AS results_done,
+                sum(total_workunits) AS total_workunits,
+                sum(total_batches) AS total_batches,
+                sum(active_batches) AS active_batches,
+                sum(outcomes_success) AS outcomes_success,
+                sum(outcomes_client_error) AS outcomes_client_error,
+                sum(outcomes_no_reply) AS outcomes_no_reply
+            FROM ores_compute_grid_samples_tbl
+            WHERE tenant_id = ores_iam_current_tenant_id_fn()
+              AND sampled_at >= to_timestamp($1::bigint) AND sampled_at < to_timestamp($2::bigint)
+            GROUP BY sampled_at
+        ), job_buckets AS (
+            SELECT floor((extract(epoch FROM sampled_at) - $1::bigint) / $3::int)::int AS b,
+                count(*) AS instants,
+                (array_agg(results_inactive ORDER BY sampled_at DESC))[1] AS results_inactive,
+                (array_agg(results_unsent ORDER BY sampled_at DESC))[1] AS results_unsent,
+                (array_agg(results_in_progress ORDER BY sampled_at DESC))[1] AS results_in_progress,
+                (array_agg(results_done ORDER BY sampled_at DESC))[1] AS results_done,
+                (array_agg(total_workunits ORDER BY sampled_at DESC))[1] AS total_workunits,
+                (array_agg(total_batches ORDER BY sampled_at DESC))[1] AS total_batches,
+                (array_agg(active_batches ORDER BY sampled_at DESC))[1] AS active_batches,
+                (array_agg(outcomes_success ORDER BY sampled_at DESC))[1] AS outcomes_success,
+                (array_agg(outcomes_client_error ORDER BY sampled_at DESC))[1] AS outcomes_client_error,
+                (array_agg(outcomes_no_reply ORDER BY sampled_at DESC))[1] AS outcomes_no_reply
+            FROM jobs
+            GROUP BY 1
+        ), fleet_buckets AS (
+            SELECT floor((extract(epoch FROM sampled_at) - $1::bigint) / $3::int)::int AS b,
+                (array_agg(total_hosts ORDER BY sampled_at DESC))[1] AS total_hosts,
+                (array_agg(online_hosts ORDER BY sampled_at DESC))[1] AS online_hosts,
+                (array_agg(idle_hosts ORDER BY sampled_at DESC))[1] AS idle_hosts
+            FROM ores_compute_grid_samples_tbl
+            WHERE tenant_id = ores_utility_system_tenant_id_fn() AND total_hosts > 0
+              AND sampled_at >= to_timestamp($1::bigint) AND sampled_at < to_timestamp($2::bigint)
+            GROUP BY 1
+        )
+        SELECT coalesce(j.b, f.b), coalesce(j.instants, 0),
+            f.total_hosts, f.online_hosts, f.idle_hosts,
+            j.results_inactive, j.results_unsent, j.results_in_progress, j.results_done,
+            j.total_workunits, j.total_batches, j.active_batches,
+            j.outcomes_success, j.outcomes_client_error, j.outcomes_no_reply
+        FROM job_buckets j FULL JOIN fleet_buckets f ON f.b = j.b
     )";
 
     const auto rows = execute_parameterized_multi_column_query(

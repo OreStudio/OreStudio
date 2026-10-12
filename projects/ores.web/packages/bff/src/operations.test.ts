@@ -683,7 +683,7 @@ describe('GET /api/operations/grid/series', () => {
         expect(body.nodes.list).toEqual([]);
     });
 
-    it('refuses a session outside system administration', async () => {
+    it('serves a tenant its own series and no node of the installation', async () => {
         const { server, cookies, calls } = buildTestServer('tenant', []);
 
         const response = await server.inject({
@@ -693,8 +693,16 @@ describe('GET /api/operations/grid/series', () => {
         });
         await server.close();
 
-        expect(response.statusCode).toBe(403);
-        expect(calls).toEqual([]);
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as SeriesBody;
+        expect(body.grid['results_done']).toEqual([10, 0, 16]);
+        // The machines are the installation's, so neither the node series nor the host
+        // registry is read for a tenant, and the answer lists no node.
+        expect(body.nodes.list).toEqual([]);
+        const subjects = calls.map((call) => call.subject);
+        expect(subjects).toContain('compute.v1.ops.get_grid_series');
+        expect(subjects).not.toContain('compute.v1.ops.get_node_series');
+        expect(subjects).not.toContain('compute.v1.hosts.list');
     });
 
     it('refuses a range that is not a preset, and any other field', async () => {

@@ -252,7 +252,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain('>11.1%<');
         expect(html).toContain('No unsaved changes.');
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*>.*?Save</);
-        expect(html.lastIndexOf('so the price stays positive')).toBeGreaterThan(
+        expect(html.indexOf('so the price stays positive')).toBeLessThan(
             html.indexOf('Sample paths'),
         );
         expect(html).toContain('Return distribution');

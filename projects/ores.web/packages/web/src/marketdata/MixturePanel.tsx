@@ -905,9 +905,9 @@ function Preview({
                     </p>
                 </div>
             </div>
-            <Notice tone={processType === 'arithmetic' ? 'warn' : 'info'}>
-                {t(`marketdata.process.about.${processType}`)}
-            </Notice>
+            {processType === 'arithmetic' && (
+                <Notice tone="warn">{t(`marketdata.process.about.${processType}`)}</Notice>
+            )}
         </section>
     );
 }

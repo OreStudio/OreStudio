@@ -36,6 +36,26 @@ namespace ores::compute::repository {
 inline constexpr int max_grid_series_buckets = 5000;
 
 /**
+ * @brief The work of the grid counted by group, as columns.
+ *
+ * Entry i of every column belongs to the group keys[i]. The group is a tenant
+ * or a party, as group_kind says. A key that is empty stands for work with no
+ * party.
+ */
+struct grid_usage {
+    std::string group_kind;
+    std::vector<std::string> keys;
+    std::vector<std::int64_t> batches;
+    std::vector<std::int64_t> workunits;
+    std::vector<std::int64_t> results;
+    std::vector<std::int64_t> results_unsent;
+    std::vector<std::int64_t> results_in_progress;
+    std::vector<std::int64_t> results_done;
+    std::vector<std::int64_t> outcomes_success;
+    std::vector<std::int64_t> outcomes_failed;
+};
+
+/**
  * @brief The grid samples of a range as columns on a regular time axis.
  *
  * Bucket i starts at start plus i times bucket_seconds, so every column has
@@ -159,6 +179,16 @@ public:
                                      std::chrono::system_clock::time_point start,
                                      std::chrono::system_clock::time_point end,
                                      int bucket_seconds);
+
+    /**
+     * @brief Return the work of the grid counted by group.
+     *
+     * The read states no tenant predicate: the row-level-security policies
+     * decide which batches, workunits and results the session reads. A session
+     * in the system tenant reads every tenant and gets one group for each
+     * tenant. Any other session gets one group for each party it may read.
+     */
+    grid_usage grid_usage_by_scope(context ctx);
 
     /**
      * @brief Return the stored node samples of a range as columns.

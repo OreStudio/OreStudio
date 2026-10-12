@@ -481,6 +481,86 @@ struct node_sample_message {
     int seconds_since_hb = 0;
 };
 
+/**
+ * @brief Asks who uses the grid, with the work counted by group.
+ *
+ * It carries no fields, because the caller's session decides the scope and the
+ * grouping. A session in the system tenant reads the work of every tenant and
+ * gets one group for each tenant. Any other session reads its own tenant, and
+ * only the parties it acts for, and gets one group for each party.
+ */
+struct get_grid_usage_request {
+    using response_type = struct get_grid_usage_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.get_grid_usage";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The work of the grid counted by group, as columns.
+ *
+ * Group i is described by keys[i] and by entry i of every other column. The
+ * group is a tenant when group_kind is "tenant" and a party when it is
+ * "party". A key that is empty stands for work with no party, which predates
+ * the party scope. The share of a group is its entry in a column divided by the
+ * sum of that column, which the caller computes.
+ */
+struct get_grid_usage_response {
+    /**
+     * @brief Whether the usage was read.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    std::string message;
+    /**
+     * @brief What a group is: "tenant" or "party".
+     */
+    std::string group_kind = "";
+    /**
+     * @brief The id of each group, empty for work with no party.
+     */
+    std::vector<std::string> keys;
+    /**
+     * @brief Batches in each group.
+     */
+    std::vector<std::int64_t> batches;
+    /**
+     * @brief Workunits in each group.
+     */
+    std::vector<std::int64_t> workunits;
+    /**
+     * @brief Results in each group.
+     */
+    std::vector<std::int64_t> results;
+    /**
+     * @brief Results waiting to run in each group.
+     */
+    std::vector<std::int64_t> results_unsent;
+    /**
+     * @brief Results running in each group.
+     */
+    std::vector<std::int64_t> results_in_progress;
+    /**
+     * @brief Results finished in each group.
+     */
+    std::vector<std::int64_t> results_done;
+    /**
+     * @brief Results that finished with success in the last 24 hours.
+     */
+    std::vector<std::int64_t> outcomes_success;
+    /**
+     * @brief Results that finished with an error or no reply in the last 24 hours.
+     */
+    std::vector<std::int64_t> outcomes_failed;
+};
+
 }
 
 #endif

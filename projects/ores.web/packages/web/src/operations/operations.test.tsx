@@ -25,7 +25,12 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
-import type { GridNodeRow, GridSeriesView, GridView } from '@ores/wire-protocol/browser';
+import type {
+    GridNodeRow,
+    GridSeriesView,
+    GridUsageView,
+    GridView,
+} from '@ores/wire-protocol/browser';
 import type { BusView } from '@ores/wire-protocol/browser';
 import type { LogsView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
@@ -42,6 +47,7 @@ import {
     newestVersionOf,
 } from './OperationsParts.js';
 import { SERVICES_QUERY_KEY } from './InstallationHealth.js';
+import { GRID_USAGE_QUERY_KEY, formatShare } from './GridUsage.js';
 import { ServicesPage, formatAge, readTime } from './ServicesPage.js';
 import {
     BusPage,
@@ -189,6 +195,7 @@ function withProviders(
     logs: LogsView = logsView(),
     permissionCodes: readonly string[] = [],
     gridSeries: GridSeriesView | undefined = undefined,
+    gridUsage: GridUsageView | undefined = undefined,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], {
@@ -212,6 +219,9 @@ function withProviders(
     client.setQueryData(GRID_QUERY_KEY, grid);
     if (gridSeries !== undefined) {
         client.setQueryData([GRID_SERIES_QUERY_KEY, gridSeries.range], gridSeries);
+    }
+    if (gridUsage !== undefined) {
+        client.setQueryData(GRID_USAGE_QUERY_KEY, gridUsage);
     }
     client.setQueryData([BUS_QUERY_KEY, '1h'], bus);
     client.setQueryData([LOGS_QUERY_KEY, DEFAULT_LOGS_FILTER, 0], logs);
@@ -1663,5 +1673,126 @@ describe('the node heatmap and the node page', () => {
         const html = renderNodePage('00000000-0000-4000-8000-00000000dead', seriesWithNodes());
 
         expect(html).toContain('No node has this id');
+    });
+});
+
+function usageGroup(overrides: Partial<GridUsageView['groups'][number]> = {}) {
+    return {
+        key: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        name: 'Acme',
+        batches: 2,
+        workunits: 30,
+        results: 30,
+        results_unsent: 5,
+        results_in_progress: 5,
+        results_done: 20,
+        outcomes_success: 18,
+        outcomes_failed: 2,
+        share: 0.75,
+        ...overrides,
+    };
+}
+
+function usageView(overrides: Partial<GridUsageView> = {}): GridUsageView {
+    return {
+        read_at: '2026-10-12 10:00:00Z',
+        group_kind: 'tenant',
+        groups: [usageGroup()],
+        ...overrides,
+    };
+}
+
+describe('the grid usage tab', () => {
+    it('lists a row for each tenant with its share of the grid', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({
+                groups: [
+                    usageGroup(),
+                    usageGroup({
+                        key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                        name: 'Globex',
+                        results: 10,
+                        share: 0.25,
+                    }),
+                ],
+            }),
+        );
+
+        expect(html).toContain('Usage by tenant');
+        expect(html).toContain('Acme');
+        expect(html).toContain('Globex');
+        expect(html).toContain('75%');
+        expect(html).toContain('25%');
+    });
+
+    it('lists a row for each party, and names the work that has no party', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({
+                group_kind: 'party',
+                groups: [
+                    usageGroup({ name: 'Desk A' }),
+                    usageGroup({ key: '', name: null, share: 0.1 }),
+                ],
+            }),
+        );
+
+        expect(html).toContain('Usage by party');
+        expect(html).toContain('Desk A');
+        expect(html).toContain('No party');
+    });
+
+    it('shows the id of a group nobody could name', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({ groups: [usageGroup({ name: null })] }),
+        );
+
+        expect(html).toContain('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+    });
+
+    it('says the grid has run no work rather than drawing an empty table', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({ groups: [] }),
+        );
+
+        expect(html).toContain('No work has run on the grid yet.');
+        expect(html).not.toContain('<table');
+    });
+
+    it('rounds a share and marks a group that ran nothing', () => {
+        expect(formatShare(0.754)).toBe('75%');
+        expect(formatShare(0.004)).toBe('<1%');
+        expect(formatShare(0)).toBe('—');
     });
 });

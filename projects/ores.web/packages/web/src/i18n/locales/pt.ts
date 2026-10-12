@@ -1547,7 +1547,32 @@ const pt: SourceCatalogue = {
                 noSample:
                     'Ainda sem amostra. A instalação não guarda qualquer resumo da grelha, por isso os contadores não podem ser desenhados; a tabela de nós abaixo fica sozinha.',
             },
-            tabs: { label: 'Vistas da grelha', overview: 'Resumo', nodes: 'Nós', heatmap: 'Mapa de calor' },
+            tabs: {
+                label: 'Vistas da grelha',
+                overview: 'Resumo',
+                usage: 'Utilização',
+                nodes: 'Nós',
+                heatmap: 'Mapa de calor',
+            },
+            usage: {
+                title: { tenant: 'Utilização por inquilino', party: 'Utilização por parte' },
+                note: 'A quota de um grupo é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
+                empty: 'Ainda não correu trabalho na grelha.',
+                unassigned: 'Sem parte',
+                columns: {
+                    tenant: 'Inquilino',
+                    party: 'Parte',
+                    batches: 'Lotes',
+                    workunits: 'Unidades de trabalho',
+                    results: 'Resultados',
+                    inProgress: 'A correr',
+                    unsent: 'À espera',
+                    done: 'Concluídos',
+                    succeeded: 'Com êxito',
+                    failed: 'Falhados',
+                    share: 'Quota',
+                },
+            },
             heatmap: {
                 title: 'Carga dos nós',
                 lead: 'Uma linha por nó e uma coluna por intervalo, coloridas pelo que o nó fez. As horas estão em UTC.',

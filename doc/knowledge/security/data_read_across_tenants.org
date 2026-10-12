@@ -52,6 +52,20 @@ A person sees the accounts of the parties they have access to, the accounts of t
 
 The existence function stays. A record that names a person asks it for yes or no, so the service does not need to read the account to write the record.
 
+** The system tenant operates the grid
+
+The six blocks share a row of the system tenant with every tenant. The grid needs the opposite direction in one case. The compute grid is one installation resource, and the system tenant runs it. The operator cannot run the grid from one tenant's view. They must see the batches, workunits and results of every tenant, and which tenant uses what share of the grid.
+
+For this reason three policies let a system-tenant session read every tenant's rows: =batches_system_read_policy=, =workunits_system_read_policy= and =results_system_read_policy=. The policies follow these rules.
+
+- They are =for select= only. Writes stay with the current tenant.
+- The guard script =check_rls_system_tenant_widenings.py= lists each policy with the reason that the system tenant operates the grid.
+- The hosts need no such policy, because every host belongs to the system tenant.
+- The compute service reads the batches, workunits and results of other tenants for counting and listing. A read across tenants returns metadata. It never returns a workunit input or a result payload.
+- A tenant keeps its own scope. A tenant's administrator reads only the tenant's rows. The party rule narrows them to the parties the session acts for.
+
+The grid usage read shows both scopes from one query. It states no tenant or party. The policies decide the rows, and the session decides the grouping: one group for each tenant for the system tenant, and one group for each party for any other session.
+
 ** Checklist for a new shared table
 
 - The rows belong to the system tenant, and no row holds private data.

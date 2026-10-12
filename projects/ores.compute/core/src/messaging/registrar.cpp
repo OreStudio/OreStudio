@@ -111,6 +111,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         "ores.compute.service",
         [th](ores::nats::message msg) { th->get_grid_series(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        get_grid_usage_request::nats_subject,
+        "ores.compute.service",
+        [th](ores::nats::message msg) { th->get_grid_usage(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         get_node_series_request::nats_subject,
         "ores.compute.service",
         [th](ores::nats::message msg) { th->get_node_series(std::move(msg)); }));

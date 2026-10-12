@@ -27,8 +27,10 @@ import {
     SERIES_RANGES,
     gridSeriesViewSchema,
     gridStatsRequestSchema,
+    gridUsageViewSchema,
     gridViewSchema,
     isWireTimestamp,
+    listTenantsPage,
     logsViewSchema,
     serviceRosterRequestSchema,
     serviceRosterViewSchema,
@@ -40,6 +42,37 @@ import {
 import { requireDeploymentRead } from './deployment-access.js';
 import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
+
+/**
+ * The names a person reads for the groups of a usage: the tenants' names for a
+ * usage by tenant, the parties' names for a usage by party.
+ *
+ * A name is a convenience, so a failure to read one is not a failure to read
+ * the usage. The group then goes out unnamed and the screen shows its id.
+ */
+async function groupNames(
+    session: LiveSession,
+    kind: string,
+    keys: readonly string[],
+): Promise<ReadonlyMap<string, string>> {
+    const ids = keys.filter((key) => key !== '');
+    if (ids.length === 0) {
+        return new Map();
+    }
+    try {
+        if (kind === 'tenant') {
+            const page = await listTenantsPage(session.client, {
+                ids,
+                limit: Math.min(ids.length, 1000),
+            });
+            return new Map(page.tenants.map((tenant) => [tenant.id, tenant.name || tenant.code]));
+        }
+        const parties = await session.client.listParties();
+        return new Map(parties.map((party) => [party.id, party.full_name || party.short_code]));
+    } catch {
+        return new Map();
+    }
+}
 
 /**
  * The one service whose instances run on the grid's nodes.
@@ -384,6 +417,43 @@ export function registerOperationsRoutes(
                     host: hostNames.get(node.host_id) ?? null,
                 })),
             },
+        });
+    });
+
+    /**
+     * Who uses the grid: the work counted by tenant for a system-tenant
+     * session, and by party for any other.
+     *
+     * The route states no scope. The compute service reads the session and
+     * decides which rows it may count and how to group them, so a client
+     * cannot ask for a wider scope than its session allows. Each group carries
+     * its share of the results, which is the share of the grid it used.
+     */
+    server.get('/api/operations/grid/usage', async (request) => {
+        const session = requireSession(request);
+        if (Object.keys((request.query as object | undefined) ?? {}).length > 0) {
+            throw invalidRequest('The grid usage read takes no query fields.');
+        }
+        const usage = await session.client.gridUsage();
+        const names = await groupNames(session, usage.group_kind, usage.keys);
+        const total = usage.results.reduce((sum, count) => sum + count, 0);
+        const groups = usage.keys.map((key, i) => ({
+            key,
+            name: names.get(key) ?? null,
+            batches: usage.batches[i] ?? 0,
+            workunits: usage.workunits[i] ?? 0,
+            results: usage.results[i] ?? 0,
+            results_unsent: usage.results_unsent[i] ?? 0,
+            results_in_progress: usage.results_in_progress[i] ?? 0,
+            results_done: usage.results_done[i] ?? 0,
+            outcomes_success: usage.outcomes_success[i] ?? 0,
+            outcomes_failed: usage.outcomes_failed[i] ?? 0,
+            share: total === 0 ? 0 : (usage.results[i] ?? 0) / total,
+        }));
+        return gridUsageViewSchema.parse({
+            read_at: toWireTimestamp(new Date()),
+            group_kind: usage.group_kind,
+            groups,
         });
     });
 

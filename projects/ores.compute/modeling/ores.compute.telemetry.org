@@ -1100,6 +1100,173 @@ the reply, so it would be a second command for one read.
  */
 #+end_src
 
+** get_grid_usage_request
+:PROPERTIES:
+:subject: compute.v1.ops.get_grid_usage
+:response: get_grid_usage_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks who uses the grid, with the work counted by group.
+ *
+ * It carries no fields, because the caller's session decides the scope and the
+ * grouping. A session in the system tenant reads the work of every tenant and
+ * gets one group for each tenant. Any other session reads its own tenant, and
+ * only the parties it acts for, and gets one group for each party.
+ */
+#+end_src
+
+** get_grid_usage_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The work of the grid counted by group, as columns.
+ *
+ * Group i is described by keys[i] and by entry i of every other column. The
+ * group is a tenant when group_kind is "tenant" and a party when it is
+ * "party". A key that is empty stands for work with no party, which predates
+ * the party scope. The share of a group is its entry in a column divided by the
+ * sum of that column, which the caller computes.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the usage was read.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, when it was not.
+ */
+#+end_src
+
+*** group_kind
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What a group is: "tenant" or "party".
+ */
+#+end_src
+
+*** keys
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of each group, empty for work with no party.
+ */
+#+end_src
+
+*** batches
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Batches in each group.
+ */
+#+end_src
+
+*** workunits
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Workunits in each group.
+ */
+#+end_src
+
+*** results
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results in each group.
+ */
+#+end_src
+
+*** results_unsent
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results waiting to run in each group.
+ */
+#+end_src
+
+*** results_in_progress
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results running in each group.
+ */
+#+end_src
+
+*** results_done
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results finished in each group.
+ */
+#+end_src
+
+*** outcomes_success
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results that finished with success in the last 24 hours.
+ */
+#+end_src
+
+*** outcomes_failed
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results that finished with an error or no reply in the last 24 hours.
+ */
+#+end_src
+
 * See also
 
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

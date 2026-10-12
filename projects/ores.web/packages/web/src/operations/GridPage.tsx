@@ -54,6 +54,7 @@ import {
     type ScreenGap,
 } from './OperationsParts.js';
 import { GridLoadTab, GridNodeLoad } from './GridSeries.js';
+import { GridUsageTab } from './GridUsage.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { gridMachinePath, gridNodePath } from '../shell/paths.js';
@@ -71,7 +72,7 @@ const JOURNEYS: readonly JourneyId[] = [
 ];
 
 /** The tabs of the grid screen, in the order they are drawn. */
-export const GRID_TABS = ['overview', 'nodes', 'heatmap'] as const;
+export const GRID_TABS = ['overview', 'usage', 'nodes', 'heatmap'] as const;
 
 /** Where the grid read's answer is cached, so a test can seed it. */
 export const GRID_QUERY_KEY = ['operations-grid'] as const;
@@ -627,6 +628,8 @@ export function GridPage(): ReactNode {
                     <MachinesPanel nodes={view.nodes} />
                 </>
             )}
+
+            {tab === 'usage' && <GridUsageTab />}
 
             {tab === 'nodes' && (
                 <NodesTab nodes={view.nodes} />

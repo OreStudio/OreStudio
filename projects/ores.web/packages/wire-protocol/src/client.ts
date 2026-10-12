@@ -96,6 +96,8 @@ import {
     gridStatsRequestSchema,
     gridSeriesReplySchema,
     gridSeriesRequestSchema,
+    gridUsageReplySchema,
+    gridUsageRequestSchema,
     nodeSeriesReplySchema,
     nodeSeriesRequestSchema,
     listHostsReplySchema,
@@ -130,6 +132,7 @@ import {
     type WireAccountPage,
     type WorkflowProgress,
     type GridSeriesReply,
+    type GridUsageReply,
     type GridStatsReply,
     type NodeSeriesReply,
 } from './operations.js';
@@ -1141,6 +1144,27 @@ export class OresClient {
         );
         if (!reply.success) {
             throw new OperationFailedError(SUBJECTS.gridSeries, reply.message);
+        }
+        return reply;
+    }
+
+    /**
+     * Who uses the grid, with the work counted by tenant or by party.
+     *
+     * The read takes no fields: the session decides the scope and the
+     * grouping, so a client cannot ask for a wider one. A refusal the read
+     * states in its body is an error rather than an empty usage, because an
+     * empty usage would read as a grid nobody uses.
+     */
+    async gridUsage(): Promise<GridUsageReply> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.gridUsage,
+            gridUsageRequestSchema.parse({}),
+            gridUsageReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.gridUsage, reply.message);
         }
         return reply;
     }

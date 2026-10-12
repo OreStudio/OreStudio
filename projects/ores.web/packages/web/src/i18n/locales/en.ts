@@ -1219,6 +1219,30 @@ export const en: SourceCatalogue = {
      * doing. The versions screen belongs to every session, so it is offered
      * from Home as well as from this area's hub.
      */
+    oresmd: {
+        title: 'oresmd URL',
+        cancel: 'Cancel',
+        copy: 'Copy',
+        copied: 'Copied',
+        apply: 'Apply',
+        refused: 'The URL was refused: {message}',
+        choose: 'Choose an instrument and a quote type.',
+        kind: 'Kind',
+        family: 'Index family',
+        instrument: 'Instrument type',
+        quote: 'Quote type',
+        authority: 'Asset class: {asset}',
+        path: '{name} (path)',
+        optional: 'Optional',
+        required: 'Required',
+        coordinate: 'Coordinate',
+        preview: 'URL',
+        kinds: {
+            quote: 'Quote',
+            series: 'Series',
+            fixing: 'Fixing',
+        },
+    },
     development: {
         lead: 'The work a team does on the product, starting with the tests a tester can run.',
         tabs: {

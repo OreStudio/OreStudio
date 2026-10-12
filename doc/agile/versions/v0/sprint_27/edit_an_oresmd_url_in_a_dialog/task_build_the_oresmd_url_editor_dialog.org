@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A screen calls the editor with a URL and a callback and gets a valid URL back, a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -86,3 +86,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The accepted editor of the prototype is built as =OresmdEditorDialog=, a component any screen calls with =url=, =onApply= and =onClose=. It opens in a modal over the screen, loads the URL it is given through the server's parse, and offers three kinds: quote, series and fixing. The schema from the server draws the rest: the instrument types by asset class or the index families, the quote types, the path and one input for each field of the row in key order, each marked required or optional and, for a point in the series, as a coordinate. A closed set is a select. The currency fields suggest the currencies the system keeps, and the day counter suggests the day counter list, and the person may overtype either, because ORE accepts values the catalogue omits. After a pause of 250 ms the codec is asked to write the URI, and the preview shows its spelling or its reason. Copy and Apply are offered only when the codec wrote a URI for exactly what is on screen. A URL the codec refuses opens an empty editor and says why. The editor holds no grammar: =editor.ts= only arranges the parts the schema describes.
+
+The text is in English, French and Portuguese. The French and Portuguese is my translation and needs a speaker.
+
+Tests: 26 tests pass for the logic in =editor.ts= and the markup of the dialog and the composer, and the full web suites pass (web 1255). I also drove the dialog in headless Chrome against a mock of the three routes, with the app's own theme. All 12 checks passed: the dialog loads a URL into its fields, the preview shows the URI, Apply waits while the person types, a refusal shows the codec words and disables Apply, 4 edits in a burst asked the codec 2 times, a series drops the coordinate, Apply hands the URI to the screen and closes, a refused URL opens empty with the reason, and a new URL asks for an instrument. The mock stood in for the codec, so the grammar itself is not checked here. The harness was a temporary file and is removed.
+
+Not done: tenors, curve ids, index names and the other catalogues of the prototype's field-source view do not suggest values yet, because the web has no reader for them. Only currencies and day counters do. A real server was not called.

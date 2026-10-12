@@ -1232,6 +1232,30 @@ const fr: SourceCatalogue = {
         },
     },
 
+    oresmd: {
+        title: 'URL oresmd',
+        cancel: 'Annuler',
+        copy: 'Copier',
+        copied: 'Copié',
+        apply: 'Appliquer',
+        refused: 'L\'URL a été refusée : {message}',
+        choose: 'Choisissez un instrument et un type de cotation.',
+        kind: 'Genre',
+        family: 'Famille d\'indices',
+        instrument: 'Type d\'instrument',
+        quote: 'Type de cotation',
+        authority: 'Classe d\'actifs : {asset}',
+        path: '{name} (chemin)',
+        optional: 'Facultatif',
+        required: 'Obligatoire',
+        coordinate: 'Coordonnée',
+        preview: 'URL',
+        kinds: {
+            quote: 'Cotation',
+            series: 'Série',
+            fixing: 'Fixing',
+        },
+    },
     development: {
         lead: "Le travail d'une équipe sur le produit, à commencer par les tests qu'un testeur peut lancer.",
         tabs: {

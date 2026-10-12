@@ -337,7 +337,6 @@ function review(overrides: Partial<Parameters<typeof ReviewPanel>[0]> = {}): str
                         refusal: '',
                     },
                 ]}
-                partCodes={['finance']}
                 reason=""
                 onReason={() => undefined}
                 pending={false}
@@ -373,7 +372,6 @@ describe('the review panel', () => {
 
     it('writes directly when the policy names no part', () => {
         const html = review({
-            partCodes: [],
             lines: [
                 {
                     key: '1',

@@ -28,7 +28,15 @@ import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { PersonRef } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
-import { Button, Field, LinkButton, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import {
+    Button,
+    Field,
+    LinkButton,
+    Notice,
+    PageHeader,
+    Select,
+    Textarea,
+} from '../ui/Primitives.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { ChangeDelta } from './ChangeDelta.js';
 import { ChecksPanel } from './ChecksPanel.js';
@@ -242,7 +250,9 @@ function Answer({
     const descriptor = descriptorFor(request.kindCode);
     const turns = answerable(request.parts);
     const [comment, setComment] = useState('');
-    const [part, setPart] = useState(turns[0]?.code ?? '');
+    const [chosen, setChosen] = useState(turns[0]?.code ?? '');
+    // The choice can only name a part that is still waiting.
+    const part = turns.some((turn) => turn.code === chosen) ? chosen : (turns[0]?.code ?? '');
     const refusedWithoutReason = comment.trim() === '';
     const namesParts = request.parts.length > 0;
 
@@ -267,13 +277,16 @@ function Answer({
             <h2 className="text-sm font-semibold">{t('inbox.request.answer')}</h2>
             {self && <Notice tone="warn">{t('inbox.request.notYourself')}</Notice>}
             {decide.isError && <Notice tone="error">{decide.error.message}</Notice>}
+            {/* A refused check warns and does not block: the server runs the lines
+                again when it applies them, and a decider may mean to approve a
+                change that is about to be made good by another. */}
             {refusedChecks > 0 && <Notice tone="warn">{t('inbox.request.checksRefused')}</Notice>}
             {namesParts && turns.length === 0 && (
                 <Notice tone="info">{t('inbox.request.noTurn')}</Notice>
             )}
             {turns.length > 1 && (
                 <Field label={t('inbox.request.answeringFor')}>
-                    <Select value={part} onChange={(event) => setPart(event.target.value)}>
+                    <Select value={part} onChange={(event) => setChosen(event.target.value)}>
                         {turns.map((turn) => (
                             <option key={turn.code} value={turn.code}>
                                 {partLabel(t, turn.code, turn.name)}
@@ -282,25 +295,21 @@ function Answer({
                     </Select>
                 </Field>
             )}
-            <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-ink-muted">
-                    {t('inbox.request.reason')}
-                </span>
-                <textarea
-                    className="w-full rounded-md border border-line bg-surface-base px-3 py-2 text-sm text-ink placeholder:text-ink-faint hover:border-line-strong focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/20"
+            <Field
+                label={t('inbox.request.reason')}
+                hint={t('inbox.request.reasonHint', { who: request.requestedBy })}
+            >
+                <Textarea
                     rows={4}
                     value={comment}
                     onChange={(event) => setComment(event.target.value)}
                 />
-                <span className="mt-1 block text-xs text-ink-faint">
-                    {t('inbox.request.reasonHint', { who: request.requestedBy })}
-                </span>
-            </label>
+            </Field>
             <div className="flex flex-wrap gap-2">
                 <Button
                     variant="primary"
                     disabled={cannotAnswer}
-                    pending={decide.isPending}
+                    pending={decide.isPending && decide.variables === 'approve'}
                     onClick={() => decide.mutate('approve')}
                 >
                     {descriptor.approveLabel(t, request)}
@@ -308,6 +317,7 @@ function Answer({
                 <Button
                     variant="danger"
                     disabled={cannotAnswer || refusedWithoutReason}
+                    pending={decide.isPending && decide.variables === 'refuse'}
                     onClick={() => decide.mutate('refuse')}
                 >
                     {t('inbox.request.refuse')}

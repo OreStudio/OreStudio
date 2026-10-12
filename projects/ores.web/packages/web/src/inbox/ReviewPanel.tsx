@@ -21,7 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Field, Notice, Tag } from '../ui/Primitives.js';
+import { Button, Field, Notice, Tag, Textarea } from '../ui/Primitives.js';
 import { descriptorFor } from './kinds.js';
 import { operationLabel, partLabel } from './words.js';
 
@@ -57,7 +57,6 @@ export interface ReviewLine {
 export function ReviewPanel({
     kindCode,
     lines,
-    partCodes,
     reason,
     onReason,
     pending,
@@ -67,8 +66,6 @@ export function ReviewPanel({
 }: {
     readonly kindCode: string;
     readonly lines: readonly ReviewLine[];
-    /** The parts the policy needs for the changes together. */
-    readonly partCodes: readonly string[];
     readonly reason: string;
     readonly onReason: (reason: string) => void;
     readonly pending: boolean;
@@ -80,6 +77,9 @@ export function ReviewPanel({
     const { t } = useTranslation();
     const descriptor = descriptorFor(kindCode);
     const refused = lines.some((line) => line.refusal !== '');
+    // The parts the request needs are the parts of its changes together, so the
+    // panel cannot name deciders on a line and then offer to write directly.
+    const partCodes = [...new Set(lines.flatMap((line) => line.partCodes))].sort();
     const gated = partCodes.length > 0;
 
     return (
@@ -140,8 +140,7 @@ export function ReviewPanel({
                         })}
                     </Notice>
                     <Field label={t('inbox.review.reason')} hint={t('inbox.review.reasonHint')}>
-                        <textarea
-                            className="w-full rounded-md border border-line bg-surface-base px-3 py-2 text-sm text-ink placeholder:text-ink-faint hover:border-line-strong focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/20"
+                        <Textarea
                             rows={3}
                             value={reason}
                             onChange={(event) => onReason(event.target.value)}

@@ -97,7 +97,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Refuse has no pending state | RequestPage.tsx | Accept | Each button now shows the spinner for its own answer. |
+| 2 | The textarea styling is repeated | RequestPage.tsx, ReviewPanel.tsx | Accept | A shared Textarea primitive replaces both, and the answer uses the labelled field as the panel does. |
+| 3 | The review panel can contradict itself | ReviewPanel.tsx | Accept | The panel no longer takes a separate set of parts. It takes them from its lines, so it cannot name deciders and offer to write directly. |
+| 4 | The chosen part can go stale | RequestPage.tsx | Accept | The choice only names a part that is still waiting. |
+| 5 | Checks do not block approval | RequestPage.tsx | Accept | Deliberate: the server runs the lines again at the apply. A comment says so. |
+| 6 | The panel takes a kind code and not a descriptor | ReviewPanel.tsx | Decline | The code is what a screen holds, and the lookup never throws. |
+| 7 | Do a manual pass against a running stack | PR | Decline | I cannot run the stack here. It stays under the limits in the Result, and the five screen tasks exercise the panel. |
 
 * Result
 

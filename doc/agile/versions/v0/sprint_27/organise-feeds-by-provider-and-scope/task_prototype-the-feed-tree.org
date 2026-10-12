@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 7566CF46-6627-49A8-AA3F-B8DE653153A4
+:END:
+#+title: Task: Prototype the feed tree
+#+description: A throwaway web prototype of the feed tree screen before the feed browser is built: System feeds by provider and My test feeds, start and stop at any node with running roll-ups, search and scale to thousands of feeds, and leaves that open the existing FX and IR feed pages. It builds on the ores.qt Market Simulator and its desktop prototype.
+#+type: task
+#+level: s1
+#+filetags: :web:synthetic:feeds:prototype:ux:organise-feeds-by-provider-and-scope:sprint_27:v0:
+#+owner: marco
+#+branch: feature/prototype-the-feed-tree
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The feed browser's layout is chosen from variants a person can open and compare, not imagined, before Build the feed browser starts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A prototype page under doc/prototypes/market_data with variants and states, linked from the market data prototype index and the run-a-synthetic-collection journey.
+- It shows the Bloomberg and 2016 ORE Samples feeds as they are seeded, a test collection, and a state with thousands of feeds.
+- Every leaf names the existing FX or IR feed page it opens.
+
+* Plan
+
+Read the =ores.qt= Market Simulator window and its desktop prototype, then build
+a throwaway web page with three layouts of the tree, organised by provider and
+scope, with start and stop at any node and leaves that open the existing FX and
+IR feed pages: [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- From the Qt window the prototype keeps: the running, stopped or partial state
+  with its count on every node; one folder-scoped request to start or stop a
+  subtree; and the two-flag pair. It leaves the editing, the mixture and the
+  live chart to the feed pages.
+- The variants are the tree and node panel of the Qt window (=a=), a single
+  tree table (=b=), and drill-down columns that load a page of children at a
+  time (=c=). Only =c= does not render a large folder whole.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

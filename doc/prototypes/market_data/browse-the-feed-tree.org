@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 17E6CB2C-E1C9-4911-81AC-591D88AC5B89
+:END:
+#+title: Browse the feed tree prototype
+#+description: The Market data feed browser before it is built: three layouts of the tree of synthetic feeds by provider and scope, with start and stop at any node and leaves that open the existing feed pages, on a throwaway page of mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:browse-the-feed-tree/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The feed tree prototype argues what the web's *Feeds* screen under *Market
+data* should show before it is built. It is the successor of the =ores.qt=
+Market Simulator window and of the
+[[id:768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC][Market simulator prototype]], which
+argued the same window on the desktop, for three collections and sixteen feeds.
+
+It argues one thing the earlier prototype did not have to: the tree is the screen
+that manages runs, not the one that edits feeds. A person finds a node, reads
+what runs under it, and starts or stops it with one request. A leaf opens the
+feed's existing page, =/market-data/fx-feeds/:id= or =/market-data/ir-feeds/:id=,
+where its process, mixture, curve template and history already are.
+
+It is throwaway, with no service and no build step. Open the
+[[file:browse-the-feed-tree/][feed tree]].
+
+* Detail
+
+** The question
+
+The feeds are now organised by provider and scope (see
+[[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]]):
+/System feeds/ by provider, then feed kind, and /Test feeds/ by party, then
+collection. Bloomberg alone holds 55 feeds, and the story expects many thousands
+once more providers and order books arrive. The open question is which layout
+keeps a node's running state and its start and stop in reach at that size.
+
+The tree carries the Qt window's ideas: a node is running, stopped or partial
+with its count; start and stop act on everything under a node through one
+folder-scoped request; and a pair reads as its two flags. It drops what belongs
+on the feed's own page: editing, the mixture and the live chart.
+
+** The variants
+
+Switch with the bottom bar, or =?variant=. The default is =a=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | tree and node | The Qt layout. The tree on the left with a roll-up meter on every node; the selected node on the right with its counts, Start and Stop, and a table of its children. A leaf shows its source, series, process and binding, and links to its page. |
+| =B= | tree table | One expandable table. Every node is a row with what it holds, its count, its state, its ticks and its actions, so a whole subtree is read and acted on without a second pane. |
+| =C= | columns | Drill-down columns, one per level, each loading a page of children. The layout for thousands of feeds: no level is ever rendered whole, and the path stays visible across the columns. |
+
+*A* is the closest to the window the desk knows. *B* reads best when a person
+wants to compare siblings. *C* is the only one that does not degrade when a
+folder holds hundreds of feeds.
+
+** The states
+
+Switch with the bottom bar, or =?state=. The default is =mixed=.
+
+| State | What it shows |
+|-------+---------------|
+| =mixed= | The Bloomberg FX spots running and its IR curves stopped, so Bloomberg reads 26 of 55; one test feed running. |
+| =stopped= | Nothing running. |
+| =scale= | Six providers and about 2,850 feeds, with an /Order books/ kind marked planned under each new provider. |
+| =search= | The search holds "usd sofr": the matching curves with their paths, and the match count. |
+
+** Driving it
+
+Nodes select, folders expand, and the search and the /Running only/ filter
+narrow the tree. Start and Stop ask first, saying how many feeds the request
+touches, and that stopping a bound feed stops every party bound to it; the
+report then says what started, what was already running and what was skipped,
+and every roll-up recomputes. /Open/ names the feed page it would open. Every
+control is prototype chrome or mock behaviour.
+
+** What the prototype assumes
+
+- Bloomberg sits under /System feeds/, the story's target. Today it is a party
+  collection published with the tenant, because the services do not yet read
+  system collections.
+- The 2016 ORE Samples collection sits under the /Generic/ provider, since it
+  stands for no provider.
+- The counts and ticks are mock values; a built screen reads them from the
+  feed status the synthetic service already reports.
+
+* See also
+
+- [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][User Journey: Run a synthetic collection]] — the journey this screen carries.
+- [[id:768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC][Market simulator prototype]] — the desktop window this succeeds.

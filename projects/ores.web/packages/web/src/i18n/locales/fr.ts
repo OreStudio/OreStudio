@@ -1741,6 +1741,13 @@ const fr: SourceCatalogue = {
                 },
             },
             series: {
+                outlook: {
+                    caution:
+                        'La file est longue. {count} tâches attendent et la grille en termine environ {rate} par minute, donc il leur faut environ {time}. Une tâche qui attend plus d’une heure échoue.',
+                    over: 'La file dépasse la capacité. {count} tâches attendent et la grille en termine environ {rate} par minute, donc il leur faut environ {time}. Une tâche qui attend plus d’une heure échoue : celles du fond de la file échoueront.',
+                    stalled:
+                        '{count} tâches attendent et aucune n’a été terminée récemment. Une tâche qui attend plus d’une heure échoue.',
+                },
                 title: 'Dans le temps',
                 lead: 'Comment la grille a évolué sur la période. Les heures sont en UTC.',
                 rangeLabel: 'Période',

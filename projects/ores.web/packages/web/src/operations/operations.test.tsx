@@ -82,6 +82,9 @@ import {
     changeOf,
     hasAnySample,
     throughputSeries,
+    QueueOutlookNotice,
+    formatWait,
+    queueOutlook,
 } from './GridSeries.js';
 import { GridNodePage, nodeColumns, formatMs, formatMiB } from './GridNodePage.js';
 import { formatRam, machineFacts } from './GridPage.js';
@@ -1829,5 +1832,87 @@ describe('the grid usage tab', () => {
         expect(formatShare(0.754)).toBe('75%');
         expect(formatShare(0.004)).toBe('<1%');
         expect(formatShare(0)).toBe('—');
+    });
+});
+
+describe('the queue outlook', () => {
+    /** Four buckets a minute apart in which the grid finished 10 jobs a minute. */
+    function steady(waiting: number, done = [0, 10, 20, 30]): GridSeriesView {
+        return gridSeriesView({
+            samples: [1, 1, 1, 1],
+            results_unsent: [waiting, waiting, waiting, waiting],
+            results_done: done,
+        });
+    }
+
+    function noticeOf(view: GridSeriesView): string {
+        return renderToStaticMarkup(
+            <TranslationProvider>
+                <QueueOutlookNotice view={view} />
+            </TranslationProvider>,
+        );
+    }
+
+    it('says nothing while the queue clears well inside the wait limit', () => {
+        const outlook = queueOutlook(steady(100));
+
+        expect(outlook.perMinute).toBe(10);
+        expect(outlook.drainMinutes).toBe(10);
+        expect(outlook.level).toBe('ok');
+        expect(noticeOf(steady(100))).toBe('');
+    });
+
+    it('cautions when the queue needs more than half the wait limit', () => {
+        const outlook = queueOutlook(steady(400));
+
+        expect(outlook.drainMinutes).toBe(40);
+        expect(outlook.level).toBe('caution');
+        expect(noticeOf(steady(400))).toContain('The queue is long');
+    });
+
+    it('warns that the back of the queue will fail when it needs more than the limit', () => {
+        const html = noticeOf(steady(1000));
+
+        expect(queueOutlook(steady(1000)).level).toBe('over');
+        expect(html).toContain('over capacity');
+        expect(html).toContain('1000 jobs wait');
+        expect(html).toContain('about 10 a minute');
+        expect(html).toContain('about 1.7 h');
+    });
+
+    it('warns when jobs wait and none finished', () => {
+        const flat = steady(50, [30, 30, 30, 30]);
+
+        expect(queueOutlook(flat).drainMinutes).toBe(Infinity);
+        expect(queueOutlook(flat).level).toBe('over');
+        expect(noticeOf(flat)).toContain('none finished recently');
+    });
+
+    it('knows no rate from a single sample and so warns of nothing', () => {
+        const lone = gridSeriesView({
+            samples: [0, 0, 0, 1],
+            results_unsent: [0, 0, 0, 5000],
+            results_done: [0, 0, 0, 0],
+        });
+
+        expect(queueOutlook(lone).perMinute).toBeNull();
+        expect(queueOutlook(lone).level).toBe('ok');
+    });
+
+    it('reads the rate over known intervals and not across a gap', () => {
+        const gapped = gridSeriesView({
+            samples: [1, 1, 0, 1],
+            results_unsent: [100, 100, 0, 100],
+            results_done: [0, 10, 0, 30],
+        });
+
+        expect(queueOutlook(gapped).perMinute).toBe(10);
+    });
+
+    it('writes a wait as a person reads it', () => {
+        expect(formatWait(0.2)).toBe('1 min');
+        expect(formatWait(45)).toBe('45 min');
+        expect(formatWait(100)).toBe('1.7 h');
+        expect(formatWait(720)).toBe('12 h');
     });
 });

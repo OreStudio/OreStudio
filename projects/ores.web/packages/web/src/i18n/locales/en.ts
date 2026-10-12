@@ -1721,6 +1721,13 @@ export const en: SourceCatalogue = {
                 },
             },
             series: {
+                outlook: {
+                    caution:
+                        'The queue is long. {count} jobs wait and the grid finishes about {rate} a minute, so they need about {time}. A job that waits more than an hour fails.',
+                    over: 'The queue is over capacity. {count} jobs wait and the grid finishes about {rate} a minute, so they need about {time}. A job that waits more than an hour fails, so the jobs at the back of the queue will fail.',
+                    stalled:
+                        '{count} jobs wait and none finished recently. A job that waits more than an hour fails.',
+                },
                 title: 'Over time',
                 lead: 'How the grid moved over the range. The times are UTC.',
                 rangeLabel: 'Range',

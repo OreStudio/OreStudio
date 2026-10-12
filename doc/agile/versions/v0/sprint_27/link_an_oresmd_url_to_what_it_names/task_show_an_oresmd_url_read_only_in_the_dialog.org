@@ -26,11 +26,11 @@ A URL is read the same way everywhere. The read-only view looks like the details
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -86,3 +86,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A screen that keeps no URL opens the oresmd URL in a read-only view: labels over values, no inputs, with Close and Copy. This is the view Marco signed off on 2026-10-12. The editor now always takes =onApply=. The same task fixes the editor's suggestions, which called a synthetic resource that does not exist and raised a banner on close. They now read the refdata store by name, quietly.
+

@@ -1606,7 +1606,8 @@ const pt: SourceCatalogue = {
                 legend: 'Uma célula cinzenta não tem amostra, e não é uma medição de zero. Uma célula clara teve amostra e nada a mostrar. Quanto mais escura, mais há.',
             },
             node: {
-                description: 'Um nó de cálculo: a sua máquina e o seu executor, e como o seu trabalho evoluiu no período.',
+                description:
+                    'Um nó de cálculo: a sua máquina e o seu executor, e como o seu trabalho evoluiu no período.',
                 back: 'Voltar aos nós',
                 machine: 'Máquina',
                 host: 'Anfitrião',
@@ -1622,8 +1623,16 @@ const pt: SourceCatalogue = {
                 charts: 'Gráficos',
                 notFound: 'Nenhum nó tem este identificador.',
                 silent: 'Este nó não enviou nenhuma amostra neste período.',
-                tasks: { title: 'Tarefas concluídas', caption: 'Tarefas concluídas em cada intervalo', done: 'Concluídas' },
-                failures: { title: 'Falhas', caption: 'Tarefas falhadas em cada intervalo', failed: 'Falhadas' },
+                tasks: {
+                    title: 'Tarefas concluídas',
+                    caption: 'Tarefas concluídas em cada intervalo',
+                    done: 'Concluídas',
+                },
+                failures: {
+                    title: 'Falhas',
+                    caption: 'Tarefas falhadas em cada intervalo',
+                    failed: 'Falhadas',
+                },
                 time: {
                     title: 'Duração das tarefas',
                     caption: 'Tarefa média e mais longa em cada intervalo',
@@ -1643,7 +1652,8 @@ const pt: SourceCatalogue = {
                 rangeLabel: 'Período',
                 ranges: { hour: 'Última hora', day: 'Último dia', week: 'Última semana' },
                 empty: 'Não há amostras neste período. O amostrador pode ainda não ter corrido, ou a grelha estava parada.',
-                gapNote: 'Uma faixa sombreada é um intervalo sem amostra. Não é uma medição de zero.',
+                gapNote:
+                    'Uma faixa sombreada é um intervalo sem amostra. Não é uma medição de zero.',
                 load: {
                     title: 'Carga',
                     caption: 'Trabalho em curso por estado do resultado',
@@ -1733,8 +1743,8 @@ const pt: SourceCatalogue = {
                     body: 'A junção resolve o caso comum, e um nó que o registo de anfitriões não conhece mostra um identificador despido. O ecrã deve dizer que nenhum anfitrião nomeia o nó, em vez de imprimir o identificador como se fosse um nome.',
                 },
                 oneTenant: {
-                    title: "Os contadores dos gráficos são de um só inquilino",
-                    body: "A tabela de nós é a da instalação, mas as contagens por trás dos gráficos não são. São calculadas por ores_compute_grid_stats_fn(p_tenant_id), que filtra cada contagem (resultados, unidades de trabalho e lotes) pelo inquilino recebido, e o amostrador passa-lhe o seu próprio inquilino de sessão. Até a instalação registar o seu próprio uso, os gráficos contam o trabalho de um só inquilino.",
+                    title: 'Os contadores dos gráficos são de um só inquilino',
+                    body: 'A tabela de nós é a da instalação, mas as contagens por trás dos gráficos não são. São calculadas por ores_compute_grid_stats_fn(p_tenant_id), que filtra cada contagem (resultados, unidades de trabalho e lotes) pelo inquilino recebido, e o amostrador passa-lhe o seu próprio inquilino de sessão. Até a instalação registar o seu próprio uso, os gráficos contam o trabalho de um só inquilino.',
                 },
             },
         },

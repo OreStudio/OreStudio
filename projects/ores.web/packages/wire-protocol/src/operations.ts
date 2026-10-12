@@ -1890,9 +1890,7 @@ export const gridSeriesReplySchema = z.object({
 export type GridSeriesReply = z.infer<typeof gridSeriesReplySchema>;
 
 /** `get_grid_usage_request`: who uses the grid. It carries no fields; the session decides the scope. */
-export const gridUsageRequestSchema = z.object(
-    {},
-) satisfies z.ZodType<GetGridUsageRequest>;
+export const gridUsageRequestSchema = z.object({}) satisfies z.ZodType<GetGridUsageRequest>;
 
 /** The columns of a usage: one count per group, in the order of its keys. */
 const gridUsageColumns = {

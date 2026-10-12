@@ -1595,7 +1595,8 @@ export const en: SourceCatalogue = {
                 legend: 'A grey cell holds no sample, and is not a measurement of zero. A clear cell had a sample and nothing to show. A darker cell is more.',
             },
             node: {
-                description: 'One compute node: its machine and runner, and how its work moved over the range.',
+                description:
+                    'One compute node: its machine and runner, and how its work moved over the range.',
                 back: 'Back to the nodes',
                 machine: 'Machine',
                 host: 'Host',
@@ -1611,8 +1612,16 @@ export const en: SourceCatalogue = {
                 charts: 'Charts',
                 notFound: 'No node has this id.',
                 silent: 'This node reported no sample in this range.',
-                tasks: { title: 'Tasks done', caption: 'Tasks finished in each interval', done: 'Done' },
-                failures: { title: 'Failures', caption: 'Tasks that failed in each interval', failed: 'Failed' },
+                tasks: {
+                    title: 'Tasks done',
+                    caption: 'Tasks finished in each interval',
+                    done: 'Done',
+                },
+                failures: {
+                    title: 'Failures',
+                    caption: 'Tasks that failed in each interval',
+                    failed: 'Failed',
+                },
                 time: {
                     title: 'Task time',
                     caption: 'Mean and longest task in each interval',
@@ -1632,7 +1641,8 @@ export const en: SourceCatalogue = {
                 rangeLabel: 'Range',
                 ranges: { hour: 'Last hour', day: 'Last day', week: 'Last week' },
                 empty: 'There are no samples in this range. The sampler may not have run yet, or the grid was stopped.',
-                gapNote: 'A shaded band is a stretch with no sample. It is not a measurement of zero.',
+                gapNote:
+                    'A shaded band is a stretch with no sample. It is not a measurement of zero.',
                 load: {
                     title: 'Load',
                     caption: 'Work in flight by result state',

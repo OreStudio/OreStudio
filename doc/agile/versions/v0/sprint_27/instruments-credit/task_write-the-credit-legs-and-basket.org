@@ -8,7 +8,7 @@
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
 #+branch: feature/write-the-credit-legs-and-basket
-#+pr:
+#+pr: 3179
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3179][#3179]] | [ore,trading,sql,shell] Write the credit legs and the basket as rows |
 
 * Review
 

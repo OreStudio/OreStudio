@@ -341,14 +341,6 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 |---------+-------------|
 | =dq.v1.report_definition_templates.list= | Retrieve all report definition templates |
 
-* Report Definitions
-
-| Subject | Description |
-|---------+-------------|
-| =dq.v1.report_definitions.list= | Retrieve all report definitions |
-| =dq.v1.report_definitions.get= | Retrieve one report definition |
-| =dq.v1.report_definitions.get_many= | Retrieve several report definitions by key |
-
 * Subject Areas
 
 | Subject | Description |
@@ -449,9 +441,6 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 | =dq.v1.publications_events.created= | Published when a publication is created |
 | =dq.v1.publications_events.deleted= | Published when a publication is deleted |
 | =dq.v1.publications_events.updated= | Published when a publication is updated |
-| =dq.v1.report_definitions_events.created= | Published when a report definition is created |
-| =dq.v1.report_definitions_events.deleted= | Published when a report definition is deleted |
-| =dq.v1.report_definitions_events.updated= | Published when a report definition is updated |
 | =dq.v1.subject_areas_events.created= | Published when a subject area is created |
 | =dq.v1.subject_areas_events.deleted= | Published when a subject area is deleted |
 | =dq.v1.subject_areas_events.updated= | Published when a subject area is updated |

@@ -386,16 +386,6 @@ namespace ores #F2F2F2 {
                 +success : bool
                 +error_message : string
             }
-            class report_definition <<struct>> {
-                +tenant_id : utility::uuid::tenant_id
-                +id : boost::uuids::uuid
-                +name : string
-                +description : optional<string>
-                +report_type : string
-                +schedule_expression : string
-                +concurrency_policy : string
-                +display_order : int
-            }
             class subject_area <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
@@ -423,14 +413,6 @@ namespace ores #F2F2F2 {
                 +price_source : string
                 +vintage_source : optional<string>
                 +vintage_date : optional<string>
-            }
-            class synthetic_market_data_provider <<struct>> {
-                +tenant_id : utility::uuid::tenant_id
-                +code : string
-                +name : string
-                +kind : string
-                +description : string
-                +display_order : int
             }
             class treatment_dimension <<struct>> {
                 +version : int
@@ -2780,45 +2762,6 @@ namespace ores #F2F2F2 {
             class dataset_publish_params <<struct>> {
                 +party_id : optional<string>
             }
-            class report_definition_key <<struct>> {
-                +id : boost::uuids::uuid
-            }
-            class report_definition_lookup <<struct>> {
-                +key : report_definition_key
-                +report_definition : optional<ores::dq::domain::report_definition>
-            }
-            class report_definition_event <<struct>> {
-                +event_id : boost::uuids::uuid
-                +key : report_definition_key
-                +action : string
-                +version : uint32_t
-                +occurred_at : chrono::system_clock::time_point
-                +correlation_id : optional<string>
-            }
-            class list_report_definitions_request <<struct>> {
-                +offset : uint32_t
-                +limit : uint32_t
-                +order : ores::utility::domain::order
-            }
-            class list_report_definitions_response <<struct>> {
-                +result : ores::utility::domain::result
-                +definitions : vector<ores::dq::domain::report_definition>
-                +total : uint64_t
-            }
-            class get_report_definition_request <<struct>> {
-                +key : report_definition_key
-            }
-            class get_report_definition_response <<struct>> {
-                +result : ores::utility::domain::result
-                +report_definition : optional<ores::dq::domain::report_definition>
-            }
-            class get_many_report_definitions_request <<struct>> {
-                +keys : vector<report_definition_key>
-            }
-            class get_many_report_definitions_response <<struct>> {
-                +result : ores::utility::domain::result
-                +entries : vector<report_definition_lookup>
-            }
             class dq_report_definition_template <<struct>> {
                 +name : string
                 +description : string
@@ -2984,49 +2927,6 @@ namespace ores #F2F2F2 {
             class get_many_synthetic_fx_spot_configs_response <<struct>> {
                 +result : ores::utility::domain::result
                 +entries : vector<synthetic_fx_spot_config_lookup>
-            }
-            class synthetic_market_data_provider_key <<struct>> {
-                +code : string
-            }
-            class synthetic_market_data_provider_lookup <<struct>> {
-                +key : synthetic_market_data_provider_key
-                +synthetic_market_data_provider : optional<ores::dq::domain::synthetic_market_data_provider>
-            }
-            class synthetic_market_data_providers_filter <<struct>> {
-                +code_one_of : optional<vector<string>>
-            }
-            class synthetic_market_data_provider_event <<struct>> {
-                +event_id : boost::uuids::uuid
-                +key : synthetic_market_data_provider_key
-                +action : string
-                +version : uint32_t
-                +occurred_at : chrono::system_clock::time_point
-                +correlation_id : optional<string>
-            }
-            class list_synthetic_market_data_providers_request <<struct>> {
-                +offset : uint32_t
-                +limit : uint32_t
-                +order : ores::utility::domain::order
-                +filter : optional<synthetic_market_data_providers_filter>
-            }
-            class list_synthetic_market_data_providers_response <<struct>> {
-                +result : ores::utility::domain::result
-                +providers : vector<ores::dq::domain::synthetic_market_data_provider>
-                +total : uint64_t
-            }
-            class get_synthetic_market_data_provider_request <<struct>> {
-                +key : synthetic_market_data_provider_key
-            }
-            class get_synthetic_market_data_provider_response <<struct>> {
-                +result : ores::utility::domain::result
-                +synthetic_market_data_provider : optional<ores::dq::domain::synthetic_market_data_provider>
-            }
-            class get_many_synthetic_market_data_providers_request <<struct>> {
-                +keys : vector<synthetic_market_data_provider_key>
-            }
-            class get_many_synthetic_market_data_providers_response <<struct>> {
-                +result : ores::utility::domain::result
-                +entries : vector<synthetic_market_data_provider_lookup>
             }
             class treatment_dimension_key <<struct>> {
                 +code : string
@@ -3238,7 +3138,6 @@ ores::dq::messaging::get_nature_dimension_version_response *-- ores::dq::domain:
 ores::dq::messaging::get_origin_dimension_response *-- ores::dq::domain::origin_dimension
 ores::dq::messaging::get_origin_dimension_version_response *-- ores::dq::domain::origin_dimension
 ores::dq::messaging::get_publication_response *-- ores::dq::domain::publication
-ores::dq::messaging::get_report_definition_response *-- ores::dq::domain::report_definition
 ores::dq::messaging::get_subject_area_response *-- ores::dq::domain::subject_area
 ores::dq::messaging::get_subject_area_version_response *-- ores::dq::domain::subject_area
 ores::dq::messaging::get_synthetic_fx_spot_config_response *-- ores::dq::domain::synthetic_fx_spot_config
@@ -3287,7 +3186,6 @@ ores::dq::messaging::list_nature_dimensions_response *-- ores::dq::domain::natur
 ores::dq::messaging::list_origin_dimension_versions_response *-- ores::dq::domain::origin_dimension
 ores::dq::messaging::list_origin_dimensions_response *-- ores::dq::domain::origin_dimension
 ores::dq::messaging::list_publications_response *-- ores::dq::domain::publication
-ores::dq::messaging::list_report_definitions_response *-- ores::dq::domain::report_definition
 ores::dq::messaging::list_subject_area_versions_response *-- ores::dq::domain::subject_area
 ores::dq::messaging::list_subject_areas_response *-- ores::dq::domain::subject_area
 ores::dq::messaging::list_synthetic_fx_spot_configs_response *-- ores::dq::domain::synthetic_fx_spot_config
@@ -3344,7 +3242,6 @@ ores::dq::messaging::put_origin_dimension_response *-- ores::dq::domain::origin_
 ores::dq::messaging::put_publication_response *-- ores::dq::domain::publication
 ores::dq::messaging::put_subject_area_response *-- ores::dq::domain::subject_area
 ores::dq::messaging::put_treatment_dimension_response *-- ores::dq::domain::treatment_dimension
-ores::dq::messaging::report_definition_lookup *-- ores::dq::domain::report_definition
 ores::dq::messaging::subject_area_lookup *-- ores::dq::domain::subject_area
 ores::dq::messaging::subject_area_version_key *-- ores::dq::domain::subject_area
 ores::dq::messaging::synthetic_fx_spot_config_lookup *-- ores::dq::domain::synthetic_fx_spot_config

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: FB4A11C5-07EA-4923-B8AC-65F46EBA517C
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.report_definition
 #+description: Codegen entity model for the reporting =report_definition= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -247,6 +248,75 @@ true
 
 Report types are a system-wide lookup seeded for the system tenant only, so
 the check reads that tenant whatever tenant owns the definition.
+
+* Artefact columns
+
+The import is a catalogue of report templates. It has no party, lifecycle state, scheduler job or grant, which the publish supplies. It adds a display order, an audience tier and an optional jurisdiction, which choose the templates each party gets.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** report_type
+:PROPERTIES:
+:type: text
+:END:
+
+** schedule_expression
+:PROPERTIES:
+:type: text
+:END:
+
+** concurrency_policy
+:PROPERTIES:
+:type: text
+:END:
+
+** display_order
+:PROPERTIES:
+:type: integer
+:END:
+
+** tier
+:PROPERTIES:
+:type: text
+:default: 'trading'
+:END:
+
+** applicable_jurisdiction
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* Artefact indexes
+
+** name
+:PROPERTIES:
+:columns: name
+:END:
+
+** report_type
+:PROPERTIES:
+:columns: report_type
+:END:
 
 * SQL
 

@@ -24,10 +24,10 @@
  */
 
 -- =============================================================================
--- Market Data Provider artefacts: one row per simulated market data provider (Bloomberg, Refinitiv, the exchanges, a broker, and the generic provider), staged for the system_core bundle and published into ores_synthetic_market_data_providers_tbl in the system tenant. Every provider is simulated; see the synthetic catalogue's own model for the synthetic mark. - Artefact Table
+-- A catalogue of the providers whose market data the synthetic feeds simulate. A system-scope collection names the provider it stands for, so the installation can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it as that provider's data. The provider is optional: a collection that stands for no provider names none, or names generic. Every provider here is simulated. Screens show it with the synthetic mark, as "Bloomberg (synthetic)", and every source name a provider's feed publishes on starts synthetic.<provider code>., so a simulated feed is never read as the real one. A real provider integration, when one comes, belongs in market data and not in this catalogue. Scoped to ores.synthetic (not ores.refdata) because only synthetic generation uses it today, following the yield_curve_process_type precedent. Managed by the system tenant. - Artefact Table
 -- =============================================================================
 
-create table if not exists "ores_dq_synthetic_market_data_providers_artefact_tbl" (
+create table if not exists "ores_dq_market_data_providers_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "code" text not null,
@@ -38,11 +38,11 @@ create table if not exists "ores_dq_synthetic_market_data_providers_artefact_tbl
     "display_order" integer not null default 0
 );
 
-create index if not exists dq_synthetic_market_data_providers_artefact_dataset_idx
-on ores_dq_synthetic_market_data_providers_artefact_tbl (dataset_id);
+create index if not exists dq_market_data_providers_artefact_dataset_idx
+on ores_dq_market_data_providers_artefact_tbl (dataset_id);
 
-create index if not exists dq_synthetic_market_data_providers_artefact_tenant_idx
-on ores_dq_synthetic_market_data_providers_artefact_tbl (tenant_id);
+create index if not exists dq_market_data_providers_artefact_tenant_idx
+on ores_dq_market_data_providers_artefact_tbl (tenant_id);
 
-create index if not exists dq_synthetic_market_data_providers_artefact_code_idx
-on ores_dq_synthetic_market_data_providers_artefact_tbl (code);
+create index if not exists dq_market_data_providers_artefact_code_idx
+on ores_dq_market_data_providers_artefact_tbl (code);

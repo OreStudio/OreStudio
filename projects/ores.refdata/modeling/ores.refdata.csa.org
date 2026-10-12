@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 29A8E20A-0F02-4D54-830E-8DDD668E86C0
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.csa
 #+description: Codegen entity model for the refdata =csa= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -380,6 +381,145 @@ ORE's NonExemptIMRegulations, as written.
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src
+
+* Artefact columns
+
+The import names the netting set by code where the store holds its uuid and party, and carries the eligible collateral currencies as a comma separated list in posting order. Publishing resolves the set in the target tenant.
+
+** netting_set_code
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** is_active
+:PROPERTIES:
+:type: boolean
+:END:
+
+** bilateral
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** csa_currency
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** index_name
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** threshold_pay
+:PROPERTIES:
+:type: numeric(38, 12)
+:nullable: true
+:END:
+
+** threshold_receive
+:PROPERTIES:
+:type: numeric(38, 12)
+:nullable: true
+:END:
+
+** minimum_transfer_amount_pay
+:PROPERTIES:
+:type: numeric(38, 12)
+:nullable: true
+:END:
+
+** minimum_transfer_amount_receive
+:PROPERTIES:
+:type: numeric(38, 12)
+:nullable: true
+:END:
+
+** independent_amount_held
+:PROPERTIES:
+:type: numeric(38, 12)
+:nullable: true
+:END:
+
+** independent_amount_type
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** call_frequency
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** post_frequency
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** margin_period_of_risk
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** collateral_compounding_spread_receive
+:PROPERTIES:
+:type: numeric(38, 12)
+:nullable: true
+:END:
+
+** collateral_compounding_spread_pay
+:PROPERTIES:
+:type: numeric(38, 12)
+:nullable: true
+:END:
+
+** apply_initial_margin
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
+
+** initial_margin_type
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** calculate_im_amount
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
+
+** calculate_vm_amount
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
+
+** non_exempt_im_regulations
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** eligible_currencies
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
 
 * SQL
 

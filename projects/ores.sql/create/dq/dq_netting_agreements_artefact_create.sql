@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- A master netting agreement, such as an ISDA Master Agreement, between the party a publish targets and a counterparty. The counterparty is named by LEI, because its id differs from tenant to tenant, and the party is the one the publish names: a staged agreement belongs to no party until published. - Artefact Table
+-- A netting agreement is the legal document, such as an ISDA Master Agreement, that lets one legal entity of the firm and one counterparty replace what each owes the other under it with a single net amount. It is the legal fact behind a [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][netting set]]: a set opened under an agreement belongs to the agreement's two parties, and a set with no agreement holds trades that do not net. The agreement's two parties never change across its versions: both columns are fixed, so a new version that changes either is refused. A netting set copies them and pins the copy to the agreement, so a set cannot be filed under another counterparty's agreement, and the copy stays true. Closing an agreement does not close its sets, as for every soft foreign key in the schema; a set's agreement is checked when the set is written. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_netting_agreements_artefact_tbl" (

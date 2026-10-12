@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,22 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.cpp.mustache
- * To modify, update the template and regenerate.
- */
-#include "ores.dq.api/domain/netting_agreement_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-
-namespace ores::dq::domain {
-
-std::ostream& operator<<(std::ostream& s, const netting_agreement& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-}
+drop table if exists "ores_dq_market_data_providers_artefact_tbl";

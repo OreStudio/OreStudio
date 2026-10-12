@@ -81,7 +81,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The wrapper closes the dialog before onApply | OresmdUrl.tsx | Note | Consistent. A double close is harmless. |
+| 2 | An empty URI returns an empty string, not null | OresmdUrl.tsx | Note | The test and the Details row expect text, and the hook order is stable. |
+| 3 | The click to open is only covered by the Chrome run | OresmdUrl.test.tsx | Note | The repo has no DOM test library. A follow-up. |
+| 4 | format and site-page fail on files from PR 3152 | | Note | irTicks.ts, mixture.test.ts and doc/knowledge/ui/feed_screen_standard.org belong to the session of that PR. I did not change them, and I told that session. |
 
 * Result
 

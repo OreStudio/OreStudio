@@ -67,6 +67,7 @@ create table if not exists "ores_reporting_file_types_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
+    check ("ore_parameter" <> ''),
     check ("kind" in ('input_document', 'data_file', 'output_file', 'intermediate_file')),
     check ("name_pattern" ~ '^[A-Za-z0-9_.-]*(\{\{[A-Z][A-Z0-9_]*\}\}[A-Za-z0-9_.-]*)*$'),
     check ("sample_count" >= 0 and "sample_count" <= "sample_total")
@@ -83,6 +84,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists file_types_tenant_idx
 on "ores_reporting_file_types_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists file_types_parameter_idx
+on "ores_reporting_file_types_tbl" (tenant_id, (coalesce(analytic_type_code, '')), ore_parameter)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_reporting_file_types_insert_fn()

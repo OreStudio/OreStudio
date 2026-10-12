@@ -26,7 +26,9 @@
  * - Each seeded file type refers to an analytic type or to the Setup block, and a
  *   configuration type that exists
  * - A name may be a pattern with a key, and a pattern with a malformed key is refused
- * - A file type has a known kind, and cannot be used by more samples than name it
+ * - A file type has a known kind and a parameter, and cannot be used by more samples than
+ *   name it
+ * - Two file types cannot name the same file: the analytic and the parameter are unique
  *
  * The seed itself is compared with the ORE samples by
  * projects/ores.sql/utility/generate_file_types_populate.py --check.
@@ -36,7 +38,7 @@
 
 begin;
 
-select plan(11);
+select plan(13);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -103,7 +105,7 @@ create or replace function pg_temp.add_type(p_code text, p_pattern text) returns
         code, tenant_id, version, analytic_type_code, ore_parameter, kind,
         configuration_type_code, name_pattern, sample_count, sample_total, description,
         display_order, modified_by, performed_by, change_reason_code, change_commentary)
-    values (p_code, ores_utility_system_tenant_id_fn(), 0, null, 'portfolioFile', 'data_file',
+    values (p_code, ores_utility_system_tenant_id_fn(), 0, null, 'testSplitFile', 'data_file',
             null, p_pattern, 1, 1, 'A test file type.', 999,
             current_user, current_user, 'system.test', 'pgTAP fixture');
 $$ language sql;
@@ -132,6 +134,28 @@ select throws_ok(
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
     '23514', null,
     'a file type of an unknown kind is refused');
+
+select throws_ok(
+    $$insert into ores_reporting_file_types_tbl (
+          code, tenant_id, version, analytic_type_code, ore_parameter, kind,
+          configuration_type_code, name_pattern, sample_count, sample_total, description,
+          display_order, modified_by, performed_by, change_reason_code, change_commentary)
+      values ('test.noparam', ores_utility_system_tenant_id_fn(), 0, null, '', 'data_file',
+              null, 'x.xml', 1, 1, 'A test file type.', 999,
+              current_user, current_user, 'system.test', 'pgTAP fixture')$$,
+    '23514', null,
+    'a file type with no ORE parameter is refused');
+
+select throws_ok(
+    $$insert into ores_reporting_file_types_tbl (
+          code, tenant_id, version, analytic_type_code, ore_parameter, kind,
+          configuration_type_code, name_pattern, sample_count, sample_total, description,
+          display_order, modified_by, performed_by, change_reason_code, change_commentary)
+      values ('test.duplicate', ores_utility_system_tenant_id_fn(), 0, null, 'conventionsFile',
+              'input_document', null, 'other.xml', 1, 1, 'A test file type.', 999,
+              current_user, current_user, 'system.test', 'pgTAP fixture')$$,
+    '23505', null,
+    'a second file type for the same analytic and parameter is refused');
 
 select * from finish();
 rollback;

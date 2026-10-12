@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T19:54:28.835119Z
+' Generated: 2026-10-12T22:47:58.818299Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 19
+Tables: 20
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -274,6 +274,46 @@ package "reporting" #E0F7FA {
     report_configuration, so several reports share one configuration without
     copying it, and the kind of configuration it is comes from
     configuration_type by foreign key rather than from a text code.
+    end note
+
+    entity ores_reporting_file_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          analytic_type_code : text <<FK>>
+        * ore_parameter : text
+        * kind : text
+          configuration_type_code : text <<FK>>
+        * name_pattern : text
+        * sample_count : integer
+        * sample_total : integer
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_file_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    File Type Table
+    Reference data naming the files an ORE run reads and writes. A file type is one
+    parameter of the run document that carries a file name: a Setup parameter such as
+    conventionsFile, or the parameter of an analytic such as the outputFileName of npv.
+    The table gives each its well known name, so a configuration never repeats a file
+    name and the export looks the name up when it writes a file.
+    The names come from the shipped ORE samples. Each is the most common name the samples
+    give the file, and sample_count out of sample_total records how many use it.
+    Names that embed a date are set aside, because a date is a value of the run.
+    A name may be a pattern with a key, for example portfolio_{{BOOK_ID}}.xml, for a file
+    that a run splits. The table can hold the pattern. Splitting is a later task.
+    The table lists names and patterns. It does not hold the content of a file.
     end note
 
     entity ores_reporting_parameter_definitions_tbl <<temporal>> #C6F0D8 {
@@ -635,6 +675,8 @@ ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_market_bin
 ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_parameter_definitions_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_configurations_tbl : "has"
+ores_reporting_analytic_types_tbl ||--o{ ores_reporting_file_types_tbl : "has"
+ores_reporting_configuration_types_tbl ||--o{ ores_reporting_file_types_tbl : "has"
 ores_reporting_parameter_value_domains_tbl ||--o{ ores_reporting_parameter_definitions_tbl : "has"
 ores_reporting_report_definitions_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"

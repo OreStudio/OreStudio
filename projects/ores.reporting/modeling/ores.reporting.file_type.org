@@ -161,9 +161,20 @@ checks the template emits on its own.
 
 | expression |
 |------------|
+| "ore_parameter" <> '' |
 | "kind" in ('input_document', 'data_file', 'output_file', 'intermediate_file') |
 | "name_pattern" ~ '^[A-Za-z0-9_.-]*(\{\{[A-Z][A-Z0-9_]*\}\}[A-Za-z0-9_.-]*)*$' |
 | "sample_count" >= 0 and "sample_count" <= "sample_total" |
+
+** Indexes
+
+The analytic and the ORE parameter say which file a type is, so a second row for the
+same pair would name the file twice. The Setup block has no analytic, so the empty
+string stands for it.
+
+| name                  | columns                                                | unique | current_only | where_extra |
+|-----------------------+--------------------------------------------------------+--------+--------------+-------------|
+| parameter             | tenant_id, (coalesce(analytic_type_code, '')), ore_parameter | true   | true         |             |
 
 * Foreign keys
 

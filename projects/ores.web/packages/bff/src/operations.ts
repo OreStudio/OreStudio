@@ -31,6 +31,9 @@ import {
     gridViewSchema,
     isWireTimestamp,
     listTenantsPage,
+    readGridUsage,
+    readTenantTypes,
+    TEST_TENANT_TYPE,
     logsViewSchema,
     serviceRosterRequestSchema,
     serviceRosterViewSchema,
@@ -43,35 +46,126 @@ import { requireDeploymentRead } from './deployment-access.js';
 import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
+/** One group of the usage view, before its share is known. */
+interface UsageRow {
+    readonly key: string;
+    readonly name: string | null;
+    readonly batches: number;
+    readonly workunits: number;
+    readonly results: number;
+    readonly results_unsent: number;
+    readonly results_in_progress: number;
+    readonly results_done: number;
+    readonly outcomes_success: number;
+    readonly outcomes_failed: number;
+    readonly oldest_unsent_seconds: number;
+    readonly unavailable: boolean;
+}
+
+const sumOf = (column: readonly number[]): number => column.reduce((sum, count) => sum + count, 0);
+
 /**
- * The names a person reads for the groups of a usage: the tenants' names for a
- * usage by tenant, the parties' names for a usage by party.
- *
- * A name is a convenience, so a failure to read one is not a failure to read
- * the usage. The group then goes out unnamed and the screen shows its id.
+ * The usage of the session's own tenant, one group for each party, with the
+ * parties' names. A name is a convenience, so a failure to read one is not a
+ * failure to read the usage: the group goes out unnamed and the screen shows its id.
  */
-async function groupNames(
+async function usageByParty(
     session: LiveSession,
-    kind: string,
-    keys: readonly string[],
-): Promise<ReadonlyMap<string, string>> {
-    const ids = keys.filter((key) => key !== '');
-    if (ids.length === 0) {
-        return new Map();
-    }
-    try {
-        if (kind === 'tenant') {
-            const page = await listTenantsPage(session.client, {
-                ids,
-                limit: Math.min(ids.length, 1000),
-            });
-            return new Map(page.tenants.map((tenant) => [tenant.id, tenant.name || tenant.code]));
+    onNamesFailure: (error: unknown) => void,
+): Promise<readonly UsageRow[]> {
+    const usage = await readGridUsage(session.client);
+    let names: ReadonlyMap<string, string> = new Map();
+    if (usage.keys.some((key) => key !== '')) {
+        try {
+            const parties = await session.client.listParties();
+            names = new Map(parties.map((party) => [party.id, party.full_name || party.short_code]));
+        } catch (error) {
+            onNamesFailure(error);
+            names = new Map();
         }
-        const parties = await session.client.listParties();
-        return new Map(parties.map((party) => [party.id, party.full_name || party.short_code]));
-    } catch {
-        return new Map();
     }
+    return usage.keys.map((key, i) => ({
+        key,
+        name: names.get(key) ?? null,
+        batches: usage.batches[i] ?? 0,
+        workunits: usage.workunits[i] ?? 0,
+        results: usage.results[i] ?? 0,
+        results_unsent: usage.results_unsent[i] ?? 0,
+        results_in_progress: usage.results_in_progress[i] ?? 0,
+        results_done: usage.results_done[i] ?? 0,
+        outcomes_success: usage.outcomes_success[i] ?? 0,
+        outcomes_failed: usage.outcomes_failed[i] ?? 0,
+        oldest_unsent_seconds: usage.oldest_unsent_seconds[i] ?? 0,
+        unavailable: false,
+    }));
+}
+
+/**
+ * The usage of every tenant, one group for each tenant.
+ *
+ * Work belongs to the tenant that owns it, and no policy lets the system tenant
+ * read another tenant's rows. The operator therefore enters each tenant and
+ * reads its usage there, as for any other read of a tenant's own data. Each
+ * entry is recorded by the server. A tenant that cannot be entered or read is
+ * listed as unavailable and not as empty, so a failure never reads as a tenant
+ * that runs nothing. Test infrastructure tenants are left out, as the roster
+ * leaves them out.
+ */
+async function usageByTenant(
+    session: LiveSession,
+    onFailure: (tenant: string, error: unknown) => void,
+    onTruncated: (listed: number, total: number) => void,
+): Promise<readonly UsageRow[]> {
+    const types = (await readTenantTypes(session.client))
+        .map((type) => type.code)
+        .filter((code) => code !== TEST_TENANT_TYPE);
+    const { tenants, totalCount } = await listTenantsPage(session.client, { types, limit: 1000 });
+    if (totalCount > tenants.length) {
+        onTruncated(tenants.length, totalCount);
+    }
+    const rows: UsageRow[] = [];
+    for (const tenant of tenants) {
+        const name = tenant.name === '' ? tenant.code : tenant.name;
+        try {
+            const usage =
+                tenant.id === session.tenantId
+                    ? await readGridUsage(session.client)
+                    : await session.client.readInsideTenant(tenant.id, (caller) =>
+                          readGridUsage(caller),
+                      );
+            rows.push({
+                key: tenant.id,
+                name,
+                batches: sumOf(usage.batches),
+                workunits: sumOf(usage.workunits),
+                results: sumOf(usage.results),
+                results_unsent: sumOf(usage.results_unsent),
+                results_in_progress: sumOf(usage.results_in_progress),
+                results_done: sumOf(usage.results_done),
+                outcomes_success: sumOf(usage.outcomes_success),
+                outcomes_failed: sumOf(usage.outcomes_failed),
+                oldest_unsent_seconds: Math.max(0, ...usage.oldest_unsent_seconds),
+                unavailable: false,
+            });
+        } catch (error) {
+            onFailure(tenant.code, error);
+            rows.push({
+                key: tenant.id,
+                name,
+                batches: 0,
+                workunits: 0,
+                results: 0,
+                results_unsent: 0,
+                results_in_progress: 0,
+                results_done: 0,
+                outcomes_success: 0,
+                outcomes_failed: 0,
+                oldest_unsent_seconds: 0,
+                unavailable: true,
+            });
+        }
+    }
+    return rows;
 }
 
 /**
@@ -421,39 +515,45 @@ export function registerOperationsRoutes(
     });
 
     /**
-     * Who uses the grid: the work counted by tenant for a system-tenant
-     * session, and by party for any other.
+     * Who uses the grid: one group for each tenant for an operator in system
+     * administration, and one group for each party for a tenant's session.
      *
-     * The route states no scope. The compute service reads the session and
-     * decides which rows it may count and how to group them, so a client
-     * cannot ask for a wider scope than its session allows. Each group carries
-     * its share of the results, which is the share of the grid it used.
+     * The route states no scope. The compute service counts one tenant, the one
+     * the call is made inside, and groups it by party. An operator reads each
+     * tenant by entering it, because no policy lets the system tenant read
+     * another tenant's work. Each group carries its share of the results.
      */
     server.get('/api/operations/grid/usage', async (request) => {
         const session = requireSession(request);
         if (Object.keys((request.query as object | undefined) ?? {}).length > 0) {
             throw invalidRequest('The grid usage read takes no query fields.');
         }
-        const usage = await session.client.gridUsage();
-        const names = await groupNames(session, usage.group_kind, usage.keys);
-        const total = usage.results.reduce((sum, count) => sum + count, 0);
-        const groups = usage.keys.map((key, i) => ({
-            key,
-            name: names.get(key) ?? null,
-            batches: usage.batches[i] ?? 0,
-            workunits: usage.workunits[i] ?? 0,
-            results: usage.results[i] ?? 0,
-            results_unsent: usage.results_unsent[i] ?? 0,
-            results_in_progress: usage.results_in_progress[i] ?? 0,
-            results_done: usage.results_done[i] ?? 0,
-            outcomes_success: usage.outcomes_success[i] ?? 0,
-            outcomes_failed: usage.outcomes_failed[i] ?? 0,
-            share: total === 0 ? 0 : (usage.results[i] ?? 0) / total,
-        }));
+        const byTenant = session.mode === 'system-administration';
+        if (byTenant) {
+            await requireDeploymentRead(session, 'The grid usage of a deployment');
+        }
+        const rows = byTenant
+            ? await usageByTenant(
+                  session,
+                  (tenant, error) =>
+                      request.log.warn({ err: error, tenant }, 'The usage of a tenant was not read.'),
+                  (listed, total) =>
+                      request.log.warn(
+                          { listed, total },
+                          'The usage lists the first tenants only; the roster holds more.',
+                      ),
+              )
+            : await usageByParty(session, (error) =>
+                  request.log.debug({ err: error }, 'The names of the parties were not read.'),
+              );
+        const total = rows.reduce((sum, row) => sum + row.results, 0);
         return gridUsageViewSchema.parse({
             read_at: toWireTimestamp(new Date()),
-            group_kind: usage.group_kind,
-            groups,
+            group_kind: byTenant ? 'tenant' : 'party',
+            groups: rows.map((row) => ({
+                ...row,
+                share: total === 0 ? 0 : row.results / total,
+            })),
         });
     });
 

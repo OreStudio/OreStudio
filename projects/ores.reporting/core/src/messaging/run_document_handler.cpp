@@ -79,7 +79,7 @@ run_document_handler::run_document_handler(
 
 
 void run_document_handler::save_run_document(ores::nats::message msg) {
-    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::report_run_setups:write");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::run_documents:write");
     if (!ctx)
         return;
     const auto req = decode<save_run_document_request>(msg);
@@ -124,7 +124,7 @@ void run_document_handler::bind_configuration(ores::nats::message msg) {
 }
 
 void run_document_handler::get_run_document(ores::nats::message msg) {
-    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::report_run_setups:read");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::run_documents:read");
     if (!ctx)
         return;
     const auto req = decode<get_run_document_request>(msg);
@@ -135,7 +135,7 @@ void run_document_handler::get_run_document(ores::nats::message msg) {
     try {
         const auto [scope, definition] = owner_scope(*ctx, req->report_definition_id);
         service::run_document_service runs(scope);
-        const auto document = runs.get_or_generate(definition);
+        const auto document = runs.get(definition);
         if (!document) {
             reply(nats_,
                   msg,
@@ -156,7 +156,7 @@ void run_document_handler::get_run_document(ores::nats::message msg) {
 }
 
 void run_document_handler::delete_run_document(ores::nats::message msg) {
-    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::report_run_setups:delete");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::run_documents:delete");
     if (!ctx)
         return;
     const auto req = decode<delete_run_document_request>(msg);

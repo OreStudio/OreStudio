@@ -123,6 +123,15 @@ begin
             NEW.configuration_id
             using errcode = '23514';
     end if;
+
+    -- A risk configuration is bound only when its analytics make an ORE run.
+    if NEW.configuration_type_code = 'risk_report_config'
+       and ores_reporting_configuration_analytics_problem_fn(NEW.tenant_id, NEW.configuration_id)
+           is not null then
+        raise exception 'Invalid configuration_id: %. %', NEW.configuration_id,
+            ores_reporting_configuration_analytics_problem_fn(NEW.tenant_id, NEW.configuration_id)
+            using errcode = '23514';
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

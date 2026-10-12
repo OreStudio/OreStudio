@@ -107,8 +107,9 @@ TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", tags) {
     const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, eurusd_uri);
 
     REQUIRE(watch.has_value());
-    CHECK(watch->subjects == std::vector<std::string>{"marketdata.v1.ops.market_tick." + tenant_id +
-                                                      "." + party_id + ".fx.rate.eur.usd"});
+    CHECK(watch->subjects ==
+          std::vector<std::string>{ores::marketdata::domain::market_tick_subject(
+              tenant_id, party_id, eurusd_uri)});
     CHECK_FALSE(watch->series.has_value());
 }
 
@@ -118,9 +119,9 @@ TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree", tags) {
     const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, rating_series_uri);
 
     REQUIRE(watch.has_value());
-    // A series has no ORE key of its own, and a rating's two coordinates sit
-    // around its identity field, so no single wildcard subject covers exactly
-    // one series; the watch takes the whole subtree and filters.
+    // A series is not a datum a producer publishes, and each of its points has
+    // a subject of its own, so no single wildcard subject covers exactly one
+    // series; the watch takes the whole subtree and filters.
     CHECK(watch->subjects == std::vector<std::string>{"marketdata.v1.ops.market_tick." + tenant_id +
                                                       "." + party_id + ".>"});
     REQUIRE(watch->series.has_value());

@@ -50,11 +50,53 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_risk_report_configs_artefact_tbl (
-        dataset_id, tenant_id, id, version, party_id, name, description, configuration_id, base_currency, observation_model, n_threads, market_data_type, market_data_date, npv_enabled, cashflow_enabled, curves_enabled, sensitivity_enabled, simulation_enabled, xva_enabled, stress_enabled, parametric_var_enabled, initial_margin_enabled, pfe_enabled, portfolio_details_enabled, saccr_enabled, calibration_enabled, credit_curves_enabled, historical_var_enabled, pnl_explain_enabled, xva_quantile, xva_cva_enabled, xva_dva_enabled, xva_fva_enabled, xva_colva_enabled, xva_dim_enabled, xva_dim_quantile, xva_dim_horizon_calendar_days, xva_dim_regression_order, var_quantiles, var_method, simm_version, simm_calculation_currency, scope_portfolio
+        dataset_id, tenant_id, id, version, party_id, name, description, configuration_id, base_currency, observation_model, n_threads, market_data_type, market_data_date, input_path, output_path, log_file, log_mask, imply_todays_fixings, continue_on_error, scope_portfolio
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ec4f314b-4ead-54be-90b6-9b02625b234f', 0, '00000000-0000-0000-0000-000000000000', 'Board risk - Group Treasury Portfolio', 'Run settings shared by Board Risk Dashboard.', 'd2c70b45-6134-5b8e-a4e9-cd67b44e8af9', 'GBP', 'disable', 1, 'eod', null, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, null, null, null, array[0.99]::numeric(5,4)[], 'delta', null, null, 'Group Treasury Portfolio'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2f690f55-64cc-508f-9c4c-541f3d0ef7d0', 0, '00000000-0000-0000-0000-000000000000', 'Cashflows - Group Treasury Portfolio', 'Run settings shared by Liquidity Coverage.', '7a31e00f-43b7-5d79-a97b-73f3275ff2a9', 'GBP', 'disable', 1, 'eod', null, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, null, null, null, null, null, null, null, 'Group Treasury Portfolio'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd5bcc005-345f-5d4e-846b-2ed1bcf8842d', 0, '00000000-0000-0000-0000-000000000000', 'Portfolio details - Group Treasury Portfolio', 'Run settings shared by Audit Trail Summary, Data Quality Completeness, System Health.', '9b9212d0-6a1a-5f59-9766-58ecec97a5a3', 'GBP', 'disable', 1, 'eod', null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, null, null, null, null, null, null, null, 'Group Treasury Portfolio'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c631f1c1-3765-5ac6-b7e3-cbdcba9852fc', 0, '00000000-0000-0000-0000-000000000000', 'Standardised counterparty exposure - Group Treasury Portfolio', 'Run settings shared by Cross-Entity Counterparty Concentration, Group Consolidated Exposure, Intercompany Exposure Matrix, Large Exposures, Leverage Ratio.', '66b39725-e6ab-59b3-ba4a-05e2934d4757', 'GBP', 'disable', 1, 'eod', null, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, null, null, null, null, null, null, null, 'Group Treasury Portfolio');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ec4f314b-4ead-54be-90b6-9b02625b234f', 0, '00000000-0000-0000-0000-000000000000', 'Board risk - Group Treasury Portfolio', 'Run settings shared by Board Risk Dashboard.', 'd2c70b45-6134-5b8e-a4e9-cd67b44e8af9', 'GBP', 'Disable', 1, 'eod', null, 'Input', 'Output', 'log.txt', 31, 'N', 'false', 'Group Treasury Portfolio'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2f690f55-64cc-508f-9c4c-541f3d0ef7d0', 0, '00000000-0000-0000-0000-000000000000', 'Cashflows - Group Treasury Portfolio', 'Run settings shared by Liquidity Coverage.', '7a31e00f-43b7-5d79-a97b-73f3275ff2a9', 'GBP', 'Disable', 1, 'eod', null, 'Input', 'Output', 'log.txt', 31, 'N', 'false', 'Group Treasury Portfolio'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd5bcc005-345f-5d4e-846b-2ed1bcf8842d', 0, '00000000-0000-0000-0000-000000000000', 'Portfolio details - Group Treasury Portfolio', 'Run settings shared by Audit Trail Summary, Data Quality Completeness, System Health.', '9b9212d0-6a1a-5f59-9766-58ecec97a5a3', 'GBP', 'Disable', 1, 'eod', null, 'Input', 'Output', 'log.txt', 31, 'N', 'false', 'Group Treasury Portfolio'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c631f1c1-3765-5ac6-b7e3-cbdcba9852fc', 0, '00000000-0000-0000-0000-000000000000', 'Standardised counterparty exposure - Group Treasury Portfolio', 'Run settings shared by Cross-Entity Counterparty Concentration, Group Consolidated Exposure, Intercompany Exposure Matrix, Large Exposures, Leverage Ratio.', '66b39725-e6ab-59b3-ba4a-05e2934d4757', 'GBP', 'Disable', 1, 'eod', null, 'Input', 'Output', 'log.txt', 31, 'N', 'false', 'Group Treasury Portfolio');
+
+    delete from ores_dq_configuration_analytics_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_configuration_analytics_artefact_tbl (
+        dataset_id, tenant_id, id, version, party_id, configuration_id, analytic_type_code, display_order, active
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '19ce908f-3284-5511-9887-1b09d51af303', 0, '00000000-0000-0000-0000-000000000000', 'd2c70b45-6134-5b8e-a4e9-cd67b44e8af9', 'npv', 1, 'Y'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd1380019-4159-5c7d-8181-c86535147e4b', 0, '00000000-0000-0000-0000-000000000000', 'd2c70b45-6134-5b8e-a4e9-cd67b44e8af9', 'saccr', 2, 'Y'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '389b420b-ebea-56bd-902b-484f70a53303', 0, '00000000-0000-0000-0000-000000000000', 'd2c70b45-6134-5b8e-a4e9-cd67b44e8af9', 'parametricVar', 3, 'Y'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd0015251-82ee-5705-ac14-6ea5011926ae', 0, '00000000-0000-0000-0000-000000000000', '7a31e00f-43b7-5d79-a97b-73f3275ff2a9', 'cashflow', 1, 'Y'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '92a1c31b-e98a-59f9-b1ca-bc77ec9ce34d', 0, '00000000-0000-0000-0000-000000000000', '9b9212d0-6a1a-5f59-9766-58ecec97a5a3', 'portfolioDetails', 1, 'Y'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '73009c0b-b66d-5a13-bf1d-f89be2d761eb', 0, '00000000-0000-0000-0000-000000000000', '66b39725-e6ab-59b3-ba4a-05e2934d4757', 'npv', 1, 'Y'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'efa79659-41c9-5ece-8666-ea16fc0af941', 0, '00000000-0000-0000-0000-000000000000', '66b39725-e6ab-59b3-ba4a-05e2934d4757', 'saccr', 2, 'Y');
+
+    delete from ores_dq_configuration_analytic_parameters_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_configuration_analytic_parameters_artefact_tbl (
+        dataset_id, tenant_id, id, version, party_id, configuration_analytic_id, parameter_name, value, position
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '959d1dc6-dc80-5f71-81f7-5c090b5e6280', 0, '00000000-0000-0000-0000-000000000000', '19ce908f-3284-5511-9887-1b09d51af303', 'baseCurrency', 'GBP', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '56bd7479-2fe4-5029-9542-3b7bca8e9a82', 0, '00000000-0000-0000-0000-000000000000', 'd1380019-4159-5c7d-8181-c86535147e4b', 'simmVersion', '2.1', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '594c149c-aa8e-5f09-b5a7-6142e32ce487', 0, '00000000-0000-0000-0000-000000000000', '389b420b-ebea-56bd-902b-484f70a53303', 'quantiles', '0.99', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0aa54a1a-4389-51a6-b76b-9027be2616d1', 0, '00000000-0000-0000-0000-000000000000', '389b420b-ebea-56bd-902b-484f70a53303', 'method', 'DeltaGammaNormal', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '55bc9293-da0d-5c29-ba68-48f3eb5f335d', 0, '00000000-0000-0000-0000-000000000000', '389b420b-ebea-56bd-902b-484f70a53303', 'breakdown', 'Y', 3),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bbc88c96-627a-5d5e-b74f-b396380e8b82', 0, '00000000-0000-0000-0000-000000000000', '73009c0b-b66d-5a13-bf1d-f89be2d761eb', 'baseCurrency', 'GBP', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'addd89ee-631a-5aa4-a043-9309542a5298', 0, '00000000-0000-0000-0000-000000000000', 'efa79659-41c9-5ece-8666-ea16fc0af941', 'simmVersion', '2.1', 1);
+
+    delete from ores_dq_configuration_market_bindings_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_configuration_market_bindings_artefact_tbl (
+        dataset_id, tenant_id, id, version, party_id, configuration_id, role, market_configuration_name, position
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6159e5b8-2b78-518f-8328-1cc19c17ca22', 0, '00000000-0000-0000-0000-000000000000', 'd2c70b45-6134-5b8e-a4e9-cd67b44e8af9', 'pricing', 'default', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '15de3bd0-abb4-5a62-b7bc-c82683922369', 0, '00000000-0000-0000-0000-000000000000', '7a31e00f-43b7-5d79-a97b-73f3275ff2a9', 'pricing', 'default', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'dbe36979-b972-5efd-975e-feca76928e9f', 0, '00000000-0000-0000-0000-000000000000', '9b9212d0-6a1a-5f59-9766-58ecec97a5a3', 'pricing', 'default', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'dfcd9ba3-b98e-56ad-8642-fe9024660cd4', 0, '00000000-0000-0000-0000-000000000000', '66b39725-e6ab-59b3-ba4a-05e2934d4757', 'pricing', 'default', 1);
 end $$;

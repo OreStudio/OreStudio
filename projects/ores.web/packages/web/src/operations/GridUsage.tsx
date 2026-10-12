@@ -34,12 +34,10 @@ import type { GridUsageGroup, GridUsageView } from '@ores/wire-protocol/browser'
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice } from '../ui/Primitives.js';
+import { QUEUE_CAUTION_MINUTES, QUEUE_WAIT_LIMIT_MINUTES, formatWait } from './GridSeries.js';
 
 /** Where the usage answer is cached, so a test can seed it. */
 export const GRID_USAGE_QUERY_KEY = ['operations-grid-usage'] as const;
-
-/** How often the usage is read again, in milliseconds. */
-const USAGE_REFRESH_MS = 30_000;
 
 /** A fraction as a whole percentage, or a dash where the group ran nothing. */
 export function formatShare(share: number): string {
@@ -64,6 +62,36 @@ export function groupLabel(
     return { text: group.key, isId: true };
 }
 
+/** How long the oldest waiting job has waited, or a dash when none waits. */
+export function formatOldest(seconds: number): string {
+    return seconds <= 0 ? '—' : formatWait(seconds / 60);
+}
+
+/**
+ * The warning that rests on the age of the oldest waiting job: a job that waits
+ * past the limit loses its place, so the age, and not an estimate, says it.
+ */
+export function QueueAgeNotice({ usage }: { readonly usage: GridUsageView }): ReactNode {
+    const { t } = useTranslation();
+    const oldest = Math.max(
+        0,
+        ...usage.groups.filter((group) => !group.unavailable).map((group) => group.oldest_unsent_seconds),
+    );
+    const minutes = oldest / 60;
+    if (minutes < QUEUE_CAUTION_MINUTES) {
+        return null;
+    }
+    const over = minutes >= QUEUE_WAIT_LIMIT_MINUTES;
+    return (
+        <Notice tone={over ? 'error' : 'warn'}>
+            {t(`operations.grid.usage.age.${over ? 'over' : 'caution'}`, {
+                time: formatWait(minutes),
+                limit: formatWait(QUEUE_WAIT_LIMIT_MINUTES),
+            })}
+        </Notice>
+    );
+}
+
 function UsageTable({ usage }: { readonly usage: GridUsageView }): ReactNode {
     const { t } = useTranslation();
     const unassigned = t('operations.grid.usage.unassigned');
@@ -73,6 +101,7 @@ function UsageTable({ usage }: { readonly usage: GridUsageView }): ReactNode {
         'results',
         'inProgress',
         'unsent',
+        'oldest',
         'done',
         'succeeded',
         'failed',
@@ -95,6 +124,16 @@ function UsageTable({ usage }: { readonly usage: GridUsageView }): ReactNode {
             <tbody className="divide-y divide-line-subtle">
                 {usage.groups.map((group) => {
                     const label = groupLabel(group, unassigned);
+                    if (group.unavailable) {
+                        return (
+                            <tr key={group.key === '' ? 'none' : group.key}>
+                                <td className="py-2">{label.text}</td>
+                                <td colSpan={columns.length} className="py-2 text-warn">
+                                    {t('operations.grid.usage.unavailable')}
+                                </td>
+                            </tr>
+                        );
+                    }
                     return (
                         <tr key={group.key === '' ? 'none' : group.key}>
                             <td className={label.isId ? 'py-2 font-mono text-xs' : 'py-2'}>
@@ -107,6 +146,9 @@ function UsageTable({ usage }: { readonly usage: GridUsageView }): ReactNode {
                                 {group.results_in_progress}
                             </td>
                             <td className="py-2 text-right font-mono">{group.results_unsent}</td>
+                            <td className="py-2 text-right font-mono">
+                                {formatOldest(group.oldest_unsent_seconds)}
+                            </td>
                             <td className="py-2 text-right font-mono">{group.results_done}</td>
                             <td className="py-2 text-right font-mono">{group.outcomes_success}</td>
                             <td className="py-2 text-right font-mono">{group.outcomes_failed}</td>
@@ -130,8 +172,9 @@ export function UsagePanel({ usage }: { readonly usage: GridUsageView }): ReactN
                 <h2 className="text-lg font-medium">
                     {t(`operations.grid.usage.title.${usage.group_kind}`)}
                 </h2>
-                <p className="text-xs text-ink-faint">{t('operations.grid.usage.note')}</p>
+                <p className="text-xs text-ink-faint">{t(`operations.grid.usage.note.${usage.group_kind}`)}</p>
             </header>
+            <QueueAgeNotice usage={usage} />
             {usage.groups.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('operations.grid.usage.empty')}</p>
             ) : (
@@ -144,10 +187,11 @@ export function UsagePanel({ usage }: { readonly usage: GridUsageView }): ReactN
 /** The Usage tab: who uses the grid, read for the session's scope. */
 export function GridUsageTab(): ReactNode {
     const { t } = useTranslation();
+    // The usage is read when the tab opens and when the person asks. An operator's
+    // read enters every tenant and each entry is recorded, so it is not polled.
     const usage = useQuery({
         queryKey: GRID_USAGE_QUERY_KEY,
         queryFn: api.gridUsage,
-        refetchInterval: USAGE_REFRESH_MS,
     });
 
     if (usage.isError) {

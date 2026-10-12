@@ -1660,7 +1660,15 @@ export const en: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Usage by tenant', party: 'Usage by party' },
-                note: 'A share is the group’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                note: {
+                    tenant: 'Each tenant is read inside the tenant, because no one tenant’s work is visible from another. A share is the tenant’s results as a fraction of the results that could be read. Succeeded and failed count the last 24 hours.',
+                    party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                },
+                unavailable: 'Could not be read',
+                age: {
+                    caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
+                    over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
+                },
                 empty: 'No work has run on the grid yet.',
                 unassigned: 'No party',
                 columns: {
@@ -1671,6 +1679,7 @@ export const en: SourceCatalogue = {
                     results: 'Results',
                     inProgress: 'Running',
                     unsent: 'Waiting',
+                    oldest: 'Oldest wait',
                     done: 'Finished',
                     succeeded: 'Succeeded',
                     failed: 'Failed',
@@ -1744,7 +1753,6 @@ export const en: SourceCatalogue = {
                 load: {
                     title: 'Load',
                     caption: 'Work in flight by result state',
-                    inactive: 'Inactive',
                     unsent: 'Unsent',
                     inProgress: 'In progress',
                 },

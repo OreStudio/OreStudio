@@ -35,7 +35,7 @@ export const DEFAULT_OBSERVATIONS = 500;
 export const observationSchema = z.object({
     /** The instant of the observation, as the wire writes it: YYYY-MM-DD HH:MM:SSZ. */
     at: z.string(),
-    /** The value, as the text the server stored. */
+    /** The value, as the text the server stored. It keeps every digit, so a reader parses it with Number. */
     value: z.string(),
     source: z.string(),
 });

@@ -76,6 +76,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "payment_frequency_code" text not null,
     "floating_index_code" text null,
     "currency" text not null,
+    "leg_group" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -92,7 +93,8 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_number" >= 1),
-    check ("currency" <> '')
+    check ("currency" <> ''),
+    check ("leg_group" is null or "leg_group" in ('premium', 'independent', 'contingent', 'default', 'recovery', 'underlying'))
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -70,6 +71,18 @@ TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", tags) {
     CHECK(plan.error() == tick_drop::unnameable_datum);
 }
 
+TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", tags) {
+    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
+                                                          "22222222-2222-2222-2222-222222222222")};
+
+    const auto plan = plan_tick(
+        make_tick("oresmd://fx/EUR?instrument=fx_spot&type=quote&quote=rate&ccy=USD", "1.0845"),
+        bindings);
+
+    REQUIRE_FALSE(plan.has_value());
+    CHECK(plan.error() == tick_drop::unnameable_datum);
+}
+
 TEST_CASE("a_tick_whose_value_is_not_a_number_is_dropped", tags) {
     const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
                                                           "22222222-2222-2222-2222-222222222222")};
@@ -93,10 +106,13 @@ TEST_CASE("a_tick_from_a_source_with_several_bindings_has_one_target_each", tags
     REQUIRE(plan->targets.size() == 2);
     CHECK(plan->targets[0].binding == bindings[0]);
     CHECK(plan->targets[1].binding == bindings[1]);
+    const auto token = ores::marketdata::domain::subject_token(eur_usd_spot);
     CHECK(plan->targets[0].subject ==
           "marketdata.v1.ops.market_tick.11111111-1111-1111-1111-111111111111."
-          "22222222-2222-2222-2222-222222222222.fx.rate.eur.usd");
+          "22222222-2222-2222-2222-222222222222." +
+              token);
     CHECK(plan->targets[1].subject ==
           "marketdata.v1.ops.market_tick.33333333-3333-3333-3333-333333333333."
-          "44444444-4444-4444-4444-444444444444.fx.rate.eur.usd");
+          "44444444-4444-4444-4444-444444444444." +
+              token);
 }

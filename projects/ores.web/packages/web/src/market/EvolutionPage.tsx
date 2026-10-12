@@ -33,7 +33,7 @@
  * No read lists the series yet, so the object is named by its identity and the
  * screen says so.
  *
- * An oresmd URL in the address, as \`uri\`, names the series to open: the screen
+ * An oresmd URL in the address, as `uri`, names the series to open: the screen
  * reads it through the server's parse, fills the identity from it and reads the
  * object, so a link to a URL is a link to its series.
  */
@@ -371,11 +371,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
     // Every submit gets its own number, so reading the same object again reads it afresh.
     const [reads, setReads] = useState(0);
 
-    const series = useQuery({
-        queryKey: ['market-series-list', partyId],
-        queryFn: () => curves.seriesList(),
-        retry: false,
-    });
+    const series = useQuery(oresmdQueries.seriesList(partyId));
 
     // An oresmd URL in the address opens the series it names, once for each URL.
     // A series the party does not have, or one that declares no axis, is said to be
@@ -386,18 +382,25 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
     const schema = useQuery({ ...oresmdQueries.schema(), enabled: uri !== '' });
     const [unavailable, setUnavailable] = useState<string | null>(null);
     const [offerSeries, setOfferSeries] = useState(false);
+    // The URL and the party together say what was opened, so a change of either opens again.
     const opened = useRef('');
+    const openedKey = `${partyId}|${uri}`;
+    // The effect lists the form values it reads. The ref stops it opening twice, so
+    // a change to them while the data loads only runs the guard.
     useEffect(() => {
-        if (uri === '' || opened.current === uri) return;
-        if (parsed.isError || series.isError) {
-            opened.current = uri;
-            setProblem((parsed.error ?? series.error)?.message ?? '');
+        if (uri === '' || opened.current === openedKey) return;
+        if (parsed.isError || schema.isError || series.isError) {
+            opened.current = openedKey;
+            setUnavailable(null);
+            setProblem((parsed.error ?? schema.error ?? series.error)?.message ?? '');
             return;
         }
         if (parsed.data === undefined || schema.data === undefined || series.data === undefined) {
             return;
         }
-        opened.current = uri;
+        opened.current = openedKey;
+        setUnavailable(null);
+        setProblem(null);
         const named = seriesOfUrl(schema.data, parsed.data);
         if (!named.ok) {
             setUnavailable(
@@ -428,16 +431,18 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
         const identity = identityOf(form);
         const span = rangeOf(from, to);
         if (identity.ok && span.ok) {
-            setProblem(null);
             setReads((count) => count + 1);
             setAsked({ identity: identity.identity, range: span.range, provenance });
         }
     }, [
         uri,
+        openedKey,
         parsed.data,
         parsed.isError,
         parsed.error,
         schema.data,
+        schema.isError,
+        schema.error,
         series.data,
         series.isError,
         series.error,
@@ -482,6 +487,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
             return;
         }
         setProblem(null);
+        setUnavailable(null);
         setReads(reads + 1);
         setAsked({ identity: identity.identity, range: span.range, provenance });
     };
@@ -564,6 +570,9 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
                     {t('market.evolution.form.provenance')}
                 </label>
                 {problem !== null && <Notice tone="error">{problem}</Notice>}
+                {uri === '' && series.isError && (
+                    <Notice tone="error">{series.error.message}</Notice>
+                )}
                 {unavailable !== null && (
                     <Notice tone="warn">
                         {unavailable}

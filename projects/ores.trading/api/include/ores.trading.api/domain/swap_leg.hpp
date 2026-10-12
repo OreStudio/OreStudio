@@ -127,6 +127,16 @@ struct swap_leg final {
      */
     std::string currency;
 
+    /**
+     * @brief The group of a credit trade's legs this leg belongs to. Null for a rates leg.
+     *
+     * A credit linked swap states four groups of payment legs, and a risk participation agreement
+     * states the legs of its underlying beside its own. The group tells them apart: premium,
+     * independent, contingent, default, recovery or underlying. The legs are keyed by the trade, so
+     * one table holds every family's legs and the group is the one column the credit family adds.
+     */
+    std::optional<std::string> leg_group;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.

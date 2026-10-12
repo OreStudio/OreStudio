@@ -279,14 +279,12 @@ public:
         const std::vector<ores::trading::domain::instrument_schedule>& schedules,
         const std::vector<ores::trading::domain::instrument_schedule_date>& schedule_dates);
 
-private:
     /**
-     * Appends one leg of an ORE leg list to the family carrier: the leg row
-     * itself and the notional and rate children that carry its schedule.
+     * The leg rows of one ORE leg, shared by every family whose legs are rows of
+     * the trade-keyed leg tables: the leg itself, the notionals that carry its
+     * amounts and the rates and spreads. The credit family reads its legs
+     * through these functions as the rates family does.
      */
-    static void
-    append_leg(trading::domain::swap_instrument_data& result, const legData& ld, int leg_number);
-
     static ores::trading::domain::swap_leg map_leg(const legData& ld, int leg_number);
 
     static std::vector<ores::trading::domain::swap_leg_amount> map_leg_amounts(const legData& ld,
@@ -300,6 +298,14 @@ private:
                                const ores::trading::domain::swap_leg& sl,
                                const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
                                const std::vector<ores::trading::domain::swap_leg_rate>& rates);
+
+private:
+    /**
+     * Appends one leg of an ORE leg list to the family carrier: the leg row
+     * itself and the notional and rate children that carry its schedule.
+     */
+    static void
+    append_leg(trading::domain::swap_instrument_data& result, const legData& ld, int leg_number);
 
     static legData_Notionals_t make_notionals(double notional);
 };

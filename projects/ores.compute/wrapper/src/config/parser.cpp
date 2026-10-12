@@ -42,6 +42,7 @@ const std::string work_dir_arg("work-dir");
 const std::string package_dir_arg("package-dir");
 const std::string heartbeat_interval_arg("heartbeat-interval-seconds");
 const std::string telemetry_interval_arg("telemetry-interval-seconds");
+const std::string claim_poll_arg("claim-poll-seconds");
 const std::string http_base_url_arg("http-base-url");
 
 using boost::program_options::value;
@@ -78,6 +79,9 @@ options_description make_options_description() {
         heartbeat_interval_arg.c_str(),
         value<std::uint32_t>()->default_value(30),
         "Seconds between heartbeat messages while a job runs")(
+        claim_poll_arg.c_str(),
+        value<std::uint32_t>()->default_value(5),
+        "Seconds between requests for work while idle and hearing no notice (minimum 1)")(
         telemetry_interval_arg.c_str(),
         value<std::uint32_t>()->default_value(30),
         "Seconds between telemetry node-sample publishes (0 = disabled)")(
@@ -152,6 +156,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.package_dir = vm[package_dir_arg].as<std::string>();
     r.heartbeat_interval_seconds = vm[heartbeat_interval_arg].as<std::uint32_t>();
     r.telemetry_interval_seconds = vm[telemetry_interval_arg].as<std::uint32_t>();
+    r.claim_poll_seconds = vm[claim_poll_arg].as<std::uint32_t>();
     r.http_base_url = vm[http_base_url_arg].as<std::string>();
     return r;
 }

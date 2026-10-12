@@ -82,6 +82,13 @@ struct analytic_type final {
     std::optional<std::string> parameter_entity;
 
     /**
+     * @brief The analytic whose output this analytic reads, or nothing when it reads none. A
+     * configuration that runs this analytic must run the one named here: the exposure profiles are
+     * read from the cube that a simulation writes.
+     */
+    std::optional<std::string> requires_analytic_type_code;
+
+    /**
      * @brief The order the analytic appears in a list.
      */
     int display_order = 0;

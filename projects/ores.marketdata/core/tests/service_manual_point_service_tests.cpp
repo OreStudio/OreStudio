@@ -72,8 +72,8 @@ std::chrono::system_clock::time_point instant(const std::string& iso) {
 }
 
 /// The context of the party that owns the series, as a person acting for it has.
-ores::database::context
-owner_context(database_helper& h, const resolve_series_identity_request& identity) {
+ores::database::context owner_context(database_helper& h,
+                                      const resolve_series_identity_request& identity) {
     const auto series =
         ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
     REQUIRE(series.size() == 1);
@@ -194,8 +194,10 @@ TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", tags) {
     const auto identity = fx_option_identity("NZD", "MXN");
     const auto ctx = owner_context(h, identity);
 
-    CHECK_FALSE(manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "abc")).success);
-    CHECK_FALSE(manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "0.09x")).success);
+    CHECK_FALSE(
+        manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "abc")).success);
+    CHECK_FALSE(
+        manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "0.09x")).success);
     CHECK_FALSE(manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "")).success);
 
     auto no_reason = key_request(identity, {"1Y", "ATM"}, "0.090");
@@ -231,7 +233,8 @@ TEST_CASE("a_context_for_another_party_cannot_key_on_the_series", tags) {
 
     const auto stranger = boost::uuids::random_generator()();
     const auto other = h.context().with_party(h.tenant_id(), stranger, {stranger}, h.db_user());
-    const auto refused = manual_point_service::key(other, key_request(identity, {"1Y", "ATM"}, "0.090"));
+    const auto refused =
+        manual_point_service::key(other, key_request(identity, {"1Y", "ATM"}, "0.090"));
     CHECK_FALSE(refused.success);
 
     CHECK(snapshot(h, identity).provenance[0].source_kind == "quoted");

@@ -56,10 +56,9 @@ struct node {
 };
 
 /// The node the identity and the coordinates name, or the reason they name none.
-std::expected<node, std::string>
-locate(ores::database::context ctx,
-       const messaging::resolve_series_identity_request& identity,
-       const std::vector<std::string>& coordinates) {
+std::expected<node, std::string> locate(ores::database::context ctx,
+                                        const messaging::resolve_series_identity_request& identity,
+                                        const std::vector<std::string>& coordinates) {
     using namespace ores::marketdata::datum;
 
     const auto found = repository::market_series_identity_reader::read(ctx, identity);

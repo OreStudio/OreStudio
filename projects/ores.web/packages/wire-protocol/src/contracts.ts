@@ -148,6 +148,12 @@ export const partyChoiceSchema = z.object({
     availableParties: z.array(partySummarySchema),
     defaultPartyId: z.string().nullable(),
     passwordResetRequired: z.boolean(),
+    /**
+     * How long the person has to choose a party, in seconds. The token that
+     * lets them choose is short lived, and a screen that knows its lifetime can
+     * say it has run out instead of waiting to be refused.
+     */
+    accessLifetimeSeconds: z.int().positive(),
 });
 export type PartyChoice = z.infer<typeof partyChoiceSchema>;
 

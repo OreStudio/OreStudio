@@ -71,7 +71,7 @@ The same two paths exist outside the window. The shell exposes them as
 and the folder token grammar is the same on both surfaces.
 
 A feed is identified by its =source_name=, which mirrors its namespace path,
-for example =synthetic.themes.realistic_2026.gbpusd=. The =source_name= is
+for example =synthetic.bloomberg.gbpusd=. The =source_name= is
 the identity and not the row id, so a rename is a re-identification.
 
 * The editors behind it
@@ -82,7 +82,7 @@ the identity and not the row id, so a rename is a re-identification.
 :END:
 
 The FX spot generation config editor, three tabs. The *Instrument* tab holds
-the pair, the ORE key, the source name, the description and the enabled flag.
+the pair, the oresmd URI, the source name, the description and the enabled flag.
 The *Price behaviour* tab chooses an engine (Geometric Brownian Motion,
 Ornstein-Uhlenbeck, or Gaussian Mixture), the tick clock ("New price every N
 s", echoed as ticks per hour), and a Simple or Advanced mode. Simple exposes
@@ -103,9 +103,9 @@ The prototype is at
 :ID: 6AE940F0-160F-4F14-91F0-038038F4D37A
 :END:
 
-The IR curve generation config editor, four tabs. *Instrument* holds the
+The IR curve generation config editor, four tabs. ores.web draws the same journey with the shared feed screens of the [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]]. *Instrument* holds the
 currency, the index name, the tenor, the role (Discount, Projection or
-Self-discounting), the fixed leg frequency and the ORE key. *Process*
+Self-discounting), the fixed leg frequency and the oresmd series URI of the curve it publishes. *Process*
 chooses one of the seeded short-rate models, Vasicek, Cox-Ingersoll-Ross,
 Hull-White, Two-Factor Gaussian or Black-Karasinski, and renders one row per
 parameter the catalogue defines for it, with the symbol, default, minimum

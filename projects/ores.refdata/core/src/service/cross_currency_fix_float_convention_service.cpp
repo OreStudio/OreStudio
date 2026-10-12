@@ -122,6 +122,7 @@ to_domain(const messaging::cross_currency_fix_float_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_cross_currency_fix_float_conventions_response

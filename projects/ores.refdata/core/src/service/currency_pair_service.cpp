@@ -103,6 +103,7 @@ domain::currency_pair to_domain(const messaging::currency_pair_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_currency_pairs_response

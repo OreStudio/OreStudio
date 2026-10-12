@@ -45,6 +45,7 @@ struct result_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::optional<std::string> party_id;
     std::string workunit_id;
     std::optional<std::string> host_id;
     int server_state = 0;

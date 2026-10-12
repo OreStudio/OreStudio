@@ -108,6 +108,7 @@ domain::currency_pair_convention to_domain(const messaging::currency_pair_conven
     return v;
 }
 
+
 }
 
 messaging::list_currency_pair_conventions_response

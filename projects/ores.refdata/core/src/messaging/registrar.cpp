@@ -226,6 +226,9 @@
 #include "ores.refdata.core/messaging/ois_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_country_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_counterparty_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_currency_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_id_scheme_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_identifier_history_provider_registrar.hpp"
@@ -449,7 +452,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // ----------------------------------------------------------------
-    // Publish-from-DQ workflow step handlers (46 subjects, one handler).
+    // Publish-from-DQ workflow step handlers, one handler for every subject.
     // ----------------------------------------------------------------
     {
         auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
@@ -472,6 +475,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "refdata.v1.ops.publish_crm_topology_bundles_from_dq",
             "refdata.v1.ops.publish_csas_from_dq",
             "refdata.v1.ops.publish_currencies_from_dq",
+            "refdata.v1.ops.publish_curve_configuration_from_dq",
             "refdata.v1.ops.publish_currency_groups_from_dq",
             "refdata.v1.ops.publish_currency_currency_groups_from_dq",
             "refdata.v1.ops.publish_currency_pairs_from_dq",
@@ -594,6 +598,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_ir_curve_bootstrap_config_history_provider(hist_registry);
         register_ir_curve_bootstrap_pillar_history_provider(hist_registry);
         register_party_contact_information_history_provider(hist_registry);
+        register_party_country_history_provider(hist_registry);
+        register_party_counterparty_history_provider(hist_registry);
+        register_party_currency_history_provider(hist_registry);
         register_party_identifier_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(

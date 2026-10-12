@@ -36,18 +36,26 @@
 
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { CurveEvolution, CurveIdentity, CurveSnapshot } from '@ores/contracts';
+import type {
+    CurveEvolution,
+    CurveIdentity,
+    CurveSeriesList,
+    CurveSnapshot,
+} from '@ores/contracts';
 import { curves, type CurveRange } from '../api/curves.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { Button, Field, Input, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import {
+    canBeShown,
     formatAge,
+    formFrom,
     identityOf,
     matrixOf,
     neverQuoted,
     nowRowsOf,
     rangeOf,
+    seriesLabel,
     type IdentityForm,
 } from './evolutionView.js';
 
@@ -270,7 +278,74 @@ export function NowPanel({
     );
 }
 
-export function EvolutionPage(): ReactNode {
+/**
+ * The series the party can see, as a choice.
+ *
+ * A series with no declared shape is listed and cannot be chosen: it has no grid, so the
+ * evolution would refuse it. An empty list says why it can be empty. A list cut at the
+ * cap says so, so it is not read as complete.
+ */
+export function SeriesPicker({
+    list,
+    loading,
+    failure,
+    picked,
+    onPick,
+}: {
+    readonly list: CurveSeriesList | undefined;
+    readonly loading: boolean;
+    readonly failure: string | undefined;
+    readonly picked: string;
+    readonly onPick: (seriesId: string) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (loading) {
+        return <p className="text-sm text-ink-muted">{t('market.evolution.picker.loading')}</p>;
+    }
+    if (failure !== undefined) {
+        return <Notice tone="error">{failure}</Notice>;
+    }
+    if (list === undefined) {
+        return null;
+    }
+    if (list.series.length === 0) {
+        return <Notice tone="info">{t('market.evolution.picker.empty')}</Notice>;
+    }
+    return (
+        <div className="space-y-2">
+            <Field label={t('market.evolution.picker.label')}>
+                <Select value={picked} onChange={(event) => onPick(event.target.value)}>
+                    <option value="">{t('market.evolution.picker.placeholder')}</option>
+                    {list.series.map((listed) => (
+                        <option
+                            key={listed.series_id}
+                            value={listed.series_id}
+                            disabled={!canBeShown(listed)}
+                        >
+                            {canBeShown(listed)
+                                ? seriesLabel(listed)
+                                : `${seriesLabel(listed)} (${t('market.evolution.picker.noShape')})`}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+            {list.truncated && (
+                <Notice tone="warn">
+                    {t('market.evolution.picker.truncated', { count: list.series.length })}
+                </Notice>
+            )}
+        </div>
+    );
+}
+
+/**
+ * The evolution screen.
+ *
+ * The party is the one the session works in. A switch of party does not clear the cache, so
+ * the series list is keyed by it: the list of the party left behind is never shown for the
+ * party switched to.
+ */
+export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
     const [form, setForm] = useState<IdentityForm>({
         asset: '',
@@ -278,7 +353,9 @@ export function EvolutionPage(): ReactNode {
         instrumentType: '',
         quoteType: '',
         fields: '',
+        partyId: '',
     });
+    const [picked, setPicked] = useState('');
     const [from, setFrom] = useState(day(DEFAULT_SPAN_DAYS));
     const [to, setTo] = useState(day(0));
     const [provenance, setProvenance] = useState(false);
@@ -286,6 +363,21 @@ export function EvolutionPage(): ReactNode {
     const [problem, setProblem] = useState<string | null>(null);
     // Every submit gets its own number, so reading the same object again reads it afresh.
     const [reads, setReads] = useState(0);
+
+    const series = useQuery({
+        queryKey: ['market-series-list', partyId],
+        queryFn: () => curves.seriesList(),
+        retry: false,
+    });
+
+    const pick = (seriesId: string): void => {
+        // Choosing the placeholder clears the pick and leaves the form as it stands.
+        setPicked(seriesId);
+        const listed = series.data?.series.find((candidate) => candidate.series_id === seriesId);
+        if (listed !== undefined && canBeShown(listed)) {
+            setForm(formFrom(listed));
+        }
+    };
 
     const evolution = useQuery({
         queryKey: ['market-evolution', asked?.identity, asked?.range, reads],
@@ -319,8 +411,12 @@ export function EvolutionPage(): ReactNode {
 
     const text = (key: keyof IdentityForm) => ({
         value: form[key],
-        onChange: (event: { target: { value: string } }) =>
-            setForm({ ...form, [key]: event.target.value }),
+        // Typing makes the identity the person's own, so it no longer names the party of a
+        // picked series.
+        onChange: (event: { target: { value: string } }) => {
+            setPicked('');
+            setForm({ ...form, [key]: event.target.value, partyId: '' });
+        },
     });
 
     return (
@@ -335,6 +431,13 @@ export function EvolutionPage(): ReactNode {
 
             <form className="card space-y-4 p-6" onSubmit={submit}>
                 <h2 className="text-lg font-medium">{t('market.evolution.form.title')}</h2>
+                <SeriesPicker
+                    list={series.data}
+                    loading={series.isPending}
+                    failure={series.isError ? series.error.message : undefined}
+                    picked={picked}
+                    onPick={pick}
+                />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Field label={t('market.evolution.form.asset')}>
                         <Input {...text('asset')} />
@@ -386,7 +489,6 @@ export function EvolutionPage(): ReactNode {
                 {problem !== null && <Notice tone="error">{problem}</Notice>}
                 <div className="flex items-center gap-3">
                     <Button type="submit">{t('market.evolution.form.submit')}</Button>
-                    <span className="text-xs text-ink-faint">{t('market.evolution.gap')}</span>
                 </div>
             </form>
 

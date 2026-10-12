@@ -21,7 +21,10 @@
 -- =============================================================================
 -- ores_compute_grid_stats_fn
 -- =============================================================================
--- Returns a single-row summary of compute grid state for a given tenant.
+-- Returns a single-row summary of compute grid state for a given tenant. The
+-- system tenant operates the grid, so its summary counts the work of every
+-- tenant; row-level security still decides which rows a session may read.
+-- The hosts belong to the system tenant and are counted for it alone.
 -- Counts only current (non-historical) rows by filtering valid_to = infinity.
 -- =============================================================================
 
@@ -59,7 +62,7 @@ as $$
             select 1
             from ores_compute_node_samples_tbl sample
             where sample.host_id = h.id
-              and sample.sampled_at > now() - interval '5 minutes'
+              and sample.sampled_at > now() - interval '2 minutes'
           )) as online_hosts
         from ores_compute_hosts_tbl h
         where h.tenant_id = p_tenant_id
@@ -82,19 +85,19 @@ as $$
             and received_at > now() - interval '24 hours'
             and outcome = 4) as outcomes_no_reply
         from ores_compute_results_tbl
-        where tenant_id = p_tenant_id
+        where (tenant_id = p_tenant_id or p_tenant_id = ores_utility_system_tenant_id_fn())
           and valid_to = ores_utility_infinity_timestamp_fn()
       ),
       workunit_count as (
         select count(*) as total_workunits
         from ores_compute_workunits_tbl
-        where tenant_id = p_tenant_id
+        where (tenant_id = p_tenant_id or p_tenant_id = ores_utility_system_tenant_id_fn())
           and valid_to = ores_utility_infinity_timestamp_fn()
       ),
       batch_stats as (
         select count(*) as total_batches
         from ores_compute_batches_tbl
-        where tenant_id = p_tenant_id
+        where (tenant_id = p_tenant_id or p_tenant_id = ores_utility_system_tenant_id_fn())
           and valid_to = ores_utility_infinity_timestamp_fn()
       ),
       active_batches as (
@@ -102,9 +105,9 @@ as $$
         from ores_compute_results_tbl r
         join ores_compute_workunits_tbl wu
           on r.workunit_id = wu.id
-         and wu.tenant_id = p_tenant_id
+         and (wu.tenant_id = p_tenant_id or p_tenant_id = ores_utility_system_tenant_id_fn())
          and wu.valid_to = ores_utility_infinity_timestamp_fn()
-        where r.tenant_id = p_tenant_id
+        where (r.tenant_id = p_tenant_id or p_tenant_id = ores_utility_system_tenant_id_fn())
           and r.valid_to = ores_utility_infinity_timestamp_fn()
           and r.server_state = 4
       )

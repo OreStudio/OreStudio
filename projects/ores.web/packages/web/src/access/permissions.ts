@@ -38,12 +38,14 @@ export const PERMISSION = {
     counterpartiesWrite: 'refdata::counterparties:write',
     curveSnapshotsRead: 'marketdata::curve_snapshots:read',
     fxFeedsRead: 'synthetic::fx_spot_generation_configs:read',
+    irFeedsRead: 'synthetic::ir_curve_generation_configs:read',
     contactsRead: 'iam::account_contact_informations:read',
     contactsWrite: 'iam::account_contact_informations:write',
     organisationRead: 'iam::organisation:read',
     rolesRead: 'iam::roles:read',
     rolesAssign: 'iam::roles:assign',
     sessionsRead: 'iam::sessions:read',
+    deploymentRead: 'installation::deployment:read',
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];

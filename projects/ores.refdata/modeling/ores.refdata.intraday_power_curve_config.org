@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 97371046-845E-4FB6-A430-0D97446B9860
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.intraday_power_curve_config
 #+description: Codegen entity model for the refdata =intraday_power_curve_config= table. The settings of one ORE intraday power curve.

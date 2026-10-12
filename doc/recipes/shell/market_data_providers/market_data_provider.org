@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 2383895A-489A-5885-8C10-AEDFBB636BC8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the market_data_providers commands from the shell?
+#+description: Every command the market_data_providers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:market_data_providers:
+
+This file documents the market_data_providers resource at the shell, one section per command. Every command is a subcommand of =market_data_providers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: FC18DF5C-BCAB-5EA0-B5DA-621FF4B49B56
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.list=.
+
+#+name: market_data_providers-list
+#+begin_src ores-shell :tangle market_data_providers-list.ores :exports none
+market_data_providers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 854D05D6-5DF3-5A22-A6E3-17E8EEA26873
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers get <code>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.get=.
+
+#+name: market_data_providers-get
+#+begin_src ores-shell :tangle market_data_providers-get.ores :exports none
+market_data_providers get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 55999C2F-25F7-5013-A29B-408E08C2F59E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers get-many <code>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.get_many=.
+
+#+name: market_data_providers-get-many
+#+begin_src ores-shell :tangle market_data_providers-get-many.ores :exports none
+market_data_providers get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FFB1A779-B737-5E59-9D21-4D1DA6D70E48
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers add <code> <name> <kind> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.put=.
+
+#+name: market_data_providers-add
+#+begin_src ores-shell :tangle market_data_providers-add.ores :exports none
+market_data_providers add __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D1263BE0-C590-5E39-9D4C-08BD3579663F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers set <code> <name> <kind> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.put=.
+
+#+name: market_data_providers-set
+#+begin_src ores-shell :tangle market_data_providers-set.ores :exports none
+market_data_providers set __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6C4B3211-1E5E-5BB5-89ED-3BA2FABBA3CE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers put-many --count <n> <code> <name> <kind> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.put_many=.
+
+#+name: market_data_providers-put-many
+#+begin_src ores-shell :tangle market_data_providers-put-many.ores :exports none
+market_data_providers put-many --count 1 __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6F90AD7C-E9B9-59F8-804F-C049D38396AA
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.delete=.
+
+#+name: market_data_providers-delete
+#+begin_src ores-shell :tangle market_data_providers-delete.ores :exports none
+market_data_providers delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: CAB7CE34-5A0B-5B45-9619-EDA6E5492F33
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers.delete_many=.
+
+#+name: market_data_providers-delete-many
+#+begin_src ores-shell :tangle market_data_providers-delete-many.ores :exports none
+market_data_providers delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6E52E5CD-068B-5688-8958-FD5A5C94149D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers_versions.list=.
+
+#+name: market_data_providers-versions
+#+begin_src ores-shell :tangle market_data_providers-versions.ores :exports none
+market_data_providers versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 18965972-1498-5990-A8E9-A4083844B526
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_providers version <code> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_providers_versions.get=.
+
+#+name: market_data_providers-version
+#+begin_src ores-shell :tangle market_data_providers-version.ores :exports none
+market_data_providers version __none__ --version 1
+#+end_src
+

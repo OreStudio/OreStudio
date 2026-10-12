@@ -21,16 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { MENU } from './areas.js';
-import { AREA_CARDS, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
-import { PATHS } from './paths.js';
-
-const AREA_PATH: Record<CardArea, string> = {
-    refdata: PATHS.refdata,
-    organisation: PATHS.organisation,
-    marketdata: '/market-data',
-    operations: PATHS.operations,
-    tenants: '/tenants',
-};
+import { AREA_CARDS, AREA_PAGE, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
 
 /**
  * The menu is one list, in the order the Menu structure page gives: Home,
@@ -62,7 +53,7 @@ describe('the menu', () => {
 
     it('asks of an area the reads its cards ask, where the menu names any', () => {
         const mismatches = Object.entries(AREA_CARDS).flatMap(([area, ids]) => {
-            const entry = MENU.find((item) => item.to === AREA_PATH[area as CardArea]);
+            const entry = MENU.find((item) => item.to === AREA_PAGE[area as CardArea]);
             if (entry?.permission === undefined) {
                 return [];
             }

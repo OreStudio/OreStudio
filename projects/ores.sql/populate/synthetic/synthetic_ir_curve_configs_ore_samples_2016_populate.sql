@@ -21,23 +21,21 @@
 /**
  * Synthetic IR Curve Config Seed Population Script — 2016 ORE Samples
  *
- * Registers the synthetic.ir_curve_configs.ore_samples_2016 dataset: four
+ * Seeds the IR rows of the synthetic.feeds.ore_samples_2016 dataset: four
  * legacy IBOR-era curves (USD-LIBOR-3M, EUR-EURIBOR-3M, GBP-LIBOR-6M,
  * JPY-LIBOR-6M), a Vasicek short-rate process each, pinned to the
  * pre-benchmark-reform world ORE's own sample data comes from -- so
- * ORE Samples-derived examples reproduce faithfully against this
- * theme. Vasicek's constant-vol Gaussian dynamics were the
+ * ORE Samples-derived examples reproduce faithfully against these
+ * feeds. Vasicek's constant-vol Gaussian dynamics were the
  * conventional choice for this era's near-zero-rate environment,
- * before CIR/RFR-style modelling (see the sibling
- * synthetic_ir_curve_configs_realistic_2026_populate.sql for the
- * modern, RFR/CIR equivalent).
+ * before CIR/RFR-style modelling (see
+ * synthetic_feeds_bloomberg_populate.sql for the modern, RFR/CIR
+ * equivalent).
  *
- * This is a wholly separate dataset/collection from the 2026 Realistic
- * theme, not an auto_start=false sibling sharing its dataset --
- * selecting this theme at the collection level (see
- * MarketSimulatorWindow's Start-at-Root theme prompt) and starting it
- * starts every curve here, since a legacy vintage and a current one are
- * mutually exclusive, never layered.
+ * This is a wholly separate dataset/collection from the Bloomberg
+ * feeds, not an auto_start=false sibling sharing its dataset --
+ * starting this collection starts every curve here, since a legacy
+ * vintage and a current one are mutually exclusive, never layered.
  *
  * kappa/sigma are representative of pre-cessation IBOR short-rate
  * dynamics -- lower vol than the RFR curves' own calibration,
@@ -60,12 +58,12 @@
 -- Artefact Seed Data
 -- =============================================================================
 --
--- The theme dataset itself (synthetic.themes.ore_samples_2016) is registered
+-- The synthetic feeds dataset itself (synthetic.feeds.ore_samples_2016) is registered
 -- by synthetic_fx_spot_configs_ore_samples_2016_populate.sql, which this
 -- script's \ir ordering in synthetic_populate.sql runs after -- this script
 -- looks it up by code rather than registering its own dataset, so FX and IR
 -- rows share one dataset id, published atomically by
--- ores_synthetic_publish_theme_from_dq_fn. See
+-- ores_synthetic_publish_feeds_from_dq_fn. See
 -- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 
 do $$
@@ -76,11 +74,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.themes.ore_samples_2016'
+      and code = 'synthetic.feeds.ore_samples_2016'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.themes.ore_samples_2016';
+        raise exception 'Dataset not found: synthetic.feeds.ore_samples_2016';
     end if;
 
     if exists (
@@ -91,7 +89,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic IR curve configs (2016 ORE Samples) for dataset: synthetic.themes.ore_samples_2016';
+    raise debug 'Populating synthetic IR curve configs (2016 ORE Samples) for dataset: synthetic.feeds.ore_samples_2016';
 
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -111,7 +109,7 @@ begin
         '2016 ORE Samples archetype: a Vasicek short-rate process for ' || c.currency_code
         || '''s discontinued IBOR-era benchmark, ' || c.currency_code || '-' || upper(c.index_family) || '-' || c.tenor || ' -- '
         || c.retirement_note
-        || ' This is the dataset this theme''s own provisioning publishes and'
+        || ' This is the dataset this collection''s own provisioning publishes and'
         || ' auto-starts by default when the 2016 ORE Samples collection is'
         || ' selected.',
         true, true, c.currency_code, c.index_family, c.tenor, 'VASICEK',

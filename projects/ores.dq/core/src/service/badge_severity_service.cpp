@@ -103,6 +103,7 @@ domain::badge_severity to_domain(const messaging::badge_severity_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_badge_severities_response badge_severity_service::list_badge_severities(

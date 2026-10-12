@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D513CA90-418E-4973-935D-78939EDBAD0F
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.swaption_volatility_config
 #+description: Codegen entity model for the refdata =swaption_volatility_config= table. The settings of one ORE swaption volatility.

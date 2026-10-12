@@ -21,11 +21,11 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The marketdata list and the BFF route are done and were read against the running stack. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Offer the list as a picker on the evolution screen. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -41,10 +41,34 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 |------+-------+-------+-----+-------------|
 | [[id:4920F67A-14E2-4AFD-95BE-C74FDC3ECF5D][List the series identities a party can see]] | DONE | 2026-10-11 | 2026-10-11 | Add a marketdata operation that returns the typed identity of each series the caller's party can see. |
 | [[id:341A268D-EBD6-426B-8B26-97EDB0EC48C9][Route the series list through the BFF]] | DONE | 2026-10-11 | 2026-10-11 | Give the BFF a session-guarded route for the series identity list, with tests. |
-| [[id:4D270BB2-621E-4B60-BEA8-0A6AFDDD4CB6][Pick the curve on the evolution screen]] | BACKLOG | | | Offer the series list as a picker on the evolution screen, filling the identity from the chosen row. |
+| [[id:4D270BB2-621E-4B60-BEA8-0A6AFDDD4CB6][Pick the curve on the evolution screen]] | DONE | 2026-10-11 | 2026-10-11 | Offer the series list as a picker on the evolution screen, filling the identity from the chosen row. |
 | [[id:777A5AFE-0D38-4E9B-BA97-8B1715BF1BF0][Scaffold story: Pick a curve from the series a party can see]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: the story, its sprint row and its three tasks. |
+| [[id:B68DA277-8C6E-49CE-8A1D-63D58A67CE7D][Import each party's own series]] | DONE | 2026-10-11 | 2026-10-11 | The market data importer finds a series by its URI across the whole tenant, so a second party reuses the first party's series and fails on its axes. Look the series up by party and URI. |
 
 * Decisions
+
+- *The list comes from the party-isolated projection.* The series table is isolated by tenant only, and the
+  identity projection is isolated by party. The lister takes visibility from the projection and the rows from
+  the table. Reading the table first showed one party another party's series, which a test caught.
+- *A listed identity names its series.* The identity carries the owning party, so passing it to the snapshot,
+  slice or evolution read names that series and no other party's.
+- *A series with no declared shape is listed and cannot be chosen.* It has no grid, so the evolution would refuse
+  it. The option says so, and the picker does not hide it.
+- *The list is cached under the party.* A switch of party does not clear the cache, so the key carries the party
+  and the list of the party left behind is never shown.
+- *The importer looks a series up by party.* The lookup was tenant-wide, which was harmless until the axes became
+  party-isolated. A second party's import reused the first party's series and was refused. The earlier import
+  tests ran with no party, so none could see it. The fix passes the context's party, and a test with two parties
+  under row-level security failed first and now passes.
+- *Tests that write a surface use a pair of their own.* The test tenant is shared across tests, so a surface one
+  test imports is still there for the next.
+
+*Left for later.*
+
+- Provisioning seeds market series without their identity rows, so a fresh party's picker can be empty until
+  =marketdata backfill-identity= runs. Capture =provisioning_projects_seeded_series_identities=.
+- The synthetic IR curve feed screen, and a shape declared when a feed starts. Capture
+  =synthetic_feed_declares_its_shape=. The screens belong to the synthetic implementation story.
 
 * Risks
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 06E59596-5D26-41A5-8356-23F5D754AF12
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_configuration_section
 #+description: Codegen entity model for the refdata =curve_configuration_section= table. One section element of an ORE curve configuration document.

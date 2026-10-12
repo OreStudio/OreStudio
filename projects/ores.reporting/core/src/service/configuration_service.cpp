@@ -107,6 +107,7 @@ domain::configuration to_domain(const messaging::configuration_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_configurations_response

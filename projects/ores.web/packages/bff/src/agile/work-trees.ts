@@ -26,8 +26,7 @@ import { join } from 'node:path';
 import { normalizeState, type AgileState } from './agile-model.js';
 
 /**
- * The work trees of the repository and the work item each is on. It replaces
- * the fleet strip of ores.dsh_kanban. A tree's work item is the last entry of
+ * The work trees of the repository and the work item each is on. A tree's work item is the last entry of
  * its `.journal.org`, which compass writes, so no other tree's agile docs are
  * read. The list of trees comes from git, and a caller never names a path.
  */

@@ -85,7 +85,9 @@ gmm_component make_component(double mean, double stdev, double weight) {
 
 fx_spot_generation_config make_fx_config() {
     fx_spot_generation_config cfg;
-    cfg.ore_key = "FX/RATE/EUR/USD";
+    cfg.base_currency_code = "EUR";
+    cfg.quote_currency_code = "USD";
+    cfg.oresmd_uri = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
     cfg.source_name = "eur_usd_test";
     cfg.process_type = "geometric";
     // "fixed" so the factory takes gmm_initial_price as-is -- the vintage
@@ -193,8 +195,8 @@ public:
     const std::string& source_name() const override {
         return source_name_;
     }
-    const std::string& qualifier() const override {
-        return qualifier_;
+    const std::vector<std::string>& series_uris() const override {
+        return series_uris_;
     }
     const std::string& role() const override {
         return role_;
@@ -205,9 +207,6 @@ public:
     std::string_view kind() const override {
         return "stub";
     }
-    std::string conflict_key() const override {
-        return ores::marketdata::domain::feed_conflict_key(qualifier_, role_);
-    }
     void start() override {}
     void stop() override {}
     std::uint64_t publish_count() const override {
@@ -216,7 +215,7 @@ public:
 
 private:
     std::string source_name_{"stub"};
-    std::string qualifier_{"STUB/KEY"};
+    std::vector<std::string> series_uris_{"STUB/KEY"};
     std::string role_;
     std::string nats_subject_{"synthetic.v1.ops.tick.stub"};
 };
@@ -239,11 +238,38 @@ TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", 
     const auto* fx = dynamic_cast<const ores::synthetic::feed::fx_spot_feed*>(feed.get());
     REQUIRE(fx != nullptr);
     CHECK(fx->source_name() == "eur_usd_test");
-    CHECK(fx->ore_key() == "FX/RATE/EUR/USD");
-    CHECK(fx->qualifier() == "EUR/USD");
+    CHECK(fx->quote_uri() == "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+    CHECK(fx->series_uris() == std::vector<std::string>{"oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD"});
     CHECK(fx->role().empty());
-    CHECK(fx->conflict_key() == "EUR/USD\x1f");
     CHECK(fx->publish_count() == 0);
+}
+
+TEST_CASE("factory::make refuses an fx_spot config whose URI is not the quote of its pair", tags) {
+    const auto factory = make_default_feed_factory();
+
+    auto other_pair = make_fx_config();
+    other_pair.oresmd_uri = "oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
+    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind),
+                                 make_build_context(),
+                                 fx_spot_feed_build_input{other_pair,
+                                                          {make_component(0.0, 0.1, 1.0)}}),
+                    std::invalid_argument);
+
+    auto a_series = make_fx_config();
+    a_series.oresmd_uri = "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
+    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind),
+                                 make_build_context(),
+                                 fx_spot_feed_build_input{a_series,
+                                                          {make_component(0.0, 0.1, 1.0)}}),
+                    std::invalid_argument);
+
+    auto an_ore_key = make_fx_config();
+    an_ore_key.oresmd_uri = "FX/RATE/EUR/USD";
+    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind),
+                                 make_build_context(),
+                                 fx_spot_feed_build_input{an_ore_key,
+                                                          {make_component(0.0, 0.1, 1.0)}}),
+                    std::invalid_argument);
 }
 
 TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config", tags) {
@@ -257,11 +283,56 @@ TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config",
     const auto* ir = dynamic_cast<const ores::synthetic::feed::ir_curve_feed*>(feed.get());
     REQUIRE(ir != nullptr);
     CHECK(ir->source_name() == "usd_sofr_test");
-    CHECK(ir->qualifier() == "USD/SOFR");
     CHECK(ir->role() == "discount");
-    CHECK(ir->conflict_key() == "USD/SOFR\x1f"
-                                "discount");
+    // A curve is a series: the pillar starts at spot and the overnight index has the tenor 1D.
+    CHECK(ir->series_uris() ==
+          std::vector<std::string>{
+              "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
     CHECK(ir->publish_count() == 0);
+}
+
+TEST_CASE("an ir_curve_feed's series carries the tenor of its index, so two index tenors are "
+          "two series that can run together",
+          tags) {
+    const auto factory = make_default_feed_factory();
+
+    auto six_month = make_ir_fixture();
+    six_month.config.currency_code = "EUR";
+    six_month.config.index_family = "euribor";
+    six_month.config.tenor = "6M";
+    auto three_month = six_month;
+    three_month.config.tenor = "3M";
+
+    const auto make = [&](const ir_fixture& f) {
+        return factory.make(std::string(ir_curve_feed_kind),
+                            make_build_context(),
+                            ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx});
+    };
+    const auto six = make(six_month);
+    const auto three = make(three_month);
+
+    CHECK(six->series_uris() ==
+          std::vector<std::string>{
+              "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M"});
+    CHECK(three->series_uris() ==
+          std::vector<std::string>{
+              "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M"});
+    CHECK(six->series_uris() != three->series_uris());
+}
+
+TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index tenor 1D", tags) {
+    const auto factory = make_default_feed_factory();
+    auto f = make_ir_fixture();
+    f.config.tenor = "FOMC";
+
+    const auto feed = factory.make(
+        std::string(ir_curve_feed_kind),
+        make_build_context(),
+        ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx});
+
+    CHECK(feed->series_uris() ==
+          std::vector<std::string>{
+              "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
 }
 
 TEST_CASE("factory::make derives the producer subject from the build input's binding_mode, "

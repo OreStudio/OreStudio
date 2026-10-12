@@ -261,11 +261,12 @@ public:
     /**
      * @brief The subjects below @p subject, prefixed for this environment.
      *
-     * A @c nats_subject constant names one subject. A subscription that must
-     * also see the family below it needs the trailing @c ">" wildcard, which
+     * A @c nats_subject constant names one subject. A stream filter that must
+     * also cover the family below it needs the trailing @c ">" wildcard, which
      * is a different string: a filter on the bare subject matches none of its
-     * children. Ask here rather than appending @c ".>" by hand, so the two
-     * spellings cannot drift.
+     * children. The result is prefixed, so it is for stream filters and other
+     * absolute uses. Do not pass it to @c subscribe(), which prefixes its
+     * subject itself and would match nothing.
      */
     [[nodiscard]] std::string subjects_below(std::string_view subject) const;
 

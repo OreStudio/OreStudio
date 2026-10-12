@@ -29,6 +29,7 @@ import type {
     ReactNode,
     Ref,
     SelectHTMLAttributes,
+    TextareaHTMLAttributes,
 } from 'react';
 import { Link, type LinkProps } from 'react-router';
 
@@ -186,6 +187,13 @@ export function Input({
     ...rest
 }: InputHTMLAttributes<HTMLInputElement> & { readonly ref?: Ref<HTMLInputElement> }): ReactNode {
     return <input ref={ref} className={cx(CONTROL, className)} {...rest} />;
+}
+
+export function Textarea({
+    className,
+    ...rest
+}: TextareaHTMLAttributes<HTMLTextAreaElement>): ReactNode {
+    return <textarea className={cx(CONTROL, className)} {...rest} />;
 }
 
 export function Select({

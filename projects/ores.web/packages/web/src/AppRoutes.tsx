@@ -33,6 +33,7 @@ import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { ErrorBanner } from './components/ErrorBanner.js';
+import { ToastViewport } from './ui/Toasts.js';
 import { setupAnswerStep } from './session/setupAnswer.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
@@ -57,6 +58,7 @@ import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
 import { BusPage } from './operations/BusPage.js';
 import { EvolutionPage } from './market/EvolutionPage.js';
+import { GridNodePage } from './operations/GridNodePage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
@@ -76,7 +78,7 @@ import { StaffOfMyParties } from './membership/StaffOfMyParties.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
-import { RequestDetailPage } from './inbox/RequestDetailPage.js';
+import { RequestPage } from './inbox/RequestPage.js';
 import { RequestStoryPage } from './inbox/RequestStoryPage.js';
 import { RequestsPage } from './inbox/RequestsPage.js';
 import { ClassificationListPage } from './refdata/ClassificationListPage.js';
@@ -89,6 +91,7 @@ import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js'
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage, FxFeedsPage } from './marketdata/fxFeeds.js';
+import { IrFeedPage, IrFeedsPage } from './marketdata/irFeeds.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -210,6 +213,8 @@ export interface AppRoutesProps {
     readonly environment?: EnvironmentView | undefined;
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
+    /** Whether the person is at the sign-in form because their session ended under them. */
+    readonly sessionEnded?: boolean;
     readonly onSignOut: () => void;
     readonly onSwitchParty: (partyId: string) => Promise<void>;
     readonly onRetryBootstrap: () => void;
@@ -231,6 +236,7 @@ export function AppRoutes({
     environment,
     onSignIn,
     onChooseParty,
+    sessionEnded = false,
     onSignOut,
     onSwitchParty,
     onRetryBootstrap,
@@ -355,7 +361,11 @@ export function AppRoutes({
                         <Navigate to="/" replace />
                     ) : (
                         <PublicShell serverVersion={gate.version} environment={environment}>
-                            <SignInPage onSignIn={onSignIn} onChooseParty={onChooseParty} />
+                            <SignInPage
+                                onSignIn={onSignIn}
+                                onChooseParty={onChooseParty}
+                                sessionEnded={sessionEnded}
+                            />
                         </PublicShell>
                     )
                 }
@@ -505,7 +515,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <OperationsArea mode={view.mode} />
+                        <OperationsArea />
                     ),
                     'workspace',
                 )}
@@ -530,6 +540,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <GridPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid/nodes/:hostId"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridNodePage />
                     ),
                     'workspace',
                 )}
@@ -564,8 +586,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <EvolutionPage />
+                    (view) => (
+                        <EvolutionPage partyId={view.party.id} />
                     ),
                     'workspace',
                 )}
@@ -672,7 +694,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <OrganisationPage mode={view.mode} />
+                        <OrganisationPage />
                     ),
                     'workspace',
                 )}
@@ -714,7 +736,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <RefdataPage mode={view.mode} />
+                        <RefdataPage />
                     ),
                     'workspace',
                 )}
@@ -726,7 +748,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <MarketDataPage mode={view.mode} />
+                        <MarketDataPage />
                     ),
                     'workspace',
                 )}
@@ -751,6 +773,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <FxFeedPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/ir-feeds"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <IrFeedsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/ir-feeds/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <IrFeedPage />
                     ),
                     'workspace',
                 )}
@@ -944,7 +990,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <RequestDetailPage me={view.username} />
+                        <RequestPage me={view.username} />
                     ),
                     'workspace',
                 )}
@@ -996,7 +1042,15 @@ export function AppRoutes({
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck, reading } = useBootstrap();
-    const { state: session, signIn, chooseParty, switchParty, refresh, signOut } = useSession();
+    const {
+        state: session,
+        ended,
+        signIn,
+        chooseParty,
+        switchParty,
+        refresh,
+        signOut,
+    } = useSession();
     const { environment } = useSite();
     const { t } = useTranslation();
     const server = useJourneyServer();
@@ -1083,6 +1137,7 @@ export function ConnectedApp(): ReactNode {
              * said on the page beside the screen that stands in for it.
              */}
             <ErrorBanner />
+            <ToastViewport />
             <ErrorBoundary title={t('journey.failedHeading')} hint={t('journey.reloadHint')}>
                 <AppRoutes
                     gate={gate}
@@ -1171,6 +1226,7 @@ export function ConnectedApp(): ReactNode {
                     journeyInProgress={journeyInProgress}
                     onSignIn={signIn}
                     onChooseParty={chooseParty}
+                    sessionEnded={ended}
                     onSignOut={() => {
                         void signOut();
                     }}

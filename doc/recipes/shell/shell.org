@@ -978,9 +978,6 @@ tangled into the runnable script library
 
 - [[id:AAD5792B-CBF7-5035-A89C-718E2D7777CA][How do I run the return_types commands from the shell?]]
 
-* Rpa Instruments
-
-
 * Scripted Instruments
 
 - [[id:AD0972FC-35E6-5CC4-960E-297D125C8A17][How do I run the scripted_instruments commands from the shell?]]
@@ -1508,3 +1505,31 @@ tangled into the runnable script library
 * Sub Periods Coupon Types
 
 - [[id:CC6297F5-7EDB-5F9F-8520-8A50E4FAE1D2][How do I run the sub_periods_coupon_types commands from the shell?]]
+
+* Approval Parts
+
+- [[id:21FF08F6-1B89-557F-B8B1-3D63C01A4947][How do I run the approval_parts commands from the shell?]]
+
+* Approval Policies
+
+- [[id:28AFF48B-A9A2-5F69-A77D-41252747E5CC][How do I run the approval_policies commands from the shell?]]
+
+* Approval Request Parts
+
+- [[id:B0E12FA2-4513-5F35-950A-353FD8D8E2E3][How do I run the approval_request_parts commands from the shell?]]
+
+* Book Changes
+
+- [[id:FA5C1FC4-BB15-5FD8-A522-7E21D05695E9][How do I run the book_changes commands from the shell?]]
+
+* Flexi Swap Instruments
+
+- [[id:BB93BAA5-13F6-51D5-96ED-0E8D86A32FB5][How do I run the flexi_swap_instruments commands from the shell?]]
+
+* Market Data Providers
+
+- [[id:2383895A-489A-5885-8C10-AEDFBB636BC8][How do I run the market_data_providers commands from the shell?]]
+
+* Synthetic Market Data Providers
+
+- [[id:754A384A-55E2-5721-BDC9-29B82F93FBE4][How do I run the synthetic_market_data_providers commands from the shell?]]

@@ -323,20 +323,21 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
         "Expecting the silent service");
 
     const auto now = std::chrono::system_clock::now();
-    const auto report = [&](const std::string& instance,
-                            const std::string& host,
-                            std::chrono::minutes age) {
-        service_sample sample;
-        sample.sampled_at = now - age;
-        sample.service_name = reporting;
-        sample.instance_id = instance;
-        sample.host_id = host;
-        sample.version = "1.0.0-test";
-        repo.insert_service_sample(h.context(), sample);
-    };
-    report("leftover", "roster-test-host", std::chrono::minutes(180));
-    report("quiet", "roster-test-host", std::chrono::minutes(10));
-    report("fresh", "roster-test-other-host", std::chrono::minutes(1));
+    const auto report =
+        [&](const std::string& instance, std::chrono::minutes age, const std::string& host) {
+            service_sample sample;
+            sample.sampled_at = now - age;
+            sample.service_name = reporting;
+            sample.instance_id = instance;
+            sample.host_id = host;
+            sample.version = "1.0.0-test";
+            repo.insert_service_sample(h.context(), sample);
+        };
+    // An older instance on a host that has a newer one is a restart's leftover and
+    // fills no slot, so the quiet instance runs on a host of its own.
+    report("leftover", std::chrono::minutes(180), "roster-test-host");
+    report("quiet", std::chrono::minutes(10), "roster-test-quiet-host");
+    report("fresh", std::chrono::minutes(1), "roster-test-host");
 
     const auto roster = repo.list_service_roster(h.context(), now);
     std::vector<service_roster_slot> reporting_slots;
@@ -360,7 +361,7 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
     CHECK(reporting_slots[1].slot == 2);
     CHECK(reporting_slots[1].instance_id == std::optional<std::string>("quiet"));
     CHECK(reporting_slots[1].state == ores::telemetry::domain::service_state::lost);
-    CHECK(reporting_slots[1].host_id == std::optional<std::string>("roster-test-host"));
+    CHECK(reporting_slots[1].host_id == std::optional<std::string>("roster-test-quiet-host"));
     CHECK(reporting_slots[1].sampled_at.has_value());
 
     REQUIRE(silent_slots.size() == 1);

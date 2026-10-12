@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: BEBAD3C1-05E0-43DF-AD66-0A347932577F
+:END:
+#+title: Task: Describe the oresmd schema to a client
+#+description: Add an operation to ores.marketdata that describes the oresmd schema: the kinds, the instrument and quote types, and for each row its fields, whether each is required or left out, and where its codes come from. The codec's own table is the source.
+#+type: task
+#+level: s1
+#+filetags: :edit_an_oresmd_url_in_a_dialog:sprint_27:v0:
+#+owner: marco
+#+branch: feature/describe-the-oresmd-schema-to-a-client
+#+pr: 3156
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A client learns what an oresmd URL may hold from the server, so it keeps no copy of the schema table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The operation is modelled in ores.marketdata.operations and its protocol twins are regenerated.
+- It answers every kind, instrument type and quote type the codec knows, with the fields of each row in schema order.
+- A test compares the answer with the codec's table.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3156][#3156]] | [marketdata] Describe the oresmd schema to a client |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | describe() rebuilds the answer on every call | oresmd_schema_describer.cpp | Fix | The answer is built once into a function-local static and copied. |
+| 2 | The kind_name fallback hides an unknown value | oresmd_schema_describer.cpp | Fix | The switch ends in std::unreachable, so an unhandled kind is a defect and not text. |
+| 3 | The handler has no test for the permission rule | oresmd_schema_handler.hpp | Note | No marketdata handler has a unit test and there is no harness for one. handler-permissions and route-auth cover the rule structurally. |
+| 4 | The include list of the handler | oresmd_schema_handler.hpp | Note | The includes are used. |
+| 5 | The loops rely on contiguous enums | oresmd_schema_describer.cpp | Note | The tests compare every row with the tables in order, so a gap fails them. |
+| 6 | Run the full ctest and the service before merge | | Note | The module tests ran: 8 cases and 1138 assertions. The full ctest takes close to an hour on this box, and the service was not started. The subscription wiring shows at runtime, in the BFF task. |
+
+* Result
+
+The server answers =marketdata.v1.ops.describe_oresmd_schema=. The answer is the codec's own tables read as data: the asset classes, every one of the 45 instrument types with its URI code, its ORE name, its asset class, its subject and its fields in key order, the 17 quote types as a URI spells them, and the 11 index families a fixing is quoted against. Each field says whether it names the series or a point in it, whether a URI may leave it out, the kind of value it holds, and the tokens ORE accepts when it is a code field.
+
+The operation is modelled in =ores.marketdata.operations=, and the C++ header and the TypeScript twin are generated from the model. =oresmd_schema_describer= reads =schema_of=, =codes_of=, =index_rows= and the codec's spellings, so it holds no copy of the grammar. =oresmd_schema_handler= serves it and the registrar subscribes it. The read needs =marketdata::market_series:read=, the permission of the series read. The schema is grammar, not data a party owns, so the story's open question on the permission is answered: no new permission.
+
+Tests: 8 cases and 1138 assertions pass in =ores.marketdata.core.tests=. They compare the answer with the tables in order, check each code against the codec's spelling, and take a URI the codec reads and a fixing it reads to show that every key is a described field. The handler has no unit test, as the other marketdata handlers have none. The web typecheck and the 175 wire-protocol tests pass with the new twin.

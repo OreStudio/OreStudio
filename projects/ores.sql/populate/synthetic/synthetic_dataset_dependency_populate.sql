@@ -34,31 +34,30 @@
 
 DO $$
 BEGIN
-    -- Dataset codes below are the theme-level dataset each pair's FX/IR rows
-    -- now share (see doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org
-    -- and synthetic_fx_spot_configs_*_populate.sql) -- previously these were
-    -- per-asset-class dataset codes (synthetic.fx_spot_configs.<theme>/
-    -- synthetic.ir_curve_configs.<theme>), retired by that same design.
+    -- Dataset codes below are the synthetic feeds datasets: one dataset holds
+    -- every FX and IR row of one set of feeds (see
+    -- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org, which
+    -- called such a dataset a theme).
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.themes.ore_samples_2016',
+        'synthetic.feeds.ore_samples_2016',
         'marketdata.fx_driver_rates',
         'vintage_source'
     );
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.themes.uniform_demo',
+        'synthetic.feeds.uniform_demo',
         'marketdata.fx_driver_rates',
         'vintage_source'
     );
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.themes.realistic_2026',
+        'synthetic.feeds.bloomberg',
         'marketdata.fx_driver_rates_2026',
         'vintage_source'
     );
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.themes.ore_samples_2016',
+        'synthetic.feeds.ore_samples_2016',
         'marketdata.ir_deposit_rates',
         'vintage_source'
     );

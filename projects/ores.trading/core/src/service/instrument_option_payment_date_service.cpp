@@ -111,6 +111,7 @@ to_domain(const messaging::instrument_option_payment_date_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_instrument_option_payment_dates_response

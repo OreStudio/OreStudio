@@ -105,6 +105,7 @@ domain::party_id_scheme to_domain(const messaging::party_id_scheme_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_party_id_schemes_response party_id_scheme_service::list_party_id_schemes(

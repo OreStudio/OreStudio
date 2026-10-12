@@ -25,6 +25,7 @@ import { Link } from 'react-router';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Input, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { Crumbs, TOPICS, classificationsPath } from './shared.js';
 
@@ -40,11 +41,20 @@ export function ClassificationsPage(): ReactNode {
     const [search, setSearch] = useState('');
     const lists = useQuery({ queryKey: ['classifications'], queryFn: api.classificationLists });
 
-    if (lists.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (lists.isError) {
-        return <Notice tone="error">{lists.error.message}</Notice>;
+    if (lists.isPending || lists.isError) {
+        return (
+            <ScreenFrame
+                trail={<Crumbs parts={[...root, { label: t('refdata.classifications.title') }]} />}
+                title={t('refdata.classifications.title')}
+                description={t('refdata.classifications.lead')}
+            >
+                {lists.isError ? (
+                    <Notice tone="error">{lists.error.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
     const wanted = search.trim().toLowerCase();
     const named = lists.data.map((list) => ({

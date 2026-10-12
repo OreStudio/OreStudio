@@ -49,6 +49,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.currencies', 6);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.asset_class', 7);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.asset_class', 8);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.market_data_providers', 9);
 
     -- =============================================================================
     -- Base System Bundle Members
@@ -192,15 +193,14 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.portfolios', 20);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.report_definitions', 40);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.risk_report_configs', 50);
 
     -- --- Synthetic Data: 2016 ORE Samples Bundle Members ---
-    -- One member: the theme dataset itself, covering every asset class it
-    -- contains (FX + IR today) in one atomic publish -- see
+    -- One member: the synthetic feeds dataset itself, covering every asset
+    -- class it contains (FX + IR today) in one atomic publish -- see
     -- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org. A new
     -- asset class never requires a client code change or a new bundle
     -- member, only a new artefact table/loop inside
-    -- ores_synthetic_publish_theme_from_dq_fn. This dataset's
+    -- ores_synthetic_publish_feeds_from_dq_fn. This dataset's
     -- price_source='vintage' rows depend on real market data they resolve
     -- against at feed-start time -- that dependency is declared in
     -- synthetic_dataset_dependency_populate.sql, not re-stated here as bundle
@@ -208,15 +208,17 @@ BEGIN
     -- publication_service::list_bundle_publishable_datasets), same as the
     -- ID-based publish path.
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.themes.ore_samples_2016', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.feeds.ore_samples_2016', 10);
 
-    -- --- Synthetic Data: 2026 Realistic Bundle Members ---
+    -- --- Synthetic Data: Bloomberg Bundle Members ---
+    -- The dataset's feed rows name the bloomberg provider, which the provider
+    -- catalogue (system_core) already holds when a tenant is provisioned.
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic_2026', 'synthetic.themes.realistic_2026', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_bloomberg', 'synthetic.feeds.bloomberg', 10);
 
     -- --- Synthetic Data: Uniform Volatility Demo Bundle Members ---
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.themes.uniform_demo', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.feeds.uniform_demo', 10);
 
     -- --- CRM Cross-Rates Matrix Topology Bundle Members ---
 
@@ -242,21 +244,12 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'ore.conventions', 5);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'refdata.crm_topology_bundles', 20);
 
-    -- The generic report set, for a party with no report design of its own:
-    -- its report definitions (ore.report_definitions), then the run settings
-    -- those definitions resolve (ore.risk_report_configs). The report publish
-    -- resolves the party from params.party_id (or the tenant root).
-    --
-    -- The configurations are here and not only in risk_management, because
-    -- risk_management is published before the party exists: the profile's
-    -- publish_bundle is step 10, the parties arrive with import_lei_hierarchy
-    -- at step 20, so both report datasets are skipped with skipped_no_party
-    -- and never published again. party_reporting runs with the party stage,
-    -- once the party is there, and is the first point at which a configuration
-    -- can resolve the definition it is keyed by. It runs after
-    -- party_essentials, because both datasets read the conventions.
+    -- The generic report set, for a party with no report design of its own: its
+    -- report definitions (ore.report_definitions). The report publish resolves the
+    -- party from params.party_id (or the tenant root). It runs with the party
+    -- stage, once the party is there, and after party_essentials, because it
+    -- reads the conventions.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_reporting', 'ore.report_definitions', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_reporting', 'ore.risk_report_configs', 15);
 
     -- The ORE samples, in publish order. Party-scoped like party_essentials.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_samples', 'ore.sample_netting_agreements', 10);

@@ -115,6 +115,7 @@ domain::swap_leg to_domain(const messaging::swap_leg_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_swap_legs_response

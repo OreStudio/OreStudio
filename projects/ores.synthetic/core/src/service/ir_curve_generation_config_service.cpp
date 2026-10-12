@@ -123,6 +123,7 @@ to_domain(const messaging::ir_curve_generation_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_ir_curve_generation_configs_response

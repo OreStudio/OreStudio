@@ -33,11 +33,12 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
     type ReactNode,
 } from 'react';
 import { api } from '../api/client.js';
-import { reportError, reportQueryError } from '../api/errors.js';
+import { onSessionEnded, reportError, reportQueryError } from '../api/errors.js';
 import { ApiFailure } from '../api/transport.js';
 import type { PartySummary, SessionView } from '@ores/wire-protocol/browser';
 
@@ -70,10 +71,18 @@ export type SignInOutcome =
           readonly outcome: 'party-required';
           readonly parties: readonly PartySummary[];
           readonly passwordResetRequired: boolean;
+          /** How many seconds the person has to choose before the choice is refused. */
+          readonly lifetimeSeconds: number;
       };
 
 interface SessionContextValue {
     readonly state: SessionState;
+    /**
+     * Why the person is at the sign-in form when they did not choose to be: the
+     * session ended while they were using it. Nothing otherwise, and nothing
+     * once they sign in again.
+     */
+    readonly ended: boolean;
     readonly signIn: (credentials: {
         username: string;
         password: string;
@@ -159,6 +168,9 @@ export function AppProviders({
 export function SessionProvider({ children }: { readonly children: ReactNode }): ReactNode {
     const queryClient = useQueryClient();
     const [state, setState] = useState<SessionState>({ status: 'loading' });
+    const [ended, setEnded] = useState(false);
+    const signedIn = useRef(false);
+    signedIn.current = state.status === 'authenticated';
 
     const sessionQuery = useQuery({
         queryKey: SESSION_QUERY_KEY,
@@ -184,6 +196,30 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
         );
     }, [data, isError, isPending, error]);
 
+    /*
+     * Any request can learn that the session is over: the token ran out, or the
+     * server forgot the session. The person was in the middle of something and
+     * nothing on the screen can recover, so the app returns to the sign-in form
+     * and says what happened. A person who was not signed in learns nothing from
+     * it: the form is already where they are.
+     */
+    useEffect(
+        () =>
+            onSessionEnded(() => {
+                if (!signedIn.current) {
+                    return;
+                }
+                signedIn.current = false;
+                setEnded(true);
+                queryClient.removeQueries({
+                    predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
+                });
+                queryClient.setQueryData(SESSION_QUERY_KEY, null);
+                setState({ status: 'anonymous' });
+            }),
+        [queryClient],
+    );
+
     /**
      * Opens the session on one of the account's parties.
      *
@@ -198,6 +234,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
                 availableParties: [...parties],
             };
             queryClient.setQueryData(SESSION_QUERY_KEY, merged);
+            setEnded(false);
             setState({ status: 'authenticated', session: merged });
             return merged;
         },
@@ -209,6 +246,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
             const result = await api.login(credentials);
             if (result.outcome === 'active') {
                 queryClient.setQueryData(SESSION_QUERY_KEY, result.session);
+                setEnded(false);
                 setState({ status: 'authenticated', session: result.session });
                 return {
                     outcome: 'active',
@@ -236,6 +274,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
                 outcome: 'party-required',
                 parties: result.availableParties,
                 passwordResetRequired: result.passwordResetRequired,
+                lifetimeSeconds: result.accessLifetimeSeconds,
             };
         },
         [queryClient, openOn],
@@ -267,19 +306,21 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
             predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
         });
         queryClient.setQueryData(SESSION_QUERY_KEY, null);
+        setEnded(false);
         setState({ status: 'anonymous' });
     }, [queryClient]);
 
     const value = useMemo<SessionContextValue>(
         () => ({
             state,
+            ended,
             signIn,
             chooseParty,
             switchParty,
             refresh,
             signOut,
         }),
-        [state, signIn, chooseParty, switchParty, refresh, signOut],
+        [state, ended, signIn, chooseParty, switchParty, refresh, signOut],
     );
 
     return <SessionContext value={value}>{children}</SessionContext>;

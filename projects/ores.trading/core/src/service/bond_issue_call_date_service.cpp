@@ -108,6 +108,7 @@ domain::bond_issue_call_date to_domain(const messaging::bond_issue_call_date_wri
     return v;
 }
 
+
 }
 
 messaging::list_bond_issue_call_dates_response

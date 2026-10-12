@@ -119,6 +119,7 @@ to_domain(const messaging::party_contact_information_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_party_contact_informations_response

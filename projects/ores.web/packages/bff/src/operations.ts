@@ -24,18 +24,55 @@ import { z } from 'zod';
 import {
     busViewSchema,
     fromWireTimestamp,
+    SERIES_RANGES,
+    gridSeriesViewSchema,
     gridStatsRequestSchema,
+    gridUsageViewSchema,
     gridViewSchema,
     isWireTimestamp,
+    listTenantsPage,
     logsViewSchema,
     serviceRosterRequestSchema,
     serviceRosterViewSchema,
     toWireTimestamp,
     type BusView,
+    type SeriesRange,
     type WireTimestamp,
 } from '@ores/wire-protocol';
-import { invalidRequest, notPermitted } from './errors.js';
+import { requireDeploymentRead } from './deployment-access.js';
+import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
+
+/**
+ * The names a person reads for the groups of a usage: the tenants' names for a
+ * usage by tenant, the parties' names for a usage by party.
+ *
+ * A name is a convenience, so a failure to read one is not a failure to read
+ * the usage. The group then goes out unnamed and the screen shows its id.
+ */
+async function groupNames(
+    session: LiveSession,
+    kind: string,
+    keys: readonly string[],
+): Promise<ReadonlyMap<string, string>> {
+    const ids = keys.filter((key) => key !== '');
+    if (ids.length === 0) {
+        return new Map();
+    }
+    try {
+        if (kind === 'tenant') {
+            const page = await listTenantsPage(session.client, {
+                ids,
+                limit: Math.min(ids.length, 1000),
+            });
+            return new Map(page.tenants.map((tenant) => [tenant.id, tenant.name || tenant.code]));
+        }
+        const parties = await session.client.listParties();
+        return new Map(parties.map((party) => [party.id, party.full_name || party.short_code]));
+    } catch {
+        return new Map();
+    }
+}
 
 /**
  * The one service whose instances run on the grid's nodes.
@@ -109,6 +146,43 @@ export function busWindow(
 
 /** The one field the bus read takes: the range the person chose. */
 const busRequestSchema = z.object({ range: z.enum(BUS_RANGES) }).strict();
+
+/**
+ * The range presets the grid series offers, and the window and bucket each one reads at.
+ *
+ * The bucket width is chosen here, not by the browser, so a range always comes
+ * back as a few hundred buckets and never as raw rows. An hour reads at a
+ * minute, a day at five minutes and a week at half an hour: 60, 288 and 336
+ * buckets. The window is computed from the deployment's clock for the same
+ * reason the bus window is, and its end is exclusive.
+ */
+const SERIES_PRESETS: Readonly<
+    Record<SeriesRange, { readonly seconds: number; readonly bucketSeconds: number }>
+> = {
+    '1h': { seconds: 60 * 60, bucketSeconds: 60 },
+    '24h': { seconds: 24 * 60 * 60, bucketSeconds: 5 * 60 },
+    '7d': { seconds: 7 * 24 * 60 * 60, bucketSeconds: 30 * 60 },
+};
+
+/** The window and the bucket width one series range names. */
+export function seriesWindow(
+    range: SeriesRange,
+    now: number,
+): {
+    readonly start: WireTimestamp;
+    readonly end: WireTimestamp;
+    readonly bucketSeconds: number;
+} {
+    const preset = SERIES_PRESETS[range];
+    return {
+        start: toWireTimestamp(new Date(now - preset.seconds * 1000)),
+        end: toWireTimestamp(new Date(now)),
+        bucketSeconds: preset.bucketSeconds,
+    };
+}
+
+/** The one field the series read takes: the range the person chose. */
+const gridSeriesRequestSchema = z.object({ range: z.enum(SERIES_RANGES) }).strict();
 
 /**
  * The range presets the logs screen offers, and the window each names.
@@ -215,9 +289,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/services', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The services of a deployment are read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The services of a deployment');
         /*
          * The read takes no fields, and the request schema is strict, so a
          * query that names one is refused at the boundary rather than stripped
@@ -250,9 +322,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/grid', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The grid of a deployment is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The grid of a deployment');
         if (!gridStatsRequestSchema.safeParse(request.query ?? {}).success) {
             throw invalidRequest('The grid read takes no query fields.');
         }
@@ -264,6 +334,10 @@ export function registerOperationsRoutes(
         );
         const nameOf = (hostId: string | null): string | null =>
             hostId === null ? null : (hostNames.get(hostId) ?? null);
+        // The host row holds what the computer reported about its hardware.
+        const hardware = new Map(
+            hosts.map((host) => [host.id, { cpu_count: host.cpu_count, ram_mb: host.ram_mb }]),
+        );
         const runnersByHost = new Map<string, (typeof slots)[number]>();
         for (const slot of slots) {
             if (slot.service_name === COMPUTE_RUNNER && slot.host_id !== null) {
@@ -286,11 +360,100 @@ export function registerOperationsRoutes(
                 return {
                     ...node,
                     host: nameOf(node.host_id),
+                    cpu_count: hardware.get(node.host_id)?.cpu_count ?? 0,
+                    ram_mb: hardware.get(node.host_id)?.ram_mb ?? 0,
                     instance_id: runner?.instance_id ?? null,
                     state: runner?.state ?? 'missing',
                     version: runner?.version ?? null,
                 };
             }),
+        });
+    });
+
+    /**
+     * The grid's samples over a range, as the load and node panels read them.
+     *
+     * One call carries both series on one time axis: the grid counters per
+     * bucket, and one row of buckets per node. The window and the bucket come
+     * from the preset and the deployment's clock, the two reads run together,
+     * and the host registry is joined onto the nodes so a node carries the name
+     * a person reads, or none when no host names it. A cell with no sample keeps
+     * its place and says so through the samples column, so the browser never
+     * reads a gap as a measured zero.
+     */
+    server.get('/api/operations/grid/series', async (request) => {
+        const session = requireSession(request);
+        await requireDeploymentRead(session, 'The grid series of a deployment');
+        const parsed = gridSeriesRequestSchema.safeParse(request.query ?? {});
+        if (!parsed.success) {
+            throw invalidRequest('The grid series read takes a range of 1h, 24h or 7d.');
+        }
+        const now = Date.now();
+        const window = seriesWindow(parsed.data.range, now);
+        const input = {
+            startTime: window.start,
+            endTime: window.end,
+            bucketSeconds: window.bucketSeconds,
+        };
+        const [grid, nodes, hosts] = await Promise.all([
+            session.client.gridSeries(input),
+            session.client.nodeSeries(input),
+            session.client.listHosts(),
+        ]);
+        const hostNames = new Map(
+            hosts.map((host) => [host.id, host.display_name || host.external_id]),
+        );
+        return gridSeriesViewSchema.parse({
+            read_at: toWireTimestamp(new Date(now)),
+            range: parsed.data.range,
+            start_time: grid.start_time,
+            bucket_seconds: grid.bucket_seconds,
+            bucket_count: grid.bucket_count,
+            grid,
+            nodes: {
+                ...nodes,
+                list: nodes.nodes.map((node) => ({
+                    ...node,
+                    host: hostNames.get(node.host_id) ?? null,
+                })),
+            },
+        });
+    });
+
+    /**
+     * Who uses the grid: the work counted by tenant for a system-tenant
+     * session, and by party for any other.
+     *
+     * The route states no scope. The compute service reads the session and
+     * decides which rows it may count and how to group them, so a client
+     * cannot ask for a wider scope than its session allows. Each group carries
+     * its share of the results, which is the share of the grid it used.
+     */
+    server.get('/api/operations/grid/usage', async (request) => {
+        const session = requireSession(request);
+        if (Object.keys((request.query as object | undefined) ?? {}).length > 0) {
+            throw invalidRequest('The grid usage read takes no query fields.');
+        }
+        const usage = await session.client.gridUsage();
+        const names = await groupNames(session, usage.group_kind, usage.keys);
+        const total = usage.results.reduce((sum, count) => sum + count, 0);
+        const groups = usage.keys.map((key, i) => ({
+            key,
+            name: names.get(key) ?? null,
+            batches: usage.batches[i] ?? 0,
+            workunits: usage.workunits[i] ?? 0,
+            results: usage.results[i] ?? 0,
+            results_unsent: usage.results_unsent[i] ?? 0,
+            results_in_progress: usage.results_in_progress[i] ?? 0,
+            results_done: usage.results_done[i] ?? 0,
+            outcomes_success: usage.outcomes_success[i] ?? 0,
+            outcomes_failed: usage.outcomes_failed[i] ?? 0,
+            share: total === 0 ? 0 : (usage.results[i] ?? 0) / total,
+        }));
+        return gridUsageViewSchema.parse({
+            read_at: toWireTimestamp(new Date()),
+            group_kind: usage.group_kind,
+            groups,
         });
     });
 
@@ -312,9 +475,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/bus', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The message bus of a deployment is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The message bus of a deployment');
         const parsed = busRequestSchema.safeParse(request.query ?? {});
         if (!parsed.success) {
             throw invalidRequest('The message bus read takes a range of 15m, 1h or 6h.');
@@ -361,11 +522,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/logs', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted(
-                'The telemetry logs of a deployment are read in system administration.',
-            );
-        }
+        await requireDeploymentRead(session, 'The telemetry logs of a deployment');
         const parsed = logsRequestSchema.safeParse(request.query ?? {});
         if (!parsed.success) {
             throw invalidRequest(

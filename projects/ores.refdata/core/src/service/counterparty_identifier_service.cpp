@@ -111,6 +111,7 @@ domain::counterparty_identifier to_domain(const messaging::counterparty_identifi
     return v;
 }
 
+
 }
 
 messaging::list_counterparty_identifiers_response

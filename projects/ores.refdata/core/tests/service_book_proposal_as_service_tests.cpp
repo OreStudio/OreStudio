@@ -122,7 +122,7 @@ TEST_CASE("the_refdata_service_user_moves_a_refused_request_to_apply_failed", ta
     auto moved = *books.get_book(live.id);
     moved.description = "Changed by someone else";
     moved.change_reason_code = "system.test";
-    books.save_book(moved);
+    write_live(w, moved);
 
     const auto id = boost::uuids::to_string(proposal.request->id);
     const auto result = svc.apply(id);

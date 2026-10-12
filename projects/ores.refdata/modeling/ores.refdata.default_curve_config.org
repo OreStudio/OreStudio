@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2FE97251-2904-4880-ACA8-42BA1CBE3542
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.default_curve_config
 #+description: Codegen entity model for the refdata =default_curve_config= table. The currency of one ORE default curve.

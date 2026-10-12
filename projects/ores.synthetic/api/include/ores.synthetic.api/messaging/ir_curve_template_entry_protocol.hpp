@@ -64,7 +64,9 @@ struct ir_curve_template_entry_lookup {
 };
 
 struct ir_curve_template_entries_filter {
+    std::optional<boost::uuids::uuid> ir_curve_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> ir_curve_config_id_one_of;
 };
 
 struct ir_curve_template_entry_event {

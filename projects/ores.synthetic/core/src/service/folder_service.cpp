@@ -109,6 +109,7 @@ domain::folder to_domain(const messaging::folder_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_folders_response

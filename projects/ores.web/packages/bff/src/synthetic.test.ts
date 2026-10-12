@@ -162,6 +162,7 @@ describe('synthetic resource routes', () => {
         expect(resources.map((resource) => resource.key)).toEqual([
             'folders',
             'collections',
+            'providers',
             'fx-feeds',
             'gmm-components',
             'ir-curve-feeds',
@@ -169,12 +170,21 @@ describe('synthetic resource routes', () => {
             'ir-template-entries',
             'process-types',
             'parameter-definitions',
+            'tenors',
+            'instrument-codes',
+            'payment-frequencies',
         ]);
+        const tenors = resources.find((resource) => resource.key === 'tenors');
+        expect(tenors?.writable).toBe(false);
+        expect(tenors?.readOnlyBecause).toContain('reference data');
         const definitions = resources.find((resource) => resource.key === 'parameter-definitions');
         expect(definitions?.writable).toBe(false);
         expect(definitions?.readOnlyBecause).toContain('name alone');
         const mixture = resources.find((resource) => resource.key === 'gmm-components');
         expect(mixture?.writePermission).toBe('synthetic::gmm_components:write');
+        const providers = resources.find((resource) => resource.key === 'providers');
+        expect(providers?.writable).toBe(false);
+        expect(providers?.readOnlyBecause).toContain('catalogue');
     });
 
     it('reads every row of a resource, as of now and unfiltered', async () => {
@@ -251,6 +261,41 @@ describe('synthetic resource routes', () => {
         expect(response.json().rows).toEqual([COMPONENT]);
         expect(calls[0]?.body).toMatchObject({
             filter: { fx_spot_config_id: OTHER, id_one_of: null, fx_spot_config_id_one_of: null },
+        });
+    });
+
+    it('reads the template entries and the parameter values of one curve feed by its parent', async () => {
+        const entry = { id: ID, ir_curve_config_id: OTHER, sequence_index: 0 };
+        const value = { id: ID, config_id: OTHER, parameter_value: 0.04 };
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ir_curve_template_entries.list': {
+                result: ok,
+                ir_curve_template_entries: [entry],
+            },
+            'synthetic.v1.ir_curve_generation_config_process_parameter_values.list': {
+                result: ok,
+                process_parameter_values: [value],
+            },
+        });
+        const entries = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/ir-template-entries/by/${OTHER}`,
+        );
+        const values = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/ir-parameter-values/by/${OTHER}`,
+        );
+        expect(entries.json().rows).toEqual([entry]);
+        expect(values.json().rows).toEqual([value]);
+        expect(calls[0]?.body).toMatchObject({
+            filter: { ir_curve_config_id: OTHER, id_one_of: null, ir_curve_config_id_one_of: null },
+        });
+        expect(calls[1]?.body).toMatchObject({
+            filter: { config_id: OTHER, id_one_of: null, config_id_one_of: null },
         });
     });
 
@@ -582,8 +627,8 @@ describe('synthetic operations', () => {
         expect(response.json()).toEqual({
             sourceName: 'live.eurusd',
             ticks: [
-                { at: '2026-10-11 09:01:00Z', value: 1.2 },
-                { at: '2026-10-11 09:02:00Z', value: 1.3 },
+                { at: '2026-10-11 09:01:00Z', value: 1.2, uri: '' },
+                { at: '2026-10-11 09:02:00Z', value: 1.3, uri: '' },
             ],
         });
     });
@@ -617,7 +662,7 @@ describe('synthetic operations', () => {
         await send(server, sessionId, 'GET', '/api/synthetic/running');
         publish(subject, { value: '1.5', observation_time: '2026-10-11 09:04:00Z' });
         const again = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5 }]);
+        expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5, uri: '' }]);
     });
 
     it('starts no listening when a feed that is not running is read', async () => {
@@ -645,6 +690,83 @@ describe('synthetic operations', () => {
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         expect(response.statusCode).toBe(404);
+    });
+
+    it('serves the ticks of an IR curve feed with the pillar each one is a value of', async () => {
+        const replies: Record<string, unknown> = {
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.usdsofr'],
+            },
+            'synthetic.v1.ir_curve_generation_configs.list': {
+                result: ok,
+                ir_curve_generation_configs: [{ id: ID, source_name: 'live.usdsofr' }],
+            },
+        };
+        const { server, sessionId, publish, calls } = buildTestServer(replies);
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        const pillar = (end: string): string =>
+            `oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=${end}`;
+
+        const subject = 'synthetic.v1.ops.tick.live.usdsofr';
+        publish(subject, {
+            value: '0.04',
+            observation_time: '2026-10-11 09:00:00Z',
+            oresmd_uri: pillar('30D'),
+        });
+        publish(subject, {
+            value: '0.045',
+            observation_time: '2026-10-11 09:00:00Z',
+            oresmd_uri: pillar('1826D'),
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?resource=ir-curve-feeds`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().ticks).toEqual([
+            { at: '2026-10-11 09:00:00Z', value: 0.04, uri: pillar('30D') },
+            { at: '2026-10-11 09:00:00Z', value: 0.045, uri: pillar('1826D') },
+        ]);
+        // The kind is named, so the feed is read through it alone: no FX read is made.
+        expect(calls.map((call) => call.subject)).not.toContain(
+            'synthetic.v1.fx_spot_generation_configs.list',
+        );
+    });
+
+    it('reads a curve feed for a person who may read curve feeds and not FX feeds', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: { outcome: 'permission_denied', message: 'No FX feeds for you.' },
+            },
+            'synthetic.v1.ir_curve_generation_configs.list': {
+                result: ok,
+                ir_curve_generation_configs: [{ id: ID, source_name: 'live.usdsofr' }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?resource=ir-curve-feeds`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sourceName).toBe('live.usdsofr');
+    });
+
+    it('refuses a ticks read of a resource that is not a feed', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?resource=folders`,
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
     });
 
     it('answers 409 with the server words when a feed start is refused', async () => {
@@ -811,6 +933,103 @@ describe('synthetic operations', () => {
         });
         expect(response.statusCode).toBe(400);
         expect(calls).toEqual([]);
+    });
+
+    it('reads an FX mixture as the simple view through the synthetic service', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.convert_fx_simple': {
+                success: true,
+                message: '',
+                has_simple_form: true,
+                trend_pct_per_hour: 0.05,
+                volatility_pct_per_hour: 0.1,
+                jump_share_pct: 10,
+                half_life_minutes: 0,
+            },
+        });
+        const body = {
+            process_type: 'geometric',
+            to_simple: true,
+            initial_price: 1.1,
+            ticks_per_hour: 3600,
+            gmm_means: [0],
+            gmm_stdevs: [0.001],
+            gmm_weights: [1],
+        };
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/convert/fx-simple',
+            body,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            has_simple_form: true,
+            volatility_pct_per_hour: 0.1,
+            jump_share_pct: 10,
+        });
+        expect(calls[0]?.body).toMatchObject(body);
+    });
+
+    it('refuses an FX simple conversion for an engine it does not know', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/fx-simple', {
+            process_type: 'jump',
+            to_simple: true,
+            initial_price: 1,
+            ticks_per_hour: 60,
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
+    it('converts IR parameters to the simple view through the synthetic service', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.convert_ir_parameters': {
+                success: true,
+                message: '',
+                has_simple_form: true,
+                parameter_names: ['start_rate', 'half_life_years'],
+                parameter_values: [0.03, 1.4],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/ir', {
+            process_type: 'VASICEK',
+            to_simple: true,
+            values: { kappa: 0.5, theta: 0.03 },
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            has_simple_form: true,
+            message: '',
+            caution: '',
+            values: { start_rate: 0.03, half_life_years: 1.4 },
+        });
+        expect(calls[0]?.body).toEqual({
+            process_type: 'VASICEK',
+            to_simple: true,
+            parameter_names: ['kappa', 'theta'],
+            parameter_values: [0.5, 0.03],
+        });
+    });
+
+    it('answers 400 with the server words when an IR conversion is refused', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.ops.convert_ir_parameters': {
+                success: false,
+                message: 'The half-life must be longer than zero.',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/ir', {
+            process_type: 'VASICEK',
+            to_simple: false,
+            values: { half_life_years: 0 },
+        });
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({
+            message: 'The half-life must be longer than zero.',
+        });
     });
 
     it('answers 400 with the server words when a preview is refused', async () => {

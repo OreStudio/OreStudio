@@ -106,6 +106,7 @@ domain::trade_state to_domain(const messaging::trade_state_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_trade_states_response

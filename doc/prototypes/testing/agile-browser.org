@@ -2,7 +2,7 @@
 :ID: B4B829FC-0015-4E93-AFF3-F5680C9789E8
 :END:
 #+title: Agile browser prototype
-#+description: The Development area gains a sprint board, a backlog and sprint charts that replace ores.dsh_kanban and ores.org-js: two ways to arrange the board, and the gaps each one states.
+#+description: The Development area gains a sprint board, a backlog and sprint charts: two ways to arrange the board, and the gaps each one states.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:testing:
@@ -18,9 +18,8 @@
 
 * Summary
 
-=ores.dsh_kanban= shows a sprint as a kanban board inside a DSH session. =ores.org-js=
-shows the agile tree and its charts as a static page. Both read the org tree and
-neither is part of ores.web. The prototype brings what they show to the
+The agile tree is org docs that compass creates. The prototype shows a sprint
+as a kanban board and the agile tree with its charts in the
 Development area, beside the Tests tab: a Board tab, a Backlog tab and a Charts
 tab. Any agile doc opens by its link inside the tab.
 
@@ -62,7 +61,7 @@ to show what it is blocked on and its dates.
 The Backlog tab lists the four buckets, inbox, next, deferred and discarded, each
 with its count and its captures. A capture opens in the tab. The Charts tab shows
 velocity, the stories done in each sprint, and a burn-up of the current sprint
-against its scope. These are the series =ores.org-js= drew.
+against its scope. These are the series a sprint review reads.
 
 ** What the screens cannot do, and say
 

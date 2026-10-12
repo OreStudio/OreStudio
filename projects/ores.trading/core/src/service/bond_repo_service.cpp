@@ -108,6 +108,7 @@ domain::bond_repo to_domain(const messaging::bond_repo_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_repos_response

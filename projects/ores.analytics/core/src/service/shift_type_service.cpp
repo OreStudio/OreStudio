@@ -101,6 +101,7 @@ domain::shift_type to_domain(const messaging::shift_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_shift_types_response

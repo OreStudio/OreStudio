@@ -133,6 +133,7 @@ domain::commodity_instrument to_domain(const messaging::commodity_instrument_wri
     return v;
 }
 
+
 }
 
 messaging::list_commodity_instruments_response

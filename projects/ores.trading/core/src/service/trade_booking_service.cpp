@@ -111,6 +111,7 @@ domain::trade_booking to_domain(const messaging::trade_booking_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_trade_bookings_response

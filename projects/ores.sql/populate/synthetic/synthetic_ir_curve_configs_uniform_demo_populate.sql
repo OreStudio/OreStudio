@@ -21,9 +21,9 @@
 /**
  * Synthetic IR Curve Config Seed Population Script — Uniform Volatility Demo
  *
- * Registers the synthetic.ir_curve_configs.uniform_demo dataset: one curve
- * per top-20-by-turnover currency (same currency/index set as
- * synthetic.ir_curve_configs.realistic_2026), each a Vasicek short-rate
+ * Seeds the IR rows of the synthetic.feeds.uniform_demo dataset: one curve
+ * per top-20-by-turnover currency (the same currency/index pairs as the
+ * matching Bloomberg curves), each a Vasicek short-rate
  * process with plain, real annualised parameters -- the day-per-tick
  * scaling (ir_curve_template_resolver's "1 tick = 1 day" convention)
  * is handled by process_factory::make_yield_curve_process()'s own dt
@@ -31,22 +31,21 @@
  * (Deposit/FRA/Swap) per curve, so every curve_role pricing
  * derivation gets exercised.
  *
- * This is not a vintage theme -- it doesn't pin to any point in market
+ * These are not vintage feeds -- they don't pin to any point in market
  * history -- it's a deliberately simple demo/exercise archetype: one
  * uniform kappa/sigma across all 20 curves (only theta/initial_rate vary,
  * by currency) using Vasicek, so every curve's dynamics are easy to
  * reason about while exercising the tick-batch/pricing pipeline. Contrast
- * with the vintage themes (2016 ORE Samples, 2026 Realistic), each of
+ * with the vintage feeds (2016 ORE Samples, Bloomberg), each of
  * which per-curve-calibrates and (for 2016 ORE Samples) is grounded in a
  * real historical curve.
  *
  * auto_start = false: this dataset shares (currency_code, index_family)
- * pairs with synthetic.ir_curve_configs.realistic_2026 (e.g. USD/sofr),
+ * pairs with synthetic.feeds.bloomberg (e.g. USD/sofr),
  * so starting both at once for the same currency would trip
  * curve_feed_controller's qualifier-collision check. Still enabled = true
  * (available, manually startable) for direct comparison against a vintage
- * theme's own calibration; select this collection explicitly (never from
- * Root, which prompts for a single theme) to start it.
+ * dataset's own calibration; start this collection explicitly to run it.
  *
  * This script is idempotent.
  */
@@ -55,12 +54,12 @@
 -- Artefact Seed Data
 -- =============================================================================
 --
--- The theme dataset itself (synthetic.themes.uniform_demo) is registered by
+-- The synthetic feeds dataset itself (synthetic.feeds.uniform_demo) is registered by
 -- synthetic_fx_spot_configs_uniform_demo_populate.sql, which this script's
 -- \ir ordering in synthetic_populate.sql runs after -- this script looks it
 -- up by code rather than registering its own dataset, so FX and IR rows
 -- share one dataset id, published atomically by
--- ores_synthetic_publish_theme_from_dq_fn. See
+-- ores_synthetic_publish_feeds_from_dq_fn. See
 -- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 
 do $$
@@ -81,11 +80,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.themes.uniform_demo'
+      and code = 'synthetic.feeds.uniform_demo'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.themes.uniform_demo';
+        raise exception 'Dataset not found: synthetic.feeds.uniform_demo';
     end if;
 
     if exists (
@@ -96,7 +95,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic IR curve configs (uniform demo) for dataset: synthetic.themes.uniform_demo';
+    raise debug 'Populating synthetic IR curve configs (uniform demo) for dataset: synthetic.feeds.uniform_demo';
 
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -116,17 +115,17 @@ begin
         || c.currency_code || '''s current risk-free rate, ' || c.currency_code || '-' || upper(c.index_family) || '. '
         || 'Intended for exercising the tick-batch/pricing pipeline with predictable, '
         || 'easy-to-reason-about dynamics -- not for realistic curve shape or '
-        || 'per-currency calibration (see synthetic.ir_curve_configs.realistic_2026 for that). '
-        || 'Not auto-started by default -- both this and realistic_2026 seed the same '
+        || 'per-currency calibration (see synthetic.feeds.bloomberg for that). '
+        || 'Not auto-started by default -- both this and synthetic.feeds.bloomberg seed the same '
         || '(currency, index) pairs, so only one may run at a time per currency; enable '
-        || 'and start this one explicitly to compare against a vintage theme''s calibration.',
+        || 'and start this one explicitly to compare against a vintage dataset''s calibration.',
         true, false, c.currency_code, c.index_family, '', 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly',
         'fixed', '', '', ''
     from (values
         -- currency, index_family, theta (mean/initial level) -- same 20 currencies and levels
-        -- as synthetic.ir_curve_configs.realistic_2026, but uniform kappa/sigma (v_kappa/v_sigma
+        -- as the matching Bloomberg curves, but uniform kappa/sigma (v_kappa/v_sigma
         -- above) rather than per-curve calibration.
         ('USD', 'sofr',    0.0400),
         ('EUR', 'estr',    0.0300),

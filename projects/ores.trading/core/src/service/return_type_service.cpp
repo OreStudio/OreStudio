@@ -101,6 +101,7 @@ domain::return_type to_domain(const messaging::return_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_return_types_response

@@ -119,6 +119,7 @@ domain::bond_leg_amount to_domain(const messaging::bond_leg_amount_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_bond_leg_amounts_response bond_leg_amount_service::list_bond_leg_amounts(

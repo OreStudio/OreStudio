@@ -141,6 +141,13 @@ struct synthetic_fx_spot_config final {
     std::optional<std::string> vintage_date;
 
     /**
+     * @brief The simulated market data provider this feed stands for (market_data_provider.code),
+     * such as bloomberg. The published feed's source name starts synthetic.<provider_code>. when it
+     * is set.
+     */
+    std::optional<std::string> provider_code;
+
+    /**
      * @brief Value equality.
      *
      * Every generated domain type is a value: two of them are equal when their

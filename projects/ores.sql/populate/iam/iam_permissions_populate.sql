@@ -823,9 +823,6 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::data_domains:delete', 'Delete data domains');
 
     -- Risk report configs
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::risk_report_configs:read', 'View risk report configs');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::risk_report_configs:write', 'Create and modify risk report configs');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::risk_report_configs:delete', 'Delete risk report configs');
 
     -- Subject areas
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::subject_areas:read', 'View subject areas');
@@ -1574,6 +1571,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::netting_sets:read', 'View netting sets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::report_definitions:read', 'View report definitions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::synthetic_fx_spot_configs:read', 'View synthetic fx spot configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::synthetic_market_data_providers:read', 'View synthetic market data provider artefacts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_statuses:read', 'View account statuses');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_types:read', 'View account types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenant_statuses:read', 'View tenant statuses');
@@ -1583,6 +1581,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_convention_resolutions:write', 'Add and change tenor convention resolutions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_convention_resolutions:delete', 'Remove tenor convention resolutions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::folders:read', 'View folders');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_providers:read', 'View market data providers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_config_process_parameter_values:read', 'View ir curve generation config process parameter values');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::yield_curve_process_parameter_definitions:read', 'View yield curve process parameter definitions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::yield_curve_process_types:read', 'View yield curve process types');
@@ -1602,6 +1601,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'compute::grid_samples:read', 'View the compute grid statistics');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_snapshots:read', 'View curve snapshots and their buckets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_instances:read', 'View job instances and the scheduler status');
+
+    -- =============================================================================
+    -- Installation Permissions
+    -- =============================================================================
+    -- A session that acts on the deployment as a whole, across every tenant. The
+    -- wildcard '*' does not cover an installation code, so a tenant's
+    -- administrator, who holds '*', does not hold this. Only the code itself or
+    -- 'installation::*' grants it.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::deployment:read', 'View the deployment as a whole: its tenants, services, grid, message bus and logs');
 END $$;
 
 

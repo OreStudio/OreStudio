@@ -120,6 +120,7 @@ to_domain(const messaging::fx_asian_forward_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fx_asian_forward_instruments_response

@@ -114,6 +114,7 @@ domain::curve_quote to_domain(const messaging::curve_quote_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_curve_quotes_response

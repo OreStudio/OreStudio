@@ -30,6 +30,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.refdata.service.lib
+        ores.history.core.lib
         ores.iam.api.lib
         ores.iam.core.lib
         ores.inbox.api.lib

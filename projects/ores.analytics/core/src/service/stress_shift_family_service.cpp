@@ -101,6 +101,7 @@ domain::stress_shift_family to_domain(const messaging::stress_shift_family_write
     return v;
 }
 
+
 }
 
 messaging::list_stress_shift_families_response

@@ -23,6 +23,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { Crumbs } from '../refdata/shared.js';
+import { useAreaParts } from '../shell/AreaTrail.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Input, PageHeader, Tag } from '../ui/Primitives.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
@@ -41,6 +42,7 @@ import { partyLabel } from './organisation.js';
  */
 export function StaffOfMyParties(): ReactNode {
     const { t } = useTranslation();
+    const trail = useAreaParts('organisation', t('access.hub.staff'));
     const [text, setText] = useState('');
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
     const news = useEntityChanges(TREE_WATCHES, tree);
@@ -58,13 +60,7 @@ export function StaffOfMyParties(): ReactNode {
     return (
         <div className="space-y-6">
             <div>
-                <Crumbs
-                    parts={[
-                        { label: t('shell.menu.home'), to: '/' },
-                        { label: t('access.hub.title'), to: '/organisation' },
-                        { label: t('access.hub.staff') },
-                    ]}
-                />
+                <Crumbs parts={trail} />
                 <PageHeader
                     title={t('access.hub.staff')}
                     description={t('access.people.leadParties')}

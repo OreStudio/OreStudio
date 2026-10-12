@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 768CD631-5525-47A0-A780-1140AD7EABB0
+:END:
+#+title: 'dashboard' is reserved for ores-dashboard.el
+#+description: Never name a file or component 'dashboard'; the emacs mode ores-dashboard.el owns the name
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-06-11
+#+updated: 2026-10-11
+
+Do not name anything 'dashboard' in this repo. ores-dashboard.el, an emacs mode in projects/ores.lisp/src/, already owns that name.
+
+*Why:* The emacs mode ores-dashboard.el took the name first, and a second 'dashboard' would be ambiguous.
+
+*How to apply:* When naming a new file or component, never use 'dashboard'. Browse the agile tree in the Development area of ores.web.

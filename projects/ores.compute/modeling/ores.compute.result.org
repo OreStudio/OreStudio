@@ -46,6 +46,15 @@ result declares no key field, so callers address it by its storage key.
 
 UUID primary key for the result.
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The party that submitted the batch the result belongs to, copied from the session when the batch is created. NULL for work that predates the party scope.
+
 ** workunit_id
 :PROPERTIES:
 :type:     uuid

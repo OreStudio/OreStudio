@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D9D86394-EF11-468C-AE45-A4127F79CAB9
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.cap_floor_volatility_config
 #+description: Codegen entity model for the refdata =cap_floor_volatility_config= table. The settings of one ORE cap and floor volatility.

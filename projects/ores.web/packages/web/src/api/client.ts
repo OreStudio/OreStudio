@@ -53,10 +53,14 @@ import {
     classificationRowSchema,
     historyVersionSchema,
     inboxNotificationPageSchema,
+    bookPreviewViewSchema,
+    bookRaiseViewSchema,
     inboxRequestPageSchema,
     inboxRequestQueueSchema,
     inboxRequestStorySchema,
     inboxRequestViewSchema,
+    requestChangesViewSchema,
+    requestChecksViewSchema,
     timelineSchema,
     type BadgePresentation,
     type ClassificationList,
@@ -65,7 +69,12 @@ import {
     type Timeline,
     type InboxNotificationView,
     type InboxPage,
+    type BookLineInput,
+    type BookPreview,
+    type BookRaise,
     type InboxRequestQueue,
+    type RequestChange,
+    type RequestChecks,
     type InboxRequestStory,
     type InboxRequestView,
     type AccountAccess,
@@ -95,6 +104,8 @@ import {
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
     serviceRosterViewSchema,
+    gridSeriesViewSchema,
+    gridUsageViewSchema,
     gridViewSchema,
     busViewSchema,
     logsViewSchema,
@@ -122,7 +133,10 @@ import {
     type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
     type ServiceRosterRow,
+    type GridSeriesView,
+    type GridUsageView,
     type GridView,
+    type SeriesRange,
     type BusView,
     type LogsView,
     type SessionView,
@@ -159,6 +173,7 @@ export interface Credentials {
  * window on the deployment's clock.
  */
 export type BusRange = '15m' | '1h' | '6h';
+export type { SeriesRange };
 
 /**
  * The range presets the logs screen offers, which the BFF turns into a window
@@ -843,6 +858,55 @@ export const api = {
         );
     },
 
+    /**
+     * What a request proposes, for any kind: the operation, the thing it is
+     * about, and each field beside the value it would replace.
+     */
+    async requestChanges(id: string): Promise<readonly RequestChange[]> {
+        return requestChangesViewSchema.parse(
+            await request(`/api/requests/${encodeURIComponent(id)}/changes`, { method: 'GET' }),
+        ).changes;
+    },
+
+    /** What running the request's lines through the real write now says. */
+    async requestChecks(id: string): Promise<RequestChecks> {
+        return requestChecksViewSchema.parse(
+            await request(`/api/requests/${encodeURIComponent(id)}/checks`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Runs the proposed book writes through the real service and writes
+     * nothing, so every refusal and the parts the policy needs come back before
+     * anyone waits.
+     */
+    async previewBookChanges(lines: readonly BookLineInput[]): Promise<BookPreview> {
+        return bookPreviewViewSchema.parse(
+            await request('/api/book-changes/preview', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ lines }),
+            }),
+        );
+    },
+
+    /**
+     * Raises one request that holds the proposed book writes. A refusal comes
+     * back as an answer with its reason and no request.
+     */
+    async raiseBookChanges(input: {
+        readonly reason: string;
+        readonly lines: readonly BookLineInput[];
+    }): Promise<BookRaise> {
+        return bookRaiseViewSchema.parse(
+            await request('/api/book-changes', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        );
+    },
+
     /** Approves, refuses, holds or resumes a request, against the version read. */
     async decideRequest(
         requestId: string,
@@ -850,6 +914,8 @@ export const api = {
             readonly version: number;
             readonly decisionCode: 'approve' | 'refuse' | 'hold' | 'resume';
             readonly comment: string;
+            /** The part the decider answers for; omitted for a request that names none. */
+            readonly partCode?: string;
         },
     ): Promise<void> {
         await request(`/api/requests/${encodeURIComponent(requestId)}/decision`, {
@@ -1143,6 +1209,68 @@ export const api = {
         ).paths;
     },
 
+    /** Sample short-rate paths from the engine and parameters on a screen; nothing is saved. */
+    async simulateIr(input: {
+        readonly process_type: string;
+        readonly parameters: readonly {
+            readonly parameter_name: string;
+            readonly parameter_value: number;
+        }[];
+        readonly num_ticks: number;
+        readonly num_paths: number;
+        readonly seed: number;
+    }): Promise<readonly (readonly number[])[]> {
+        return z.object({ paths: z.array(z.array(z.number())) }).parse(
+            await request('/api/synthetic/simulate/ir', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        ).paths;
+    },
+
+    /** The rate at each row of a curve template, priced from the values on a screen; nothing is saved. */
+    async previewIrShape(input: {
+        readonly process_type: string;
+        readonly parameters: readonly {
+            readonly parameter_name: string;
+            readonly parameter_value: number;
+        }[];
+        readonly fixed_leg_payment_frequency_code: string;
+        readonly entries: readonly {
+            readonly sequence_index: number;
+            readonly start_tenor_code: string;
+            readonly end_tenor_code: string;
+            readonly instrument_code: string;
+        }[];
+    }): Promise<
+        readonly {
+            readonly sequence_index: number;
+            readonly start_tenor_code: string;
+            readonly end_tenor_code: string;
+            readonly rate: number;
+        }[]
+    > {
+        return z
+            .object({
+                points: z.array(
+                    z.object({
+                        sequence_index: z.number(),
+                        start_tenor_code: z.string(),
+                        end_tenor_code: z.string(),
+                        rate: z.number(),
+                    }),
+                ),
+            })
+            .parse(
+                await request('/api/synthetic/preview/ir-shape', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            ).points;
+    },
+
     /** The mixture an engine change leaves, as the synthetic service converts it. */
     async convertFxMixture(input: {
         readonly gmm_means: readonly number[];
@@ -1165,6 +1293,85 @@ export const api = {
             })
             .parse(
                 await request('/api/synthetic/convert/fx', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            );
+    },
+
+    /**
+     * An FX mixture read as the simple view, or the simple view written as a
+     * mixture, as the synthetic service converts it. Every figure is per hour.
+     */
+    async convertFxSimple(input: {
+        readonly process_type: string;
+        readonly to_simple: boolean;
+        readonly initial_price: number;
+        readonly ticks_per_hour: number;
+        readonly gmm_means?: readonly number[];
+        readonly gmm_stdevs?: readonly number[];
+        readonly gmm_weights?: readonly number[];
+        readonly trend_pct_per_hour?: number;
+        readonly volatility_pct_per_hour?: number;
+        readonly jump_share_pct?: number;
+        readonly half_life_minutes?: number;
+    }): Promise<{
+        readonly has_simple_form: boolean;
+        readonly message: string;
+        readonly trend_pct_per_hour: number;
+        readonly volatility_pct_per_hour: number;
+        readonly jump_share_pct: number;
+        readonly half_life_minutes: number;
+        readonly gmm_means: readonly number[];
+        readonly gmm_stdevs: readonly number[];
+        readonly gmm_weights: readonly number[];
+    }> {
+        return z
+            .object({
+                has_simple_form: z.boolean(),
+                message: z.string(),
+                trend_pct_per_hour: z.number(),
+                volatility_pct_per_hour: z.number(),
+                jump_share_pct: z.number(),
+                half_life_minutes: z.number(),
+                gmm_means: z.array(z.number()),
+                gmm_stdevs: z.array(z.number()),
+                gmm_weights: z.array(z.number()),
+            })
+            .parse(
+                await request('/api/synthetic/convert/fx-simple', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            );
+    },
+
+    /**
+     * An IR engine's parameters read as the simple view, or the simple view
+     * written as the engine's parameters, as the synthetic service converts
+     * them. Rates are decimals.
+     */
+    async convertIrParameters(input: {
+        readonly process_type: string;
+        readonly to_simple: boolean;
+        readonly values: Readonly<Record<string, number>>;
+    }): Promise<{
+        readonly has_simple_form: boolean;
+        readonly message: string;
+        readonly caution: string;
+        readonly values: Readonly<Record<string, number>>;
+    }> {
+        return z
+            .object({
+                has_simple_form: z.boolean(),
+                message: z.string(),
+                caution: z.string(),
+                values: z.record(z.string(), z.number()),
+            })
+            .parse(
+                await request('/api/synthetic/convert/ir', {
                     method: 'POST',
                     headers: JSON_HEADERS,
                     body: JSON.stringify(input),
@@ -1201,18 +1408,28 @@ export const api = {
     async feedTicks(
         id: string,
         limit: number,
+        resource: 'fx-feeds' | 'ir-curve-feeds' = 'fx-feeds',
     ): Promise<{
         readonly sourceName: string;
-        readonly ticks: readonly { readonly at: string; readonly value: number }[];
+        readonly ticks: readonly {
+            readonly at: string;
+            readonly value: number;
+            readonly uri: string;
+        }[];
     }> {
         return z
             .object({
                 sourceName: z.string(),
-                ticks: z.array(z.object({ at: z.string(), value: z.number() })),
+                ticks: z.array(
+                    z.object({ at: z.string(), value: z.number(), uri: z.string().default('') }),
+                ),
             })
             .parse(
                 await request(
-                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?limit=${String(limit)}`,
+                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?${new URLSearchParams({
+                        limit: String(limit),
+                        resource,
+                    }).toString()}`,
                     { method: 'GET' },
                 ),
             );
@@ -1697,6 +1914,34 @@ export const api = {
      */
     async grid(): Promise<GridView> {
         return gridViewSchema.parse(await request('/api/operations/grid', { method: 'GET' }));
+    },
+
+    /**
+     * The grid's samples over a range, as columns on one time axis.
+     *
+     * The range travels as a preset, as the bus and logs ranges do, because the
+     * window and the bucket width are the deployment's to compute. The reply
+     * holds the grid counters per bucket and one row of buckets per node, and a
+     * bucket with no sample says so through its samples column.
+     */
+    async gridSeries(range: SeriesRange): Promise<GridSeriesView> {
+        const query = new URLSearchParams({ range });
+        return gridSeriesViewSchema.parse(
+            await request(`/api/operations/grid/series?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Who uses the grid: the work counted by tenant for an operator, and by
+     * party for a tenant's administrator.
+     *
+     * The call names no scope. The server reads the session and decides which
+     * rows the caller may count and how to group them.
+     */
+    async gridUsage(): Promise<GridUsageView> {
+        return gridUsageViewSchema.parse(
+            await request('/api/operations/grid/usage', { method: 'GET' }),
+        );
     },
 
     /**

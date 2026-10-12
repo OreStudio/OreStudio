@@ -275,12 +275,12 @@ TEST_CASE("mapper_reverse_swap_carries_the_digits_of_a_stored_rate", tags) {
     const auto t = load_first_trade("IR_Swap_Vanilla.xml");
     const auto result = swap_instrument_mapper::forward_swap(t);
 
-    const auto reconstructed =
-        swap_instrument_mapper::reverse_swap(result.header,
-                                             std::get<ores::trading::domain::vanilla_swap_instrument>(result.facts),
-                                             result.legs,
-                                             result.leg_amounts,
-                                             result.leg_rates);
+    const auto reconstructed = swap_instrument_mapper::reverse_swap(
+        result.header,
+        std::get<ores::trading::domain::vanilla_swap_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates);
 
     REQUIRE(reconstructed.SwapData);
     const auto& leg = reconstructed.SwapData->LegData.at(0);
@@ -308,7 +308,8 @@ TEST_CASE("mapper_reverse_capfloor_carries_the_digits_of_a_stored_strike", tags)
 
     REQUIRE(reconstructed.CapFloorData);
     const auto& cf = *reconstructed.CapFloorData;
-    CHECK(ores::utility::decimal::decimal::from_string(cf.LegData.Notionals.Notional.at(0).lexical()) ==
+    CHECK(ores::utility::decimal::decimal::from_string(
+              cf.LegData.Notionals.Notional.at(0).lexical()) ==
           ores::utility::decimal::decimal::from_string("3000000"));
     REQUIRE(cf.Caps);
     CHECK(cf.Caps->Cap.at(0).lexical() == "0.025");

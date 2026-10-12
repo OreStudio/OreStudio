@@ -38,6 +38,8 @@ std::vector<ores::diff::domain::field_value> render_result_fields(const domain::
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID",
+                      .value = v.party_id ? boost::uuids::to_string(*v.party_id) : std::string{}});
     fields.push_back({.name = "Workunit ID", .value = boost::uuids::to_string(v.workunit_id)});
     fields.push_back({.name = "Host ID", .value = boost::uuids::to_string(v.host_id)});
     fields.push_back({.name = "Server State", .value = std::to_string(v.server_state)});

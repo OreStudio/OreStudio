@@ -123,17 +123,14 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
 
 } // namespace
 
-std::string ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
-    auto family = cfg.index_family;
-    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
-        return static_cast<char>(std::toupper(c));
-    });
-    return cfg.currency_code + "/" + (cfg.tenor.empty() ? family : family + "-" + cfg.tenor);
+std::string ir_curve_index_tenor(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
+    return cfg.tenor.empty() || cfg.tenor == "FOMC" ? std::string("1D") : cfg.tenor;
 }
 
-std::string ir_curve_tenor_convention_code(const std::string& qualifier) {
-    return qualifier.ends_with("-FOMC") ? std::string("RATES_SPOT_FOMC") :
-                                          std::string("RATES_SPOT_FORWARD");
+std::string
+ir_curve_tenor_convention_code(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
+    return cfg.tenor == "FOMC" ? std::string("RATES_SPOT_FOMC") :
+                                 std::string("RATES_SPOT_FORWARD");
 }
 
 std::vector<ir_curve_resolved_entry>

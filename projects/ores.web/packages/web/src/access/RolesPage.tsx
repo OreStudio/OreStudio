@@ -29,6 +29,7 @@ import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { AreaFilter } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { rolePath } from '../shell/paths.js';
 import { RefreshQueries } from '../ui/RefreshButton.js';
 
@@ -82,11 +83,20 @@ export function RolesPage(): ReactNode {
         placeholderData: keepPreviousData,
     });
 
-    if (page.isError) {
-        return <Notice tone="error">{page.error.message}</Notice>;
-    }
-    if (page.data === undefined) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    if (page.isError || page.data === undefined) {
+        return (
+            <ScreenFrame
+                trail={<AreaTrail area="organisation" screen={t('access.roles.title')} />}
+                title={t('access.roles.title')}
+                description={t('access.roles.lead')}
+            >
+                {page.isError ? (
+                    <Notice tone="error">{page.error.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
     const { roles, totalCount, serviceHidden, areas } = page.data;
     const { first, last } = pageBounds(offset, roles.length);

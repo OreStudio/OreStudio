@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 30D31E66-B7D0-429D-8D60-4D73EC32C82C
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.commodity_volatility_config
 #+description: Codegen entity model for the refdata =commodity_volatility_config= table. The settings of one ORE commodity volatility.

@@ -76,7 +76,27 @@ std::vector<book_line_outcome> to_outcomes(const service::book_preview& preview)
                        .operation = l.operation,
                        .entity_id = l.entity_id,
                        .columns = l.columns,
-                       .refusal = l.refusal});
+                       .refusal = l.refusal,
+                       .part_codes = l.part_codes});
+    }
+    return out;
+}
+
+std::vector<book_change_delta> to_deltas(const std::vector<service::line_delta>& deltas) {
+    std::vector<book_change_delta> out;
+    out.reserve(deltas.size());
+    for (const auto& d : deltas) {
+        book_change_delta wire{.line_no = d.line_no,
+                               .operation = d.operation,
+                               .entity_id = d.entity_id,
+                               .base_version = d.base_version,
+                               .applied = d.applied,
+                               .fields = {}};
+        for (const auto& f : d.fields) {
+            wire.fields.push_back(book_field_delta{
+                .name = f.name, .before = f.before, .after = f.after, .changed = f.changed});
+        }
+        out.push_back(std::move(wire));
     }
     return out;
 }

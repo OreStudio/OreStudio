@@ -119,6 +119,7 @@ to_domain(const messaging::counterparty_contact_information_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_counterparty_contact_informations_response

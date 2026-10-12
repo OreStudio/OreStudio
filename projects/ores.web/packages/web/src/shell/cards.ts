@@ -20,6 +20,7 @@
  */
 
 import type { IconName } from '../ui/Icon.js';
+import { DEPLOYMENT_READ } from '@ores/contracts';
 import { PATHS } from './paths.js';
 import type { MenuItem } from './areas.js';
 
@@ -31,7 +32,7 @@ import type { MenuItem } from './areas.js';
  * same line about it and the same glyph wherever it is offered. A screen that
  * needs a read says so here, and the read decides who sees the card.
  */
-export interface CardDef extends Pick<MenuItem, 'permission' | 'scope'> {
+export interface CardDef extends Pick<MenuItem, 'permission'> {
     readonly titleKey: string;
     readonly bodyKey: string;
     readonly to: string;
@@ -139,6 +140,14 @@ export const CARDS = {
         permission: 'synthetic::fx_spot_generation_configs:read',
         screenTitleKey: 'marketdata.fxFeeds.title',
     },
+    irFeeds: {
+        titleKey: 'marketdata.area.screens.irFeeds',
+        bodyKey: 'marketdata.area.screens.irFeedsBody',
+        to: '/market-data/ir-feeds',
+        icon: 'trend',
+        permission: 'synthetic::ir_curve_generation_configs:read',
+        screenTitleKey: 'marketdata.irFeeds.title',
+    },
     curveEvolution: {
         titleKey: 'market.evolution.title',
         bodyKey: 'marketdata.area.screens.evolutionBody',
@@ -184,7 +193,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.servicesBody',
         to: '/operations/services',
         icon: 'server',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.services.title',
     },
     grid: {
@@ -192,7 +201,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.gridBody',
         to: '/operations/grid',
         icon: 'apps',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.grid.title',
     },
     bus: {
@@ -200,7 +209,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.busBody',
         to: '/operations/bus',
         icon: 'bus',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.bus.title',
     },
     logs: {
@@ -208,7 +217,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.logsBody',
         to: '/operations/logs',
         icon: 'log',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.logs.title',
     },
     signIns: {
@@ -231,7 +240,7 @@ export const CARDS = {
         bodyKey: 'home.system.tenantsLead',
         to: '/tenants',
         icon: 'party',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'tenants.title',
     },
     myAccess: {
@@ -269,12 +278,21 @@ export const AREA_CARDS = {
         'conventions',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
-    marketdata: ['fxFeeds', 'curveEvolution'],
+    marketdata: ['fxFeeds', 'irFeeds', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;
 
 export type CardArea = keyof typeof AREA_CARDS;
+
+/** The address of each area's page, which is also the start of every address inside it. */
+export const AREA_PAGE: Record<CardArea, string> = {
+    refdata: PATHS.refdata,
+    organisation: PATHS.organisation,
+    marketdata: '/market-data',
+    operations: PATHS.operations,
+    tenants: '/tenants',
+};
 
 /** The cards of a person's own account, which Home offers beside the areas. */
 export const ACCOUNT_CARDS: readonly CardId[] = ['myAccess', 'security'];
@@ -282,6 +300,16 @@ export const ACCOUNT_CARDS: readonly CardId[] = ['myAccess', 'security'];
 /** The definition of one card. */
 export function cardOf(id: CardId): CardDef {
     return CARDS[id];
+}
+
+/**
+ * The area a card's screen belongs to. A workflow listed on the screen it acts
+ * on has no area page of its own, so its area is that screen's. A card of a
+ * person themselves has none.
+ */
+export function screenAreaOf(id: CardId): CardArea | undefined {
+    const on = (CARDS[id] as CardDef).on;
+    return areaOfCard(id) ?? (on === undefined ? undefined : areaOfCard(on as CardId));
 }
 
 /** The area whose page draws this card, or undefined for a card outside the areas. */

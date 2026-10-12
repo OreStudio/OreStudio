@@ -153,6 +153,7 @@ to_domain(const messaging::commodity_future_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_commodity_future_conventions_response

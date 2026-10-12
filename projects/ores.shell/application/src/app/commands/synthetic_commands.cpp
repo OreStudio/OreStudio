@@ -307,9 +307,8 @@ resolve_folder_id(std::ostream& out, nats_client& session, const std::string& to
 struct resolved_feed {
     std::string config_id;
     std::string source_name;
-    // FX feeds only; IR curve configs have no ore key. validate_vintage
-    // prints it.
-    std::optional<std::string> ore_key;
+    // The config's oresmd URI. validate_vintage prints it.
+    std::optional<std::string> oresmd_uri;
 };
 
 // The result of probing one feed family for an exact name match: a
@@ -324,12 +323,12 @@ struct exact_match_result {
 // Resolve an exact name match within one feed family. A single match
 // yields the feed identity; several matches are reported ambiguous,
 // listing each matching feed's source_name, and yield nothing.
-template <typename Config, typename NameMatch, typename OreKeyOf>
+template <typename Config, typename NameMatch, typename OresmdUriOf>
 exact_match_result exact_feed_match(std::ostream& out,
                                     const std::vector<Config>& configs,
                                     const std::string& token,
                                     NameMatch is_name_match,
-                                    OreKeyOf ore_key_of) {
+                                    OresmdUriOf oresmd_uri_of) {
     std::vector<Config> exact;
     for (const auto& c : configs)
         if (is_name_match(c))
@@ -337,7 +336,7 @@ exact_match_result exact_feed_match(std::ostream& out,
     if (exact.size() == 1)
         return exact_match_result{resolved_feed{boost::uuids::to_string(exact.front().id),
                                                 exact.front().source_name,
-                                                ore_key_of(exact.front())}};
+                                                oresmd_uri_of(exact.front())}};
     if (exact.size() > 1) {
         std::vector<std::string> labels;
         for (const auto& c : exact)
@@ -349,22 +348,22 @@ exact_match_result exact_feed_match(std::ostream& out,
 }
 
 // Find the config whose id matches the needle within one feed family.
-template <typename Config, typename OreKeyOf>
+template <typename Config, typename OresmdUriOf>
 std::optional<resolved_feed>
-feed_by_id(const std::vector<Config>& configs, const std::string& needle, OreKeyOf ore_key_of) {
+feed_by_id(const std::vector<Config>& configs, const std::string& needle, OresmdUriOf oresmd_uri_of) {
     for (const auto& c : configs)
         if (boost::uuids::to_string(c.id) == needle)
-            return resolved_feed{needle, c.source_name, ore_key_of(c)};
+            return resolved_feed{needle, c.source_name, oresmd_uri_of(c)};
     return std::nullopt;
 }
 
-// Resolve a feed token -- UUID, exact ore key or exact source_name --
+// Resolve a feed token -- UUID, exact oresmd URI or exact source_name --
 // to its config identity, of any asset class. The shell probes the FX
 // config family first, then the IR curve family -- the server's own
 // kind resolution probes the repositories in the same order, so a
 // token matching both families, config ids and source_names alike,
 // resolves to the feed the server would start. A token shared by
-// several visible feeds (e.g. the same ore key under different
+// several visible feeds (e.g. the same oresmd URI under different
 // collections) is reported as ambiguous, listing each feed's
 // source_name.
 std::optional<resolved_feed>
@@ -386,15 +385,15 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
     if (id) {
         if (const auto found = feed_by_id(fx_result->fx_spot_generation_configs,
                                           boost::uuids::to_string(*id),
-                                          [](const auto& c) { return c.ore_key; }))
+                                          [](const auto& c) { return c.oresmd_uri; }))
             return found;
     } else {
         const auto matched = exact_feed_match(
             out,
             fx_result->fx_spot_generation_configs,
             token,
-            [&token](const auto& c) { return c.ore_key == token || c.source_name == token; },
-            [](const auto& c) { return c.ore_key; });
+            [&token](const auto& c) { return c.oresmd_uri == token || c.source_name == token; },
+            [](const auto& c) { return c.oresmd_uri; });
         if (matched.feed || matched.ambiguous)
             return matched.feed;
     }
@@ -1322,7 +1321,7 @@ bool synthetic_commands::validate_vintage(std::ostream& out,
     if (!feed)
         return false;
     const auto& feed_id = feed->config_id;
-    const std::string ore_key = feed->ore_key ? " (" + *feed->ore_key + ")" : "";
+    const std::string oresmd_uri = feed->oresmd_uri ? " (" + *feed->oresmd_uri + ")" : "";
 
     marketdata::messaging::get_vintage_validity_request req;
     auto result = do_auth_request<marketdata::messaging::get_vintage_validity_response>(
@@ -1338,16 +1337,16 @@ bool synthetic_commands::validate_vintage(std::ostream& out,
         if (e.config_id != feed_id)
             continue;
         if (!e.applicable) {
-            out << "⚠ Vintage check not applicable to feed " << feed->source_name << ore_key
+            out << "⚠ Vintage check not applicable to feed " << feed->source_name << oresmd_uri
                 << " (fixed price source)." << std::endl;
             return true;
         }
         if (e.valid) {
-            out << "✓ Vintage data available for feed " << feed->source_name << ore_key << "."
+            out << "✓ Vintage data available for feed " << feed->source_name << oresmd_uri << "."
                 << std::endl;
             return true;
         }
-        fail(out) << "Vintage data missing for feed " << feed->source_name << ore_key << "."
+        fail(out) << "Vintage data missing for feed " << feed->source_name << oresmd_uri << "."
                   << std::endl;
         return false;
     }
@@ -1589,7 +1588,8 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
     write.base_currency_code = base;
     write.quote_currency_code = quote;
     write.source_name = source_name;
-    write.ore_key = "FX/RATE/" + base + "/" + quote;
+    write.oresmd_uri =
+        "oresmd://fx/" + base + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + quote;
     // The preview reads the opening price from the config, so the authored feed
     // states it rather than depending on a vintage the setup cannot read.
     write.price_source = "fixed";

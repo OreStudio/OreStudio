@@ -21,6 +21,7 @@
 #define ORES_DATABASE_REPOSITORY_MAPPER_HELPERS_HPP
 
 #include "ores.database/repository/db_types.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
@@ -141,6 +142,32 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
  */
 inline std::chrono::system_clock::time_point timestamp_to_timepoint(const db_timestamp& ts) {
     return platform::time::datetime::from_iso8601_utc(ts.str() + "+00");
+}
+
+/**
+ * @brief The instant a bitemporal row stopped being valid, when it has stopped.
+ *
+ * A row that is current ends at the maximum timestamp, which stands for
+ * "never" and is not an instant anyone means. A row whose end is any other
+ * value was closed or replaced at that instant. Reading the end through here
+ * keeps the sentinel in one place, so a caller never compares a timestamp with
+ * it, and never reads the sentinel as the year 9999.
+ *
+ * The sentinel is compared as text, before any conversion: a
+ * std::chrono::system_clock::time_point counts nanoseconds and cannot hold
+ * the year 9999, so converting the sentinel first would overflow.
+ *
+ * @param valid_to The row's valid_to, as the entity holds it
+ * @return The instant the row ended, or nothing while it is current
+ *
+ * @example
+ * row.closed_at = validity_end(entity.valid_to);
+ */
+inline std::optional<std::chrono::system_clock::time_point>
+validity_end(const db_timestamp& valid_to) {
+    if (valid_to.str() == MAX_TIMESTAMP_NAIVE)
+        return std::nullopt;
+    return timestamp_to_timepoint(valid_to);
 }
 
 /**

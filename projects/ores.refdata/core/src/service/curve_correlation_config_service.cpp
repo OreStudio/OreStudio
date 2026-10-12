@@ -120,6 +120,7 @@ domain::curve_correlation_config to_domain(const messaging::curve_correlation_co
     return v;
 }
 
+
 }
 
 messaging::list_curve_correlation_configs_response

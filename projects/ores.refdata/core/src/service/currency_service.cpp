@@ -121,6 +121,7 @@ domain::currency to_domain(const messaging::currency_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_currencies_response

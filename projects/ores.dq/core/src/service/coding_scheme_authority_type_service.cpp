@@ -105,6 +105,7 @@ to_domain(const messaging::coding_scheme_authority_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_coding_scheme_authority_types_response

@@ -92,8 +92,8 @@ public:
     const std::string& source_name() const override {
         return source_;
     }
-    const std::string& qualifier() const override {
-        return qualifier_;
+    const std::vector<std::string>& series_uris() const override {
+        return series_uris_;
     }
     const std::string& role() const override {
         return role_;
@@ -103,9 +103,6 @@ public:
     }
     std::string_view kind() const override {
         return stub_kind_name;
-    }
-    std::string conflict_key() const override {
-        return ores::marketdata::domain::feed_conflict_key(qualifier_, role_);
     }
     std::uint64_t publish_count() const override {
         return 0;
@@ -120,7 +117,7 @@ public:
 
 private:
     std::string source_;
-    std::string qualifier_;
+    std::vector<std::string> series_uris_;
     std::string role_;
     std::string subject_;
     std::atomic<bool> stop_{false};

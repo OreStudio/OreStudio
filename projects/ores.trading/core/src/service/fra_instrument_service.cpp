@@ -110,6 +110,7 @@ domain::fra_instrument to_domain(const messaging::fra_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fra_instruments_response fra_instrument_service::list_fra_instruments(

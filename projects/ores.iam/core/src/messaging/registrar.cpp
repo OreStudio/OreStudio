@@ -86,6 +86,7 @@
 #include "ores.iam.core/messaging/account_contact_information_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/account_credential_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/account_history_provider_registrar.hpp"
+#include "ores.iam.core/messaging/account_party_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/account_type_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/role_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/run_grant_history_provider_registrar.hpp"
@@ -688,6 +689,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         // history-provider-registrar facet).
         register_account_contact_information_history_provider(hist_registry);
         register_account_history_provider(hist_registry);
+        register_account_party_history_provider(hist_registry);
         register_account_credential_history_provider(hist_registry);
         register_role_grant_request_history_provider(hist_registry);
         register_account_type_history_provider(hist_registry);

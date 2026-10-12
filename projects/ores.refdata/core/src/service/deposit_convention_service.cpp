@@ -108,6 +108,7 @@ domain::deposit_convention to_domain(const messaging::deposit_convention_write& 
     return v;
 }
 
+
 }
 
 messaging::list_deposit_conventions_response deposit_convention_service::list_deposit_conventions(

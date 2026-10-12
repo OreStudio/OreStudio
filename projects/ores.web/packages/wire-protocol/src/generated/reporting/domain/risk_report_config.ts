@@ -34,7 +34,10 @@ export interface RiskReportConfig {
     version: number;
     tenant_id: string;
     id: string;
-    report_definition_id: string;
+    party_id: string;
+    name: string;
+    description: string;
+    configuration_id: string;
     base_currency: string;
     observation_model: string;
     n_threads: number;
@@ -50,6 +53,12 @@ export interface RiskReportConfig {
     parametric_var_enabled: number;
     initial_margin_enabled: number;
     pfe_enabled: number;
+    portfolio_details_enabled: number;
+    saccr_enabled: number;
+    calibration_enabled: number;
+    credit_curves_enabled: number;
+    historical_var_enabled: number;
+    pnl_explain_enabled: number;
     xva_quantile: number;
     xva_cva_enabled: number;
     xva_dva_enabled: number;

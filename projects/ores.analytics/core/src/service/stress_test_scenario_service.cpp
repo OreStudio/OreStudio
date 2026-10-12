@@ -109,6 +109,7 @@ domain::stress_test_scenario to_domain(const messaging::stress_test_scenario_wri
     return v;
 }
 
+
 }
 
 messaging::list_stress_test_scenarios_response

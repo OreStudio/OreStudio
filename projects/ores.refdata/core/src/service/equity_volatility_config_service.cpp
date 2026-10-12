@@ -117,6 +117,7 @@ domain::equity_volatility_config to_domain(const messaging::equity_volatility_co
     return v;
 }
 
+
 }
 
 messaging::list_equity_volatility_configs_response

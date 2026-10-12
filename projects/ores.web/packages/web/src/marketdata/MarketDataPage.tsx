@@ -31,7 +31,7 @@ import { PageHeader } from '../ui/Primitives.js';
  * generates. Its cards come from the one registry that every area and Home draw
  * from, and each is drawn for a person who holds the read of its screen.
  */
-export function MarketDataPage({ mode }: { readonly mode: SessionMode }): ReactNode {
+export function MarketDataPage(): ReactNode {
     const { t } = useTranslation();
     return (
         <div className="space-y-6">
@@ -42,7 +42,7 @@ export function MarketDataPage({ mode }: { readonly mode: SessionMode }): ReactN
                     description={t('marketdata.area.lead')}
                 />
             </div>
-            <AreaCards area="marketdata" mode={mode} />
+            <AreaCards area="marketdata" />
         </div>
     );
 }

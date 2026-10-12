@@ -394,8 +394,10 @@ make_step(const provision_tenant_workflow_request& run,
         return {provision_party_step_kind};
     if (kind == attach_photos_step_kind)
         return {load_staff_step_kind, provision_party_step_kind};
+    // The feeds bind every party the tenant holds, so the parties the import
+    // creates must exist first; a party created after the step is never bound.
     if (kind == start_market_feeds_step_kind)
-        return {publish_bundle_step_kind};
+        return {provision_party_step_kind, publish_bundle_step_kind};
     if (kind == start_tenant_setup_step_kind)
         return {system_provision_step_kind};
     return {};

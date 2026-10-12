@@ -25,9 +25,9 @@
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.inbox.service/app/application_exception.hpp"
-#include "ores.inbox.service/app/nats_apply_engine.hpp"
 #include "ores.inbox.service/app/approval_sweep_schedule.hpp"
 #include "ores.inbox.service/app/approval_windows.hpp"
+#include "ores.inbox.service/app/nats_apply_engine.hpp"
 #include "ores.inbox.service/messaging/approval_decision_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_decision_type_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_kind_event_registrar.hpp"
@@ -152,8 +152,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     const sweep apply_retry_sweep{
         .setting_name = "inbox.apply_retry.schedule",
         .job_name = "ores.inbox.apply_retry",
-        .subject =
-            std::string(ores::inbox::messaging::retry_stalled_applies_request::nats_subject),
+        .subject = std::string(ores::inbox::messaging::retry_stalled_applies_request::nats_subject),
         .description = "Resume the approved requests whose apply stopped, and end the ones whose "
                        "window ran out"};
     approval_sweep_schedule apply_retry(svc_nats, apply_retry_sweep);

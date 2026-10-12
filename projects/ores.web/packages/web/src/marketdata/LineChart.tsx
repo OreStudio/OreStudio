@@ -50,6 +50,12 @@ export interface ChartSeries {
     readonly strong?: boolean;
     /** Shades the area under the line, for the one series a chart is about. */
     readonly fill?: boolean;
+    /** How opaque the series is, from 0 to 1; a curve fades with age. */
+    readonly opacity?: number;
+    /** Draws a dot at each point, as a chart of a few points does. */
+    readonly dots?: boolean;
+    /** The width of the line, when neither the default nor `strong` fits. */
+    readonly width?: number;
 }
 
 /** Where a value falls between the low and high ends, in chart units; a flat range sits in the middle. */
@@ -72,6 +78,8 @@ export function LineChart({
     xFormat,
     label,
     price = false,
+    categories,
+    padding = 0,
 }: {
     readonly series: readonly ChartSeries[];
     readonly xs?: readonly number[];
@@ -80,9 +88,17 @@ export function LineChart({
     /** What the chart shows, for a reader that does not see it. */
     readonly label: string;
     readonly price?: boolean;
+    /**
+     * Names the points of a chart whose x axis is a list and not a scale, such
+     * as the tenors of a curve: every name is drawn under its point, and the
+     * points are spaced evenly.
+     */
+    readonly categories?: readonly string[];
+    /** How far past the low and the high values the y axis reaches, as a share of their range. */
+    readonly padding?: number;
 }): ReactNode {
     const width = useWidth();
-    const length = xs?.length ?? series[0]?.points.length ?? 0;
+    const length = categories?.length ?? xs?.length ?? series[0]?.points.length ?? 0;
     if (length < 2) {
         return null;
     }
@@ -90,8 +106,14 @@ export function LineChart({
     const right = price ? AXIS_MARGIN : BARE_MARGIN;
     const xAt = xs ?? Array.from({ length }, (_, i) => i);
     const values = series.flatMap((one) => one.points);
-    const low = Math.min(...values);
-    const high = Math.max(...values);
+    const lowest = Math.min(...values);
+    const highest = Math.max(...values);
+    const room =
+        highest === lowest
+            ? Math.max(Math.abs(highest) * 0.0005, 1e-6)
+            : (highest - lowest) * padding;
+    const low = lowest - room;
+    const high = highest + room;
     const xLow = xAt[0] ?? 0;
     const xHigh = xAt[length - 1] ?? 1;
     const xOf = (i: number): number => scale(xAt[i] ?? i, xLow, xHigh, left, width.value - right);
@@ -161,17 +183,31 @@ export function LineChart({
                         {format(level)}
                     </text>
                 ))}
-                <text x={left} y={HEIGHT - 6}>
-                    {showX(xLow)}
-                </text>
-                {price && (
+                {categories === undefined && (
+                    <text x={left} y={HEIGHT - 6}>
+                        {showX(xLow)}
+                    </text>
+                )}
+                {categories?.map((name, i) => (
+                    <text
+                        key={`${name}-${String(i)}`}
+                        x={xOf(i)}
+                        y={HEIGHT - 6}
+                        textAnchor="middle"
+                    >
+                        {name}
+                    </text>
+                ))}
+                {categories === undefined && price && (
                     <text x={(left + width.value - right) / 2} y={HEIGHT - 6} textAnchor="middle">
                         {showX((xLow + xHigh) / 2)}
                     </text>
                 )}
-                <text x={width.value - right} y={HEIGHT - 6} textAnchor="end">
-                    {showX(xHigh)}
-                </text>
+                {categories === undefined && (
+                    <text x={width.value - right} y={HEIGHT - 6} textAnchor="end">
+                        {showX(xHigh)}
+                    </text>
+                )}
             </g>
             {series.map((one, i) =>
                 one.fill === true ? (
@@ -190,11 +226,26 @@ export function LineChart({
                     d={pathOf(one.points)}
                     fill="none"
                     stroke={one.colour}
-                    strokeWidth={one.strong === true ? 2.4 : 1.4}
+                    strokeWidth={one.width ?? (one.strong === true ? 2.4 : 1.4)}
+                    {...(one.opacity === undefined ? {} : { strokeOpacity: one.opacity })}
                     {...(one.dashed === true ? { strokeDasharray: '4 3' } : {})}
                     vectorEffect="non-scaling-stroke"
                 />
             ))}
+            {series.map((one, i) =>
+                one.dots === true
+                    ? one.points.map((value, j) => (
+                          <circle
+                              key={`dot-${String(i)}-${String(j)}`}
+                              cx={xOf(j)}
+                              cy={yOf(value)}
+                              r={one.strong === true ? 3.5 : 2.5}
+                              fill={one.colour}
+                              {...(one.opacity === undefined ? {} : { fillOpacity: one.opacity })}
+                          />
+                      ))
+                    : null,
+            )}
         </svg>
     );
 }

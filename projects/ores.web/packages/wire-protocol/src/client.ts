@@ -94,6 +94,12 @@ import {
     serviceRosterRequestSchema,
     gridStatsReplySchema,
     gridStatsRequestSchema,
+    gridSeriesReplySchema,
+    gridSeriesRequestSchema,
+    gridUsageReplySchema,
+    gridUsageRequestSchema,
+    nodeSeriesReplySchema,
+    nodeSeriesRequestSchema,
     listHostsReplySchema,
     listHostsRequestSchema,
     natsServerSamplesReplySchema,
@@ -125,7 +131,10 @@ import {
     type SeedProfileChoice,
     type WireAccountPage,
     type WorkflowProgress,
+    type GridSeriesReply,
+    type GridUsageReply,
     type GridStatsReply,
+    type NodeSeriesReply,
 } from './operations.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
 import { subjects as variabilityOperationSubjects } from './generated/variability/protocol/operations_protocol.js';
@@ -1105,6 +1114,84 @@ export class OresClient {
         );
         if (!reply.success) {
             throw new OperationFailedError(SUBJECTS.gridStats, reply.message);
+        }
+        return reply;
+    }
+
+    /**
+     * The stored grid samples between two instants, as columns in buckets.
+     *
+     * The range widens to whole buckets counted from the epoch, and the reply
+     * states where its first bucket starts. A refusal the read states in its
+     * body, such as a range that needs too many buckets, is an error: an empty
+     * series is the answer a quiet range gives, and a refusal must not read as
+     * one.
+     */
+    async gridSeries(input: {
+        readonly startTime: WireTimestamp;
+        readonly endTime: WireTimestamp;
+        readonly bucketSeconds: number;
+    }): Promise<GridSeriesReply> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.gridSeries,
+            gridSeriesRequestSchema.parse({
+                start_time: input.startTime,
+                end_time: input.endTime,
+                bucket_seconds: input.bucketSeconds,
+            }),
+            gridSeriesReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.gridSeries, reply.message);
+        }
+        return reply;
+    }
+
+    /**
+     * Who uses the grid, with the work counted by tenant or by party.
+     *
+     * The read takes no fields: the session decides the scope and the
+     * grouping, so a client cannot ask for a wider one. A refusal the read
+     * states in its body is an error rather than an empty usage, because an
+     * empty usage would read as a grid nobody uses.
+     */
+    async gridUsage(): Promise<GridUsageReply> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.gridUsage,
+            gridUsageRequestSchema.parse({}),
+            gridUsageReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.gridUsage, reply.message);
+        }
+        return reply;
+    }
+
+    /**
+     * The stored node samples between two instants, as columns in buckets.
+     *
+     * The nodes are listed once and every column is nodes times buckets,
+     * row-major. It reads on the grid series' axis, so the two replies line up.
+     */
+    async nodeSeries(input: {
+        readonly startTime: WireTimestamp;
+        readonly endTime: WireTimestamp;
+        readonly bucketSeconds: number;
+    }): Promise<NodeSeriesReply> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.nodeSeries,
+            nodeSeriesRequestSchema.parse({
+                start_time: input.startTime,
+                end_time: input.endTime,
+                bucket_seconds: input.bucketSeconds,
+            }),
+            nodeSeriesReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.nodeSeries, reply.message);
         }
         return reply;
     }

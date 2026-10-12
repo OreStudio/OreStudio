@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: F718C10F-4C0E-4AAF-9802-6A52A30498AC
+:END:
+#+title: Task: Project the identities a publish seeds
+#+description: Extract the identity backfill into one function and call it from the data quality publish handler once the SQL function has inserted series.
+#+type: task
+#+level: s1
+#+filetags: :provisioning_projects_seeded_series_identities:sprint_27:v0:
+#+owner: marco
+#+branch: feature/project-the-identities-a-publish-seeds
+#+pr: 3169
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:22F9E0F3-6AAA-4C97-B648-0605F49ACD00][Project the identities of the series a publish seeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A series a publish seeds has its identity row as soon as the publish completes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:22F9E0F3-6AAA-4C97-B648-0605F49ACD00][Project the identities of the series a publish seeds]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The backfill command and the publish handler call one function.
+- A test with a series lacking its identity row shows it projected, a projected series left alone, and a second call writing nothing.
+- On a running stack, a published dataset's series are listed by the picker with no manual backfill.
+
+* Plan
+
+Move the "project the series that have no identity row" logic out of the backfill handler into the projector as
+=project_missing=. Call it from the backfill handler and from the data quality publish handler, once the SQL
+function has inserted or updated series, for the tenant the command names. Test it against series inserted by
+raw SQL, which is how the publish inserts them. Prove it on the running stack with a real publish into a fresh
+tenant.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Acme series published from the FX Driver Rates dataset, with an identity row, before the change | 13 of 65 (the 13 I backfilled by hand) | a join of the series and identity tables, grouped by origin | a48c5f0e3c |
+| Acme IR Deposit Rates series with an identity row, before the change | 0 of 1 | the same query | a48c5f0e3c |
+| New backfill tests | 5 cases pass, 15 assertions | =ores.marketdata.core.tests "[series_identity][backfill]"= | a48c5f0e3c plus the change |
+| Identity, importer, read and repository suites together | 105 cases, 964 assertions, pass in 3 of 3 runs after the review fixes | the same binary with the five tags | a48c5f0e3c plus the change |
+| Backfill command after the refactor, Acme Corporation Plc | "Projected 0 of 19 series" | =marketdata backfill-identity --party= in a shell | a48c5f0e3c plus the change |
+| Fresh tenant after =bundles publish= of the FX dataset, with an identity row | FX Driver Rates 13 of 13, IR Deposit Rates 1 of 1 | the same join, for the new tenant, with no backfill run | a48c5f0e3c plus the change |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3169][#3169]] | [marketdata] Project the identities a publish seeds |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The guard on the function's counts may miss a republish | publish_from_dq_handler.cpp | Accept | A real gap. The function counts observation rows, so a republish whose observations are all skipped says nothing about the series. The guard is gone and the projection always runs, which also repairs earlier unprojected series. Shown on the stack: Acme went from 25 of 78 series projected to 79 of 79 after one republish that skipped every observation. |
+| 2 | The full-tenant scan on every publish | projector.cpp | Decline | Two reads of the tenant's series and identity rows, once per dataset publish. Tenants hold hundreds of series. A SQL anti-join is possible if that changes. |
+| 3 | Updated series are not re-projected | projector.cpp | Decline | The function finds a series by its URI and updates only its observations, so a series' URI never changes. |
+| 4 | An unreadable URI is retried on every call | projector.hpp | Decline, with a test | =project= writes a row for it with its kind and no field value, so it is not missing next time. A new test pins that, and the header says so. |
+| 5 | Two tenant contexts in the handler | publish_from_dq_handler.cpp | Accept | A comment says the command's tenant is the function's target and may differ from the workflow's. |
+| 6 | Test gaps | tests | Accept in part | The unreadable URI test is added. The handler still has no unit test. |
+| - | Run the drift check | marketdata | Accept | It found that I had hand-edited a generated header. Fixed in the model. |
+
+* Result
+
+A series a data quality publish creates now has its identity row as soon as the publish completes. The publish
+handler calls =project_missing= for the tenant the command names, after the SQL function has inserted or
+updated series and before the step reports complete. The picker and the resolver therefore see the seeded series
+in a new environment, with no one running a backfill.
+
+*Cause.* The publish is a SQL function that inserts series directly. The code there says SQL cannot run the
+codec, and the identity projection is read through the codec, so the rows were never written. The backfill
+command existed, kept its logic inline in the handler, and had to be run by hand for each party.
+
+*The change.* =project_missing= finds the series with no identity row and projects them, for the whole tenant or
+one party. The backfill command and the publish handler both call it. It is idempotent: a second call finds
+nothing. A projection that fails fails the publish step, so a missing projection cannot go unseen. The SQL
+function is unchanged, because the codec must stay the only reader of the URI grammar.
+
+*On the running stack.* A real publish of the FX driver rates dataset into a fresh tenant produced 13 FX series
+and 1 IR deposit series, and every one has its identity row. The Acme tenant, published before the change, had
+13 of 65 and 0 of 1.
+
+*A mistake the drift check caught.* I first edited =market_series_handler.hpp= by hand. It is generated from the
+model, so the check regenerated it and restored the old code. The change now lives in the model's backfill handler
+section and the header is regenerated from it. The check also regenerated six marketdata =*_service.cpp= files
+that differ from main by one blank line, because main's generator templates changed and marketdata was not
+regenerated. They are committed here so the drift check passes.
+
+*Left alone.* One system-tenant series, seeded by a SQL populate script, still has no identity row. It belongs
+to the system tenant and no screen lists it.

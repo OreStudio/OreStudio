@@ -26,8 +26,10 @@
  * script is idempotent.
  *
  * The kinds are the global elements of ORE's configuration schemas under
- * external/ore/xsd. The run document is not one of them: a report owns its run
- * setup directly. Trades, portfolios, collateral balances, the script library
+ * external/ore/xsd. The run document is the one kind a report does not read as a
+ * file: risk_report_config holds the run settings the run document is generated
+ * from, shared by the definitions that bind it. Trades, portfolios, collateral
+ * balances, the script library
  * and shared type fragments are not configuration. run_parameter is the
  * parameter a shipped run document uses to name the file, and is null where no
  * shipped run document names one. A version of a kind that already exists keeps
@@ -59,7 +61,8 @@ begin
             (14, 'currency_configuration',   'Currency configuration',   'CurrencyConfig',          'ores.refdata',   'currencyConfiguration'),
             (15, 'ibor_fallback',            'IBOR fallback',            'IborFallbackConfig',      'ores.refdata',   'iborFallbackConfig'),
             (16, 'counterparty_information', 'Counterparty information', 'CounterpartyInformation', 'ores.refdata',   'counterpartyFile'),
-            (17, 'netting_set_definitions',  'Netting set definitions',  'NettingSetDefinitions',   'ores.trading',   'csaFile')
+            (17, 'netting_set_definitions',  'Netting set definitions',  'NettingSetDefinitions',   'ores.trading',   'csaFile'),
+            (18, 'risk_report_config',       'Risk report configuration', 'ORE',                    'ores.reporting', null)
         ) as k(display_order, code, name, ore_root_element, owning_component, run_parameter)
     loop
         -- Every version of a kind that predates the mapping columns, current or

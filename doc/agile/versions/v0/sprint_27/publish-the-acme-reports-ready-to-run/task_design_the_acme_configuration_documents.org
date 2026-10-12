@@ -26,7 +26,7 @@ A report is ready to run only when its four configuration documents exist. Acme 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -85,3 +85,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Retired on 2026-10-11. The task "Store the report configuration documents in DQ and populate ACME's" covers this work in one deliverable: phase A adds the DQ side of the four required kinds, and the ACME datasets follow in its second part.

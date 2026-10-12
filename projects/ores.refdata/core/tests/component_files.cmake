@@ -163,6 +163,7 @@ set(files
     "sandbox_eventing_integration_tests.cpp"
     "sandbox_member_eventing_integration_tests.cpp"
     "series_subclass_code_eventing_integration_tests.cpp"
+    "service_book_gate_tests.cpp"
     "service_book_proposal_as_service_tests.cpp"
     "service_book_proposal_tests.cpp"
     "service_calendar_materialisation_service_tests.cpp"

@@ -196,6 +196,15 @@ _JUNCTION_MESSAGING_FACETS = frozenset({
     "ores.ts.protocol",
 })
 
+# A junction's history is opt-in: the model states ``:history: true``. The
+# provider registrar needs wiring into its component's registrar, so a provider
+# nothing wires would be dead code, and the mapper renders a history row that
+# only a junction with a history reads.
+_JUNCTION_HISTORY_FACETS = frozenset({
+    "ores.cpp.history-provider-registrar",
+    "ores.cpp.presentation",
+})
+
 # The per-entity history-provider registrar renders every version's actor
 # through build_entity_history_versions(), which requires the entity's
 # domain type to carry flat modified_by and recorded_at members. Two
@@ -573,6 +582,13 @@ def resolve_targets(
             gen_facets = {f for f in gen_facets
                           if f not in _JUNCTION_MESSAGING_FACETS
                           and f not in _PROTOCOL_FACETS}
+        if not junction.get("history"):
+            # Hard gate, like the one above: the history facets read the
+            # history row and the history read that only a junction stating
+            # :history: true generates, so an explicit :ores.*.enabled: override
+            # must not re-admit them for one that does not.
+            gen_facets = {f for f in gen_facets
+                          if f not in _JUNCTION_HISTORY_FACETS}
     no_temporal_archetypes: frozenset[str] = frozenset()
     if model_type == "domain_entity":
         entity = model_data.get("domain_entity", {})

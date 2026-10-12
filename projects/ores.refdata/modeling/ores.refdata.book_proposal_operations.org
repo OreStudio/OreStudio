@@ -72,6 +72,18 @@ the rules of the four-eyes framework.
 :cpp_type: std::string
 :END:
 
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parts the policy names for this line alone, which decide it. The
+ * request needs the union over its lines.
+ */
+#+end_src
+
 ** preview_book_changes_request
 :PROPERTIES:
 :subject:  refdata.v1.ops.preview_book_changes
@@ -186,3 +198,160 @@ the rules of the four-eyes framework.
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
+
+** book_field_delta
+
+#+begin_src cpp :name comment
+/**
+ * @brief One column of a proposed line beside the live book's value.
+ *
+ * The values are text whatever the column's type, because a screen draws them
+ * and does not compute with them. The before is empty when the line creates
+ * the book.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** before
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** after
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** changed
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+** book_change_delta
+
+#+begin_src cpp :name comment
+/**
+ * @brief One line of a request as the decider reads it: the operation, the book
+ * it names, and each column beside the live value.
+ */
+#+end_src
+
+*** line_no
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** operation
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** entity_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** base_version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** applied
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+*** fields
+:PROPERTIES:
+:cpp_type: std::vector<book_field_delta>
+:END:
+
+** get_book_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.get_book_changes
+:response: get_book_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the lines a request holds, each beside the live book.
+ *
+ * Answered to the person who raised the request, to whoever may decide its
+ * kind, and to whoever may read the tenant's requests. Answered as not found
+ * otherwise, as opening the request is.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_book_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** changes
+:PROPERTIES:
+:cpp_type: std::vector<book_change_delta>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The lines in line order.
+ */
+#+end_src
+
+** recheck_book_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.recheck_book_changes
+:response: recheck_book_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Runs the lines a request holds through the real write again and
+ * writes nothing.
+ *
+ * The live book may have moved since the request was raised, so the checks a
+ * decider reads are run now. Answered to the same callers as the lines are.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** recheck_book_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<book_line_outcome>
+:END:
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+

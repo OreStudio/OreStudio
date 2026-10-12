@@ -42,7 +42,7 @@ This page is the top of the tree and the only inventory.
 | [[file:../knowledge/journeys/currencies/currencies.org][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs | none yet |
 | [[file:../knowledge/journeys/calendars/calendars.org][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce | none yet |
 | [[file:classifications/][Classifications]] | The short code lists that classify reference data | 1 |
-| [[file:parties/][Parties]] | The tenant's own legal entities and the counterparties it trades with | 2 |
+| [[file:parties/][Parties]] | The tenant's own legal entities and the counterparties it trades with | 3 |
 | [[file:books/][Books and portfolios]] | The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it | 1 |
 | [[file:conventions/][Conventions]] | The market terms an instrument is built on, and the reference data lists each convention picks from | 1 |
 | [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |

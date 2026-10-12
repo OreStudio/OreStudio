@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T02:26:09.491000Z
+' Generated: 2026-10-11T23:20:31.653727Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 105
+Tables: 104
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1551,8 +1551,8 @@ package "trading" #E8F5E9 {
           option_expiry_date : date
           option_strike : numeric(38, 12)
           linked_asset_code : text
-          tranche_attachment : numeric(38, 12)
-          tranche_detachment : numeric(38, 12)
+          tranche_attachment : double
+          tranche_detachment : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

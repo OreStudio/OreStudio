@@ -114,6 +114,7 @@ domain::report_instance to_domain(const messaging::report_instance_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_report_instances_response report_instance_service::list_report_instances(

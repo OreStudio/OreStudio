@@ -123,6 +123,7 @@ domain::inflation_curve_config to_domain(const messaging::inflation_curve_config
     return v;
 }
 
+
 }
 
 messaging::list_inflation_curve_configs_response

@@ -22,6 +22,7 @@
 #include <ctime>
 #include <format>
 #include <iomanip>
+#include <locale>
 #include <sstream>
 #include <stdexcept>
 
@@ -42,6 +43,29 @@ std::string datetime::to_iso8601_utc(const std::chrono::system_clock::time_point
 }
 
 namespace {
+
+/**
+ * Parses text written in a strptime format as a UTC instant.
+ *
+ * The one place a timestamp is read into a std::tm, so no caller handles one.
+ * The C locale is imbued so that a month name is always the English one.
+ * @p shown is what an error quotes, which is the caller's own text and not the
+ * trimmed copy this parses.
+ */
+std::chrono::system_clock::time_point parse_utc_format(const std::string& text,
+                                                       const std::string& format,
+                                                       const char* const who,
+                                                       const std::string& shown) {
+    std::tm tm = {};
+    std::istringstream ss(text);
+    ss.imbue(std::locale::classic());
+    ss >> std::get_time(&tm, format.c_str());
+
+    if (ss.fail())
+        throw std::invalid_argument(std::string(who) + ": failed to parse: " + shown);
+
+    return time_utils::to_time_point_utc(tm);
+}
 
 /**
  * Parses a UTC timestamp carrying either separator.
@@ -77,14 +101,7 @@ parse_utc_timestamp(const std::string& str, const bool designator_required, cons
     if (clean.size() > 10 && clean[10] == 'T')
         clean[10] = ' ';
 
-    std::tm tm = {};
-    std::istringstream ss(clean);
-    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-
-    if (ss.fail())
-        throw std::invalid_argument(std::string(who) + ": failed to parse: " + str);
-
-    return time_utils::to_time_point_utc(tm);
+    return parse_utc_format(clean, "%Y-%m-%d %H:%M:%S", who, str);
 }
 
 }
@@ -95,6 +112,11 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::stri
 
 std::chrono::system_clock::time_point datetime::from_db_string(const std::string& str) {
     return parse_utc_timestamp(str, false, "from_db_string");
+}
+
+std::chrono::system_clock::time_point
+datetime::from_utc_format(const std::string& str, const std::string& format) {
+    return parse_utc_format(str, format, "from_utc_format", str);
 }
 
 std::string datetime::to_db_string(const std::chrono::system_clock::time_point& tp) {

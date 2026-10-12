@@ -1396,6 +1396,73 @@ def _format_columns_for_doxygen(columns):
             col['detail'] = _format_detail_for_doxygen(col['detail'])
 
 
+# How a junction history renders a member of the history row as text. A
+# junction names its link by its sides and may carry columns of its own, and a
+# type with no rendering here is refused rather than left out: a field a history
+# silently omits is a change the history does not show.
+_HISTORY_VALUE_EXPRESSIONS = {
+    'std::string': '{x}',
+    'int': 'std::to_string({x})',
+    'bool': '({x} ? std::string("true") : std::string("false"))',
+    'boost::uuids::uuid': 'boost::uuids::to_string({x})',
+    'std::chrono::year_month_day': 'ores::platform::time::datetime::to_iso8601_date({x})',
+    'std::chrono::system_clock::time_point':
+        'ores::platform::time::datetime::to_iso8601_utc({x})',
+}
+
+
+def history_value_expression(cpp_type, member, owner):
+    """The C++ expression that renders ``member`` of type ``cpp_type`` as text.
+
+    An optional renders as the empty string when it holds no value. A type the
+    table does not name raises, naming the junction and the member.
+    """
+    cpp_type = str(cpp_type or '').strip()
+    optional = re.fullmatch(r'std::optional<(.+)>', cpp_type)
+    if optional:
+        inner = history_value_expression(optional.group(1), f'(*{member})', owner)
+        return f'({member} ? {inner} : std::string())'
+    template = _HISTORY_VALUE_EXPRESSIONS.get(cpp_type)
+    if template is None:
+        raise ValueError(
+            f"{owner}: a junction history cannot render {member} of type "
+            f"'{cpp_type}'. Add the type to _HISTORY_VALUE_EXPRESSIONS in "
+            f"codegen/core.py, or leave :history: off for this junction.")
+    return template.format(x=member)
+
+
+def derive_junction_history(junction):
+    """Derive what a junction's history templates read, from its two sides.
+
+    Sets ``history_parent`` and ``history_child`` (the side the history is read
+    by, and the side that names the link within it), ``history_entity_type``,
+    and on each side and column the expression that renders it and its title.
+    """
+    owner = junction.get('name_singular', '?')
+    left = junction.get('left', {})
+    right = junction.get('right', {})
+    parent_is_right = bool(right.get('list_by')) and not left.get('list_by')
+    junction['history_parent'] = right if parent_is_right else left
+    junction['history_child'] = left if parent_is_right else right
+    junction['history_entity_type'] = (
+        f"{junction.get('product', 'ores')}.{junction.get('component', '')}"
+        f".{junction.get('name_singular', '')}")
+    # The read code the history needs is the junction's own, unless the model
+    # names the code that guards the reads of the rows: a history holds every
+    # version of what those reads serve, so it must not be easier to read.
+    junction['history_read_permission'] = junction.get('history_read_permission') or (
+        f"{junction.get('component', '')}::{junction.get('name', '')}:read")
+    for side in (left, right):
+        side['history_value'] = history_value_expression(
+            side.get('cpp_type'), f"v.link.{side.get('column', '')}", owner)
+    for column in junction.get('columns') or []:
+        name = column.get('name', '')
+        column['history_title'] = name.replace('_', ' ').title()
+        column['history_value'] = history_value_expression(
+            column.get('cpp_type'), f'v.link.{name}', owner)
+    return junction
+
+
 def derive_tenant_read_flags(domain_entity):
     """
     Derive the read-scope boolean every repository template reads, from
@@ -5587,6 +5654,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction.get('left', {}).get('is_uuid', False) or
             junction.get('right', {}).get('is_uuid', False)
         )
+        # A junction that states :history: true gets a history: the versions of
+        # every link of one parent, closed links included, read by the parent
+        # side. See derive_junction_history.
+        if junction.get('history'):
+            derive_junction_history(junction)
         junction['has_date_left_or_right_or_column'] = (
             junction.get('left', {}).get('is_date', False) or
             junction.get('right', {}).get('is_date', False) or

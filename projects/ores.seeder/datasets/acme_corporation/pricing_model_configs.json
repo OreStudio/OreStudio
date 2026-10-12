@@ -1,0 +1,42 @@
+[
+  {
+    "company_code": "acme_group",
+    "id": "1a57ead2-29c3-5220-8423-72aff0672f9b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Group pricing engines",
+    "description": "The model and engine that price each product ACME Corporation Group trades.",
+    "config_variant": "",
+    "configuration_id": "3b4103d0-dead-5caa-b756-e8772782d831"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "UK pricing engines",
+    "description": "The model and engine that price each product ACME Corporation UK trades.",
+    "config_variant": "",
+    "configuration_id": "48af1c3d-0e82-56d8-b1fd-ec489370a036"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "US pricing engines",
+    "description": "The model and engine that price each product ACME Corporation US trades.",
+    "config_variant": "",
+    "configuration_id": "874d6102-068c-5ed2-8f08-9331ae1c0669"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "HK pricing engines",
+    "description": "The model and engine that price each product ACME Corporation HK trades.",
+    "config_variant": "",
+    "configuration_id": "43f95400-fd09-5b4c-a1e8-544a4fedf04d"
+  }
+]

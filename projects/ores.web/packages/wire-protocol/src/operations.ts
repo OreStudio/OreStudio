@@ -60,8 +60,15 @@ import {
 } from './generated/telemetry/protocol/service_samples_protocol.js';
 import {
     subjects as computeTelemetrySubjects,
+    type GetGridSeriesRequest,
+    type GetGridSeriesResponse,
+    type GetGridUsageRequest,
+    type GetGridUsageResponse,
     type GetGridStatsRequest,
     type GetGridStatsResponse,
+    type GetNodeSeriesRequest,
+    type GetNodeSeriesResponse,
+    type NodeSeriesNode,
     type NodeStatsSummary,
 } from './generated/compute/protocol/telemetry_protocol.js';
 import {
@@ -118,6 +125,9 @@ export const SUBJECTS = {
     listImages: imageSubjects.list_images_request,
     serviceRoster: serviceSampleSubjects.get_service_roster_request,
     gridStats: computeTelemetrySubjects.get_grid_stats_request,
+    gridSeries: computeTelemetrySubjects.get_grid_series_request,
+    gridUsage: computeTelemetrySubjects.get_grid_usage_request,
+    nodeSeries: computeTelemetrySubjects.get_node_series_request,
     listHosts: hostSubjects.list_hosts_request,
     natsServerSamples: natsSubjects.get_nats_server_samples_request,
     natsStreamSamples: natsSubjects.get_nats_stream_samples_request,
@@ -1820,6 +1830,200 @@ export const gridStatsReplySchema = z.object({
 
 export type GridStatsReply = z.infer<typeof gridStatsReplySchema>;
 
+/**
+ * One column of a series: a count per bucket, or per node and bucket.
+ *
+ * A reply that leaves a column out is an empty column, never a column of made-up
+ * zeros, because the `samples` column says which cells hold a sample at all.
+ */
+const countColumn = z.array(z.int().nonnegative()).default([]);
+
+/** The ranges the grid series screen offers, and the bucket each one reads at. */
+export const SERIES_RANGES = ['1h', '24h', '7d'] as const;
+export type SeriesRange = (typeof SERIES_RANGES)[number];
+
+/**
+ * `get_grid_series_request`: the grid samples between two instants, in buckets.
+ *
+ * The range widens to whole buckets counted from the epoch, so the reply says
+ * where its first bucket starts.
+ */
+export const gridSeriesRequestSchema = z.object({
+    start_time: z.string(),
+    end_time: z.string(),
+    bucket_seconds: z.int().positive(),
+}) satisfies z.ZodType<GetGridSeriesRequest>;
+
+/** The columns of a grid series: one count per bucket, named as the grid sample names them. */
+const gridSeriesColumns = {
+    samples: countColumn,
+    total_hosts: countColumn,
+    online_hosts: countColumn,
+    idle_hosts: countColumn,
+    results_inactive: countColumn,
+    results_unsent: countColumn,
+    results_in_progress: countColumn,
+    results_done: countColumn,
+    total_workunits: countColumn,
+    total_batches: countColumn,
+    active_batches: countColumn,
+    outcomes_success: countColumn,
+    outcomes_client_error: countColumn,
+    outcomes_no_reply: countColumn,
+};
+
+/**
+ * `get_grid_series_response`: the grid samples as columns on a regular time axis.
+ *
+ * Bucket i starts at `start_time` plus i times `bucket_seconds`. A bucket whose
+ * `samples` entry is 0 holds no sample, and its zeros are not a measurement.
+ */
+export const gridSeriesReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    start_time: text,
+    bucket_seconds: z.int().nonnegative().default(0),
+    bucket_count: z.int().nonnegative().default(0),
+    ...gridSeriesColumns,
+}) satisfies z.ZodType<GetGridSeriesResponse>;
+
+export type GridSeriesReply = z.infer<typeof gridSeriesReplySchema>;
+
+/** `get_grid_usage_request`: who uses the grid. It carries no fields; the session decides the scope. */
+export const gridUsageRequestSchema = z.object({}) satisfies z.ZodType<GetGridUsageRequest>;
+
+/** The columns of a usage: one count per group, in the order of its keys. */
+const gridUsageColumns = {
+    batches: countColumn,
+    workunits: countColumn,
+    results: countColumn,
+    results_unsent: countColumn,
+    results_in_progress: countColumn,
+    results_done: countColumn,
+    outcomes_success: countColumn,
+    outcomes_failed: countColumn,
+};
+
+/**
+ * `get_grid_usage_response`: the grid's work counted by group, as columns.
+ *
+ * The group is a tenant or a party, as `group_kind` says. A system-tenant
+ * session reads every tenant; any other session reads its own tenant and the
+ * parties it acts for. An empty key stands for work with no party.
+ */
+export const gridUsageReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    group_kind: text,
+    keys: z.array(z.string()).default([]),
+    ...gridUsageColumns,
+}) satisfies z.ZodType<GetGridUsageResponse>;
+
+export type GridUsageReply = z.infer<typeof gridUsageReplySchema>;
+
+/** One group of the usage: a tenant or a party, with its counts and its share of the grid. */
+export const gridUsageGroupSchema = z.object({
+    key: text,
+    /** What a person reads: the tenant's or party's name, or none when it could not be named. */
+    name: text.nullable().default(null),
+    batches: z.int().nonnegative(),
+    workunits: z.int().nonnegative(),
+    results: z.int().nonnegative(),
+    results_unsent: z.int().nonnegative(),
+    results_in_progress: z.int().nonnegative(),
+    results_done: z.int().nonnegative(),
+    outcomes_success: z.int().nonnegative(),
+    outcomes_failed: z.int().nonnegative(),
+    /** This group's results as a fraction of every result in the view, 0 when there are none. */
+    share: z.number().min(0).max(1),
+});
+
+export type GridUsageGroup = z.infer<typeof gridUsageGroupSchema>;
+
+/**
+ * The usage as the BFF serves it: one group for each tenant or party, with the
+ * names joined on and each group's share of the results.
+ */
+export const gridUsageViewSchema = z.object({
+    read_at: text.nullable().default(null),
+    group_kind: z.enum(['tenant', 'party']),
+    groups: z.array(gridUsageGroupSchema).default([]),
+});
+
+export type GridUsageView = z.infer<typeof gridUsageViewSchema>;
+
+/** `get_node_series_request`: the node samples between two instants, in buckets. */
+export const nodeSeriesRequestSchema = z.object({
+    start_time: z.string(),
+    end_time: z.string(),
+    bucket_seconds: z.int().positive(),
+}) satisfies z.ZodType<GetNodeSeriesRequest>;
+
+/** One node that reported in the range. */
+export const nodeSeriesNodeSchema = z.object({
+    host_id: z.string(),
+    machine: text,
+}) satisfies z.ZodType<NodeSeriesNode>;
+
+/**
+ * The columns of a node series. Each holds nodes times buckets entries,
+ * row-major: the cell of node i in bucket j is at i times `bucket_count` plus j.
+ */
+const nodeSeriesColumns = {
+    samples: countColumn,
+    tasks_completed: countColumn,
+    tasks_failed: countColumn,
+    tasks_since_last: countColumn,
+    avg_task_duration_ms: countColumn,
+    max_task_duration_ms: countColumn,
+    input_bytes_fetched: countColumn,
+    output_bytes_uploaded: countColumn,
+};
+
+/**
+ * `get_node_series_response`: the node samples as columns on the grid series'
+ * time axis, with the nodes listed once, ordered by machine and then host id.
+ */
+export const nodeSeriesReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    start_time: text,
+    bucket_seconds: z.int().nonnegative().default(0),
+    bucket_count: z.int().nonnegative().default(0),
+    nodes: z.array(nodeSeriesNodeSchema).default([]),
+    ...nodeSeriesColumns,
+}) satisfies z.ZodType<GetNodeSeriesResponse>;
+
+export type NodeSeriesReply = z.infer<typeof nodeSeriesReplySchema>;
+
+/** A node of the series as the browser reads it: the wire node and the host registry's name for it. */
+export const gridSeriesNodeSchema = nodeSeriesNodeSchema.extend({
+    host: text.nullable().default(null),
+});
+
+/**
+ * The grid series as the browser reads it: both series on one time axis.
+ *
+ * The BFF joins the host registry onto the nodes, so a node carries the name a
+ * person reads, or none when no host names it. `read_at` is the deployment's
+ * clock at the read, because a browser stamping its own would date the reading
+ * by a clock the deployment never used.
+ */
+export const gridSeriesViewSchema = z.object({
+    read_at: text.nullable().default(null),
+    range: z.enum(SERIES_RANGES),
+    start_time: text,
+    bucket_seconds: z.int().nonnegative().default(0),
+    bucket_count: z.int().nonnegative().default(0),
+    grid: z.object(gridSeriesColumns),
+    nodes: z.object({
+        list: z.array(gridSeriesNodeSchema).default([]),
+        ...nodeSeriesColumns,
+    }),
+});
+
+export type GridSeriesView = z.infer<typeof gridSeriesViewSchema>;
+
 /** One host as the registry answers it. */
 const hostSchema = z.object({
     version: z.int().nonnegative().default(0),
@@ -1869,6 +2073,8 @@ export const listHostsReplySchema = z.object({
  */
 export const gridNodeRowSchema = nodeSummarySchema.extend({
     host: text.nullable().default(null),
+    cpu_count: z.int().nonnegative().default(0),
+    ram_mb: z.int().nonnegative().default(0),
     instance_id: z.string().nullable().default(null),
     state: z.string().default('missing'),
     version: z.string().nullable().default(null),

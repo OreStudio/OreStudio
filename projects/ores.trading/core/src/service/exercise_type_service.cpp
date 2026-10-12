@@ -101,6 +101,7 @@ domain::exercise_type to_domain(const messaging::exercise_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_exercise_types_response

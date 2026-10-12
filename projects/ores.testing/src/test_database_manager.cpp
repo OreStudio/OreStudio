@@ -23,10 +23,9 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.platform/process/pid.hpp"
-#include "ores.platform/time/time_utils.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <chrono>
-#include <iomanip>
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -112,10 +111,8 @@ std::string test_database_manager::generate_test_tenant_code(const std::string& 
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     // Get current timestamp
-    const auto now = std::chrono::system_clock::now();
-    const auto time_t_now = std::chrono::system_clock::to_time_t(now);
-    std::tm tm_now{};
-    ores::platform::time::time_utils::localtime_safe(&time_t_now, &tm_now);
+    const auto now = ores::platform::time::datetime::to_local_display_string(
+        std::chrono::system_clock::now(), "%Y%m%d_%H%M%S");
 
     // Use process ID for uniqueness across parallel processes
     const auto pid = ores::platform::process::current_pid();
@@ -130,7 +127,7 @@ std::string test_database_manager::generate_test_tenant_code(const std::string& 
      * survive the length limit; the suite's name is shortened to fit around it.
      */
     std::ostringstream suffix;
-    suffix << "_" << std::put_time(&tm_now, "%Y%m%d_%H%M%S") << "_" << pid << "_" << random_suffix;
+    suffix << "_" << now << "_" << pid << "_" << random_suffix;
 
     const auto suffix_text = suffix.str();
     const auto room = suffix_text.size() < tenant_code_max_length ?

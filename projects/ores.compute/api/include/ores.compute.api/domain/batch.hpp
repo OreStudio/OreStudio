@@ -61,6 +61,12 @@ struct batch final {
     std::string external_ref;
 
     /**
+     * @brief The party that submitted the batch, copied from the session when the batch is created.
+     * NULL for work that predates the party scope.
+     */
+    std::optional<boost::uuids::uuid> party_id;
+
+    /**
      * @brief Lifecycle status: open, processing, assimilating, or closed.
      */
     std::string status;

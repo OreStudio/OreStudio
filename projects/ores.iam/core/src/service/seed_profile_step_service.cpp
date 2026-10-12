@@ -108,6 +108,7 @@ domain::seed_profile_step to_domain(const messaging::seed_profile_step_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_seed_profile_steps_response seed_profile_step_service::list_seed_profile_steps(

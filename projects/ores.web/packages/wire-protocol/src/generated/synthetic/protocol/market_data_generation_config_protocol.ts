@@ -40,6 +40,7 @@ export interface MarketDataGenerationConfigWrite {
     description: string;
     enabled: boolean;
     dataset_id: string | null;
+    provider_code: string | null;
 }
 
 export interface MarketDataGenerationConfigChange {

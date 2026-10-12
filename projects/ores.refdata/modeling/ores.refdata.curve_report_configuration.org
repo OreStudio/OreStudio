@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: DAF5C102-BD47-4031-98F0-3220FEE745E0
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_report_configuration
 #+description: Codegen entity model for the refdata =curve_report_configuration= table. The report settings of one ORE volatility entry.

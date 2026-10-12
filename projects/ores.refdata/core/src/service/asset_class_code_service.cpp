@@ -103,6 +103,7 @@ domain::asset_class_code to_domain(const messaging::asset_class_code_write& writ
     return v;
 }
 
+
 }
 
 messaging::list_asset_class_codes_response asset_class_code_service::list_asset_class_codes(

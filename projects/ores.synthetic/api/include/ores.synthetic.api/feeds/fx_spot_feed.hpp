@@ -60,33 +60,35 @@ inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
  * writes market observations. The synthetic service has no marketdata writes.
  *
  * The NATS publish subject is supplied by the caller (derived per-producer
- * from its source name) so that multiple producers for the same ORE key
+ * from its source name) so that multiple producers for the same datum
  * publish on distinct subjects.
  *
- * The qualifier is derived from the ore_key at construction via
- * split_market_series_key (e.g. "FX/RATE/EUR/USD" -> "EUR/USD"); a key that
- * does not parse yields an empty qualifier. The feed has no role -- its
- * conflict key is its qualifier alone.
+ * The feed is built from the oresmd quote URI of the datum it produces. The
+ * strict codec reads it at construction, and a URI that names no datum, or a
+ * datum that is not an fx_spot quote, is refused. The feed's series_uris() is
+ * the one series URI of that quote. The feed has no role -- its conflict key is
+ * its series URI alone.
  */
 class ORES_SYNTHETIC_API_EXPORT fx_spot_feed final : public ores::marketdata::domain::IFeed {
 public:
     fx_spot_feed(ores::nats::service::client& nats,
-                 std::string ore_key,
+                 std::string quote_uri,
                  std::string source_name,
                  std::string nats_subject,
                  std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
                  double ticks_per_hour);
 
     /**
-     * @brief ORE canonical key this feed produces, e.g. "FX/RATE/EUR/USD".
-     * FX-specific; the common interface exposes qualifier() instead.
+     * @brief The oresmd quote URI this feed publishes ticks under, e.g.
+     * "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD".
+     * FX-specific; the common interface exposes series_uris().
      */
-    std::string ore_key() const {
-        return ore_key_;
+    const std::string& quote_uri() const {
+        return quote_uri_;
     }
 
     const std::string& source_name() const override;
-    const std::string& qualifier() const override;
+    const std::vector<std::string>& series_uris() const override;
     const std::string& role() const override;
     const std::string& nats_subject() const override {
         return nats_subject_;
@@ -94,7 +96,6 @@ public:
     std::string_view kind() const override {
         return fx_spot_feed_kind;
     }
-    std::string conflict_key() const override;
     void start() override;
     void stop() override;
     std::uint64_t publish_count() const override {
@@ -103,10 +104,9 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    std::string ore_key_;
-    std::string oresmd_uri_;
+    std::string quote_uri_;
+    std::vector<std::string> series_uris_;
     std::string source_name_;
-    std::string qualifier_;
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process_;
     tick_clock clock_;
     std::string nats_subject_;

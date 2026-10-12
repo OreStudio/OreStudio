@@ -23,7 +23,9 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstddef>
+#include <optional>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -59,6 +61,33 @@ public:
         std::size_t unchanged = 0;
         std::size_t unreadable = 0;
     };
+
+    /**
+     * @brief What a backfill projected, found already projected and could not read.
+     *
+     * A series whose URI neither codec reads is still written, with its kind and no
+     * field value, so it counts in @c projected and in @c unreadable, and a later
+     * call finds it already projected.
+     */
+    struct backfill_result {
+        std::size_t projected = 0;
+        std::size_t already_projected = 0;
+        std::size_t unreadable = 0;
+    };
+
+    /**
+     * @brief Projects the identity of each series the context can see that has none.
+     *
+     * A series written through the repository is projected as it is written. A series
+     * inserted any other way is not: a publish from the data quality area inserts in SQL,
+     * which cannot run the codec. This finds those series by the absence of their row and
+     * projects them, so a call is idempotent and a second call over the same series finds
+     * nothing to write.
+     *
+     * @param party When set, only the series of that party.
+     */
+    static backfill_result project_missing(ores::database::context ctx,
+                                           const std::optional<boost::uuids::uuid>& party = {});
 
     /**
      * @brief Projects @p series, replacing the identity of any series already

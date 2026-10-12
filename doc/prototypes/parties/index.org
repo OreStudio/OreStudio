@@ -7,13 +7,13 @@
 #+level: cross
 #+filetags: :prototype:index:ui:parties:
 #+created: 2026-10-08
-#+updated: 2026-10-08
+#+updated: 2026-10-12
 
 * Summary
 
 The tenant's own legal entities and the counterparties it trades with: their identifiers, contacts, and the countries, currencies and units they connect to.
 
-2 prototypes answer to this group. Each one is a static page under
+3 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -28,6 +28,7 @@ generated alternative kept beside the agreed design, never instead of it.
 |--------------------------------+----------------+---------+--------|
 | Onboard a counterparty         | A counterparty is a legal entity before it is a trading relationship: the identifiers that name it, the people to call, and the agreements that govern it. It also draws a second person's approval before a counterparty is written: the request waits, the checker decides, and a decline leaves the record alone. | [[file:onboard-a-counterparty/][prototype]] | none |
 | Keep a party's details current | A party's record is corrected, not replaced: a name, an identifier, a contact and the countries and currencies it works in, each with a version to fall back to. It also draws a second person's approval for every material correction: the request waits, the checker decides, and a decline leaves the party alone. | [[file:keep-a-partys-details-current/][prototype]] | none |
+| Keep a counterparty's details current | A counterparty is a record, not a workflow: drawn like the parties screen, with a list, a record on tabs for its details, identifiers, contacts, business centres, the parties that may trade with it and its history, and a dialog for each card. A dialog never writes. The review shows each change with the function that decides it, and the button saves a contact change directly or raises one request for the rest. | [[file:keep-a-counterpartys-details-current/][prototype]] | none |
 
 * Adding a prototype
 

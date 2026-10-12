@@ -35,6 +35,7 @@ export interface Batch {
     tenant_id: string;
     id: string;
     external_ref: string;
+    party_id: string | null;
     status: string;
     modified_by: string;
     performed_by: string;

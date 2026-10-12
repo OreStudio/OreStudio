@@ -103,6 +103,7 @@ domain::tenor_kind to_domain(const messaging::tenor_kind_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenor_kinds_response

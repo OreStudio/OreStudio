@@ -93312,8 +93312,8 @@ const xsdcpp::ElementInfo _stFreeStyleEventSchedule_Info = {
     &domain::_stFreeStyleEventScheduleBase_Info,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _moneyFloat_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_moneyFloat};
+const xsdcpp::ElementInfo _moneyFloat_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                              (xsdcpp::set_value_t)&domain::_set_moneyFloat};
 const xsdcpp::ElementInfo _stFreeStyleNumber_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_stFreeStyleNumber,

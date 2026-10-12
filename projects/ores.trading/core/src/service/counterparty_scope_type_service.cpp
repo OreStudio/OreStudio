@@ -102,6 +102,7 @@ domain::counterparty_scope_type to_domain(const messaging::counterparty_scope_ty
     return v;
 }
 
+
 }
 
 messaging::list_counterparty_scope_types_response

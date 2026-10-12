@@ -1,0 +1,4492 @@
+[
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b4cbef45-c2ee-561a-a6b8-a2aaf012fd4a",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "550e5b85-655d-59f7-8b69-15d9eab623a0",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d5974139-f40b-5cf9-b0f1-f0a287ac6433",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ff5eab34-6899-59e6-9da9-32130fe95225",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c8d72d21-88c2-5e7f-9571-b25e806a7371",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "696e0205-b55f-50e1-bafc-a2b5c5ddc221",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "78e68b91-2717-5017-a394-43db0ae6ce21",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9a12e1e9-c099-5997-8cb8-b93972700cfd",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4fbe9e28-07f1-5df0-aa8f-73ffed7d85e8",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4bd30e90-c533-5b12-91c3-77fcc7462b48",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6993f29f-8ded-54f2-9de4-7542ddeac8d0",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fa9aa8a5-b775-5de2-9915-d8e421bdfb0a",
+    "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a9ba54c7-e8e4-53b5-9f40-4a43fabbad5b",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "36db76c0-3958-5103-aee9-b66ed4b85d15",
+    "quote_text": "MM/RATE/USD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1a460017-0f80-56a0-b762-2bb39c9df59b",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "bcea963f-367d-557d-b1b8-ee58f4609f67",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ea1b4ad4-5812-5e25-b52d-877180ffb852",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "638a2a81-5c7a-5876-97a6-6d8ba10f3e69",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b4ebabec-e173-5c47-b5f3-53253f54520c",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3e241412-2730-53c7-a733-a07386ce408c",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "01a51401-b7de-5e71-a527-acf323f5b513",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6460b445-6e5b-5153-8519-e2fe6e0d7f44",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7b040e05-1015-50f5-9707-2cbd3f3d4321",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "312f5889-da4e-522f-83b3-11d5c11d0b70",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f03c44ea-15f0-56e2-abfc-2665e4de72da",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "10cd9c27-d403-544e-b36b-3cad170c922c",
+    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8de94576-27c9-59bd-adfb-63d7c0df249a",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "d1013b6f-5977-530e-9478-99ef1951ed11",
+    "quote_text": "MM/RATE/HKD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "422a5f31-3ad4-5777-a04b-da09738abe7b",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a6c0ab05-95fc-5e88-bd47-bf992fd19b61",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5b76b565-d3b7-5b72-86aa-6f6fe1cee81e",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "47c8a5fb-285e-5dac-87b5-707e5787e34e",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8ec0c9e6-b92f-5cc9-9d16-af4fa1293e14",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0f67ac40-1d69-5880-843b-fbe468e2687d",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "64ce6d0e-3190-58fe-b193-555a196be572",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b5b53359-4053-5e67-92e6-411e7e1a35d3",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "20240dd6-04b5-5078-9d7d-c2f3be82c50d",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "be782045-ee76-5e34-bfe5-d5c5e4f06552",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "635420db-caf3-5269-83c6-07b8b7c02441",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2c235e4b-9469-5fdc-b0ee-68fe39a77bb4",
+    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4ab3fe08-0fcf-51d7-b94c-a47403e66b89",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "3e507e1b-c242-5d60-bfcf-7a2153d6a513",
+    "quote_text": "MM/RATE/EUR/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1b3621cb-3bcf-5a68-89d4-0258767309c6",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ee88350c-d9fe-5b5a-bc23-5b67a8d87ee0",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "48d44ccf-0bf0-5176-83e5-606d55e06877",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e6b21d6d-3e0b-564c-8a08-7c806220595a",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "775f211a-f8c8-50e9-b2a8-346d17bed76a",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "34c4e53e-5725-54f7-8733-c60fed2d4696",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "99e87787-647a-5fca-b57b-07f65df4d3ab",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9647d13c-5441-555e-a5fc-f8624b542f2a",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "533b3240-78c6-5107-a0f4-1fc148cad194",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b988c2aa-4ebc-5467-a6a2-f5f0f78b8a5c",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "21529c18-1310-52e3-914c-d550193cd0da",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "27279211-3246-50e6-8566-36b8916ff703",
+    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ceef9462-85ea-58cb-aa9f-420b0502f9a7",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "88723564-2562-5ac5-9278-b6b773ef2e4b",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ea6afe4f-27c0-52ba-87c2-beb45b24aa70",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7b3b60b3-0fb8-5abb-81b9-3feb13382134",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cd88fe62-a710-5213-b579-b782c7614a7b",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3e96fdc4-00cf-5ed3-a4df-7e3ba57b5df1",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b802d7c9-a9be-594d-9ece-b30e8f1abfa9",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ae760c32-67f6-51f3-bdab-6595eea13487",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "212fb4fe-92b9-5c20-a1ec-caddff0b10b6",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6e68fcef-2fd1-5e96-ad0d-31c532be5349",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c08ec248-0b28-53e7-af1c-78c99209b681",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "754a3a1c-6f40-5e85-9eef-bde648f46959",
+    "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "532e1a86-ffa8-5708-9bfd-69f5668f5608",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "18e95383-7e10-5b2e-b8ec-7b2a791356d6",
+    "quote_text": "MM/RATE/EUR/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2ff59040-bda6-57c3-9179-f29545353e92",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "10d79080-b6ef-5822-acf8-683d76be51a7",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f2eec97c-894b-5ca8-b9e1-901651c9a13a",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d3e7d1ba-720f-5375-9621-3e6be1880fd3",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e8e3bc8d-c8b4-5c1c-a263-489071428847",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "97b2a53d-0201-58ae-af31-788304d573f3",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0cba6c17-99a5-5492-a26c-326808b0024d",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d32e80be-245d-597b-a063-c4894f3d6ed6",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "845a306b-1fab-584b-9843-43f9c92ad808",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "23b156a0-e121-5d8e-807c-f2ad9e26f231",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b5688f71-1436-5542-935b-5c72b6d43c2f",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9c3cbb1b-3b53-5c87-994b-847363fe0518",
+    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "29c25cd5-7b5f-58a4-8f44-f72583d8bdb4",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "31e39269-5c2b-5c69-b948-0005910a7a07",
+    "quote_text": "MM/RATE/USD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3de2fc21-b32b-5e03-97f3-9acd62b6fcf0",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a85dc1be-10fd-5606-b488-712729e0cdee",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7d024c52-b249-56c7-acda-5036637e970f",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ca8f5fe8-50ab-5073-b161-87445e8dcf65",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "84aeb748-8f04-51b9-ac96-9204b07ab1fa",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "bb14c1c5-fd41-5370-a000-15df429a619e",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "15b60b02-58f5-5b7f-b2f0-34051c47b5fc",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d8e42ce1-796a-500a-9ac0-37598892adaa",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7156d027-e361-5585-801a-5fa99c1304f1",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cf02846b-4028-533f-895d-7a858999b86b",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cb1f7221-ebb3-537e-b807-33b74debf1cf",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e95b93ec-e014-53f7-a166-916e68b55a53",
+    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7c1d2d8c-8558-5e54-95b6-759eea6653da",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "45f8e58d-fe7b-5f26-9fb6-c4fc91e08ac8",
+    "quote_text": "MM/RATE/CHF/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5903a227-7e02-5ed7-bcb1-da617bcd7820",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ad5536d3-fcd2-5f4d-b347-598a578d336f",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "10b51831-6a35-5c84-ac7b-f4e777530de1",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d169799e-7ee8-57d1-8a00-b6ce1898eb72",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b97ab4d5-8f08-58a9-9f04-f6b0bd0160cc",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "43f47b92-6002-533c-85e1-4afc8abba73e",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6b0c084d-c40b-54f5-9f5d-cf355b162134",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5497e44a-8a9b-5945-ac5a-aea651262270",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0cd886d1-79fc-5c1c-90d5-a90c88b1b968",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "88b6751e-e530-5f1d-b338-5e85079ec07f",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "04c0abca-daa8-583d-a251-dbc9509c1e31",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4ad6b4e5-a064-56fa-9ae1-7a143632bf41",
+    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "quote_text": "IR_SWAP/RATE/CHF/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b8eca230-a225-594c-a33a-d1900b901413",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cbcde0c1-e8e8-5bcf-b59f-22871418cf83",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8d5d5552-c409-5d59-b284-b65683cbe78e",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0d286401-ce35-5db3-9e16-9a66d02345af",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ff7a2207-6ad8-584b-afbf-a4d92669eecf",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7f935867-dff1-58ae-a985-6f3a099f5de9",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "085e150f-4b5b-5430-b625-3faa994e33c3",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ae13be17-dc2b-5485-bbcc-c5b0d002df80",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d9ee82dd-8cd1-5971-ba7a-17800d3934c9",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "337c79d6-2fdc-52c4-8a67-c4370fa85389",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "083f5265-b47f-5341-850c-e9b7292a7200",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "145ec452-66f1-5e42-bf33-7edb9d3c0a5f",
+    "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6aa2d61d-10c4-52a4-9656-a531c344b3d2",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "f221a246-c56f-567d-ba10-d13249bf9317",
+    "quote_text": "MM/RATE/CAD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "eeb44ed7-de64-5cab-9ae3-f30a89752f1e",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fb61097f-56ce-5336-a04b-d22b5ec253be",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "64c7933f-fa4e-549c-8704-2ecdad0dbbbe",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b0256081-f188-50c8-b716-48c80d2ed23f",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3a08188d-3801-58d2-93ce-10d5bfceff10",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f0850d7c-1c40-5aef-a5f4-f8c026fcdf3f",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7c9b3b2c-57c2-5b03-949c-0697b399f54f",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fffa50bc-e231-5186-a3e5-2d9bb799534e",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3ce17ccc-6f9d-5ba6-89e6-a5ccfcd648f8",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e28b5db9-21d1-5e83-a7a8-bef82d64d4b3",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3aa50fb2-6f21-5595-b341-af20ae756ca2",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0517d225-e57a-50b5-8da4-2f3c3aa51b22",
+    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c2f34425-34f3-52b6-badf-6e0ec46124db",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "25e6c25b-2fd9-5f7f-a174-fd0daa1a0b48",
+    "quote_text": "MM/RATE/AUD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "17e6910d-494d-5446-af63-bfb9a76a02e9",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b7795830-cd86-5f1c-ba0e-f1fa8936ae7f",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d4e66292-699e-5ca5-9b69-8c6829e2e3c1",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e5c7297f-a8fc-51bb-9dec-640708037afe",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "277516d1-6389-54bf-a3cb-23b620cf20c7",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "92447570-a5c4-5afb-aa40-595b3e835428",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3359c543-4574-583d-9a2b-678dc8038f31",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f12c383e-8d8b-5ba3-99f1-1c8d013582c3",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "06cbe109-5909-534a-93d7-4f4d2c291a25",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0b2d98de-7684-5e3c-813d-deb7a506c0f3",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2e8128ba-7349-5a99-873d-19db157d4161",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f76f9e88-3799-5e9b-a2ee-41e83227249b",
+    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "15973c90-fd3b-5213-8422-724b36a5c290",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "c512aa94-3012-543e-a157-f32878fc8ac3",
+    "quote_text": "MM/RATE/NZD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f8f41d7f-1f3d-54af-9a4a-b3e94e6ceedd",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "32c26128-13b6-5807-bba5-084c88609c79",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "bb95a77c-f5dc-5f34-8de3-572fff9a57b0",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "69545398-8e50-5258-a580-69f8cdb2ac97",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "087e1e83-eae9-5a50-a00b-11d416f25137",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e57c17bf-7e46-5dce-a901-ad80cc422a02",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c9490098-8dc2-5686-8b8e-4aed041720bf",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "52a79288-4e4d-56f4-9ed3-33b92ad1f454",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "971f9bd1-676c-58c2-aced-f74919f63565",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "62bab5df-85bc-5fe7-8d35-1874a7e13647",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f17427c2-e247-5e81-bba2-875fab7ea74c",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0db688d9-d851-5c93-892f-08533419936b",
+    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d6b7f972-7bdd-5135-bb8b-d526670b0a1a",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "44e13cc7-fc26-5fec-9c71-18323afc952e",
+    "quote_text": "MM/RATE/SEK/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "568e72fe-ac3c-5736-be78-7194428d15d5",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6156b9c1-1d3a-557a-b16b-7397e232f367",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3aad0030-3f06-52be-abc6-d4826bd84826",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3219281a-007a-5ca2-8607-75c7a1f0fa37",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4a18dd99-13fd-59c9-8e0c-bc018802e0b7",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a5e8dd10-468d-525c-9578-e7fe539acba1",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c7e44644-292d-57fd-9052-5b3b6eb1ae47",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "49a49707-2ad1-504a-9a75-ddd5d4c8d71c",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fce4c000-422d-5471-b1f2-8342a1522366",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "bae3bb48-ae44-5e15-86fb-a4aa663dba83",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3c9192b1-0449-5b27-8626-17fbba6c25ae",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2aee6dd4-6515-53d1-84a3-30f630bc0661",
+    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "quote_text": "IR_SWAP/RATE/SEK/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1b90e92e-3999-5b47-9eda-627cc9569d61",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "d697357d-ab3d-54a6-ad6d-72262997fd66",
+    "quote_text": "MM/RATE/NOK/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "62e14122-be47-553d-88d8-8b4bd4b24f3d",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5dbcac55-f420-51e2-808b-51b4d9f422d3",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "34452240-fff3-55d4-b8e7-ab4cef402318",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e913f41b-925a-5dc9-9fa3-25da5bd62465",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f4094cd0-3892-5094-b4a6-aee56be1e79b",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "12c37f7c-8cd5-5338-9ac0-b0337a55b4af",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "92050422-cf9c-516b-b9e3-3db16310704b",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0257baec-019e-551d-ad61-2bb74859a25b",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "97925889-e39b-5abc-9fa4-8a1edbdad4e2",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "43c36086-094c-596f-84c1-a75d93a88b39",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d071a65a-250a-5161-a152-bc5bb550ebf0",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "faa88ec5-3439-5ebe-8236-0b3fdd4967a6",
+    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "quote_text": "IR_SWAP/RATE/NOK/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5cc24095-1b80-5424-8a05-c9b5b364b90d",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "5a0d7ef5-f5b5-5442-838f-e52ce01bed81",
+    "quote_text": "MM/RATE/DKK/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "83913dac-caa8-5e96-b7e8-c2f50f195adf",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f6ed3e7a-d3ce-5b94-ae49-3039ebc8eaff",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "06787e8b-11e2-5305-b363-1bf2ad1be119",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f9a50d1f-7909-53a2-bafc-152080d88791",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a7086af7-e407-55e2-822b-2112547efae8",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d44c179f-72c5-55b6-b57e-f77c5c11c144",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cf29b8ff-aa38-551f-a945-58e334e0d8d9",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2ed43d00-13bd-56f0-b1fc-0979fb35f15f",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5af001a9-8c64-50b4-8671-d0d7f7e8ff1f",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "25e64433-3a9f-58a2-8d69-6190d8966bc6",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9d750c9c-e2af-56f2-9a8f-b73faff0c63a",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f1099416-3333-5880-b188-9b9881b057ee",
+    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "quote_text": "IR_SWAP/RATE/DKK/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d6254716-bf58-5cdd-9613-f78d698278b3",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "5bed9e6a-709a-5c6f-9282-fdbf68471b4b",
+    "quote_text": "MM/RATE/ZAR/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5442bc41-e0ef-553d-94e3-cca670d1cb1e",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "10cda330-555b-5573-a3e2-e0cbed71d3b4",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "97457751-89e0-5f5f-8017-5c9a1e4567cd",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6ee4ea2d-0e8d-5338-8c10-3ea8858e8ed9",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8fac2e02-7d46-5426-987b-2906e028ed64",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cca2c5de-1fe7-535a-952d-7f1950e1f540",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c93bf5ca-8aff-5c3d-9ba7-c995b9e6cac0",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f09a7a34-ad17-54ed-9b17-d67a81627d16",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "96779988-6b34-57db-9355-a60d119e3934",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c6c33678-381d-58a6-a707-4f8e5de76914",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0475662b-c4c5-5ecb-9081-271e6bb3c52a",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "45b650b1-4960-5e8d-b704-e91433c55b77",
+    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "quote_text": "IR_SWAP/RATE/ZAR/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2624459f-8026-56e7-9f2a-27b33b75a8ae",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "a3acaefe-5845-539b-a273-b840be9cf2cb",
+    "quote_text": "MM/RATE/TRY/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "665c6c67-e671-5032-920b-811035d52438",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "580428de-2364-5cf6-810f-6a3d0ef56f76",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0a944e0b-bd0d-50f3-829f-8ca36e434b02",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c7917f41-d6f3-5d89-a108-9384e7ff01a8",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c962f256-5c79-50f3-8a8b-8bc4aae784ea",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "434a3097-497b-5e88-b015-8742eff7c900",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d5810263-abab-5f18-950e-88d376583dc5",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cd9a7a2b-c8a0-5ee5-8a2b-e22064aa39f1",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "67b18a47-cc65-5351-bb14-c875acbb096b",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b1ded85d-46b4-54e9-82ba-623a69162fc8",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3d1b0a30-fd71-5535-b114-1ed72355ecec",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "605fe56c-c7c8-5a09-b623-fe5a6979df73",
+    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "quote_text": "IR_SWAP/RATE/TRY/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "86f832e2-838a-5bd1-afec-0a9bcfdb3728",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "2f2fe20e-c89b-5aee-981e-9d77e52284ff",
+    "quote_text": "MM/RATE/PLN/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5d264e6b-6add-5fd9-b448-365ff036fe12",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a61354b3-1595-51b3-b676-164aa8a23dd4",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7d588cf1-306b-5b4b-a42f-06d85d58adbe",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5ef5198b-6a1f-5432-b1d6-8b5415621395",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a62c225a-966f-57aa-b08f-a97ffa01263f",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a1b29874-3f94-51c8-97b5-0d0297cdfc01",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "656a77ef-b62f-5f8b-bd86-37d228b6829e",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "984c074c-2951-5896-b9b4-0c3c688fb8f5",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "57af43a1-9ba6-5f71-89fc-51213f218b33",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7edca893-37a3-5fa5-9ed1-02b3561fed1f",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d75cf956-f04c-50c6-b932-7b08b5be7f57",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "059b578b-2cc1-5ace-a2aa-7da900030c65",
+    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "quote_text": "IR_SWAP/RATE/PLN/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "07735ad8-05d4-5570-bf26-983493ebb3f4",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "20c0d816-52af-566a-bcf3-76beb0d86b76",
+    "quote_text": "MM/RATE/CZK/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0cd91895-20e1-5692-8881-a70f90ae974d",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "34263794-e2a5-52b0-ae1c-b416e56e48d3",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "13ef31f4-dfe5-5695-afc8-11c1e24fd5d1",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e17b1542-378d-5671-9233-1a867525afdb",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6acdb0ab-d2e9-596b-a0ec-268e55024063",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5cbb967e-bb9b-5572-96e3-ccd245d69bfe",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "eedbd5af-5a74-574f-b0e0-688510afb0eb",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4141aba3-c4b8-54ad-af0a-91f6ae713cb1",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b4302042-31f1-54b4-851f-9a854c6c104d",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1259bd26-2bde-565f-a265-5bd0ad3593f1",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "13e6a298-46de-5f41-bb22-4eb9f6930fdb",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "db5902a4-0854-5ac7-9163-2edaa044378c",
+    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "quote_text": "IR_SWAP/RATE/CZK/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "76aeef55-e5c9-5355-8cb1-d964eb5f8200",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8e08564f-438b-5e1c-9555-13721c0b4553",
+    "quote_text": "MM/RATE/HUF/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "57af5399-139d-512b-a9ff-45b45505e68f",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7ae0cd6b-fd30-5b70-aa6b-0f9c9c4f6285",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "46cdf45f-4335-5ada-8b49-6584f38eb549",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3dae6a96-4f00-5bd8-bcff-51d095f55668",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8f6ccca9-91a6-55cd-9c09-f772c891246e",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e0456274-9725-5fb2-8bb6-0bb15aa8fe3d",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cac976f0-5cfe-56c5-9bfb-077025722c5a",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "71be911a-f86f-5289-9d60-dc960298fd27",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0d49728d-ac9e-557d-acba-420f1e6016d6",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7c611ea5-0b42-5c76-b1c9-ca4cf4c116b6",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6b9156c9-0897-5bb1-9d91-7aabc9720d94",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "aa611572-f07a-5f99-a3d4-b095f34584e4",
+    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "quote_text": "IR_SWAP/RATE/HUF/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "24c04bee-25b1-5931-a255-d24d30b6d455",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "abdb643c-e391-5639-896d-7b885b7725fd",
+    "quote_text": "MM/RATE/ILS/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "81a2859a-a463-51cb-9c41-a53db3735415",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ef2caf22-ce15-5e05-b3ec-c65b660083ce",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cde326c8-4fc6-5b97-9840-70f20a3b1fb1",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "432d401c-d181-594a-9cf4-bfb7a5ca381b",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0a34774b-dbb8-5c64-ab19-cde6dbe06add",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "49fc030d-8427-53b8-b7fc-9ee3eefb51c6",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "12283721-ced9-5c99-9551-ac4115796fc2",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "850ea06e-f8d3-59c2-ab7b-2467ae6e2ef7",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ae8384dc-83ea-58b0-8944-3ab5c00aab10",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "00bda456-ac41-5c29-9256-26df83978f24",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0f0c7445-f112-58d6-9660-27934f10584b",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f1d48e99-518b-5e47-86c8-2743d4d3e022",
+    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "quote_text": "IR_SWAP/RATE/ILS/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "62c6a2a2-28d1-5e69-aa4a-06d3b96faaea",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5c845035-f632-5c6e-8f17-66534c558d16",
+    "quote_text": "MM/RATE/USD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e7c3ae9a-2a9f-5c87-9f30-20e13d2819f7",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e9ddfd35-aa6b-53e4-9a69-4e2edd17ce2e",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "dd1aeaea-4a45-56d0-84d7-5dfb97332304",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9b8c8074-4789-5c30-9d3f-7dfd4b7e4f22",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6ec28981-a861-5185-9889-18a50b17df89",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e5d5b49e-c051-5a37-967a-68c5224599e6",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c5634016-d0c1-5f4d-9a43-d44bf67b64f7",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "91f01fb4-b7c3-5016-abc0-8251567f7350",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ef389fcd-be1c-5b24-986f-62c1b37cf3b1",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c8dcac8e-e0d3-5058-95a0-5270a6e5068b",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "00ff00c9-7e16-5b3e-ac3b-820f2634a210",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d9e05929-8a55-518f-85fd-1ffa81b95f41",
+    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "813779f8-6685-5661-8710-7d5c6d05a8e0",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "fbd56288-cba4-5231-b4e0-50dcec879fa1",
+    "quote_text": "MM/RATE/CAD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e1fe944f-c46f-5af5-926c-422201bc7d28",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9b495c6f-a22b-5209-9125-46391bdcde4a",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4b315fa3-5198-54bc-a7d0-477eb8c9e731",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6101d250-e9bc-577c-abc3-8a125543d241",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "83e83f8f-09ba-5465-bd40-708777923f8e",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "67f97b52-8d4a-5b79-8904-7ac1b76fa871",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5ca97215-0c10-5f4f-a6c5-0d4ebf8b8bbe",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b177b1ff-c83c-54b0-9ab0-609abf9e013c",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "69075710-2320-5731-8797-c5cbe07c2871",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fa78f269-afdb-5fa4-b0d7-7ccd9d4093cf",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3290d3d8-14cc-51c1-bd64-14cf2ae15728",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1e2ebcdd-898f-5ecd-9482-5fec1fa28874",
+    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "quote_text": "IR_SWAP/RATE/CAD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "aa131020-6975-5866-ba05-36ae40b5aacc",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "53037a3e-99b9-51e5-8725-0f2f7f760b34",
+    "quote_text": "MM/RATE/EUR/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "44c1917c-be66-5d4d-ad88-24fa4bbf45b8",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "244a44cf-9f5e-5216-9916-cf8d612df520",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "76f86203-d88f-585c-95e9-ee9fc4594d11",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3669a6a9-cb16-5df3-8177-69cd278a0e86",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9c24a281-6a25-554a-a409-c6b78be7c248",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e3dc2368-13a8-58d9-a775-a5ad12d3efea",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "dc21fd56-1dc9-53c4-8e19-2bbbe2703ec6",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "711e3229-3b92-5acc-b6ce-d74e8fbb94ba",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "74ff02e0-c497-56e1-b820-3829ed20a6d6",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "aa74d823-4db2-5192-a3ab-2d78b9c38e30",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "64f6c0d1-0e8f-5cdf-a711-734b623bc0e2",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d9a36ce1-6b25-5108-ba04-1c6db1e45995",
+    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "quote_text": "IR_SWAP/RATE/EUR/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8a592eeb-6149-540a-bfb8-f061705ff866",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1b4535e4-610c-5b69-8d88-557ecdee4f50",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ebaf3f86-490b-5313-b7b6-665b6d008871",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6a053a90-06bc-5339-a8e3-3542fa408443",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "24247f42-4b8d-56b0-9871-e94a95a0ccdd",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "edf669d7-95aa-5ac7-bdef-08569e18efc8",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9bc83739-b480-5d7b-a80e-fe44677c7983",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "386371d0-4078-5531-94e0-75969a467a32",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "05671089-67bb-5942-95c3-8945c3cf1f24",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "69b31cfa-9040-581b-90fb-d5ca2cb8e4ab",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0ffe61a2-8bc1-5b28-b87e-58a70ce75dd9",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b2d14d4e-d109-5783-acf0-bbe2f398dd54",
+    "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "quote_text": "IR_SWAP/RATE/GBP/0D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3244448e-21d6-5573-8ef4-760aeda71f32",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4a9a3f12-4621-53e6-ab54-efb6d37bc577",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "86bc08e8-4586-58e9-844e-653325cc3e82",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8607b036-ccfb-548d-b8ac-aba5ab71b83f",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "89153bea-17cc-58fb-b4f1-0017d1fd8350",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "10df0b13-9192-531b-af8b-8ec4d7b7f6e1",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8f7d76c1-0593-526d-be55-7b1a651efa5d",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8694e0d9-6c0c-5840-be46-8c33aaa1a9be",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9c7e57b3-6269-5d36-b917-12d320bd58ae",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "12673d4d-4ce2-5c25-b754-bf861864863e",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c4b94e42-ef3f-56ae-ad66-5ae0dab14e94",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d16cf1eb-04f6-55d5-a09f-4f865e8b565c",
+    "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a143d2ab-6520-5ed5-9233-67730c6a7ed4",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "027b229e-f09f-5bbb-bdfb-a7c9dd605759",
+    "quote_text": "MM/RATE/MXN/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "dd807710-f3e7-5ee4-b6c2-1adfb20cee2d",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "47de0723-68d5-501a-b480-2ffc646bd55c",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8659c25f-cb0d-56a6-b918-100b859b3113",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "af72c53d-e1d8-5f22-8e17-47012c9247d4",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5dc27771-b650-5c91-8f66-b45311d00f4b",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d4c1f250-c8c6-54d3-8232-be36ae884ba6",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f66e8582-f04c-51b7-8050-e018acae606d",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a4d63dc2-386b-52c0-a32c-36597eb64c74",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d7b741e7-78bd-589f-b882-ba52eb8a4684",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "de706d59-2ceb-5637-81b5-c8a85d715ed5",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d22c789b-ed68-5dd6-bbab-cc9919122551",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "739e53a3-b8e3-5a34-9c36-4ffb89d600a0",
+    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "quote_text": "IR_SWAP/RATE/MXN/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ba5439db-f3f8-59c6-b1e3-4bd5d57a9c78",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "bb96c9e0-2729-5131-9742-f8f32ddbae77",
+    "quote_text": "MM/RATE/BRL/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0e118851-317a-537c-b82e-1cc3ee1214eb",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "380e7df7-141c-50d3-9c9a-27f541ef2b53",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "910f4eed-a06f-54a0-8e7c-d99458d36a7a",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6e2607bc-ec97-594e-99e3-3fe11f46f5fa",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "84127411-4c58-5393-8758-a4faf712a516",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "07d1f119-200a-514a-b1df-13ec86b1543f",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7a2bf8b8-445b-5030-b0a8-77ac2cf37872",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3bc3b406-895d-50cd-90de-4af2550a710c",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "63cc39a8-f3c4-5636-b10a-e2a76755fd63",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "27a92408-bfa2-545b-ae30-c4eb105f5f66",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "21a95919-9de7-5f07-b837-09b2c3da13c1",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "55a09885-4f27-5273-9335-5ee1830bb291",
+    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "quote_text": "IR_SWAP/RATE/BRL/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a6b28d05-f322-5f02-917a-b31d7ee1a045",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "4033837b-c196-5189-bf2d-a97bc2f6364b",
+    "quote_text": "MM/RATE/HKD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9e227891-123f-509c-b2ea-56cbedc5acb7",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "aa84ae3f-2fa1-5c25-835c-672716256182",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1e70cf9e-1098-5a6f-bd83-90d336712267",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d7cf57cd-62e2-51d9-a767-8aaa3f955f78",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "48485bf7-626c-57f3-9ca1-b4c99a59ba6d",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0785f2ce-d9c0-5910-a275-224dce24d3b5",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fb26d9e8-bc36-5e49-b6ac-3b6f16ea445e",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f6a1ed51-5468-5d9c-aca6-cb4b93b74f3a",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fef0e312-34a4-5813-b8bf-435022716bd6",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4610268c-3fe0-5835-a2e9-f9f2966df8e0",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0ccb7006-edb3-5608-9d6d-5ceecc2303b4",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2a93137d-8578-570c-8f1b-25df3795546d",
+    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "quote_text": "IR_SWAP/RATE/HKD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e8b03dbc-0ba3-5d98-b63f-41aab6518017",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "debcb295-18bd-5ce4-b63c-60e1fb65a40e",
+    "quote_text": "MM/RATE/USD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8baecd08-0f11-5c72-83bd-75adc322594a",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "137bfd5b-a729-5380-9e76-163b555fe432",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "062a76cc-d63c-55bc-baa4-16291ea5cb73",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "75ce8737-eca3-5b2b-bc8e-ddf29d1aa6b2",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9085eed6-0a46-5313-a6aa-23ef5d37ac3f",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2094c7c8-96d9-5ee5-bc5f-137ad286ccf9",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d529b6b0-279a-5d55-a7d1-422d9d28fdf4",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "139367d8-75ed-5af6-9e48-a6ec9aa039d8",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "96e99c81-2111-59b2-a863-d839e939d8ba",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4ebc185a-a87e-54a8-9054-2f4ed11748f0",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "37356cda-f4a6-5869-b76c-0d29a6bd3aff",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6018e481-9180-57e7-bb60-8d9e0907f8ab",
+    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "quote_text": "IR_SWAP/RATE/USD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7c049aea-27fa-5c71-9ab1-2430b82edafd",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c5490ffa-0802-5ad9-9479-baef9be2fac3",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "88313b33-2675-5553-96e9-b04676c252a2",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d8a152ae-da7c-5f33-880e-3065882a9836",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0a0a2461-2047-5646-986f-a3522623bf09",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "60eba9c2-68f1-5387-a426-880922913690",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "32523b17-f42f-5350-8e28-f9f7b8b46be1",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "337899fa-0587-5376-88ab-cd6ffe65bd7f",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "db5336c6-27c4-5c08-9ec1-694155d4c81e",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b2d22f6b-a26e-571a-8054-1a55507d1019",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "63766676-ac1f-5bc1-ac51-29e97e630ab8",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e0f35327-0931-5020-ad53-068760d8ea7a",
+    "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "quote_text": "IR_SWAP/RATE/JPY/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f4ccadb5-6805-585e-935e-d6c1f82d62e5",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "c13fa732-6c93-5aae-a3b5-d97aaed6ff18",
+    "quote_text": "MM/RATE/AUD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "71f02c8a-f759-5c2d-897e-0904e7d87092",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "edfb60da-f1e9-542e-aa9d-76ff1ce6b3b8",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "87f611b3-4a96-5beb-aed5-3b74d302a91a",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4d16583a-1b31-5843-b73b-b8b93885a421",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "59b108b4-075a-54ae-b5f6-3f42a52b7ce6",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5a44c6fa-2be4-599c-9adb-734f34dc2fa3",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0ec585dc-0c18-5f24-b2ca-6ed090fa8d5a",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "58dbdf45-742b-50ec-99cb-a36d761081e8",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4cd47743-e051-546d-87d2-67521503bd3c",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3aae7c24-7a3d-5e41-9602-34188181d4be",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0a7ed5e9-640f-5363-8b3f-b5d8e63a8692",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "22a10981-ed79-5cb6-9aad-134a02b2267a",
+    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "quote_text": "IR_SWAP/RATE/AUD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7315448f-763d-5b13-9d02-d273d39b4445",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "4ec23c31-a719-50c7-8141-370bd75b9be8",
+    "quote_text": "MM/RATE/NZD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6f392cec-8cec-5f74-9219-ae0cf76f16f0",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "15813273-02ca-533e-bcc9-bff49a9f1b1b",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "961e29e8-2c0a-5d11-9a60-36ff324b6625",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "69460fa9-9d84-5bc2-a3ea-1ed07dbd4543",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ca5e30e5-512f-5298-a4bc-413ada3c121a",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "67a1bbec-46a6-5858-8139-205f383248bf",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "82188029-7139-5218-895e-627ba0395011",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ea69f7a9-b668-5ff5-badc-4c4c442989f4",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fe65a022-16e6-529e-be44-07b0a9d72374",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "925b5acc-e7d4-5e34-953d-24b5102d544e",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d81a23d8-a0bf-585b-aa13-d8524fe82c71",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f2e40408-0c52-5ecb-9da0-ba48af9a6ac8",
+    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "quote_text": "IR_SWAP/RATE/NZD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1ed502e6-d0d5-5fa9-83a4-9f3aea9750cc",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "17249546-dd1d-5be7-8e60-316433c60fa3",
+    "quote_text": "MM/RATE/SGD/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "80560dcd-0050-509b-9104-a90263fd9f5a",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b9a7d5c2-7a58-54f5-a68d-8c248f5b2f16",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f3085aed-fbbb-5c51-bb44-3bd05b86b579",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7a916260-9d4e-5327-a7cf-933d2e4e22b2",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "406acd97-5e64-523e-af50-b513090eeaae",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6d56f334-4818-5b5a-bcdb-9e6fe3d56bd0",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1b920c9c-4a39-5d04-8a82-5575e173fa42",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f4d38f44-a502-5cb4-a18f-ad8681394c3c",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ec86a059-06f1-56ac-8115-91d778b143b7",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7e630f77-35b5-5a54-8bbf-1712ebdffacd",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e9830a76-bc4a-525d-9114-1a2dca45a87e",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "76c3528b-b509-56ae-ab44-898656c99245",
+    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "quote_text": "IR_SWAP/RATE/SGD/2D/1D/30Y",
+    "position": 11
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4576dbf0-a70f-55dd-8596-ba142d1ce147",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "2d30f345-728a-5444-bf94-54b9c2be39fb",
+    "quote_text": "MM/RATE/INR/0D/1D",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "35be28d0-cf0c-5414-ac49-239fbd9facd6",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/1M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5f92cc51-2dce-5080-80f4-9418f1028d0d",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/3M",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c6633809-5b91-531b-97cc-141dd1688987",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/6M",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "98c798ca-771c-59cb-9e80-96727264281b",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/1Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "560bac73-35ac-5297-b556-85eac0902224",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/2Y",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a02d9237-c181-56ad-bba4-d29f4efcaa2d",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/3Y",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0c3b1f6d-71db-538f-9af5-5882a24a85d2",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/5Y",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "884825ae-a0fd-5444-8d40-c257ed8c1fd9",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/7Y",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1dbc0ceb-9387-5737-9909-3f1fc68bd45a",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/10Y",
+    "position": 8
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "97e400e8-680b-5686-927d-0a11d6385dc8",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/15Y",
+    "position": 9
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c95b41d5-c6b6-5fe5-acd0-c3b9a28052c9",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/20Y",
+    "position": 10
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "34648821-a625-5c71-af21-b8e256b50d12",
+    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "quote_text": "IR_SWAP/RATE/INR/2D/1D/30Y",
+    "position": 11
+  }
+]

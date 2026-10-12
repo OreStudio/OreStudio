@@ -22,9 +22,9 @@
  * CRM Topology Bundles Seed Population Script
  *
  * Registers the refdata.crm_topology_bundles dataset (its own standalone
- * bundle, 'crm_topology' -- deliberately independent of any synthetic-data
- * vintage/theme bundle, so a party gets a working CRM Cross-Rates Matrix
- * regardless of which theme's feed, if any, is currently running) and
+ * bundle, 'crm_topology' -- deliberately independent of any synthetic
+ * feeds bundle, so a party gets a working CRM Cross-Rates Matrix
+ * regardless of which dataset's feed, if any, is currently running) and
  * seeds three named CRMs per party, matching real FX desk tiering:
  *
  * - "majors": pivot USD, the 8 major driver pairs as spanning-tree
@@ -44,7 +44,7 @@
  *
  * The explicit dataset dependency (ores_dq_dataset_dependencies_upsert_fn)
  * on marketdata.fx_driver_rates records that this dataset presupposes
- * those currencies existing -- no dependency on any synthetic theme's
+ * those currencies existing -- no dependency on any synthetic dataset's
  * live feed: publishing topology config doesn't require a feed to
  * already be running, only the driver-currency reference data.
  *
@@ -59,9 +59,9 @@ DO $$
 BEGIN
     PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'CRM Topology Curation',
-        'Named CRM (Cross-Rates Matrix) topologies curated to mirror real FX desk liquidity tiering: a dense direct-quote "majors" mesh for liquid G10 pairs, a strict USD-pivot-star "exotics" tier for thin-liquidity EM pairs where no one directly quotes cross rates, and a USD-pivot-star "scandies" tier for the Nordic currencies (SEK/NOK/DKK) plus EUR. Driver pairs are chosen to exactly match currencies with real, live synthetic feed data (see marketdata.fx_driver_rates and synthetic.themes.ore_samples_2016) -- never a CRM edge with no underlying feed.',
-        'ores.analytics.quant CRM design (see doc/agile/versions/v0/sprint_23/crm_implementation/), cross-referenced against marketdata.fx_driver_rates and synthetic.themes.ore_samples_2016 for feed coverage.',
-        'Every driver pair here has a corresponding row in both marketdata.fx_driver_rates and synthetic.themes.ore_samples_2016; derived pairs are a curated subset of pairs triangulable from the majors driver set.'
+        'Named CRM (Cross-Rates Matrix) topologies curated to mirror real FX desk liquidity tiering: a dense direct-quote "majors" mesh for liquid G10 pairs, a strict USD-pivot-star "exotics" tier for thin-liquidity EM pairs where no one directly quotes cross rates, and a USD-pivot-star "scandies" tier for the Nordic currencies (SEK/NOK/DKK) plus EUR. Driver pairs are chosen to exactly match currencies with real, live synthetic feed data (see marketdata.fx_driver_rates and synthetic.feeds.ore_samples_2016) -- never a CRM edge with no underlying feed.',
+        'ores.analytics.quant CRM design (see doc/agile/versions/v0/sprint_23/crm_implementation/), cross-referenced against marketdata.fx_driver_rates and synthetic.feeds.ore_samples_2016 for feed coverage.',
+        'Every driver pair here has a corresponding row in both marketdata.fx_driver_rates and synthetic.feeds.ore_samples_2016; derived pairs are a curated subset of pairs triangulable from the majors driver set.'
     );
 END $$;
 
@@ -116,7 +116,7 @@ BEGIN
         'driver_currencies'
     );
 
-    -- No dependency on a live-feed dataset (e.g. synthetic.themes.ore_samples_2016
+    -- No dependency on a live-feed dataset (e.g. synthetic.feeds.ore_samples_2016
     -- for the 2016 vintage) -- publishing the topology config/driver-pair/derived-
     -- pair rows here doesn't require a live feed to already be publishing
     -- successfully, only the driver_currencies reference data above. The CRM
@@ -130,7 +130,7 @@ END $$;
 -- Its own standalone bundle (dq_dataset_bundle_populate.sql's
 -- 'crm_topology'), not a member of any vintage bundle -- see that
 -- registration's comment for why: a party gets a working CRM Cross-Rates
--- Matrix regardless of which synthetic-data theme/vintage it publishes,
+-- Matrix regardless of which synthetic feeds dataset it publishes,
 -- and adding/retiring a vintage bundle never has to remember to carry
 -- CRM topology along with it.
 -- =============================================================================
@@ -167,7 +167,7 @@ begin
     )
     values
         -- majors: 8 driver pairs (spanning-tree edges), matching
-        -- marketdata.fx_driver_rates / synthetic.themes.ore_samples_2016
+        -- marketdata.fx_driver_rates / synthetic.feeds.ore_samples_2016
         -- exactly.
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'USD', 'driver'),
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'USD', 'driver'),
@@ -218,7 +218,7 @@ begin
         (v_dataset_id, v_tenant_id, 'exotics', 'USD', 'USD', 'INR', 'driver'),
         -- scandies: 4 driver pairs (spanning-tree edges), a USD-pivot
         -- star over the Nordic currencies plus EUR, matching
-        -- marketdata.fx_driver_rates / synthetic.themes.ore_samples_2016
+        -- marketdata.fx_driver_rates / synthetic.feeds.ore_samples_2016
         -- exactly (EUR/USD shared with majors; USD/SEK shared with
         -- majors; USD/NOK, USD/DKK added specifically for this tier).
         (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'EUR', 'USD', 'driver'),

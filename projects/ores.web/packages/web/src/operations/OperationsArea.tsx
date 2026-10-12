@@ -33,7 +33,7 @@ import { PageHeader } from '../ui/Primitives.js';
  * no read, so every person can say which build they use when they report a
  * problem.
  */
-export function OperationsArea({ mode }: { readonly mode: SessionMode }): ReactNode {
+export function OperationsArea(): ReactNode {
     const { t } = useTranslation();
     return (
         <div className="space-y-6">
@@ -44,7 +44,7 @@ export function OperationsArea({ mode }: { readonly mode: SessionMode }): ReactN
                     description={t('operations.hub.description')}
                 />
             </div>
-            <AreaCards area="operations" mode={mode} />
+            <AreaCards area="operations" />
         </div>
     );
 }

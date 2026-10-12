@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 27181728-3F7D-4D39-9934-D38E04CFC5A6
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_parametric_smile
 #+description: Codegen entity model for the refdata =curve_parametric_smile= table. The parametric smile configuration of an ORE volatility entry.

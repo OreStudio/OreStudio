@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 34F339B8-5C3B-4E10-BAC3-5D0FB67BA2F7
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.inflation_seasonality_factor
 #+description: Codegen entity model for the refdata =inflation_seasonality_factor= table. One seasonality factor of an ORE inflation curve.

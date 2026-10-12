@@ -24,23 +24,17 @@
  *
  * Risk Report Config Table
  *
- * The ORE-level parameters for a risk report definition: base currency,
- * observation model, analytics flags, XVA/VaR/SIMM settings and threading.
- *
- * Each row is owned by exactly one report_definition (1:1, enforced by the
- * unique index on report_definition_id). Portfolio and book scope live in
- * separate temporal junction tables; an empty set in either junction means
- * "all visible to the tenant".
- *
- * Analytics flags use integer 0/1, not boolean, to match the project
- * convention. npv and cashflow default to enabled; all others default off.
+ * The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row.
  */
 
 create table if not exists "ores_reporting_risk_report_configs_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "report_definition_id" uuid not null,
+    "party_id" uuid not null,
+    "name" text not null,
+    "description" text null,
+    "configuration_id" uuid not null,
     "base_currency" text not null,
     "observation_model" text not null default 'disable',
     "n_threads" integer not null default 1,
@@ -56,6 +50,12 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     "parametric_var_enabled" integer not null default 0,
     "initial_margin_enabled" integer not null default 0,
     "pfe_enabled" integer not null default 0,
+    "portfolio_details_enabled" integer not null default 0,
+    "saccr_enabled" integer not null default 0,
+    "calibration_enabled" integer not null default 0,
+    "credit_curves_enabled" integer not null default 0,
+    "historical_var_enabled" integer not null default 0,
+    "pnl_explain_enabled" integer not null default 0,
     "xva_quantile" numeric(5,4) null,
     "xva_cva_enabled" integer not null default 1,
     "xva_dva_enabled" integer not null default 0,
@@ -98,18 +98,26 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     check ("parametric_var_enabled" in (0, 1)),
     check ("initial_margin_enabled" in (0, 1)),
     check ("pfe_enabled" in (0, 1)),
+    check ("portfolio_details_enabled" in (0, 1)),
+    check ("saccr_enabled" in (0, 1)),
+    check ("calibration_enabled" in (0, 1)),
+    check ("credit_curves_enabled" in (0, 1)),
+    check ("historical_var_enabled" in (0, 1)),
+    check ("pnl_explain_enabled" in (0, 1)),
     check ("xva_cva_enabled" in (0, 1)),
     check ("xva_dva_enabled" in (0, 1)),
     check ("xva_fva_enabled" in (0, 1)),
     check ("xva_colva_enabled" in (0, 1)),
     check ("xva_dim_enabled" in (0, 1)),
     check ("xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3),
-    check ("var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo'))
+    check ("var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo')),
+    check ("npv_enabled" + "cashflow_enabled" + "curves_enabled" + "sensitivity_enabled" + "simulation_enabled" + "xva_enabled" + "stress_enabled" + "parametric_var_enabled" + "initial_margin_enabled" + "pfe_enabled" + "portfolio_details_enabled" + "saccr_enabled" + "calibration_enabled" + "credit_curves_enabled" + "historical_var_enabled" + "pnl_explain_enabled" >= 1),
+    check ("pfe_enabled" = 0 or "simulation_enabled" = 1)
 );
 
--- Unique report_definition_id for active records
-create unique index if not exists risk_report_configs_report_definition_id_uniq_idx
-on "ores_reporting_risk_report_configs_tbl" (tenant_id, report_definition_id)
+-- Composite natural key: unique combination for active records
+create unique index if not exists risk_report_configs_party_id_name_uniq_idx
+on "ores_reporting_risk_report_configs_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -133,26 +141,17 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate report_definition_id (soft FK to ores_reporting_report_definitions_tbl)
+    -- Validate configuration_id (soft FK to ores_reporting_configurations_tbl)
     if not exists (
-        select 1 from ores_reporting_report_definitions_tbl
+        select 1 from ores_reporting_configurations_tbl
         where tenant_id = NEW.tenant_id
-          and id = NEW.report_definition_id
+          and id = NEW.configuration_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid report_definition_id: %. No active report definition found with this id.', NEW.report_definition_id
+        raise exception 'Invalid configuration_id: %. No active configuration found with this id.', NEW.configuration_id
             using errcode = '23503';
     end if;
 
-    -- An official report reads no sandbox: a config whose scope names a
-    -- sandbox portfolio or a virtual book cannot belong to an official
-    -- definition, including by moving to one.
-    if ores_reporting_definition_is_official_fn(NEW.tenant_id, NEW.report_definition_id)
-       and ores_reporting_config_scope_has_sandbox_fn(NEW.tenant_id, NEW.id) then
-        raise exception 'Invalid report_definition_id: %. The configuration scopes sandbox data and the definition is official.',
-            NEW.report_definition_id
-            using errcode = '23514';
-    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
@@ -224,4 +223,41 @@ on delete to "ores_reporting_risk_report_configs_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Risk Report Config
+-- =============================================================================
+alter table ores_reporting_risk_report_configs_tbl enable row level security;
+
+drop policy if exists risk_report_configs_tbl_tenant_isolation_policy
+    on ores_reporting_risk_report_configs_tbl;
+
+create policy risk_report_configs_tbl_tenant_isolation_policy
+on ores_reporting_risk_report_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists risk_report_configs_tbl_party_isolation_policy
+    on ores_reporting_risk_report_configs_tbl;
+
+create policy risk_report_configs_tbl_party_isolation_policy
+on ores_reporting_risk_report_configs_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

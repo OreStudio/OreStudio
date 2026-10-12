@@ -310,8 +310,10 @@ result. No person types them, and nothing in the shell sends them.
 /**
  * @brief A wrapper node's liveness signal.
  *
- * Fire-and-forget and unauthenticated: the handler touches the host row
- * with the service context, and registers the host on its first heartbeat.
+ * Fire-and-forget and unauthenticated: the handler registers the host on its
+ * first heartbeat with the service context. It also carries what the computer
+ * says about its hardware, which the handler writes to the host row only when
+ * it differs from the row, so a known host's heartbeat still writes nothing.
  */
 #+end_src
 
@@ -326,6 +328,30 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+*** cpu_count
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Logical processors of the computer, 0 when the node could not read it.
+ */
+#+end_src
+
+*** ram_mb
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Physical memory of the computer in MiB, 0 when the node could not read it.
+ */
+#+end_src
+
 ** reap_work_message
 :PROPERTIES:
 :subject: compute.v1.ops.reap_work
@@ -337,6 +363,94 @@ result. No person types them, and nothing in the shell sends them.
  * @brief Asks the service to requeue the work of stale hosts.
  *
  * It carries no fields, because the stale threshold is the service's own.
+ */
+#+end_src
+
+** result_started_request
+:PROPERTIES:
+:subject: compute.v1.ops.result_started
+:auth: none
+:response: result_started_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Tells the service that a wrapper node has begun a job.
+ *
+ * The node waits for the reply before it runs the job, so the service has
+ * recorded the result as in progress before the node can submit it. Without the
+ * wait a fast job could submit first, and the late start would overwrite the
+ * finished result. Like the submit, the channel is trusted at the transport
+ * layer, because a node holds no user JWT.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant the assignment named; the result is scoped to it.
+ */
+#+end_src
+
+*** result_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The result the node has begun.
+ */
+#+end_src
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The node that runs it.
+ */
+#+end_src
+
+** result_started_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the start was recorded.
+ *
+ * A start for a result that is not unsent is not an error: the result is already
+ * further on, and the reply says so in the message with success set.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the start was recorded or was already moot.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not recorded, when it was not.
  */
 #+end_src
 

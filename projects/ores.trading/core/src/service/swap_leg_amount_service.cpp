@@ -113,6 +113,7 @@ domain::swap_leg_amount to_domain(const messaging::swap_leg_amount_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_swap_leg_amounts_response swap_leg_amount_service::list_swap_leg_amounts(

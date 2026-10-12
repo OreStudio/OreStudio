@@ -19,8 +19,6 @@
  *
  */
 
-import type { InboxRequestView } from '@ores/wire-protocol/browser';
-
 /**
  * The words a request is drawn with.
  *
@@ -32,7 +30,7 @@ import type { InboxRequestView } from '@ores/wire-protocol/browser';
 
 export type Tone = 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
 
-/** The six states a request may be in, each with the chip the prototype draws. */
+/** The states a request may be in, each with the chip the prototype draws. */
 // A state is painted by what it means to the person reading it. Waiting is
 // the thing to look at, a grant is the outcome that went their way, a refusal
 // is the one that did not, and the rest are neither: a withdrawn or lapsed
@@ -44,6 +42,7 @@ const STATE_TONES: Readonly<Record<string, Tone>> = {
     refused: 'down',
     withdrawn: 'muted',
     expired: 'muted',
+    apply_failed: 'down',
 };
 
 /** A state's name in the person's language, or its code when it has none. */
@@ -79,16 +78,40 @@ export function sourceLabel(t: (key: string) => string, entityType: string): str
 }
 
 /**
- * What a request asks for, as a row names it.
+ * A part's name in the person's language, or the server's own name for it.
  *
- * A person's own requests name the roles they asked for, because IAM answers
- * the read that asks for them. A request the reader may not read the roles of
- * says nothing about what it asks for, and the kind's label stands in.
+ * A part is a function that must approve: controller, finance, market risk,
+ * operations. The server names each part, and a tenant may add one this build
+ * has no word for, so the code is only the first thing tried.
  */
-export function askedFor(
-    t: (key: string) => string,
-    request: Pick<InboxRequestView, 'kindCode' | 'roles'>,
-): string {
-    const names = request.roles.map((role) => role.name).filter((name) => name !== '');
-    return names.length > 0 ? names.join(', ') : kindLabel(t, request.kindCode);
+export function partLabel(t: (key: string) => string, code: string, serverName = ''): string {
+    const key = `inbox.part.${code}`;
+    const label = t(key);
+    if (label !== key) return label;
+    return serverName === '' ? code : serverName;
+}
+
+/** The state of one part of a request, as the chip draws it. */
+const PART_STATE_TONES: Readonly<Record<string, Tone>> = {
+    approved: 'up',
+    refused: 'down',
+    waiting: 'warn',
+    later: 'muted',
+};
+
+export function partStateTone(stateCode: string): Tone {
+    return PART_STATE_TONES[stateCode] ?? 'muted';
+}
+
+export function partStateLabel(t: (key: string) => string, stateCode: string): string {
+    const key = `inbox.partState.${stateCode}`;
+    const label = t(key);
+    return label === key ? stateCode : label;
+}
+
+/** What a line does to its subject, in the person's language. */
+export function operationLabel(t: (key: string) => string, operation: string): string {
+    const key = `inbox.operation.${operation}`;
+    const label = t(key);
+    return label === key ? operation : label;
 }

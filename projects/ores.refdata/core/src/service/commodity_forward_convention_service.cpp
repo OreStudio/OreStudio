@@ -111,6 +111,7 @@ to_domain(const messaging::commodity_forward_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_commodity_forward_conventions_response

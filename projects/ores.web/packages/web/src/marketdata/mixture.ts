@@ -276,3 +276,58 @@ export function removedFrom(
     const kept = new Set(draft.map((component) => component.id));
     return saved.filter((component) => !kept.has(component.id));
 }
+
+/** The numbers a mixture holds, one entry per component. */
+export interface MixtureNumbers {
+    readonly means: readonly number[];
+    readonly stdevs: readonly number[];
+    readonly weights: readonly number[];
+}
+
+function plainNumber(value: number | undefined): string {
+    return String(Number((value ?? 0).toPrecision(10)));
+}
+
+/**
+ * The draft the simple view's mixture makes. The primary component keeps the
+ * identity of the one that had the most weight, and the jump regime that of a
+ * component four times as wide, so a save updates them in place; a
+ * mean-reverting mixture keeps the first. A component the new mixture has no
+ * room for is left out, and a saved one shows as deleted until the save.
+ */
+export function draftFromMixture(
+    current: readonly DraftComponent[],
+    mixture: MixtureNumbers,
+    reverting: boolean,
+    newId: () => string,
+): readonly DraftComponent[] {
+    const gaussians = gaussiansOf(current);
+    let primary = 0;
+    if (gaussians !== undefined) {
+        gaussians.forEach((one, i) => {
+            if (one.weight > (gaussians[primary]?.weight ?? 0)) {
+                primary = i;
+            }
+        });
+    }
+    const primaryOf = reverting ? 0 : primary;
+    const jump = current.findIndex(
+        (_, i) =>
+            i !== primaryOf &&
+            gaussians !== undefined &&
+            (gaussians[i]?.stdev ?? 0) >= 4 * (gaussians[primaryOf]?.stdev ?? 0),
+    );
+    const sources = [current[primaryOf], jump >= 0 ? current[jump] : undefined];
+    const names = ['Primary process', 'Jump regime (approx.)'];
+    return mixture.means.slice(0, 2).map((mean, i) => {
+        const source = sources[i];
+        return {
+            id: source?.id ?? newId(),
+            version: source?.version ?? null,
+            description: source?.description || names[i] || '',
+            mean: plainNumber(mean),
+            stdev: plainNumber(mixture.stdevs[i]),
+            weight: plainNumber(mixture.weights[i]),
+        };
+    });
+}

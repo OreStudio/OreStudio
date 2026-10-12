@@ -263,7 +263,7 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         fx.base_currency_code = base;
         fx.quote_currency_code = quote;
         fx.source_name = source_name;
-        fx.ore_key = "FX/RATE/" + base + "/" + quote;
+        fx.oresmd_uri = "oresmd://fx/" + base + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + quote;
         fx.price_source = "fixed";
         fx.gmm_initial_price = 1.08;
         fx.ticks_per_hour = 12;
@@ -280,13 +280,14 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         return fx;
     };
 
-    auto fx_enabled = make_fx(main_container, "EUR", "USD", "feed_config.test.fx.eur_usd", true);
+    auto fx_enabled =
+        make_fx(main_container, "EUR", "USD", "synthetic.feed_config.test.fx.eur_usd", true);
     const auto fx_disabled =
-        make_fx(main_container, "GBP", "USD", "feed_config.test.fx.gbp_usd", false);
-    const auto fx_conflicting =
-        make_fx(conflict_container, "EUR", "USD", "feed_config.test.fx.eur_usd_conflict", true);
-    const auto fx_no_components =
-        make_fx(no_components_container, "CHF", "USD", "feed_config.test.fx.chf_usd", true);
+        make_fx(main_container, "GBP", "USD", "synthetic.feed_config.test.fx.gbp_usd", false);
+    const auto fx_conflicting = make_fx(
+        conflict_container, "EUR", "USD", "synthetic.feed_config.test.fx.eur_usd_conflict", true);
+    const auto fx_no_components = make_fx(
+        no_components_container, "CHF", "USD", "synthetic.feed_config.test.fx.chf_usd", true);
 
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_enabled);
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_disabled);
@@ -350,11 +351,12 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         return ir;
     };
 
-    auto ir_enabled = make_ir(main_container, "USD", "feed_config.test.ir.usd_sofr", true);
+    auto ir_enabled =
+        make_ir(main_container, "USD", "synthetic.feed_config.test.ir.usd_sofr", true);
     const auto ir_disabled =
-        make_ir(main_container, "EUR", "feed_config.test.ir.eur_sofr_disabled", false);
-    const auto ir_no_entries =
-        make_ir(no_entries_container, "EUR", "feed_config.test.ir.eur_sofr_no_entries", true);
+        make_ir(main_container, "EUR", "synthetic.feed_config.test.ir.eur_sofr_disabled", false);
+    const auto ir_no_entries = make_ir(
+        no_entries_container, "EUR", "synthetic.feed_config.test.ir.eur_sofr_no_entries", true);
 
     repo::ir_curve_generation_config_repository().write(party_ctx, ir_enabled);
     repo::ir_curve_generation_config_repository().write(party_ctx, ir_disabled);
@@ -633,7 +635,7 @@ TEST_CASE("feed_config_start_rejects_missing_children", tags) {
     CHECK(f.ctrl->running_count() == 0);
 }
 
-TEST_CASE("feed_config_start_reports_qualifier_conflict", tags) {
+TEST_CASE("feed_config_start_reports_oresmd_conflict", tags) {
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_configs(f.db, test_party);

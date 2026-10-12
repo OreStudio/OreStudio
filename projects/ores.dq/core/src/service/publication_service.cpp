@@ -110,6 +110,7 @@ domain::publication to_domain(const messaging::publication_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_publications_response

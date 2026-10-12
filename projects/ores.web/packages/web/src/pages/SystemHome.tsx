@@ -592,7 +592,7 @@ function TenantTable({
 }
 
 function ActiveModules(): ReactNode {
-    return <ActiveCards mode="system-administration" />;
+    return <ActiveCards />;
 }
 
 function UpcomingModules(): ReactNode {

@@ -57,6 +57,12 @@ struct workunit final {
     boost::uuids::uuid id;
 
     /**
+     * @brief The party that submitted the batch the workunit belongs to, copied from the session
+     * when the batch is created. NULL for work that predates the party scope.
+     */
+    std::optional<boost::uuids::uuid> party_id;
+
+    /**
      * @brief FK reference to ores_compute_batches_tbl.
      */
     boost::uuids::uuid batch_id;

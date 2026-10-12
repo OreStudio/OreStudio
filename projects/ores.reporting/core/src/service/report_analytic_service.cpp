@@ -108,6 +108,7 @@ domain::report_analytic to_domain(const messaging::report_analytic_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_report_analytics_response report_analytic_service::list_report_analytics(

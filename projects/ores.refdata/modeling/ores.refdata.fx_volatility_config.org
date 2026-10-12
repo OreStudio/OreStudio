@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BDBBC2A5-0698-426A-8951-363BBB792EB2
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.fx_volatility_config
 #+description: Codegen entity model for the refdata =fx_volatility_config= table. The settings of one ORE FX volatility.

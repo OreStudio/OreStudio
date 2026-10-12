@@ -111,6 +111,7 @@ domain::composite_instrument to_domain(const messaging::composite_instrument_wri
     return v;
 }
 
+
 }
 
 messaging::list_composite_instruments_response

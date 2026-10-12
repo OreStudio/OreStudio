@@ -120,6 +120,7 @@ const KIND_RANK: Readonly<Record<string, number>> = {
     decided: 50,
     granted: 60,
     signed_in: 70,
+    closed: 80,
     sign_in_failed: 70,
     signed_out: 70,
     refreshed: 70,
@@ -167,6 +168,9 @@ export const ACCOUNT_ENTITY = 'ores.iam.account';
 
 /** The contact record a person owns, whose versions make up their address. */
 export const CONTACT_ENTITY = 'ores.iam.account_contact_information';
+
+/** The link between a person and a party they work in. */
+export const ACCOUNT_PARTY_ENTITY = 'ores.iam.account_party';
 
 /** One person's grants or refusals of a sign-in. */
 export const AUTH_EVENT_ENTITY = 'ores.iam.auth_event';
@@ -250,14 +254,69 @@ export function recordEvents(
     }));
 }
 
+/** The name a link's history gives to its own row: both keys, parent first. */
+const LINK_ID_FIELD = 'ID';
+
+/** The end of a link's validity, empty while the link is open. */
+const CLOSED_AT_FIELD = 'Closed At';
+
+/**
+ * The entries a link table's history makes.
+ *
+ * A link has two keys, so the server reads its history by the parent and answers
+ * every version of every link of that parent, each carrying the pair as its
+ * @c ID field. The versions are grouped by that pair, and each link is one row
+ * of the stream: its opening, each change, and its closing. A link is closed by
+ * ending its validity and not by writing a version, so the closing is read off
+ * the field the server states, and it has no author: the store records when a
+ * link ended, and not who ended it.
+ */
+export function linkEvents(
+    entityType: string,
+    versions: readonly {
+        readonly version: number;
+        readonly modifiedBy: string;
+        readonly recordedAt: string;
+        readonly fields: readonly TimelineField[];
+    }[],
+): readonly TimelineEvent[] {
+    const links = new Map<string, (typeof versions)[number][]>();
+    for (const version of versions) {
+        const id = fieldValue(version.fields, LINK_ID_FIELD);
+        links.set(id, [...(links.get(id) ?? []), version]);
+    }
+    return [...links.entries()].flatMap(([id, own]) => {
+        const events = recordEvents(entityType, id, own);
+        const closings = own
+            .filter((version) => fieldValue(version.fields, CLOSED_AT_FIELD) !== '')
+            .map(
+                (version): TimelineEvent => ({
+                    entityType,
+                    entityId: id,
+                    kind: 'closed',
+                    at: fieldValue(version.fields, CLOSED_AT_FIELD),
+                    actor: '',
+                    version: version.version,
+                    reasonCode: '',
+                    commentary: '',
+                    fields: version.fields.filter(
+                        (field) =>
+                            !TIMELINE_PROVENANCE_FIELDS.has(field.name) &&
+                            field.name !== CLOSED_AT_FIELD,
+                    ),
+                }),
+            );
+        return [...events, ...closings];
+    });
+}
+
 /**
  * One person's whole story, newest first.
  *
  * The account, its contact record, the roles it holds and its sign-ins are four
  * reads over four tables, merged into one stream. The parts are not equally
  * answerable, and the stream says so rather than rounding: a grant that was
- * taken away has no read at all, the party links are a junction the protocol
- * declares to have no history, and the sign-in log keeps a window rather than
+ * taken away has no read at all, and the sign-in log keeps a window rather than
  * everything. Each is a gap on the answer.
  *
  * A username nothing holds answers with an empty stream, which is what the
@@ -274,7 +333,7 @@ export async function readPersonTimeline(
 
     const gaps: TimelineGap[] = [];
 
-    const [accountVersions, contact, grants, signIns] = await Promise.all([
+    const [accountVersions, contact, grants, signIns, partyLinks] = await Promise.all([
         orGap(
             gaps,
             ACCOUNT_ENTITY,
@@ -301,6 +360,13 @@ export async function readPersonTimeline(
             AUTH_EVENT_ENTITY,
             'The sign-in read refused this caller, so this person’s sign-ins are not shown.',
             () => readAuthEvents(caller, { accountId: account.id, limit: SIGN_IN_PAGE }),
+            [],
+        ),
+        orGap(
+            gaps,
+            ACCOUNT_PARTY_ENTITY,
+            'The parties this person works in could not be read, so opening or closing one is not shown.',
+            () => readEntityHistory(caller, ACCOUNT_PARTY_ENTITY, account.id),
             [],
         ),
     ]);
@@ -337,6 +403,13 @@ export async function readPersonTimeline(
         ],
     }));
 
+    const partyLinkEvents = await namedLinks(
+        caller,
+        linkEvents(ACCOUNT_PARTY_ENTITY, partyLinks),
+        'Party',
+        'parties',
+    );
+
     const signInEvents: readonly TimelineEvent[] = signIns.map((event) => ({
         entityType: AUTH_EVENT_ENTITY,
         entityId: event.id,
@@ -355,10 +428,6 @@ export async function readPersonTimeline(
     }));
 
     gaps.push({
-        entity: 'ores.iam.account_party',
-        reason: 'A party link is a junction the protocol declares to have no versions and no events, so opening or closing one is not in the stream.',
-    });
-    gaps.push({
         entity: 'ores.iam.account_role',
         reason: 'A grant that was taken away is closed by its end time, and no read returns a closed grant, so only the grants held now are shown.',
     });
@@ -373,6 +442,7 @@ export async function readPersonTimeline(
         events: orderTimeline([
             ...recordEvents(ACCOUNT_ENTITY, account.id, accountVersions),
             ...contactEvents,
+            ...partyLinkEvents,
             ...grantEvents,
             ...signInEvents,
         ]),
@@ -421,6 +491,61 @@ const PARTY_PARTS: readonly {
     },
 ];
 
+/**
+ * Says the row on a link's far side by its name and not by its id.
+ *
+ * A link records the id of the party or the counterparty it points at, and a
+ * reader of the stream cannot read an id. The names are read one row at a time,
+ * which is a handful for a party, and a name that cannot be read leaves the id
+ * in place: the entry still says which row, only less kindly.
+ */
+async function namedLinks(
+    caller: AuthenticatedCaller,
+    events: readonly TimelineEvent[],
+    field: string,
+    resourceKey: string,
+): Promise<readonly TimelineEvent[]> {
+    const resource = recordResource(resourceKey);
+    if (resource === undefined) return events;
+    const ids = [
+        ...new Set(events.map((event) => fieldValue(event.fields, field)).filter((v) => v !== '')),
+    ];
+    const names = new Map<string, string>();
+    await Promise.all(
+        ids.map(async (id) => {
+            try {
+                const row = await readRecord(caller, resource, id);
+                const name = String(row?.['full_name'] ?? row?.['short_code'] ?? '');
+                if (name !== '') names.set(id, name);
+            } catch {
+                // The id stands in for a name that could not be read.
+            }
+        }),
+    );
+    return events.map((event) => ({
+        ...event,
+        fields: event.fields.map((f) =>
+            f.name === field && names.has(f.value) ? { ...f, value: names.get(f.value) ?? '' } : f,
+        ),
+    }));
+}
+
+/** The links a party holds, each read by the party under its own entity type. */
+const PARTY_LINKS: readonly {
+    readonly entityType: string;
+    readonly what: string;
+    /** The field that holds an id, and the resource that names it. A code needs none. */
+    readonly far?: { readonly field: string; readonly resource: string };
+}[] = [
+    { entityType: 'ores.refdata.party_country', what: 'countries it works in' },
+    { entityType: 'ores.refdata.party_currency', what: 'currencies it works in' },
+    {
+        entityType: 'ores.refdata.party_counterparty',
+        what: 'counterparties it may trade with',
+        far: { field: 'Counterparty', resource: 'counterparties' },
+    },
+];
+
 /** The versions of a history that belong to the row asked for. */
 function versionsOfRow<T extends { readonly fields: readonly TimelineField[] }>(
     versions: readonly T[],
@@ -434,9 +559,9 @@ function versionsOfRow<T extends { readonly fields: readonly TimelineField[] }>(
  *
  * A party is made of several kinds of record, so its story is the party's own
  * versions, merged with those of its identifiers, its contacts and its business
- * units. The countries and the currencies it works in and the counterparties it
- * may trade with are junctions, which keep no versions: opening or closing one
- * is not in the stream, and the stream says so as a gap.
+ * units, and with the opening and closing of the countries and currencies it
+ * works in and the counterparties it may trade with. A link has two keys, so it
+ * is read by the party and answers every link the party ever held.
  *
  * A party nothing holds answers with an empty stream, as the party page does.
  */
@@ -494,16 +619,23 @@ export async function readPartyTimeline(
         }),
     );
 
-    for (const [entity, what] of [
-        ['ores.refdata.party_country', 'countries it works in'],
-        ['ores.refdata.party_currency', 'currencies it works in'],
-        ['ores.refdata.party_counterparty', 'counterparties it may trade with'],
-    ] as const) {
-        gaps.push({
-            entity,
-            reason: `The ${what} are a junction the protocol declares to have no versions and no events, so adding or closing one is not in the stream.`,
-        });
-    }
+    const linkStories = await Promise.all(
+        PARTY_LINKS.map(async (link) => {
+            const events = linkEvents(
+                link.entityType,
+                await orGap(
+                    gaps,
+                    link.entityType,
+                    `The ${link.what} could not be read, so opening or closing one is not shown.`,
+                    () => readEntityHistory(caller, link.entityType, partyId),
+                    [],
+                ),
+            );
+            return link.far === undefined
+                ? events
+                : namedLinks(caller, events, link.far.field, link.far.resource);
+        }),
+    );
 
     return {
         subject: 'party',
@@ -511,6 +643,7 @@ export async function readPartyTimeline(
         events: orderTimeline([
             ...recordEvents(PARTY_ENTITY, partyId, versionsOfRow(partyVersions, partyId)),
             ...partEvents.flat(),
+            ...linkStories.flat(),
         ]),
         gaps,
     };

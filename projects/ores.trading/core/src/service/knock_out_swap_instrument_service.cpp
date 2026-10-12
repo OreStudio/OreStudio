@@ -110,6 +110,7 @@ to_domain(const messaging::knock_out_swap_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_knock_out_swap_instruments_response

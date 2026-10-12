@@ -48,6 +48,7 @@ struct batch_entity {
 
     std::string external_ref;
 
+    std::optional<std::string> party_id;
     std::string status;
     std::string modified_by;
     std::string performed_by;

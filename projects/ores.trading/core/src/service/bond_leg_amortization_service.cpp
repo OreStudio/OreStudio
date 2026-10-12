@@ -121,6 +121,7 @@ domain::bond_leg_amortization to_domain(const messaging::bond_leg_amortization_w
     return v;
 }
 
+
 }
 
 messaging::list_bond_leg_amortizations_response

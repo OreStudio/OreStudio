@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: A3F75AC1-7ABC-47A2-8CC6-3F75C5998C78
+:END:
+#+title: Task: Prototype the counterparty entity screen
+#+description: Draw the counterparty as an entity screen like the parties screen, with its identifiers, contacts and links, where a gated change raises a request and a contact change is written directly, before the product screen is built.
+#+type: task
+#+level: s1
+#+filetags: :build_the_four_eyes_framework:sprint_27:v0:
+#+owner: marco
+#+branch: feature/prototype-the-counterparty-entity-screen
+#+pr: 3178
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The counterparty screen is agreed as a record screen, not a workflow, before it is built.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The prototype shows a list, a record with tabs, and a dialog for each card.
+- A gated change goes through the review panel and raises a request; a contact change is written directly.
+- The request page shows the waiting, decide and declined states.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+- Draw the counterparty as the product draws the party: a list, a record on tabs, a dialog for each card. The tabs are the kinds of row a counterparty holds: details, identifiers, contacts, business centres, the parties that may trade with it, and history.
+- Reuse the shared four-eyes controls of the sibling prototypes for the waiting, decision and declined screens, so the request is drawn as the other prototypes draw it.
+- Mark each change with the function that decides it from the approval policy, and let the review's button save a change nobody gates and raise one request for the rest.
+- Test every state and the click paths with a small DOM stand-in run under node, because the prototype is plain files with no build.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The product owner signed the prototype off on 2026-10-12, with one condition: the history, and every other part of the screen, follow the UX standards. The prototype's History tab is a plain table to keep the picture short. The product screen does not copy it: see the counterparty screen task.
+- The product owner said the screen is not the onboarding journey. Onboarding is a workflow. The screen to build is an entity screen like the parties screen, with the links a counterparty adds, so this prototype is of the record.
+- The earlier onboarding prototype stays as the record of the workflow. This one sits beside it.
+- The policy rows give the gating: the counterparty, its identifiers and its party links need Operations, and the contact information and the business centre links need nobody.
+- The prototype shows no delete. The policy has no delete row for a counterparty, so a counterparty is closed through its status.
+- Open question for the product owner: should a contact change stay ungated? The policy says so today.
+- The product screen cannot raise a request yet. Only the book is gated on the server. The counterparty needs the same chain the book had: its model marked gated, a pending change, a preview and raise, and an apply.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3178][#3178]] | [prototype] Keep a counterparty's details current |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The request id differs between the screens | prototype.js, four-eyes.js | Accept | The shared controls read the id from the page, and the id moves on once a request is raised. One id now shows everywhere. |
+| 2 | The state bar breaks after the outcome | prototype.js | Accept | Every state starts from the mock data as it was, so the bar can be walked in any order. A test walks it after an outcome. |
+| 3 | Withdraw does not return to the review | prototype.js | Accept | Withdraw reopens the review with the edits kept. |
+| 4 | A new counterparty has no validation | prototype.js | Accept | An empty short code, an empty name, a duplicate short code and an empty identifier value block the save, with words. |
+| 5 | Versions rise once for each field | prototype.js | Accept | An identifier or a contact rises by one for each save. |
+| 6 | A dead assignment, and fe.params runs twice | prototype.js | Accept in part | The dead assignment is removed. The second params call stays, with its comment, because raising a request picks the first decider. |
+| 7 | A direct save trips a waiting request's version check | prototype.js | Accept | Kept on purpose, and the design note says so. |
+
+* Result
+
+The counterparty is drawn as a record screen that saves a change nobody gates and raises a request for the rest.
+
+- =doc/prototypes/parties/keep-a-counterpartys-details-current/= holds the page, with a design note beside it. The group page and the top page list it.
+- The list searches and opens a record. The record has six tabs and a dialog for each card, and a new counterparty is the same dialog as an edit.
+- The review shows each change with its decider. A request that is raised is drawn as waiting, as the checker's decision with its checks, and as declined, and an approved one writes a new version.
+
+Evidence: every state loads and each click path runs under a DOM stand-in in node: edit then raise then approve, a direct contact save, a gated party link, a new counterparty, the maker refused as decider, and a failed version check. The prototype inventory check reports a problem about the site build that is on main and not in this change.
+
+Not done here: a review of the prototype by the product owner, and the product screen.

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 1503D1BB-A74E-483C-B35C-E42B28F68466
+:END:
+#+title: Task: Draw the IR curve feeds on the shared feed screens
+#+description: An IR curve feed gets a list, a page, an add and edit dialog, a process tab with its parameters and previews, and a curve template tab, built on the feed kind that every asset class shares.
+#+type: task
+#+level: s1
+#+filetags: :name_every_synthetic_feed_by_oresmd_uri:sprint_27:v0:
+#+owner: marco
+#+branch: feature/name-every-synthetic-feed-by-oresmd-uri
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-12
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09E3EF10-022C-433F-80B0-96F3396AA9CC][Name every synthetic feed by its oresmd reference]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A quant composes an IR curve feed in ores.web in the words of the Qt IR curve editor, on the same list and page as an FX price feed. The screens are shared, so the next asset class states a feed kind and writes only its own tabs. This delivers most of the task Build the IR curve feed screen, which stays open for the Ticks tab.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09E3EF10-022C-433F-80B0-96F3396AA9CC][Name every synthetic feed by its oresmd reference]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The feed list, the feed page and the add, edit and delete dialogs are drawn by one component for every kind, and the FX price feed screens are unchanged.
+- The IR curve feed has a list with run controls, a page with Details, Process, Curve template and History tabs, and a dialog in the words of the Qt editor.
+- The Process tab saves the engine and the parameters together under one reason, and previews the curve shape and sample short-rate paths from the values on the screen.
+- The curve template is edited as the parts of the feed, and the history shows the feed, its parameters and its entries as one stream.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3152][#3152]] | Name every synthetic feed by its oresmd reference |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The IR curve feeds use the feed screens that every asset class shares (FeedKind, FeedsPage, FeedPage): a dialog in the words of the Qt editor, a Process tab, a Curve template tab, a Ticks tab that draws the curves as the Qt market simulator does, and a History tab. The Process tab offers Simple and Advanced, the same switch as the FX price behaviour tab. The feed screen standard states all of it. The author looked at the Process and Ticks tabs in a browser.

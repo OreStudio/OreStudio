@@ -31,6 +31,7 @@
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
@@ -38,6 +39,24 @@
 #include <vector>
 
 namespace ores::refdata::repository {
+
+/**
+ * @brief One version of a party country, with the end of its validity.
+ *
+ * A link is closed by ending its validity, not by deleting the row, so a closed
+ * link is a row whose end is in the past. @c closed_at is set on a version that
+ * ended because the link was closed, and empty on a version that a later
+ * version replaced and on a link that is open. The domain type does not carry
+ * it, and it is final, so the history row holds the link beside it. The actor
+ * and the time stand flat on the row as well, which is the shape the history
+ * builder reads.
+ */
+struct party_country_history_row {
+    domain::party_country link;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::optional<std::chrono::system_clock::time_point> closed_at;
+};
 
 /**
  * @brief Reads and writes party countries to data storage.
@@ -127,6 +146,15 @@ public:
      * @brief Gets the total count of active party countries filtered by country_alpha2_code.
      */
     std::uint32_t get_total_party_country_count_by_country(const std::string& country_alpha2_code);
+
+    /**
+     * @brief Reads every version of every party country of one party.
+     *
+     * Closed links are included. The rows are grouped by country
+     * and run newest first within a group, so a caller numbers and diffs the
+     * versions of one link by walking a group.
+     */
+    std::vector<party_country_history_row> read_all_by_party(const boost::uuids::uuid& party_id);
 
     /**
      * @brief Deletes a party country by its pair of keys.

@@ -111,6 +111,7 @@ to_domain(const messaging::intraday_power_curve_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_intraday_power_curve_configs_response

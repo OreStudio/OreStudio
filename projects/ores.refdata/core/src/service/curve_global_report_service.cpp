@@ -120,6 +120,7 @@ domain::curve_global_report to_domain(const messaging::curve_global_report_write
     return v;
 }
 
+
 }
 
 messaging::list_curve_global_reports_response

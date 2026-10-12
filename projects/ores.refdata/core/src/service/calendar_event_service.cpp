@@ -111,6 +111,7 @@ domain::calendar_event to_domain(const messaging::calendar_event_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_calendar_events_response calendar_event_service::list_calendar_events(

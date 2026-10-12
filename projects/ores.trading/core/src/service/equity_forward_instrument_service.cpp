@@ -116,6 +116,7 @@ to_domain(const messaging::equity_forward_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_equity_forward_instruments_response

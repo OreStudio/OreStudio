@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_country.hpp"
 #include "ores.refdata.api/domain/party_country_json_io.hpp" // IWYU pragma: keep.
@@ -331,6 +332,48 @@ std::uint32_t party_country_repository::get_total_party_country_count_by_country
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active party countries count by country: " << count;
     return count;
+}
+
+std::vector<party_country_history_row>
+party_country_repository::read_all_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the party countries. Party: "
+                               << party_id;
+
+    const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_country_entity>> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id_str) |
+                       order_by("country_alpha2_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<party_country_entity, party_country_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<party_country_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                party_country_history_row row;
+                row.link = party_country_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced =
+                    !rows.empty() &&
+                    rows.back().link.country_alpha2_code == row.link.country_alpha2_code &&
+                    rows.back().link.version == row.link.version + 1;
+                if (!replaced)
+                    row.closed_at = validity_end(entity.valid_to);
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the party countries by party.");
 }
 
 void party_country_repository::remove(const boost::uuids::uuid& party_id,

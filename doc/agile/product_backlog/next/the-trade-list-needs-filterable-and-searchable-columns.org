@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 2BC74BA9-1A41-44BF-9DEB-847405468164
 :END:
-#+title: The trade screens read through the standard entity protocol,…
-#+description: The trade screens read through the standard entity protocol, and the trade list cannot filter the way a person searches today. trades_filter has only id_one_of. The model must declare a search member over the trade identifier, the trade type description and the counterparty name, and filterable columns for the counterparty, the trade type, the booking nature and the entry channel. The state of a trade lives on the trade state component and the book on the booking component, so a filter by either needs a decision: a filterable column on the read the list uses, or the standard scoped read list_by_book_id for a book and its subtree. The child tables of a trade (identifiers, party roles, portfolios, additional fields and the instrument parts) have no filter at all, and a trade page needs a read by trade id for each. Declare the columns in the entity models, regenerate, and expose the trading entities in the BFF record registry. The trade prototypes show the request the screens will send.
+#+title: The trade list cannot yet search by identifier, filter by state or book, or filter by the enum columns
+#+description: After the trade model declared the counterparty and the trade type filterable and the trade type searchable, four needs of the trade list remain: a search by the trade's identifier, a filter by state and by book, filters on the enum columns, and by-trade reads for the child tables.
 #+type: capture
 #+level: cross
 #+filetags: :capture:
@@ -13,16 +13,18 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+The story "Filter and search trades through the model" declared the counterparty and the trade type filterable, and the trade type searchable and sortable. Four needs of the trade list remain.
+
+- *Search by identifier.* The firm's trade identifier is a row of =trade_identifier=, not a column of the trade, so the standard =search= member cannot read it. Decide whether the trade carries a display identifier of its own, or whether a search may read a child table.
+- *State and book.* The state is a column of =trade_state= and the book of =trade_booking=. A list that filters by either needs a filterable column on the read it uses, or the standard scoped read =list_by_book_id= with the subtree scope.
+- *The enum columns.* The booking nature, the entry channel and the counterparty scope are enums. No model declares an enum column filterable yet, so the generator's support for one is unproven.
+- *Child tables.* The identifiers, the party roles, the portfolios, the additional fields and the instrument's parts have no filter at all. A trade page needs a read by trade id for each.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The trade screens read through the standard entity protocol and invent no operation. What they need beyond it is a change to the model.
 
 * References
 
--
-
-* See also
-
--
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] — the review journey lists each as a gap.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the filter record and the scoped read.

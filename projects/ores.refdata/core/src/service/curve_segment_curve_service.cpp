@@ -110,6 +110,7 @@ domain::curve_segment_curve to_domain(const messaging::curve_segment_curve_write
     return v;
 }
 
+
 }
 
 messaging::list_curve_segment_curves_response

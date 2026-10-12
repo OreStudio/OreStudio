@@ -103,6 +103,7 @@ domain::subject_area to_domain(const messaging::subject_area_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_subject_areas_response

@@ -233,9 +233,11 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
     CHECK(inputs_of("load_staff") == std::vector<std::string>{"provision_party"});
     CHECK(inputs_of("attach_photos") ==
           (std::vector<std::string>{"load_staff", "provision_party"}));
-    // The feeds read the reference data and nothing else, which is what lets
-    // them run beside the party chain rather than after it.
-    CHECK(inputs_of("start_market_feeds") == std::vector<std::string>{"publish_bundle"});
+    // The feeds bind every party the tenant holds, so they wait for the party
+    // chain as well as the reference data: a party the import creates after
+    // the feeds start would never be bound.
+    CHECK(inputs_of("start_market_feeds") ==
+          (std::vector<std::string>{"provision_party", "publish_bundle"}));
     // Nothing is finished before everything is, so the last step reads them all.
     CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 6);
 }
@@ -399,7 +401,7 @@ TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
              declared(
                  "attach_photos",
                  R"({"parties":[{"name":"Acme Corporation Plc","dataset":"acme.acme_group.accounts"}]})"),
-             declared("start_market_feeds", R"({"theme":"synthetic.themes.realistic_2026"})")}),
+             declared("start_market_feeds", R"({"dataset":"synthetic.feeds.bloomberg"})")}),
         tenant_id,
         correlation_id);
 

@@ -112,6 +112,7 @@ domain::scripted_instrument to_domain(const messaging::scripted_instrument_write
     return v;
 }
 
+
 }
 
 messaging::list_scripted_instruments_response

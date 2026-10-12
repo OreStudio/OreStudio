@@ -1657,6 +1657,7 @@ export const en: SourceCatalogue = {
                 label: 'Grid views',
                 overview: 'Overview',
                 usage: 'Usage',
+                machines: 'Machines',
                 nodes: 'Nodes',
                 heatmap: 'Heatmap',
             },
@@ -1667,6 +1668,11 @@ export const en: SourceCatalogue = {
                     party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
                 },
                 unavailable: 'Could not be read',
+                pie: {
+                    tenant: 'Share of the results by tenant',
+                    party: 'Share of the results by party',
+                    other: 'Others',
+                },
                 age: {
                     caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
                     over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
@@ -1834,10 +1840,6 @@ export const en: SourceCatalogue = {
                     'Waits for the compute journeys, which own the host and workunit screens.',
             },
             gap: {
-                noHost: {
-                    title: 'A node with no host row',
-                    body: 'The join fixes the common case, and a node the host registry does not know shows a bare id. The screen must say that no host names the node, rather than printing the id as if it were a name.',
-                },
                 oneTenant: {
                     title: "The charts' counters are one tenant's",
                     body: "The node table is the installation's, but the counts behind the charts are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count (results, workunits and batches) by the tenant it is handed, and the poller hands it its own session tenant. Until the installation records its own usage, the charts count one tenant's work and not every tenant's.",

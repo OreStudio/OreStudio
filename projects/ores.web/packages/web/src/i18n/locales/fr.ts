@@ -1677,6 +1677,7 @@ const fr: SourceCatalogue = {
                 label: 'Vues de la grille',
                 overview: "Vue d'ensemble",
                 usage: 'Utilisation',
+                machines: 'Machines',
                 nodes: 'Nœuds',
                 heatmap: 'Carte de chaleur',
             },
@@ -1687,6 +1688,11 @@ const fr: SourceCatalogue = {
                     party: 'La part d’une partie est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
                 },
                 unavailable: 'N’a pas pu être lu',
+                pie: {
+                    tenant: 'Part des résultats par tenant',
+                    party: 'Part des résultats par partie',
+                    other: 'Autres',
+                },
                 age: {
                     caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
                     over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
@@ -1855,10 +1861,6 @@ const fr: SourceCatalogue = {
                     'En attente des parcours de calcul, qui possèdent les écrans des hôtes et des unités de travail.',
             },
             gap: {
-                noHost: {
-                    title: 'Un nœud sans ligne d’hôte',
-                    body: 'La jointure règle le cas courant, et un nœud que le registre des hôtes ne connaît pas montre un identifiant nu. L’écran doit dire qu’aucun hôte ne nomme le nœud, plutôt que d’afficher l’identifiant comme s’il était un nom.',
-                },
                 oneTenant: {
                     title: "Les compteurs des graphiques sont ceux d'un seul locataire",
                     body: "Le tableau des nœuds est celui de l'installation, mais les comptes derrière les graphiques ne le sont pas. Ils sont calculés par ores_compute_grid_stats_fn(p_tenant_id), qui filtre chaque compte (résultats, unités de travail et lots) par le locataire reçu, et l'échantillonneur lui passe son propre locataire de session. Tant que l'installation n'enregistre pas son propre usage, les graphiques comptent le travail d'un seul locataire.",

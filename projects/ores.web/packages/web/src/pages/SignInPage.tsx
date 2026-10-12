@@ -23,6 +23,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
+import { ApiFailure } from '../api/transport.js';
 import { PasswordInput } from '../ui/PasswordField.js';
 import { JourneySplash } from '../journeys/parts.js';
 import type { SignInOutcome } from '../session/SessionProvider.js';
@@ -53,6 +54,25 @@ export interface SignInPageProps {
     readonly onChooseParty: (partyId: string, parties: readonly PartySummary[]) => Promise<void>;
 }
 
+/**
+ * What a refused choice of party means for the screen.
+ *
+ * A session that has ended cannot be chosen into, so the sign-in begins again
+ * and says why. Any other refusal is said as it came, and the choice stays open.
+ */
+export function partyChoiceRefused(
+    error: unknown,
+    timedOut: string,
+): { readonly beginAgain: boolean; readonly message: string } {
+    if (error instanceof ApiFailure && error.code === 'session-expired') {
+        return { beginAgain: true, message: timedOut };
+    }
+    return {
+        beginAgain: false,
+        message: error instanceof Error ? error.message : String(error),
+    };
+}
+
 export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactNode {
     const { t } = useTranslation();
     const [username, setUsername] = useState('');
@@ -77,10 +97,35 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
         }
     };
 
+    /*
+     * The token that lets a person choose a party lasts a few minutes. A person
+     * who leaves the picker open past that finds the choice refused, and nothing
+     * on the screen can make it work: the sign-in has to begin again. So the
+     * screen says so and returns to the form, and keeps the password out of it.
+     */
+    const choose = async (party: PartySummary): Promise<void> => {
+        setFailure(undefined);
+        try {
+            await onChooseParty(party.id, parties ?? []);
+        } catch (error) {
+            const refused = partyChoiceRefused(error, t('signIn.partyTimedOut'));
+            if (refused.beginAgain) {
+                setParties(undefined);
+                setPassword('');
+            }
+            setFailure(refused.message);
+        }
+    };
+
     const picker = (
         <>
             <h1 className="text-lg font-semibold text-ink">{t('signIn.chooseParty')}</h1>
             <p className="mt-2 text-sm text-ink-muted">{t('signIn.choosePartyHint')}</p>
+            {failure !== undefined && (
+                <div className="mt-4">
+                    <Notice tone="error">{failure}</Notice>
+                </div>
+            )}
             <ul className="mt-4 space-y-2">
                 {(parties ?? []).map((party) => (
                     <li key={party.id}>
@@ -88,7 +133,7 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
                             variant="secondary"
                             className="w-full justify-start"
                             onClick={() => {
-                                void onChooseParty(party.id, parties ?? []);
+                                void choose(party);
                             }}
                         >
                             {party.name}

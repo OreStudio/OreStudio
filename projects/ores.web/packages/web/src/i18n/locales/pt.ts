@@ -612,6 +612,7 @@ const pt: SourceCatalogue = {
         failed: 'Não foi possível iniciar sessão.',
         chooseParty: 'Escolha uma entidade',
         choosePartyHint: 'Esta conta trabalha em mais do que uma entidade.',
+        partyTimedOut: 'A sua sessão expirou, porque não escolheu uma parte a tempo. Inicie a sessão novamente.',
         partyCategory: 'Categoria',
     },
 

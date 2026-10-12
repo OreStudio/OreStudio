@@ -607,6 +607,7 @@ export const en: SourceCatalogue = {
         failed: 'Sign in failed.',
         chooseParty: 'Choose a party',
         choosePartyHint: 'This account works in more than one party.',
+        partyTimedOut: 'Your sign-in timed out because you did not choose a party in time. Sign in again.',
         partyCategory: 'Category',
     },
 

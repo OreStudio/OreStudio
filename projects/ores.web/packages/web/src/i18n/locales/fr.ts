@@ -613,6 +613,7 @@ const fr: SourceCatalogue = {
         failed: 'Échec de la connexion.',
         chooseParty: 'Choisir une entité',
         choosePartyHint: 'Ce compte fonctionne dans plusieurs entités.',
+        partyTimedOut: 'Votre connexion a expiré, car vous n’avez pas choisi de partie à temps. Connectez-vous de nouveau.',
         partyCategory: 'Catégorie',
     },
 

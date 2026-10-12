@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/generate-the-pending-change-for-the-counterparty
-#+pr:
+#+pr: 3187
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3187][#3187]] | [refdata] Generate the pending change for the counterparty |
 
 * Review
 

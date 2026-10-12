@@ -1761,7 +1761,6 @@ const fr: SourceCatalogue = {
                 load: {
                     title: 'Charge',
                     caption: 'Travail en cours par état de résultat',
-                    inactive: 'Inactif',
                     unsent: 'Non envoyé',
                     inProgress: 'En cours',
                 },

@@ -81,6 +81,7 @@ import {
     heatmapRow,
     changeOf,
     hasAnySample,
+    loadSeries,
     throughputSeries,
     QueueOutlookNotice,
     formatWait,
@@ -1933,5 +1934,20 @@ describe('the queue outlook', () => {
         expect(formatWait(45)).toBe('45 min');
         expect(formatWait(100)).toBe('1.7 h');
         expect(formatWait(720)).toBe('12 h');
+    });
+});
+
+describe('the load series', () => {
+    it('draws the waiting and the running results and leaves out the retired ones', () => {
+        const view = gridSeriesView({
+            results_inactive: [26000, 26000, 26000, 26000],
+            results_unsent: [4, 2, 0, 1],
+            results_in_progress: [2, 2, 0, 1],
+        });
+
+        const series = loadSeries(view, t);
+
+        expect(series.map((one) => one.key)).toEqual(['unsent', 'progress']);
+        expect(series.flatMap((one) => [...one.values]).every((count) => count < 26000)).toBe(true);
     });
 });

@@ -1741,7 +1741,6 @@ export const en: SourceCatalogue = {
                 load: {
                     title: 'Load',
                     caption: 'Work in flight by result state',
-                    inactive: 'Inactive',
                     unsent: 'Unsent',
                     inProgress: 'In progress',
                 },

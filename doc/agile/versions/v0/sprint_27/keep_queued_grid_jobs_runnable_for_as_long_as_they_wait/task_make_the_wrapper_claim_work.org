@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 9F534561-CFB9-4E3D-947B-34C94CE34939
+:END:
+#+title: Task: Make the wrapper claim work
+#+description: A free wrapper claims one job at a time, wakes on a plain NATS notice, and polls with jitter as a fallback. It runs the job, extends its lease through the heartbeat, and submits.
+#+type: task
+#+level: s1
+#+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
+#+owner: marco
+#+branch: feature/make-the-wrapper-claim-work
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A node takes work only when it is free, and never holds a job it is not running.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A wrapper claims, runs and submits one job at a time.
+- A lost notice delays a job by seconds and loses nothing.
+- The wrapper no longer subscribes to the assignments stream.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

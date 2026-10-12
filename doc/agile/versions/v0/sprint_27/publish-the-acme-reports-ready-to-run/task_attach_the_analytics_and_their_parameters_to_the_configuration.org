@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/attach-the-analytics-and-their-parameters-to-the-configuration
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Replace the sixteen analytic switches of the risk report configuration with the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The merge of the PR that publishes the shared risk report configurations. |
-| Next         | Do the data model analysis in the Plan, then confirm the model with the product owner. |
+| Now          | The data model analysis is written. It waits for the product owner to confirm the model. |
+| Waiting on   | The product owner's answers to the three open points of the analysis. |
+| Next         | Remove the switches, rename and re-key the two entities, and regenerate. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -65,6 +65,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The analysis is [[id:4D47DE4D-A52F-46E5-BA75-C2141BEB72D3][The analytics of a configuration and their parameters]]. It recommends keeping two entities, renamed =configuration_analytic= and =configuration_analytic_parameter= and re-keyed to the configuration, in place of the earlier idea of reusing =configuration_parameter=.
 
 Names. These entities are attached to a configuration and not to a report, so none of them carries a =report_= prefix.
 

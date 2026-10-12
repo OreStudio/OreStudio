@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 4D47DE4D-A52F-46E5-BA75-C2141BEB72D3
+:END:
+#+title: Investigation: The analytics of a configuration and their parameters
+#+description: Where the analytics of a run and their parameters belong once a configuration is shared, what the model must be, and which parameters ACME stores.
+#+type: investigation
+#+level: s1
+#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into where the analytics of a run and their parameters belong once a configuration is shared, what the model must be, and which parameters ACME stores.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The first pull request of this story made the risk report configuration a shared, party owned entity. A report definition binds it by name, and reports that run the same analytics over the same scope in the same currency share one row. That change exposed three faults in how a run is described.
+
+- The analytics of a run are held in two entities that belong to a report definition: =report_analytic= and =report_analytic_parameter=. A shared configuration cannot own its analytics through them.
+- The shared configuration holds the analytics as sixteen =*_enabled= switch columns. A switch can say "run SA-CCR" and nothing more. The parameters an analytic needs, such as the historical window of a stressed VaR, the quantiles of a VaR or the exposure profile flags, have no place to live.
+- The two entities carry a =report_= prefix, but a report no longer owns them.
+
+The product owner asked on 2026-10-12 that the analytics and their parameters attach to the configuration, that they gain DQ support, and that the datasets carry the real values.
+
+* Methodology
+
+- Read the five entity models involved: =report_analytic=, =report_analytic_parameter=, =report_run_setup=, =report_market_binding= and =configuration_parameter=, and the =run_document_service=, the run document handler, the run store and the run document generator.
+- Counted the files that use each entity, from =git grep= over =projects=.
+- Measured the 416 run documents of =external/ore/examples=: how often an analytic type repeats inside one document, and the most common value of each parameter for the analytics the ACME reports run. The measurement counts only analytics whose =active= parameter is on.
+- Read the seed of the parameter definitions to see how their ids are made.
+
+* Paths taken
+
+** What holds a run today
+
+| Entity | Keyed by | Holds |
+|--------+----------+-------|
+| =report_run_setup= | the report definition | The 43 =Setup= parameters as columns: dates, paths, file names, flags. |
+| =report_market_binding= | the report definition | The named market roles. |
+| =report_analytic= | the report definition | One row per analytic: type, order, active flag. |
+| =report_analytic_parameter= | the analytic | One row per value: the parameter definition, the value, the position. |
+| =configuration_parameter= | a configuration | One value with its parameter definition and position. Nothing but its generated service uses it. |
+| =risk_report_config= | the party, shared | Base currency, thread count, observation model, market data, sixteen switches, VaR and SIMM settings. |
+
+The run document generator builds the =Setup=, the =Markets= and the =Analytics= from =risk_report_config= and the bindings. The stored rows of the first four entities are written only by =ore import-run=, which is the path that brings an ORE sample into the database.
+
+The files that use the entities, by directory, are mostly generated: the repository, mapper, service, protocol, registrar and shell script layers of each entity, 6 files in the SQL tree for the analytic and 3 for the parameter, and 17 uses in =run_document_service.cpp=. The change is wide but mechanical.
+
+** Does an analytic type repeat inside one run document?
+
+The model of =report_analytic= says a run "can repeat one". In the 416 documents no type repeats. The ORE schema does not forbid it, so the platform may not rely on it.
+
+** Can a dataset name a parameter definition by id?
+
+No. The seed makes each id with =gen_random_uuid()=, so the id of =npv.active= differs between databases. A staged row has to name the definition by its scope, analytic type and name, and the publish resolves the name.
+
+** Two shapes for the rows
+
+| | A: keep two entities, re-key and rename | B: one junction and the existing parameter entity |
+|-+-----------------------------------------+---------------------------------------------------|
+| Analytic | =configuration_analytic=: configuration, analytic type, order, active | The same row. |
+| Parameter | =configuration_analytic_parameter=: analytic, parameter definition, value, position | =configuration_parameter= is reused: configuration, parameter definition, value, position. |
+| Repeated analytic type | Allowed, as in the schema. | Not allowed. Needs a uniqueness rule on (configuration, analytic type), and a parameter then cannot say which of two analytics it belongs to. |
+| Change to the mappers and the service | A rename and a new foreign key. The shape of the document stays the one the mappers know. | The mappers must find the analytic of a parameter through the definition's analytic type. |
+| Meaning of =configuration_parameter= | Unchanged. | It would hold header level values and analytic values, told apart only by the scope of the definition. |
+| Tables | Two | One, and the existing one |
+
+Both shapes give a DQ staging table for each entity through the shared document publish: the header first, then the analytics, then the parameters. The child rows carry the =configuration_id= of the header, and the shared publish re-keys it in step.
+
+** Where do the run setup and the market bindings go?
+
+They are also keyed by the definition, and the setup duplicates columns of the shared configuration (base currency, thread count, observation model). The generator builds the setup from the configuration and writes nothing per definition. ACME publishes no stored setup. Moving them with the analytics would make the shared configuration the whole run document, which is a larger change than the product owner asked for. They stay with the definition in this task, and the open point below records the choice.
+
+** How are the rules enforced once the analytics are rows?
+
+A database check cannot count child rows, so two rules need another home.
+
+- A configuration switches at least one analytic on. Check it where the configuration is used: the binding trigger refuses a configuration with no analytic, and the export refuses it too. The publish also checks the count, so a dataset that stages a configuration with none fails at once.
+- The exposure analytic reads the cube that a simulation writes. A check on the analytic rows at the binding, or a column on the analytic type that names the analytic it needs, states this. The column keeps the rule in the vocabulary, with the other facts about analytic types.
+
+** How does the import path change?
+
+=ore import-run= stores the =Setup=, the =Markets= and the =Analytics= of an ORE sample against a definition. After the change it must create a risk report configuration with its header, store the analytics and their parameters on it, bind it to the definition, and store the setup and the markets on the definition as before. The base currency, thread count and observation model that the configuration needs come from the =Setup=.
+
+** The parameters ACME stores
+
+Of the parameters of an analytic some are files and some are choices. The files are not stored: the export resolves an input document through the bindings and takes an output name from the file types table (see the tasks "Add the ORE file types table with well known names" and "Name every ORE file from the file types table"). Only the choices are stored.
+
+The values below are the most common ones in the 416 ORE samples, counted over the analytics whose =active= flag is on. The counts are uses over active uses of the analytic. An ACME value that differs from the sample is marked.
+
+| Analytic | Stored choices | Source |
+|----------+----------------+--------|
+| =portfolioDetails= | none | Both parameters are output file names. |
+| =npv= | =baseCurrency= the base currency of the entity | The samples use EUR 298 of 354, so ACME states its own currency. |
+| =cashflow= | none | The only parameter is an output file name. |
+| =curves= | =configuration= default, =grid= 240,1M | 217 of 258 and 247 of 258. |
+| =creditcurves= | =configuration= default, =grid= 240,1M | 15 of 15. |
+| =calibration= | none | Both parameters are files. |
+| =sensitivity= | =recalibrateModels= Y, =outputSensitivityThreshold= 0.000001, =parSensitivity= Y for the DV01 report | 37 of 44, 39 of 44, 17 of 18. |
+| =simulation= | =baseCurrency=, =storeFlows= Y, =amc= N | The samples use amc in 52 of 57 documents that state it. ACME runs no AMC. |
+| =pfe= | =exposureProfiles= Y, =exposureProfilesByTrade= N, =quantile= 0.95, =calculationType= Symmetric, =allocationMethod= None, =marginalAllocationLimit= 1.0, =exerciseNextBreak= N | 1 of 1. |
+| =xva= | =exposureProfiles= Y, =cva=, =dva=, =fva= Y, =quantile= 0.95, =calculationType= Symmetric, =allocationMethod= None, =exposureProfilesByTrade= Y, =exerciseNextBreak= N, =baseCurrency= | 220 of 221, 201 and 171 of 186, 209 of 209, 160 of 204, 118 of 188, 180 of 195, 178 of 182. |
+| =saccr= | =simmVersion= 2.1 | 1 of 3. Not stated in the other two. |
+| =historicalSimulationVar= | =historicalPeriod=, =mporDays= 10, =mporCalendar= the entity's calendar, =mporOverlappingPeriods= true, =quantiles= 0.99 for a stressed VaR, =includeExpectedShortfall= Y, =breakdown= Y | 5 of 5 for the first four. The window of a stressed VaR is a stressed period such as 2008-09-01 to 2009-03-31, which the samples do not give. |
+| =pnlExplain= | =mporDate= the previous business day, =parSensitivity= | The sample date is fixed in 5 of 5. A run needs a relative date, which is a rule and not a stored value. |
+| =parametricVar= | =quantiles= 0.99, =method= DeltaGammaNormal, =breakdown= Y | 2 of 2. =mcSamples= and =mcSeed= only for a Monte Carlo method. |
+
+Two parameters are not choices of the configuration: a date such as =mporDate= or =asofDate= changes at every run, and the export fills it.
+
+* Conclusions
+
+1. The analytics and their parameters belong to the shared configuration, and the =report_= prefix goes. Shape A is the recommendation: rename =report_analytic= to =configuration_analytic= and =report_analytic_parameter= to =configuration_analytic_parameter=, and re-key the first from the report definition to the configuration header. This keeps the document shape the mappers and the corpus tests know, allows a repeated type as the schema does, and leaves =configuration_parameter= with one meaning. My earlier suggestion of shape B was made before I had read the entities, and it needs a uniqueness invariant and a lookup through the definition that A does not.
+2. The DQ staging of both entities is generated from the entities. The staged analytic row names its configuration and its analytic type. The staged parameter row cannot hold a definition id, so its declared staging columns are the analytic type and the parameter name, and the publish resolves them to the definition of the target database. The shared document publish gains one hook for this, so each document does not write its own insert.
+3. The sixteen switches and the checks on them leave =risk_report_config=. The rule that a configuration switches at least one analytic on moves to the binding and the publish. The dependency of the exposure analytic on the simulation moves to the vocabulary of analytic types.
+4. The run setup and the market bindings stay with the definition in this task. The generator keeps building the setup from the configuration.
+5. The import path creates a configuration, binds it and stores the analytics on it.
+6. The values in the table above are the ones to stage, with the ACME choices marked there. The file parameters are left out and resolved at export.
+
+* Recommendations
+
+Do the work in this order, each step ending in a check.
+
+1. Remove the sixteen switches, rename and re-key the two entities, and regenerate. Keep the generator reading analytic rows.
+2. Add the DQ staging for both entities, the hook on the shared publish, and the pgTAP test.
+3. Add the binding and publish rules, and the column on the analytic type.
+4. Change the import path, and the corpus round trip tests that read analytics.
+5. Stage the analytics and parameters of each ACME configuration from the table above, and test that the exported analytics and the stored parameters equal the decided ones for all 78 definitions.
+
+Open points for the product owner.
+
+- Does the run setup move to the configuration as well? It would make the shared configuration the whole run document and remove the duplicated columns, at the cost of a wider change.
+- Is the repeat of an analytic type needed? If not, shape B saves one table and the model can add the uniqueness rule.
+- The stressed window and the other values marked as ACME choices need a reviewer who knows the regime.
+
+* See also
+
+- [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] is the story.
+- [[id:3EF2E543-6429-443B-A2A0-1AA830EAD577][Attach the analytics and their parameters to the configuration]] is the task this record supports.
+- [[id:7CE34CFC-A04C-46E4-92D2-B1C09DEADE50][The ORE run document]] describes the 43 setup parameters and the 35 analytic types.

@@ -39,7 +39,9 @@ export interface Curve {
 }
 
 /** The pillars of the curve in the order the feed publishes them: by the template's sequence. */
-export function pillarsOf(entries: readonly Readonly<Record<string, unknown>>[]): readonly Pillar[] {
+export function pillarsOf(
+    entries: readonly Readonly<Record<string, unknown>>[],
+): readonly Pillar[] {
     return [...entries]
         .sort((a, b) => Number(a['sequence_index']) - Number(b['sequence_index']))
         .map((row) => ({

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :key_a_manual_point_from_the_web:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/key-a-manual-point-from-the-web
 #+pr:
 #+blocked_on: Key and clear a manual point over the wire
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The browser can key and clear a manual point for its session.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The server operations.                 |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -85,3 +85,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=POST /api/curves/manual-point= and =POST /api/curves/manual-point/clear= forward to the two operations. The body schemas are strict. A key needs at least one coordinate, a value, a reason code and a non-empty commentary. The server's refusal reaches the browser as 422 with its own words, and a missing permission is 403. Six new tests in =curves.test.ts= cover the forward, the 422, the 403, the structural refusals that never reach the server, and the clear.
+
+The BFF typechecks and its 25 curve tests pass. Not run against the real stack.

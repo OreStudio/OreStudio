@@ -21,11 +21,11 @@ An operator who holds the write permission can set a node of a curve or surface 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The story and its three tasks are scaffolded. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Key and clear a manual point over the wire. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -40,15 +40,26 @@ An operator who holds the write permission can set a node of a curve or surface 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8147EF5E-1F23-47FF-B2A7-84B2C0E90A9A][Key and clear a manual point over the wire]] | BACKLOG | | | Add two marketdata operations that key and clear a manual point on a node of a named object, checked against the declared shape, with the write permission. |
-| [[id:8E974BC2-9B19-4C95-A07B-AAE9CB339D9F][Route the manual point through the BFF]] | BACKLOG | | | Give the BFF session-guarded routes that key and clear a manual point, with tests. |
-| [[id:52FB26D7-D8E5-49CE-A1D0-3570AC16FD49][Adjust a node by hand on the evolution screen]] | BACKLOG | | | Offer set and clear on a node of the Now table for a person who may write, mark manual nodes as manual, and show the correction at once. |
+| [[id:8147EF5E-1F23-47FF-B2A7-84B2C0E90A9A][Key and clear a manual point over the wire]] | DONE | 2026-10-12 | 2026-10-12 | Add two marketdata operations that key and clear a manual point on a node of a named object, checked against the declared shape, with the write permission. |
+| [[id:8E974BC2-9B19-4C95-A07B-AAE9CB339D9F][Route the manual point through the BFF]] | DONE | 2026-10-12 | 2026-10-12 | Give the BFF session-guarded routes that key and clear a manual point, with tests. |
+| [[id:52FB26D7-D8E5-49CE-A1D0-3570AC16FD49][Adjust a node by hand on the evolution screen]] | DONE | 2026-10-12 | 2026-10-12 | Offer set and clear on a node of the Now table for a person who may write, mark manual nodes as manual, and show the correction at once. |
 | [[id:6DA906AA-8526-4ACD-8D92-8CBD94C2EDCC][Scaffold story: Adjust a curve point by hand from the web]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: the story, its sprint row and its three tasks, and the paperwork closing the identity projection story. |
 
 * Decisions
+
+- The node is named by its coordinates in the order the shape declares its axes, the order the reads return them in. The server composes the URI through the codec, so no caller builds one.
+- A key is stamped when the server receives it. A node can hold several manual points over time, and clear releases all of them.
+- Clear closes the keyed observation row as well as the annex, in one transaction. Releasing the annex alone left the keyed value as the newest row, so it read as quoted until the next feed write.
+- Only the series' own party can write to it, because the observation takes the context's party.
+- The screen offers the controls from the write permission and always reads the source for such a person, so manual nodes are marked. The server checks the write again.
+- Not checked: the handler's permission check has no test, the adjust form has no interaction test, and nothing ran against the live stack. The services could not restart because =.env= is out of date.
 
 * Out of scope
 
 - The spread overlay, a parallel shift or a twist over a segment. It needs its own operation and its own journey step.
 - The history of a manual point beyond what the annex already records.
 - Approval of a manual correction. That belongs with the publication and approval chain.
+
+* Result
+
+An operator who holds the observation write permission can set a node of a curve or surface by hand from the evolution screen, with a reason and a commentary, and clear it again. Two server operations, two BFF routes and the screen controls ship together, with the repository fix that makes a clear show the feed value again. The marketdata core suite, the BFF curve tests and the web market, access and language tests pass. The live stack was not used. See the decisions for what was not checked.

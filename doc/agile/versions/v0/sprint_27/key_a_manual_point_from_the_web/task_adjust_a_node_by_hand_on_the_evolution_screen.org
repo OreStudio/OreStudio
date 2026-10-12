@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :key_a_manual_point_from_the_web:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/key-a-manual-point-from-the-web
 #+pr:
 #+blocked_on: Route the manual point through the BFF
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ An operator corrects a node and clears the correction from the evolution screen.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The BFF routes.                        |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -86,3 +86,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A person who holds =marketdata::market_observations:write= sees an Actions column in the Now table. Each node has an Adjust button that opens a form for the value, a change reason and a commentary. A node that shows as manual also has a Clear button. After a write the screen reads the object again. Such a person always gets the source column, so manual nodes are marked and show who keyed them. The catalogues have the new words in English, French and Portuguese, and the language parity test passes. The permission also has its plain-words entry.
+
+Static-markup tests cover what the panel offers with and without the write permission and that Clear shows only on manual nodes. The form itself opens on a click and is not covered by a test. I did not use the screen in a browser.
+
+Decisions:
+- The screen decides only what to offer. The server checks the write again.
+- Reasons come from the shared =useReason('amend')= list used by the other screens.

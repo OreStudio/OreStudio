@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :key_a_manual_point_from_the_web:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/key-a-manual-point-from-the-web
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A caller with the write permission can set a node by hand with a reason and clea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -86,3 +86,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two operations, =marketdata.v1.ops.key_manual_point= and =marketdata.v1.ops.clear_manual_point=, reach the repository's manual point writes. =manual_point_service= resolves the series from its typed identity, checks the coordinates against the declared shape, builds the node URI through the codec and calls =write_manual_point= or =clear_manual_point=. =manual_point_handler= checks =marketdata::market_observations:write= and the registrar subscribes both subjects.
+
+Acceptance met:
+- Keying stores a manual point with the actor, the reason and the commentary, and the snapshot returns it as manual. Tested.
+- Clearing shows the feed value again. This needed a repository fix: clear released the annex only, so a keyed value with no later feed write stayed the newest row and read as quoted. =clear_manual_point= now also closes the keyed observation row in the same transaction. The history keeps both.
+- Refused and tested: a node the shape does not hold, a wrong coordinate count, a value that is no number, a missing reason or commentary, a context for another party, and a clear with nothing to clear.
+- Six service tests run under row-level security with the scoped test helper. The marketdata core suite passes in full.
+
+Not covered by a test: the handler's permission check. It copies the pattern of the read handlers. The BFF tests prove only that a forbidden reply becomes 403. No live run against the stack was made, because =compass services= needs a regenerated =.env= first.
+
+Decisions:
+- A key is stamped when the server receives it, so a node can hold several manual points over time. Clear releases all of them.
+- A context whose party is not the series' party is refused, because the observation takes the context's party.

@@ -300,7 +300,13 @@ std::vector<line_delta> book_proposal_service::deltas(const std::string& request
                      .applied = line.applied,
                      .fields = {}};
         if (line.operation == "put") {
-            const auto live = svc.get_book(line.entity_id);
+            // The book as the maker read it, so a line that has applied still
+            // shows what it changed. A new book has nothing before it.
+            std::optional<domain::book> live;
+            if (line.base_version > 0) {
+                live = svc.get_book_at_version(line.entity_id,
+                                               static_cast<std::uint32_t>(line.base_version));
+            }
             using B = domain::book;
             using L = domain::book_change;
             d.fields = {

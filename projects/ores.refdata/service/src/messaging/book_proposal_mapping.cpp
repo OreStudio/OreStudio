@@ -81,7 +81,6 @@ std::vector<book_line_outcome> to_outcomes(const service::book_preview& preview)
     return out;
 }
 
-
 std::vector<book_change_delta> to_deltas(const std::vector<service::line_delta>& deltas) {
     std::vector<book_change_delta> out;
     out.reserve(deltas.size());

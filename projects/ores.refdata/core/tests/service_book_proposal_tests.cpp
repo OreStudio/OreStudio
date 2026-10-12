@@ -548,3 +548,29 @@ TEST_CASE("a_line_that_creates_a_book_has_no_before", tags) {
         CHECK(f.changed);
     }
 }
+
+TEST_CASE("a_line_that_has_applied_still_shows_what_it_changed", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto created = new_book_line(h, w);
+    const auto live = make_live(w, created);
+    auto edit = edit_line(live, created);
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
+    const auto proposal = svc.raise({edit}, "Change the status");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    REQUIRE(svc.apply(id).applied);
+
+    const auto deltas = svc.deltas(id);
+
+    REQUIRE(deltas.size() == 1);
+    CHECK(deltas[0].applied);
+    const auto status = std::ranges::find(
+        deltas[0].fields, "book_status", &ores::refdata::service::field_delta::name);
+    REQUIRE(status != deltas[0].fields.end());
+    CHECK(status->changed);
+    CHECK(status->before == live.book_status);
+    CHECK(status->after == edit.book_status);
+}

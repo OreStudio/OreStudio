@@ -192,6 +192,8 @@ std::vector<part_progress> approval_lifecycle::progress_of(const std::string& re
                             .state = "later"};
         if (std::ranges::any_of(open, [&](const auto& o) { return o.code == p.code; }))
             entry.state = "waiting";
+        // A part with an approval is never open, so an answer below replaces
+        // waiting and never contradicts it.
         for (const auto& row : rows) {
             if (text(row, 0) != p.code)
                 continue;

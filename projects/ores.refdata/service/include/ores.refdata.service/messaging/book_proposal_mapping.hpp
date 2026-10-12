@@ -79,7 +79,6 @@ ORES_REFDATA_SERVICE_EXPORT step_result apply_step_result(const service::book_ap
 ORES_REFDATA_SERVICE_EXPORT std::vector<book_line_outcome>
 to_outcomes(const service::book_preview& preview);
 
-
 /**
  * @brief The stored lines as the wire states them.
  */

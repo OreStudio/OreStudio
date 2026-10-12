@@ -166,8 +166,9 @@ public:
     /**
      * @brief The stored lines of a request, each beside the live book.
      *
-     * Reads only. A put lists every column with whether the line changes it, and
-     * a delete lists none.
+     * Reads only. A put lists every column with whether the line changes it,
+     * against the book at the version the maker read, so a line that has applied
+     * still shows what it changed. A delete lists none.
      */
     std::vector<line_delta> deltas(const std::string& request_id);
 

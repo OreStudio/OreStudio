@@ -876,17 +876,14 @@ export async function readRequestParts(
     viewer: RequestViewer,
 ): Promise<InboxRequestPartView[]> {
     const request: GetApprovalPartsRequest = { request_id: requestId };
-    let reply: z.infer<typeof requestPartsReplySchema>;
-    try {
-        reply = await caller.callAuthenticated(
-            INBOX_SUBJECTS.getRequestParts,
-            request,
-            requestPartsReplySchema,
-        );
-    } catch (error) {
-        if (isRefusal(error)) return [];
-        throw error;
-    }
+    // A refusal of the call itself is not "no parts": the operation answers a
+    // request the caller may not open as not found, so anything else is a fault
+    // the screen should show and not an empty trail.
+    const reply = await caller.callAuthenticated(
+        INBOX_SUBJECTS.getRequestParts,
+        request,
+        requestPartsReplySchema,
+    );
     if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') return [];
     ok(INBOX_SUBJECTS.getRequestParts, reply.result);
 

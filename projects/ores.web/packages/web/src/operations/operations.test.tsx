@@ -1571,7 +1571,9 @@ describe('the grid over time', () => {
         expect(html).toContain('<tfoot');
         expect(html).toContain('>Total<');
         expect(html).toContain('24.0 GiB');
-        expect(html).toContain('1 of 3');
+        const footer = html.slice(html.indexOf('<tfoot'), html.indexOf('</tfoot>'));
+        expect(footer).toContain('1 of 2');
+        expect(footer).toContain('1 of 3');
     });
 
     it('reads a computer’s facts from the nodes that gave them, and states none it was not given', () => {

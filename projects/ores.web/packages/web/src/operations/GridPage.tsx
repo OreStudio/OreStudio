@@ -381,27 +381,29 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                         </tr>
                     ))}
                 </tbody>
-                <tfoot className="border-t border-line">
-                    <tr className="font-medium">
-                        <td className="py-2">{t('operations.grid.machines.total')}</td>
-                        <td className="py-2 font-mono">
-                            {t('operations.grid.machines.nodes', {
-                                running: totals.up,
-                                total: totals.machines,
-                            })}
-                        </td>
-                        <td className="py-2 font-mono">{totals.cpuCount || '—'}</td>
-                        <td className="py-2 font-mono">{formatRam(totals.ramMb)}</td>
-                        <td className="py-2 font-mono">
-                            {t('operations.grid.machines.nodes', {
-                                running: totals.running,
-                                total: totals.nodes,
-                            })}
-                        </td>
-                        <td className="py-2 font-mono">{totals.tasksCompleted}</td>
-                        <td className="py-2 font-mono">{totals.tasksFailed}</td>
-                    </tr>
-                </tfoot>
+                {machines.length > 0 && (
+                    <tfoot className="border-t border-line">
+                        <tr className="font-medium">
+                            <td className="py-2">{t('operations.grid.machines.total')}</td>
+                            <td className="py-2 font-mono">
+                                {t('operations.grid.machines.upOfTotal', {
+                                    up: totals.up,
+                                    total: totals.machines,
+                                })}
+                            </td>
+                            <td className="py-2 font-mono">{totals.cpuCount || '—'}</td>
+                            <td className="py-2 font-mono">{formatRam(totals.ramMb)}</td>
+                            <td className="py-2 font-mono">
+                                {t('operations.grid.machines.nodes', {
+                                    running: totals.running,
+                                    total: totals.nodes,
+                                })}
+                            </td>
+                            <td className="py-2 font-mono">{totals.tasksCompleted}</td>
+                            <td className="py-2 font-mono">{totals.tasksFailed}</td>
+                        </tr>
+                    </tfoot>
+                )}
             </table>
             {machines.some((machine) => machine.name === '') && (
                 <p className="text-xs text-ink-faint">{t('operations.grid.machines.hint')}</p>

@@ -2061,6 +2061,12 @@ export const en: SourceCatalogue = {
                 submit: 'Watch',
             },
             errors: {
+                notListed:
+                    'This party has no series for that URL yet. A series exists once data has been written to it.',
+                noShape:
+                    '{series} holds one value at each instant. It declares no axis, so it has no evolution to draw.',
+                fixing: 'A fixing is a rate on one day and names no series.',
+                unknown: "'{name}' is not an instrument the series list can show.",
                 missing:
                     'State the asset class, the scope, the instrument type and the quote type.',
                 field: 'Write each other field as name=value.',

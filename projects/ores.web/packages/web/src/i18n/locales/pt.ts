@@ -2074,6 +2074,12 @@ const pt: SourceCatalogue = {
                 submit: 'Acompanhar',
             },
             errors: {
+                notListed:
+                    'Esta parte ainda não tem uma série para este URL. Uma série existe quando se escrevem dados nela.',
+                noShape:
+                    '{series} tem um valor em cada instante. Não declara nenhum eixo, por isso não há evolução para desenhar.',
+                fixing: 'Um fixing é uma taxa de um dia e não designa nenhuma série.',
+                unknown: '«{name}» não é um instrumento que a lista de séries pode mostrar.',
                 missing:
                     'Indique a classe de ativos, o âmbito, o tipo de instrumento e o tipo de cotação.',
                 field: 'Escreva cada outro campo como nome=valor.',

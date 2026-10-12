@@ -32,9 +32,14 @@
  *
  * No read lists the series yet, so the object is named by its identity and the
  * screen says so.
+ *
+ * An oresmd URL in the address, as \`uri\`, names the series to open: the screen
+ * reads it through the server's parse, fills the identity from it and reads the
+ * object, so a link to a URL is a link to its series.
  */
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type {
     CurveEvolution,
@@ -44,6 +49,8 @@ import type {
 } from '@ores/contracts';
 import { curves, type CurveRange } from '../api/curves.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { seriesOfUrl, seriesVerdict } from '../oresmd/identity.js';
+import { oresmdQueries } from '../oresmd/queries.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Button, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import {
@@ -370,6 +377,74 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
         retry: false,
     });
 
+    // An oresmd URL in the address opens the series it names, once for each URL.
+    // A series the party does not have, or one that declares no axis, is said to be
+    // unavailable in words, and the identity stays on the form to read or change.
+    const [search] = useSearchParams();
+    const uri = search.get('uri') ?? '';
+    const parsed = useQuery({ ...oresmdQueries.parse(uri), enabled: uri !== '' });
+    const schema = useQuery({ ...oresmdQueries.schema(), enabled: uri !== '' });
+    const [unavailable, setUnavailable] = useState<string | null>(null);
+    const opened = useRef('');
+    useEffect(() => {
+        if (uri === '' || opened.current === uri) return;
+        if (parsed.isError || series.isError) {
+            opened.current = uri;
+            setProblem((parsed.error ?? series.error)?.message ?? '');
+            return;
+        }
+        if (parsed.data === undefined || schema.data === undefined || series.data === undefined) {
+            return;
+        }
+        opened.current = uri;
+        const named = seriesOfUrl(schema.data, parsed.data);
+        if (!named.ok) {
+            setUnavailable(
+                named.reason === 'fixing'
+                    ? t('market.evolution.errors.fixing')
+                    : named.reason === 'unknown'
+                      ? t('market.evolution.errors.unknown', { name: named.message })
+                      : named.message,
+            );
+            return;
+        }
+        const verdict = seriesVerdict(series.data, named.form);
+        if (verdict.kind !== 'shown') {
+            setForm(named.form);
+            setUnavailable(
+                verdict.kind === 'not-listed'
+                    ? t('market.evolution.errors.notListed')
+                    : t('market.evolution.errors.noShape', {
+                          series: seriesLabel(verdict.listed),
+                      }),
+            );
+            return;
+        }
+        const form = formFrom(verdict.listed);
+        setPicked(verdict.listed.series_id);
+        setForm(form);
+        const identity = identityOf(form);
+        const span = rangeOf(from, to);
+        if (identity.ok && span.ok) {
+            setProblem(null);
+            setReads((count) => count + 1);
+            setAsked({ identity: identity.identity, range: span.range, provenance });
+        }
+    }, [
+        uri,
+        parsed.data,
+        parsed.isError,
+        parsed.error,
+        schema.data,
+        series.data,
+        series.isError,
+        series.error,
+        from,
+        to,
+        provenance,
+        t,
+    ]);
+
     const pick = (seriesId: string): void => {
         // Choosing the placeholder clears the pick and leaves the form as it stands.
         setPicked(seriesId);
@@ -487,6 +562,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
                     {t('market.evolution.form.provenance')}
                 </label>
                 {problem !== null && <Notice tone="error">{problem}</Notice>}
+                {unavailable !== null && <Notice tone="warn">{unavailable}</Notice>}
                 <div className="flex items-center gap-3">
                     <Button type="submit">{t('market.evolution.form.submit')}</Button>
                 </div>

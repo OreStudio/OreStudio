@@ -26,11 +26,11 @@ The series page shows a spot rate as the stored text trimmed to seven significan
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -86,3 +86,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The series page shows an FX spot rate with the =decimal_places= of its pair's convention, read from the =currency-pair-conventions= resource through the refdata store, quietly. The chart axis and the table use it: AUD/USD shows four places and USD/JPY two. A pair with no convention, a failed read and a series that is not an FX spot rate keep the plain seven-digit format. The page still reads by count only. A time window was left out on purpose. Checked in headless Chrome against real data.
+

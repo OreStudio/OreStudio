@@ -30,39 +30,54 @@
 -- -----------------------------------------------------------------------------
 -- Market data generation configs (dual RLS: tenant + party isolation)
 -- -----------------------------------------------------------------------------
+-- System scope: a system collection's feeds are the installation's, kept in
+-- the system tenant and read by every tenant. A feed table's tenant policy
+-- admits a system-tenant row whose collection is system-scoped; writing stays
+-- with the system tenant. The collection's own policy below admits a system
+-- collection to every session the same way.
+-- -----------------------------------------------------------------------------
+create or replace function ores_synthetic_is_system_collection_fn(p_config_id uuid)
+returns boolean
+language sql
+stable
+as $$
+    -- No tenant filter is needed: the collection's scope check puts every
+    -- system-scoped row in the system tenant, so a match is always the
+    -- system tenant's collection. Relax that check and this needs one.
+    select exists (
+        select 1 from ores_synthetic_market_data_generation_configs_tbl c
+        where c.id = p_config_id
+          and c.scope = 'system'
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+$$;
+
+-- -----------------------------------------------------------------------------
 alter table ores_synthetic_market_data_generation_configs_tbl enable row level security;
 
--- A NULL tenant_id/party_id is a wider-scope row (system/tenant scope --
--- see the scope column), not an unscoped or orphaned one: it must stay
--- visible to every session in that wider radius, not be filtered out by
--- an equality/ANY() check that a NULL can never satisfy. That widening
--- applies to USING (visibility/reads) only -- WITH CHECK (writes) stays
--- strict, or any session could elevate a row's scope beyond its own
--- isolation boundary just by omitting the narrower identifier. Only a
--- system-tenant-context caller may write an actual null-tenant row;
--- mirrors scheduler_rls_policies_create.sql's job_instances_write_policy.
+-- A collection belongs to a tenant. A system collection belongs to the
+-- system tenant and its system party, and every tenant reads it: the shared
+-- shape (tenant_id = current or tenant_id = system), scoped to system rows.
+-- Writes stay strict: a session writes only its own tenant's collections, so
+-- only the system tenant writes a system collection.
 drop policy if exists market_data_generation_configs_tenant_isolation_policy
     on ores_synthetic_market_data_generation_configs_tbl;
 
 create policy market_data_generation_configs_tenant_isolation_policy
 on ores_synthetic_market_data_generation_configs_tbl
 for all using (
-    tenant_id is null
-    or tenant_id = ores_iam_current_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn() and scope = 'system')
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
--- Same USING/WITH CHECK split as above: a party-restricted session can
--- READ a null-party_id (tenant-scope) row, but cannot WRITE one -- only
--- a session with no party restriction (ores_iam_visible_party_ids_fn()
--- is null, e.g. a tenant admin) can create/update a tenant-scope row.
 -- Party isolation is a read-side restrictive policy (the refdata pattern):
 -- the trigger set owns write-side validation, and a WITH CHECK here would
--- block the generated-data publisher and the eventing test seeds. Rows with
--- a null party_id are tenant/system-scoped and visible to the whole tenant.
+-- block the generated-data publisher and the eventing test seeds. A row with
+-- a null party_id is tenant-scoped and visible to the whole tenant; a system
+-- row is visible to every party of every tenant.
 drop policy if exists market_data_generation_configs_party_isolation_policy
     on ores_synthetic_market_data_generation_configs_tbl;
 
@@ -72,6 +87,7 @@ as restrictive
 for select using (
     party_id is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or scope = 'system'
 );
 
 -- -----------------------------------------------------------------------------
@@ -86,6 +102,8 @@ create policy fx_spot_generation_configs_tenant_isolation_policy
 on ores_synthetic_fx_spot_generation_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn()
+        and ores_synthetic_is_system_collection_fn(config_id))
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -125,6 +143,12 @@ create policy gmm_components_tenant_isolation_policy
 on ores_synthetic_gmm_components_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn()
+        and exists (
+            select 1 from ores_synthetic_fx_spot_generation_configs_tbl f
+            where f.id = fx_spot_config_id
+              and f.valid_to = ores_utility_infinity_timestamp_fn()
+              and ores_synthetic_is_system_collection_fn(f.config_id)))
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -162,6 +186,8 @@ create policy ir_curve_generation_configs_tenant_isolation_policy
 on ores_synthetic_ir_curve_generation_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn()
+        and ores_synthetic_is_system_collection_fn(config_id))
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -175,6 +201,12 @@ on ores_synthetic_ir_curve_generation_configs_tbl
 as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
+    or exists (
+        select 1 from ores_synthetic_market_data_generation_configs_tbl c
+        where c.id = config_id
+          and c.scope in ('tenant', 'system')
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+    )
 );
 
 -- -----------------------------------------------------------------------------
@@ -189,6 +221,12 @@ create policy ir_curve_template_entries_tenant_isolation_policy
 on ores_synthetic_ir_curve_template_entries_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn()
+        and exists (
+            select 1 from ores_synthetic_ir_curve_generation_configs_tbl i
+            where i.id = ir_curve_config_id
+              and i.valid_to = ores_utility_infinity_timestamp_fn()
+              and ores_synthetic_is_system_collection_fn(i.config_id)))
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -202,6 +240,14 @@ on ores_synthetic_ir_curve_template_entries_tbl
 as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
+    or exists (
+        select 1 from ores_synthetic_ir_curve_generation_configs_tbl i
+        join ores_synthetic_market_data_generation_configs_tbl c on c.id = i.config_id
+        where i.id = ir_curve_config_id
+          and c.scope in ('tenant', 'system')
+          and i.valid_to = ores_utility_infinity_timestamp_fn()
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+    )
 );
 
 -- -----------------------------------------------------------------------------
@@ -247,6 +293,24 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Market data providers (system-tenant reference data; tenant isolation
+-- only, same shape as yield_curve_process_types)
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_market_data_providers_tbl enable row level security;
+
+drop policy if exists market_data_providers_tenant_isolation_policy
+    on ores_synthetic_market_data_providers_tbl;
+
+create policy market_data_providers_tenant_isolation_policy
+on ores_synthetic_market_data_providers_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Yield curve process parameter definitions (system-tenant reference data;
 -- tenant isolation only, same shape as yield_curve_process_types)
 -- -----------------------------------------------------------------------------
@@ -282,6 +346,12 @@ create policy ir_curve_generation_config_process_parameter_values_tenant_isolati
 on ores_synthetic_config_process_parameter_values_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn()
+        and exists (
+            select 1 from ores_synthetic_ir_curve_generation_configs_tbl i
+            where i.id = ores_synthetic_config_process_parameter_values_tbl.config_id
+              and i.valid_to = ores_utility_infinity_timestamp_fn()
+              and ores_synthetic_is_system_collection_fn(i.config_id)))
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -304,6 +374,11 @@ for select using (
         select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
         where c.id = ores_synthetic_config_process_parameter_values_tbl.config_id
           and c.valid_to = ores_utility_infinity_timestamp_fn()
-          and c.party_id = ANY(ores_iam_visible_party_ids_fn())
+          and (c.party_id = ANY(ores_iam_visible_party_ids_fn())
+               or exists (
+                   select 1 from ores_synthetic_market_data_generation_configs_tbl m
+                   where m.id = c.config_id
+                     and m.scope in ('tenant', 'system')
+                     and m.valid_to = ores_utility_infinity_timestamp_fn()))
     )
 );

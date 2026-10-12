@@ -18,6 +18,9 @@
  *
  */
 
+-- The provider catalogue before the collections that name a provider.
+\ir ./synthetic_market_data_providers_create.sql
+\ir ./synthetic_market_data_providers_notify_trigger_create.sql
 \ir ./synthetic_folders_create.sql
 \ir ./synthetic_folders_notify_trigger_create.sql
 \ir ./synthetic_market_data_generation_configs_create.sql

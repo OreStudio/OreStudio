@@ -55,6 +55,7 @@ generate_synthetic_synthetic_fx_spot_config(utility::generation::generation_cont
     r.price_source = std::string("vintage");
     r.vintage_source = std::string("ore.reference");
     r.vintage_date = std::string("2016-02-05");
+    r.provider_code = std::nullopt;
     return r;
 }
 

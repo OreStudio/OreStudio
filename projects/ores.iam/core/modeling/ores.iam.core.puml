@@ -1710,8 +1710,8 @@ class ores::iam::messaging::tenant_provisioning_handler {
     {static} -publish_bundle(client : internal_request_client&, bundle_code : string, username : string, params_json : string, add_step : function, on_progress : function, timeout : seconds) : bool
     {static} -find_party(client : internal_request_client&, full_name : string) : optional<party>
     {static} -find_system_party(client : internal_request_client&) : optional<party>
-    {static} -start_synthetic_theme_feeds(client : internal_request_client&, dataset_code : string) : bool
-    {static} -create_theme_feed_bindings(resolve_client : internal_request_client&, save_client : internal_request_client&, dataset_code : string, party_id : string) : bool
+    {static} -start_synthetic_feeds(client : internal_request_client&, dataset_code : string) : bool
+    {static} -create_feed_bindings(resolve_client : internal_request_client&, save_client : internal_request_client&, dataset_code : string, party_id : string) : bool
     -copy_template_image(client : internal_request_client&, ctx : context&, tenant_id : string, key : string) : optional<uuid>
     -attach_staff_photos(client : internal_request_client&, ctx : context&, tenant_id : string, office_code : string, username : string)
     -finish_party(client : internal_request_client&, ctx : context&, tenant_id : string, account_id : uuid, username : string, party : party, set_default : bool)

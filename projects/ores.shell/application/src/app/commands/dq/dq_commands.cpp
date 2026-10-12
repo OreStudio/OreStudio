@@ -27,6 +27,7 @@
 #include "ores.shell/app/commands/dq/report_definition_template_operations_commands.hpp"
 #include "ores.shell/app/commands/dq/subject_area_commands.hpp"
 #include "ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
+#include "ores.shell/app/commands/dq/synthetic_market_data_provider_commands.hpp"
 #include "ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 
 namespace ores::shell::app::commands {
@@ -60,6 +61,7 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     publication_commands::register_commands(root_menu, session);
     report_definition_template_operations_commands::register_commands(root_menu, session);
     synthetic_fx_spot_config_commands::register_commands(root_menu, session);
+    synthetic_market_data_provider_commands::register_commands(root_menu, session);
     subject_area_commands::register_commands(root_menu, session);
     treatment_dimension_commands::register_commands(root_menu, session);
 }

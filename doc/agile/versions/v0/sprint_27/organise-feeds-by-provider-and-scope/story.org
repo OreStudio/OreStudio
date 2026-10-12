@@ -8,7 +8,7 @@
 #+filetags: :synthetic:marketdata:web:feeds:sprint_27:v0:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -43,7 +43,7 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:67676632-0008-417E-86E4-8E2490B78337][Model providers and feed scope]] | BACKLOG | | | A provider as system reference data, seeded with the main vendors and exchanges, and a scope on every feed: a system feed under a provider in the system tenant, or a tenant's or party's test feed. |
+| [[id:67676632-0008-417E-86E4-8E2490B78337][Model providers and feed scope]] | DONE | 2026-10-11 | 2026-10-11 | A provider as system reference data, seeded with the main vendors and exchanges, and a scope on every feed: a system feed under a provider in the system tenant, or a tenant's or party's test feed. |
 | [[id:2E7C3EE3-2B47-4393-A9B3-8A94D05C8076][Seed the provider feed catalogue]] | BACKLOG | | | System feeds per provider and kind, organised provider, kind, then the provider's folders, with provider-qualified source names, run once in the system tenant. |
 | [[id:CDA9C6C5-3D37-4736-8C1F-2DE8918696E4][Subscribe a tenant to provider feeds]] | BACKLOG | | | A screen that shows what each provider offers, what a tenant or party consumes and since when, and writes the feed bindings that subscribe and unsubscribe. |
 | [[id:D9D2EE5D-31C3-4B77-AB9B-E836CB585FA0][Build the feed browser]] | BACKLOG | | | One Market data feed browser: a lazily loaded tree of System feeds by provider and My test feeds with counts and run roll-ups, start and stop at any node, and the kind's list and feed page as its leaves. |
@@ -80,6 +80,12 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
   node's feeds on the right through the kind's list, and the kind's feed page
   when one is opened. The FX price feed list and page become that leaf, and
   the per-kind cards under Market data become entry points into the tree.
+- *One way to set up feeds.* Feeds come from a synthetic feeds dataset (DQ
+  artefact type =synthetic_feeds=), published by one function into the party
+  provisioning names; the "theme" was that dataset and is renamed to it. A feed
+  row names its provider, and its source name follows the provider. Until the
+  services read system collections, a provider's feeds are published as a
+  party collection like any other.
 - *Built for scale from the first screen.* Order books and wide provider
   catalogues mean tens of thousands of feeds. The tree loads one level at a
   time and asks the server for each node's counts and run roll-up; every list
@@ -96,6 +102,18 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 - *Source names carry the provider.* After the synthetic mark, a system feed's
   source is qualified by its provider and a test feed's by its party, so two
   scopes never claim one source.
+
+- *A system collection is the system tenant's.* It belongs to the system
+  tenant and its system party, the party the super administrator works in,
+  as every other shared catalogue does. The earlier null-tenant reading of
+  system scope could hold no feeds, because a feed must share its
+  collection's tenant.
+- *One bound provider per pair, for now.* The collection's conflict guard
+  stays: one enabled, bound system collection at a time. So the first step
+  creates the providers and binds one of them, chosen arbitrarily, as the
+  authoritative source of a pair such as EUR/USD; the other providers'
+  collections run sandboxed. The second step is a rate blending service that
+  reads the providers' spots and owns the blended EUR/USD itself.
 
 * Open questions
 

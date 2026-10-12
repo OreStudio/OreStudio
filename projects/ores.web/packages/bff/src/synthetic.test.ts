@@ -162,6 +162,7 @@ describe('synthetic resource routes', () => {
         expect(resources.map((resource) => resource.key)).toEqual([
             'folders',
             'collections',
+            'providers',
             'fx-feeds',
             'gmm-components',
             'ir-curve-feeds',
@@ -175,6 +176,9 @@ describe('synthetic resource routes', () => {
         expect(definitions?.readOnlyBecause).toContain('name alone');
         const mixture = resources.find((resource) => resource.key === 'gmm-components');
         expect(mixture?.writePermission).toBe('synthetic::gmm_components:write');
+        const providers = resources.find((resource) => resource.key === 'providers');
+        expect(providers?.writable).toBe(false);
+        expect(providers?.readOnlyBecause).toContain('catalogue');
     });
 
     it('reads every row of a resource, as of now and unfiltered', async () => {

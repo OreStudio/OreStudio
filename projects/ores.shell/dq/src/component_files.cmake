@@ -48,6 +48,7 @@ set(files
     "app/commands/dq/report_definition_template_operations_commands.cpp"
     "app/commands/dq/subject_area_commands.cpp"
     "app/commands/dq/synthetic_fx_spot_config_commands.cpp"
+    "app/commands/dq/synthetic_market_data_provider_commands.cpp"
     "app/commands/dq/treatment_dimension_commands.cpp"
 )
 
@@ -81,5 +82,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/report_definition_template_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/subject_area_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/synthetic_market_data_provider_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 )

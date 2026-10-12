@@ -3318,7 +3318,7 @@ const pt: SourceCatalogue = {
         fxFeeds: {
             title: 'Fluxos de preços FX',
             lead: 'Os fluxos FX sintéticos da sua parte. Um fluxo não produz nada até estar ativo e arrancado.',
-            add: 'Adicionar fluxo',
+            add: 'Adicionar',
             addTitle: 'Adicionar um fluxo de preços FX',
             pair: 'Par',
             samePair: 'As moedas base e cotada têm de ser diferentes.',
@@ -3343,8 +3343,6 @@ const pt: SourceCatalogue = {
             stop: 'Parar',
             choose: 'Escolher',
             chooseFeed: 'Escolher {feed}',
-            startChosen: 'Arrancar os escolhidos ({count})',
-            stopChosen: 'Parar os escolhidos ({count})',
             startedCount: '{count} fluxos arrancados.',
             stoppedCount: '{count} fluxos parados.',
             refused: '{feed}: {message}',

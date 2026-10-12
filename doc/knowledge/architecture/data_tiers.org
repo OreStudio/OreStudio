@@ -81,7 +81,7 @@ its values.
 
 Observations of the market, one per observation time. A live feed, a
 curated vendor set such as the Federal Reserve H.10 rates, a synthetic
-theme and the ORE samples are all tier 4. What separates them is the
+feeds dataset and the ORE samples are all tier 4. What separates them is the
 value's nature and origin, not the tier, and the platform already states
 those two dimensions.
 
@@ -101,7 +101,7 @@ machinery.
 | 1 | A populate script under =projects/ores.sql/populate/=, idempotent, written for the system tenant |
 | 2 | A DQ dataset, published into the owning service and installed as a bundle |
 | 3 | An =ores.seeder= dataset |
-| 4 | A DQ dataset for a curated set, a synthetic theme for generated data, or a feed |
+| 4 | A DQ dataset for a curated set, a synthetic feeds dataset for generated data, or a feed |
 | 5 | Runtime alone |
 
 ** The procedure
@@ -116,7 +116,7 @@ Ask these in order and stop at the first yes.
 3. *Is this an entity belonging to one installation?* Tier 3. Add it to a
    seeder dataset, and expect it to differ everywhere.
 4. *Is it an observation of the market at a time?* Tier 4. Choose a
-   curated dataset, a synthetic theme or a feed.
+   curated dataset, a synthetic feeds dataset or a feed.
 5. *Otherwise it is produced by use.* Tier 5. Add nothing; the write path
    is the delivery.
 

@@ -59,6 +59,20 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            class market_data_provider_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_market_data_providers(ores::nats::message msg) : void
+                +get_market_data_provider(ores::nats::message msg) : void
+                +get_many_market_data_providers(ores::nats::message msg) : void
+                +put_market_data_provider(ores::nats::message msg) : void
+                +put_many_market_data_providers(ores::nats::message msg) : void
+                +delete_market_data_provider(ores::nats::message msg) : void
+                +delete_many_market_data_providers(ores::nats::message msg) : void
+                +list_market_data_provider_versions(ores::nats::message msg) : void
+                +get_market_data_provider_version(ores::nats::message msg) : void
+            }
             class organisation_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -268,6 +282,50 @@ namespace ores #F2F2F2 {
             class market_data_generation_config_repository {
                 +remove_status : enum class
             }
+            class market_data_provider_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +kind : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class market_data_provider_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const market_data_provider_entity& v) : domain::market_data_provider
+                +map(const domain::market_data_provider& v) : market_data_provider_entity
+                +map(const vector<market_data_provider_entity>& v) : vector<domain::market_data_provider>
+                +map(const vector<domain::market_data_provider>& v) : vector<market_data_provider_entity>
+            }
+            class market_data_provider_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::market_data_provider& v) : void
+                +write(context ctx, const vector<domain::market_data_provider>& v) : void
+                +write(context ctx, const domain::market_data_provider& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::market_data_provider>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::market_data_provider>
+                +read_latest(context ctx, const string& code) : vector<domain::market_data_provider>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::market_data_provider>
+                +read_all(context ctx, const string& code) : vector<domain::market_data_provider>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::market_data_provider>
+                +is_sortable(string_view field) : bool
+                +get_total_provider_count(context ctx, const optional<messaging::market_data_providers_filter>& filter, const optional<string>& as_of) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::market_data_provider& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::market_data_provider& v, const ores::utility::domain::precondition& claim) : domain::market_data_provider
+            }
             class yield_curve_process_parameter_definition_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
@@ -349,6 +407,32 @@ namespace ores #F2F2F2 {
             class market_data_generation_config_service {
                 -ctx_ : context
                 -repo_ : repository::market_data_generation_config_repository
+            }
+            class market_data_provider_service {
+                -ctx_ : context
+                -repo_ : repository::market_data_provider_repository
+                -lg() : [[nodiscard]] static auto&
+                +market_data_provider_service(context ctx)
+                +list_market_data_providers(const messaging::list_market_data_providers_request& request) : messaging::list_market_data_providers_response
+                +get_market_data_provider(const messaging::get_market_data_provider_request& request) : messaging::get_market_data_provider_response
+                +get_many_market_data_providers(const messaging::get_many_market_data_providers_request& request) : messaging::get_many_market_data_providers_response
+                +put_market_data_provider(const messaging::put_market_data_provider_request& request) : messaging::put_market_data_provider_response
+                +put_many_market_data_providers(const messaging::put_many_market_data_providers_request& request) : messaging::put_many_market_data_providers_response
+                +delete_market_data_provider(const messaging::delete_market_data_provider_request& request) : messaging::delete_market_data_provider_response
+                +delete_many_market_data_providers(const messaging::delete_many_market_data_providers_request& request) : messaging::delete_many_market_data_providers_response
+                +list_market_data_provider_versions(const messaging::list_market_data_provider_versions_request& request) : messaging::list_market_data_provider_versions_response
+                +get_market_data_provider_version(const messaging::get_market_data_provider_version_request& request) : messaging::get_market_data_provider_version_response
+                +list_providers(uint32_t offset, uint32_t limit) : vector<domain::market_data_provider>
+                +count_providers() : uint32_t
+                +get_provider_at_version(const string& code, uint32_t version) : optional<domain::market_data_provider>
+                +get_provider(const string& code) : optional<domain::market_data_provider>
+                +get_providers(const vector<string>& codes) : vector<domain::market_data_provider>
+                +save_provider(const domain::market_data_provider& provider) : void
+                +save_providers(const vector<domain::market_data_provider>& providers) : void
+                +delete_provider(const string& code) : void
+                +delete_providers(const vector<string>& codes) : void
+                +get_provider_history(const string& code) : vector<domain::market_data_provider>
+                -prepare_change(const messaging::market_data_provider_change& change, const ores::utility::domain::change_intent& intent, domain::market_data_provider& out) : ores::utility::domain::result
             }
             class organisation_generator_service {
             }
@@ -877,7 +961,7 @@ class ores::synthetic::messaging::publish_from_dq_handler {
 }
 note right of "ores::synthetic::messaging::publish_from_dq_handler"
 The one handler with no verifier_ member: it serves the
-synthetic.v1.ops.publish_theme_from_dq workflow step and calls
+synthetic.v1.ops.publish_feeds_from_dq workflow step and calls
 the SECURITY DEFINER SQL functions, which read the DQ
 artefact tables and write the ores_synthetic_* tables. The
 workflow engine, not a user, drives it.
@@ -894,7 +978,7 @@ note right of "ores::synthetic::messaging::registrar"
 The component's one entry point. It composes every
 sub-registrar, wires the two hand-wired subjects
 (generate_organisation_request and
-synthetic.v1.ops.publish_theme_from_dq), builds one
+synthetic.v1.ops.publish_feeds_from_dq), builds one
 function-local static dispatch_registry, registers the nine
 history providers into it, and finally registers the
 generic history.v1.get subscription against it. All

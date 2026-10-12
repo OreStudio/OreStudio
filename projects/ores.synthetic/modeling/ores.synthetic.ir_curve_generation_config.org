@@ -97,15 +97,16 @@ Floating-rate index family this curve represents (oresmd's
 =index_family=: =libor=/=euribor= for term IBOR-style indices, or one
 of the overnight/RFR-style families -- =sofr=/=estr=/=sonia=/=tona=/
 =saron=/=aonia=/=corra=/=honia=/=sora=/=swestr=/=nowa=/=kofr=/=mibor=/
-=zaronia=/=destr=/=polonia=/=nzonia=/=shibor=/=tiie=/=taibor=), stored
+=zaronia=/=destr=/=polonia=/=nzonia=/=shibor=/=tiie=/=taibor=/=cdi=/
+=czeonia=/=buboron=/=telboron=/=tlref=/=camara=/=ibr=/=hibor=), stored
 as a fixed lower-case token rather than the full ISDA/ORE code the
 predecessor =index_name= column held ("USD-SOFR") -- =currency_code=
-already carries the currency half of that pair. The
-=(currency_code, index_family)= pair is validated as a whole by a
-hand-written composite trigger (not the codegen single-argument
-Validations mechanism, which cannot express a two-column lookup)
-against =overnight_index_convention=/=ibor_index_convention=, whose own
-=id= is =currency_code + "-" + upper(index_family)=.
+already carries the currency half of that pair. Only the check below
+limits the family. The =(currency_code, index_family)= pair names an
+=overnight_index_convention= or =ibor_index_convention=, whose own =id=
+is =currency_code + "-" + upper(index_family)=; the feed itself reads
+no convention, so a curve whose pair has no convention seeded still
+ticks.
 
 #+begin_src cpp :name generator
 std::string("sofr")
@@ -426,10 +427,11 @@ std::nullopt
 | expression                                              |
 |----------------------------------------------------------|
 | "currency_code" <> ''                                    |
-| "index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') |
-| ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" = '') or ("index_family" = 'sofr' and "tenor" in ('', 'FOMC')) |
+| "index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor') |
+| ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor') and "tenor" = '') or ("index_family" = 'sofr' and "tenor" in ('', 'FOMC')) |
 | "role" in ('discount', 'projection', 'self_discounting') |
 | "source_name" <> ''                                       |
+| "source_name" like 'synthetic.%'                          |
 | "ticks_per_hour" > 0                                       |
 | "price_source" in ('fixed', 'vintage')                    |
 | ("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '' and "vintage_series_uri" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> '' and "vintage_series_uri" <> '') |
@@ -535,7 +537,7 @@ std::nullopt
 | field                             | label                        | widget                       | type          | is_key | is_required | placeholder                              | combo_domain_type      | combo_display_field | combo_fetch_include       | combo_fetch_fn | combo_watcher_name                  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_values                        |
 |-----------------------------------+-------------------------------+-------------------------------+---------------+--------+-------------+--------------------------------------------+--------------------------+----------------------+-----------------------------+------------------+---------------------------------------+--------------------+------------------------+--------------------+---------------+---------------------------------------|
 | currency_code                     | Currency                     | currencyEdit                 | line_edit     |        | true        | Enter currency code                      |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| index_family                      | Index Family                 | indexFamilyCombo             | static_combo  |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             | libor,euribor,sofr,estr,sonia,tona,saron,aonia,corra,honia,sora,swestr,nowa,kofr,mibor,zaronia,destr,polonia,nzonia,shibor,tiie,taibor   |
+| index_family                      | Index Family                 | indexFamilyCombo             | static_combo  |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             | libor,euribor,sofr,estr,sonia,tona,saron,aonia,corra,honia,sora,swestr,nowa,kofr,mibor,zaronia,destr,polonia,nzonia,shibor,tiie,taibor,cdi,czeonia,buboron,telboron,tlref,camara,ibr,hibor   |
 | tenor                             | Tenor                         | tenorCombo                    | dynamic_combo |        |             |                                            | refdata::domain::tenor  | display_name         |   | fetch_tenors   | irCurveGenerationConfigTenorWatcher  | code               | description          | sort_order         | tenors      |                                      |
 | role                              | Role                          | roleCombo                     | static_combo  |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             | discount,projection,self_discounting |
 | process_type                      | Process Type                  | processTypeEdit                | line_edit     |        | true        | VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, or TWO_FACTOR_GAUSSIAN |               |                      |                            |                |                                      |                    |                      |                    |             |                                      |

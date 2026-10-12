@@ -95,6 +95,16 @@ Currency gaps against the ACME books and the manual chapter:
 
 A first attempt to add the FX spots and the missing curves was written and set aside, because other work is refactoring the feeds. It is not kept in the repository. It took the start levels of BRL, HKD, KRW, SGD and TWD from the Federal Reserve H.10 release, which does not quote the other missing currencies, so those need another source or a fixed illustrative level.
 
+** Update: the Bloomberg feeds
+
+The Bloomberg synthetic feeds dataset (=synthetic.feeds.bloomberg=), which
+replaces the 2026 Realistic dataset, closes the FX spot and curve currency
+gaps above: a USD spot for 26 currencies and an overnight-benchmark curve for
+28, plus the USD FOMC short end. The 13 spots outside the H.10 release start
+at an illustrative level. ORE carries a convention for every new benchmark,
+including CLP-CAMARA, COP-IBR and CNH-HIBOR, so none needed a new one. The
+other gaps in the list above remain.
+
 * References
 
 - [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]] — the design that fixes the reports, books and currencies of each entity.

@@ -52,40 +52,40 @@ BEGIN
         'Sample organisational and risk-reporting data for development and testing. Includes business units, portfolios, trading books, and the standard set of risk report definitions (NPV, VaR, CVA, XVA, etc.) -- reports reference the book/portfolio tree, so both live in one bundle.'
     );
 
-    -- Each of the three bundles below is a mutually-exclusive synthetic
-    -- market-data theme: publishing more than one is fine (a party can make
-    -- several available), but only one's feeds should ever run at a time --
-    -- see MarketSimulatorWindow's Start-at-Root theme prompt, which refuses
-    -- to cascade a start across themes for exactly this reason.
+    -- Each of the three bundles below publishes one synthetic feeds dataset.
+    -- Publishing more than one is fine (a party can make several available),
+    -- but only one's feeds should run at a time: two running sets of feeds
+    -- tick the same pairs. Nothing in this repository enforces that today;
+    -- the Qt client's Market Simulator prompted for one collection at a time.
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'synthetic_ore_samples_2016',
         'Synthetic Data: 2016 ORE Samples',
-        'Pre-benchmark-reform theme pinned to the 2016-02-05 Fed H.10 vintage: calibrated FX spot generation for all 8 major + 3 EM/exotic driver pairs, plus four legacy IBOR-era IR curves (USD-LIBOR-3M, EUR-EURIBOR-3M, GBP-LIBOR-6M, JPY-LIBOR-6M). Matches the conventions ORE''s own sample data comes from.'
+        'Pre-benchmark-reform feeds pinned to the 2016-02-05 Fed H.10 vintage: calibrated FX spot generation for all 8 major + 3 EM/exotic driver pairs, plus four legacy IBOR-era IR curves (USD-LIBOR-3M, EUR-EURIBOR-3M, GBP-LIBOR-6M, JPY-LIBOR-6M). Matches the conventions ORE''s own sample data comes from.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic_realistic_2026',
-        'Synthetic Data: 2026 Realistic',
-        'Current-regime theme: one per-currency-calibrated overnight-RFR IR curve for each top-20-by-turnover currency, plus calibrated FX spot generation for all 8 major + 3 EM/exotic + 2 Nordic driver pairs, both grounded in the real 2026-05-05 Fed H.10 vintage.'
+        'synthetic_bloomberg',
+        'Synthetic Data: Bloomberg',
+        'Current-regime feeds a simulated Bloomberg quotes: a USD FX spot for each of 26 currencies, 13 of them grounded in the real 2026-05-05 Fed H.10 vintage, and one per-currency-calibrated overnight-RFR IR curve for each of 28 currencies, plus the USD FOMC short end.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'synthetic_uniform_demo',
         'Synthetic Data: Uniform Volatility Demo',
-        'Not a vintage theme -- a deliberately simple demo/exercise archetype: uniform, exaggerated volatility for both FX (single-component geometric process) and IR (one uniform Vasicek kappa/sigma across all 20 currencies), easy to eyeball and exercises every UI feature.'
+        'Not vintage feeds -- a deliberately simple demo/exercise archetype: uniform, exaggerated volatility for both FX (single-component geometric process) and IR (one uniform Vasicek kappa/sigma across all 20 currencies), easy to eyeball and exercises every UI feature.'
     );
 
     -- The CRM Cross-Rates Matrix's topology config (which crosses/tiers
     -- exist -- majors/exotics/scandies) is deliberately its own bundle,
-    -- independent of any synthetic-data vintage or theme: a party gets a
-    -- working CRM window regardless of which theme's feed (if any) is
+    -- independent of any synthetic feeds dataset: a party gets a
+    -- working CRM window regardless of which dataset's feed (if any) is
     -- currently running, and adding/retiring a vintage bundle never has to
     -- remember to carry CRM topology along with it.
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crm_topology',
         'CRM Cross-Rates Matrix Topology',
-        'Named CRM topology configs (majors/exotics/scandies tiers) for the Cross-Rates Matrix window. Published per party, independent of which synthetic-data theme (if any) is providing live rates -- the CRM shows static/stale prices until a feed starts ticking the underlying driver pairs.'
+        'Named CRM topology configs (majors/exotics/scandies tiers) for the Cross-Rates Matrix window. Published per party, independent of which synthetic feeds dataset (if any) is providing live rates -- the CRM shows static/stale prices until a feed starts ticking the underlying driver pairs.'
     );
 
     -- The generic LEI hierarchy import: the production counterpart of

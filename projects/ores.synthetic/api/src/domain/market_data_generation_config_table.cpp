@@ -25,20 +25,34 @@
 #include "ores.synthetic.api/domain/market_data_generation_config_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::synthetic::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<market_data_generation_config>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Scope" << "Binding" << "Enabled" << "Description"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Name" << "Scope" << "Binding" << "Provider" << "Enabled"
+          << "Description" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& c : v) {
-        table << c.name << c.scope << c.binding_mode << (c.enabled ? "true" : "false")
-              << c.description << c.modified_by << c.version << fort::endr;
+        table << c.name << c.scope << c.binding_mode << opt_str(c.provider_code)
+              << (c.enabled ? "true" : "false") << c.description << c.modified_by << c.version
+              << fort::endr;
     }
     return table.to_string();
 }

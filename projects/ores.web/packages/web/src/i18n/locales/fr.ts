@@ -1694,7 +1694,8 @@ const fr: SourceCatalogue = {
                     other: 'Autres',
                 },
                 age: {
-                    caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
+                    caution:
+                        'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
                     over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
                 },
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',
@@ -3678,6 +3679,12 @@ const fr: SourceCatalogue = {
                 irFeeds: 'Flux de courbes de taux',
                 irFeedsBody:
                     "Composez les flux synthétiques de courbes de taux : la devise et l'indice, le moteur de taux court avec ses paramètres, et le modèle de courbe.",
+                synthetic: 'Synthétique',
+                syntheticBody:
+                    'Les flux que la plateforme génère : ce qui tourne, et les flux FX et de taux.',
+                feedOverview: "Vue d'ensemble des flux",
+                feedOverviewBody:
+                    'Ce qui tourne, par portée, fournisseur et type. Démarrez et arrêtez un fournisseur ou un type.',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
@@ -3702,6 +3709,61 @@ const fr: SourceCatalogue = {
             },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
+        },
+        synthetic: {
+            title: 'Synthétique',
+            lead: 'Les flux que la plateforme génère au lieu de les recevoir, et les écrans qui les pilotent.',
+        },
+        feedOverview: {
+            title: "Vue d'ensemble des flux",
+            lead: 'Ce qui tourne, par portée, fournisseur et type de flux. Choisissez un nœud pour affiner la colonne suivante. La page compte les flux sans en lister aucun : les listes de flux les contiennent.',
+            scope: { system: 'Flux système', test: 'Flux de test' },
+            scopeNote: {
+                system: 'Les flux de l’installation, un dossier par fournisseur. Chaque locataire s’y lie ; seul le locataire système les démarre et les arrête.',
+                test: 'Les flux qu’un locataire ou une partie a créés pour lui-même. Ils sont isolés : aucune liaison ne stocke leurs ticks.',
+            },
+            columns: {
+                scope: 'Portée',
+                provider: 'Fournisseur',
+                kind: 'Type de flux',
+                holds: 'Contient',
+                state: 'État',
+            },
+            state: {
+                running: 'En marche',
+                stopped: 'Arrêté',
+                partial: '{running} sur {total} en marche',
+                empty: 'Vide',
+            },
+            named: '{name} (synthétique)',
+            bound: 'Lié',
+            sandboxed: 'Isolé',
+            holds: '{fx} FX · {ir} taux',
+            figures: {
+                feeds: 'Flux',
+                running: 'En marche',
+                fx: 'Taux de change',
+                ir: 'Courbes de taux',
+            },
+            folder: 'Dossier',
+            start: 'Démarrer',
+            stop: 'Arrêter',
+            startTitle: 'Démarrer {name}',
+            stopTitle: 'Arrêter {name}',
+            startBody:
+                'Démarrer les {count} flux arrêtés sous {name} ? Les flux déjà en marche restent en marche.',
+            stopBody:
+                'Arrêter les {count} flux en marche sous {name} ? Arrêter un flux lié l’arrête pour chaque partie liée.',
+            startReport:
+                '{started} flux démarrés sous {name}. {already} déjà en marche, {skipped} ignorés.',
+            stopReport: '{stopped} flux arrêtés sous {name}.',
+            requestNote:
+                'Démarrer et Arrêter agissent sur chaque flux sous {name}, en une seule requête.',
+            kindNote:
+                'La vue d’ensemble s’arrête au type de flux. Les {count} flux sont dans les listes, flux de prix FX et flux de courbes de taux.',
+            none: 'Il n’y a pas encore de flux. Un jeu de flux synthétiques publié pour votre partie remplit cette page.',
+            noProviders: 'Aucun fournisseur dans cette portée.',
+            chooseProvider: 'Choisissez un fournisseur pour voir ses types de flux.',
         },
         irFeeds: {
             title: 'Flux de courbes de taux',

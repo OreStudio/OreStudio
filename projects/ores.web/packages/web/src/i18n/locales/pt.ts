@@ -1685,7 +1685,8 @@ const pt: SourceCatalogue = {
                     other: 'Outros',
                 },
                 age: {
-                    caution: 'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
+                    caution:
+                        'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
                     over: 'A tarefa em espera mais antiga espera há {time}, acima dos {limit} que uma tarefa pode esperar.',
                 },
                 empty: 'Ainda não correu trabalho na grelha.',
@@ -3654,6 +3655,12 @@ const pt: SourceCatalogue = {
                 irFeeds: 'Fluxos de curvas de taxas',
                 irFeedsBody:
                     'Componha os fluxos sintéticos de curvas de taxas: a moeda e o índice, o motor de taxa curta com os seus parâmetros e o modelo da curva.',
+                synthetic: 'Sintético',
+                syntheticBody:
+                    'Os fluxos que a plataforma gera: o que corre, e os fluxos FX e de taxas.',
+                feedOverview: 'Visão geral dos fluxos',
+                feedOverviewBody:
+                    'O que corre, por âmbito, fornecedor e tipo. Inicie e pare um fornecedor ou um tipo.',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },
@@ -3677,6 +3684,60 @@ const pt: SourceCatalogue = {
             },
             removeWarning:
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
+        },
+        synthetic: {
+            title: 'Sintético',
+            lead: 'Os fluxos que a plataforma gera em vez de receber, e os ecrãs que os controlam.',
+        },
+        feedOverview: {
+            title: 'Visão geral dos fluxos',
+            lead: 'O que corre, por âmbito, fornecedor e tipo de fluxo. Escolha um nó para restringir a coluna seguinte. A página conta fluxos e nunca lista nenhum: as listas de fluxos guardam-nos.',
+            scope: { system: 'Fluxos do sistema', test: 'Fluxos de teste' },
+            scopeNote: {
+                system: 'Os fluxos da instalação, uma pasta por fornecedor. Cada inquilino liga-se a eles; só o inquilino do sistema os inicia e para.',
+                test: 'Fluxos que um inquilino ou uma parte criou para si. Estão isolados: nenhuma ligação guarda os seus ticks.',
+            },
+            columns: {
+                scope: 'Âmbito',
+                provider: 'Fornecedor',
+                kind: 'Tipo de fluxo',
+                holds: 'Contém',
+                state: 'Estado',
+            },
+            state: {
+                running: 'A correr',
+                stopped: 'Parado',
+                partial: '{running} de {total} a correr',
+                empty: 'Vazio',
+            },
+            named: '{name} (sintético)',
+            bound: 'Ligado',
+            sandboxed: 'Isolado',
+            holds: '{fx} FX · {ir} taxas',
+            figures: {
+                feeds: 'Fluxos',
+                running: 'A correr',
+                fx: 'Câmbios',
+                ir: 'Curvas de taxas',
+            },
+            folder: 'Pasta',
+            start: 'Iniciar',
+            stop: 'Parar',
+            startTitle: 'Iniciar {name}',
+            stopTitle: 'Parar {name}',
+            startBody:
+                'Iniciar os {count} fluxos parados em {name}? Os fluxos que já correm continuam a correr.',
+            stopBody:
+                'Parar os {count} fluxos a correr em {name}? Parar um fluxo ligado pára-o para cada parte ligada.',
+            startReport:
+                '{started} fluxos iniciados em {name}. {already} já a correr, {skipped} ignorados.',
+            stopReport: '{stopped} fluxos parados em {name}.',
+            requestNote: 'Iniciar e Parar atuam em cada fluxo de {name}, num único pedido.',
+            kindNote:
+                'A visão geral pára no tipo de fluxo. Os {count} fluxos estão nas listas, fluxos de preços FX e fluxos de curvas de taxas.',
+            none: 'Ainda não há fluxos. Um conjunto de fluxos sintéticos publicado para a sua parte preenche esta página.',
+            noProviders: 'Nenhum fornecedor neste âmbito.',
+            chooseProvider: 'Escolha um fornecedor para ver os seus tipos de fluxo.',
         },
         irFeeds: {
             title: 'Fluxos de curvas de taxas',

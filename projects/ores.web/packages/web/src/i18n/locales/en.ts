@@ -1674,7 +1674,8 @@ export const en: SourceCatalogue = {
                     other: 'Others',
                 },
                 age: {
-                    caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
+                    caution:
+                        'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
                     over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
                 },
                 empty: 'No work has run on the grid yet.',
@@ -3627,6 +3628,12 @@ export const en: SourceCatalogue = {
                 irFeeds: 'IR curve feeds',
                 irFeedsBody:
                     'Compose the synthetic IR curve feeds: the currency and index, the short-rate engine with its parameters, and the curve template.',
+                synthetic: 'Synthetic',
+                syntheticBody:
+                    'The feeds the platform generates: what runs, and the FX and IR feeds.',
+                feedOverview: 'Feed overview',
+                feedOverviewBody:
+                    'What runs, by scope, provider and kind. Start and stop a provider or a kind.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3650,6 +3657,60 @@ export const en: SourceCatalogue = {
             },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
+        },
+        synthetic: {
+            title: 'Synthetic',
+            lead: 'The feeds the platform generates rather than receives, and the screens that run them.',
+        },
+        feedOverview: {
+            title: 'Feed overview',
+            lead: 'What runs, by scope, provider and feed kind. Choose a node to narrow the next column. The page counts feeds and never lists one: the feed lists hold them.',
+            scope: { system: 'System feeds', test: 'Test feeds' },
+            scopeNote: {
+                system: "The installation's feeds, one folder per provider. Every tenant binds to them; only the system tenant starts and stops them.",
+                test: 'Feeds a tenant or a party made for itself. They are sandboxed: no binding stores their ticks.',
+            },
+            columns: {
+                scope: 'Scope',
+                provider: 'Provider',
+                kind: 'Feed kind',
+                holds: 'Holds',
+                state: 'State',
+            },
+            state: {
+                running: 'Running',
+                stopped: 'Stopped',
+                partial: '{running} of {total} running',
+                empty: 'Empty',
+            },
+            named: '{name} (synthetic)',
+            bound: 'Bound',
+            sandboxed: 'Sandboxed',
+            holds: '{fx} FX · {ir} IR',
+            figures: {
+                feeds: 'Feeds',
+                running: 'Running',
+                fx: 'FX spots',
+                ir: 'IR curves',
+            },
+            folder: 'Folder',
+            start: 'Start',
+            stop: 'Stop',
+            startTitle: 'Start {name}',
+            stopTitle: 'Stop {name}',
+            startBody:
+                'Start the {count} feeds under {name} that are stopped? Feeds already running stay running.',
+            stopBody:
+                'Stop the {count} running feeds under {name}? Stopping a bound feed stops it for every party bound to it.',
+            startReport:
+                'Started {started} feeds under {name}. {already} already running, {skipped} skipped.',
+            stopReport: 'Stopped {stopped} feeds under {name}.',
+            requestNote: 'Start and Stop act on every feed under {name}, in one request.',
+            kindNote:
+                'The overview stops at the feed kind. The {count} feeds are in the lists, FX price feeds and IR curve feeds.',
+            none: 'There are no feeds yet. A synthetic feeds dataset published for your party fills this page.',
+            noProviders: 'No provider in this scope.',
+            chooseProvider: 'Choose a provider to see its feed kinds.',
         },
         irFeeds: {
             title: 'IR curve feeds',

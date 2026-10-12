@@ -367,6 +367,32 @@ is not drawn.
 - A column beside the plot shows the process that made the curves: the engine, the
   rate and each parameter with its saved value.
 
+** The feed overview
+
+The Synthetic folder of Market data opens on cards: the feed overview and the feed lists
+of each asset class. The overview (=marketdata/FeedOverviewPage.tsx=) is the dashboard.
+It drills down in three columns, scope, provider and feed kind, and the node chosen in
+each column narrows the next. It counts feeds and never lists one.
+
+- A scope is /System feeds/ (a collection whose scope says system) or /Test feeds/
+  (every other). A provider is the provider a collection stands for, or /Generic/ when
+  it stands for none, drawn with the synthetic mark, "Bloomberg (synthetic)". A feed
+  kind is an asset class folder of the collection.
+- Every node shows its FX spots and IR curves and one of Running, Stopped, "n of m
+  running" or Empty. The node chosen has a panel: its figures, Start and Stop, and the
+  nodes under it with the same figures.
+- The server counts. =synthetic.v1.ops.list_feed_folders= returns the children of one
+  folder, or the roots, each with the feeds under it at any depth and how many run. The
+  database groups the feeds by folder and the controller reports what runs, so the page
+  reads a few folders and not the feeds. The page asks again every five seconds.
+- Start and Stop of a provider or a kind ask first, saying how many feeds the request
+  touches, and that stopping a bound feed stops it for every party bound to it. One
+  request names a folder (=/api/synthetic/folders/:id/start= or =stop=) and the server
+  walks its subtree. A toast then says what started, what was already running and what
+  was skipped. The buttons are drawn for a person who may write feeds.
+- The overview stops at the feed kind. The feeds are in the feed lists, and in the feed
+  tree when it is built.
+
 ** History
 
 The History tab is one stream of the feed and every part it holds, drawn as

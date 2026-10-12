@@ -29,6 +29,7 @@ import { TranslationProvider } from '../i18n/Provider.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { IrFeedPage, IrFeedsPage } from './irFeeds.js';
 import { MarketDataPage } from './MarketDataPage.js';
+import { SyntheticPage } from './SyntheticPage.js';
 
 const FEED_ID = '66666666-6666-4666-8666-666666666666';
 
@@ -136,6 +137,7 @@ function render(path: string, seed: (client: QueryClient) => void): string {
                 <MemoryRouter initialEntries={[path]}>
                     <Routes>
                         <Route path="/market-data" element={<MarketDataPage />} />
+                        <Route path="/market-data/synthetic" element={<SyntheticPage />} />
                         <Route path="/market-data/ir-feeds" element={<IrFeedsPage />} />
                         <Route path="/market-data/ir-feeds/:id" element={<IrFeedPage />} />
                     </Routes>
@@ -146,11 +148,19 @@ function render(path: string, seed: (client: QueryClient) => void): string {
 }
 
 describe('the market data area', () => {
-    it('offers the IR curve feeds to a person who reads them', () => {
+    it('offers the Synthetic folder to a person who reads the feeds', () => {
         const html = render('/market-data', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
+        expect(html).toContain('href="/market-data/synthetic"');
+    });
+
+    it('offers the IR curve feeds in the Synthetic folder to a person who reads them', () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
         expect(html).toContain('IR curve feeds');
+        expect(html).toContain('href="/market-data/synthetic/ir-feeds"');
     });
 
     it('draws no card for a person who does not', () => {

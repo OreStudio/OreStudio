@@ -320,6 +320,23 @@ const PEOPLE_REASON_CODES = [
     'common.other',
 ] as const;
 
+const feedFolderSchema = z.object({
+    id: z.string(),
+    parent_id: z.string(),
+    name: z.string(),
+    kind: z.string(),
+    scope: z.string(),
+    provider_code: z.string(),
+    binding_mode: z.string(),
+    fx_feeds: z.number(),
+    ir_feeds: z.number(),
+    running_feeds: z.number(),
+    has_children: z.boolean(),
+});
+
+/** A folder of the feed hierarchy with the feeds under it and how many run. */
+export type FeedFolder = z.infer<typeof feedFolderSchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -1402,6 +1419,57 @@ export const api = {
         return z
             .object({ sourceNames: z.array(z.string()) })
             .parse(await request('/api/synthetic/running', { method: 'GET' })).sourceNames;
+    },
+
+    /**
+     * The children of one folder, or the roots when none is named, each with the
+     * feeds under it at any depth and how many run. The service counts them.
+     */
+    async feedFolders(parent = ''): Promise<readonly FeedFolder[]> {
+        return z
+            .object({ folders: z.array(feedFolderSchema) })
+            .parse(
+                await request(
+                    `/api/synthetic/feed-folders?${new URLSearchParams(
+                        parent === '' ? {} : { parent },
+                    ).toString()}`,
+                    { method: 'GET' },
+                ),
+            ).folders;
+    },
+
+    /** Starts every feed under a folder in one request, and says what it did. */
+    async startFolder(id: string): Promise<{
+        readonly message: string;
+        readonly started: number;
+        readonly alreadyRunning: number;
+        readonly skipped: number;
+    }> {
+        return z
+            .object({
+                message: z.string(),
+                started: z.number(),
+                alreadyRunning: z.number(),
+                skipped: z.number(),
+            })
+            .parse(
+                await request(`/api/synthetic/folders/${encodeURIComponent(id)}/start`, {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: '{}',
+                }),
+            );
+    },
+
+    /** Stops every running feed under a folder in one request, and says what it did. */
+    async stopFolder(id: string): Promise<{ readonly message: string; readonly stopped: number }> {
+        return z.object({ message: z.string(), stopped: z.number() }).parse(
+            await request(`/api/synthetic/folders/${encodeURIComponent(id)}/stop`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: '{}',
+            }),
+        );
     },
 
     /** The newest ticks the BFF heard from one feed, oldest first. */

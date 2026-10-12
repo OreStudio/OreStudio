@@ -935,6 +935,56 @@ describe('synthetic operations', () => {
         expect(calls).toEqual([]);
     });
 
+    it('reads the children of a folder with the feeds under each', async () => {
+        const folder = {
+            id: 'f1',
+            parent_id: '',
+            name: 'Synthetic',
+            kind: 'root',
+            scope: '',
+            provider_code: '',
+            binding_mode: '',
+            fx_feeds: 26,
+            ir_feeds: 33,
+            running_feeds: 20,
+            has_children: true,
+        };
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.list_feed_folders': { success: true, message: '', folders: [folder] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/feed-folders?parent=f0',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ folders: [folder] });
+        expect(calls[0]?.body).toEqual({ parent_id: 'f0' });
+    });
+
+    it('asks for the roots when no folder is named', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.list_feed_folders': { success: true, message: '', folders: [] },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/feed-folders');
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ folders: [] });
+        expect(calls[0]?.body).toEqual({ parent_id: '' });
+    });
+
+    it('refuses a folder request with a parameter it does not know', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/feed-folders?depth=2',
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('reads an FX mixture as the simple view through the synthetic service', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.convert_fx_simple': {

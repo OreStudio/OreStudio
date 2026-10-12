@@ -41,6 +41,10 @@ export const PATHS = {
     rescue: '/organisation/rescue',
     operations: '/operations',
     signIns: '/operations/sign-ins',
+    synthetic: '/market-data/synthetic',
+    feedOverview: '/market-data/synthetic/overview',
+    fxFeeds: '/market-data/synthetic/fx-feeds',
+    irFeeds: '/market-data/synthetic/ir-feeds',
 } as const;
 
 /** The address of one person's page. */
@@ -89,4 +93,8 @@ export const MOVED: readonly (readonly [from: string, to: string])[] = [
     ['/roles/:roleId', `${PATHS.roles}/:roleId`],
     ['/rescue', PATHS.rescue],
     ['/audit', PATHS.signIns],
+    ['/market-data/fx-feeds', PATHS.fxFeeds],
+    ['/market-data/fx-feeds/:id', `${PATHS.fxFeeds}/:id`],
+    ['/market-data/ir-feeds', PATHS.irFeeds],
+    ['/market-data/ir-feeds/:id', `${PATHS.irFeeds}/:id`],
 ];

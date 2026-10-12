@@ -21,6 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { api } from '../api/client.js';
+import { PATHS } from '../shell/paths.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { OresmdUrl } from '../oresmd/OresmdUrl.js';
 import { show, type FieldSpec, type FieldValues } from '../refdata/records.js';
@@ -237,7 +238,7 @@ const FX_FEED_KIND: FeedKind = {
     resource: FEEDS,
     entity: 'ores.synthetic.fx_spot_generation_config',
     historySubject: 'fx_feed',
-    path: '/market-data/fx-feeds',
+    path: PATHS.fxFeeds,
     words: 'fxFeeds',
     fields: FEED_FIELDS,
     editFields: FEED_EDIT_FIELDS,

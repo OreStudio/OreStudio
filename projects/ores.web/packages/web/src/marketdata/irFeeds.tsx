@@ -21,6 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
+import { PATHS } from '../shell/paths.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { OresmdUrl } from '../oresmd/OresmdUrl.js';
 import {
@@ -387,7 +388,7 @@ const IR_FEED_KIND: FeedKind = {
     resource: FEEDS,
     entity: 'ores.synthetic.ir_curve_generation_config',
     historySubject: 'ir_feed',
-    path: '/market-data/ir-feeds',
+    path: PATHS.irFeeds,
     words: 'irFeeds',
     fields: IR_FIELDS,
     editFields: IR_EDIT_FIELDS,

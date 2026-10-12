@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: C894AE85-AB9B-4FF4-A4DE-829F6F902C56
+:END:
+#+title: ores.synthetic.feed_overview
+#+description: Codegen operation model for reading a folder's children with the feed counts and the run state under each.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: feed_overview
+#+namespace: ores::synthetic::messaging
+#+brief: A folder's children with the feeds and the running feeds under each.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+The read behind the feed overview and the feed tree. A screen asks for the children of
+one folder, or for the roots, and gets each child with the feeds under it, split into FX
+spots and IR curves, and how many of them run. The service counts in the database and
+takes the running feeds from the controller, so no screen reads the feeds to count them.
+Nothing is stored.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** feed_folder
+#+begin_src cpp :name comment
+/**
+ * @brief One folder of the feed hierarchy, with what runs under it.
+ *
+ * A collection folder also carries what the collection says: its scope, the
+ * provider it stands for, and whether it is bound or sandboxed.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The folder's id. */
+#+end_src
+
+*** parent_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The parent folder's id; empty for a root. */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The folder's display name. */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What the folder is: root, collection, asset_class or instrument_type. */
+#+end_src
+
+*** scope
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief For a collection, who consumes its data: system, tenant or party; empty otherwise. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief For a collection, the provider it stands for; empty when none. */
+#+end_src
+
+*** binding_mode
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief For a collection, bound or sandboxed; empty otherwise. */
+#+end_src
+
+*** fx_feeds
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The FX spot feeds under the folder, at any depth. */
+#+end_src
+
+*** ir_feeds
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The IR curve feeds under the folder, at any depth. */
+#+end_src
+
+*** running_feeds
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many of those feeds are running now. */
+#+end_src
+
+*** has_children
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Whether the folder has folders under it. */
+#+end_src
+
+** list_feed_folders_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.list_feed_folders
+:response: list_feed_folders_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request the children of one folder, or the roots, with the feed counts.
+ */
+#+end_src
+
+*** parent_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The folder whose children are wanted; empty for the roots. */
+#+end_src
+
+** list_feed_folders_response
+#+begin_src cpp :name comment
+/**
+ * @brief The children of the folder asked for, and why there are none when
+ * the read was refused.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** folders
+:PROPERTIES:
+:cpp_type: std::vector<feed_folder>
+:END:
+#+begin_src cpp :name comment
+/** @brief The children, in name order. */
+#+end_src
+

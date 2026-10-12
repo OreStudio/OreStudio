@@ -51,6 +51,7 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 | [[id:CD538F61-3C81-4522-9508-992432FE093B][State providers and scope in the feed screen standard]] | BACKLOG | | | The feed screen standard gains the browser, the two scopes and the subscription, and the FX price feed screen is brought to it. |
 | [[id:20163E28-2E23-436A-9E6E-AC4D5432C585][Start the feeds after the parties exist]] | DONE | 2026-10-12 | 2026-10-12 | The tenant run starts the market feeds as soon as the bundles are published, in parallel with the LEI import, because the step needs only publish_bundle. The step binds every party the tenant holds, so it binds the system party alone and the legal entities the import creates later get no bindings and store no prices. The step must also need provision_party. |
 | [[id:7566CF46-6627-49A8-AA3F-B8DE653153A4][Prototype the feed tree]] | DONE | 2026-10-12 | 2026-10-12 | A throwaway web prototype of the feed tree screen before the feed browser is built: System feeds by provider and Test feeds, start and stop at any node with running roll-ups, search and scale to thousands of feeds, and leaves that open the existing FX and IR feed pages. It builds on the ores.qt Market Simulator and its desktop prototype. |
+| [[id:593E2632-0CD4-45E4-9672-3BFB581924AD][Build the Synthetic page and the feed overview]] | BACKLOG | | | A Synthetic folder under Market data, and the feed overview: columns by scope, provider and feed kind with the counts and the running roll-up, and start and stop of a provider or a kind. |
 
 * Decisions
 

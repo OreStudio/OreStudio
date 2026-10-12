@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: E66D68BB-A1E4-47CF-998A-E6DC3D4BF4F3
 :END:
-#+title: Task: Read system rows through the services and list the providers
-#+description: A tenant reads the installation's system rows through the synthetic service, and the Market data area lists the simulated providers.
+#+title: Task: Read system rows through the services
+#+description: A tenant reads the installation's system rows through the synthetic service, which the feed tree and the feed overview need before they can show a provider's feeds.
 #+type: task
 #+level: s1
 #+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A tenant reads the installation's system rows through the synthetic service, and the Market data area lists the simulated providers.
+A tenant reads the installation's system rows through the synthetic service, which the feed tree and the feed overview need before they can show a provider's feeds.
 
 * Status
 
@@ -37,7 +37,6 @@ A tenant reads the installation's system rows through the synthetic service, and
 
 - The synthetic repositories of the collection, its feeds and their parts, the folders and the provider read the system tenant's rows as well as the caller's.
 - An integration test shows a tenant reads a provider the system tenant holds.
-- The Market data area has a read only providers screen with the synthetic mark, the code, the kind and the collection count.
 
 * Plan
 
@@ -76,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/3211][#3211]] | Read system rows through the services and list the providers |
+| [[https://github.com/OreStudio/OreStudio/pull/3211][#3211]] | Read system rows through the services |
 
 * Review
 
@@ -90,8 +89,11 @@ A tenant reads the installation's system rows through the synthetic service. The
 
 The provider table's policy was tenant isolation only, so no tenant saw a system-tenant provider even in SQL. It admits the system tenant's rows now. The earlier finding that row-level security already admitted the providers was wrong; the collection and its feeds were admitted.
 
-The Market data area has a read only Providers screen: the name with the synthetic mark, the code, the kind, the number of collections that stand for the provider, and a description.
+A read only Providers screen was built and withdrawn in the same PR. The prototype
+[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree]] shows a provider as a folder
+of the feed tree and a column of the feed overview, with its feeds and their run state, and
+no list of providers of its own. A provider has meaning through its feeds.
 
-Checked: the new integration test, synthetic core (43 cases) and service (56) on a recreated database; the pgTAP visibility test, 7 of 7 with Acme provisioned; the codegen drift gate for synthetic; 1409 web tests; and, as the Acme tenant administrator, =GET /api/synthetic/providers= returns all eight providers.
+Checked: the new integration test, synthetic core (43 cases) and service (56) on a recreated database; the pgTAP visibility test, 8 of 8 with Acme provisioned; the codegen drift gate for synthetic; 1408 web tests; and, as the Acme tenant administrator, =GET /api/synthetic/providers= returns all eight providers.
 
 Not met: no dataset publishes a system collection, so a tenant sees only the provider catalogue. A tenant must not start a system feed through the control plane, and that guard belongs with publishing. Both go with Seed the provider feed catalogue and Subscribe a tenant to provider feeds.

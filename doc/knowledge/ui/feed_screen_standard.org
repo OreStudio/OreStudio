@@ -367,16 +367,6 @@ is not drawn.
 - A column beside the plot shows the process that made the curves: the engine, the
   rate and each parameter with its saved value.
 
-** The providers screen
-
-The Market data area lists the providers whose market data the synthetic feeds
-simulate (=marketdata/providers.tsx=): a list of the catalogue, read only for a
-tenant, because the catalogue belongs to the installation. Each row shows the name
-with the synthetic mark ("Bloomberg (synthetic)"), the code, the kind (data vendor,
-exchange, broker or generic), how many collections stand for the provider, and a
-description. It is what the screen that subscribes a tenant to a provider's feeds
-will offer, and a leaf of the feed browser.
-
 ** History
 
 The History tab is one stream of the feed and every part it holds, drawn as

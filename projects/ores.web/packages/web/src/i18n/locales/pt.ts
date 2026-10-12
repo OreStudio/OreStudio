@@ -3651,9 +3651,6 @@ const pt: SourceCatalogue = {
                 irFeeds: 'Fluxos de curvas de taxas',
                 irFeedsBody:
                     'Componha os fluxos sintéticos de curvas de taxas: a moeda e o índice, o motor de taxa curta com os seus parâmetros e o modelo da curva.',
-                providers: 'Fornecedores de dados de mercado',
-                providersBody:
-                    'Os fornecedores que os fluxos sintéticos simulam: fornecedores de dados, bolsas e corretores.',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },
@@ -3677,19 +3674,6 @@ const pt: SourceCatalogue = {
             },
             removeWarning:
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
-        },
-        providers: {
-            title: 'Fornecedores de dados de mercado',
-            lead: 'Os fornecedores cujos dados de mercado os fluxos sintéticos simulam. O catálogo pertence à instalação e todos os inquilinos o leem. Todo fornecedor aqui é simulado, por isso o seu nome leva a marca sintética.',
-            named: '{name} (sintético)',
-            kind: 'Tipo',
-            collections: 'Coleções',
-            kinds: {
-                data_vendor: 'Fornecedor de dados',
-                exchange: 'Bolsa',
-                broker: 'Corretor',
-                generic: 'Genérico',
-            },
         },
         irFeeds: {
             title: 'Fluxos de curvas de taxas',
@@ -4107,7 +4091,6 @@ const pt: SourceCatalogue = {
         observationsWrite: 'ajustar à mão pontos de dados de mercado',
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
         irFeedsRead: 'ver os fluxos de curvas de taxas sintéticos',
-        providersRead: 'ver os fornecedores de dados de mercado simulados',
     },
 
     unavailable: {

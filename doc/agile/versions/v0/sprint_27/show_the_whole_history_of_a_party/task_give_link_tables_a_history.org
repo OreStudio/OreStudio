@@ -8,7 +8,7 @@
 #+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-whole-history-of-a-party
-#+pr:
+#+pr: 3163
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3163][#3163]] | [codegen] Give link tables a history, and draw it in the party and person timelines |
 
 * Review
 

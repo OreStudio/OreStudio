@@ -1,0 +1,284 @@
+:PROPERTIES:
+:ID: 65BA1988-C806-4E62-9B37-9CAC5A085C41
+:END:
+#+title: ores.reporting.file_type
+#+description: Codegen entity model for the reporting =file_type= table. The kinds of file in the ORE universe and the well known name of each.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A kind of file in the ORE universe and its well known name.
+#+entity_singular: file_type
+#+entity_plural: file_types
+#+entity_title: File Type
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+Reference data naming the files an ORE run reads and writes. A file type is one
+parameter of the run document that carries a file name: a Setup parameter such as
+conventionsFile, or the parameter of an analytic such as the outputFileName of npv.
+The table gives each its well known name, so a configuration never repeats a file
+name and the export looks the name up when it writes a file.
+
+The names come from the shipped ORE samples. Each is the most common name the samples
+give the file, and sample_count out of sample_total records how many use it.
+Names that embed a date are set aside, because a date is a value of the run.
+
+A name may be a pattern with a key, for example portfolio_{{BOOK_ID}}.xml, for a file
+that a run splits. The table can hold the pattern. Splitting is a later task.
+
+The table lists names and patterns. It does not hold the content of a file.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_file_types_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code of the file type: the scope and the ORE parameter, for example setup.conventionsFile or npv.outputFileName.
+
+** analytic_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The analytic whose parameter names the file, or nothing when the Setup block names it.
+
+** ore_parameter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The ORE parameter that carries the file name.
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the file is: input_document, data_file, output_file or intermediate_file. An intermediate file is one analytic writes and another reads.
+
+#+begin_src cpp :name generator
+std::string("data_file")
+#+end_src
+
+** configuration_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The configuration type whose entities fill the document, or nothing when no configuration type describes it yet.
+
+** name_pattern
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The well known name of the file, or a pattern when a run may split the file by a key. A pattern writes the key between double braces, for example portfolio_{{BOOK_ID}}.xml. The key is upper case letters, digits and underscores.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + ".xml"
+#+end_src
+
+** sample_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many of the ORE samples that name this file give it this name.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** sample_total
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many of the ORE samples name this file at all.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the file is, in one line.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the file type appears in a list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_file_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+Domain constraints beyond the standard temporal, natural-key and nil-uuid
+checks the template emits on its own.
+
+| expression |
+|------------|
+| "kind" in ('input_document', 'data_file', 'output_file', 'intermediate_file') |
+| "name_pattern" ~ '^[A-Za-z0-9_.-]*(\{\{[A-Z][A-Z0-9_]*\}\}[A-Za-z0-9_.-]*)*$' |
+| "sample_count" >= 0 and "sample_count" <= "sample_total" |
+
+* Foreign keys
+
+** analytic_type_code
+:PROPERTIES:
+:table:         ores_reporting_analytic_types_tbl
+:target_column: code
+:parent_entity: analytic_type
+:nullable:      true
+:error_message: Invalid analytic_type_code: %. No active analytic type found with this code.
+:list_by:       true
+:END:
+
+** configuration_type_code
+:PROPERTIES:
+:table:         ores_reporting_configuration_types_tbl
+:target_column: code
+:parent_entity: configuration_type
+:nullable:      true
+:error_message: Invalid configuration_type_code: %. No active configuration type found with this code.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: file type
+:entity_plural_words:   file types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: at
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| kind          | Kind          |
+| name_pattern  | Name          |
+| sample_count  | Samples       |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/file_type.hpp
+:domain_class:           reporting::domain::file_type
+:protocol_include:       ores.reporting.api/messaging/file_type_protocol.hpp
+:collection_name:        file_types
+:key_field:              code
+:get_request_class:      reporting::messaging::get_file_types_request
+:get_response_class:     reporting::messaging::get_file_types_response
+:get_message_type:       get_file_types_request
+:save_request_class:     reporting::messaging::save_file_type_request
+:save_response_class:    reporting::messaging::save_file_type_response
+:save_message_type:      save_file_type_request
+:delete_request_class:   reporting::messaging::delete_file_type_request
+:delete_response_class:  reporting::messaging::delete_file_type_response
+:delete_message_type:    delete_file_type_request
+:END:
+
+*** Detail fields
+
+| field                   | label                  | type      | is_key | is_required | placeholder |
+|-------------------------+------------------------+-----------+--------+-------------+-------------|
+| code                    | Code                   | line_edit | true   | true        | Enter file type code |
+| analytic_type_code      | Analytic Type          | line_edit |        |             | e.g. npv |
+| ore_parameter           | ORE Parameter          | line_edit |        | true        | e.g. outputFileName |
+| kind                    | Kind                   | line_edit |        | true        | e.g. output_file |
+| configuration_type_code | Configuration Type     | line_edit |        |             | e.g. conventions |
+| name_pattern            | Name                   | line_edit |        | true        | e.g. npv.csv |
+| sample_count            | Samples Using Name     | spin_edit |        | true        | Enter count |
+| sample_total            | Samples Naming File    | spin_edit |        | true        | Enter count |
+| description             | Description            | line_edit |        | true        | Enter description |
+| display_order           | Order                  | spin_edit |        | true        | Enter order |
+
+*** Columns
+
+| enum_name   | field        | header  | type   | width |
+|-------------+--------------+---------+--------+-------|
+| Code        | code         | Code    | string | 220   |
+| Kind        | kind         | Kind    | string | 140   |
+| Name        | name_pattern | Name    | string | 220   |
+| Samples     | sample_count | Samples | int    | 80    |
+| Version     | version      | Version | int    | 80    |
+| ModifiedBy  | modified_by  | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-ore-file-types-table-with-well-known-names
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Add a lookup entity that lists the kinds of file in the ORE universe and gives e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing. |
@@ -60,9 +60,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| File types seeded | 142: 79 input documents, 14 data files, 11 intermediate files, 38 output files | =python3 projects/ores.sql/utility/generate_file_types_populate.py= over the 416 samples in external/ore/examples | see PR |
+| Samples that give =pricingengine.xml= to =pricingEnginesFile= | 402 of 416 | same script, =setup.pricingEnginesFile= row | see PR |
+| Samples that give =netting.xml= to =csaFile= of xva | 213 of 252 | same script, =xva.csaFile= row | see PR |
+| Samples that give =npv.csv= to the npv =outputFileName= | 333 of 368 | same script, =npv.outputFileName= row | see PR |
 
 * Notes
+
+Decisions made while building the table.
+
+- A file type is one parameter of the run document that carries a file name, keyed by the analytic that names it (empty for the Setup block) and the ORE parameter. The code is =scope.parameter=, for example =setup.conventionsFile= or =npv.outputFileName=. The pricing engines file of the simulation analytic is a different file type from the Setup one, because the samples give the two different names.
+- A name that embeds an eight digit date is set aside, because the date is a value of the run and not part of a name. =fixings_20160205.txt= is the most common fixings name (268 samples) but the table holds =fixings.txt= (62), and =market.txt= (75) in place of =market_20160205.txt= (153).
+- =logFile= is not a file type. It is a stored choice of the configuration.
+- A value that lists several files, such as the pca input files of calibration, is left out, because it is not one file.
+- Kinds: an output file has Output in its parameter name or is =outputFile=; an XML value is an input document, except a portfolio, which is a data file; a CSV or text file that another analytic also writes, or whose parameter says Input, is an intermediate file; the rest are data files.
+- Only four Setup documents have a configuration type today (conventions, curve configuration, today's market, pricing engines). The other documents get theirs when the tasks that add their entities land.
+- A name may be a pattern with a key between double braces. The check constraint accepts =portfolio_{{BOOK_ID}}.xml= and refuses a malformed key. Seeding a split file is the job of the split task.
+- The seed is generated, and =generate_file_types_populate.py --check= compares it with the samples. The check is part of the local gate (=file-types-seed=).
 
 Counts from the samples, measured on 2026-10-12 over the 416 run documents: =pricingengine.xml= 189 of 416 plain uses of =pricingEnginesFile= and 150 more with a relative prefix; =netting.xml= 209 of 252 uses of =csaFile=; =collateralbalances.xml= 23 of 23; =sensitivity.xml= 70 of 76; =stresstest.xml= 15 of 19; =npv.csv= 333 of 368; =flows.csv= 314 of 336; =curves.csv= 315 of 331.
 

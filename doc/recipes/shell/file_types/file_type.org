@@ -1,0 +1,266 @@
+:PROPERTIES:
+:ID: 2CEEA23E-4502-53D0-8907-01141D8124C0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the file_types commands from the shell?
+#+description: Every command the file_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:file_types:
+
+This file documents the file_types resource at the shell, one section per command. Every command is a subcommand of =file_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3B443B35-B9BA-5763-9275-F4D52F43884A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.file_types.list=.
+
+#+name: file_types-list
+#+begin_src ores-shell :tangle file_types-list.ores :exports none
+file_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 03A5493C-FB3D-5932-8D00-FDACDCD531BC
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types get <code>
+#+end_example
+
+It is addressed at =reporting.v1.file_types.get=.
+
+#+name: file_types-get
+#+begin_src ores-shell :tangle file_types-get.ores :exports none
+file_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E0DA47C5-05A5-5802-9C06-47DF21568ACF
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.file_types.get_many=.
+
+#+name: file_types-get-many
+#+begin_src ores-shell :tangle file_types-get-many.ores :exports none
+file_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: F4BBDD2F-D064-53D0-90F0-7D09345BE49D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types add <code> <analytic_type_code> <ore_parameter> <kind> <configuration_type_code> <name_pattern> <sample_count> <sample_total> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.file_types.put=.
+
+#+name: file_types-add
+#+begin_src ores-shell :tangle file_types-add.ores :exports none
+file_types add __none__ - __none__ __none__ - __none__ 0 0 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 160F1741-F0E2-562F-AE0A-2DBA28BAE494
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types set <code> <analytic_type_code> <ore_parameter> <kind> <configuration_type_code> <name_pattern> <sample_count> <sample_total> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.file_types.put=.
+
+#+name: file_types-set
+#+begin_src ores-shell :tangle file_types-set.ores :exports none
+file_types set __none__ - __none__ __none__ - __none__ 0 0 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D6224C2B-B0C7-5151-BE50-7FB7335F4975
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types put-many --count <n> <code> <analytic_type_code> <ore_parameter> <kind> <configuration_type_code> <name_pattern> <sample_count> <sample_total> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.file_types.put_many=.
+
+#+name: file_types-put-many
+#+begin_src ores-shell :tangle file_types-put-many.ores :exports none
+file_types put-many --count 1 __none__ - __none__ __none__ - __none__ 0 0 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 23995B54-EAA8-5DFA-AC4B-9D2AA478002F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.file_types.delete=.
+
+#+name: file_types-delete
+#+begin_src ores-shell :tangle file_types-delete.ores :exports none
+file_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8A7C4F22-04AD-57D3-BC9B-1D2561CAD3E5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.file_types.delete_many=.
+
+#+name: file_types-delete-many
+#+begin_src ores-shell :tangle file_types-delete-many.ores :exports none
+file_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-analytic-type-code=
+:PROPERTIES:
+:ID: 41ECAE3C-BEDD-5C6C-9733-E2CE797D8590
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types by-analytic-type-code <analytic_type_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.file_types.list_by_analytic_type_code=.
+
+#+name: file_types-by-analytic-type-code
+#+begin_src ores-shell :tangle file_types-by-analytic-type-code.ores :exports none
+file_types by-analytic-type-code - --limit 1
+#+end_src
+
+** =by-configuration-type-code=
+:PROPERTIES:
+:ID: 47A10A5A-D48F-5195-8651-A105AB7BFFDE
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types by-configuration-type-code <configuration_type_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.file_types.list_by_configuration_type_code=.
+
+#+name: file_types-by-configuration-type-code
+#+begin_src ores-shell :tangle file_types-by-configuration-type-code.ores :exports none
+file_types by-configuration-type-code - --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 27C9CCA6-2A72-562F-8B82-19512B122D8B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.file_types_versions.list=.
+
+#+name: file_types-versions
+#+begin_src ores-shell :tangle file_types-versions.ores :exports none
+file_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F03826BF-65EC-57AC-9743-B6CFA88763B5
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+file_types version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.file_types_versions.get=.
+
+#+name: file_types-version
+#+begin_src ores-shell :tangle file_types-version.ores :exports none
+file_types version __none__ --version 1
+#+end_src
+

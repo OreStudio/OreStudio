@@ -86,9 +86,9 @@ export function axisOf(view: GridSeriesView): ChartAxis {
 /**
  * The work in flight: the results that wait and the results that run.
  *
- * A result that is inactive is not in flight. It was retired, or it has not been
- * sent, and its count only grows. Stacked here it would set the scale of the
- * chart and flatten the load a person came to see, so it is left out.
+ * A result that is inactive was retired, and its count only grows. Stacked here
+ * it would set the scale of the chart and flatten the load a person came to see,
+ * so it is left out.
  */
 export function loadSeries(view: GridSeriesView, t: Translator['t']): readonly ChartSeries[] {
     return [

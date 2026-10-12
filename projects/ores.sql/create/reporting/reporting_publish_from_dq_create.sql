@@ -229,7 +229,7 @@ begin
             p_dataset_id, p_target_tenant_id, v_party_id,
             'risk_report_config', 'ores.reporting', 'ores_reporting_',
             array['risk_report_configs', 'configuration_analytics',
-                  'configuration_analytic_parameters'],
+                  'configuration_analytic_parameters', 'configuration_market_bindings'],
             array[]::text[],
             jsonb_build_object('configuration_analytic_parameters', jsonb_build_object(
                 'parameter_definition_id',

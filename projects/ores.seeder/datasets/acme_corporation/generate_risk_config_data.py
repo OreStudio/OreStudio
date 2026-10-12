@@ -195,6 +195,22 @@ PARAMETERS = {
 # The threads a simulation of the exposure profiles needs.
 SIMULATION_THREADS = 4
 
+# The choices of an ORE run that are no data file, as ORE spells them. Every
+# shipped sample states the folders and the log file, and almost all state the
+# log mask and the fixings and error flags.
+SETUP_CHOICES = {
+    "input_path": "Input",
+    "output_path": "Output",
+    "log_file": "log.txt",
+    "log_mask": 31,
+    "imply_todays_fixings": "N",
+    "continue_on_error": "false",
+}
+
+# The market roles a run prices against and the today's market configuration each
+# one reads. Every ACME document names one configuration, default.
+MARKETS = [("pricing", "default")]
+
 
 def load(name):
     with open(os.path.join(SCRIPT_DIR, f"{name}.json")) as f:
@@ -290,7 +306,7 @@ def analytic_rows(company, name, configuration_id, analytics, currency):
 def risk_report_configs(definitions, portfolios):
     """One configuration for each distinct (analytics, scope) of an entity's reports,
     with its analytics and their parameters."""
-    configs, analytics_rows, parameter_rows = [], [], []
+    configs, analytics_rows, parameter_rows, market_rows = [], [], [], []
     for company in documents.LABEL:
         used = {}
         for d in definitions:
@@ -315,24 +331,38 @@ def risk_report_configs(definitions, portfolios):
                 "description": f"Run settings shared by {', '.join(sorted(reports))}.",
                 "configuration_id": configuration_id,
                 "base_currency": currency,
-                "observation_model": "disable",
+                "observation_model": "Disable",
                 "n_threads": SIMULATION_THREADS if "simulation" in analytics else 1,
                 "market_data_type": "eod",
                 "market_data_date": None,
+                **SETUP_CHOICES,
                 "scope_portfolio": scope_of(company, first),
             })
             rows, values = analytic_rows(company, name, configuration_id, analytics, currency)
             analytics_rows.extend(rows)
             parameter_rows.extend(values)
-    return configs, analytics_rows, parameter_rows
+            for position, (role, market) in enumerate(MARKETS, start=1):
+                market_rows.append({
+                    "company_code": company,
+                    "id": documents.new_uuid(f"configuration_market_binding:{company}:{name}:{role}"),
+                    "version": 0,
+                    "party_id": documents.NO_PARTY,
+                    "configuration_id": configuration_id,
+                    "role": role,
+                    "market_configuration_name": market,
+                    "position": position,
+                })
+    return configs, analytics_rows, parameter_rows, market_rows
 
 
 def main():
     definitions = load("report_definitions")
-    configs, analytics_rows, parameter_rows = risk_report_configs(definitions, load("portfolios"))
+    configs, analytics_rows, parameter_rows, market_rows = risk_report_configs(
+        definitions, load("portfolios"))
     write("risk_report_configs", configs)
     write("configuration_analytics", analytics_rows)
     write("configuration_analytic_parameters", parameter_rows)
+    write("configuration_market_bindings", market_rows)
 
 
 if __name__ == "__main__":

@@ -107,7 +107,8 @@ CONFIGURATION_DOCUMENTS = [
      ["curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
       "curve_quotes"]),
     ("risk_report_configs", "Risk Report Configurations",
-     ["risk_report_configs", "configuration_analytics", "configuration_analytic_parameters"]),
+     ["risk_report_configs", "configuration_analytics", "configuration_analytic_parameters",
+      "configuration_market_bindings"]),
 ]
 
 NETTING_COMPANIES = ["acme_group"] + COMPANIES

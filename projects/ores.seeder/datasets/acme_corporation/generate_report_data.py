@@ -137,11 +137,12 @@ def main():
     write("report_configurations", [
         b for company in ENTITIES
         for b in bindings(company, [r for r in definitions if r["company_code"] == company])])
-    configs, analytics_rows, parameter_rows = risk.risk_report_configs(
+    configs, analytics_rows, parameter_rows, market_rows = risk.risk_report_configs(
         definitions, risk.load("portfolios"))
     write("risk_report_configs", configs)
     write("configuration_analytics", analytics_rows)
     write("configuration_analytic_parameters", parameter_rows)
+    write("configuration_market_bindings", market_rows)
 
 
 if __name__ == "__main__":

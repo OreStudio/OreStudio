@@ -71,7 +71,8 @@ select is(
            'curve_quotes']) t
          union all
          select concat('ores_reporting_', t, '_tbl') from unnest(array['risk_report_configs',
-           'configuration_analytics', 'configuration_analytic_parameters']) t)),
+           'configuration_analytics', 'configuration_analytic_parameters',
+           'configuration_market_bindings']) t)),
     'commodity_price_segment_id configuration_analytic_id curve_configuration_id curve_definition_id curve_segment_id '
     'default_curve_configuration_id pricing_model_config_id pricing_model_product_id '
     'todays_market_collection_id todays_market_config_id todays_market_configuration_id',

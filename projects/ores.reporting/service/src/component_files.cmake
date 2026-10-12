@@ -30,6 +30,7 @@ set(files
     "messaging/configuration_analytic_event_registrar.cpp"
     "messaging/configuration_analytic_parameter_event_registrar.cpp"
     "messaging/configuration_event_registrar.cpp"
+    "messaging/configuration_market_binding_event_registrar.cpp"
     "messaging/configuration_parameter_event_registrar.cpp"
     "messaging/configuration_type_event_registrar.cpp"
     "messaging/parameter_definition_event_registrar.cpp"
@@ -37,8 +38,6 @@ set(files
     "messaging/report_configuration_event_registrar.cpp"
     "messaging/report_definition_event_registrar.cpp"
     "messaging/report_instance_event_registrar.cpp"
-    "messaging/report_market_binding_event_registrar.cpp"
-    "messaging/report_run_setup_event_registrar.cpp"
     "messaging/report_type_event_registrar.cpp"
 )
 
@@ -55,6 +54,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_analytic_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_analytic_parameter_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_market_binding_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_parameter_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/parameter_definition_event_registrar.hpp"
@@ -62,8 +62,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_configuration_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_definition_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_instance_event_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_market_binding_event_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_run_setup_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/ores.reporting.service.hpp"
 )

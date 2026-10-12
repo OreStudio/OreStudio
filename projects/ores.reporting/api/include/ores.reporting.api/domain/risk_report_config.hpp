@@ -84,19 +84,21 @@ struct risk_report_config final {
     boost::uuids::uuid configuration_id;
 
     /**
-     * @brief Reporting base currency (ISO 4217 code) that all results are converted to.
+     * @brief Reporting base currency (ISO 4217 code) that all results are converted to. Empty when
+     * the run does not state one.
      */
-    std::string base_currency;
+    std::optional<std::string> base_currency;
 
     /**
-     * @brief How the engine handles absent market data: disable, none, move or defer.
+     * @brief How the engine handles absent market data, as ORE spells it: Disable, None, Move or
+     * Defer.
      */
-    std::string observation_model = "disable";
+    std::optional<std::string> observation_model;
 
     /**
      * @brief Number of worker threads the risk engine may use.
      */
-    int n_threads = 1;
+    std::optional<int> n_threads;
 
     /**
      * @brief Market data convention: live, eod or date.
@@ -109,6 +111,136 @@ struct risk_report_config final {
      * market_data_type stays eod.
      */
     std::string market_data_date;
+
+    /**
+     * @brief The accrual date, a date or the literal ASOF. Empty when the run does not state it.
+     */
+    std::optional<std::string> accrual_date;
+
+    /**
+     * @brief The date before which fixings are not read. Empty when the run does not state it.
+     */
+    std::optional<std::string> fixing_cutoff;
+
+    /**
+     * @brief The folder the run reads its input from, relative to the run.
+     */
+    std::string input_path = "Input";
+
+    /**
+     * @brief The folder the run reads market data from, when it differs. Empty when the run does
+     * not state it.
+     */
+    std::optional<std::string> input_path_market;
+
+    /**
+     * @brief The folder the run reads the portfolio from, when it differs. Empty when the run does
+     * not state it.
+     */
+    std::optional<std::string> input_path_portfolio;
+
+    /**
+     * @brief The folder the run writes its results to, relative to the run.
+     */
+    std::string output_path = "Output";
+
+    /**
+     * @brief The name of the log file.
+     */
+    std::string log_file = "log.txt";
+
+    /**
+     * @brief The calendar of the run's dates. Empty when the run does not state it.
+     */
+    std::optional<std::string> date_calendar;
+
+    /**
+     * @brief The convention of the run's dates. Empty when the run does not state it.
+     */
+    std::optional<std::string> date_convention;
+
+    /**
+     * @brief Whether the run goes on after an error, as ORE spells it: true or false. Empty when
+     * the run does not state it.
+     */
+    std::optional<std::string> continue_on_error;
+
+    /**
+     * @brief Whether the run builds the trades that failed, as ORE spells it: true or false. Empty
+     * when the run does not state it.
+     */
+    std::optional<std::string> build_failed_trades;
+
+    /**
+     * @brief Whether today's fixings are implied, as ORE spells it: Y or N. Empty when the run does
+     * not state it.
+     */
+    std::optional<std::string> imply_todays_fixings;
+
+    /**
+     * @brief Whether today's cash flows are included, as ORE spells it: Y or N. Empty when the run
+     * does not state it.
+     */
+    std::optional<std::string> include_todays_cash_flows;
+
+    /**
+     * @brief Whether events on the reference date are included, as ORE spells it: Y or N. Empty
+     * when the run does not state it.
+     */
+    std::optional<std::string> include_reference_date_events;
+
+    /**
+     * @brief Whether the market is built on demand, as ORE spells it: true or false. Empty when the
+     * run does not state it.
+     */
+    std::optional<std::string> lazy_market_building;
+
+    /**
+     * @brief Whether index fixings are enriched, as ORE spells it: true or false. Empty when the
+     * run does not state it.
+     */
+    std::optional<std::string> enrich_index_fixings;
+
+    /**
+     * @brief Whether the run uses the analytics framework, as ORE spells it: true or false. Empty
+     * when the run does not state it.
+     */
+    std::optional<std::string> use_analytics;
+
+    /**
+     * @brief Whether report headers are written as comments, as ORE spells it: Y or N. Empty when
+     * the run does not state it.
+     */
+    std::optional<std::string> csv_comment_report_header;
+
+    /**
+     * @brief Whether a missing mapping maps to itself, as ORE spells it: true or false. Empty when
+     * the run does not state it.
+     */
+    std::optional<std::string> default_mapping_to_identity;
+
+    /**
+     * @brief Whether the portfolio is read from sub directories, as ORE spells it: true or false.
+     * Empty when the run does not state it.
+     */
+    std::optional<std::string> portfolio_recurse_into_sub_directories;
+
+    /**
+     * @brief The log mask, a bit set of the message kinds to write. Empty when the run does not
+     * state it.
+     */
+    std::optional<int> log_mask;
+
+    /**
+     * @brief The number of days of fixing lag to ignore. Empty when the run does not state it.
+     */
+    std::optional<int> ignore_fixing_lag;
+
+    /**
+     * @brief Whether the run writes additional results, as ORE spells it: Y or N. Empty when the
+     * run does not state it.
+     */
+    std::optional<std::string> additional_results;
 
     /**
      * @brief Username of the person who last modified this risk report config.

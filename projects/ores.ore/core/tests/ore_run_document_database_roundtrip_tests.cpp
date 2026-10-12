@@ -21,7 +21,8 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
-#include "ores.reporting.core/repository/report_run_setup_repository.hpp"
+#include "ores.reporting.core/repository/configuration_repository.hpp"
+#include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
@@ -43,10 +44,11 @@ std::filesystem::path corpus_file(const std::string& relative) {
 
 using ores::ore::domain::run_document_mapper;
 using ores::platform::filesystem::file;
-using ores::reporting::repository::report_run_setup_repository;
+using ores::reporting::repository::configuration_repository;
+using ores::reporting::repository::risk_report_config_repository;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("a party sees only its own run document", tags) {
+TEST_CASE("a party sees only its own run settings", tags) {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
 
@@ -54,17 +56,28 @@ TEST_CASE("a party sees only its own run document", tags) {
     ores::ore::domain::load_data(
         file::read_content(corpus_file("ORE-Python/Notebooks/Example_1/Input/ore.xml")), original);
     auto next_id = boost::uuids::random_generator();
-    auto setup = run_document_mapper::map_setup(original);
-    setup.id = next_id();
-    setup.report_definition_id = next_id();
-    ores::database::domain::assign_party(setup, parties.a);
 
-    report_run_setup_repository setups;
-    setups.write(parties.a_context, setup);
+    ores::reporting::domain::configuration header;
+    header.id = next_id();
+    header.name = "Example_1";
+    header.configuration_type_code = "risk_report_config";
+    header.owning_component = "ores.reporting";
+    ores::database::domain::assign_party(header, parties.a);
+    configuration_repository().write(parties.a_context, header);
+
+    auto settings = run_document_mapper::map_setup(original).settings;
+    settings.id = next_id();
+    settings.name = "Example_1";
+    settings.description = "Example_1";
+    settings.configuration_id = header.id;
+    ores::database::domain::assign_party(settings, parties.a);
+
+    risk_report_config_repository repository;
+    repository.write(parties.a_context, settings);
 
     const auto owns = [&](const auto& rows) {
-        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == setup.id; });
+        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == settings.id; });
     };
-    CHECK(owns(setups.read_latest(parties.a_context)));
-    CHECK_FALSE(owns(setups.read_latest(parties.b_context)));
+    CHECK(owns(repository.read_latest(parties.a_context)));
+    CHECK_FALSE(owns(repository.read_latest(parties.b_context)));
 }

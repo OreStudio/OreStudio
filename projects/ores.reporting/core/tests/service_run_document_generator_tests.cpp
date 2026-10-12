@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -44,8 +45,14 @@ analytic(const std::string& type, int order, const std::string& active = "Y") {
 
 run_document_inputs inputs() {
     run_document_inputs in;
-    in.asof_date = "2026-10-09";
+    in.risk.market_data_type = "date";
+    in.risk.market_data_date = "2026-10-09";
     in.risk.base_currency = "GBP";
+    ores::reporting::domain::configuration_market_binding pricing;
+    pricing.role = "pricing";
+    pricing.market_configuration_name = "default";
+    pricing.position = 1;
+    in.market_bindings = {pricing};
     in.analytics = {analytic("curves", 1)};
     in.bound_types = {"conventions", "curve_configuration", "todays_market", "pricing_engines"};
     return in;
@@ -104,33 +111,35 @@ TEST_CASE("the parameters of an analytic reach the run with their values and ord
     CHECK(d.analytics[1].parameters[1].name == "calculationType");
 }
 
-TEST_CASE("the setup names a file for each bound type and none for the others", tags) {
+TEST_CASE("the run names a file for each bound type and none for the others", tags) {
     auto in = inputs();
     in.bound_types = {"curve_configuration", "todays_market"};
-    const auto& s = generate_run_document(in).setup;
-    CHECK(s.curve_config_file == "curveconfig.xml");
-    CHECK(s.market_config_file == "todaysmarket.xml");
-    CHECK_FALSE(s.conventions_file);
-    CHECK_FALSE(s.pricing_engines_file);
+    const auto& files = generate_run_document(in).files;
+    REQUIRE(files.size() == 2);
+    CHECK(files[0].parameter == "curveConfigFile");
+    CHECK(files[0].name == "curveconfig.xml");
+    CHECK(files[1].parameter == "marketConfigFile");
+    CHECK(files[1].name == "todaysmarket.xml");
 }
 
-TEST_CASE("the setup carries the as-of date and the base currency", tags) {
-    const auto& s = generate_run_document(inputs()).setup;
-    CHECK(s.asof_date == "2026-10-09");
-    CHECK(s.base_currency == "GBP");
+TEST_CASE("the run carries the choices of the configuration as they are", tags) {
+    const auto& s = generate_run_document(inputs()).settings;
+    CHECK(s.market_data_type == "date");
+    CHECK(s.market_data_date == "2026-10-09");
+    CHECK(s.base_currency == std::optional<std::string>("GBP"));
 }
 
-TEST_CASE("a run with no as-of date names none", tags) {
+TEST_CASE("the run carries the market bindings of the configuration", tags) {
     auto in = inputs();
-    in.asof_date.clear();
-    CHECK_FALSE(generate_run_document(in).setup.asof_date);
-}
-
-TEST_CASE("the run prices against the named market configuration", tags) {
-    auto in = inputs();
-    in.market_configuration = "overnight";
+    in.market_bindings[0].market_configuration_name = "overnight";
     const auto d = generate_run_document(in);
     REQUIRE(d.market_bindings.size() == 1);
     CHECK(d.market_bindings[0].role == "pricing");
-    CHECK(d.market_bindings[0].configuration_name == "overnight");
+    CHECK(d.market_bindings[0].market_configuration_name == "overnight");
+}
+
+TEST_CASE("a configuration with no market binding makes a run with none", tags) {
+    auto in = inputs();
+    in.market_bindings.clear();
+    CHECK(generate_run_document(in).market_bindings.empty());
 }

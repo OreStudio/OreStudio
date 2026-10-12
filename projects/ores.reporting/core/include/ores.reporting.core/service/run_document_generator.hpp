@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_CORE_SERVICE_RUN_DOCUMENT_GENERATOR_HPP
 #define ORES_REPORTING_CORE_SERVICE_RUN_DOCUMENT_GENERATOR_HPP
 
+#include "ores.reporting.api/domain/configuration_market_binding.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <vector>
 
@@ -32,21 +32,14 @@ namespace ores::reporting::service {
 /**
  * @brief What a run document is built from.
  *
- * Every field comes from the definition, its risk configuration or its
- * bindings. The as-of date is the one value that changes from run to run.
+ * Every field comes from the risk report configuration the definition binds or
+ * from the bindings of the definition.
  */
 struct run_document_inputs {
-    boost::uuids::uuid report_definition_id;
-    boost::uuids::uuid party_id;
-
     /**
-     * @brief The date the run values the portfolio at, as ORE writes it.
-     */
-    std::string asof_date;
-
-    /**
-     * @brief The definition's risk configuration, which holds the base currency,
-     * the thread count, the observation model and the market data of the run.
+     * @brief The risk report configuration, which holds the choices of the run:
+     * the base currency, the thread count, the observation model, the folders,
+     * the flags and the market data of the run.
      */
     ores::reporting::domain::risk_report_config risk;
 
@@ -57,26 +50,25 @@ struct run_document_inputs {
     std::vector<messaging::run_analytic> analytics;
 
     /**
+     * @brief The market bindings of the configuration, in the order the run
+     * writes them.
+     */
+    std::vector<ores::reporting::domain::configuration_market_binding> market_bindings;
+
+    /**
      * @brief The configuration type codes the definition binds.
      */
     std::vector<std::string> bound_types;
-
-    /**
-     * @brief The name of the today's market configuration the run prices
-     * against.
-     */
-    std::string market_configuration = "default";
 };
 
 /**
  * @brief Builds the run document for a definition.
  *
- * The document names one input file for each configuration type the definition
- * binds, and nothing for a type it does not bind, so the export writes exactly
- * the files that exist. It carries the analytics of the configuration with
- * their parameters, and binds the market role to the named today's market
- * configuration. A run with no analytic that is on is refused, because an ORE
- * run with none does nothing.
+ * The document carries the choices, the analytics and the market bindings of the
+ * configuration as they are. It names one input file for each configuration type
+ * the definition binds, and nothing for a type it does not bind, so the export
+ * writes exactly the files that exist. A run with no analytic that is on is
+ * refused, because an ORE run with none does nothing.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT messaging::run_document
 generate_run_document(const run_document_inputs& in);

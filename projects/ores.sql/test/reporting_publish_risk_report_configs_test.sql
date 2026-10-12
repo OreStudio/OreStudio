@@ -29,6 +29,8 @@
  *   for the party
  * - A staged parameter names the parameter, and the publish resolves it to the
  *   definition of the analytic type the staged analytic has
+ * - The run settings the configuration states, and the market bindings it holds,
+ *   reach the live tables as staged
  * - The portfolio scope names the portfolio the party holds under that name
  * - A repeat publish adds nothing
  * - A parameter that no definition describes is refused, and so is a
@@ -41,7 +43,7 @@
 
 begin;
 
-select plan(14);
+select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -58,7 +60,8 @@ select (select id from ores_refdata_parties_tbl
        '00000000-0000-0000-0000-0000000e0005'::uuid as pfe_id,
        '00000000-0000-0000-0000-0000000e0006'::uuid as parameter_id,
        '00000000-0000-0000-0000-0000000e0007'::uuid as empty_config_id,
-       '00000000-0000-0000-0000-0000000e0008'::uuid as lonely_configuration_id;
+       '00000000-0000-0000-0000-0000000e0008'::uuid as lonely_configuration_id,
+       '00000000-0000-0000-0000-0000000e000a'::uuid as market_id;
 
 insert into ores_refdata_portfolios_tbl (
     id, tenant_id, version, party_id, name, parent_portfolio_id, purpose_type,
@@ -85,10 +88,11 @@ where code = 'test.risk_report_configs' and valid_to = ores_utility_infinity_tim
 
 insert into ores_dq_risk_report_configs_artefact_tbl (
     dataset_id, tenant_id, id, version, party_id, name, description, configuration_id,
-    base_currency, observation_model, n_threads, market_data_type, scope_portfolio)
+    base_currency, observation_model, n_threads, market_data_type, input_path, output_path,
+    log_file, log_mask, imply_todays_fixings, scope_portfolio)
 select d.id, ores_utility_system_tenant_id_fn(), c.config_id, 0, c.party_id,
     'Test exposure', 'A risk report configuration', c.configuration_id,
-    'GBP', 'disable', 1, 'eod', 'RRC-FIXTURE-PORTFOLIO'
+    'GBP', 'Disable', 1, 'eod', 'Input', 'Output', 'log.txt', 31, 'N', 'RRC-FIXTURE-PORTFOLIO'
 from t_dataset d, t_ctx c;
 
 insert into ores_dq_configuration_analytics_artefact_tbl (
@@ -107,6 +111,13 @@ select d.id, ores_utility_system_tenant_id_fn(), c.parameter_id, 0, c.party_id, 
     'quantile', '0.95', 1
 from t_dataset d, t_ctx c;
 
+insert into ores_dq_configuration_market_bindings_artefact_tbl (
+    dataset_id, tenant_id, id, version, party_id, configuration_id, role,
+    market_configuration_name, position)
+select d.id, ores_utility_system_tenant_id_fn(), c.market_id, 0, c.party_id, c.configuration_id,
+    'pricing', 'default', 1
+from t_dataset d, t_ctx c;
+
 create or replace function pg_temp.publish() returns table (action text, record_count bigint) as $$
     select p.action, p.record_count
     from t_dataset d, t_ctx c,
@@ -118,8 +129,8 @@ $$ language sql;
 
 select results_eq(
     $$select * from pg_temp.publish()$$,
-    $$values ('inserted'::text, 4::bigint), ('scoped'::text, 1::bigint)$$,
-    'the publish adds the configuration, its two analytics, its parameter and its scope');
+    $$values ('inserted'::text, 5::bigint), ('scoped'::text, 1::bigint)$$,
+    'the publish adds the configuration, its two analytics, its parameter, its market binding and its scope');
 
 create temp view t_live as
 select r.*
@@ -136,6 +147,23 @@ select is(
     (select r.base_currency from t_live r),
     'GBP',
     'the configuration keeps its settings');
+
+select results_eq(
+    $$select r.observation_model, r.input_path, r.output_path, r.log_file, r.log_mask,
+             r.imply_todays_fixings, r.continue_on_error
+      from t_live r$$,
+    $$values ('Disable'::text, 'Input'::text, 'Output'::text, 'log.txt'::text, 31,
+              'N'::text, null::text)$$,
+    'the configuration keeps the run choices it states and leaves the others empty');
+
+select results_eq(
+    $$select b.role, b.market_configuration_name, b.position
+      from ores_reporting_configuration_market_bindings_tbl b, t_live r
+      where b.tenant_id = ores_utility_system_tenant_id_fn()
+        and b.configuration_id = r.configuration_id
+        and b.valid_to = ores_utility_infinity_timestamp_fn()$$,
+    $$values ('pricing'::text, 'default'::text, 1)$$,
+    'the market binding belongs to the configuration');
 
 select is(
     (select r.configuration_id from t_live r),
@@ -189,7 +217,7 @@ select results_eq(
 
 select results_eq(
     $$select * from pg_temp.publish()$$,
-    $$values ('skipped'::text, 4::bigint)$$,
+    $$values ('skipped'::text, 5::bigint)$$,
     'a repeat publish adds nothing');
 
 select is(
@@ -244,10 +272,11 @@ where dataset_id = (select id from t_dataset);
 
 insert into ores_dq_risk_report_configs_artefact_tbl (
     dataset_id, tenant_id, id, version, party_id, name, description, configuration_id,
-    base_currency, observation_model, n_threads, market_data_type, scope_portfolio)
+    base_currency, observation_model, n_threads, market_data_type, input_path, output_path,
+    log_file, log_mask, imply_todays_fixings, scope_portfolio)
 select d.id, ores_utility_system_tenant_id_fn(), c.empty_config_id, 0, c.party_id,
     'Test empty', 'A configuration that stages no analytic', gen_random_uuid(),
-    'GBP', 'disable', 1, 'eod', null
+    'GBP', 'Disable', 1, 'eod', 'Input', 'Output', 'log.txt', null, null, null
 from t_dataset d, t_ctx c;
 
 select throws_ok(

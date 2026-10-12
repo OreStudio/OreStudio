@@ -103,7 +103,7 @@ std::string make_definition(fixture& f, const boost::uuids::uuid& party) {
 
 ores::reporting::messaging::run_document npv_run() {
     ores::reporting::messaging::run_document doc;
-    doc.setup.curve_config_file = "curveconfig.xml";
+    doc.settings.base_currency = "EUR";
     ores::reporting::messaging::run_analytic npv;
     npv.analytic.analytic_type_code = "npv";
     npv.analytic.display_order = 1;
@@ -113,9 +113,9 @@ ores::reporting::messaging::run_document npv_run() {
     return doc;
 }
 
-const std::vector<std::string> all_permissions{"reporting::report_run_setups:read",
-                                               "reporting::report_run_setups:write",
-                                               "reporting::report_run_setups:delete",
+const std::vector<std::string> all_permissions{"reporting::run_documents:read",
+                                               "reporting::run_documents:write",
+                                               "reporting::run_documents:delete",
                                                "reporting::configurations:write"};
 
 }

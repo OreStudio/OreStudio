@@ -21,18 +21,16 @@
 #include "ores.database/repository/document_operations.hpp"
 #include "ores.reporting.core/repository/configuration_analytic_parameter_repository.hpp"
 #include "ores.reporting.core/repository/configuration_analytic_repository.hpp"
+#include "ores.reporting.core/repository/configuration_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
 #include "ores.reporting.core/repository/parameter_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/repository/report_market_binding_repository.hpp"
-#include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/service/run_document_generator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -110,6 +108,18 @@ std::vector<messaging::run_analytic> analytics_of(const ores::database::context&
     return out;
 }
 
+// The market bindings of a configuration, in the order the run document writes them.
+std::vector<domain::configuration_market_binding>
+market_bindings_of(const ores::database::context& ctx, const boost::uuids::uuid& configuration_id) {
+    auto bindings =
+        read_where(ctx, configuration_market_binding_repository(), [&](const auto& b) {
+            return b.configuration_id == configuration_id;
+        });
+    std::ranges::sort(bindings,
+                      [](const auto& l, const auto& r) { return l.position < r.position; });
+    return bindings;
+}
+
 domain::configuration write_configuration(const ores::database::context& ctx,
                                           const std::string& configuration_type_code,
                                           const std::string& name) {
@@ -143,14 +153,6 @@ void write_binding(const ores::database::context& ctx,
     report_configuration_repository().write(ctx, binding);
 }
 
-// What ORE spells with a capital, the risk configuration spells in lower case.
-std::string observation_model_of(const std::optional<std::string>& value) {
-    if (!value)
-        return "disable";
-    const auto lower = boost::algorithm::to_lower_copy(*value);
-    return lower == "none" || lower == "move" || lower == "defer" ? lower : "disable";
-}
-
 }
 
 run_document_service::run_document_service(context ctx)
@@ -158,12 +160,6 @@ run_document_service::run_document_service(context ctx)
 
 void run_document_service::save(const boost::uuids::uuid& report_definition_id,
                                 messaging::run_document v) {
-    const auto of_definition = [&](const auto& row) {
-        return row.report_definition_id == report_definition_id;
-    };
-    if (!read_where(ctx_, report_run_setup_repository(), of_definition).empty())
-        throw std::invalid_argument(
-            "The report definition already holds a run document; import into a new definition.");
     if (!bindings_of_type(report_definition_id, run_settings_type).empty())
         throw std::invalid_argument(
             "The report definition already binds a risk report configuration; import into a new "
@@ -188,29 +184,24 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
         ctx_, report_definition_repository(), "report definition", report_definition_id);
     auto next_id = boost::uuids::random_generator();
 
-    // The run settings the document describes become a configuration that the definition
-    // binds. The analytics belong to the configuration and not to the definition.
+    // The choices, the analytics and the market bindings the document describes
+    // become one configuration that the definition binds. None of them belongs to
+    // the definition itself.
     const auto configuration = write_configuration(ctx_, run_settings_type, definition.name);
 
-    domain::risk_report_config risk;
+    auto risk = std::move(v.settings);
     risk.id = next_id();
     risk.name = definition.name;
     risk.description = "The run settings imported with the run document of " + definition.name;
     risk.configuration_id = configuration.id;
-    risk.base_currency = v.setup.base_currency.value_or("USD");
-    risk.observation_model = observation_model_of(v.setup.observation_model);
-    risk.n_threads = std::max(1, v.setup.n_threads.value_or(1));
-    risk.market_data_type = "eod";
     ores::service::messaging::stamp_document(risk, ctx_);
     risk_report_config_repository().write(ctx_, risk);
 
-    v.setup.id = next_id();
-    v.setup.report_definition_id = report_definition_id;
     for (auto& b : v.market_bindings) {
         b.id = next_id();
-        b.report_definition_id = report_definition_id;
+        b.configuration_id = configuration.id;
     }
-    ores::service::messaging::stamp_document(v, ctx_);
+    ores::service::messaging::stamp_document(v.market_bindings, ctx_);
 
     std::vector<domain::configuration_analytic> analytics;
     std::vector<domain::configuration_analytic_parameter> parameters;
@@ -231,10 +222,9 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
     }
     ores::service::messaging::stamp_document(parameters, ctx_);
 
-    report_run_setup_repository().write(ctx_, v.setup);
     configuration_analytic_repository().write(ctx_, analytics);
     configuration_analytic_parameter_repository().write(ctx_, parameters);
-    report_market_binding_repository().write(ctx_, v.market_bindings);
+    configuration_market_binding_repository().write(ctx_, v.market_bindings);
 
     // The binding comes last: it refuses a configuration whose analytics make no run.
     write_binding(ctx_, report_definition_id, run_settings_type, configuration.id);
@@ -242,24 +232,24 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
 
 std::optional<messaging::run_document>
 run_document_service::get(const boost::uuids::uuid& report_definition_id) {
-    const auto of_definition = [&](const auto& row) {
-        return row.report_definition_id == report_definition_id;
-    };
-    const auto setups = read_where(ctx_, report_run_setup_repository(), of_definition);
-    if (setups.empty())
+    const auto settings = bindings_of_type(report_definition_id, run_settings_type);
+    if (settings.empty())
         return std::nullopt;
 
-    messaging::run_document r;
-    r.setup = setups.front();
+    const auto configuration_id = settings.front().configuration_id;
+    const auto risk = read_where(ctx_, risk_report_config_repository(), [&](const auto& r) {
+        return r.configuration_id == configuration_id;
+    });
+    if (risk.empty())
+        return std::nullopt;
 
-    const auto settings = bindings_of_type(report_definition_id, run_settings_type);
-    if (!settings.empty())
-        r.analytics = analytics_of(ctx_, settings.front().configuration_id);
-
-    r.market_bindings = read_where(ctx_, report_market_binding_repository(), of_definition);
-    std::ranges::sort(r.market_bindings,
-                      [](const auto& l, const auto& r) { return l.position < r.position; });
-    return r;
+    run_document_inputs in;
+    in.risk = risk.front();
+    in.analytics = analytics_of(ctx_, configuration_id);
+    in.market_bindings = market_bindings_of(ctx_, configuration_id);
+    for (const auto& b : bindings(report_definition_id))
+        in.bound_types.push_back(b.configuration_type_code);
+    return generate_run_document(in);
 }
 
 domain::configuration run_document_service::bind(const boost::uuids::uuid& report_definition_id,
@@ -271,18 +261,7 @@ domain::configuration run_document_service::bind(const boost::uuids::uuid& repor
 }
 
 void run_document_service::remove(const boost::uuids::uuid& report_definition_id) {
-    const auto of_definition = [&](const auto& row) {
-        return row.report_definition_id == report_definition_id;
-    };
-    const auto market_bindings =
-        read_where(ctx_, report_market_binding_repository(), of_definition);
-    const auto setups = read_where(ctx_, report_run_setup_repository(), of_definition);
     const auto slots = bindings(report_definition_id);
-
-    if (!market_bindings.empty())
-        report_market_binding_repository().remove(ctx_, ids_of(market_bindings));
-    if (!setups.empty())
-        report_run_setup_repository().remove(ctx_, ids_of(setups));
 
     for (const auto& b : slots) {
         report_configuration_repository().remove(ctx_, boost::uuids::to_string(b.id));
@@ -307,9 +286,12 @@ void run_document_service::remove(const boost::uuids::uuid& report_definition_id
                 read_where(ctx_, configuration_analytic_parameter_repository(), [&](const auto& p) {
                     return analytic_ids.contains(p.configuration_analytic_id);
                 });
+            const auto markets = market_bindings_of(ctx_, b.configuration_id);
             const auto risk = read_where(ctx_, risk_report_config_repository(), [&](const auto& r) {
                 return r.configuration_id == b.configuration_id;
             });
+            if (!markets.empty())
+                configuration_market_binding_repository().remove(ctx_, ids_of(markets));
             if (!parameters.empty())
                 configuration_analytic_parameter_repository().remove(ctx_, ids_of(parameters));
             if (!analytics.empty())
@@ -319,30 +301,6 @@ void run_document_service::remove(const boost::uuids::uuid& report_definition_id
         }
         configuration_repository().remove(ctx_, boost::uuids::to_string(b.configuration_id));
     }
-}
-
-std::optional<messaging::run_document>
-run_document_service::get_or_generate(const boost::uuids::uuid& report_definition_id) {
-    if (auto stored = get(report_definition_id))
-        return stored;
-
-    const auto risk = risk_report_config_repository().find_by_definition_id(
-        ctx_, boost::uuids::to_string(report_definition_id));
-    if (!risk)
-        return std::nullopt;
-
-    const auto definition = ores::database::repository::read_one(
-        ctx_, report_definition_repository(), "report definition", report_definition_id);
-
-    run_document_inputs in;
-    in.report_definition_id = report_definition_id;
-    in.party_id = definition.party_id;
-    in.risk = *risk;
-    in.analytics = analytics_of(ctx_, risk->configuration_id);
-    in.asof_date = in.risk.market_data_date;
-    for (const auto& b : bindings(report_definition_id))
-        in.bound_types.push_back(b.configuration_type_code);
-    return generate_run_document(in);
 }
 
 std::vector<domain::report_configuration>

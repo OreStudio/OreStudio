@@ -36,14 +36,12 @@
 \ir ./reporting_report_type_configuration_type_create.sql
 \ir ./reporting_analytic_types_create.sql
 \ir ./reporting_analytic_types_notify_trigger_create.sql
-\ir ./reporting_report_run_setups_create.sql
-\ir ./reporting_report_run_setups_notify_trigger_create.sql
 \ir ./reporting_configuration_analytics_create.sql
 \ir ./reporting_configuration_analytics_notify_trigger_create.sql
 \ir ./reporting_configuration_analytic_parameters_create.sql
 \ir ./reporting_configuration_analytic_parameters_notify_trigger_create.sql
-\ir ./reporting_report_market_bindings_create.sql
-\ir ./reporting_report_market_bindings_notify_trigger_create.sql
+\ir ./reporting_configuration_market_bindings_create.sql
+\ir ./reporting_configuration_market_bindings_notify_trigger_create.sql
 \ir ./reporting_parameter_value_domains_create.sql
 \ir ./reporting_parameter_value_domains_notify_trigger_create.sql
 \ir ./reporting_parameter_definitions_create.sql

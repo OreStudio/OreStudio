@@ -482,12 +482,12 @@ struct node_sample_message {
 };
 
 /**
- * @brief Asks who uses the grid, with the work counted by group.
+ * @brief Asks who uses the grid in the session's tenant, with the work counted by party.
  *
- * It carries no fields, because the caller's session decides the scope and the
- * grouping. A session in the system tenant reads the work of every tenant and
- * gets one group for each tenant. Any other session reads its own tenant, and
- * only the parties it acts for, and gets one group for each party.
+ * It carries no fields, because the caller's session decides the tenant and the
+ * parties. A tenant's administrator reads the tenant. A session that acts for
+ * parties reads those parties. A session of the system tenant reads the system
+ * tenant's work only, and another tenant is read by entering it.
  */
 struct get_grid_usage_request {
     using response_type = struct get_grid_usage_response;
@@ -502,13 +502,13 @@ struct get_grid_usage_request {
 };
 
 /**
- * @brief The work of the grid counted by group, as columns.
+ * @brief The work of the session's tenant counted by party, as columns.
  *
  * Group i is described by keys[i] and by entry i of every other column. The
- * group is a tenant when group_kind is "tenant" and a party when it is
- * "party". A key that is empty stands for work with no party, which predates
- * the party scope. The share of a group is its entry in a column divided by the
- * sum of that column, which the caller computes.
+ * group is a party, and group_kind says "party". A key that is empty stands for
+ * work with no party, which predates the party scope. The share of a group is its
+ * entry in a column divided by the sum of that column, which the caller
+ * computes.
  */
 struct get_grid_usage_response {
     /**
@@ -520,7 +520,7 @@ struct get_grid_usage_response {
      */
     std::string message;
     /**
-     * @brief What a group is: "tenant" or "party".
+     * @brief What a group is: always "party".
      */
     std::string group_kind = "";
     /**

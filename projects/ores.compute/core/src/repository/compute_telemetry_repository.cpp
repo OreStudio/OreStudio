@@ -244,40 +244,30 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
 }
 
 grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the grid usage by scope";
+    BOOST_LOG_SEV(lg(), debug) << "Reading the grid usage by party";
 
-    // Whether the session works for the system tenant decides the grouping. The
-    // policies decide the rows, so the query names no tenant or party.
-    static const std::string kind_sql = R"(
-        SELECT ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
-    )";
-    const auto kind_rows =
-        execute_parameterized_multi_column_query(ctx, kind_sql, {}, lg(), "reading the grid scope");
-    const bool by_tenant = !kind_rows.empty() && !kind_rows.front().empty() &&
-                           kind_rows.front().front() && *kind_rows.front().front() == "t";
-
-    // Each table is counted on its own and the parts are summed by group, so a
-    // group that has batches and no results still appears.
+    // The policies decide the rows: the session's own tenant, and the parties it
+    // acts for. The query names no tenant, and a session of the system tenant reads
+    // the system tenant's work only. A person who needs another tenant's usage enters
+    // that tenant and reads it there. Each table is counted on its own and the parts
+    // are summed by party, so a party that has batches and no results still appears.
     static const std::string sql = R"(
-        WITH scope AS (
-            SELECT ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn() AS by_tenant
-        ),
-        parts AS (
-            SELECT CASE WHEN s.by_tenant THEN t.tenant_id::text ELSE coalesce(t.party_id::text, '') END AS k,
+        WITH parts AS (
+            SELECT coalesce(t.party_id::text, '') AS k,
                 count(*) AS batches, 0::bigint AS workunits, 0::bigint AS results,
                 0::bigint AS unsent, 0::bigint AS in_progress, 0::bigint AS done,
                 0::bigint AS ok, 0::bigint AS failed
-            FROM ores_compute_batches_tbl t CROSS JOIN scope s
+            FROM ores_compute_batches_tbl t
             WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
             GROUP BY 1
           UNION ALL
-            SELECT CASE WHEN s.by_tenant THEN t.tenant_id::text ELSE coalesce(t.party_id::text, '') END,
+            SELECT coalesce(t.party_id::text, ''),
                 0, count(*), 0, 0, 0, 0, 0, 0
-            FROM ores_compute_workunits_tbl t CROSS JOIN scope s
+            FROM ores_compute_workunits_tbl t
             WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
             GROUP BY 1
           UNION ALL
-            SELECT CASE WHEN s.by_tenant THEN t.tenant_id::text ELSE coalesce(t.party_id::text, '') END,
+            SELECT coalesce(t.party_id::text, ''),
                 0, 0, count(*),
                 count(*) FILTER (WHERE t.server_state = 2),
                 count(*) FILTER (WHERE t.server_state = 4),
@@ -286,7 +276,7 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
                     AND t.received_at > now() - interval '24 hours'),
                 count(*) FILTER (WHERE t.server_state = 5 AND t.outcome IN (3, 4)
                     AND t.received_at > now() - interval '24 hours')
-            FROM ores_compute_results_tbl t CROSS JOIN scope s
+            FROM ores_compute_results_tbl t
             WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
             GROUP BY 1
         )
@@ -302,7 +292,7 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
         execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading the grid usage");
 
     grid_usage usage;
-    usage.group_kind = by_tenant ? "tenant" : "party";
+    usage.group_kind = "party";
     const auto number = [](const std::optional<std::string>& cell) -> std::int64_t {
         return cell ? std::stoll(*cell) : 0;
     };

@@ -603,7 +603,6 @@ TEST_CASE("grid_usage_of_a_tenant_session_groups_its_batches_by_party", tags) {
     CHECK(usage.batches[static_cast<std::size_t>(a)] == 2);
     CHECK(usage.batches[static_cast<std::size_t>(b)] == 1);
     CHECK(usage_index_of(usage, "") >= 0);
-    CHECK(usage_index_of(usage, own.to_string()) == -1);
 }
 
 TEST_CASE("grid_usage_of_a_session_that_acts_for_a_party_hides_the_other_parties", tags) {
@@ -631,37 +630,44 @@ TEST_CASE("grid_usage_of_a_session_that_acts_for_a_party_hides_the_other_parties
     CHECK(usage_index_of(usage, boost::uuids::to_string(party_b)) == -1);
 }
 
-TEST_CASE("grid_usage_of_the_system_tenant_groups_the_work_of_every_tenant_by_tenant", tags) {
+TEST_CASE("grid_usage_reads_one_tenant_and_a_system_session_reads_no_other", tags) {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto own = h.tenant_id();
     const auto system = tenant_id::system();
 
     auto provision_ctx = h.context();
-    const auto third_code = test_database_manager::generate_test_tenant_code("ores.compute.usage");
+    const auto third_code =
+        test_database_manager::generate_test_tenant_code("ores.compute.usage");
     const auto third =
         tenant_id::from_string(test_database_manager::provision_test_tenant(
                                    provision_ctx, third_code, "compute usage third tenant"))
             .value();
 
+    const auto own_party = random_uuid();
+    const auto third_party = random_uuid();
     ores::compute::repository::batch_repository repo;
     sample_cleanup cleanup(h);
-    const auto mine = usage_batch(gen, own, random_uuid());
-    const auto theirs = usage_batch(gen, third, random_uuid());
+    const auto mine = usage_batch(gen, own, own_party);
+    const auto theirs = usage_batch(gen, third, third_party);
     cleanup.batch(own, mine.id);
     cleanup.batch(third, theirs.id);
     repo.write(h.context(), mine);
     repo.write(h.context().with_tenant(third, h.db_user()), theirs);
 
     compute_telemetry_repository telemetry;
-    const auto as_system = h.context().with_tenant(system, h.db_user());
-    const auto usage = telemetry.grid_usage_by_scope(as_system);
 
-    CHECK(usage.group_kind == "tenant");
-    CHECK(usage_index_of(usage, own.to_string()) >= 0);
-    CHECK(usage_index_of(usage, third.to_string()) >= 0);
+    // A tenant reads its own work and no other tenant's.
+    const auto as_tenant = telemetry.grid_usage_by_scope(h.context());
+    CHECK(as_tenant.group_kind == "party");
+    CHECK(usage_index_of(as_tenant, boost::uuids::to_string(own_party)) >= 0);
+    CHECK(usage_index_of(as_tenant, boost::uuids::to_string(third_party)) == -1);
 
-    const auto as_third_tenant = telemetry.grid_usage_by_scope(h.context());
-    CHECK(as_third_tenant.group_kind == "party");
-    CHECK(usage_index_of(as_third_tenant, third.to_string()) == -1);
+    // The system tenant is a tenant like the others for this read: it reads the
+    // system tenant's work and neither of the two tenants above. An operator who
+    // needs another tenant's work enters that tenant.
+    const auto as_system = telemetry.grid_usage_by_scope(h.context().with_tenant(system, h.db_user()));
+    CHECK(as_system.group_kind == "party");
+    CHECK(usage_index_of(as_system, boost::uuids::to_string(own_party)) == -1);
+    CHECK(usage_index_of(as_system, boost::uuids::to_string(third_party)) == -1);
 }

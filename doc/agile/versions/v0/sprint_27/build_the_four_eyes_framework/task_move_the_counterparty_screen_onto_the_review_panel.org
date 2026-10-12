@@ -2,7 +2,7 @@
 :ID: 77613BC7-0180-47E6-8F3D-0BCF447F6818
 :END:
 #+title: Task: Move the counterparty screen onto the review panel
-#+description: Make the counterparty onboarding screen raise a request for a gated change instead of writing it.
+#+description: Build the counterparty as a record screen like the parties screen, where a gated change raises a request and a contact change is written directly.
 #+type: task
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Make the counterparty onboarding screen raise a request for a gated change instead of writing it.
+Build the counterparty as a record screen like the parties screen, where a gated change raises a request and a contact change is written directly.
 
 * Status
 
@@ -59,6 +59,9 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The product owner ruled that the screen is an entity screen like the parties screen, not the onboarding journey. Onboarding is a workflow. The prototype is =keep-a-counterpartys-details-current= under the parties group.
+- The server must gate the counterparty first. Only the book is gated today. The counterparty needs the chain the book had: its model marked gated, a pending change, a preview and raise, and an apply. These are tasks of their own, to be filed when the prototype is agreed.
 
 * Test Scenarios
 

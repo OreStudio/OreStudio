@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: DC90563D-CCBE-42F3-B055-A868F8A4F9AF
+:END:
+#+title: Keep a counterparty's details current prototype
+#+description: The counterparty drawn as a record screen like the parties screen, with its tabs, its dialogs and the review that saves a change or raises a request.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:parties:refdata:four-eyes:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+| Item          | Where                                                  |
+|---------------+--------------------------------------------------------|
+| Prototype     | [[file:keep-a-counterpartys-details-current/][the prototype]] |
+| Gemini review | none                                                   |
+| Group         | [[file:index.org][Parties prototypes]]                                   |
+
+* Summary
+
+The onboarding journey draws a counterparty as a workflow: a person walks it once
+and leaves. That is the wrong shape for the work that follows. A counterparty is
+corrected for years: a name, an identifier, a contact, a party that may now trade
+with it. This prototype draws the counterparty as a *record*, as the product draws
+the party, so the same screen serves the first entry and every correction after it.
+
+It is throwaway. It reads no service and every value is mock data.
+
+* Detail
+
+** What it argues
+
+- *A list and a record, not a walk.* The list searches by short code and name and
+  opens one record. A new counterparty is the same dialog as an edit, started from
+  the list.
+- *One tab for each kind of row.* Details, identifiers, contacts, business centres,
+  the parties that may trade with the counterparty, and history. The link tabs are
+  where a counterparty differs from a party: the junction to the tenant's own
+  parties is a tab of its own.
+- *A dialog for each card, and a dialog never writes.* It collects the change and
+  hands it to the review.
+- *The review decides what the button does.* Each change shows the function that
+  decides it. A change the policy gates raises one request. A change it does not
+  gate is saved directly, as a new version.
+
+** What is gated
+
+| Change | Decider | What the button does |
+|--------+---------+----------------------|
+| Counterparty create or edit | Operations | Raise request |
+| Identifier add or edit | Operations | Raise request |
+| Party link add or remove | Operations | Raise request |
+| Contact add or edit | nobody | Save |
+| Business centre link add or remove | nobody | Save |
+
+These are the rows of the approval policy. The prototype draws them and does not
+decide them.
+
+** The states
+
+| State | What it shows |
+|-------+---------------|
+| =list= | The counterparty list with search and a pending badge on a counterparty that has a request waiting |
+| =details=, =identifiers=, =contacts=, =centres=, =parties=, =history= | The record on the named tab |
+| =edit=, =new= | The details dialog, form step |
+| =review-gated=, =review-direct= | The review for a change that needs Operations, and for one that does not |
+| =waiting=, =decide=, =declined=, =outcome= | The raised request: who still has to answer, the checker's screen with its checks, a decline that writes no version, and the applied request |
+
+** What the checker checks
+
+The decision screen runs two checks: the person who asked is not the person who
+answers, and the counterparty is still at the version the maker read. The
+=?check=stale= switch makes the second fail, and an approval is then refused.
+
+** What is fake
+
+The data, the identity of the actors, the clock, and every write. Nothing is saved
+and a reload returns the page to its first state.
+
+** Where the code lives
+
+The product screen is built from the shared pieces the four-eyes story adds: the
+changes view, the review panel, the request page. The counterparty needs a server
+side first, because only the book is gated today: its model must be marked gated, and
+it needs a pending change, a preview and raise, and an apply.
+
+** Verdict
+
+Open. The open question is whether a counterparty's contacts and business centres
+should stay ungated. The policy says so today.

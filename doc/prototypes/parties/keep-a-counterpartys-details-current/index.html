@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keep a counterparty's details current prototype — Parties journeys</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no fetch.
+
+  The counterparty as a record screen, drawn like the parties screen and not
+  as a workflow: the list, then one record on tabs (details, identifiers,
+  contacts, business centres, the parties that may trade with it, history),
+  each card changed in a dialog. A dialog never writes: it collects the change,
+  the review shows each change with the function that decides it, and the
+  primary button saves or raises one request.
+
+  States are chosen from the query string, as the sibling prototypes do:
+
+    ?state=list                        the counterparty list
+    ?state=details|identifiers|contacts|centres|parties|history
+                                       one record, on the named tab
+    ?state=edit                        the details dialog, form step
+    ?state=review-gated                a review whose changes need Operations
+    ?state=review-direct               a review of a contact change, written directly
+    ?state=new                         the new counterparty dialog
+    ?state=waiting|decide|declined     the raised request, the checker's decision, a decline
+    ?state=outcome                     the request applied
+    ?cp=ATLAS                          the open counterparty, by short code
+    ?query=Atlas                       the list search, as typed
+    ?actor=f.ledger|o.ops|...          who answers on the decision screen (decide only)
+    ?maker=h.desk|f.ledger|...         who raised the request; the maker cannot decide it
+    ?check=stale                       make the counterparty-version check fail
+
+  The bar at the foot mirrors the states.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="four-eyes.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>

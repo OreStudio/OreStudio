@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/gate-the-refdata-writes-behind-the-policy
-#+pr:
+#+pr: 3158
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3158][#3158]] | [refdata] Gate the book writes behind the approval policy |
 
 * Review
 

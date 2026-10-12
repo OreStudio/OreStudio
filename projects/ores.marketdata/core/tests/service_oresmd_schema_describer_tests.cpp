@@ -60,9 +60,8 @@ const messaging::oresmd_instrument* instrument_coded(std::string_view code) {
 }
 
 bool has_field(const messaging::oresmd_instrument& row, const std::string& name) {
-    return std::any_of(row.fields.begin(), row.fields.end(), [&](const auto& spec) {
-        return spec.name == name;
-    });
+    return std::any_of(
+        row.fields.begin(), row.fields.end(), [&](const auto& spec) { return spec.name == name; });
 }
 
 }
@@ -116,9 +115,8 @@ TEST_CASE("an interest rate swap holds the fields the codec writes, with the ind
     for (const auto& spec : swap->fields)
         names.push_back(spec.name);
     CHECK(names == std::vector<std::string>{"ccy", "index_name", "fwd_start", "tenor", "term"});
-    const auto index_name = std::find_if(swap->fields.begin(), swap->fields.end(), [](auto& f) {
-        return f.name == "index_name";
-    });
+    const auto index_name = std::find_if(
+        swap->fields.begin(), swap->fields.end(), [](auto& f) { return f.name == "index_name"; });
     CHECK(index_name->may_be_none);
 }
 
@@ -166,9 +164,8 @@ TEST_CASE("the quotes are the spellings a URI writes, each once", tags) {
 
 TEST_CASE("an index family holds what the codec reads for a fixing", tags) {
     const auto& indexes = schema_answer().indexes;
-    const auto ibor = std::find_if(indexes.begin(), indexes.end(), [](auto& f) {
-        return f.code == "ibor";
-    });
+    const auto ibor =
+        std::find_if(indexes.begin(), indexes.end(), [](auto& f) { return f.code == "ibor"; });
     REQUIRE(ibor != indexes.end());
     CHECK(ibor->asset == "ir");
     CHECK(ibor->subject == "ccy");
@@ -177,6 +174,7 @@ TEST_CASE("an index family holds what the codec reads for a fixing", tags) {
     CHECK_FALSE(ibor->fields[0].optional);
     CHECK(ibor->fields[1].name == "tenor");
     CHECK(ibor->fields[1].optional);
-    CHECK(oresmd_uri_codec::read_index("oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M")
-              .has_value());
+    CHECK(
+        oresmd_uri_codec::read_index("oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M")
+            .has_value());
 }

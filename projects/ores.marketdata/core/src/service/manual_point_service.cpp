@@ -23,16 +23,16 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
-#include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <cstddef>
 #include <expected>
-#include <set>
 #include <string>
+#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -107,17 +107,14 @@ std::expected<node, std::string> locate(ores::database::context ctx,
     return node{series.id, std::move(*uri)};
 }
 
-/// Whether @p text is one finite number, written whole.
+/// Whether @p text is one finite number, written whole in decimal. A leading space,
+/// a plus sign and a hex float are not numbers here, because the text is stored as
+/// it is stated.
 bool is_number(const std::string& text) {
-    if (text.empty())
-        return false;
-    try {
-        std::size_t used = 0;
-        const auto number = std::stod(text, &used);
-        return used == text.size() && std::isfinite(number);
-    } catch (const std::exception&) {
-        return false;
-    }
+    double number = 0;
+    const auto end = text.data() + text.size();
+    const auto [stopped, error] = std::from_chars(text.data(), end, number);
+    return error == std::errc{} && stopped == end && std::isfinite(number);
 }
 
 }
@@ -167,23 +164,16 @@ manual_point_service::clear(ores::database::context ctx,
         return response;
     }
 
-    // A node can hold a manual point at more than one instant, because each key
-    // is stamped when it is made. Clearing releases the node, so it releases all.
-    std::set<std::chrono::system_clock::time_point> instants;
-    for (const auto& row :
-         repository::observation_lineage_repository{}.read_manual_for_series(ctx, at->series_id)) {
-        if (row.oresmd_uri == at->oresmd_uri)
-            instants.insert(row.observation_datetime);
-    }
-    if (instants.empty()) {
+    // A node can hold a manual point at more than one instant, because each key is
+    // stamped when it is made. Clearing releases the node, so it releases all of
+    // them in one transaction.
+    const auto cleared = repository::market_observation_repository{}.clear_manual_points(
+        ctx, at->series_id, at->oresmd_uri);
+    if (cleared == 0) {
         response.message = "The node holds no manual point.";
         return response;
     }
-
-    repository::market_observation_repository observations;
-    for (const auto& instant : instants)
-        observations.clear_manual_point(ctx, at->series_id, at->oresmd_uri, instant);
-    BOOST_LOG_SEV(lg(), info) << "Cleared " << instants.size() << " manual point(s) on series "
+    BOOST_LOG_SEV(lg(), info) << "Cleared " << cleared << " manual point(s) on series "
                               << at->series_id;
     response.success = true;
     return response;

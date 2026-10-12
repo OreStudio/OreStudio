@@ -2451,7 +2451,9 @@ running this again finds nothing to do.
 Keys a manual point on one node of a composite object. The object is named by its
 typed identity, as the reads name it. The node is named by its coordinates, one
 for each declared axis, in the order the shape declares them. The point owns its
-coordinate until it is cleared.
+coordinate until it is cleared. Each key is stamped when the server receives it
+and writes a new observation row, so a node adjusted twice holds two. That is
+intended: the history keeps every correction, and a clear releases them all.
 
 #+begin_src cpp :name comment
 /**

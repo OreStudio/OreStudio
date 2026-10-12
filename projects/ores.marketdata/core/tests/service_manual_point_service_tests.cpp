@@ -199,6 +199,12 @@ TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", tags) {
     CHECK_FALSE(
         manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "0.09x")).success);
     CHECK_FALSE(manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "")).success);
+    // The text is stored as stated, so a spelling a decimal reader would not take
+    // is refused and not normalised.
+    for (const auto* spelling : {" 0.09", "0x10", "+0.09", "0.09 ", "inf", "nan"}) {
+        CHECK_FALSE(
+            manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, spelling)).success);
+    }
 
     auto no_reason = key_request(identity, {"1Y", "ATM"}, "0.090");
     no_reason.change_reason_code.clear();

@@ -115,8 +115,10 @@ private:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(manual_point_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
+            // The exception can name tables or constraints, so it is logged and the
+            // caller is told only that the write failed.
             resp.success = false;
-            resp.message = e.what();
+            resp.message = "The write failed.";
         }
         BOOST_LOG_SEV(manual_point_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);

@@ -13,16 +13,17 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Say in the testing guide that the test helpers isolate by test run and not by test. Every test in one run shares one tenant, so a test must use keys of its own, such as a currency pair or a curve id no other test uses.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The helper needs no truncation, so a surface or a series that one test writes is still there for the next test. Two marketdata tests broke other suites intermittently because of it: a lister test that added axes to a pair another test read, and a derived point test that shared a pair. Each now has a pair of its own, and eight clean runs followed. Nothing in the guide tells the next author to do the same.
 
 * References
 
--
+- =projects/ores.marketdata/core/tests/service_series_identity_lister_tests.cpp=
+- =projects/ores.marketdata/core/tests/service_manual_point_service_tests.cpp=, which picks unused pairs for the same reason
 
 * See also
 
--
+- The testing guide, as the place to document the convention.

@@ -25,7 +25,9 @@
 #include "ores.refdata.core/service/book_service.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.core/repository/book_change_repository.hpp"
 #include "ores.refdata.core/repository/book_repository.hpp"
+#include "ores.service/messaging/approval_gate.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -36,6 +38,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -118,6 +121,55 @@ domain::book to_domain(const messaging::book_write& write) {
     v.rates_centre_code = write.rates_centre_code;
     v.sandbox_id = write.sandbox_id;
     return v;
+}
+
+
+/**
+ * @brief The columns a write changes, by the names the approval policy uses.
+ *
+ * A write that creates a row changes every column.
+ */
+std::vector<std::string> columns_changed(const std::vector<domain::book>& live,
+                                         const domain::book& next) {
+    const bool created = live.empty();
+    std::vector<std::string> names;
+    // The key names the row and is not a column a policy decides.
+    const auto note = [&](std::string_view name, bool changed) {
+        if (changed && name != "id")
+            names.emplace_back(name);
+    };
+    note("id", created || live.front().id != next.id);
+    note("party_id", created || live.front().party_id != next.party_id);
+    note("name", created || live.front().name != next.name);
+    note("description", created || live.front().description != next.description);
+    note("parent_portfolio_id",
+         created || live.front().parent_portfolio_id != next.parent_portfolio_id);
+    note("owner_unit_id", created || live.front().owner_unit_id != next.owner_unit_id);
+    note("functional_currency",
+         created || live.front().functional_currency != next.functional_currency);
+    note("gl_account_ref", created || live.front().gl_account_ref != next.gl_account_ref);
+    note("cost_center", created || live.front().cost_center != next.cost_center);
+    note("book_status", created || live.front().book_status != next.book_status);
+    note("regulatory_book_type",
+         created || live.front().regulatory_book_type != next.regulatory_book_type);
+    note("book_purpose_type", created || live.front().book_purpose_type != next.book_purpose_type);
+    note("ledger_feed_type", created || live.front().ledger_feed_type != next.ledger_feed_type);
+    note("is_sweepable", created || live.front().is_sweepable != next.is_sweepable);
+    note("rates_centre_code", created || live.front().rates_centre_code != next.rates_centre_code);
+    note("sandbox_id", created || live.front().sandbox_id != next.sandbox_id);
+    return names;
+}
+
+/**
+ * @brief Refuses a direct write to a gated entity.
+ *
+ * The in-process save and remove methods take no request, so no approved
+ * request could open the gate for them. They are refused, and the protocol
+ * operations are the only way to write.
+ */
+[[noreturn]] void refuse_direct_write() {
+    throw std::logic_error(
+        ores::database::domain::describe(outcome_code::approval_required, {.entity = "book"}));
 }
 
 }
@@ -283,6 +335,10 @@ book_service::delete_book(const messaging::delete_book_request& request) {
         }
         expected = request.removal.precondition.version;
     }
+    if (const auto refused = gate_delete(read_one(repo_, ctx_, request.removal.key), expected)) {
+        response.result = *refused;
+        return response;
+    }
     const auto named = read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "book"});
@@ -332,6 +388,12 @@ book_service::delete_many_books(const messaging::delete_many_books_request& requ
     }
     if (request.removals.empty())
         return response;
+    for (const auto& removal : request.removals) {
+        if (const auto refused = gate_delete(read_one(repo_, ctx_, removal.key), std::nullopt)) {
+            response.result = *refused;
+            return response;
+        }
+    }
     // A removal names its row by the key a caller holds, and the repository
     // takes the storage key, so the two are joined once here rather than at
     // each column's conversion. A name that matches no row is skipped: the
@@ -413,6 +475,8 @@ book_service::prepare_change(const messaging::book_change& change,
     ores::utility::domain::result result;
     out = to_domain(change.write);
     const auto current = read_one(repo_, ctx_, key_from(out));
+    if (const auto refused = gate_put(current, out, change.precondition))
+        return *refused;
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -450,6 +514,85 @@ book_service::prepare_change(const messaging::book_change& change,
     return result;
 }
 
+void book_service::carry_out_request(std::string request_id) {
+    pass_ = {.request_id = std::move(request_id), .rehearsal = false};
+}
+
+void book_service::rehearse() {
+    pass_.rehearsal = true;
+}
+
+std::vector<std::string> book_service::changed_columns(const messaging::book_write& proposed) {
+    const auto next = to_domain(proposed);
+    return columns_changed(read_one(repo_, ctx_, key_from(next)), next);
+}
+
+bool book_service::holds_line(const std::string& operation,
+                              const boost::uuids::uuid& id,
+                              int base_version) {
+    if (pass_.request_id.empty())
+        return false;
+    // One more than the most a request may hold, so a request over the limit
+    // is seen as over it and never read as a shorter one.
+    const auto lines = repository::book_change_repository{}.read_latest_by_request_id(
+        ctx_, pass_.request_id, 0, 1001);
+    return std::ranges::any_of(lines, [&](const auto& l) {
+        return !l.applied && l.operation == operation && l.entity_id == id &&
+               l.base_version == base_version;
+    });
+}
+
+std::optional<ores::utility::domain::result>
+book_service::gate_put(const std::vector<domain::book>& current,
+                       const domain::book& next,
+                       const ores::utility::domain::precondition& claim) {
+    using ores::service::messaging::gate_verdict;
+    using ores::utility::domain::precondition_kind;
+    if (pass_.rehearsal)
+        return std::nullopt;
+    switch (ores::service::messaging::gate_verdict_of(
+        ctx_, "book", "put", columns_changed(current, next), pass_.request_id)) {
+        case gate_verdict::free:
+            return std::nullopt;
+        case gate_verdict::approved: {
+            // The line holds the version the maker read. A write with no claim
+            // names no line, so it never matches.
+            int base_version = -1;
+            if (claim.kind == precondition_kind::must_not_exist)
+                base_version = 0;
+            else if (claim.kind == precondition_kind::must_match_version && claim.version)
+                base_version = static_cast<int>(*claim.version);
+            if (holds_line("put", next.id, base_version))
+                return std::nullopt;
+            break;
+        }
+        case gate_verdict::required:
+            break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "book"});
+}
+
+std::optional<ores::utility::domain::result>
+book_service::gate_delete(const std::vector<domain::book>& live,
+                          std::optional<std::uint32_t> expected) {
+    using ores::service::messaging::gate_verdict;
+    // A row that is not there has nothing to protect: the removal answers
+    // that it is missing.
+    if (pass_.rehearsal || live.empty())
+        return std::nullopt;
+    switch (
+        ores::service::messaging::gate_verdict_of(ctx_, "book", "delete", {}, pass_.request_id)) {
+        case gate_verdict::free:
+            return std::nullopt;
+        case gate_verdict::approved:
+            if (holds_line("delete", live.front().id, static_cast<int>(expected.value_or(0))))
+                return std::nullopt;
+            break;
+        case gate_verdict::required:
+            break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "book"});
+}
 
 std::vector<domain::book> book_service::list_books(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all books";
@@ -517,6 +660,7 @@ std::vector<domain::book> book_service::get_books(const std::vector<std::string>
 }
 
 void book_service::save_book(const domain::book& v) {
+    refuse_direct_write();
     if (v.id.is_nil())
         throw std::invalid_argument("Book id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving book. " << "id: " << v.id;
@@ -527,6 +671,7 @@ void book_service::save_book(const domain::book& v) {
 }
 
 void book_service::save_books(const std::vector<domain::book>& books) {
+    refuse_direct_write();
     for (const auto& e : books) {
         if (e.id.is_nil())
             throw std::invalid_argument("Book id cannot be empty.");
@@ -540,12 +685,14 @@ void book_service::save_books(const std::vector<domain::book>& books) {
 }
 
 void book_service::delete_book(const boost::uuids::uuid& id) {
+    refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing book. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed book. " << "id: " << id;
 }
 
 void book_service::delete_books(const std::vector<std::string>& ids) {
+    refuse_direct_write();
     repo_.remove(ctx_, ids);
 }
 

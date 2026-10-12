@@ -328,6 +328,22 @@ would leave a partial batch behind as soon as one row had moved on.
 A batch removal is unconditional; remove the rows one at a time to state a version.
 #+end_src
 
+** approval_required
+:PROPERTIES:
+:code: approval_required
+:outcome: denied
+:producer: request
+:args: entity
+:END:
+
+The approval policy gates this act, and the write does not come from an approved
+request. The service writes nothing. The caller raises a request, and the
+applier makes the write when every part the policy names has approved.
+
+#+begin_src text :name message
+A change to this {entity} needs the approval of a request; raise one instead of writing it.
+#+end_src
+
 ** internal_error
 :PROPERTIES:
 :code: internal_error

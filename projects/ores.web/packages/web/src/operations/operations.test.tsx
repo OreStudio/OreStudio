@@ -1888,6 +1888,18 @@ describe('the queue outlook', () => {
         expect(noticeOf(flat)).toContain('none finished recently');
     });
 
+    it('does not call a grid stalled on one flat interval', () => {
+        const brief = gridSeriesView({
+            samples: [0, 1, 1, 1],
+            results_unsent: [0, 50, 50, 50],
+            results_done: [0, 30, 30, 30],
+        });
+
+        // Two known intervals, both flat: too short a stretch to call the grid stalled.
+        expect(queueOutlook(brief).drainMinutes).toBeNull();
+        expect(queueOutlook(brief).level).toBe('ok');
+    });
+
     it('knows no rate from a single sample and so warns of nothing', () => {
         const lone = gridSeriesView({
             samples: [0, 0, 0, 1],

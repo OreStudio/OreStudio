@@ -162,6 +162,9 @@ const QUEUE_CAUTION_MINUTES = QUEUE_WAIT_LIMIT_MINUTES / 2;
 /** The known intervals the rate is read over, newest last. */
 const OUTLOOK_INTERVALS = 10;
 
+/** The known intervals that must show no finished job before the grid is called stalled. */
+const MIN_INTERVALS_TO_STALL = 3;
+
 /** What the queue will do at the rate the grid finishes work. */
 export interface QueueOutlook {
     /** The jobs waiting at the newest sample. */
@@ -181,9 +184,10 @@ export interface QueueOutlook {
  * The queue's outlook from the series: the jobs waiting now against the rate
  * the grid finished jobs over the last intervals.
  *
- * It reads the newest bucket that holds a sample, and a rate over the known
- * intervals only, so a gap in the samples is never read as a stretch where
- * nothing finished.
+ * It reads the newest bucket that holds a sample, and a rate over the last
+ * known intervals only, so a gap in the samples is never read as a stretch where
+ * nothing finished. The intervals are the newest known ones and are not
+ * contiguous after a gap, so a long gap lets older work feed the rate.
  */
 export function queueOutlook(view: GridSeriesView): QueueOutlook {
     const samples = view.grid.samples;
@@ -210,7 +214,9 @@ export function queueOutlook(view: GridSeriesView): QueueOutlook {
     if (waiting === 0) {
         return { waiting, perMinute, drainMinutes: 0, level: 'ok' };
     }
-    if (perMinute === null) {
+    // A rate over a single interval is too short to call a stalled grid: a queue
+    // that has only just started has not been picked up yet.
+    if (perMinute === null || (perMinute <= 0 && changes.length < MIN_INTERVALS_TO_STALL)) {
         return { waiting, perMinute, drainMinutes: null, level: 'ok' };
     }
     const drainMinutes = perMinute <= 0 ? Infinity : waiting / perMinute;
@@ -544,42 +550,42 @@ export function GridSeriesPanels({ view }: { readonly view: GridSeriesView }): R
         <div className="space-y-4">
             <QueueOutlookNotice view={view} />
             <div className="grid gap-4 lg:grid-cols-2">
-            <Panel title={t('operations.grid.series.load.title')}>
-                <SeriesChart
-                    kind="stacked-area"
-                    axis={axis}
-                    samples={samples}
-                    series={loadSeries(view, t)}
-                    caption={t('operations.grid.series.load.caption')}
-                />
-            </Panel>
-            <Panel title={t('operations.grid.series.fleet.title')}>
-                <SeriesChart
-                    kind="lines"
-                    axis={axis}
-                    samples={samples}
-                    series={fleetSeries(view, t)}
-                    caption={t('operations.grid.series.fleet.caption')}
-                />
-            </Panel>
-            <Panel title={t('operations.grid.series.throughput.title')}>
-                <SeriesChart
-                    kind="stacked-bars"
-                    axis={axis}
-                    samples={samples}
-                    series={throughputSeries(view, t)}
-                    caption={t('operations.grid.series.throughput.caption')}
-                />
-            </Panel>
-            <Panel title={t('operations.grid.series.outcomes.title')}>
-                <SeriesChart
-                    kind="stacked-bars"
-                    axis={axis}
-                    samples={samples}
-                    series={outcomeSeries(view, t)}
-                    caption={t('operations.grid.series.outcomes.caption')}
-                />
-            </Panel>
+                <Panel title={t('operations.grid.series.load.title')}>
+                    <SeriesChart
+                        kind="stacked-area"
+                        axis={axis}
+                        samples={samples}
+                        series={loadSeries(view, t)}
+                        caption={t('operations.grid.series.load.caption')}
+                    />
+                </Panel>
+                <Panel title={t('operations.grid.series.fleet.title')}>
+                    <SeriesChart
+                        kind="lines"
+                        axis={axis}
+                        samples={samples}
+                        series={fleetSeries(view, t)}
+                        caption={t('operations.grid.series.fleet.caption')}
+                    />
+                </Panel>
+                <Panel title={t('operations.grid.series.throughput.title')}>
+                    <SeriesChart
+                        kind="stacked-bars"
+                        axis={axis}
+                        samples={samples}
+                        series={throughputSeries(view, t)}
+                        caption={t('operations.grid.series.throughput.caption')}
+                    />
+                </Panel>
+                <Panel title={t('operations.grid.series.outcomes.title')}>
+                    <SeriesChart
+                        kind="stacked-bars"
+                        axis={axis}
+                        samples={samples}
+                        series={outcomeSeries(view, t)}
+                        caption={t('operations.grid.series.outcomes.caption')}
+                    />
+                </Panel>
             </div>
         </div>
     );

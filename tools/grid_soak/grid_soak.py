@@ -29,7 +29,8 @@ real use: the queue climbing in a burst, draining in a quiet stretch, and every
 node taking its share.
 
 The driver keeps its own estimate of the queue, which is the jobs it sent minus
-what the capacity could finish since. A wave that would push that estimate past
+what the capacity could finish since. It is an estimate: the time a wave takes
+to send counts as work the grid did, so it can run a little low. A wave that would push that estimate past
 --max-queue-minutes of work is held back. A job that waits longer than the
 storage token lives fails, so the default keeps the wait well inside an hour.
 
@@ -108,8 +109,11 @@ def parse_principals(specs):
     names, weights = [], []
     for spec in specs:
         name, _, weight = spec.partition(":")
+        try:
+            weights.append(float(weight) if weight else 1.0)
+        except ValueError:
+            raise SystemExit(f"grid_soak: the weight of {name} is not a number: {weight!r}")
         names.append(name)
-        weights.append(float(weight) if weight else 1.0)
     return names, weights
 
 
@@ -257,7 +261,8 @@ def main(argv):
             now = time.monotonic()
             queue = drained(queue, args.capacity, now - last)
             last = now
-            if queue + count > args.capacity * args.max_queue_minutes:
+            # An empty queue always takes a wave, so a small bound never holds every one.
+            if queue > 0 and queue + count > args.capacity * args.max_queue_minutes:
                 held_waves += 1
                 print(
                     f"[soak] holding back {count} job(s): about {queue / args.capacity:.0f} "
@@ -272,9 +277,11 @@ def main(argv):
                     f"as {reference}",
                     flush=True,
                 )
+                # A failed wave may have queued some of its jobs, so it counts as sent
+                # for the estimate and the estimate errs towards a longer queue.
+                queue += count
                 if send_wave(root, args, rng, reference, count):
                     sent_jobs += count
-                    queue += count
                 else:
                     failed_waves += 1
                     print(f"[soak] wave {sent_waves} failed", flush=True)

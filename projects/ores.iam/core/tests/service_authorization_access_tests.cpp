@@ -116,10 +116,10 @@ role write_role_bundling(database_helper& h, generation_context& gen, const std:
     }
 
     ores::iam::domain::role_permission link;
-    link.tenant_id = h.tenant_id();
+    link.tenant_id = h.tenant_id().to_string();
     link.role_id = r.id;
     link.permission_id = p.id;
-    link.assigned_by = h.db_user();
+    link.modified_by = h.db_user();
     link.change_reason_code = "system.test";
     link.change_commentary = "Synthetic test data";
     links.write(link);
@@ -333,7 +333,8 @@ TEST_CASE("replace_role_permissions_adds_and_removes_in_one_call", tags) {
     auto caller = caller_who_may_shape_roles(h, gen);
     auto role = write_role_bundling(h, gen, std::string(permissions::accounts_read));
 
-    authorization_service svc(h.context());
+    // A bundle write is attributed to the actor of the context it runs in.
+    authorization_service svc(h.context().with_tenant(h.tenant_id(), h.db_user()));
     const auto answer = svc.replace_role_permissions(caller.id,
                                                      role.id,
                                                      {std::string(permissions::roles_read)},
@@ -355,8 +356,8 @@ TEST_CASE("replace_role_permissions_adds_and_removes_in_one_call", tags) {
     REQUIRE(rows.size() == 1);
     CHECK(rows.front().change_reason_code == "common.rectification");
     CHECK(rows.front().change_commentary == "The role was too broad");
-    CHECK_FALSE(rows.front().assigned_by.empty());
-    CHECK(rows.front().assigned_at.time_since_epoch().count() != 0);
+    CHECK_FALSE(rows.front().modified_by.empty());
+    CHECK(rows.front().recorded_at.time_since_epoch().count() != 0);
 }
 
 TEST_CASE("replace_role_permissions_is_denied_without_the_update_permission", tags) {

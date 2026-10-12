@@ -160,10 +160,10 @@ domain::role authorization_service::create_role(const std::string& name,
     // Create role-permission mappings
     for (const auto& perm : resolved_perms) {
         domain::role_permission rp;
-        rp.tenant_id = ctx_.tenant_id();
+        rp.tenant_id = ctx_.tenant_id().to_string();
         rp.role_id = role.id;
         rp.permission_id = perm.id;
-        rp.assigned_by = modified_by;
+        rp.modified_by = modified_by;
         rp.change_reason_code = std::string{reason::codes::new_record};
         rp.change_commentary = "Role created with its permission bundle";
         role_permission_repo_.write(rp);
@@ -276,10 +276,10 @@ authorization_service::replace_role_permissions(const boost::uuids::uuid& caller
             continue;
         }
         domain::role_permission link;
-        link.tenant_id = ctx_.tenant_id();
+        link.tenant_id = ctx_.tenant_id().to_string();
         link.role_id = role_id;
         link.permission_id = permission.id;
-        link.assigned_by = ctx_.actor();
+        link.modified_by = ctx_.actor();
         link.change_reason_code = reason;
         link.change_commentary = change_commentary;
         role_permission_repo_.write(link);

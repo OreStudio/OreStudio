@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,10 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.core/repository/role_permission_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.api/domain/role_permission.hpp"
+#include "ores.iam.api/domain/role_permission_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.core/repository/role_permission_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -31,29 +43,32 @@ domain::role_permission role_permission_mapper::map(const role_permission_entity
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::role_permission r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
+    r.version = v.version;
+    r.tenant_id = v.tenant_id;
+    r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id.value());
     r.permission_id = boost::lexical_cast<boost::uuids::uuid>(v.permission_id);
-    r.assigned_by = v.assigned_by;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.assigned_at = timestamp_to_timepoint(v.assigned_at);
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 role_permission_entity role_permission_mapper::map(const domain::role_permission& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     role_permission_entity r;
-    r.tenant_id = v.tenant_id.to_string();
-    r.role_id = boost::lexical_cast<std::string>(v.role_id);
-    r.permission_id = boost::lexical_cast<std::string>(v.permission_id);
-    r.assigned_by = v.assigned_by;
+    r.role_id = boost::uuids::to_string(v.role_id);
+    r.tenant_id = v.tenant_id;
+    r.permission_id = boost::uuids::to_string(v.permission_id);
+    r.version = v.version;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    // Note: assigned_at is managed by the database
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

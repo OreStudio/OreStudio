@@ -162,14 +162,15 @@ begin
     -- by name/code. The copy states the same tail the roles copy does, so a
     -- provisioned tenant's bundle rows say where they came from.
     insert into ores_iam_role_permissions_tbl (
-        tenant_id, role_id, permission_id,
-        assigned_by, assigned_at,
+        tenant_id, role_id, permission_id, version,
+        modified_by, performed_by,
         change_reason_code, change_commentary)
     select
         v_tenant_id,
         new_r.id,
         new_p.id,
-        v_actor, current_timestamp,
+        0,
+        v_actor, v_actor,
         'system.new_record', 'Copied from system tenant during provisioning'
     from ores_iam_role_permissions_tbl rp
     join ores_iam_roles_tbl old_r on old_r.id = rp.role_id

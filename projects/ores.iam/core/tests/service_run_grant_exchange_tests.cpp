@@ -109,10 +109,10 @@ role write_role(database_helper& h,
     }
 
     ores::iam::domain::role_permission link;
-    link.tenant_id = h.tenant_id();
+    link.tenant_id = h.tenant_id().to_string();
     link.role_id = r.id;
     link.permission_id = p.id;
-    link.assigned_by = h.db_user();
+    link.modified_by = h.db_user();
     link.change_reason_code = "system.test";
     link.change_commentary = "Synthetic test data";
     links.write(link);

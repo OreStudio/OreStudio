@@ -235,6 +235,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/pricing_model_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/publish_operation_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/shift_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/stress_shift_family_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/stress_test_library_protocol.hpp"

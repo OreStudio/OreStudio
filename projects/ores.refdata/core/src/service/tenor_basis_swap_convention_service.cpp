@@ -117,6 +117,7 @@ to_domain(const messaging::tenor_basis_swap_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenor_basis_swap_conventions_response

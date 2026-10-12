@@ -117,6 +117,7 @@ domain::report_definition to_domain(const messaging::report_definition_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_report_definitions_response report_definition_service::list_report_definitions(

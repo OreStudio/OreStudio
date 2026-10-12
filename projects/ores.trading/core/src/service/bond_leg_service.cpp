@@ -122,6 +122,7 @@ domain::bond_leg to_domain(const messaging::bond_leg_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_legs_response

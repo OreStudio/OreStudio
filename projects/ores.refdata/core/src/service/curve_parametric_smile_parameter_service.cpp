@@ -112,6 +112,7 @@ to_domain(const messaging::curve_parametric_smile_parameter_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_curve_parametric_smile_parameters_response

@@ -108,6 +108,7 @@ domain::composite_leg to_domain(const messaging::composite_leg_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_composite_legs_response

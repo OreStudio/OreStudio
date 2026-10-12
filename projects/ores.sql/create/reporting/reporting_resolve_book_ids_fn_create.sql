@@ -22,10 +22,10 @@
 -- Official reports read no sandbox
 -- =============================================================================
 
--- Whether a risk report config belongs to an official report definition. A
--- config whose definition cannot be found is treated as official, the safe
--- side. Security definer: the answer must not depend on what the session may
--- see.
+-- Whether a risk report config is read by an official report definition. A
+-- config is official when any definition that binds it is official, and also
+-- when no definition binds it yet, the safe side. Security definer: the answer
+-- must not depend on what the session may see.
 create or replace function ores_reporting_config_is_official_fn(
     p_tenant_id              uuid,
     p_risk_report_config_id  uuid
@@ -33,16 +33,20 @@ create or replace function ores_reporting_config_is_official_fn(
 returns boolean as $$
 begin
     return coalesce((
-        select d.is_official
+        select bool_or(d.is_official)
         from ores_reporting_risk_report_configs_tbl c
+        join ores_reporting_report_configurations_tbl b
+          on b.tenant_id = c.tenant_id
+         and b.configuration_id = c.configuration_id
+         and b.configuration_type_code = 'risk_report_config'
+         and b.valid_to = ores_utility_infinity_timestamp_fn()
         join ores_reporting_report_definitions_tbl d
-          on d.tenant_id = c.tenant_id
-         and d.id = c.report_definition_id
+          on d.tenant_id = b.tenant_id
+         and d.id = b.report_definition_id
          and d.valid_to = ores_utility_infinity_timestamp_fn()
         where c.tenant_id = p_tenant_id
           and c.id = p_risk_report_config_id
           and c.valid_to = ores_utility_infinity_timestamp_fn()
-        limit 1
     ), true);
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
@@ -123,8 +127,9 @@ begin
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
 
--- Whether any risk report config of a definition names a sandbox portfolio or a
--- virtual book in its scope. A definition cannot become official while it does.
+-- Whether the risk report config that a definition binds names a sandbox
+-- portfolio or a virtual book in its scope. A definition cannot become official
+-- while it does.
 create or replace function ores_reporting_definition_scope_has_sandbox_fn(
     p_tenant_id            uuid,
     p_report_definition_id uuid
@@ -132,10 +137,16 @@ create or replace function ores_reporting_definition_scope_has_sandbox_fn(
 returns boolean as $$
 begin
     return exists (
-        select 1 from ores_reporting_risk_report_configs_tbl c
-        where c.tenant_id = p_tenant_id
-          and c.report_definition_id = p_report_definition_id
-          and c.valid_to = ores_utility_infinity_timestamp_fn()
+        select 1
+        from ores_reporting_report_configurations_tbl b
+        join ores_reporting_risk_report_configs_tbl c
+          on c.tenant_id = b.tenant_id
+         and c.configuration_id = b.configuration_id
+         and c.valid_to = ores_utility_infinity_timestamp_fn()
+        where b.tenant_id = p_tenant_id
+          and b.report_definition_id = p_report_definition_id
+          and b.configuration_type_code = 'risk_report_config'
+          and b.valid_to = ores_utility_infinity_timestamp_fn()
           and ores_reporting_config_scope_has_sandbox_fn(p_tenant_id, c.id)
     );
 end;

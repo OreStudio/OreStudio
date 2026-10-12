@@ -1,0 +1,255 @@
+:PROPERTIES:
+:ID: 3A0C7559-31F3-4651-8596-262F5A0CACC5
+:END:
+#+title: Task: Store the report configuration documents in DQ and populate ACME's
+#+description: Add the DQ staging and publish for every configuration document an ACME report reads, then populate ACME's own datasets so each report definition publishes with all the configuration it needs, with no ORE import.
+#+type: task
+#+level: s1
+#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+owner: marco
+#+branch: feature/store-the-report-configuration-in-dq
+#+pr: 3146
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report definition is ready to run only when every configuration document its report type and analytics need is published and bound. Step one adds the DQ tables that store those documents and the publish that writes them to the owning component. Step two populates ACME's datasets, crafted for the reports each party runs and inspired by the ORE samples, and publishes the bindings, with declared dataset dependencies in the order configurations, then definitions with bindings, then risk configurations. The earlier analysis already says which documents each report reads, and this task builds on it and does not repeat it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
+| Now          | Nothing. |
+| Waiting on   | The extra documents the analysis names (simulation, sensitivity, stress test, historical return, Basel traffic light), which the product owner postponed. The complete provision also waits for the attach photos fix of another environment. |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+The product owner narrowed the scope on 2026-10-12. The documents that need new entity models, and the analytics and their parameters, move to follow-on tasks of this story.
+
+- Each configuration kind that the risk report type requires (pricing engines, today's market, curve configuration and conventions), and the run settings of a report, has a DQ staging table generated from its domain entity, an artefact type and a publish function that writes the owning component's tables, party scoped and idempotent.
+- Each ACME party has a dataset per kind, crafted for the reports that party runs. A dataset declares its dependency on the data it needs.
+- After a clean provision every ACME definition binds each configuration type its report type requires. No ORE import runs.
+- Every definition exports a run configuration that validates against the ORE schemas, and its analytics are the ones decided for its report.
+- The reports that read a kind nothing can store yet are listed with what they wait for, in the follow-on tasks.
+
+* Plan
+
+Two parts, in this order, as the product owner decided on 2026-10-11.
+
+*Part 1. The DQ tables that store the data.*
+
+1. Take the inventory against the current tables. The existing analysis lists
+   what each report reads. Check each kind against what the schema holds today
+   and mark it as stored, stageable or unstorable. A kind with no owning table
+   gets its entity first.
+2. For each kind, add the DQ staging table and its artefact type, and the
+   publish function that writes the owning component's tables for the party a
+   publish names. The codegen flag that generates a staging table from an entity
+   model is the route, as the instrument conventions took.
+3. Add the publish of the bindings between a definition and its documents, and
+   change the risk configuration publish so it reads those bindings and no longer
+   assumes an ORE import wrote them.
+
+*Part 2. The ACME datasets.*
+
+4. Craft each party's documents for the reports that party runs, inspired by the
+   ORE samples and not copied from them. Start from the analysis of which reports
+   read which documents, and from the report design of which party runs which
+   report.
+5. Register a dataset per party and kind in the party's bundle. Declare the
+   dependencies: the configurations before the definitions with their bindings,
+   and those before the risk configurations.
+6. Prove it on a clean provision: every definition has all its bindings, and a
+   readiness query lists nothing missing.
+
+*Part C. The run settings, shared, and the run document built at export.*
+
+The product owner decided on 2026-10-12 that the run settings are shared configurations in DQ,
+generated from the domain entity, and that the run document is built at export.
+
+7. Make the risk report configuration a shared, party-owned entity. A definition binds it by name in
+   the =risk_report_config= slot, as it binds its pricing engines. The configuration type is seeded,
+   and the risk report type requires it. The DQ staging table is generated from the domain entity
+   with one extra column that names the scope portfolio. The separate DQ model for the staging entity
+   is deleted.
+8. Publish the run settings through one function on the shared document publish, and write their
+   portfolio scope from the staged name. Craft the settings of each party from the analysis of what
+   each report needs: the analytics, the currency and the scope. Declare the dependencies, so that
+   the portfolios come first and the definitions last.
+9. Bind the conventions and the run settings in the bindings of each definition.
+10. Build the run document at export from the settings and the bindings. A stored run document
+    overrides the built one.
+11. Recreate the database, provision, export the UK "Yield Curves" definition and validate each file
+    against its schema.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Pricing engines documents after a clean provision | One header, its products and its parameters, and one reporting configuration, for each of the four parties | =compass sql= counts of the analytics tables and of the reporting configurations, by party, after =compass db recreate -y -k= and =bootstrap setup --profile acme_demo= | the commit that adds the publish |
+| Definitions bound to their pricing engines | Every definition of every party: group 10, UK 24, US 22, HK 22 | the same query on the report configurations table | the same commit |
+| Risk report configurations after a clean provision | Group 4 for 10 definitions, UK 15 for 24, US 15 for 22, HK 15 for 22 | =compass db sql= count of =ores_reporting_risk_report_configs_tbl= and of the definitions, by party, after =compass db recreate -y --kill= and =bootstrap setup --profile acme_demo= | f3d473f7c6 |
+| Bindings per definition after the same provision | 5 for every definition: conventions, pricing engines, today's market, curve configuration and run settings (390 bindings) | the same query on the report configurations table | f3d473f7c6 |
+| Portfolio scope rows after the same provision | One for each run settings set: 4, 15, 15 and 15 | the same query on the portfolio scope table | f3d473f7c6 |
+| Run configurations exported | 78 of 78 definitions export. 56 distinct files validate against =input.xsd=, none fails | =ore export-run= over every definition, then =xmllint --schema input.xsd --path external/ore/xsd= over each distinct file | the commit that corrects the analytics |
+| Analytics of the exported run documents against the analytics decided for each report | 78 of 78 equal | the =Analytic= elements of each exported =ore.xml= against =ANALYTICS= in =generate_risk_config_data.py= | the commit that corrects the analytics |
+| pgTAP | The new risk report configuration publish test passes with 11 tests. The official reports, bindings, pricing engines, configuration documents and document guard tests pass | =compass db sql -f= over each file in =projects/ores.sql/test= | f3d473f7c6 |
+| C++ suites | =ores.reporting.core.tests=, =ores.dq.core.tests= and =ores.ore.core.tests= pass | =ctest -R= over the three names | bc9a609553 |
+
+* Notes
+
+*The analysis already exists.* It is in these places.
+
+- [[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]]: for each of the seeded definitions, the
+  four documents every risk run reads and the extra documents some analytics
+  read (simulation, counterparty, netting, sensitivity, stress test), and which
+  of them can be stored.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][The ORE report configuration vocabulary]] and
+  [[id:0FC2B828-ED9C-4C8F-A8DD-84C1BB913A09][the ORE report configuration documents]]: what each document is, who owns
+  it, and the target model.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]]: the pricing configuration domain model.
+- [[id:A77947D9-FB2E-4518-A26B-21680DB0E1E1][World data versus party configuration]]: the pricing engines, curve
+  configurations, today's market and instrument conventions are party
+  configuration.
+- The sprint 26 story on ORE report configuration built the entities, the
+  document stores and the import. Its derivation of the seventeen configuration
+  types is in its evidence folder.
+
+*What a reader must correct in that analysis.* It assumed the documents arrive
+through an ORE import and that the configuration dataset depends on that import.
+The product owner ruled on 2026-10-11 that the documents are Acme's own crafted
+data and that no import step exists.
+
+*Inventory read from the stories, 2026-10-11. Step 1 verifies it against the schema.*
+
+#+ATTR_HTML: :class hug-leading
+| Kind | Read by | Entities modelled | Document store | DQ staging and publish |
+|------+---------+-------------------+----------------+------------------------|
+| pricing_engines | every risk run | yes | yes | none |
+| todays_market | every risk run | yes | yes | none |
+| curve_configuration | every risk run | yes | yes | none |
+| conventions | every risk run | yes | yes | published as a party dataset, but not as the configuration a definition binds |
+| stress_test | Stressed VaR | yes | none yet | none |
+| simulation | exposure, XVA, capital and consolidation reports, Model Calibration | no | none | none |
+| sensitivity | the sensitivity reports, FRTB SA, P&L Attribution, the monitors | no | none | none |
+| counterparty_information, netting_set_definitions | the exposure and XVA reports | refdata and trading hold the counterparties, netting sets and CSAs as entities | none | the netting data is already a party dataset |
+| historical_return, basel_traffic_light | the four blocked reports | no | none | none |
+
+What this means for the order of work.
+
+- The four kinds every risk run requires are modelled and stored. They need only
+  the DQ side, so they are the first deliverable (phase A). With them every
+  definition can bind its required documents and the risk configuration can
+  publish.
+- Simulation and sensitivity have no entity model. The inbox story "Complete the
+  ORE report configuration" holds them as its tasks "Round trip the simulation
+  configuration" and "Round trip the sensitivity configuration", still BACKLOG. The
+  simulation document has 18 entities and the sensitivity document has 58. They
+  are the second deliverable (phase B), and they are prerequisites for the
+  analytics reports. That story's tasks must move into this work or run first.
+- The stress test needs a store, in the task "Store the stress test and credit
+  simulation documents", also in that backlog story.
+- The counterparty and netting documents are exported from entities that ACME
+  already publishes. Step 1 decides whether they need a configuration kind of
+  their own or an export from the existing data.
+- The historical return and Basel traffic light kinds stay out until the
+  blocked reports are reconciled with the report design.
+
+*Found while proving the publish, 2026-10-11.* A definition also needs its run
+document, the ORE run document that the export names. Exporting the run
+configuration of a published Acme definition fails with "The report definition holds
+no run document". The run document is the setup block, the market bindings and the
+analytic list, held in the run setup, market binding, analytic and analytic parameter
+tables of the reporting component. Nothing publishes them for Acme, so they join the
+scope of this task as part C below. The analytic list follows the analytics switches
+that the risk report configurations already carry for each report.
+
+*Open points the first step settles.*
+
+- The tables I found for the documents are pricing engines, today's market,
+  curve configuration, the instrument conventions, stress test and credit
+  simulation. I found no table for the simulation and the sensitivity analysis
+  documents, which several reports read. The analysis says savers exist for
+  them, so the inventory has to find where they are stored, or add the entities.
+- The analysis marks four reports as blocked, because they read a kind that
+  nothing stores yet: Stressed VaR and the Intraday Risk Monitor and the Board
+  Risk Dashboard read a historical return, and P&L Attribution reads a Basel
+  traffic light. The report design decided that Stressed VaR and P&L Attribution
+  run at every trading entity (rule D7). Either the two kinds get stored, or the
+  design and the blocked list are reconciled. The task must do one of the two.
+- Part of the earlier work is done in another environment. The story "Build the
+  retire or reset tenant journey" published the risk report configurations as a
+  dataset and wrote the function that expands a root portfolio into its books.
+  This task changes that publish, so it should tell that environment.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3146][#3146]] | [sql,dq] Publish the ACME report configuration documents through DQ |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The function name from the subject goes into SQL unchecked | publish_subject_plan.cpp | Accepted | A subject names a function only when its operation is lower-case letters, digits and underscores and ends in _from_dq. Negative tests added. |
+| 2 | Re-keying every uuid column can break a reference outside the document | dq_publish_configuration_document_create.sql | Accepted | The shared publish takes the columns that refer outside a document and copies them as staged. A test lists the uuid key columns of the three documents, all of which refer inside. |
+| 3 | The mode argument has no effect | dq_publish_configuration_document_create.sql | Accepted | Documented on the shared publish and on each document function: a publish only inserts. |
+| 4 | A header with no configuration publishes with no reporting configuration | dq_publish_configuration_document_create.sql | Accepted | The publish refuses such a header. Test added. |
+| 5 | The result counts are coarse | dq_publish_configuration_document_create.sql | Not changed | Minor. The totals are enough to see a partial publish. |
+| 6 | Unused includes, search path | publish_from_dq_handler.cpp | Accepted in part | The unused include is removed. The search path follows the existing publish functions. |
+| 7 | The seeder JSON should regenerate with no diff | generate_configuration_data.py | Answered | Regenerating the three generators leaves the tree unchanged. |
+
+* Result
+
+Delivered, with the scope narrowed by the product owner on 2026-10-12.
+
+A risk report configuration is a named, shared, party owned entity that a definition binds by name, and its DQ
+staging table is generated from the domain entity. The separate DQ model is deleted. Each ACME party publishes
+its pricing engines, today's market, curve configuration, run settings and conventions binding as datasets with
+declared dependencies, and every definition binds five configurations. A clean provision leaves 49 shared
+configurations (15 for each trading entity and 4 for the holding company) and 390 bindings. All 78 definitions
+export a run configuration. The export builds the run document from the configuration and the bindings, 56
+distinct exported files validate against the ORE schemas, and the exported analytics equal the ones decided for
+each report. Each configuration must switch an analytic on, and the database refuses one that does not.
+
+The analytics of each report were checked against how the 416 ORE samples use each analytic, and six
+assignments were corrected (rule D22 of the report design).
+
+Not delivered, and raised as tasks of this story: the analytics and their parameters as rows of the
+configuration, the ORE file types table with well known names and its use by the export, the analytic and
+input documents that need new entity models, a run of the exported packages in the engine, a report type for
+the platform reports, and the match of the curve quote names with the feeds. The complete provision still
+waits for the attach photos fix of another environment. The configuration holds switches and no analytic
+parameters, so reports that need a stressed window, a CSA file or collateral balances will fail at a missing
+file when the engine runs.

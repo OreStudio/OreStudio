@@ -117,6 +117,7 @@ to_domain(const messaging::equity_variance_swap_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_equity_variance_swap_instruments_response

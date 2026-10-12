@@ -111,6 +111,7 @@ domain::host to_domain(const messaging::host_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_hosts_response

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.core/messaging/registrar.hpp"
+#include "ores.analytics.api/messaging/publish_operation_protocol.hpp"
 #include "ores.analytics.core/messaging/configuration_document_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_engine_type_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_engine_type_registrar.hpp"
@@ -27,6 +28,7 @@
 #include "ores.analytics.core/messaging/pricing_model_product_parameter_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_product_parameter_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_product_registrar.hpp"
+#include "ores.analytics.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
@@ -59,6 +61,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(subs, register_pricing_model_config_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_product_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_product_parameter_handlers(nats, ctx, verifier));
+
+    // Publish-from-DQ workflow step handlers. One handler serves every subject, and
+    // it derives the SQL function from the delivered subject, so a new document needs
+    // a subject here and a row in ores_dq_artefact_types_tbl, and nothing else.
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        static constexpr std::string_view publish_subjects[]{
+            publish_pricing_engines_from_dq_request::nats_subject,
+            publish_todays_market_from_dq_request::nats_subject,
+        };
+        for (const auto subject : publish_subjects) {
+            subs.push_back(nats.queue_subscribe(
+                subject, "ores.analytics.service", [pdq](ores::nats::message msg) {
+                    pdq->handle(std::move(msg));
+                }));
+        }
+    }
 
     // Generic history.v1.get subject and the generated per-entity providers.
     {

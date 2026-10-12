@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1937C645-B3BD-4847-AC75-CF5589A56CB6
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.cds_volatility_term
 #+description: Codegen entity model for the refdata =cds_volatility_term= table. One term of an ORE CDS volatility.

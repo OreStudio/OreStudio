@@ -108,6 +108,7 @@ domain::fsm_state to_domain(const messaging::fsm_state_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fsm_states_response

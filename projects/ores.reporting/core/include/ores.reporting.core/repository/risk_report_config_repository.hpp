@@ -126,26 +126,25 @@ public:
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Reads latest risk report configs filtered by report_definition_id, with pagination.
+     * @brief Reads latest risk report configs filtered by configuration_id, with pagination.
      * @param ctx Repository context with database connection
-     * @param report_definition_id The report_definition_id to filter by
+     * @param configuration_id The configuration_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::risk_report_config>
-    read_latest_by_report_definition_id(context ctx,
-                                        const std::string& report_definition_id,
-                                        std::uint32_t offset,
-                                        std::uint32_t limit,
-                                        const ores::utility::domain::order& order = {});
+    read_latest_by_configuration_id(context ctx,
+                                    const std::string& configuration_id,
+                                    std::uint32_t offset,
+                                    std::uint32_t limit,
+                                    const ores::utility::domain::order& order = {});
 
     /**
-     * @brief Gets the total count of active risk report configs filtered by report_definition_id.
+     * @brief Gets the total count of active risk report configs filtered by configuration_id.
      */
-    std::uint32_t
-    get_total_config_count_by_report_definition_id(context ctx,
-                                                   const std::string& report_definition_id);
+    std::uint32_t get_total_config_count_by_configuration_id(context ctx,
+                                                             const std::string& configuration_id);
 
 
     /**

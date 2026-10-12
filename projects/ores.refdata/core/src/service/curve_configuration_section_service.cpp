@@ -108,6 +108,7 @@ to_domain(const messaging::curve_configuration_section_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_curve_configuration_sections_response

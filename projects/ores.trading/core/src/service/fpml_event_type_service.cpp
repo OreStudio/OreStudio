@@ -101,6 +101,7 @@ domain::fpml_event_type to_domain(const messaging::fpml_event_type_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_fpml_event_types_response fpml_event_type_service::list_fpml_event_types(

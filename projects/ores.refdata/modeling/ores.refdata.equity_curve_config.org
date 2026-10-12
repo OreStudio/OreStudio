@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A5F39222-082E-4954-B085-15DEC4839CD3
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.equity_curve_config
 #+description: Codegen entity model for the refdata =equity_curve_config= table. The settings of one ORE equity curve.

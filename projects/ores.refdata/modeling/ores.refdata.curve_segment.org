@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 24bda9d8-1cac-45f8-8d53-af43767ee229
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_segment
 #+description: Codegen entity model for the refdata =curve_segment= table. One segment of an ORE curve recipe.

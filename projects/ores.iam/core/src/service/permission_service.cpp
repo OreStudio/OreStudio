@@ -103,6 +103,7 @@ domain::permission to_domain(const messaging::permission_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_permissions_response

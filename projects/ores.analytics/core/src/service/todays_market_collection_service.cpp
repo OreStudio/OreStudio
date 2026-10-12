@@ -109,6 +109,7 @@ domain::todays_market_collection to_domain(const messaging::todays_market_collec
     return v;
 }
 
+
 }
 
 messaging::list_todays_market_collections_response

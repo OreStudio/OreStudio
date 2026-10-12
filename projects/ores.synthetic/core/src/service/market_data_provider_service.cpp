@@ -105,6 +105,7 @@ domain::market_data_provider to_domain(const messaging::market_data_provider_wri
     return v;
 }
 
+
 }
 
 messaging::list_market_data_providers_response

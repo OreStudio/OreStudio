@@ -110,6 +110,7 @@ domain::notification_preference to_domain(const messaging::notification_preferen
     return v;
 }
 
+
 }
 
 messaging::list_notification_preferences_response

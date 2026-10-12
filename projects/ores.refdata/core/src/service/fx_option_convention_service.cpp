@@ -110,6 +110,7 @@ domain::fx_option_convention to_domain(const messaging::fx_option_convention_wri
     return v;
 }
 
+
 }
 
 messaging::list_fx_option_conventions_response

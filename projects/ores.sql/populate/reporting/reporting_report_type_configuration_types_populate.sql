@@ -43,7 +43,8 @@ begin
             ('risk', 'pricing_engines'),
             ('risk', 'todays_market'),
             ('risk', 'curve_configuration'),
-            ('risk', 'conventions')
+            ('risk', 'conventions'),
+            ('risk', 'risk_report_config')
         ) as t(report_type_code, configuration_type_code)
     loop
         if not exists (

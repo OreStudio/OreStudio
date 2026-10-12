@@ -118,6 +118,7 @@ domain::seed_profile to_domain(const messaging::seed_profile_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_seed_profiles_response

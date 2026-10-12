@@ -111,6 +111,7 @@ domain::market_series to_domain(const messaging::market_series_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_market_series_response

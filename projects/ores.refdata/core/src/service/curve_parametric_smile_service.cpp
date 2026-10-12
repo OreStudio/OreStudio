@@ -110,6 +110,7 @@ domain::curve_parametric_smile to_domain(const messaging::curve_parametric_smile
     return v;
 }
 
+
 }
 
 messaging::list_curve_parametric_smiles_response

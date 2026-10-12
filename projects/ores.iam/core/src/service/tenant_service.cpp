@@ -111,6 +111,7 @@ domain::tenant to_domain(const messaging::tenant_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenants_response

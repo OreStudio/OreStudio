@@ -110,6 +110,7 @@ domain::pricing_model_config to_domain(const messaging::pricing_model_config_wri
     return v;
 }
 
+
 }
 
 messaging::list_pricing_model_configs_response

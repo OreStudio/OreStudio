@@ -105,6 +105,7 @@ domain::approval_decision_type to_domain(const messaging::approval_decision_type
     return v;
 }
 
+
 }
 
 messaging::list_approval_decision_types_response

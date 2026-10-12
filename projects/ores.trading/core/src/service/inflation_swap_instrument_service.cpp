@@ -110,6 +110,7 @@ to_domain(const messaging::inflation_swap_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_inflation_swap_instruments_response

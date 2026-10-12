@@ -110,6 +110,7 @@ domain::gmm_component to_domain(const messaging::gmm_component_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_gmm_components_response

@@ -106,6 +106,7 @@ to_domain(const messaging::currency_pair_classification_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_currency_pair_classifications_response

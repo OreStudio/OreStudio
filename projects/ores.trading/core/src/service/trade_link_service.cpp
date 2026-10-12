@@ -111,6 +111,7 @@ domain::trade_link to_domain(const messaging::trade_link_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_trade_links_response

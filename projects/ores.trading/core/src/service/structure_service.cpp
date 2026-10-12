@@ -108,6 +108,7 @@ domain::structure to_domain(const messaging::structure_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_structures_response

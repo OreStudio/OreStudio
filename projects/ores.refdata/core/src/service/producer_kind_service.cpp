@@ -103,6 +103,7 @@ domain::producer_kind to_domain(const messaging::producer_kind_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_producer_kinds_response

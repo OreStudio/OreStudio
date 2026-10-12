@@ -116,6 +116,7 @@ domain::credit_simulation_config to_domain(const messaging::credit_simulation_co
     return v;
 }
 
+
 }
 
 messaging::list_credit_simulation_configs_response

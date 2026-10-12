@@ -110,6 +110,7 @@ domain::approval_kind to_domain(const messaging::approval_kind_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_approval_kinds_response

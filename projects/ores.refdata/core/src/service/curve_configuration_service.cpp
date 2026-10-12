@@ -107,6 +107,7 @@ domain::curve_configuration to_domain(const messaging::curve_configuration_write
     return v;
 }
 
+
 }
 
 messaging::list_curve_configurations_response

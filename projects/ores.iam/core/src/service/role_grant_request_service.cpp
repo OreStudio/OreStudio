@@ -105,6 +105,7 @@ domain::role_grant_request to_domain(const messaging::role_grant_request_write& 
     return v;
 }
 
+
 }
 
 messaging::list_role_grant_requests_response role_grant_request_service::list_role_grant_requests(

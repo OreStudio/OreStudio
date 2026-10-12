@@ -103,6 +103,7 @@ domain::account_status to_domain(const messaging::account_status_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_account_statuses_response account_status_service::list_account_statuses(

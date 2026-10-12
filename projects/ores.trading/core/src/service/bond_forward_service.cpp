@@ -116,6 +116,7 @@ domain::bond_forward to_domain(const messaging::bond_forward_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_forwards_response

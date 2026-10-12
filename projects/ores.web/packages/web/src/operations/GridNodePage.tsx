@@ -90,7 +90,13 @@ export function formatMiB(value: number): string {
     return `${(value / 1024 / 1024).toFixed(value >= 10 * 1024 * 1024 ? 0 : 1)} MiB`;
 }
 
-function Fact({ label, children }: { readonly label: string; readonly children: ReactNode }): ReactNode {
+function Fact({
+    label,
+    children,
+}: {
+    readonly label: string;
+    readonly children: ReactNode;
+}): ReactNode {
     return (
         <div className="space-y-1">
             <dt className="text-xs text-ink-faint">{label}</dt>
@@ -147,8 +153,12 @@ export function NodeCharts({
 }): ReactNode {
     const columns = nodeColumns(view, index);
     const axis = axisOf(view);
-    const tone = (key: string, label: string, values: readonly (number | null)[], kind: ChartSeries['tone']) =>
-        ({ key, label, values, tone: kind }) satisfies ChartSeries;
+    const tone = (
+        key: string,
+        label: string,
+        values: readonly (number | null)[],
+        kind: ChartSeries['tone'],
+    ) => ({ key, label, values, tone: kind }) satisfies ChartSeries;
     const panel = (title: string, chart: ReactNode): ReactNode => (
         <div className="space-y-2 rounded-md border border-line-subtle p-4">
             <h3 className="text-sm font-medium">{title}</h3>
@@ -163,7 +173,14 @@ export function NodeCharts({
                     kind="stacked-bars"
                     axis={axis}
                     samples={columns.samples}
-                    series={[tone('done', t('operations.grid.node.tasks.done'), columns.tasksDone, 'accent')]}
+                    series={[
+                        tone(
+                            'done',
+                            t('operations.grid.node.tasks.done'),
+                            columns.tasksDone,
+                            'accent',
+                        ),
+                    ]}
                     caption={t('operations.grid.node.tasks.caption')}
                 />,
             )}
@@ -173,7 +190,14 @@ export function NodeCharts({
                     kind="stacked-bars"
                     axis={axis}
                     samples={columns.samples}
-                    series={[tone('failed', t('operations.grid.node.failures.failed'), columns.failures, 'warn')]}
+                    series={[
+                        tone(
+                            'failed',
+                            t('operations.grid.node.failures.failed'),
+                            columns.failures,
+                            'warn',
+                        ),
+                    ]}
                     caption={t('operations.grid.node.failures.caption')}
                 />,
             )}
@@ -185,7 +209,12 @@ export function NodeCharts({
                     samples={columns.samples}
                     series={[
                         tone('mean', t('operations.grid.node.time.mean'), columns.meanMs, 'accent'),
-                        tone('longest', t('operations.grid.node.time.longest'), columns.longestMs, 'warn'),
+                        tone(
+                            'longest',
+                            t('operations.grid.node.time.longest'),
+                            columns.longestMs,
+                            'warn',
+                        ),
                     ]}
                     caption={t('operations.grid.node.time.caption')}
                     format={formatMs}
@@ -198,8 +227,18 @@ export function NodeCharts({
                     axis={axis}
                     samples={columns.samples}
                     series={[
-                        tone('fetched', t('operations.grid.node.bytes.fetched'), columns.fetched, 'accent'),
-                        tone('uploaded', t('operations.grid.node.bytes.uploaded'), columns.uploaded, 'up'),
+                        tone(
+                            'fetched',
+                            t('operations.grid.node.bytes.fetched'),
+                            columns.fetched,
+                            'accent',
+                        ),
+                        tone(
+                            'uploaded',
+                            t('operations.grid.node.bytes.uploaded'),
+                            columns.uploaded,
+                            'up',
+                        ),
                     ]}
                     caption={t('operations.grid.node.bytes.caption')}
                     format={formatMiB}

@@ -116,6 +116,7 @@ domain::curve_bootstrap_config to_domain(const messaging::curve_bootstrap_config
     return v;
 }
 
+
 }
 
 messaging::list_curve_bootstrap_configs_response

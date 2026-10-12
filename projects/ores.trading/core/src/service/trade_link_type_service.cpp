@@ -104,6 +104,7 @@ domain::trade_link_type to_domain(const messaging::trade_link_type_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_trade_link_types_response trade_link_type_service::list_trade_link_types(

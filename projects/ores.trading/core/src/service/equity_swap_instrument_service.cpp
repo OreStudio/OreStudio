@@ -117,6 +117,7 @@ domain::equity_swap_instrument to_domain(const messaging::equity_swap_instrument
     return v;
 }
 
+
 }
 
 messaging::list_equity_swap_instruments_response

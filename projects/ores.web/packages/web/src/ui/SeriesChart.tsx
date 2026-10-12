@@ -119,7 +119,9 @@ export function chartMaximum(
         }
         const figures = series.map((entry) => entry.values[index] ?? 0);
         const height =
-            kind === 'lines' ? Math.max(...figures) : figures.reduce((sum, value) => sum + value, 0);
+            kind === 'lines'
+                ? Math.max(...figures)
+                : figures.reduce((sum, value) => sum + value, 0);
         top = Math.max(top, height);
     }
     return top;
@@ -350,7 +352,13 @@ export function SeriesChart({
                         runs.map((run) => (
                             <path
                                 key={`${entry.key}-${run[0]}`}
-                                d={layerPath(run, totals[layer] ?? [], tops[layer] ?? [], count, maximum)}
+                                d={layerPath(
+                                    run,
+                                    totals[layer] ?? [],
+                                    tops[layer] ?? [],
+                                    count,
+                                    maximum,
+                                )}
                                 className={`fill-current ${TONE_CLASS[entry.tone]}`}
                                 opacity="0.55"
                             />

@@ -36,6 +36,7 @@ using ores::utility::generation::generation_keys;
 
 domain::risk_report_config
 generate_synthetic_risk_report_config(utility::generation::generation_context& ctx) {
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
@@ -45,7 +46,11 @@ generate_synthetic_risk_report_config(utility::generation::generation_context& c
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.report_definition_id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.party_id = ctx.generate_uuid();
+    r.name = std::string("Valuation") + "-" + std::to_string(idx);
+    r.description = std::string("Run settings");
+    r.configuration_id = ctx.generate_uuid();
     r.base_currency = std::string(faker::finance::currencyCode());
     r.observation_model = std::string("disable");
     r.n_threads = faker::number::integer(1, 8);
@@ -61,6 +66,12 @@ generate_synthetic_risk_report_config(utility::generation::generation_context& c
     r.parametric_var_enabled = faker::number::integer(0, 1);
     r.initial_margin_enabled = faker::number::integer(0, 1);
     r.pfe_enabled = faker::number::integer(0, 1);
+    r.portfolio_details_enabled = faker::number::integer(0, 1);
+    r.saccr_enabled = faker::number::integer(0, 1);
+    r.calibration_enabled = faker::number::integer(0, 1);
+    r.credit_curves_enabled = faker::number::integer(0, 1);
+    r.historical_var_enabled = faker::number::integer(0, 1);
+    r.pnl_explain_enabled = faker::number::integer(0, 1);
     r.xva_quantile = faker::number::decimal(0.9, 0.99);
     r.xva_cva_enabled = faker::number::integer(0, 1);
     r.xva_dva_enabled = faker::number::integer(0, 1);

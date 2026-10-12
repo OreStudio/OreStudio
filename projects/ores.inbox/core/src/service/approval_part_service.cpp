@@ -105,6 +105,7 @@ domain::approval_part to_domain(const messaging::approval_part_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_approval_parts_response

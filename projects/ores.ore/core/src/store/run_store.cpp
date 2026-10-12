@@ -51,7 +51,7 @@ namespace {
  */
 struct document_kind {
     std::string_view code;
-    std::optional<std::string> report_run_setup::*file;
+    std::optional<std::string> report_run_setup::* file;
 };
 
 // In the order an import writes them: a curve segment names its conventions,
@@ -62,6 +62,9 @@ constexpr document_kind document_kinds[] = {
     {"todays_market", &report_run_setup::market_config_file},
     {"pricing_engines", &report_run_setup::pricing_engines_file},
 };
+
+// The run settings are no input file: the run document is built from them.
+constexpr std::string_view run_settings_type = "risk_report_config";
 
 const document_kind* find_kind(std::string_view code) {
     for (const auto& k : document_kinds)
@@ -295,26 +298,29 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
     }();
 
     reporting::service::run_document_service runs(ctx);
-    const auto document = runs.get(report_definition_id);
-    if (!document)
+    const auto stored = runs.get_or_generate(report_definition_id);
+    if (!stored)
         throw std::invalid_argument("The report definition holds no run document.");
+    const auto& document = *stored;
 
     domain::ore run;
-    run.Setup = domain::run_document_mapper::reverse_setup(document->setup);
-    run.Analytics = domain::run_document_mapper::reverse_analytics(document->analytics);
-    if (!document->market_bindings.empty())
+    run.Setup = domain::run_document_mapper::reverse_setup(document.setup);
+    run.Analytics = domain::run_document_mapper::reverse_analytics(document.analytics);
+    if (!document.market_bindings.empty())
         run.Markets =
-            domain::run_document_mapper::reverse_market_bindings(document->market_bindings);
+            domain::run_document_mapper::reverse_market_bindings(document.market_bindings);
 
     input_files files;
     files[std::string(run_document_file)] = domain::save_data(run);
     for (const auto& b : runs.bindings(report_definition_id)) {
+        if (b.configuration_type_code == run_settings_type)
+            continue;
         const auto* kind = find_kind(b.configuration_type_code);
         if (kind == nullptr)
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, which the export cannot write.",
                 b.configuration_type_code));
-        const auto& file = document->setup.*kind->file;
+        const auto& file = document.setup.*kind->file;
         if (!file)
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, but its run document names no "

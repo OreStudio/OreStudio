@@ -133,6 +133,7 @@ domain::instrument_schedule to_domain(const messaging::instrument_schedule_write
     return v;
 }
 
+
 }
 
 messaging::list_instrument_schedules_response

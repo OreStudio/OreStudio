@@ -21,39 +21,19 @@
 /**
  * Reporting Component Dataset Dependencies
  *
- * The risk report config publish resolves each artefact's report definition by
- * name for the target party, and it scopes the config to the party's root
- * portfolio, whose books the run expands through that scope. So the report
- * definitions and the organisation data -- business units, portfolios, books --
- * must be published before a configuration that names them.
- *
- * The four ORE configuration documents a risk run reads come from
- * `ore import-run`, not from a DQ dataset, so there is nothing to declare for
- * them here: the publish reads the bindings the import wrote and skips a
- * definition that does not carry all four.
+ * The generic report definitions are published after the instrument conventions
+ * they resolve. The risk report configurations are Acme's own datasets, and
+ * their dependencies are declared with them.
  *
  * This script is idempotent.
  */
 
 DO $$
 BEGIN
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.risk_report_configs', 'ore.report_definitions', 'report_definition_source');
-
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.risk_report_configs', 'testdata.portfolios', 'root_portfolio_source');
-
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.risk_report_configs', 'testdata.books', 'book_population_source');
-
     -- The canonical instrument conventions are party-scoped reference data a
-    -- run resolves by id. Both reporting datasets run in party_reporting, after
-    -- party_essentials,
-    -- after the conventions, so the dependency is declared here even though
-    -- the bundle display_order already puts them in the right order.
+    -- run resolves by id. The definitions run in party_reporting, after
+    -- party_essentials, so the dependency is declared here even though the
+    -- bundle display_order already puts them in the right order.
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore.report_definitions', 'ore.conventions', 'convention_source');
-
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.risk_report_configs', 'ore.conventions', 'convention_source');
 END $$;

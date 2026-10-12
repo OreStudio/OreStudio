@@ -104,6 +104,7 @@ domain::swap_index_convention to_domain(const messaging::swap_index_convention_w
     return v;
 }
 
+
 }
 
 messaging::list_swap_index_conventions_response

@@ -93,3 +93,6 @@
 \ir ./analytics_todays_market_configurations_notify_trigger_create.sql
 \ir ./analytics_todays_market_configuration_bindings_create.sql
 \ir ./analytics_todays_market_configuration_bindings_notify_trigger_create.sql
+
+-- Publication of the configuration documents from DQ datasets
+\ir ./analytics_publish_from_dq_create.sql

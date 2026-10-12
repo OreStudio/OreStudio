@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 09555e86-1d84-4707-ad68-9b141b3cbce8
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_definition
 #+description: Codegen entity model for the refdata =curve_definition= table. One curve recipe in an ORE curveconfig.xml, with the settings every section shares.

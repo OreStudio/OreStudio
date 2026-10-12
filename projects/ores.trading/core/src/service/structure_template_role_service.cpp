@@ -106,6 +106,7 @@ domain::structure_template_role to_domain(const messaging::structure_template_ro
     return v;
 }
 
+
 }
 
 messaging::list_structure_template_roles_response

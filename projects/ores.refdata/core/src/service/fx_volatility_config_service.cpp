@@ -125,6 +125,7 @@ domain::fx_volatility_config to_domain(const messaging::fx_volatility_config_wri
     return v;
 }
 
+
 }
 
 messaging::list_fx_volatility_configs_response

@@ -110,6 +110,7 @@ domain::approval_decision to_domain(const messaging::approval_decision_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_approval_decisions_response approval_decision_service::list_approval_decisions(

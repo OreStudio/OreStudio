@@ -108,6 +108,7 @@ domain::trade_identifier to_domain(const messaging::trade_identifier_write& writ
     return v;
 }
 
+
 }
 
 messaging::list_trade_identifiers_response trade_identifier_service::list_trade_identifiers(

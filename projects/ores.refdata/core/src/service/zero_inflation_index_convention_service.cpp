@@ -110,6 +110,7 @@ to_domain(const messaging::zero_inflation_index_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_zero_inflation_index_conventions_response

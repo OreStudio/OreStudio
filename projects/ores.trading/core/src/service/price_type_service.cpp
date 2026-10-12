@@ -101,6 +101,7 @@ domain::price_type to_domain(const messaging::price_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_price_types_response

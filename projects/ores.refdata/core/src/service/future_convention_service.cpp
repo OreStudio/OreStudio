@@ -106,6 +106,7 @@ domain::future_convention to_domain(const messaging::future_convention_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_future_conventions_response future_convention_service::list_future_conventions(

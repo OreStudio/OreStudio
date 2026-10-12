@@ -206,6 +206,49 @@
 \ir ./dq_publications_create.sql
 \ir ./dq_publications_notify_trigger_create.sql
 \ir ./dq_bundle_publication_create.sql
+\ir ./dq_publish_configuration_document_create.sql
 
 -- FSM Framework (finite state machine infrastructure, part of DQ metadata layer)
 \ir ./dq_fsm_create.sql
+
+-- Report configuration documents: staging tables
+\ir ./dq_pricing_model_configs_artefact_create.sql
+\ir ./dq_pricing_model_products_artefact_create.sql
+\ir ./dq_pricing_model_product_parameters_artefact_create.sql
+\ir ./dq_curve_configurations_artefact_create.sql
+\ir ./dq_curve_configuration_sections_artefact_create.sql
+\ir ./dq_curve_global_reports_artefact_create.sql
+\ir ./dq_curve_definitions_artefact_create.sql
+\ir ./dq_yield_curve_configs_artefact_create.sql
+\ir ./dq_equity_curve_configs_artefact_create.sql
+\ir ./dq_default_curve_configs_artefact_create.sql
+\ir ./dq_default_curve_configurations_artefact_create.sql
+\ir ./dq_inflation_curve_configs_artefact_create.sql
+\ir ./dq_inflation_seasonality_factors_artefact_create.sql
+\ir ./dq_curve_security_configs_artefact_create.sql
+\ir ./dq_intraday_power_curve_configs_artefact_create.sql
+\ir ./dq_fx_volatility_configs_artefact_create.sql
+\ir ./dq_base_correlation_configs_artefact_create.sql
+\ir ./dq_curve_correlation_configs_artefact_create.sql
+\ir ./dq_curve_report_configurations_artefact_create.sql
+\ir ./dq_cds_volatility_configs_artefact_create.sql
+\ir ./dq_cds_volatility_terms_artefact_create.sql
+\ir ./dq_curve_volatility_configs_artefact_create.sql
+\ir ./dq_inflation_cap_floor_volatility_configs_artefact_create.sql
+\ir ./dq_swaption_volatility_configs_artefact_create.sql
+\ir ./dq_cap_floor_volatility_configs_artefact_create.sql
+\ir ./dq_curve_parametric_smiles_artefact_create.sql
+\ir ./dq_curve_parametric_smile_parameters_artefact_create.sql
+\ir ./dq_equity_volatility_configs_artefact_create.sql
+\ir ./dq_commodity_volatility_configs_artefact_create.sql
+\ir ./dq_bond_future_volatility_configs_artefact_create.sql
+\ir ./dq_curve_bootstrap_configs_artefact_create.sql
+\ir ./dq_curve_segments_artefact_create.sql
+\ir ./dq_curve_segment_curves_artefact_create.sql
+\ir ./dq_curve_quotes_artefact_create.sql
+\ir ./dq_todays_market_configs_artefact_create.sql
+\ir ./dq_todays_market_collections_artefact_create.sql
+\ir ./dq_todays_market_entries_artefact_create.sql
+\ir ./dq_todays_market_configurations_artefact_create.sql
+\ir ./dq_todays_market_configuration_bindings_artefact_create.sql
+\ir ./dq_report_configurations_artefact_create.sql

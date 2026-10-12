@@ -60,8 +60,8 @@ TEST_CASE("system_info_reports_a_plausible_amount_of_memory", tags) {
     CHECK(ram_mb < 16LL * 1024 * 1024);
 }
 
-#if defined(__linux__)
 TEST_CASE("system_info_agrees_with_the_kernel_about_memory", tags) {
+#if defined(__linux__)
     const auto reported = get_system_info().ram_mb;
     const auto kernel = kernel_mem_total_mb();
 
@@ -69,5 +69,7 @@ TEST_CASE("system_info_agrees_with_the_kernel_about_memory", tags) {
     // MemTotal leaves out the memory the kernel reserves, so it is a little less.
     CHECK(reported >= kernel);
     CHECK(reported <= kernel + kernel / 5);
-}
+#else
+    SKIP("The kernel memory total is read from /proc/meminfo, which only Linux has.");
 #endif
+}

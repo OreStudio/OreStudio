@@ -128,6 +128,7 @@ to_domain(const messaging::cross_currency_basis_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_cross_currency_basis_conventions_response

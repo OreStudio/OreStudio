@@ -101,6 +101,7 @@ domain::day_counter to_domain(const messaging::day_counter_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_day_counters_response

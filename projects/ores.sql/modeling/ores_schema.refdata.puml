@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T11:55:04.768754Z
+' Generated: 2026-10-12T22:47:58.818299Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 155
+Tables: 158
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1477,6 +1477,41 @@ package "refdata" #FFF3E0 {
     journey 5.
     end note
 
+    entity ores_refdata_counterparty_changes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * line_no : integer
+        * operation : text
+        * base_version : integer
+        * applied : boolean
+        * entity_id : uuid <<FK>>
+        * short_code : text
+        * full_name : text
+          transliterated_name : text
+        * party_type : text
+          parent_counterparty_id : uuid <<FK>>
+        * status : text
+          image_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_counterparty_changes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Counterparty Change Table
+    Do not edit. Change ores.refdata.counterparty and run
+    derive_pending_models.py.
+    end note
+
     entity ores_refdata_counterparty_contact_informations_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -1508,6 +1543,39 @@ package "refdata" #FFF3E0 {
     Counterparty Contact Information Table
     Contact details for counterparties organised by purpose (Legal, Operations,
     Settlement, Billing). Each counterparty can have one contact record per type.
+    end note
+
+    entity ores_refdata_counterparty_identifier_changes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * line_no : integer
+        * operation : text
+        * base_version : integer
+        * applied : boolean
+        * entity_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+        * id_scheme : text
+        * id_value : text
+          description : text
+        * is_authoritative : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_counterparty_identifier_changes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Counterparty Identifier Change Table
+    Do not edit. Change ores.refdata.counterparty_identifier and run
+    derive_pending_models.py.
     end note
 
     entity ores_refdata_counterparty_identifiers_tbl <<temporal>> #C6F0D8 {
@@ -4126,6 +4194,35 @@ package "refdata" #FFF3E0 {
     party-level visibility.
     end note
 
+    entity ores_refdata_party_counterparty_changes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * line_no : integer
+        * operation : text
+        * base_version : integer
+        * applied : boolean
+        * party_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_party_counterparty_changes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Party Counterparty Change Table
+    Do not edit. Change ores.refdata.party_counterparty and run
+    derive_pending_models.py.
+    end note
+
     entity ores_refdata_party_countries_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
         * party_id : uuid <<PK, FK>>
@@ -5457,7 +5554,9 @@ ores_refdata_day_counters_tbl ||--o{ ores_refdata_commodity_curve_configs_tbl : 
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_price_segments_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
+ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_changes_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_contact_informations_tbl : "has"
+ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifier_changes_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"

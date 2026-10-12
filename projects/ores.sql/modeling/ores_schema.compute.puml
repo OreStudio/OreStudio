@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T10:59:04.698805Z
+' Generated: 2026-10-12T22:47:58.818299Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: compute
-Tables: 12
+Tables: 13
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -352,6 +352,39 @@ package "compute" #EDE7F6 {
     assignment after generation. No parameterized overload or model knob is
     needed.
     result declares no key field, so callers address it by its storage key.
+    end note
+
+    entity ores_compute_work_ledger_tbl  #F7E5FF {
+        * result_id : uuid <<PK, FK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * work_tenant_id : uuid <<FK>>
+        * workunit_id : uuid <<FK>>
+        * platforms : text[]
+        * priority : integer
+        * state : text
+        * queued_at : timestamptz
+          host_id : uuid <<FK>>
+          claimed_at : timestamptz
+          lease_expires_at : timestamptz
+        * attempts : integer
+    }
+
+    note right of ores_compute_work_ledger_tbl
+    The queue of the compute grid. One entry for each result that waits or runs,
+    holding what the service needs to choose a job and to find a lease that has
+    ended: the tenant that owns the result, the platforms that can run it, the
+    priority of its workunit, the host that holds it, the lease and the number of
+    attempts.
+    A result belongs to a tenant and no policy lets the system tenant read another
+    tenant's rows, so a queue that serves every tenant cannot be a query over the
+    results of all of them. The ledger belongs to the installation instead. It
+    holds ids, times and counts and no business data of a tenant. The service
+    reads and writes it as the system tenant, and enters a tenant only to write
+    that tenant's own result.
+    The table is hand-written, not generated. It is a mutable current-state table
+    with atomic claim statements, and the policy below admits only a session of the
+    system tenant, a shape the entity templates do not offer.
     end note
 
     entity ores_compute_workflow_batch_links_tbl  #F7E5FF {

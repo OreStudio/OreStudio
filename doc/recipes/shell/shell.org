@@ -1066,6 +1066,10 @@ tangled into the runnable script library
 
 - [[id:D74D4948-6B4D-5495-B833-2656AE06D375][How do I run the analytic_types commands from the shell?]]
 
+* File Types
+
+- [[id:2CEEA23E-4502-53D0-8907-01141D8124C0][How do I run the file_types commands from the shell?]]
+
 * Account Statuses
 
 - [[id:C5CBE7E0-3308-5539-8E6C-1760A6E3644C][How do I run the account_statuses commands from the shell?]]
@@ -1097,14 +1101,6 @@ tangled into the runnable script library
 * Curve Segments
 
 - [[id:F6B891AC-DDCE-5328-9825-A8FC8033A4D6][How do I run the curve_segments commands from the shell?]]
-
-* Report Analytic Parameters
-
-- [[id:2B4A520B-F99C-53AF-956D-96588F275C71][How do I run the report_analytic_parameters commands from the shell?]]
-
-* Report Market Bindings
-
-- [[id:5303CFC9-F28E-5554-90DC-6961327581D2][How do I run the report_market_bindings commands from the shell?]]
 
 * Stress Test Libraries
 
@@ -1533,3 +1529,27 @@ tangled into the runnable script library
 * Synthetic Market Data Providers
 
 - [[id:754A384A-55E2-5721-BDC9-29B82F93FBE4][How do I run the synthetic_market_data_providers commands from the shell?]]
+
+* Configuration Analytic Parameters
+
+- [[id:648E9E27-C524-58D8-8EC2-6B4A62BF25E9][How do I run the configuration_analytic_parameters commands from the shell?]]
+
+* Configuration Market Bindings
+
+- [[id:816DE640-79CA-5D61-8B10-ECA6E64595A9][How do I run the configuration_market_bindings commands from the shell?]]
+
+* Counterparty Changes
+
+- [[id:032C5BF8-1642-5EC3-8A42-D92E8A0B05F7][How do I run the counterparty_changes commands from the shell?]]
+
+* Counterparty Identifier Changes
+
+- [[id:69D860E0-5450-5878-897F-354FC432DBC2][How do I run the counterparty_identifier_changes commands from the shell?]]
+
+* Credit Basket Constituents
+
+- [[id:6EB34D50-B77B-5894-A389-3D05FC76179A][How do I run the credit_basket_constituents commands from the shell?]]
+
+* Party Counterparty Changes
+
+- [[id:3474AB5C-382E-5576-943C-7EBD0BD0DBF0][How do I run the party_counterparty_changes commands from the shell?]]

@@ -473,6 +473,17 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("sql",),
     ),
     Check(
+        id="file-types-seed",
+        title="The seeded file type names are the names the ORE samples use",
+        argv=("python3", "projects/ores.sql/utility/generate_file_types_populate.py", "--check"),
+        classes=("sql",),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_file_types_populate.sql",
+            "projects/ores.sql/utility/generate_file_types_populate.py",
+        ),
+        fix="Run projects/ores.sql/utility/generate_file_types_populate.py and commit the seed.",
+    ),
+    Check(
         id="marketdata-identity-columns",
         title="The series identity projection matches the codec schema",
         argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),

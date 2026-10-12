@@ -2061,6 +2061,9 @@ const fr: SourceCatalogue = {
         current: 'Version actuelle',
         field: 'Champ',
         noChanges: 'Aucune modification',
+        batch: {
+            entries: '{count} entrées',
+        },
         kind: {
             raised: 'Créé',
             changed: 'Modifié',

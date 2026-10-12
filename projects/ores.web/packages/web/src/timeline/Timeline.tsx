@@ -29,6 +29,7 @@ import {
     type TimelineField,
 } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { batchesOf, type Row } from './batches.js';
 import { SystemToggle, useSystemFilter } from './SystemToggle.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import { DiffLines } from '../ui/Diff.js';
@@ -131,6 +132,7 @@ export function Timeline({
           })
         : timeline.events;
     const shown = events.filter((event) => system.shows(event.actor));
+    const rows = batchesOf(shown);
     return (
         <div className="grid gap-3" data-timeline>
             <div className="flex justify-end">
@@ -142,22 +144,39 @@ export function Timeline({
             </div>
             <EventChart events={shown} />
             <ol className="grid list-none gap-0 p-0">
-                {shown.map((event, index) => (
-                    <Fragment key={entryKey(event, index)}>
-                        {startsADay(event, shown[index - 1]) && <DayDivider at={event.at} />}
-                        <Entry
-                            event={event}
-                            before={previous.get(earlier(event))}
-                            actions={renderActions?.(event)}
-                            head={renderHead?.(event)}
-                            recordName={recordName?.(event)}
-                            actorPath={actorPath}
-                            actorPicture={actorPicture}
-                            current={newest.has(`${entryKeyOf(event)}#${String(event.version)}`)}
-                            isNew={marked?.has(timelineEntryKey(event)) === true}
-                        />
-                    </Fragment>
-                ))}
+                {rows.map((row, index) => {
+                    const first = firstOf(row);
+                    const before = rows[index - 1];
+                    return (
+                        <Fragment key={rowKey(row, index)}>
+                            {startsADay(first, before === undefined ? undefined : firstOf(before)) && (
+                                <DayDivider at={first.at} />
+                            )}
+                            {row.kind === 'batch' ? (
+                                <Batch
+                                    events={row.events}
+                                    recordName={recordName}
+                                    actorPath={actorPath}
+                                    actorPicture={actorPicture}
+                                />
+                            ) : (
+                                <Entry
+                                    event={row.event}
+                                    before={previous.get(earlier(row.event))}
+                                    actions={renderActions?.(row.event)}
+                                    head={renderHead?.(row.event)}
+                                    recordName={recordName?.(row.event)}
+                                    actorPath={actorPath}
+                                    actorPicture={actorPicture}
+                                    current={newest.has(
+                                        `${entryKeyOf(row.event)}#${String(row.event.version)}`,
+                                    )}
+                                    isNew={marked?.has(timelineEntryKey(row.event)) === true}
+                                />
+                            )}
+                        </Fragment>
+                    );
+                })}
             </ol>
             <Gaps gaps={timeline.gaps} />
         </div>
@@ -412,6 +431,103 @@ function startsADay(event: TimelineEvent, before: TimelineEvent | undefined): bo
 
 /** The column the rail sits in, which every row of the stream shares. */
 const ROW = 'grid grid-cols-[8rem_1.6rem_1fr]';
+
+/** The entry a row stands for in the rail: the entry, or the newest of a batch. */
+function firstOf(row: Row): TimelineEvent {
+    return row.kind === 'entry' ? row.event : (row.events[0] as TimelineEvent);
+}
+
+function rowKey(row: Row, index: number): string {
+    return row.kind === 'entry'
+        ? entryKey(row.event, index)
+        : `batch#${entryKey(firstOf(row), index)}`;
+}
+
+/**
+ * Entries that are one act, drawn as one row that opens to its members.
+ *
+ * The row says what was done, how many times, to which kind of record, by whom
+ * and why, once. The members are listed by name beneath it, so the reader can
+ * find one without reading forty cards that differ only in a name.
+ */
+function Batch({
+    events,
+    recordName,
+    actorPath,
+    actorPicture,
+}: {
+    readonly events: readonly TimelineEvent[];
+    readonly recordName: ((event: TimelineEvent) => string | undefined) | undefined;
+    readonly actorPath: ((actor: string) => string | undefined) | undefined;
+    readonly actorPicture: ((actor: string) => string | null) | undefined;
+}): ReactNode {
+    const { t, language } = useTranslation();
+    const newest = firstOf({ kind: 'batch', events });
+    const kind = newest.kind;
+    return (
+        <li className={`${ROW} scroll-mt-4`} data-ms={parseTimestamp(newest.at).getTime()} data-batch>
+            <div className="flex items-start justify-end gap-1.5 pr-2.5 pt-[6px]">
+                <span className="pt-[3px] font-mono text-[0.72rem] text-ink-faint">
+                    {timeOf(newest.at, language)}
+                </span>
+            </div>
+            <div className="relative flex justify-center">
+                <span className="absolute inset-y-0 w-px bg-line" aria-hidden />
+                <span
+                    className={`relative z-10 mt-[9px] h-[9px] w-[9px] rounded-full border ${DOT[kindTone(kind)] ?? DOT['neutral']}`}
+                    aria-hidden
+                />
+            </div>
+            <div className="flex min-w-0 items-start gap-2.5 pb-3.5 pl-1.5 pt-1">
+                {actorPicture !== undefined && newest.actor !== '' && (
+                    <Avatar name={newest.actor} size="md" src={actorPicture(newest.actor)} />
+                )}
+                <div className="grid min-w-0 flex-1 gap-1.5">
+                    <div className="flex flex-wrap items-baseline gap-2">
+                        <Tag tone={kindTone(kind)}>{t(`timeline.kind.${kind}`)}</Tag>
+                        <span className="font-mono text-[0.72rem] text-ink-faint">
+                            {`${String(events.length)} × ${entityOf(newest).replaceAll('_', ' ')}`}
+                        </span>
+                        {newest.reasonCode !== '' && (
+                            <span className="rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[0.68rem] text-warn">
+                                {newest.reasonCode}
+                            </span>
+                        )}
+                        {newest.actor !== '' && (
+                            <Actor name={newest.actor} path={actorPath?.(newest.actor)} />
+                        )}
+                    </div>
+                    {newest.commentary !== '' && (
+                        <p className="text-[0.8rem] text-ink-muted italic">{newest.commentary}</p>
+                    )}
+                    <details className="text-sm">
+                        <summary className="cursor-pointer text-ink-muted hover:text-ink">
+                            {t('timeline.batch.entries', { count: String(events.length) })}
+                        </summary>
+                        <ul className="mt-1 grid list-none gap-0.5 p-0">
+                            {events.map((event, index) => (
+                                <li
+                                    key={entryKey(event, index)}
+                                    className="flex items-baseline gap-3"
+                                >
+                                    <span className="font-mono text-[0.72rem] text-ink-faint">
+                                        {timeOf(event.at, language)}
+                                    </span>
+                                    <span>
+                                        {recordName?.(event) ??
+                                            [entityOf(event), shortId(event.entityId)]
+                                                .filter((part) => part !== '')
+                                                .join(' ')}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </details>
+                </div>
+            </div>
+        </li>
+    );
+}
 
 function DayDivider({ at }: { readonly at: string }): ReactNode {
     const { language } = useTranslation();

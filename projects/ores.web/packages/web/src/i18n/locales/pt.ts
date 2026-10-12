@@ -2052,6 +2052,9 @@ const pt: SourceCatalogue = {
         current: 'Versão atual',
         field: 'Campo',
         noChanges: 'Sem alterações',
+        batch: {
+            entries: '{count} entradas',
+        },
         kind: {
             raised: 'Criado',
             changed: 'Alterado',

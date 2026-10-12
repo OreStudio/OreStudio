@@ -387,6 +387,7 @@ function PartyHistory({
             actorPath={actorPathFor(holds('iam::accounts:read'))}
             actorPicture={pictureOf}
             isService={isService}
+            hideUnchanged
             recordName={(event) => {
                 const record = RECORD_KEYS[event.entityType];
                 if (record === undefined) return undefined;

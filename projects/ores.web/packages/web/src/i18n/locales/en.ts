@@ -2033,6 +2033,9 @@ export const en: SourceCatalogue = {
         current: 'Current version',
         field: 'Field',
         noChanges: 'No changes',
+        batch: {
+            entries: '{count} entries',
+        },
         kind: {
             raised: 'Created',
             changed: 'Changed',

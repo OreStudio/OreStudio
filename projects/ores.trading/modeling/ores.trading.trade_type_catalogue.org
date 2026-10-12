@@ -232,6 +232,7 @@ shape whichever family states the rows.
 | cap_floor_instrument              |
 | commodity_basket_constituent      |
 | composite_leg                     |
+| credit_basket_constituent         |
 | equity_position_option_underlying |
 | flexi_swap_instrument             |
 | flexi_swap_lower_notional         |

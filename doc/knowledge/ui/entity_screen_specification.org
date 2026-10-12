@@ -551,11 +551,24 @@ kind and its record.
 *** Gaps
 
 Some parts of a story cannot be answered, and the stream says so. A grant that was
-taken away is closed and no read returns it. A junction has no versions. The
-sign-in log keeps a window. Each such part is a gap on the answer, stated on the
-screen in words. A gap is never rounded away, and it is never shown as an empty
-list. The screen says a gap in its own words, in every language, and never in the
-server's reason, which names tables, reads and refusals.
+taken away is closed and no read returns it. The sign-in log keeps a window. Each
+such part is a gap on the answer, stated on the screen in words. A gap is never
+rounded away, and it is never shown as an empty list.
+
+- A gap the screen knows is said in its own words, in every language, once.
+- Any other gap says that part of the history could not be read. It then names the
+  record and gives the stream's own reason, so a reader can tell what is missing
+  and why. The reason is in English and may name tables, reads and refusals.
+  Such a gap is a fault to fix, not a state to keep.
+
+*** How a part of a story is read
+
+A history is read for one row. The screen names the row by its own id when its
+kind of record has one, because the key a model declares for the row may be shared
+by other rows: every party holds a contact of each type. A link has no id of its
+own, so its history is read by the parent it belongs to, and each version names its
+link as =parent/child= in its =ID= field. The screen pairs versions by that field.
+The rule for the request is in [[file:../architecture/entity_addressing.org][Entity addressing]].
 
 *** Narrowed histories
 

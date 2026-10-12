@@ -45,6 +45,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:7AF13836-60A8-4072-B2F6-A6A06D0FBB36][ores.trading.amortization_type]] | Notional amortization schedule kind. |
 | [[id:EADFEF66-F4AE-4271-B92E-25145818C1CF][ores.trading.average_type]] | Averaging method for an Asian-style option (Arithmetic or Geometric). |
 | [[id:0143968F-0BAF-44A0-A38B-C32146BD46F6][ores.trading.credit_instrument]] | Credit instrument economics for CreditDefaultSwap, CDSIndex, SyntheticCDO and their variants. |
+| [[id:3C255B2B-B7DE-4A55-8666-153D982A1167][ores.trading.credit_basket_constituent]] | One name of a credit basket, keyed by trade and sequence number. |
 | [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] | Scripted instrument economics for the AMC script-based product types. |
 | [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] | Vanilla interest rate swap or cross-currency swap instrument. |
 | [[id:A7A25644-CBF0-4E4A-A768-4636CCF91E05][ores.trading.callable_swap_instrument]] | Callable interest rate swap instrument. |

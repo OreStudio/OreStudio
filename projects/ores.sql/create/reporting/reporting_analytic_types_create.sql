@@ -44,6 +44,7 @@ create table if not exists "ores_reporting_analytic_types_tbl" (
     "name" text not null,
     "description" text not null,
     "parameter_entity" text null,
+    "requires_analytic_type_code" text null,
     "display_order" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,

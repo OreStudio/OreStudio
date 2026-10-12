@@ -25,6 +25,7 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.refdata.core/service/party_contact_information_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
@@ -247,4 +248,52 @@ TEST_CASE("read_nonexistent_party_contact_information_id", tags) {
     const auto keeper_rows = repo.read_latest(h.context(), boost::uuids::to_string(keeper.id));
     REQUIRE(keeper_rows.size() == 1);
     CHECK(keeper_rows[0].city == keeper.city);
+}
+
+TEST_CASE("the_history_of_a_contact_is_its_own_when_another_party_holds_the_same_type", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    party_repository party_repo;
+
+    auto first = generate_synthetic_party(ctx);
+    first.change_reason_code = "system.test";
+    for (const auto& e : party_repo.read_latest(h.context())) {
+        if (e.tenant_id == first.tenant_id) {
+            first.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), first);
+    h.set_party(first.id);
+
+    auto second = generate_synthetic_party(ctx);
+    second.change_reason_code = "system.test";
+    second.parent_party_id = first.id;
+    party_repo.write(h.context(), second);
+
+    party_contact_information_repository repo;
+    auto mine = generate_synthetic_party_contact_information(ctx);
+    mine.change_reason_code = "system.test";
+    mine.party_id = first.id;
+    mine.contact_type = "Legal";
+    repo.write(h.context(), mine);
+    mine.version = repo.read_latest(h.context(), boost::uuids::to_string(mine.id)).front().version;
+    mine.change_commentary = "Changed once";
+    repo.write(h.context(), mine);
+
+    auto theirs = generate_synthetic_party_contact_information(ctx);
+    theirs.change_reason_code = "system.test";
+    theirs.party_id = second.id;
+    theirs.contact_type = "Legal";
+    repo.write(h.context(), theirs);
+
+    // The history provider reads through this overload with the row's id.
+    ores::refdata::service::party_contact_information_service svc(h.context());
+    const auto own = svc.get_party_contact_information_history(mine.id);
+    REQUIRE(own.size() == 2);
+    for (const auto& version : own)
+        CHECK(version.id == mine.id);
+    h.set_party(second.id);
+    ores::refdata::service::party_contact_information_service their_svc(h.context());
+    CHECK(their_svc.get_party_contact_information_history(theirs.id).size() == 1);
 }

@@ -22,9 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { OresmdComposeRequest, OresmdSchema } from '@ores/contracts';
-import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { useRecords } from '../refdata/records.js';
 import { Button, Dialog, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import {
     EMPTY,
@@ -92,7 +90,7 @@ function Options({
 
 /** Each catalogue is its own component, because a field with no catalogue must not read one. */
 function CurrencySuggestions({ id }: { readonly id: string }): ReactNode {
-    const currencies = useRecords('currencies');
+    const currencies = useQuery(oresmdQueries.currencies());
     return (
         <Options
             id={id}
@@ -102,10 +100,7 @@ function CurrencySuggestions({ id }: { readonly id: string }): ReactNode {
 }
 
 function DayCounterSuggestions({ id }: { readonly id: string }): ReactNode {
-    const dayCounters = useQuery({
-        queryKey: ['classifications', 'day-counter'],
-        queryFn: () => api.classificationRows('day-counter'),
-    });
+    const dayCounters = useQuery(oresmdQueries.dayCounters());
     return <Options id={id} values={(dayCounters.data ?? []).map((row) => row.code)} />;
 }
 
@@ -131,7 +126,7 @@ function Suggestions({ id, field }: { readonly id: string; readonly field: strin
  *
  * `onApply` receives the URI the codec wrote, and Apply is offered only when
  * the codec wrote one for what is on screen. A screen that keeps no URL to
- * change gives no `onApply`, and the editor offers Copy and no Apply.
+ * change opens `OresmdViewDialog` instead, which shows the URL and edits nothing.
  */
 export function OresmdEditorDialog({
     url,
@@ -140,8 +135,7 @@ export function OresmdEditorDialog({
 }: {
     /** The URI to edit. Empty starts a new one. */
     readonly url: string;
-    /** Without it the editor shows and copies a URL and offers no Apply. */
-    readonly onApply?: (uri: string) => void;
+    readonly onApply: (uri: string) => void;
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -205,16 +199,14 @@ export function OresmdEditorDialog({
                     <Button type="button" disabled={uri === ''} onClick={() => void copy()}>
                         {copied ? t('oresmd.copied') : t('oresmd.copy')}
                     </Button>
-                    {onApply !== undefined && (
-                        <Button
-                            type="button"
-                            variant="primary"
-                            disabled={uri === ''}
-                            onClick={() => onApply(uri)}
-                        >
-                            {t('oresmd.apply')}
-                        </Button>
-                    )}
+                    <Button
+                        type="button"
+                        variant="primary"
+                        disabled={uri === ''}
+                        onClick={() => onApply(uri)}
+                    >
+                        {t('oresmd.apply')}
+                    </Button>
                 </>
             }
         >

@@ -1309,7 +1309,10 @@ export const en: SourceCatalogue = {
      * from Home as well as from this area's hub.
      */
     oresmd: {
-        open: 'Open in the editor',
+        close: 'Close',
+        assetClass: 'Asset class',
+        edit: 'Edit',
+        inspect: 'Inspect',
         title: 'oresmd URL',
         cancel: 'Cancel',
         copy: 'Copy',
@@ -1659,7 +1662,15 @@ export const en: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Usage by tenant', party: 'Usage by party' },
-                note: 'A share is the group’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                note: {
+                    tenant: 'Each tenant is read inside the tenant, because no one tenant’s work is visible from another. A share is the tenant’s results as a fraction of the results that could be read. Succeeded and failed count the last 24 hours.',
+                    party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                },
+                unavailable: 'Could not be read',
+                age: {
+                    caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
+                    over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
+                },
                 empty: 'No work has run on the grid yet.',
                 unassigned: 'No party',
                 columns: {
@@ -1670,6 +1681,7 @@ export const en: SourceCatalogue = {
                     results: 'Results',
                     inProgress: 'Running',
                     unsent: 'Waiting',
+                    oldest: 'Oldest wait',
                     done: 'Finished',
                     succeeded: 'Succeeded',
                     failed: 'Failed',
@@ -1743,7 +1755,6 @@ export const en: SourceCatalogue = {
                 load: {
                     title: 'Load',
                     caption: 'Work in flight by result state',
-                    inactive: 'Inactive',
                     unsent: 'Unsent',
                     inProgress: 'In progress',
                 },
@@ -2044,6 +2055,20 @@ export const en: SourceCatalogue = {
     },
 
     market: {
+        series: {
+            title: 'Series',
+            description: 'The values of one series over time.',
+            noUri: 'Open a series from an oresmd URL.',
+            hasShape: '{series} has an axis, so its page is the Evolution page.',
+            openEvolution: 'Open the Evolution page',
+            chart: 'Values over time',
+            empty: 'This series holds no observations yet.',
+            showing: 'Showing the latest {shown} of {total} observations.',
+            at: 'Instant',
+            value: 'Value',
+            source: 'Source',
+            openSeries: 'Open the series page',
+        },
         evolution: {
             title: 'Watch a curve or surface evolve',
             description:
@@ -2063,6 +2088,12 @@ export const en: SourceCatalogue = {
                 submit: 'Watch',
             },
             errors: {
+                notListed:
+                    'This party has no series for that URL yet. A series exists once data has been written to it.',
+                noShape:
+                    '{series} holds one value at each instant. It declares no axis, so it has no evolution to draw.',
+                fixing: 'A fixing is a rate on one day and names no series.',
+                unknown: "'{name}' is not an instrument the series list can show.",
                 missing:
                     'State the asset class, the scope, the instrument type and the quote type.',
                 field: 'Write each other field as name=value.',
@@ -3578,6 +3609,10 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        feeds: {
+            targetUri:
+                'The series this feed writes to. Each tick the feed makes is stored as an observation of the series that this URI names.',
+        },
         area: {
             title: 'Market data',
             lead: 'The prices and curves the platform receives or generates.',

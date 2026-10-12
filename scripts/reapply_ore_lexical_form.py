@@ -377,6 +377,7 @@ MONEY_MEMBERS = [
     ("creditDefaultSwapData", "UpfrontFee"),
     ("indexCreditDefaultSwapData", "UpfrontFee"),
     ("indexCreditDefaultSwapOptionData", "Strike"),
+    ("nameData", "Notional"),
 ]
 
 
@@ -443,13 +444,24 @@ def _apply_members_cpp(text: str, reverse: bool = False) -> str:
             continue
         text = _swap_in(text, span, ser_old, ser_new, f"domain.cpp {struct}.{member} serializer")
 
-        info_old = f"(xsdcpp::get_field_t)&_get_{struct}_{member},\n     &domain::_float_Info,\n"
-        info_new = f"(xsdcpp::get_field_t)&_get_{struct}_{member},\n     &domain::_moneyFloat_Info,\n"
+        from_info, to_info = "_float_Info", "_moneyFloat_Info"
         if reverse:
-            info_old, info_new = info_new, info_old
-        if text.count(info_old) != 1:
-            raise AnchorError(f"domain.cpp: the element info of {struct}.{member} occurs {text.count(info_old)} times")
-        text = text.replace(info_old, info_new, 1)
+            from_info, to_info = to_info, from_info
+        info = re.compile(
+            r"(\(xsdcpp::get_field_t\)&_get_"
+            + re.escape(struct)
+            + "_"
+            + re.escape(member)
+            + r",\s*&domain::)"
+            + from_info
+            + ","
+        )
+        if len(info.findall(text)) != 1:
+            raise AnchorError(
+                f"domain.cpp: the element info of {struct}.{member} occurs "
+                f"{len(info.findall(text))} times"
+            )
+        text = info.sub(lambda m: m.group(1) + to_info + ",", text, count=1)
 
         m = re.search(
             r"void\* _get_" + re.escape(struct) + "_" + re.escape(member) + r"\([^)]*\) \{\n.*?\n\}\n",

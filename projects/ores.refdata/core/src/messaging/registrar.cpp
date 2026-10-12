@@ -44,7 +44,9 @@
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/configuration_document_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_change_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_identifier_change_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/country_registrar.hpp"
@@ -83,6 +85,7 @@
 #include "ores.refdata.core/messaging/ois_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_registrar.hpp"
+#include "ores.refdata.core/messaging/party_counterparty_change_registrar.hpp"
 #include "ores.refdata.core/messaging/party_counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/party_country_registrar.hpp"
 #include "ores.refdata.core/messaging/party_currency_registrar.hpp"
@@ -158,8 +161,10 @@
 #include "ores.refdata.core/messaging/commodity_price_segment_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_change_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_identifier_change_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/country_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_driver_pair_history_provider_registrar.hpp"
@@ -226,8 +231,9 @@
 #include "ores.refdata.core/messaging/ois_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_history_provider_registrar.hpp"
-#include "ores.refdata.core/messaging/party_country_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_counterparty_change_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_counterparty_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_country_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_currency_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_id_scheme_history_provider_registrar.hpp"
@@ -318,8 +324,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
+    append(register_counterparty_change_handlers(nats, ctx, verifier));
     append(register_counterparty_contact_information_handlers(nats, ctx, verifier));
     append(register_counterparty_identifier_handlers(nats, ctx, verifier));
+    append(register_counterparty_identifier_change_handlers(nats, ctx, verifier));
     append(register_csa_handlers(nats, ctx, verifier));
     append(register_csa_eligible_currency_handlers(nats, ctx, verifier));
     append(register_country_handlers(nats, ctx, verifier));
@@ -357,6 +365,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_party_handlers(nats, ctx, verifier));
     append(register_party_contact_information_handlers(nats, ctx, verifier));
     append(register_party_counterparty_handlers(nats, ctx, verifier));
+    append(register_party_counterparty_change_handlers(nats, ctx, verifier));
     append(register_party_country_handlers(nats, ctx, verifier));
     append(register_party_currency_handlers(nats, ctx, verifier));
     append(register_party_id_scheme_handlers(nats, ctx, verifier));
@@ -536,6 +545,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_cds_convention_history_provider(hist_registry);
         register_contact_type_history_provider(hist_registry);
         register_counterparty_history_provider(hist_registry);
+        register_counterparty_change_history_provider(hist_registry);
         register_country_history_provider(hist_registry);
         register_crm_driver_pair_history_provider(hist_registry);
         register_crm_enabled_derived_pair_history_provider(hist_registry);
@@ -590,6 +600,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_calendar_type_history_provider(hist_registry);
         register_counterparty_contact_information_history_provider(hist_registry);
         register_counterparty_identifier_history_provider(hist_registry);
+        register_counterparty_identifier_change_history_provider(hist_registry);
         register_csa_history_provider(hist_registry);
         register_csa_eligible_currency_history_provider(hist_registry);
         register_derivation_kind_history_provider(hist_registry);
@@ -600,6 +611,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_party_contact_information_history_provider(hist_registry);
         register_party_country_history_provider(hist_registry);
         register_party_counterparty_history_provider(hist_registry);
+        register_party_counterparty_change_history_provider(hist_registry);
         register_party_currency_history_provider(hist_registry);
         register_party_identifier_history_provider(hist_registry);
 

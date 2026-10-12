@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 26300A39-44B3-48A9-8080-9F9AE32427CF
+:END:
+#+title: Task: Open a series on the Evolution page from an oresmd URL
+#+description: Let the Evolution page take an oresmd URL in its address, read it through the server's parse, and open the series it names. A series URL names its own series, and a quote URL names the series its datum belongs to, from the identity fields of its row. A fixing names no series.
+#+type: task
+#+level: s1
+#+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
+#+owner: marco
+#+branch: feature/open-a-series-on-the-evolution-page-from-an-oresmd-url
+#+pr: 3189
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A link can name a series by its URL. The Evolution page opens the series in the address, so the link is a real address that opens in a new tab and copies as a link.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The Evolution page reads uri from its address, parses it through the server and fills the identity of its form from the asset, the path, the instrument, the quote type and the identity fields of the row.
+- A quote URL opens the series of its datum, and a coordinate field of the quote is not part of the identity.
+- A URL the codec refuses, or a fixing, shows the reason on the page and does not open a series.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3189][#3189]] | [web] Open a series on the Evolution page from an oresmd URL |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Evolution page reads a =uri= in its address, asks the server to parse it, and opens the series it names. A series the party does not have, a fixing and a URL the codec refuses are said in words, and the identity stays on the form. A series with no axis is said to have no evolution to draw. The series page of a later task takes over that case. Checked in headless Chrome against the real services.
+

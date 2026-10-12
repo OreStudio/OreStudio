@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 89AF03DA-A6EF-472C-A473-853A3F5159AD
+:END:
+#+title: Task: Read a series' observations in the BFF
+#+description: Add a BFF route that reads the latest observations of one series through the server's observation list, filtered by the series id and ordered by time, so a page can draw a series that has no axis. The server checks the permission and the party.
+#+type: task
+#+level: s1
+#+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
+#+owner: marco
+#+branch: feature/read-a-series-observations-in-the-bff
+#+pr: 3192
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The web can read the values of a series over time, whatever its shape.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A route returns the latest observations of a series, oldest first, with their instants, values and sources, behind the session check.
+- The number of observations is bounded, and a request for more is clamped, not refused.
+- A series with no observation answers an empty list.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3192][#3192]] | [bff] Read a series' observations |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The BFF has =GET /api/series/:id/observations=. It calls the existing =list_by_series_id= operation, clamps the limit to 1000 (default 500), and returns the observations oldest first with the total the series holds. It sits behind the session check like the other routes. A server refusal reaches the browser as a refusal, not as an empty list.
+

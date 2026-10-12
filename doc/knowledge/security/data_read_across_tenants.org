@@ -52,19 +52,19 @@ A person sees the accounts of the parties they have access to, the accounts of t
 
 The existence function stays. A record that names a person asks it for yes or no, so the service does not need to read the account to write the record.
 
-** The system tenant operates the grid
+** An operator reads a tenant's work inside the tenant
 
-The six blocks share a row of the system tenant with every tenant. The grid needs the opposite direction in one case. The compute grid is one installation resource, and the system tenant runs it. The operator cannot run the grid from one tenant's view. They must see the batches, workunits and results of every tenant, and which tenant uses what share of the grid.
+The six blocks share a row of the system tenant with every tenant. The opposite direction, a system-tenant session that reads every tenant's rows, is not a sixth block. It is the widening that =check_rls_system_tenant_widenings.py= exists to stop, and the audit task removes the widenings that remain.
 
-For this reason three policies let a system-tenant session read every tenant's rows: =batches_system_read_policy=, =workunits_system_read_policy= and =results_system_read_policy=. The policies follow these rules.
+The compute grid shows the rule at work. The fleet (hosts, nodes, node samples) belongs to the installation, and the policy that exposes it is the shared-reference shape. The work (batches, workunits and results) belongs to the tenant that owns it. The operator still needs to see which tenant uses what share of the grid, and the answer is to read each tenant from inside it.
 
-- They are =for select= only. Writes stay with the current tenant.
-- The guard script =check_rls_system_tenant_widenings.py= lists each policy with the reason that the system tenant operates the grid.
-- The hosts need no such policy, because every host belongs to the system tenant.
-- The compute service reads the batches, workunits and results of other tenants for counting and listing. A read across tenants returns metadata. It never returns a workunit input or a result payload.
-- A tenant keeps its own scope. A tenant's administrator reads only the tenant's rows. The party rule narrows them to the parties the session acts for.
+- The usage read counts the session's own tenant and groups it by party. It names no tenant, and a session of the system tenant reads the system tenant's work and no other tenant's.
+- The BFF builds the operator's breakdown. It lists the tenants, enters each one with =readInsideTenant=, reads the usage there, and totals it. The server records each entry and each exit.
+- A tenant that cannot be entered or read is listed as unavailable. It is never shown as empty.
+- The operator's usage is read when the tab opens and when the person asks. It is not polled, because every read enters every tenant.
+- The compute policies carry no system-tenant read, and the guard's exception list names none of them.
 
-The grid usage read shows both scopes from one query. It states no tenant or party. The policies decide the rows, and the session decides the grouping: one group for each tenant for the system tenant, and one group for each party for any other session.
+An exception to the rule needs a stated reason, a review and a sign-off before it goes on the guard's list. The first change to the grid listed three read policies on the grid's behalf with a reason that had not been reviewed. It was withdrawn, because the documented way, entering each tenant, serves the need without a policy.
 
 ** Checklist for a new shared table
 

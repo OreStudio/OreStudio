@@ -8,6 +8,10 @@
 #include "ores.{{component_core}}/presentation/{{entity_singular}}_history_field_mapper.hpp"
 #include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+{{#history_by_row_id}}
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+{{/history_by_row_id}}
 {{/primary_key.is_compound}}
 
 namespace ores::{{component}}::messaging {
@@ -27,7 +31,15 @@ void register_{{entity_singular}}_history_provider(
         "{{component}}::{{entity_plural}}:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::{{entity_singular}}_service svc(scoped_ctx);
+{{#history_by_row_id}}
+            // The declared key is shared by the rows of other scopes, so the
+            // history is addressed by the row's own id.
+            auto versions = svc.get_{{entity_singular_short}}_history(
+                boost::lexical_cast<boost::uuids::uuid>(entity_id));
+{{/history_by_row_id}}
+{{^history_by_row_id}}
             auto versions = svc.get_{{entity_singular_short}}_history(entity_id);
+{{/history_by_row_id}}
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_{{entity_singular}}_fields);
         });

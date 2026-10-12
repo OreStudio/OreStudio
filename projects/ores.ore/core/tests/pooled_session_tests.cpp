@@ -18,11 +18,7 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/run_document_mapper.hpp"
-#include "ores.platform/filesystem/file.hpp"
-#include "ores.reporting.core/repository/report_run_setup_repository.hpp"
-#include "ores.testing/project_root.hpp"
+#include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -43,18 +39,14 @@ namespace {
 
 const std::string tags("[ore][session][database]");
 
-ores::reporting::domain::report_run_setup make_setup(const boost::uuids::uuid& party) {
-    ores::ore::domain::ore run;
-    ores::ore::domain::load_data(
-        ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
-            "external/ore/examples/ORE-Python/Notebooks/Example_1/Input/ore.xml")),
-        run);
-    auto next_id = boost::uuids::random_generator();
-    auto setup = ores::ore::domain::run_document_mapper::map_setup(run);
-    setup.id = next_id();
-    setup.report_definition_id = next_id();
-    ores::database::domain::assign_party(setup, party);
-    return setup;
+ores::reporting::domain::configuration make_header(const boost::uuids::uuid& party) {
+    ores::reporting::domain::configuration header;
+    header.id = boost::uuids::random_generator()();
+    header.name = "pooled session";
+    header.configuration_type_code = "risk_report_config";
+    header.owning_component = "ores.reporting";
+    ores::database::domain::assign_party(header, party);
+    return header;
 }
 
 }
@@ -62,13 +54,13 @@ ores::reporting::domain::report_run_setup make_setup(const boost::uuids::uuid& p
 TEST_CASE("a context without a party does not inherit a pooled connection's party", tags) {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
-    ores::reporting::repository::report_run_setup_repository repo;
-    const auto setup = make_setup(parties.a);
-    repo.write(parties.a_context, setup);
+    ores::reporting::repository::configuration_repository repo;
+    const auto header = make_header(parties.a);
+    repo.write(parties.a_context, header);
 
     const auto tenant_only = h.context().with_tenant(h.tenant_id(), "");
     const auto holds_a = [&](const auto& rows) {
-        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == setup.id; });
+        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == header.id; });
     };
     for (int i = 0; i < 50; ++i) {
         INFO("round " << i);
@@ -81,7 +73,7 @@ TEST_CASE("an actor holding a quote reaches a pooled session", tags) {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto ctx = h.context().with_party(h.tenant_id(), parties.a, {parties.a}, "o'brien");
-    ores::reporting::repository::report_run_setup_repository repo;
-    const auto setup = make_setup(parties.a);
-    CHECK_NOTHROW(repo.write(ctx, setup));
+    ores::reporting::repository::configuration_repository repo;
+    const auto header = make_header(parties.a);
+    CHECK_NOTHROW(repo.write(ctx, header));
 }

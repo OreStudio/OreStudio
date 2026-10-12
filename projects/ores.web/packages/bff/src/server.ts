@@ -37,6 +37,7 @@ import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
 import { registerOresmdRoutes } from './oresmd.js';
+import { registerSeriesRoutes } from './series.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
@@ -138,6 +139,7 @@ import {
     readSessionsPage,
     readTenantStatuses,
     readTenantTypes,
+    TEST_TENANT_TYPE,
     readTenant,
     readPartiesPage,
     readProvisioningRuns,
@@ -1831,9 +1833,6 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         limit: z.int().positive().max(1000),
     });
 
-    /** The tenant type that marks test infrastructure, hidden unless asked for. */
-    const TEST_TENANT_TYPE = 'automation';
-
     /** The deployment's own tenant, which the home page does not count. */
     const SYSTEM_TENANT_TYPE = 'system';
 
@@ -2659,6 +2658,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerConventionRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
+    registerSeriesRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     const scenarioStore =

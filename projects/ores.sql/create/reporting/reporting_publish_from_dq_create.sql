@@ -177,8 +177,11 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- =============================================================================
 
 -- Publishes the risk report configurations a dataset stages for the target
--- party. The copy, the re-keying and the reporting configuration each one is
--- registered as are the shared ores_dq_publish_configuration_document_fn. A
+-- party, each with its analytics and their parameters. The copy, the re-keying and
+-- the reporting configuration each one is registered as are the shared
+-- ores_dq_publish_configuration_document_fn. A staged parameter names its parameter,
+-- and the analytic type comes from the staged analytic it points at, so the
+-- publish resolves the pair to the definition of the target database. A
 -- definition binds a configuration by name, as it binds its pricing engines, so
 -- this publish needs no definition and many definitions can share one row.
 --
@@ -196,6 +199,7 @@ returns table (action text, record_count bigint) as $$
 declare
     v_party_id uuid;
     v_missing  text;
+    v_problems text;
     v_scoped   bigint;
     r          record;
 begin
@@ -224,12 +228,43 @@ begin
         select * from ores_dq_publish_configuration_document_fn(
             p_dataset_id, p_target_tenant_id, v_party_id,
             'risk_report_config', 'ores.reporting', 'ores_reporting_',
-            array['risk_report_configs'])
+            array['risk_report_configs', 'configuration_analytics',
+                  'configuration_analytic_parameters', 'configuration_market_bindings'],
+            array[]::text[],
+            jsonb_build_object('configuration_analytic_parameters', jsonb_build_object(
+                'parameter_definition_id',
+                'select d.id from ores_reporting_parameter_definitions_tbl d '
+                || 'join ores_dq_configuration_analytics_artefact_tbl p '
+                || 'on p.dataset_id = a.dataset_id and p.id = a.configuration_analytic_id '
+                || 'where d.tenant_id = ores_utility_system_tenant_id_fn() '
+                || 'and d.scope = ''analytic'' and d.subtype = p.analytic_type_code '
+                || 'and d.name = a.parameter_name '
+                || 'and d.valid_to = ores_utility_infinity_timestamp_fn()')))
     loop
         action := r.action;
         record_count := r.record_count;
         return next;
     end loop;
+
+    select string_agg(format('%s: %s', x.name, x.problem), '; ' order by x.name)
+    into v_problems
+    from (
+        select c.name,
+               ores_reporting_configuration_analytics_problem_fn(
+                   p_target_tenant_id, c.configuration_id) as problem
+        from ores_reporting_risk_report_configs_tbl c
+        where c.tenant_id = p_target_tenant_id
+          and c.party_id = v_party_id
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+          and c.id in (select ores_dq_party_uuid_fn(v_party_id, a.id)
+                       from ores_dq_risk_report_configs_artefact_tbl a
+                       where a.dataset_id = p_dataset_id)
+    ) x
+    where x.problem is not null;
+    if v_problems is not null then
+        raise exception 'Dataset % stages risk report configurations whose analytics make no run: %.',
+            p_dataset_id, v_problems;
+    end if;
 
     insert into ores_reporting_risk_report_config_portfolios_tbl (
         tenant_id, risk_report_config_id, portfolio_id, valid_from, valid_to

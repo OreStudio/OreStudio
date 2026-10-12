@@ -19,19 +19,35 @@
  *
  */
 
+import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button } from '../ui/Primitives.js';
+import { useActingPartyId } from '../session/SessionProvider.js';
+import { evolutionRoute, seriesOfUrl, seriesRoute, seriesVerdict } from './identity.js';
 import { OresmdEditorDialog } from './OresmdEditor.js';
+import { oresmdQueries } from './queries.js';
+import { OresmdViewDialog } from './OresmdView.js';
+
+const URL_CLASSES = 'break-all font-mono text-xs';
 
 /**
- * An oresmd URL drawn as text with a button that opens it in the editor.
+ * An oresmd URL as a reference, drawn the way the app draws every other.
  *
- * It is how a screen shows a URL it holds: the person reads the URL, and the
- * editor shows what it says field by field and the codec's own spelling. With
- * `onApply` the editor can hand back an edited URL. Without it the editor only
- * shows and copies, which is right for a screen that keeps no URL of its own to
- * change, such as a feed, whose URL follows from its currencies and its curve.
+ * A click on the URL goes to the object it names, so it is a real link: it opens
+ * in a new tab and copies as a link. A series or a quote names a series the party
+ * has. One that declares an axis opens on the Evolution page. One with no axis,
+ * such as a spot rate, opens on the series page, which draws its values over time.
+ * Otherwise the URL is plain text: a fixing has no page, and a series the party
+ * does not have is not there. The server's parse and the party's series list say
+ * which, so the link holds none of the grammar.
+ *
+ * Beside the URL a button opens the dialog. Where the screen stores the URL, with
+ * `onApply`, it is Edit and opens the editor, and the edited URL goes back through
+ * `onApply`. Where the screen keeps no URL to change, such as a feed whose URL
+ * follows from its currencies and its curve, it is Inspect and opens the URL read
+ * as its parts.
  */
 export function OresmdUrl({
     uri,
@@ -42,27 +58,58 @@ export function OresmdUrl({
 }): ReactNode {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
+    const partyId = useActingPartyId();
+    const parsed = useQuery({ ...oresmdQueries.parse(uri), enabled: uri !== '' });
+    const schema = useQuery({ ...oresmdQueries.schema(), enabled: uri !== '' });
+    const list = useQuery({
+        ...oresmdQueries.seriesList(partyId ?? ''),
+        enabled: uri !== '' && partyId !== undefined,
+    });
     if (uri === '') return '';
+    const named =
+        parsed.data === undefined || schema.data === undefined
+            ? undefined
+            : seriesOfUrl(schema.data, parsed.data);
+    // A link is offered only where a page can open the series. Anything else is
+    // text, because a link that ends in an apology is worse than no link.
+    const verdict =
+        named?.ok === true && list.data !== undefined
+            ? seriesVerdict(list.data, named.form).kind
+            : undefined;
+    const target =
+        verdict === 'shown'
+            ? evolutionRoute(uri)
+            : verdict === 'no-shape'
+              ? seriesRoute(uri)
+              : undefined;
     return (
         <span className="flex flex-wrap items-center gap-2">
-            <span className="break-all font-mono text-xs">{uri}</span>
-            <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(true)}>
-                {t('oresmd.open')}
-            </Button>
-            {open && (
-                <OresmdEditorDialog
-                    url={uri}
-                    {...(onApply === undefined
-                        ? {}
-                        : {
-                              onApply: (edited: string) => {
-                                  setOpen(false);
-                                  onApply(edited);
-                              },
-                          })}
-                    onClose={() => setOpen(false)}
-                />
+            {target !== undefined ? (
+                <Link
+                    to={target}
+                    className={`${URL_CLASSES} underline decoration-line-strong underline-offset-2 hover:decoration-accent`}
+                >
+                    {uri}
+                </Link>
+            ) : (
+                <span className={URL_CLASSES}>{uri}</span>
             )}
+            <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(true)}>
+                {t(onApply === undefined ? 'oresmd.inspect' : 'oresmd.edit')}
+            </Button>
+            {open &&
+                (onApply === undefined ? (
+                    <OresmdViewDialog url={uri} onClose={() => setOpen(false)} />
+                ) : (
+                    <OresmdEditorDialog
+                        url={uri}
+                        onApply={(edited) => {
+                            setOpen(false);
+                            onApply(edited);
+                        }}
+                        onClose={() => setOpen(false)}
+                    />
+                ))}
         </span>
     );
 }

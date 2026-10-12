@@ -30,13 +30,13 @@
 
 /**
  * @file xml_ore_run_document_mapper_roundtrip_tests.cpp
- * @brief The run document's Setup block, mapped to the setup entity and back.
+ * @brief The run document's Setup block, mapped to the configuration and back.
  *
  * Every shipped run document is walked: its Setup parameters are read into
- * report_run_setup, the entity is written back out as an ORE parameter list,
- * and the two parameter sets are compared name for name. The entity holds the
- * values as ORE spells them, so nothing is expected to change on the way
- * through and the comparison is exact.
+ * the choices of risk_report_config and the file names of run_file, the two are
+ * written back out as an ORE parameter list, and the two parameter sets are
+ * compared name for name. The values are held as ORE spells them, so nothing is
+ * expected to change on the way through and the comparison is exact.
  */
 
 namespace {
@@ -75,6 +75,7 @@ TEST_CASE("ore_run_document_setup_round_trips_over_the_corpus", tags) {
     int files = 0;
     int ignored_parameters = 0;
     int repeated_parameters = 0;
+    int files_named = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("ore", corpus_root())) {
         ++files;
@@ -89,6 +90,7 @@ TEST_CASE("ore_run_document_setup_round_trips_over_the_corpus", tags) {
         }
 
         const auto setup = run_document_mapper::map_setup(document);
+        files_named += static_cast<int>(setup.files.size());
         const auto reversed = run_document_mapper::reverse_setup(setup);
         const auto exported = parameters_of(reversed);
 
@@ -118,6 +120,7 @@ TEST_CASE("ore_run_document_setup_round_trips_over_the_corpus", tags) {
     // The corpus holds four hundred and sixteen run documents.
     CHECK(files == 416);
     CHECK(ignored_parameters == 0);
+    CHECK(files_named > 0);
 
     // The duplicate count is asserted so the last-occurrence rule is measured
     // rather than assumed: three documents repeat continueOnError three times.
@@ -204,7 +207,7 @@ TEST_CASE("ore_run_document_market_bindings_round_trip_over_the_corpus", tags) {
             INFO(path.string() + ": binding " + std::to_string(i));
             CHECK(mapped.at(i).position == static_cast<int>(i) + 1);
             CHECK(mapped.at(i).role == std::string(document.Markets->Parameter.at(i).name));
-            CHECK(mapped.at(i).configuration_name ==
+            CHECK(mapped.at(i).market_configuration_name ==
                   static_cast<const std::string&>(document.Markets->Parameter.at(i)));
         }
 
@@ -252,4 +255,27 @@ TEST_CASE("ore_run_document_setup_refuses_what_it_cannot_hold", tags) {
                     std::runtime_error);
     CHECK_THROWS_AS(run_document_mapper::map_setup(document_with("logMask", "")),
                     std::runtime_error);
+}
+
+TEST_CASE("ore_run_document_setup_splits_choices_from_file_names", tags) {
+    using namespace ores::ore::domain;
+
+    ore document;
+    const auto add = [&document](const std::string& name, const std::string& value) {
+        parameterListType_Parameter_t parameter;
+        parameter.name = name;
+        static_cast<std::string&>(parameter) = value;
+        document.Setup.Parameter.push_back(parameter);
+    };
+    add("asofDate", "2016-02-05");
+    add("baseCurrency", "EUR");
+    add("conventionsFile", "conventions.xml");
+
+    const auto setup = run_document_mapper::map_setup(document);
+    CHECK(setup.settings.market_data_type == "date");
+    CHECK(setup.settings.market_data_date == "2016-02-05");
+    CHECK(setup.settings.base_currency == std::optional<std::string>("EUR"));
+    REQUIRE(setup.files.size() == 1);
+    CHECK(setup.files.front().parameter == "conventionsFile");
+    CHECK(setup.files.front().name == "conventions.xml");
 }

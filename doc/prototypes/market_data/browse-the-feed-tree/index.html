@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Browse the feed tree prototype — Synthetic feeds</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.crumbs{font-size:.8rem;color:var(--ink-faint)}.crumbs b{color:var(--ink-dim);font-weight:500}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px;align-content:start}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:260px;flex:1}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn.small{padding:2px 9px;font-size:.78rem}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.check{display:inline-flex;gap:6px;align-items:center;font-size:.85rem;color:var(--ink-dim)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+tr.sel td{background:#1d2633}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.plan{border-style:dashed;color:var(--ink-faint)}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.split{display:grid;grid-template-columns:360px 1fr;gap:14px;align-items:start}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.tree{font-size:.88rem;max-height:70vh;overflow:auto}
+.node{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.node:hover{background:var(--panel-2)}.node.sel{background:#1d2633;outline:1px solid #2b4466}
+.twisty{width:14px;text-align:center;color:var(--ink-faint);flex:none}
+.ico{width:18px;text-align:center;flex:none;color:var(--ink-faint)}
+.name{overflow:hidden;text-overflow:ellipsis}
+.roll{margin-left:auto;display:flex;align-items:center;gap:6px;flex:none}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dot.run{background:var(--ok);box-shadow:0 0 6px #3fb95088}.dot.stop{background:#4b4b52}.dot.part{background:linear-gradient(90deg,var(--ok) 50%,#4b4b52 50%)}
+.meter{width:60px;height:6px;border-radius:3px;background:#2d2d33;overflow:hidden;flex:none}.meter i{display:block;height:100%;background:var(--ok)}
+.count{font-family:var(--mono);font-size:.75rem;color:var(--ink-faint)}
+.flags{font-size:.95rem;letter-spacing:-.15em}
+.hero{display:flex;gap:16px;align-items:center}
+.hero .big{font-size:1.5rem;font-weight:700}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:.86rem}.kv dt{color:var(--ink-faint)}.kv dd{margin:0}
+.stat{display:flex;gap:18px;flex-wrap:wrap}.stat div{display:grid}.stat b{font-size:1.3rem}.stat span{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.cols{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:10px;overflow-x:auto}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;display:grid;gap:2px;align-content:start;max-height:66vh;overflow:auto}
+.col h3{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:2px 6px 6px}
+.more{padding:6px;text-align:center;font-size:.8rem;color:var(--accent);cursor:pointer}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:6px;cursor:pointer;align-content:start}
+.card:hover{border-color:var(--accent)}.card h3{font-size:.95rem}.card.new{border-style:dashed;border-color:#2b4466}
+.card .ic{font-size:1.2rem;color:var(--accent)}
+.toast{position:fixed;right:18px;bottom:80px;z-index:70;background:#0b0e13;border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;max-width:420px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:.86rem}
+.dialog-back{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:18px}
+.dialog{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;max-width:520px;display:grid;gap:12px}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The synthetic feeds area: the web successor of the ores.qt Market Simulator
+  (MarketSimulatorWindow.cpp) and its desktop prototype
+  (../synthetic-market-simulator/). One connected flow of screens.
+
+  ?screen=market|synthetic|overview|tree|feed
+    market     Market data, the area: a Synthetic folder card joins Curve
+               evolution, and the FX and IR feed cards move under it.
+    synthetic  Market data › Synthetic: a folder card's page, cards only (Feed
+               overview, Feed tree, FX price feeds, IR curve feeds).
+    overview   Market data › Synthetic › Feed overview: drills down by scope,
+               provider and feed kind in columns, and never lists a feed.
+    tree       Market data › Synthetic › Feed tree: the tree to the feeds, the
+               selected node beside it. Choosing a feed leaves the tree.
+    feed       The feed's existing page (/market-data/fx-feeds/:id or
+               /market-data/ir-feeds/:id), drawn as a stub. Its breadcrumbs run
+               through the tree, and each crumb returns to the tree there.
+
+  The tree follows the story's decision: System feeds by provider, then feed
+  kind; Test feeds by party, then collection. Today the Bloomberg feeds are a
+  party collection; the tree shows the target.
+
+  ?state=mixed|stopped|scale|search switches the mock data:
+    mixed    Bloomberg FX running, Bloomberg IR stopped, a test feed running.
+    stopped  Nothing running.
+    scale    Six providers, about 2,850 feeds, order books planned.
+    search   The tree's search holds "usd sofr".
+
+  Start and Stop work on the mock: the node's feeds change state, the
+  roll-ups recompute, and the report says started, already running, skipped.
+  Moving between screens keeps the selection and the running set; choosing a
+  state reloads the page with fresh mock data, so both reset.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const SCREENS = ['market', 'synthetic', 'overview', 'tree', 'feed', 'fxlist', 'irlist'];
+let screen = SCREENS.includes(params.get('screen')) ? params.get('screen') : 'synthetic';
+const state = params.get('state') || 'mixed';
+function set(key, value) {
+  const p = new URLSearchParams(location.search);
+  p.set(key, value);
+  location.search = p.toString();
+}
+
+const FLAG = {USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',CAD:'🇨🇦',NZD:'🇳🇿',SEK:'🇸🇪',NOK:'🇳🇴',DKK:'🇩🇰',ZAR:'🇿🇦',MXN:'🇲🇽',INR:'🇮🇳',HKD:'🇭🇰',SGD:'🇸🇬',CNH:'🇭🇰',CNY:'🇨🇳',KRW:'🇰🇷',TWD:'🇹🇼',PLN:'🇵🇱',CZK:'🇨🇿',HUF:'🇭🇺',TRY:'🇹🇷',ILS:'🇮🇱',BRL:'🇧🇷',CLP:'🇨🇱',COP:'🇨🇴'};
+const flagsOf = (base, quote) => `<span class="flags">${FLAG[base] || '🏳'}${FLAG[quote] || '🏳'}</span>`;
+
+const BBG_FX = [['EUR','USD',1.1707],['GBP','USD',1.3576],['AUD','USD',.7196],['NZD','USD',.5903],['USD','CAD',1.3609],['USD','CHF',.7822],['USD','DKK',6.3827],['USD','INR',95.32],['USD','JPY',157.68],['USD','MXN',17.3741],['USD','NOK',9.2402],['USD','SEK',9.246],['USD','ZAR',16.6371],['USD','HKD',7.83],['USD','SGD',1.29],['USD','CNH',7.15],['USD','KRW',1440],['USD','TWD',30.5],['USD','PLN',3.65],['USD','CZK',21.2],['USD','HUF',330],['USD','TRY',44],['USD','ILS',3.6],['USD','BRL',5.45],['USD','CLP',940],['USD','COP',4100]];
+const BBG_IR = [['USD','SOFR',.04],['EUR','ESTR',.03],['JPY','TONA',.0025],['GBP','SONIA',.045],['CHF','SARON',.01],['AUD','AONIA',.043],['CAD','CORRA',.035],['CNY','SHIBOR',.018],['HKD','HONIA',.045],['SGD','SORA',.03],['SEK','SWESTR',.025],['NOK','NOWA',.04],['NZD','NZONIA',.04],['KRW','KOFR',.028],['INR','MIBOR',.065],['MXN','TIIE',.1],['ZAR','ZARONIA',.075],['DKK','DESTR',.028],['PLN','POLONIA',.055],['TWD','TAIBOR',.02],['CNH','HIBOR',.018],['CZK','CZEONIA',.035],['HUF','BUBORON',.065],['ILS','TELBORON',.0425],['TRY','TLREF',.38],['BRL','CDI',.14],['CLP','CAMARA',.045],['COP','IBR',.09],['USD','SOFR-FOMC',.04]];
+const ORE_FX = BBG_FX.slice(0, 13).map(([b, q, v]) => [b, q, v * 0.93]);
+const ORE_IR = [['USD','LIBOR-3M',.0062],['EUR','EURIBOR-3M',-.0019],['GBP','LIBOR-6M',.0071],['JPY','LIBOR-6M',.0002]];
+
+let seq = 0;
+const id = () => `n${++seq}`;
+const uuid = () => 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16));
+
+function fxLeaf(ns, [base, quote, level], running, binding) {
+  return {id: id(), type: 'feed', kind: 'fx', label: `${base}/${quote}`, base, quote, running, binding,
+    source: `synthetic.${ns}.${(base + quote).toLowerCase()}`, uuid: uuid(),
+    series: `oresmd://fx/${base}?type=quote&instrument=fx_spot&quote=rate&ccy=${quote}`,
+    process: 'Geometric, 2-component mixture', cadence: '1,800 an hour',
+    value: level, ticks: running ? 1800 + Math.round(Math.random() * 900) : 0};
+}
+function irLeaf(ns, [ccy, family, rate], running, binding) {
+  return {id: id(), type: 'feed', kind: 'ir', label: `${ccy} ${family}`, ccy, running, binding,
+    source: `synthetic.${ns}.${(ccy + family).toLowerCase().replace(/-/g, '')}`, uuid: uuid(),
+    series: `oresmd://ir/${ccy}?type=quote&instrument=ir_swap&quote=rate&tenor=1D`,
+    process: 'Cox-Ingersoll-Ross', cadence: '60 an hour', value: rate,
+    pillars: family === 'SOFR-FOMC' ? 9 : 7, ticks: running ? 40 + Math.round(Math.random() * 30) : 0};
+}
+const folder = (label, extra, children) => ({id: id(), type: 'folder', label, children, ...extra});
+
+function systemFeeds(scale) {
+  const fxOn = state === 'mixed', irOn = false;
+  const providers = [
+    folder('Bloomberg', {icon: '▣', role: 'provider', providerKind: 'Data vendor', binding: 'bound'}, [
+      folder('FX spot', {icon: '⇄', role: 'kind'}, BBG_FX.map(p => fxLeaf('bloomberg', p, fxOn, 'bound'))),
+      folder('IR curves', {icon: '⌒', role: 'kind'}, BBG_IR.map(p => irLeaf('bloomberg', p, irOn, 'bound'))),
+    ]),
+    folder('Generic', {icon: '▢', role: 'provider', providerKind: 'Generic', binding: 'sandboxed'}, [
+      folder('2016 ORE Samples', {icon: '◫', role: 'collection', note: 'A vintage collection: it starts from the 2016-02-05 H.10 rates.'}, [
+        folder('FX spot', {icon: '⇄', role: 'kind'}, ORE_FX.map(p => fxLeaf('2016oresamples', p, false, 'sandboxed'))),
+        folder('IR curves', {icon: '⌒', role: 'kind'}, ORE_IR.map(p => irLeaf('2016oresamples', p, false, 'sandboxed'))),
+      ]),
+    ]),
+  ];
+  if (scale) {
+    const many = (name, kindName, ns, n, prefix, on) => folder(name, {icon: '▣', role: 'provider', providerKind: kindName, binding: 'sandboxed'}, [
+      folder('FX spot', {icon: '⇄', role: 'kind'}, Array.from({length: n}, (_, i) => fxLeaf(ns, ['USD', prefix + String(i).padStart(3, '0'), 1 + i / 100], on && i % 3 === 0, 'sandboxed'))),
+      folder('IR curves', {icon: '⌒', role: 'kind'}, Array.from({length: Math.round(n / 4)}, (_, i) => irLeaf(ns, ['USD', 'CURVE' + i, .03], false, 'sandboxed'))),
+      folder('Order books', {icon: '≣', role: 'kind', planned: true}, []),
+    ]);
+    providers.push(many('Refinitiv', 'Data vendor', 'refinitiv', 420, 'R', true),
+                   many('ICE', 'Exchange', 'ice', 380, 'I', false),
+                   many('CME', 'Exchange', 'cme', 610, 'C', true),
+                   many('LSE', 'Exchange', 'lse', 290, 'L', false),
+                   many('Eurex', 'Exchange', 'eurex', 520, 'X', false));
+  }
+  return folder('System feeds', {icon: '◉', role: 'root', note: 'The installation’s feeds, one folder per provider. Every tenant binds to them; only the system tenant changes them.'}, providers);
+}
+const testFeeds = () => folder('Test feeds', {icon: '◎', role: 'root', note: 'Feeds a tenant or a party made for itself. They are sandboxed: no binding stores their ticks.'}, [
+  folder('ACME Corporation UK plc', {icon: '♟', role: 'party'}, [
+    folder('EUR/USD stress', {icon: '◫', role: 'collection', binding: 'sandboxed', note: 'A party’s test collection: the EUR/USD and GBP/USD spots at three times their usual vol.'}, [
+      folder('FX spot', {icon: '⇄', role: 'kind'}, [fxLeaf('eurusdstress', ['EUR','USD',1.17], state === 'mixed', 'sandboxed'), fxLeaf('eurusdstress', ['GBP','USD',1.36], false, 'sandboxed')]),
+    ]),
+  ]),
+]);
+
+const ROOTS = [systemFeeds(state === 'scale'), testFeeds()];
+const BY_ID = new Map();
+(function index(nodes, parent) {
+  for (const n of nodes) { n.parent = parent; BY_ID.set(n.id, n); if (n.children) index(n.children, n); }
+})(ROOTS, null);
+
+const leaves = n => n.type === 'feed' ? [n] : (n.children || []).flatMap(leaves);
+function roll(n) {
+  const all = leaves(n);
+  const running = all.filter(f => f.running).length;
+  return {total: all.length, running, fx: all.filter(f => f.kind === 'fx').length, ir: all.filter(f => f.kind === 'ir').length,
+          ticks: all.reduce((s, f) => s + f.ticks, 0), state: running === 0 ? 'stop' : running === all.length ? 'run' : 'part'};
+}
+const pathOf = n => { const p = []; for (let x = n; x; x = x.parent) p.unshift(x); return p; };
+const stateWord = r => r.total === 0 ? 'Empty' : r.state === 'run' ? 'Running' : r.state === 'stop' ? 'Stopped' : `${r.running} of ${r.total} running`;
+const stateTag = r => r.total === 0 ? '<span class="tag plan">Empty</span>' : r.state === 'run' ? '<span class="tag ok">Running</span>' : r.state === 'stop' ? '<span class="tag">Stopped</span>' : `<span class="tag warn">${r.running} of ${r.total}</span>`;
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const fmt = v => Math.abs(v) >= 100 ? v.toFixed(2) : Math.abs(v) >= 1 ? v.toFixed(4) : v.toFixed(5);
+const fmtRate = v => (v * 100).toFixed(3) + '%';
+const pageOf = f => f.kind === 'fx' ? `/market-data/fx-feeds/${f.uuid}` : `/market-data/ir-feeds/${f.uuid}`;
+
+let selected = params.get('node') ? BY_ID.get(params.get('node')) : ROOTS[0].children[0];
+const expanded = new Set([ROOTS[0].id, ROOTS[1].id, ROOTS[0].children[0].id]);
+let query = state === 'search' ? 'usd sofr' : '';
+let runningOnly = false;
+let toast = '';
+let pending = null;
+
+function matches(f) {
+  if (runningOnly && !f.running) return false;
+  if (!query) return true;
+  const hay = `${f.label} ${f.source} ${pathOf(f).map(p => p.label).join(' ')}`.toLowerCase();
+  return query.toLowerCase().split(/\s+/).every(w => hay.includes(w));
+}
+const visible = n => n.type === 'feed' ? matches(n) : (n.planned && !query && !runningOnly) || (n.children || []).some(visible);
+
+function ask(node, action) {
+  const r = roll(node);
+  const touched = action === 'start' ? r.total - r.running : r.running;
+  pending = {node, action, r, touched};
+  draw();
+}
+function act() {
+  const {node, action, r} = pending;
+  const all = leaves(node);
+  let changed = 0, already = 0;
+  for (const f of all) {
+    if (action === 'start') { if (f.running) already++; else { f.running = true; f.ticks = 1; changed++; } }
+    else { if (f.running) { f.running = false; changed++; } else already++; }
+  }
+  toast = action === 'start'
+    ? `Started ${changed} feeds under ${node.label}. ${already} already running, 0 skipped. One request named the folder; the server walked the subtree.`
+    : `Stopped ${changed} feeds under ${node.label}. ${already} were not running.`;
+  pending = null;
+  draw();
+  setTimeout(() => { toast = ''; draw(); }, 5000);
+}
+
+function rollChip(n) {
+  if (n.planned) return '<span class="tag plan">Planned</span>';
+  const r = roll(n);
+  if (n.type === 'feed') return `<span class="dot ${n.running ? 'run' : 'stop'}"></span>`;
+  return `<span class="count">${r.running}/${r.total}</span><span class="meter"><i style="width:${r.total ? 100 * r.running / r.total : 0}%"></i></span>`;
+}
+function icon(n) {
+  if (n.type !== 'feed') return `<span class="ico">${n.icon || '▸'}</span>`;
+  return n.kind === 'fx' ? flagsOf(n.base, n.quote) : `<span class="flags">${FLAG[n.ccy] || '🏳'}</span>`;
+}
+
+function treeRows(nodes, depth) {
+  return nodes.filter(visible).map(n => {
+    const open = expanded.has(n.id) || !!query || runningOnly;
+    const twisty = n.type === 'feed' || n.planned ? '' : open ? '▾' : '▸';
+    const row = `<div class="node ${selected === n ? 'sel' : ''}" data-node="${n.id}" style="padding-left:${6 + depth * 16}px">
+      <span class="twisty" data-twist="${n.id}">${twisty}</span>${icon(n)}<span class="name">${n.label}</span><span class="roll">${rollChip(n)}</span></div>`;
+    return row + (n.children && open ? treeRows(n.children, depth + 1) : '');
+  }).join('');
+}
+
+function actions(n, small, noOpen) {
+  if (n.planned) return '';
+  const r = roll(n), cls = small ? 'btn small' : 'btn';
+  const open = n.type === 'feed' && !noOpen ? ` <a class="${cls}" href="#" data-open="${n.id}">Open</a>` : '';
+  return `<button class="${cls}" data-start="${n.id}" ${r.running === r.total ? 'disabled' : ''}>Start</button>
+          <button class="${cls}" data-stop="${n.id}" ${r.running === 0 ? 'disabled' : ''}>Stop</button>${open}`;
+}
+
+function nodePanel(n) {
+  const r = roll(n);
+  const crumbs = pathOf(n).map(p => p === n ? `<b>${p.label}</b>` : `<a href="#" data-node="${p.id}">${p.label}</a>`).join(' › ');
+  if (n.type === 'feed') return feedPanel(n, crumbs);
+  if (n.planned) return `<div class="panel"><p class="crumbs">${crumbs}</p><h1>${n.label}</h1>
+    <p class="notice">A planned kind. The folder shows where order books will sit, so the tree does not change shape when they arrive.</p></div>`;
+  const kids = (n.children || []).filter(visible);
+  const shown = kids.slice(0, 60);
+  const childRows = shown.map(c => {
+    const cr = roll(c);
+    if (c.type === 'feed') return `<tr data-node="${c.id}"><td>${icon(c)} ${c.label}</td><td class="mono faint">${c.source}</td>
+      <td class="num">${c.kind === 'fx' ? fmt(c.value) : fmtRate(c.value)}</td><td>${c.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}</td>
+      <td class="num">${c.ticks.toLocaleString()}</td><td>${actions(c, true)}</td></tr>`;
+    return `<tr data-node="${c.id}"><td><span class="ico">${c.icon || '▸'}</span> ${c.label}</td><td class="faint">${c.planned ? 'planned' : `${cr.fx} FX · ${cr.ir} IR`}</td>
+      <td class="num">${cr.total.toLocaleString()}</td><td>${c.planned ? '<span class="tag plan">Planned</span>' : stateTag(cr)}</td><td class="num">${cr.ticks.toLocaleString()}</td><td>${actions(c, true)}</td></tr>`;
+  }).join('');
+  const feedHead = kids.length && kids[0].type === 'feed';
+  const more = kids.length > shown.length ? `<p class="faint">Showing ${shown.length} of ${kids.length.toLocaleString()}. The page loads the next 60 on scroll; the search narrows by name or source.</p>` : '';
+  return `<div class="panel"><p class="crumbs">${crumbs}</p>
+    <div class="top"><h1>${n.label}</h1>${n.providerKind ? `<span class="tag">${n.providerKind}</span>` : ''}${n.binding ? `<span class="tag ${n.binding === 'bound' ? 'ok' : ''}">${n.binding === 'bound' ? 'Bound' : 'Sandboxed'}</span>` : ''}${stateTag(r)}</div>
+    ${n.note ? `<p class="muted">${n.note}</p>` : ''}
+    <div class="stat"><div><b>${r.total.toLocaleString()}</b><span>Feeds</span></div><div><b>${r.running.toLocaleString()}</b><span>Running</span></div>
+      <div><b>${r.fx.toLocaleString()}</b><span>FX spots</span></div><div><b>${r.ir.toLocaleString()}</b><span>IR curves</span></div><div><b>${r.ticks.toLocaleString()}</b><span>Ticks this hour</span></div></div>
+    <div class="toolbar">${actions(n)}<span class="faint">Start and Stop act on every feed under ${n.label}, in one request.</span></div>
+    <table><thead><tr><th>${feedHead ? 'Feed' : 'Folder'}</th><th>${feedHead ? 'Source' : 'Holds'}</th><th class="num">${feedHead ? 'Last' : 'Feeds'}</th><th>State</th><th class="num">Ticks</th><th></th></tr></thead><tbody>${childRows}</tbody></table>${more}</div>`;
+}
+
+function feedPanel(f, crumbs) {
+  const hero = f.kind === 'fx'
+    ? `<div class="hero"><span style="font-size:2.2rem">${flagsOf(f.base, f.quote)}</span><div><div class="big">${f.base}/${f.quote}</div><div class="muted">FX spot · ${fmt(f.value)}</div></div></div>`
+    : `<div class="hero"><span style="font-size:2.2rem">${FLAG[f.ccy] || '🏳'}</span><div><div class="big">${f.label}</div><div class="muted">IR curve · ${f.pillars} pillars · short rate ${fmtRate(f.value)}</div></div></div>`;
+  return `<div class="panel"><p class="crumbs">${crumbs}</p>${hero}
+    <div class="toolbar">${f.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}${actions(f)}</div>
+    <dl class="kv"><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${esc(f.series)}</dd>
+      <dt>Process</dt><dd>${f.process}</dd><dt>Cadence</dt><dd>${f.cadence}</dd><dt>Binding</dt><dd>${f.binding === 'bound' ? 'Bound: every bound party stores its ticks' : 'Sandboxed: no binding stores its ticks'}</dd>
+      <dt>Ticks this hour</dt><dd>${f.ticks.toLocaleString()}</dd></dl>
+    <p class="notice">The tree manages runs. The feed’s process, mixture, curve template and history are on its own page:
+      <a href="#" data-open="${f.id}">${pageOf(f)}</a>.</p></div>`;
+}
+
+function go(next, node) {
+  screen = next;
+  if (node) { selected = node; for (const p of pathOf(node)) expanded.add(p.id); }
+  window.scrollTo(0, 0);
+  draw();
+}
+
+const crumbTrail = (...parts) => `<p class="crumbs">${parts.join(' › ')}</p>`;
+const toMarket = '<a href="#" data-go="market">Market data</a>';
+const toSynthetic = '<a href="#" data-go="synthetic">Synthetic</a>';
+const toTree = '<a href="#" data-go="tree">Feed tree</a>';
+
+function marketScreen() {
+  const card = (ic, title, body, target, extra = '') => `<div class="card ${extra}" ${target ? `data-go="${target}"` : ''}><span class="ic">${ic}</span><h3>${title}</h3><p class="muted">${body}</p></div>`;
+  return `${crumbTrail('<b>Market data</b>')}
+    <div class="top"><h1>Market data</h1></div><p class="muted">The prices and curves the platform receives or generates.</p>
+    <div class="cards">${card('◇', 'Synthetic', 'The feeds the platform generates: an overview of what runs, the feed tree, and the FX and IR feeds.', 'synthetic', 'new')}
+      ${card('〜', 'Curve evolution', 'Read a curve or surface over a range of instants, and as it stands now.', '')}</div>
+    <p class="notice">Synthetic is new. The FX price feeds and IR curve feeds cards move under it, beside the feed tree.</p>`;
+}
+
+function overviewPanel(n) {
+  const r = roll(n);
+  const kids = (n.children || []).filter(c => c.type !== 'feed');
+  const rows = kids.map(c => {
+    const cr = roll(c);
+    return `<tr data-node="${c.id}"><td><span class="ico">${c.icon || '▸'}</span> ${c.label}</td><td class="faint">${c.planned ? 'planned' : `${cr.fx.toLocaleString()} FX · ${cr.ir.toLocaleString()} IR`}</td>
+      <td class="num">${cr.total.toLocaleString()}</td><td>${c.planned ? '<span class="tag plan">Planned</span>' : stateTag(cr)}</td><td class="num">${cr.ticks.toLocaleString()}</td><td>${actions(c, true)}</td></tr>`;
+  }).join('');
+  const kindTail = n.role === 'kind' && !n.planned
+    ? `<p class="notice">The overview stops at the feed kind. The ${r.total.toLocaleString()} feeds are in the feed tree.</p>` : '';
+  return `<div class="panel">
+    <div class="top"><h1>${n.label}</h1>${n.providerKind ? `<span class="tag">${n.providerKind}</span>` : ''}${n.binding ? `<span class="tag ${n.binding === 'bound' ? 'ok' : ''}">${n.binding === 'bound' ? 'Bound' : 'Sandboxed'}</span>` : ''}${n.planned ? '<span class="tag plan">Planned</span>' : stateTag(r)}</div>
+    ${n.note ? `<p class="muted">${n.note}</p>` : ''}
+    <div class="stat"><div><b>${r.total.toLocaleString()}</b><span>Feeds</span></div><div><b>${r.running.toLocaleString()}</b><span>Running</span></div>
+      <div><b>${r.fx.toLocaleString()}</b><span>FX spots</span></div><div><b>${r.ir.toLocaleString()}</b><span>IR curves</span></div><div><b>${r.ticks.toLocaleString()}</b><span>Ticks this hour</span></div></div>
+    <div class="toolbar">${actions(n)}<button class="btn" data-totree="${n.id}">Open in feed tree</button></div>
+    ${rows ? `<table><thead><tr><th>Folder</th><th>Holds</th><th class="num">Feeds</th><th>State</th><th class="num">Ticks</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : ''}${kindTail}</div>`;
+}
+
+function syntheticScreen() {
+  const card = (ic, title, body, target) => `<div class="card" data-go="${target}"><span class="ic">${ic}</span><h3>${title}</h3><p class="muted">${body}</p></div>`;
+  return `${crumbTrail(toMarket, '<b>Synthetic</b>')}
+    <div class="top"><h1>Synthetic</h1></div><p class="muted">The feeds the platform generates rather than receives.</p>
+    <div class="cards">${card('▦', 'Feed overview', 'What runs, by scope, provider and kind. Start and stop a provider or a kind.', 'overview')}
+      ${card('⌸', 'Feed tree', 'Every feed by provider and scope. Start and stop any folder, and open a feed.', 'tree')}
+      ${card('⇄', 'FX price feeds', 'The synthetic FX spot feeds and the mixture that generates each.', 'fxlist')}
+      ${card('⌒', 'IR curve feeds', 'The synthetic curve feeds and the process and template of each.', 'irlist')}</div>
+    <p class="notice">A folder card's page holds cards and nothing else (menu structure, The area page), so the overview is a screen of its own.</p>`;
+}
+
+function overviewScreen() {
+  const chain = pathOf(selected.type === 'feed' ? selected.parent : selected);
+  const levels = [ROOTS, ...chain.filter(n => n.children && n.role !== 'kind').map(n => n.children.filter(c => c.type !== 'feed'))].filter(l => l.length);
+  const cols = levels.map((nodes, i) => {
+    const title = i === 0 ? 'Scope' : chain[i - 1].label;
+    return `<div class="col"><h3>${title}</h3>${nodes.map(n => `<div class="node ${chain.includes(n) ? 'sel' : ''}" data-node="${n.id}"><span class="ico">${n.icon || '▸'}</span><span class="name">${n.label}</span><span class="roll">${rollChip(n)}</span></div>`).join('')}</div>`;
+  }).join('');
+  const total = ROOTS.reduce((s, n) => s + roll(n).total, 0), running = ROOTS.reduce((s, n) => s + roll(n).running, 0);
+  return `${crumbTrail(toMarket, toSynthetic, '<b>Feed overview</b>')}
+    <div class="top"><h1>Feed overview</h1><span class="muted">${running.toLocaleString()} of ${total.toLocaleString()} feeds running</span></div>
+    <div class="cols">${cols}</div>${overviewPanel(chain[chain.length - 1])}`;
+}
+
+function treeScreen() {
+  const n = selected;
+  const shown = n.type === 'feed' ? n.parent : n;
+  return `${crumbTrail(toMarket, toSynthetic, '<b>Feed tree</b>')}
+    <div class="top"><h1>Feed tree</h1></div>
+    <div class="toolbar"><input class="search" id="q" placeholder="Search feeds by name, source or folder" value="${esc(query).replace(/"/g, '&quot;')}">
+      <label class="check"><input type="checkbox" id="ro" ${runningOnly ? 'checked' : ''}> Running only</label>
+      ${query || runningOnly ? `<span class="tag warn">${ROOTS.flatMap(leaves).filter(matches).length.toLocaleString()} match</span>` : ''}
+      <button class="btn" id="expand">Expand</button><button class="btn" id="collapse">Collapse</button></div>
+    <div class="split"><div class="panel"><div class="tree">${treeRows(ROOTS, 0)}</div></div>${nodePanel(shown)}</div>`;
+}
+
+function feedScreen() {
+  const f = selected;
+  const path = pathOf(f);
+  const crumbs = [toMarket, toSynthetic, toTree, ...path.slice(0, -1).map(p => `<a href="#" data-crumb="${p.id}">${p.label}</a>`), `<b>${f.label}</b>`];
+  const hero = f.kind === 'fx'
+    ? `<div class="hero"><span style="font-size:2.2rem">${flagsOf(f.base, f.quote)}</span><div><div class="big">${f.base}/${f.quote}</div><div class="muted">FX spot · ${fmt(f.value)}</div></div></div>`
+    : `<div class="hero"><span style="font-size:2.2rem">${FLAG[f.ccy] || '🏳'}</span><div><div class="big">${f.label}</div><div class="muted">IR curve · ${f.pillars} pillars · short rate ${fmtRate(f.value)}</div></div></div>`;
+  return `${crumbTrail(...crumbs)}${hero}
+    <div class="toolbar">${f.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}${actions(f, false, true)}</div>
+    <div class="panel"><p class="notice">The feed’s existing page, ${pageOf(f)}, drawn as a stub. It keeps its tabs (the ${f.kind === 'fx' ? 'mixture and ticks' : 'process, template and ticks'}) and its history.
+      What changes is the breadcrumb: it runs through the tree, so each folder on it returns to the feed tree with that folder chosen.</p>
+      <dl class="kv"><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${esc(f.series)}</dd><dt>Process</dt><dd>${f.process}</dd><dt>Cadence</dt><dd>${f.cadence}</dd></dl></div>`;
+}
+
+function listStub(kind) {
+  const all = ROOTS.flatMap(leaves).filter(f => f.kind === kind);
+  return `${crumbTrail(toMarket, toSynthetic, `<b>${kind === 'fx' ? 'FX price feeds' : 'IR curve feeds'}</b>`)}
+    <div class="top"><h1>${kind === 'fx' ? 'FX price feeds' : 'IR curve feeds'}</h1><span class="muted">${all.length.toLocaleString()} feeds</span></div>
+    <p class="notice">The existing list screen, unchanged but for its place: it now sits under Synthetic, and its breadcrumb says so.</p>`;
+}
+
+function draw() {
+  document.getElementById('note').textContent =
+    `Prototype · Synthetic feeds · screen ${screen} · state ${state} · mock data · nothing is started`;
+  const body = screen === 'market' ? marketScreen() : screen === 'tree' ? treeScreen() : screen === 'feed' ? feedScreen()
+             : screen === 'fxlist' ? listStub('fx') : screen === 'irlist' ? listStub('ir') : screen === 'overview' ? overviewScreen() : syntheticScreen();
+  const dialog = pending ? `<div class="dialog-back"><div class="dialog"><h1>${pending.action === 'start' ? 'Start' : 'Stop'} ${pending.node.label}?</h1>
+      <p>${pending.action === 'start' ? `Starts ${pending.touched.toLocaleString()} feeds; ${pending.r.running.toLocaleString()} are already running.` : `Stops ${pending.touched.toLocaleString()} running feeds.`}
+      ${pending.node.binding === 'bound' && pending.action === 'stop' ? ' Every party bound to these feeds stops receiving their ticks.' : ''}</p>
+      <p class="faint">One folder-scoped request; the server walks the subtree and reports what it started, what was already running and what it skipped.</p>
+      <div class="toolbar"><button class="btn primary" id="go">${pending.action === 'start' ? 'Start' : 'Stop'}</button><button class="btn" id="cancel">Cancel</button></div></div></div>` : '';
+  document.getElementById('app').innerHTML = body + dialog + (toast ? `<div class="toast">${toast}</div>` : '');
+  wire();
+  bar.querySelectorAll('[data-sc]').forEach(b => b.classList.toggle('on', b.dataset.sc === screen));
+}
+
+function wire() {
+  const app = document.getElementById('app');
+  app.querySelectorAll('[data-go]').forEach(e => e.onclick = ev => { ev.preventDefault(); go(e.dataset.go); });
+  app.querySelectorAll('[data-crumb]').forEach(e => e.onclick = ev => { ev.preventDefault(); go('tree', BY_ID.get(e.dataset.crumb)); });
+  app.querySelectorAll('[data-totree]').forEach(e => e.onclick = () => go('tree', BY_ID.get(e.dataset.totree)));
+  app.querySelectorAll('[data-twist]').forEach(e => e.onclick = ev => { ev.stopPropagation(); const k = e.dataset.twist; expanded.has(k) ? expanded.delete(k) : expanded.add(k); draw(); });
+  app.querySelectorAll('[data-node]').forEach(e => e.onclick = ev => {
+    if (ev.target.closest('button,[data-twist]')) return;
+    ev.preventDefault();
+    const n = BY_ID.get(e.dataset.node);
+    if (n.type === 'feed') return go('feed', n);
+    selected = n; for (const p of pathOf(n)) expanded.add(p.id); expanded.add(n.id); draw();
+  });
+  app.querySelectorAll('[data-start]').forEach(e => e.onclick = ev => { ev.stopPropagation(); ask(BY_ID.get(e.dataset.start), 'start'); });
+  app.querySelectorAll('[data-stop]').forEach(e => e.onclick = ev => { ev.stopPropagation(); ask(BY_ID.get(e.dataset.stop), 'stop'); });
+  app.querySelectorAll('[data-open]').forEach(e => e.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); go('feed', BY_ID.get(e.dataset.open)); });
+  const q = document.getElementById('q');
+  if (q) q.oninput = () => { query = q.value; draw(); const again = document.getElementById('q'); again.focus(); again.setSelectionRange(again.value.length, again.value.length); };
+  const ro = document.getElementById('ro'); if (ro) ro.onchange = e => { runningOnly = e.target.checked; draw(); };
+  const ex = document.getElementById('expand'); if (ex) ex.onclick = () => { BY_ID.forEach(n => { if (n.children && n.children.length <= 60) expanded.add(n.id); }); draw(); };
+  const co = document.getElementById('collapse'); if (co) co.onclick = () => { expanded.clear(); draw(); };
+  const goBtn = document.getElementById('go'); if (goBtn) goBtn.onclick = act;
+  const cancel = document.getElementById('cancel'); if (cancel) cancel.onclick = () => { pending = null; draw(); };
+}
+
+const bar = document.getElementById('bar');
+bar.innerHTML = '<span class="label faint">Screen</span>' +
+  [['market', 'Market data'], ['synthetic', 'Synthetic'], ['overview', 'Feed overview'], ['tree', 'Feed tree']].map(([v, l]) => `<button data-sc="${v}">${l}</button>`).join('') +
+  '<span class="sep">|</span><span class="label faint">State</span>' +
+  ['mixed', 'stopped', 'scale', 'search'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+bar.querySelectorAll('[data-sc]').forEach(b => b.onclick = () => go(b.dataset.sc));
+bar.querySelectorAll('[data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+if (screen === 'feed' && selected.type !== 'feed') selected = leaves(ROOTS[0])[0];
+
+draw();
+</script>
+</body>
+</html>

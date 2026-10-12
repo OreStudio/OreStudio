@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
+    "app/claim_loop.cpp"
     "app/host.cpp"
     "app/log_publisher.cpp"
     "config/options.cpp"
@@ -31,6 +32,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/app/application.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/app/claim_loop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/app/host.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/app/log_publisher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/config/options.hpp"

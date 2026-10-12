@@ -28,6 +28,8 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/run_grant_history_field_mapper.hpp"
 #include "ores.iam.core/service/run_grant_service.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::messaging {
 
@@ -37,7 +39,10 @@ void register_run_grant_history_provider(ores::history::service::dispatch_regist
         "iam::run_grants:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::run_grant_service svc(scoped_ctx);
-            auto versions = svc.get_grant_history(entity_id);
+            // The declared key is shared by the rows of other scopes, so the
+            // history is addressed by the row's own id.
+            auto versions =
+                svc.get_grant_history(boost::lexical_cast<boost::uuids::uuid>(entity_id));
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_run_grant_fields);
         });

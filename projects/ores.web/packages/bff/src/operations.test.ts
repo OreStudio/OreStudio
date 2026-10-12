@@ -158,6 +158,38 @@ function wireGridStats(overrides: Record<string, unknown> = {}): Record<string, 
     };
 }
 
+const ACME_TENANT_ID = '44444444-4444-4444-4444-444444444444';
+const BARCLAYS_TENANT_ID = '55555555-5555-5555-5555-555555555555';
+
+const TENANT_TYPES = {
+    types: [
+        { type: 'production', name: 'Production', display_order: 1 },
+        { type: 'automation', name: 'Automation', display_order: 2 },
+        { type: 'system', name: 'System', display_order: 3 },
+    ],
+};
+
+/** One tenant as the registry writes it. */
+function wireUsageTenant(id: string, code: string, name: string): Record<string, unknown> {
+    return {
+        version: 1,
+        tenant_id: SYSTEM_TENANT,
+        id,
+        code,
+        name,
+        type: 'production',
+        description: '',
+        hostname: code,
+        status: 'active',
+        is_registration_default: false,
+        modified_by: 'system',
+        performed_by: 'system',
+        change_reason_code: 'new',
+        change_commentary: '',
+        recorded_at: '2026-10-01 09:00:00Z',
+    };
+}
+
 /** A grid usage reply as the wire answers it: two groups, the second with no party. */
 function wireGridUsage(overrides: Record<string, unknown> = {}): Record<string, unknown> {
     return {
@@ -173,6 +205,7 @@ function wireGridUsage(overrides: Record<string, unknown> = {}): Record<string, 
         results_done: [20, 10],
         outcomes_success: [18, 10],
         outcomes_failed: [2, 0],
+        oldest_unsent_seconds: [90, 0],
         ...overrides,
     };
 }
@@ -240,19 +273,77 @@ function buildTestServer(
     nodeSeries: Record<string, unknown> = wireNodeSeries(),
     usage: Record<string, unknown> = wireGridUsage(),
     parties: readonly Record<string, unknown>[] = [],
+    tenants: readonly Record<string, unknown>[] = [],
+    usageByTenant: Readonly<Record<string, Record<string, unknown> | Error>> = {},
 ) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
     const client = {
         async callAuthenticated(
             subject: string,
-            _body: unknown,
+            body: unknown,
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
             if (subject === MY_ROLES_SUBJECT) {
                 return schema.parse(myRolesAnswer(mode, permissionCodes));
             }
+            calls.push({ subject, body });
+            if (subject === 'compute.v1.ops.get_grid_usage') {
+                return schema.parse(usage);
+            }
+            if (subject === 'iam.v1.tenant_types.list') {
+                return schema.parse(TENANT_TYPES);
+            }
+            if (subject === 'dq.v1.badge_definitions.list') {
+                return schema.parse({});
+            }
+            if (subject === 'iam.v1.tenants.list') {
+                return schema.parse({
+                    result: { outcome: 'ok' },
+                    tenants,
+                    total: tenants.length,
+                });
+            }
             throw new Error(`unexpected call ${subject}`);
+        },
+        async readInsideTenant<T>(
+            tenantId: string,
+            read: (caller: {
+                callAuthenticated: (
+                    subject: string,
+                    body: unknown,
+                    schema: { parse: (value: unknown) => unknown },
+                ) => Promise<unknown>;
+            }) => Promise<T>,
+        ): Promise<T> {
+            calls.push({ subject: 'enter', body: tenantId });
+            try {
+                const answer = usageByTenant[tenantId];
+                if (answer instanceof Error) {
+                    throw answer;
+                }
+                return await read({
+                    callAuthenticated: async (subject, _body, schema) => {
+                        calls.push({ subject: `inside ${subject}`, body: tenantId });
+                        return schema.parse(
+                            answer ??
+                                wireGridUsage({
+                                    keys: [],
+                                    batches: [],
+                                    workunits: [],
+                                    results: [],
+                                    results_unsent: [],
+                                    results_in_progress: [],
+                                    results_done: [],
+                                    outcomes_success: [],
+                                    outcomes_failed: [],
+                                }),
+                        );
+                    },
+                });
+            } finally {
+                calls.push({ subject: 'leave', body: tenantId });
+            }
         },
         async serviceRoster(): Promise<readonly Record<string, unknown>[]> {
             calls.push({ subject: 'telemetry.v1.ops.get_service_roster', body: {} });
@@ -269,10 +360,6 @@ function buildTestServer(
         async nodeSeries(input: Record<string, unknown>): Promise<Record<string, unknown>> {
             calls.push({ subject: 'compute.v1.ops.get_node_series', body: input });
             return nodeSeries;
-        },
-        async gridUsage(): Promise<Record<string, unknown>> {
-            calls.push({ subject: 'compute.v1.ops.get_grid_usage', body: {} });
-            return usage;
         },
         async listParties(): Promise<readonly Record<string, unknown>[]> {
             calls.push({ subject: 'refdata.v1.parties.list', body: {} });
@@ -711,6 +798,24 @@ describe('GET /api/operations/grid/usage', () => {
         expect(response.json<{ groups: { share: number }[] }>().groups[0]?.share).toBe(0);
     });
 
+    it('serves the wait of the oldest waiting job of each party', async () => {
+        const { server, cookies } = buildTestServer('tenant-administration', [], wireGridStats());
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/usage',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(
+            response
+                .json<{ groups: { oldest_unsent_seconds: number }[] }>()
+                .groups.map((group) => group.oldest_unsent_seconds),
+        ).toEqual([90, 0]);
+    });
+
     it('takes no query fields', async () => {
         const { server, cookies, calls } = buildTestServer('tenant', []);
 
@@ -735,6 +840,171 @@ describe('GET /api/operations/grid/usage', () => {
         await server.close();
 
         expect(response.statusCode).toBe(401);
+    });
+});
+
+describe('GET /api/operations/grid/usage for an operator', () => {
+    const TENANTS = [
+        wireUsageTenant(SYSTEM_TENANT, 'system', 'System'),
+        wireUsageTenant(ACME_TENANT_ID, 'acme_corporation', 'Acme Corporation'),
+        wireUsageTenant(BARCLAYS_TENANT_ID, 'barclays', 'Barclays Plc'),
+    ];
+    const ACME_USAGE = wireGridUsage({
+        keys: ['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'],
+        batches: [2, 1],
+        workunits: [20, 10],
+        results: [20, 10],
+        results_unsent: [0, 0],
+        results_in_progress: [0, 0],
+        results_done: [20, 10],
+        outcomes_success: [20, 10],
+        outcomes_failed: [0, 0],
+        oldest_unsent_seconds: [120, 5400],
+    });
+    const BARCLAYS_USAGE = wireGridUsage({
+        keys: ['cccccccc-cccc-4ccc-8ccc-cccccccccccc'],
+        batches: [1],
+        workunits: [10],
+        results: [10],
+        results_unsent: [0],
+        results_in_progress: [0],
+        results_done: [10],
+        outcomes_success: [10],
+        outcomes_failed: [0],
+        oldest_unsent_seconds: [0],
+    });
+    const SYSTEM_USAGE = wireGridUsage({
+        keys: [''],
+        batches: [0],
+        workunits: [0],
+        results: [0],
+        results_unsent: [0],
+        results_in_progress: [0],
+        results_done: [0],
+        outcomes_success: [0],
+        outcomes_failed: [0],
+        oldest_unsent_seconds: [0],
+    });
+
+    function operatorServer(
+        usageByTenant: Readonly<Record<string, Record<string, unknown> | Error>>,
+    ) {
+        return buildTestServer(
+            'system-administration',
+            [],
+            wireGridStats(),
+            [],
+            [],
+            [],
+            [],
+            undefined,
+            wireGridSeries(),
+            wireNodeSeries(),
+            SYSTEM_USAGE,
+            [],
+            TENANTS,
+            usageByTenant,
+        );
+    }
+
+    it('enters each other tenant, reads its usage there and totals it by tenant', async () => {
+        const { server, cookies, calls } = operatorServer({
+            [ACME_TENANT_ID]: ACME_USAGE,
+            [BARCLAYS_TENANT_ID]: BARCLAYS_USAGE,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/usage',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json<{
+            group_kind: string;
+            groups: {
+                name: string;
+                results: number;
+                share: number;
+                oldest_unsent_seconds: number;
+                unavailable: boolean;
+            }[];
+        }>();
+        expect(body.group_kind).toBe('tenant');
+        expect(body.groups.map((group) => group.name)).toEqual([
+            'System',
+            'Acme Corporation',
+            'Barclays Plc',
+        ]);
+        expect(body.groups.map((group) => group.results)).toEqual([0, 30, 10]);
+        expect(body.groups.map((group) => group.share)).toEqual([0, 0.75, 0.25]);
+        // A tenant's wait is the longest wait of its parties.
+        expect(body.groups.map((group) => group.oldest_unsent_seconds)).toEqual([0, 5400, 0]);
+        // The session's own tenant is read as the session and the others are entered.
+        const entered = calls.filter((call) => call.subject === 'enter').map((call) => call.body);
+        expect(entered).toEqual([ACME_TENANT_ID, BARCLAYS_TENANT_ID]);
+        expect(calls.filter((call) => call.subject === 'leave')).toHaveLength(2);
+    });
+
+    it('lists a tenant it could not read as unavailable and still serves the rest', async () => {
+        const { server, cookies } = operatorServer({
+            [ACME_TENANT_ID]: new Error('The tenant could not be entered.'),
+            [BARCLAYS_TENANT_ID]: BARCLAYS_USAGE,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/usage',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const groups = response.json<{
+            groups: { name: string; results: number; share: number; unavailable: boolean }[];
+        }>().groups;
+        const acme = groups.find((group) => group.name === 'Acme Corporation');
+        const barclays = groups.find((group) => group.name === 'Barclays Plc');
+        expect(acme?.unavailable).toBe(true);
+        expect(acme?.results).toBe(0);
+        expect(barclays?.unavailable).toBe(false);
+        // The unreadable tenant is outside the total, so the share is of what could be read.
+        expect(barclays?.share).toBe(1);
+    });
+
+    it('leaves the test infrastructure tenants out of the list it asks for', async () => {
+        const { server, cookies, calls } = operatorServer({});
+
+        await server.inject({ method: 'GET', url: '/api/operations/grid/usage', cookies });
+        await server.close();
+
+        const listed = calls.find((call) => call.subject === 'iam.v1.tenants.list');
+        const filter = (listed?.body as { filter: { type_one_of: string[] } }).filter;
+        expect(filter.type_one_of).toEqual(['production', 'system']);
+    });
+
+    it('refuses an operator without the read of the deployment as a whole', async () => {
+        const { server, cookies, calls } = buildTestServer(
+            'system-administration',
+            [],
+            wireGridStats(),
+            [],
+            [],
+            [],
+            [],
+            ['*'],
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/usage',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(403);
+        expect(calls.filter((call) => call.subject === 'enter')).toEqual([]);
     });
 });
 

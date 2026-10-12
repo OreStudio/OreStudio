@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 370AC554-5C70-4235-8A74-22A468E2B6CF
+:END:
+#+title: Codegen an installation-owned current-state table
+#+description: The work ledger is a mutable table that only a session of the system tenant reads or writes, with atomic claim statements. The entity templates offer a current-state shape and a shared-reference policy, and no policy that admits the system tenant alone, so the ledger is hand-written. Let a model state the installation-only policy and generate the table, the domain and the repository base.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let an entity model state that a table belongs to the installation, and generate it. The model would say three things.
+
+- The table is a mutable current-state table with a key of its own, so it has no validity window and no version.
+- Its policy admits a session of the system tenant alone, written =tenant_id = current and tenant_id = system=. That admits no tenant's rows to anyone else, so the RLS guard does not flag it.
+- Its writes are atomic statements that the repository holds by hand, such as a claim that takes one row with =for update skip locked=.
+
+From that the codegen would produce the table and its drop script, the policy, the domain type and the repository base with the plain reads and writes.
+
+* Why
+
+The work ledger is the queue of the compute grid. A queue that serves every tenant cannot be a query over every tenant's results, because no policy lets the system tenant read another tenant's work. The ledger is the installation's, with one entry for each result, holding ids, times and counts, and the service reads it as the system tenant.
+
+The entity templates offer the current-state shape that the grid samples use, and the shared-reference policy that admits the system tenant's rows to every session. They offer no policy that admits the system tenant alone, so the ledger is hand-written: its create and drop scripts, its repository and its tests. Every installation-owned scheduling table that follows will want the same shape, and a hand-written one drifts from the conventions the generated tables keep.
+
+* References
+
+- =projects/ores.sql/create/compute/compute_work_ledger_create.sql=, the hand-written table and its policy.
+- =projects/ores.compute/core/src/repository/work_ledger_repository.cpp=, the atomic statements.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]], where the ledger is described.
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]], the three ownership classes.
+
+* See also
+
+- [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Story: Keep queued grid jobs runnable for as long as they wait]], where the ledger was written.

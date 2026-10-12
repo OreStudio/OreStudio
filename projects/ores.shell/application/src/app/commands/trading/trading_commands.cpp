@@ -37,6 +37,7 @@
 #include "ores.shell/app/commands/trading/commodity_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_leg_commands.hpp"
+#include "ores.shell/app/commands/trading/credit_basket_constituent_commands.hpp"
 #include "ores.shell/app/commands/trading/credit_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_accumulator_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_asian_option_instrument_commands.hpp"
@@ -111,6 +112,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     commodity_instrument_commands::register_commands(root_menu, session);
     composite_instrument_commands::register_commands(root_menu, session);
     composite_leg_commands::register_commands(root_menu, session);
+    credit_basket_constituent_commands::register_commands(root_menu, session);
     credit_instrument_commands::register_commands(root_menu, session);
     equity_accumulator_instrument_commands::register_commands(root_menu, session);
     equity_asian_option_instrument_commands::register_commands(root_menu, session);

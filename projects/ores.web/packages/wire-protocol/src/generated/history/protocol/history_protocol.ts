@@ -46,7 +46,8 @@ export interface EntityHistoryVersion {
  *
  * entity_type is the dispatch key (e.g. "ores.refdata.currency"); entity_id
  * is the entity's own primary key rendered as a string, since key shapes vary
- * across entities.
+ * across entities. A row that shares its declared key with rows of other
+ * scopes, such as a party's contact type, is addressed by its own id.
  *
  * The subject names the component that OWNS the entity, which this model
  * cannot know: the same request reaches iam.v1.history.get for an IAM entity

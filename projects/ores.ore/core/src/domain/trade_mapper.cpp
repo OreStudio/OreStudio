@@ -135,7 +135,7 @@ trade_mapper::map_bond_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<trading::domain::credit_instrument>
+std::optional<trading::domain::credit_instrument_data>
 trade_mapper::map_credit_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "CreditDefaultSwap")

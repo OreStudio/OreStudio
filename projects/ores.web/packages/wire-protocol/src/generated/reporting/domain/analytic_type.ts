@@ -37,6 +37,7 @@ export interface AnalyticType {
     name: string;
     description: string;
     parameter_entity: string | null;
+    requires_analytic_type_code: string | null;
     display_order: number;
     modified_by: string;
     performed_by: string;

@@ -1,0 +1,762 @@
+[
+  {
+    "company_code": "acme_group",
+    "id": "19ce908f-3284-5511-9887-1b09d51af303",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "d2c70b45-6134-5b8e-a4e9-cd67b44e8af9",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "d1380019-4159-5c7d-8181-c86535147e4b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "d2c70b45-6134-5b8e-a4e9-cd67b44e8af9",
+    "analytic_type_code": "saccr",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "389b420b-ebea-56bd-902b-484f70a53303",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "d2c70b45-6134-5b8e-a4e9-cd67b44e8af9",
+    "analytic_type_code": "parametricVar",
+    "display_order": 3,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "d0015251-82ee-5705-ac14-6ea5011926ae",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "7a31e00f-43b7-5d79-a97b-73f3275ff2a9",
+    "analytic_type_code": "cashflow",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "92a1c31b-e98a-59f9-b1ca-bc77ec9ce34d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "9b9212d0-6a1a-5f59-9766-58ecec97a5a3",
+    "analytic_type_code": "portfolioDetails",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "73009c0b-b66d-5a13-bf1d-f89be2d761eb",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "66b39725-e6ab-59b3-ba4a-05e2934d4757",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "efa79659-41c9-5ece-8666-ea16fc0af941",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "66b39725-e6ab-59b3-ba4a-05e2934d4757",
+    "analytic_type_code": "saccr",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "8b19d3d8-b876-5869-9d39-571a1077d357",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "78bc4427-f4e6-5a82-9fb3-eb48755ee90a",
+    "analytic_type_code": "cashflow",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "fadc3fe5-f49e-598e-ad84-04179171728c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "d3afa1b2-c28d-59a6-833d-a652ea2d6075",
+    "analytic_type_code": "cashflow",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "5070e45a-98a9-5866-8c9b-f7ed665b34d9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "54215e3f-b749-53fc-952a-50126f9f3cd7",
+    "analytic_type_code": "curves",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "6e2359bb-1e6e-5d72-a05c-78c3492ab5a9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "54215e3f-b749-53fc-952a-50126f9f3cd7",
+    "analytic_type_code": "creditcurves",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "4aba86b5-c983-5dd0-96f7-fdb5063f81f3",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "6dae1270-1257-542c-8650-ef701f7d632d",
+    "analytic_type_code": "curves",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "815c594e-84b7-5f4b-b54c-05883840e5f4",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "c324ba5b-adbb-5857-97bb-4670ab679719",
+    "analytic_type_code": "simulation",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "16c73beb-0d66-5de8-8273-ab88f435f8fa",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "c324ba5b-adbb-5857-97bb-4670ab679719",
+    "analytic_type_code": "pfe",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "112a1981-466f-5476-9872-33061029f2b1",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "38ff0f66-de34-5e74-9da8-706f48074d9d",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "261f63f6-17ee-577d-b426-683092c92715",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "38ff0f66-de34-5e74-9da8-706f48074d9d",
+    "analytic_type_code": "sensitivity",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "9fd55c00-8055-54d7-932a-4cdcf7043280",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "38ff0f66-de34-5e74-9da8-706f48074d9d",
+    "analytic_type_code": "parametricVar",
+    "display_order": 3,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "98284286-a93f-5ef4-b1d9-1e01704c5aba",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "7ecc7e11-9510-5d09-bc09-a9ee64c669c9",
+    "analytic_type_code": "calibration",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "49012f6d-93fc-5e68-99b2-30b7b5dd5923",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "c5d6c1aa-fb56-53dc-9700-25ba38c4329d",
+    "analytic_type_code": "portfolioDetails",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "23c8c86d-4894-5cb9-93a9-c12773590bd8",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "34ecc8dd-0f04-50e0-b331-cbca40a5ce06",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "d41dc127-b65c-5555-bd23-cb82b8300346",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "34ecc8dd-0f04-50e0-b331-cbca40a5ce06",
+    "analytic_type_code": "pnlExplain",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ad4ec776-466c-50ba-8895-e589ea9084c7",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "0209b919-43ad-55b2-85a8-f09a52fb090f",
+    "analytic_type_code": "sensitivity",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ad6a2bad-ca4e-5d5d-87f9-7e198f574243",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "bda767ab-e78a-52a1-84d3-6937bdf57bb9",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "7dcb1c31-18da-5733-a84f-ed9dfdc0633e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "bda767ab-e78a-52a1-84d3-6937bdf57bb9",
+    "analytic_type_code": "saccr",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "16fd33b0-a5cc-5909-a129-7b2e5b9fb645",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "980df085-f950-5e0d-a93d-7f35217729fb",
+    "analytic_type_code": "historicalSimulationVar",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "66e60e87-bd7c-5e77-843a-76fd154f4529",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "a1beac36-06d0-52c0-8f2b-a4e044602635",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "d1faf21b-eb32-5f41-b18b-63e7852d3cd2",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "a3530f75-ba02-5a41-8738-2a16e34cd767",
+    "analytic_type_code": "simulation",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "03451634-2185-58ea-b1e7-041229552887",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "a3530f75-ba02-5a41-8738-2a16e34cd767",
+    "analytic_type_code": "xva",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "e9d5feca-ab44-55f9-9c85-2b363f04acb0",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "c26330fd-5419-5339-84dc-86a7018ebb21",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "545b5601-de9c-567c-97ac-037a37403418",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "c26330fd-5419-5339-84dc-86a7018ebb21",
+    "analytic_type_code": "sensitivity",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "c03408c0-eeff-5622-ac7f-de88f3a7945c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "8494aa1b-7346-545c-a39f-026a6722c26d",
+    "analytic_type_code": "cashflow",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "b1d28ad6-66b8-5ba6-8924-ad680eb56927",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "1ad95938-a5c2-5864-b3b8-201ad457370e",
+    "analytic_type_code": "cashflow",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "a38c6ca8-4dbf-5258-9fcc-9d1cc0ca1694",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "341e174a-aea0-5827-a3ee-004a8ac2e519",
+    "analytic_type_code": "curves",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9f7ab332-647e-5f3d-9b17-435d46078d04",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "341e174a-aea0-5827-a3ee-004a8ac2e519",
+    "analytic_type_code": "creditcurves",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "0fd75756-3145-5a1a-a055-d2f937dda9de",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "e668fb4c-2480-5e45-a6de-0d6c6dd8d1a7",
+    "analytic_type_code": "curves",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "26d785d6-1132-5e4e-9bfc-316e30d35de8",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "f1f094e8-30fe-5378-a9ab-bd1cbb3761ff",
+    "analytic_type_code": "simulation",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "90946f42-7b95-5c36-a221-e5b4c8af6a76",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "f1f094e8-30fe-5378-a9ab-bd1cbb3761ff",
+    "analytic_type_code": "pfe",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "03ae4ba9-829f-5c41-bdf9-05fda64ab50a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "6f3453c6-3d09-5da2-b724-f094314530e2",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "274d2510-31fd-5ee7-994f-3bab18d84caa",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "6f3453c6-3d09-5da2-b724-f094314530e2",
+    "analytic_type_code": "sensitivity",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9f155a12-d8ea-5baf-84b7-1e6ae3643acb",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "6f3453c6-3d09-5da2-b724-f094314530e2",
+    "analytic_type_code": "parametricVar",
+    "display_order": 3,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "4d04811d-4a5b-5cbb-9ce0-8b9261976c6b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "8e7c128e-a2c8-5442-a2c2-2898807e3898",
+    "analytic_type_code": "calibration",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "beefb191-5f30-5247-b821-cc7588082f43",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "c31b47dc-7615-5108-9f50-87174cc9c597",
+    "analytic_type_code": "portfolioDetails",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "ec3e6502-95db-5d6b-bd7f-c25dc54cb1b9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "a89d8330-4221-52f9-8781-ea5c7f378d61",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "f88b37c2-acf1-59e8-9ece-ac65657ff05d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "a89d8330-4221-52f9-8781-ea5c7f378d61",
+    "analytic_type_code": "pnlExplain",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "c406d5d8-ee1c-5237-ba3f-c02d38d8aa3d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "c02b9df9-d299-5b42-b8b2-f6bc2d63cf49",
+    "analytic_type_code": "sensitivity",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "1bac1e4c-6a17-5d1d-b13f-ddd856db4124",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "52ed5cf3-6983-5972-b7ab-5004a687892e",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "28aa8c11-0a65-56d9-900e-4b3eefd97d54",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "52ed5cf3-6983-5972-b7ab-5004a687892e",
+    "analytic_type_code": "saccr",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "6582e2a5-564c-5f99-9290-01058ad59b93",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "43483816-680e-5107-b0b1-407caf8afc1f",
+    "analytic_type_code": "historicalSimulationVar",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "62adf8f7-012f-5750-a7af-21fc96d6c7ae",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "e58894b9-ae4c-5039-9ea4-ee21a5e910cb",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "5167d916-2b87-564d-9c61-a0d4d2dc9931",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "29cdeb23-57cf-51f0-8558-99c21dc8f775",
+    "analytic_type_code": "simulation",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9a149660-41fa-550a-98d0-efa7027d19dc",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "29cdeb23-57cf-51f0-8558-99c21dc8f775",
+    "analytic_type_code": "xva",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "ab971e02-2ada-53cb-b01f-8bef55f98cc1",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "765acac9-bd92-5026-9f36-c0507c001265",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "dc6dbca7-96b4-5c62-bd94-cf8ada368d22",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "765acac9-bd92-5026-9f36-c0507c001265",
+    "analytic_type_code": "sensitivity",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "407bddb3-3b58-5b24-a3f9-7df4fd96c52c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "beb4e88f-97e3-5db2-b9fc-80e9cc5731b6",
+    "analytic_type_code": "cashflow",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "40e6c6f3-ad0f-5a1d-8deb-4964e5c406e9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "fa56a48a-9d89-56e0-a4af-941469fd7a47",
+    "analytic_type_code": "cashflow",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "805d47c6-601e-5299-b960-c1bdfbc05c97",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "eba75abc-e06b-50e5-b790-4811056ee775",
+    "analytic_type_code": "curves",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "3a631c5c-eff0-50ff-9c35-dfc4c97be42d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "eba75abc-e06b-50e5-b790-4811056ee775",
+    "analytic_type_code": "creditcurves",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "625bba53-77a9-5111-b984-56bfb01c844c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "5c053639-e171-5456-a040-15d4241ba618",
+    "analytic_type_code": "curves",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "e34fb050-6ac7-564f-8c99-1c0c1c5d2c84",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "474027a8-8be0-5787-ac7a-55b849074f78",
+    "analytic_type_code": "simulation",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f8b0dade-5930-53b4-a3c4-4afb8eddcb9a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "474027a8-8be0-5787-ac7a-55b849074f78",
+    "analytic_type_code": "pfe",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "4f42799d-dd87-5506-a9ef-e040f3e74828",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "24d31c24-7f03-507a-9b6d-d78726830d38",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "6c169460-5bb1-5152-8619-e921b4c8b9fb",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "24d31c24-7f03-507a-9b6d-d78726830d38",
+    "analytic_type_code": "sensitivity",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "83165bc5-afa7-5c63-a9a5-b96212d7de60",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "24d31c24-7f03-507a-9b6d-d78726830d38",
+    "analytic_type_code": "parametricVar",
+    "display_order": 3,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "bd5919d0-7d84-58d7-b53c-867e7759c551",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "92f101c7-fec1-581f-93a0-c98c5155d62a",
+    "analytic_type_code": "calibration",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "59242c09-1982-5d00-a968-9ad741334879",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "e643d0d8-2f52-5c0a-8e28-873b90029629",
+    "analytic_type_code": "portfolioDetails",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "eb9bfb43-6398-5257-8c01-54c066d35f25",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "53108de8-27d9-5374-997c-47533bd38f65",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "3f24282c-2d3d-54a1-a5d2-bda545a19c5c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "53108de8-27d9-5374-997c-47533bd38f65",
+    "analytic_type_code": "pnlExplain",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "48819b15-1622-5c70-a936-5b39d9d9fbdb",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "5412511f-8e31-5999-8956-537c241c1a87",
+    "analytic_type_code": "sensitivity",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "693e72cf-dfa5-53aa-93fa-20a2e7c3fbe7",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "d2e0092a-9103-5b6f-9032-2d64a26c0019",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "fe81002a-931e-5032-b672-5da34af8b1c6",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "d2e0092a-9103-5b6f-9032-2d64a26c0019",
+    "analytic_type_code": "saccr",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "02c9b9b7-4ecc-5665-aaba-38fed17d4ca2",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "3096edfd-4fee-5b67-a1e7-e70d7f832fc7",
+    "analytic_type_code": "historicalSimulationVar",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "019d6293-6144-5749-8ea7-1d9e06dc490f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "e9f5d5b3-3a25-5058-8724-9bd1423497b5",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "c210d46e-e98f-5861-b588-27870ba98775",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "10de689e-632a-5b67-b274-23caebcf3418",
+    "analytic_type_code": "simulation",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "532b52e7-a703-5d14-a927-fdcaca4de5e9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "10de689e-632a-5b67-b274-23caebcf3418",
+    "analytic_type_code": "xva",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "d1884b09-e24e-55c5-98f6-00bace730bd2",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "03a7a8ee-5467-545d-b3a5-694f9f94ab7f",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "1992726d-091e-54a3-8d0d-c227938c420f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "03a7a8ee-5467-545d-b3a5-694f9f94ab7f",
+    "analytic_type_code": "sensitivity",
+    "display_order": 2,
+    "active": "Y"
+  }
+]

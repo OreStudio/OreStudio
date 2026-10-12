@@ -192,6 +192,12 @@
 -- Books, portfolios, and business units (drop first, depend on parties and lookup tables)
 \ir ./refdata_book_changes_notify_trigger_drop.sql
 \ir ./refdata_book_changes_drop.sql
+\ir ./refdata_counterparty_changes_notify_trigger_drop.sql
+\ir ./refdata_counterparty_changes_drop.sql
+\ir ./refdata_counterparty_identifier_changes_notify_trigger_drop.sql
+\ir ./refdata_counterparty_identifier_changes_drop.sql
+\ir ./refdata_party_counterparty_changes_notify_trigger_drop.sql
+\ir ./refdata_party_counterparty_changes_drop.sql
 \ir ./refdata_books_notify_trigger_drop.sql
 \ir ./refdata_books_drop.sql
 -- Sandbox members, then sandboxes (before portfolios)

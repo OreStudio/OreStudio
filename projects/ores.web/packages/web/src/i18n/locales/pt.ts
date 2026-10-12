@@ -1312,7 +1312,10 @@ const pt: SourceCatalogue = {
     },
 
     oresmd: {
-        open: 'Abrir no editor',
+        close: 'Fechar',
+        assetClass: 'Classe de ativos',
+        edit: 'Editar',
+        inspect: 'Inspecionar',
         title: 'URL oresmd',
         cancel: 'Cancelar',
         copy: 'Copiar',
@@ -1670,7 +1673,15 @@ const pt: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Utilização por inquilino', party: 'Utilização por parte' },
-                note: 'A quota de um grupo é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
+                note: {
+                    tenant: 'Cada inquilino é lido dentro do inquilino, porque o trabalho de um inquilino não é visível a partir de outro. A quota de um inquilino é a fração dos seus resultados entre os resultados que puderam ser lidos. Com êxito e falhados contam as últimas 24 horas.',
+                    party: 'A quota de uma parte é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
+                },
+                unavailable: 'Não foi possível ler',
+                age: {
+                    caution: 'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
+                    over: 'A tarefa em espera mais antiga espera há {time}, acima dos {limit} que uma tarefa pode esperar.',
+                },
                 empty: 'Ainda não correu trabalho na grelha.',
                 unassigned: 'Sem parte',
                 columns: {
@@ -1681,6 +1692,7 @@ const pt: SourceCatalogue = {
                     results: 'Resultados',
                     inProgress: 'A correr',
                     unsent: 'À espera',
+                    oldest: 'Espera mais antiga',
                     done: 'Concluídos',
                     succeeded: 'Com êxito',
                     failed: 'Falhados',
@@ -1754,7 +1766,6 @@ const pt: SourceCatalogue = {
                 load: {
                     title: 'Carga',
                     caption: 'Trabalho em curso por estado do resultado',
-                    inactive: 'Inativo',
                     unsent: 'Por enviar',
                     inProgress: 'Em curso',
                 },
@@ -2057,6 +2068,20 @@ const pt: SourceCatalogue = {
     },
 
     market: {
+        series: {
+            title: 'Série',
+            description: 'Os valores de uma série ao longo do tempo.',
+            noUri: 'Abra uma série a partir de um URL oresmd.',
+            hasShape: '{series} tem um eixo, por isso a sua página é a página Evolução.',
+            openEvolution: 'Abrir a página Evolução',
+            chart: 'Valores ao longo do tempo',
+            empty: 'Esta série ainda não tem observações.',
+            showing: 'As últimas {shown} de {total} observações.',
+            at: 'Instante',
+            value: 'Valor',
+            source: 'Fonte',
+            openSeries: 'Abrir a página da série',
+        },
         evolution: {
             title: 'Acompanhar a evolução de uma curva ou superfície',
             description:
@@ -2076,6 +2101,12 @@ const pt: SourceCatalogue = {
                 submit: 'Acompanhar',
             },
             errors: {
+                notListed:
+                    'Esta parte ainda não tem uma série para este URL. Uma série existe quando se escrevem dados nela.',
+                noShape:
+                    '{series} tem um valor em cada instante. Não declara nenhum eixo, por isso não há evolução para desenhar.',
+                fixing: 'Um fixing é uma taxa de um dia e não designa nenhuma série.',
+                unknown: '«{name}» não é um instrumento que a lista de séries pode mostrar.',
                 missing:
                     'Indique a classe de ativos, o âmbito, o tipo de instrumento e o tipo de cotação.',
                 field: 'Escreva cada outro campo como nome=valor.',
@@ -3605,6 +3636,10 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        feeds: {
+            targetUri:
+                'A série em que este feed escreve. Cada tick do feed é guardado como uma observação da série que este URI nomeia.',
+        },
         area: {
             title: 'Dados de mercado',
             lead: 'Os preços e as curvas que a plataforma recebe ou gera.',

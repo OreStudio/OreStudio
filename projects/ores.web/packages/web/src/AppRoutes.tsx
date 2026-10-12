@@ -58,6 +58,7 @@ import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
 import { BusPage } from './operations/BusPage.js';
 import { EvolutionPage } from './market/EvolutionPage.js';
+import { SeriesPage } from './market/SeriesPage.js';
 import { GridNodePage } from './operations/GridNodePage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
@@ -588,6 +589,18 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <EvolutionPage partyId={view.party.id} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/series"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    (view) => (
+                        <SeriesPage partyId={view.party.id} />
                     ),
                     'workspace',
                 )}

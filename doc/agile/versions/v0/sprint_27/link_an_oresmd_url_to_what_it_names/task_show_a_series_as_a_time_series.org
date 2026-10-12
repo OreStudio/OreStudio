@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 5114C1FA-0CA4-4B13-9D89-63CE54E5A49E
+:END:
+#+title: Task: Show a series as a time series
+#+description: Add a series page that draws the values of one series over time with the line chart and lists the latest observations, for a series that declares no axis, such as an FX spot rate. It opens from an oresmd URL in the address, and says in words when the party has no such series or the series has no observation yet.
+#+type: task
+#+level: s1
+#+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
+#+owner: marco
+#+branch: feature/show-a-series-as-a-time-series
+#+pr: 3193
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A series with one value at each instant has a page, so its URL can link to it as every series can.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The page reads uri from its address, finds the series among the series the party can see, and draws its observations as a line over time with the latest values in a table.
+- A series the party does not have, a URL the codec refuses, a fixing and a series with no observation are each said in words, and none shows a raw server error.
+- The Evolution page offers a link to this page when the series it was asked for has no axis.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3193][#3193]] | [web] Show a series as a time series |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The page =/market-data/series?uri== reads an oresmd URL, finds the series among the ones the party can see, and draws the latest observations as a line and a table of the newest 20 with their source. A series with an axis is sent to the Evolution page. A missing series, a fixing and a refused URL are said in words. The Evolution page links to this page when a series has no axis. Checked in headless Chrome: the AUD/USD spot series shows 26 of 26 observations.
+

@@ -1322,7 +1322,10 @@ const fr: SourceCatalogue = {
     },
 
     oresmd: {
-        open: "Ouvrir dans l'éditeur",
+        close: 'Fermer',
+        assetClass: "Classe d'actifs",
+        edit: 'Modifier',
+        inspect: 'Inspecter',
         title: 'URL oresmd',
         cancel: 'Annuler',
         copy: 'Copier',
@@ -1679,7 +1682,15 @@ const fr: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Utilisation par locataire', party: 'Utilisation par partie' },
-                note: 'La part d’un groupe est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                note: {
+                    tenant: 'Chaque locataire est lu à l’intérieur du locataire, car le travail d’un locataire n’est pas visible depuis un autre. La part d’un locataire est la fraction de ses résultats parmi les résultats qui ont pu être lus. Réussis et échoués comptent les dernières 24 heures.',
+                    party: 'La part d’une partie est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                },
+                unavailable: 'N’a pas pu être lu',
+                age: {
+                    caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
+                    over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
+                },
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',
                 unassigned: 'Aucune partie',
                 columns: {
@@ -1690,6 +1701,7 @@ const fr: SourceCatalogue = {
                     results: 'Résultats',
                     inProgress: 'En cours',
                     unsent: 'En attente',
+                    oldest: 'Plus ancienne attente',
                     done: 'Terminés',
                     succeeded: 'Réussis',
                     failed: 'Échoués',
@@ -1763,7 +1775,6 @@ const fr: SourceCatalogue = {
                 load: {
                     title: 'Charge',
                     caption: 'Travail en cours par état de résultat',
-                    inactive: 'Inactif',
                     unsent: 'Non envoyé',
                     inProgress: 'En cours',
                 },
@@ -2065,6 +2076,20 @@ const fr: SourceCatalogue = {
     },
 
     market: {
+        series: {
+            title: 'Série',
+            description: 'Les valeurs d’une série au fil du temps.',
+            noUri: 'Ouvrez une série depuis une URL oresmd.',
+            hasShape: '{series} a un axe, sa page est donc la page Évolution.',
+            openEvolution: 'Ouvrir la page Évolution',
+            chart: 'Valeurs au fil du temps',
+            empty: 'Cette série ne contient pas encore d’observation.',
+            showing: 'Les {shown} dernières observations sur {total}.',
+            at: 'Instant',
+            value: 'Valeur',
+            source: 'Source',
+            openSeries: 'Ouvrir la page de la série',
+        },
         evolution: {
             title: 'Suivre l’évolution d’une courbe ou d’une surface',
             description:
@@ -2084,6 +2109,12 @@ const fr: SourceCatalogue = {
                 submit: 'Suivre',
             },
             errors: {
+                notListed:
+                    "Cette partie n'a pas encore de série pour cette URL. Une série existe dès que des données y sont écrites.",
+                noShape:
+                    "{series} porte une valeur à chaque instant. Elle ne déclare aucun axe, donc il n'y a pas d'évolution à tracer.",
+                fixing: "Un fixing est un taux d'un jour et ne désigne aucune série.",
+                unknown: "« {name} » n'est pas un instrument que la liste des séries peut montrer.",
                 missing:
                     'Indiquez la classe d’actifs, le périmètre, le type d’instrument et le type de cotation.',
                 field: 'Écrivez chaque autre champ sous la forme nom=valeur.',
@@ -3629,6 +3660,10 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        feeds: {
+            targetUri:
+                'La série dans laquelle ce flux écrit. Chaque tick du flux est stocké comme une observation de la série que nomme cette URI.',
+        },
         area: {
             title: 'Données de marché',
             lead: 'Les prix et les courbes que la plateforme reçoit ou génère.',

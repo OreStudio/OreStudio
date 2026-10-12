@@ -20,7 +20,7 @@
  */
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { show, useRecords } from '../refdata/records.js';
@@ -98,6 +98,7 @@ export function IrProcessPanel({
     const [saving, setSaving] = useState(false);
     const [mode, setMode] = useEditingMode();
     const [refusal, setRefusal] = useState('');
+    const [explained, setExplained] = useState('');
     const lines = parameterLines(definitions.data ?? NO_ROWS, saved, engine);
     const valueOf = (line: ParameterLine): string =>
         typed[show(line.definition['id'])] ?? line.value;
@@ -114,13 +115,13 @@ export function IrProcessPanel({
     };
     const unsaved = counts.added + counts.changed + counts.removed + (engineChanged ? 1 : 0);
     const reading = useIrReading(engine, parameterValues(lines, typed));
-    const simple = mode === 'simple' && reading.view !== undefined;
+    const simple = mode === 'simple' && reading.view !== undefined && reading.exact;
     const savedReading = useIrReading(
         savedEngine,
         engineChanged ? undefined : parameterValues(lines, {}),
     );
 
-    const applySimple = async (next: SimpleView): Promise<void> => {
+    const applySimple = async (next: SimpleView, explain = ''): Promise<void> => {
         try {
             const out = await api.convertIrParameters({
                 process_type: engine,
@@ -129,10 +130,29 @@ export function IrProcessPanel({
             });
             setTyped((current) => ({ ...current, ...typedFrom(lines, out.values) }));
             setRefusal('');
+            setExplained(explain);
         } catch (error) {
             setRefusal(error instanceof Error ? error.message : String(error));
         }
     };
+
+    // Values that only approximate the simple view are converted once, and the
+    // person is told what changed. The draft is unsaved, so Discard undoes it.
+    const tried = useRef('');
+    useEffect(() => {
+        const key = JSON.stringify([engine, parameterValues(lines, typed)]);
+        if (
+            mode !== 'simple' ||
+            reading.stale ||
+            reading.exact ||
+            reading.view === undefined ||
+            tried.current === key
+        ) {
+            return;
+        }
+        tried.current = key;
+        void applySimple(reading.view, t('marketdata.irSimple.switched'));
+    });
 
     return (
         <div className="space-y-4">
@@ -180,6 +200,7 @@ export function IrProcessPanel({
                                 onClick={() => {
                                     setEngine(savedEngine);
                                     setTyped({});
+                                    setExplained('');
                                 }}
                             >
                                 {t('marketdata.irProcess.discard')}
@@ -209,6 +230,7 @@ export function IrProcessPanel({
                     </p>
                 )}
                 {refusal !== '' && <Notice tone="warn">{refusal}</Notice>}
+                {explained !== '' && mode === 'simple' && <Notice tone="info">{explained}</Notice>}
                 {mode === 'simple' && reading.view === undefined && reading.reason !== '' && (
                     <Notice tone="info">
                         {t('marketdata.irSimple.byHand', { reason: reading.reason })}

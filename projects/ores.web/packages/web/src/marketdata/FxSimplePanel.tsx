@@ -74,6 +74,8 @@ export interface FxReading {
     /** Why it does not, in the service's words. */
     readonly reason: string;
     readonly loading: boolean;
+    /** Whether the answer is for an earlier request, while the current one is asked. */
+    readonly stale: boolean;
 }
 
 /**
@@ -109,6 +111,7 @@ export function useFxReading(
         exact: ready && data?.has_simple_form === true,
         reason: data?.has_simple_form === false ? data.message : '',
         loading: ready && reading.isPending,
+        stale: reading.isPlaceholderData,
     };
 }
 

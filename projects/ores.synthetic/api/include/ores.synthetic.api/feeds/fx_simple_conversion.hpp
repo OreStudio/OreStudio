@@ -66,7 +66,7 @@ struct fx_simple_reading {
  * update; the arithmetic engine reads them in price units, so they scale by
  * @p initial_price. A trend per hour is spread over the updates of the hour,
  * and a volatility per hour over their square root. A jump share above zero
- * adds a second component with no drift and six times the volatility. The
+ * adds a second component with no drift and four times the volatility. The
  * Ornstein-Uhlenbeck engine gets one component with κ from the half-life.
  *
  * Throws std::invalid_argument for an unknown engine, a price or a rate that is
@@ -82,7 +82,7 @@ ORES_SYNTHETIC_API_EXPORT fx_mixture fx_mixture_from_simple(const fx_simple_view
  * @brief The simple view of a mixture, and whether it is exact.
  *
  * The inverse of fx_mixture_from_simple. The primary component is the one with
- * the most weight; components with four times its deviation or more are the jump
+ * the most weight; components with three times its deviation or more are the jump
  * regime. Throws std::invalid_argument for an unknown engine, vectors of
  * different sizes, or a price or rate that is not positive.
  */

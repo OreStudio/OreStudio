@@ -296,10 +296,17 @@ model, and it asks plain questions in place of the table.
   questions are per hour, so they do not depend on the feed's rate: which way the
   price drifts, how far it moves, and how often it jumps; the mean-reverting engine
   asks how long the price takes to come half way back, and how far it moves. The
-  server converts both ways (=synthetic.v1.ops.convert_fx_simple=). A mixture the
-  simple form cannot stand for, such as three hand-set components, shows the table
-  with a note and a button, /Use the closest simple form/, which replaces the
-  components with an approximation.
+  server converts both ways (=synthetic.v1.ops.convert_fx_simple=). The simple form of
+  a mixture is one primary component and, if the feed jumps, one jump regime that has
+  no drift and is four times as wide.
+- Switching to Simple never leaves a dead end. Values that the simple form states
+  exactly stay as they are. Values that it only approximates, such as three
+  hand-set components, or a second factor and a correlation set by hand, are
+  converted to the closest simple form, and a notice says what changed: how many
+  components became how many, the jump share, or the factors that were set. The
+  change is only in the draft. *Save* writes it, and *Discard* brings the old values
+  back. Values with no simple view at all, such as a reversion speed of zero, show the
+  table with a note that says why.
 
 ** The Ticks tab
 

@@ -102,7 +102,7 @@ public:
             if (req->to_simple) {
                 const auto reading =
                     ores::synthetic::feed::ir_simple_from_parameters(req->process_type, given);
-                resp.has_simple_form = reading.view.has_value();
+                resp.has_simple_form = reading.exact;
                 resp.message = reading.reason;
                 resp.caution = reading.caution;
                 if (reading.view) {

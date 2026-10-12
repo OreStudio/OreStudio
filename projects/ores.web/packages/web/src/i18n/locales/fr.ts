@@ -3472,8 +3472,12 @@ const fr: SourceCatalogue = {
             },
             sentenceReverting:
                 'Le prix est ramené vers {price}. La moitié de la distance se referme en {minutes} minutes, et une heure typique le déplace d’environ {move} %.',
-            byHand: 'Ces composantes sont réglées à la main, donc seul le mode Avancé peut les montrer. {reason}',
-            approximate: 'Utiliser la forme simple la plus proche',
+            switched: {
+                jumps: 'Passage en Simple. La forme simple la plus proche a remplacé {from} composantes par {to} : une composante principale et un régime de sauts qui couvre {jump} % des mises à jour et qui est quatre fois plus large. Rien n’est enregistré avant Enregistrer. Annuler rétablit les anciennes composantes.',
+                none: 'Passage en Simple. La forme simple la plus proche a remplacé {from} composantes par une composante principale, sans saut. Rien n’est enregistré avant Enregistrer. Annuler rétablit les anciennes composantes.',
+                reverting:
+                    'Passage en Simple. Le moteur à retour à la moyenne lit une composante, donc {removed} autres ont été retirées. Rien n’est enregistré avant Enregistrer. Annuler les rétablit.',
+            },
         },
         irSimple: {
             lead: 'Répondez à quatre questions. Le serveur transforme les réponses en nombres que le moteur lit. Passez en Avancé pour les voir.',
@@ -3505,7 +3509,9 @@ const fr: SourceCatalogue = {
                 touches_zero:
                     'Les taux peuvent toucher zéro. Baissez la variation annuelle ou relevez le niveau à long terme.',
             },
-            byHand: 'Ces valeurs sont réglées à la main, donc seul le mode Avancé peut les montrer. {reason}',
+            switched:
+                'Passage en Simple. Le second facteur et la corrélation étaient réglés à la main. La forme simple les fixe : le second facteur revient à 60 % de la vitesse du premier avec la moitié de sa volatilité, et la corrélation est nulle. Rien n’est enregistré avant Enregistrer. Annuler rétablit les anciennes valeurs.',
+            byHand: 'Ces valeurs n’ont pas de forme simple, donc seul le mode Avancé peut les montrer. {reason}',
             readout: {
                 halfLife: 'Demi-vie : {value} ans',
                 rate: '= {value} %',

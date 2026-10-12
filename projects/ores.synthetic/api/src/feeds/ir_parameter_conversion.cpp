@@ -163,16 +163,15 @@ ir_simple_reading ir_simple_from_parameters(const std::string& process_type,
         const double sigma_x = named(parameters, "sigma_x");
         if (!close(named(parameters, "kappa_y"), kappa * second_speed_ratio) ||
             !close(named(parameters, "sigma_y"), sigma_x * second_volatility_ratio) ||
-            !close(named(parameters, "rho"), 0.0)) {
+            !close(named(parameters, "rho"), 0.0))
             out.reason = "The second factor and the correlation are set by hand.";
-            return out;
-        }
         view.long_run_rate = theta;
         view.yearly_move_bp = sigma_x * two_factor_spread / basis_point;
         break;
     }
     }
     out.view = view;
+    out.exact = out.reason.empty();
     return out;
 }
 

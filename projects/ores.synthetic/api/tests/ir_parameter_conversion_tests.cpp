@@ -84,6 +84,7 @@ TEST_CASE("ir_parameter_conversion reads every engine's parameters back to the s
         const auto reading =
             ir_simple_from_parameters(engine, ir_parameters_from_simple(engine, sample));
         REQUIRE(reading.view.has_value());
+        CHECK(reading.exact);
         CHECK(reading.view->start_rate == Approx(sample.start_rate));
         CHECK(reading.view->long_run_rate == Approx(sample.long_run_rate));
         CHECK(reading.view->half_life_years == Approx(sample.half_life_years));
@@ -116,7 +117,8 @@ TEST_CASE("ir_parameter_conversion has no simple view for a hand-set second fact
     auto p = ir_parameters_from_simple("TWO_FACTOR_GAUSSIAN", sample);
     p["rho"] = 0.4;
     const auto reading = ir_simple_from_parameters("TWO_FACTOR_GAUSSIAN", p);
-    CHECK_FALSE(reading.view.has_value());
+    CHECK(reading.view.has_value());
+    CHECK_FALSE(reading.exact);
     CHECK_FALSE(reading.reason.empty());
 }
 

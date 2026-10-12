@@ -3417,8 +3417,12 @@ export const en: SourceCatalogue = {
             },
             sentenceReverting:
                 'The price is pulled back to {price}. Half the distance closes in {minutes} minutes, and a typical hour moves it about {move}%.',
-            byHand: 'These components are set by hand, so only Advanced can show them. {reason}',
-            approximate: 'Use the closest simple form',
+            switched: {
+                jumps: 'Switched to Simple. The closest simple form replaced {from} components with {to}: a primary component and a jump regime that covers {jump}% of updates and is four times as wide. Nothing is saved until you press Save. Discard brings the old components back.',
+                none: 'Switched to Simple. The closest simple form replaced {from} components with one primary component and no jumps. Nothing is saved until you press Save. Discard brings the old components back.',
+                reverting:
+                    'Switched to Simple. The mean-reverting engine reads one component, so {removed} others were removed. Nothing is saved until you press Save. Discard brings them back.',
+            },
         },
         irSimple: {
             lead: 'Answer four questions. The server turns the answers into the numbers the engine reads. Switch to Advanced to see them.',
@@ -3449,7 +3453,9 @@ export const en: SourceCatalogue = {
                 touches_zero:
                     'Rates may touch zero. Lower the yearly move or raise the long-run level to keep them above it.',
             },
-            byHand: 'These values are set by hand, so only Advanced can show them. {reason}',
+            switched:
+                'Switched to Simple. The second factor and the correlation were set by hand. The simple form sets them: the second factor reverts at 60% of the first speed with half its volatility, and the correlation is zero. Nothing is saved until you press Save. Discard brings the old values back.',
+            byHand: 'These values have no simple form, so only Advanced can show them. {reason}',
             readout: {
                 halfLife: 'Half-life: {value} years',
                 rate: '= {value}%',

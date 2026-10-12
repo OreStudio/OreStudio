@@ -3446,8 +3446,12 @@ const pt: SourceCatalogue = {
             },
             sentenceReverting:
                 'O preço é puxado de volta para {price}. Metade da distância fecha-se em {minutes} minutos, e uma hora típica move-o cerca de {move}%.',
-            byHand: 'Estes componentes foram ajustados à mão, por isso só o modo Avançado os pode mostrar. {reason}',
-            approximate: 'Usar a forma simples mais próxima',
+            switched: {
+                jumps: 'Passou para Simples. A forma simples mais próxima substituiu {from} componentes por {to}: um componente principal e um regime de saltos que cobre {jump}% das atualizações e é quatro vezes mais largo. Nada é guardado até carregar em Guardar. Descartar repõe os componentes antigos.',
+                none: 'Passou para Simples. A forma simples mais próxima substituiu {from} componentes por um componente principal, sem saltos. Nada é guardado até carregar em Guardar. Descartar repõe os componentes antigos.',
+                reverting:
+                    'Passou para Simples. O motor de reversão à média lê um componente, por isso {removed} outros foram removidos. Nada é guardado até carregar em Guardar. Descartar repõe-nos.',
+            },
         },
         irSimple: {
             lead: 'Responda a quatro perguntas. O servidor transforma as respostas nos números que o motor lê. Passe para Avançado para vê-los.',
@@ -3478,7 +3482,9 @@ const pt: SourceCatalogue = {
                 touches_zero:
                     'As taxas podem tocar em zero. Baixe a variação anual ou suba o nível de longo prazo.',
             },
-            byHand: 'Estes valores foram ajustados à mão, por isso só o modo Avançado os pode mostrar. {reason}',
+            switched:
+                'Passou para Simples. O segundo fator e a correlação estavam ajustados à mão. A forma simples define-os: o segundo fator reverte a 60% da velocidade do primeiro com metade da sua volatilidade, e a correlação é zero. Nada é guardado até carregar em Guardar. Descartar repõe os valores antigos.',
+            byHand: 'Estes valores não têm forma simples, por isso só o modo Avançado os pode mostrar. {reason}',
             readout: {
                 halfLife: 'Meia-vida: {value} anos',
                 rate: '= {value}%',

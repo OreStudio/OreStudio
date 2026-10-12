@@ -37,11 +37,16 @@ import {
 
 /** What the service makes of the values on the screen, in the terms of the simple view. */
 export interface IrReading {
+    /** The simple view of the values, exact or the closest one; undefined when there is none. */
     readonly view: SimpleView | undefined;
+    /** Whether the view stands for the values without loss. */
+    readonly exact: boolean;
     /** Why there is no simple view, in the service's words; empty when there is one. */
     readonly reason: string;
     readonly caution: string;
     readonly loading: boolean;
+    /** Whether the answer is for an earlier request, while the current one is asked. */
+    readonly stale: boolean;
 }
 
 /**
@@ -67,10 +72,12 @@ export function useIrReading(
     });
     const data = reading.data;
     return {
-        view: data === undefined || !data.has_simple_form ? undefined : viewOf(data.values),
+        view: data === undefined ? undefined : viewOf(data.values),
+        exact: data?.has_simple_form === true,
         reason: data?.has_simple_form === false ? data.message : '',
         caution: data?.caution ?? '',
         loading: reading.isPending && values !== undefined,
+        stale: reading.isPlaceholderData,
     };
 }
 

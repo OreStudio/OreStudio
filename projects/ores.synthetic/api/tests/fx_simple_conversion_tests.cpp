@@ -52,10 +52,10 @@ TEST_CASE("fx_simple_conversion spreads a figure per hour over the updates of th
     CHECK(m.weights[0] == Approx(0.9));
 }
 
-TEST_CASE("fx_simple_conversion adds a jump regime of six times the volatility", tags) {
+TEST_CASE("fx_simple_conversion adds a jump regime of four times the volatility", tags) {
     const auto m = fx_mixture_from_simple(sample, "geometric", 1.1, 3600);
     CHECK(m.means[1] == 0.0);
-    CHECK(m.stdevs[1] == Approx(6.0 * m.stdevs[0]));
+    CHECK(m.stdevs[1] == Approx(4.0 * m.stdevs[0]));
     CHECK(m.weights[1] == Approx(0.1));
 }
 
@@ -97,6 +97,21 @@ TEST_CASE("fx_simple_conversion reads what it wrote back to the same view", tags
             CHECK(reading.view.jump_share_pct == Approx(sample.jump_share_pct));
         }
     }
+}
+
+TEST_CASE("fx_simple_conversion reads the seeded primary and tail as a simple form", tags) {
+    const ores::synthetic::feed::fx_mixture seeded{
+        .means = {0.0, 0.0}, .stdevs = {2.14e-05, 8.56e-05}, .weights = {0.95, 0.05}};
+    const auto reading = fx_simple_from_mixture(seeded, "geometric", 1.1, 3600);
+    CHECK(reading.exact);
+    CHECK(reading.view.jump_share_pct == Approx(5.0));
+    CHECK(reading.view.volatility_pct_per_hour == Approx(2.14e-05 * 60.0 * 100.0));
+}
+
+TEST_CASE("fx_simple_conversion allows for the rounding of a seeded tail", tags) {
+    const ores::synthetic::feed::fx_mixture seeded{
+        .means = {0.0, 0.0}, .stdevs = {1.89e-05, 7.55e-05}, .weights = {0.95, 0.05}};
+    CHECK(fx_simple_from_mixture(seeded, "geometric", 1.0, 3600).exact);
 }
 
 TEST_CASE("fx_simple_conversion approximates a mixture set by hand, and says so", tags) {

@@ -20,7 +20,7 @@
  */
 
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { EditingModeToggle, useEditingMode } from '../ui/EditingMode.js';
@@ -203,6 +203,7 @@ function MixtureEditor({
     });
     const [mode, setMode] = useEditingMode();
     const [refusal, setRefusal] = useState('');
+    const [explained, setExplained] = useState('');
     const ticksPerHour = Number(feed['ticks_per_hour']);
     const price = fixedPrice ? savedPrice : Number(previewPrice);
     const plan = savePlan(feedId, saved, draft);
@@ -241,31 +242,60 @@ function MixtureEditor({
               : reading.exact
                 ? reading.view
                 : undefined;
-    const byHand =
-        mode === 'simple' && draft.length > 0 && !reading.exact && reading.view !== undefined;
 
-    const applySimple = async (next: FxSimpleView): Promise<void> => {
+    const applySimple = async (nextView: FxSimpleView, explain = false): Promise<void> => {
         try {
             const out = await api.convertFxSimple({
                 process_type: engine,
                 to_simple: false,
                 initial_price: price,
                 ticks_per_hour: ticksPerHour,
-                ...next,
+                ...nextView,
             });
-            setDraft(
-                draftFromMixture(
-                    draft,
-                    { means: out.gmm_means, stdevs: out.gmm_stdevs, weights: out.gmm_weights },
-                    ou,
-                    () => crypto.randomUUID(),
-                ),
+            const next = draftFromMixture(
+                draft,
+                { means: out.gmm_means, stdevs: out.gmm_stdevs, weights: out.gmm_weights },
+                ou,
+                () => crypto.randomUUID(),
             );
+            setDraft(next);
             setRefusal('');
+            setExplained(
+                explain
+                    ? ou
+                        ? t('marketdata.fxSimple.switched.reverting', {
+                              removed: String(draft.length - next.length),
+                          })
+                        : t(`marketdata.fxSimple.switched.${next.length > 1 ? 'jumps' : 'none'}`, {
+                              from: String(draft.length),
+                              to: String(next.length),
+                              jump: String(Number(nextView.jump_share_pct.toPrecision(3))),
+                          })
+                    : '',
+            );
         } catch (error) {
             setRefusal(error instanceof Error ? error.message : String(error));
         }
     };
+
+    // A mixture that only approximates the simple view is converted once, and
+    // the person is told what changed. The draft is unsaved, so Discard undoes it.
+    const tried = useRef('');
+    useEffect(() => {
+        const key = JSON.stringify([engine, price, gaussians]);
+        if (
+            mode !== 'simple' ||
+            draft.length === 0 ||
+            reading.stale ||
+            reading.exact ||
+            reading.view === undefined ||
+            tried.current === key
+        ) {
+            return;
+        }
+        tried.current = key;
+        void applySimple(reading.view, true);
+    });
 
     const move = (index: number, by: number): void => {
         const next = [...draft];
@@ -359,6 +389,7 @@ function MixtureEditor({
                                     setDraft(saved);
                                     setEngine(savedEngine);
                                     setConverted(null);
+                                    setExplained('');
                                 }}
                             >
                                 {t('marketdata.mixture.discard')}
@@ -386,19 +417,7 @@ function MixtureEditor({
                     </Notice>
                 )}
                 {refusal !== '' && <Notice tone="warn">{refusal}</Notice>}
-                {byHand && reading.view !== undefined && (
-                    <Notice tone="info">
-                        <span>{t('marketdata.fxSimple.byHand', { reason: reading.reason })} </span>
-                        {may.write && (
-                            <Button
-                                size="sm"
-                                onClick={() => void applySimple(reading.view as FxSimpleView)}
-                            >
-                                {t('marketdata.fxSimple.approximate')}
-                            </Button>
-                        )}
-                    </Notice>
-                )}
+                {explained !== '' && mode === 'simple' && <Notice tone="info">{explained}</Notice>}
                 {panelView !== undefined && draft.length === 0 && (
                     <p className="text-sm text-ink-muted">{t('marketdata.mixture.none')}</p>
                 )}

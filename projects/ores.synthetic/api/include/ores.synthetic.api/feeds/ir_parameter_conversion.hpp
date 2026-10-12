@@ -44,17 +44,19 @@ struct ir_simple_view {
 /**
  * @brief What the simple view makes of an engine's parameters.
  *
- * @p view is empty when the parameters have no simple form: a reversion speed
- * of zero never halves the distance to the long-run level, and a
- * Two-Factor Gaussian feed whose second factor or correlation differs from
- * the simple view's choices has more than the four questions can say.
- * @p reason then says why. @p caution is non-empty when the parameters have a
+ * @p view is empty when the parameters have no simple view at all: a reversion
+ * speed of zero never halves the distance to the long-run level. @p exact is
+ * false when the view only approximates the parameters: a Two-Factor Gaussian
+ * feed whose second factor or correlation differs from the simple view's
+ * choices has more than the four questions can say, and writing the view back
+ * sets them. @p reason then says why. @p caution is non-empty when the parameters have a
  * view but a risk worth saying: "touches_zero" for a Cox-Ingersoll-Ross
  * volatility so high for its reversion speed (σ² above 2κθ) that the rate can
  * reach zero.
  */
 struct ir_simple_reading {
     std::optional<ir_simple_view> view;
+    bool exact = false;
     std::string reason;
     std::string caution;
 };

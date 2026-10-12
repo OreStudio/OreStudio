@@ -26,8 +26,8 @@ namespace ores::synthetic::feed {
 
 namespace {
 
-constexpr double jump_volatility_ratio = 6.0;
-constexpr double jump_detection_ratio = 4.0;
+constexpr double jump_volatility_ratio = 4.0;
+constexpr double jump_detection_ratio = 3.0;
 
 bool is_ornstein_uhlenbeck(const std::string& process_type) {
     if (process_type == "ornstein_uhlenbeck")
@@ -44,8 +44,13 @@ void require_positive(double price, int ticks_per_hour) {
         throw std::invalid_argument("The ticks per hour must be positive.");
 }
 
+/// Within the rounding of the three significant digits the seeded mixtures keep.
 bool close(double a, double b) {
-    return std::abs(a - b) <= 1e-6 * std::max({1.0, std::abs(a), std::abs(b)});
+    return std::abs(a - b) <= 1e-2 * std::max(std::abs(a), std::abs(b));
+}
+
+bool negligible(double value, double against) {
+    return std::abs(value) <= 1e-6 * std::abs(against);
 }
 
 }
@@ -115,7 +120,7 @@ fx_simple_reading fx_simple_from_mixture(const fx_mixture& mixture,
         out.view.volatility_pct_per_hour = per_hour_pct(mixture.stdevs.front(), true);
         if (kappa > 0.0)
             out.view.half_life_minutes = std::log(2.0) / kappa * 60.0 / updates;
-        out.exact = mixture.means.size() == 1 && close(mixture.means.front(), 0.0) && kappa > 0.0;
+        out.exact = mixture.means.size() == 1 && negligible(mixture.means.front(), mixture.stdevs.front()) && kappa > 0.0;
         if (!out.exact)
             out.reason = kappa > 0.0 ? "The engine reads one component, and this has more."
                                      : "The price never returns to its long-run level.";
@@ -134,7 +139,7 @@ fx_simple_reading fx_simple_from_mixture(const fx_mixture& mixture,
         if (mixture.stdevs[i] >= jump_detection_ratio * mixture.stdevs[primary]) {
             jump += mixture.weights[i];
             ++jumps;
-            jump_shaped = jump_shaped && close(mixture.means[i], 0.0) &&
+            jump_shaped = jump_shaped && negligible(mixture.means[i], mixture.stdevs[i]) &&
                           close(mixture.stdevs[i],
                                 jump_volatility_ratio * mixture.stdevs[primary]);
         } else {

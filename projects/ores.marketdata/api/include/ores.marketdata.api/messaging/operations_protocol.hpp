@@ -179,6 +179,92 @@ struct describe_oresmd_schema_response {
 };
 
 /**
+ * @brief One field of an oresmd URI: its name and the text it holds.
+ *
+ * The text is in the spelling a URI writes. The path of a URI is the subject, and
+ * it is not one of these.
+ */
+struct oresmd_uri_field {
+    std::string name;
+    std::string text;
+};
+
+/**
+ * @brief Asks the codec to read an oresmd URI.
+ *
+ * The codec's reader is strict, so a URI that is not in its own spelling is
+ * refused with the rule that failed. A URI longer than the codec's limit is
+ * refused without being read.
+ */
+struct parse_oresmd_uri_request {
+    using response_type = struct parse_oresmd_uri_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.parse_oresmd_uri";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string uri;
+};
+
+/**
+ * @brief The parts of an oresmd URI, or why the codec refuses it.
+ *
+ * `kind` is quote, series or fixing. For a quote or a series `instrument` is the
+ * text under `instrument=` and `quote` is the text under `quote=`. For a fixing
+ * `instrument` is the index family and `quote` is empty. `subject` is the path.
+ * `fields` holds the other fields the URI states, in schema order, and leaves
+ * out one the URI leaves out.
+ */
+struct parse_oresmd_uri_response {
+    std::string kind;
+    std::string instrument;
+    std::string quote;
+    std::string asset;
+    std::string subject;
+    std::vector<oresmd_uri_field> fields;
+    bool success = false;
+    std::string message;
+};
+
+/**
+ * @brief Asks the codec to write an oresmd URI from its parts.
+ *
+ * A field with no text is a field the URI leaves out. The codec decides whether
+ * the parts make a URI: a required field that is missing, a field the row does
+ * not list, a field given twice and a value of the wrong form are each refused.
+ */
+struct compose_oresmd_uri_request {
+    using response_type = struct compose_oresmd_uri_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.compose_oresmd_uri";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string kind;
+    std::string instrument;
+    std::string quote;
+    std::string subject;
+    std::vector<oresmd_uri_field> fields;
+};
+
+/**
+ * @brief The oresmd URI the codec writes, or why the parts make none.
+ *
+ * The URI is the codec's canonical text, so a stored URI compares as text.
+ */
+struct compose_oresmd_uri_response {
+    std::string uri;
+    bool success = false;
+    std::string message;
+};
+
+/**
  * @brief Requests the typed identity of each series the caller can see.
  *
  * A party reads only its own series, so the list is the caller's view and not the

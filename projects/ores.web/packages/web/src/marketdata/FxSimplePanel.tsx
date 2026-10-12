@@ -24,7 +24,7 @@ import type { ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { type Gaussian } from './mixture.js';
-import { Answer, Presets, differs } from './SimpleControls.js';
+import { Answer, Presets, differs, Summary } from './SimpleControls.js';
 
 /** The questions of the simple view of an FX feed. Every figure is per hour. */
 export interface FxSimpleView {
@@ -245,7 +245,7 @@ export function FxSimplePanel({
                     </div>
                 )}
             </div>
-            <p className="text-sm text-ink">
+            <Summary>
                 {reverting
                     ? t('marketdata.fxSimple.sentenceReverting', {
                           price: String(price),
@@ -258,7 +258,7 @@ export function FxSimplePanel({
                           }`,
                           { trend: String(Math.abs(trend)), move: String(move) },
                       )}
-            </p>
+            </Summary>
         </div>
     );
 }

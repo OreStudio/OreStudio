@@ -24,7 +24,7 @@ import type { ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice } from '../ui/Primitives.js';
-import { Answer, Presets, differs } from './SimpleControls.js';
+import { Answer, Presets, differs, Summary } from './SimpleControls.js';
 import {
     HALF_LIFE_PRESETS,
     MOVE_PRESETS,
@@ -180,12 +180,12 @@ export function IrSimplePanel({
                     />
                 </div>
             </div>
-            <p className="text-sm text-ink">
+            <Summary>
                 {t(`marketdata.irSimple.lean.${lean}`, {
                     start: percentText(view.start_rate),
                     longRun: percentText(view.long_run_rate),
                 })}
-            </p>
+            </Summary>
             {caution !== '' && (
                 <Notice tone="warn">{t(`marketdata.irSimple.caution.${caution}`)}</Notice>
             )}

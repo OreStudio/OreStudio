@@ -147,3 +147,12 @@ export function Presets({
         </div>
     );
 }
+
+/** What the answers make of the model, in a sentence, set apart so it is found at a glance. */
+export function Summary({ children }: { readonly children: ReactNode }): ReactNode {
+    return (
+        <p className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-ink">
+            {children}
+        </p>
+    );
+}

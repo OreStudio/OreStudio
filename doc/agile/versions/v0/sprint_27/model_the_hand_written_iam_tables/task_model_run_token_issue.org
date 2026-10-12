@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=run_token_issue= is generated from =ores.iam.run_token_issue.org=, a hypertable entity with no retention.
+
+- The table, entity, mapper, domain type and repository come from the model, with the schema of the hand-written script.
+- The count of distinct runs and the existence check stay hand-written, renamed =run_token_issue_log=, because they are counts. The recorder writes through the generated repository.
+- The table still carries no row-level security. That finding is in its own capture.

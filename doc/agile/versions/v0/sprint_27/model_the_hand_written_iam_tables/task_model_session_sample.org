@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=session_sample= is generated from =ores.iam.session_sample.org=, a hypertable entity with tenant isolation and a thirty-day retention.
+
+- The table, entity, mapper, domain type and repository come from the model.
+- The tenant isolation policy is generated with the table, so the hand-written copy in =iam_rls_policies_create.sql= is removed.
+- No hand-written C++ reads or writes the table, so nothing else changed.

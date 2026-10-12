@@ -686,13 +686,19 @@ operation.
   with a one-of member. A history is =list= of the entity's versions. A read at an
   instant is the =as_of= field.
 - *The filter record.* A filter has an equals member for each column the model
-  declares filterable, a one-of member for the key and the relation columns, and
+  declares filterable, a one-of member for the key and the relation columns, a
+  =_from= and a =_to= member for each filterable date or timestamp column, and
   one =search= member for the columns the model declares searchable. A screen
   that wants to filter by a column asks for the column to be declared filterable.
   It does not filter in the browser. A combo box that filters a list offers only
   the values that exist, as the paging section says.
-- *A scoped read.* The trades of a book, and of the books below it, are
-  =list_by_book_id= with the subtree scope, and not a filter the screen builds.
+- *A scoped read.* The children of one row are =list_by_<relation>=, such as the
+  identifiers of a trade. A filter on a column of another entity, such as the
+  trades in a book or in a state, is a filter of a read model that carries the
+  column, and not a join the screen builds. The trades of a portfolio and the
+  portfolios below it are the books below it, read first, then a one-of member
+  of those books. The table in *Finding an entity* of the protocol
+  specification names the mechanism for each need.
 - *Writes.* A change is =put= with a precondition, which is the version the edit
   started from, and a change intent: the reason code and the commentary. A set of
   records is =put_many=, and it is one transaction. The screen never sends a

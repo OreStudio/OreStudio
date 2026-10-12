@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T23:20:31.653727Z
+' Generated: 2026-10-12T22:47:58.818299Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 104
+Tables: 105
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1522,6 +1522,49 @@ package "trading" #E8F5E9 {
     is immutable, the trade anchor references it with a database foreign
     key rather than a trigger check. The table has no tenant: the set is the
     same for every tenant.
+    end note
+
+    entity ores_trading_credit_basket_constituents_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * issuer_id : text <<FK>>
+          qualifier : text
+          credit_curve_id : text <<FK>>
+          notional : numeric(38, 12)
+          weight : double
+          currency : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_credit_basket_constituents_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Basket Constituent Table
+    One row per name a credit basket states, keyed to the trade and the name's
+    ordinal within the document.
+    The ORE schema states a basket as an unbounded list of Name elements, each
+    carrying an issuer, a credit curve, an optional notional, an optional weight
+    and an optional currency, and a few more that this table does not hold yet.
+    The list order is the document's order and the ordinal preserves it, so the
+    export re-emits the names as the document held them.
+    An index credit default swap and a synthetic CDO state a basket. A product
+    that states none writes no rows.
+    The notional is a money value, so the column holds an exact numeric. The
+    weight is a continuous quantity, so the column holds a binary float. The
+    document may state neither, and then the column is null rather than a zero the
+    document never wrote.
+    The trade row carries the party. The name rows are family-owned and ride the
+    trade's scope.
     end note
 
     entity ores_trading_credit_instruments_tbl <<temporal>> #C6F0D8 {
@@ -3446,6 +3489,7 @@ package "trading" #E8F5E9 {
         * payment_frequency_code : text
           floating_index_code : text
         * currency : text
+          leg_group : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3971,6 +4015,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_composite_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_composite_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_composite_legs_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_composite_legs_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_credit_basket_constituents_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_basket_constituents_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_credit_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_accumulator_instruments_tbl : "has"

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/credit_basket_constituents/credit_basket_constituent.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+credit_basket_constituents list --limit 1

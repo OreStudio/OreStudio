@@ -260,6 +260,21 @@ for select using (
     or party_id = any(ores_iam_visible_party_ids_fn())
 );
 
+-- A grid sample row counts one party's work, or the work with no party. A session
+-- that acts for parties reads their rows and the rows with no party, so the fleet
+-- row and the rows of other tenants' shared fleet stay visible to it.
+drop policy if exists grid_samples_party_isolation_policy
+    on ores_compute_grid_samples_tbl;
+
+create policy grid_samples_party_isolation_policy
+on ores_compute_grid_samples_tbl
+as restrictive
+for select using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id is null
+    or party_id = any(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Removed: the system tenant's read of every tenant's work
 -- An earlier version let a system-tenant session read every tenant's batches,

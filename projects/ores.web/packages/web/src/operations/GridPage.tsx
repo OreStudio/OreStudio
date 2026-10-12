@@ -39,7 +39,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
-import type { GridNodeRow, GridView, SeriesRange } from '@ores/wire-protocol/browser';
+import type { GridNodeRow, GridView, SeriesRange, SessionMode } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
@@ -621,7 +621,60 @@ function NodesTab({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactN
     );
 }
 
-export function GridPage(): ReactNode {
+/** The tabs a tenant's session and a party's session are offered: their own work only. */
+export const TENANT_GRID_TABS = ['overview', 'usage'] as const;
+
+/**
+ * The grid as a tenant's administrator or a party's member sees it.
+ *
+ * The charts and the usage are those of the person's own work, as far as the
+ * session reads it: the tenant's for an administrator and the parties' it acts
+ * for for a member. The fleet chart shows the installation's capacity as counts.
+ * The machines, the nodes and the heatmap name the installation's hardware, so
+ * only an operator is offered them, and the read of the grid's node list, which
+ * they need, is refused to a tenant.
+ */
+function TenantGridPage(): ReactNode {
+    const { t } = useTranslation();
+    const [range, setRange] = useState<SeriesRange>('1h');
+    const { tab, bar } = useTabs({
+        label: t('operations.grid.tabs.label'),
+        tabs: TENANT_GRID_TABS,
+        titleOf: (candidate) => t(`operations.grid.tabs.${candidate}`),
+    });
+    return (
+        <div className="space-y-6">
+            <div>
+                <AreaTrail area="operations" screen={t('operations.screens.grid')} />
+                <PageHeader
+                    title={t('operations.grid.title')}
+                    description={t('operations.grid.tenantDescription')}
+                    actions={<OperationsBack />}
+                />
+            </div>
+
+            {bar}
+
+            {tab === 'overview' && <GridLoadTab range={range} onRange={setRange} />}
+
+            {tab === 'usage' && <GridUsageTab />}
+        </div>
+    );
+}
+
+/**
+ * The grid screen. An operator in system administration reads the whole
+ * installation, and everybody else reads their own work.
+ */
+export function GridPage({ mode }: { readonly mode?: SessionMode } = {}): ReactNode {
+    return mode !== undefined && mode !== 'system-administration' ? (
+        <TenantGridPage />
+    ) : (
+        <OperatorGridPage />
+    );
+}
+
+function OperatorGridPage(): ReactNode {
     const { t } = useTranslation();
     const grid = useQuery({ queryKey: GRID_QUERY_KEY, queryFn: api.grid });
     const [range, setRange] = useState<SeriesRange>('1h');

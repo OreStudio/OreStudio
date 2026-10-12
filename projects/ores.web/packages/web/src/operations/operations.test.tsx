@@ -459,6 +459,7 @@ describe('the operations area', () => {
         const html = withProviders(<OperationsArea />, '/', [], gridView(), busView(), logsView(), [
             'iam::sessions:read',
             'installation::deployment:read',
+            'compute::grid_samples:read',
         ]);
 
         expect(html).toContain('href="/operations/versions"');
@@ -1102,7 +1103,7 @@ describe('the route to the compute grid', () => {
             gridView(),
             busView(),
             logsView(),
-            ['installation::deployment:read'],
+            ['installation::deployment:read', 'compute::grid_samples:read'],
         );
 
         expect(html).toContain('href="/operations/grid"');
@@ -1588,6 +1589,49 @@ describe('the grid over time', () => {
         ]);
         expect(mixed).toEqual({ cpuCount: 4, ramMb: 7168 });
         expect(formatRam(7168)).toBe('7.0 GiB');
+    });
+
+    it('offers the compute grid to anybody who may read the grid samples, without the deployment read', () => {
+        const html = withProviders(<OperationsArea />, '/', [], gridView(), busView(), logsView(), [
+            'compute::grid_samples:read',
+        ]);
+
+        expect(html).toContain('href="/operations/grid"');
+        expect(html).not.toContain('href="/operations/services"');
+        expect(html).not.toContain('href="/operations/bus"');
+    });
+
+    it('offers a tenant or a party member the overview and the usage, and no machine', () => {
+        const render = (mode: 'tenant-administration' | 'application', path: string): string =>
+            withProviders(
+                <GridPage mode={mode} />,
+                path,
+                [],
+                gridView(),
+                busView(),
+                logsView(),
+                [],
+                gridSeriesView(),
+                usageView({ group_kind: 'party' }),
+            );
+
+        for (const mode of ['tenant-administration', 'application'] as const) {
+            const overview = render(mode, '/');
+            expect(overview).toContain('>Overview<');
+            expect(overview).toContain('>Usage<');
+            expect(overview).not.toContain('>Machines<');
+            expect(overview).not.toContain('>Nodes<');
+            expect(overview).not.toContain('>Heatmap<');
+            expect(overview).toContain('Over time');
+
+            // A tab for hardware is not served to them, even by the address.
+            const machines = render(mode, '/?tab=machines');
+            expect(machines).not.toContain('machines up');
+            expect(machines).not.toContain('grid-01.example.com');
+
+            const usage = render(mode, '/?tab=usage');
+            expect(usage).toContain('Usage by party');
+        }
     });
 
     it('keeps the grid screen on five tabs, so each page stays short', () => {

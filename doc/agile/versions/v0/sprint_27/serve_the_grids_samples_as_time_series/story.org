@@ -53,6 +53,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:60802A8C-2F41-4D74-8485-D383E5F36EA9][Read each tenant's grid work inside the tenant]] | DONE | 2026-10-12 | 2026-10-12 | The operator's breakdown by tenant is built by entering each tenant and reading its usage there, as the tenancy documentation requires, and the three system-tenant read policies and the grid-wide summary that the first usage change added are removed. |
 | [[id:22BBF2AD-F2DE-44C0-A0A8-1C3FA66AB0B6][Show machines on a tab and draw the tenant pie]] | DONE | 2026-10-12 | 2026-10-12 | The machines table moves to its own tab, the Usage tab draws a pie of each group's share, and the no-host gap note is removed. |
 | [[id:CDCDA380-711C-4F7E-9AE4-A9CB91BBA5A6][Total the machines table]] | DONE | 2026-10-12 | 2026-10-12 | A totals row under the machines table sums the fleet's machines, hardware, nodes and tasks. |
+| [[id:0ADD9640-2C5B-4065-8114-3443E9D62EFE][Give a tenant and a party the grid views]] | DONE | 2026-10-12 | 2026-10-13 | The poller writes a sample row for each tenant and party, a tenant or party session reads the series of its own work, and the grid screen opens to a tenant administrator and a party user with the fleet capacity as a summary. |
 
 * Findings
 

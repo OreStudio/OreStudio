@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T23:20:31.653727Z
+' Generated: 2026-10-12T22:47:58.818299Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -44,6 +44,9 @@ Keys this group states reach into:
 - ores_iam_permissions_tbl (iam)
 - ores_iam_role_grant_requests_tbl (iam)
 - ores_refdata_book_changes_tbl (refdata)
+- ores_refdata_counterparty_changes_tbl (refdata)
+- ores_refdata_counterparty_identifier_changes_tbl (refdata)
+- ores_refdata_party_counterparty_changes_tbl (refdata)
 end note
 
 '

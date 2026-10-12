@@ -1672,6 +1672,8 @@ const pt: SourceCatalogue = {
                 nodes: 'Nós',
                 heatmap: 'Mapa de calor',
             },
+            tenantDescription:
+                'A carga, o débito e os resultados do trabalho que pode ver, ao longo do tempo, e a capacidade da instalação.',
             usage: {
                 title: { tenant: 'Utilização por inquilino', party: 'Utilização por parte' },
                 note: {

@@ -53,6 +53,8 @@
 \ir ./reporting_configuration_analytics_drop.sql
 
 
+\ir ./reporting_file_types_notify_trigger_drop.sql
+\ir ./reporting_file_types_drop.sql
 \ir ./reporting_analytic_types_notify_trigger_drop.sql
 \ir ./reporting_analytic_types_drop.sql
 

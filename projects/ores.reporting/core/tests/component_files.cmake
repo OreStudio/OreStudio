@@ -27,6 +27,7 @@ set(files
     "configuration_market_binding_eventing_integration_tests.cpp"
     "configuration_parameter_eventing_integration_tests.cpp"
     "configuration_type_eventing_integration_tests.cpp"
+    "file_type_eventing_integration_tests.cpp"
     "main.cpp"
     "parameter_definition_eventing_integration_tests.cpp"
     "parameter_value_domain_eventing_integration_tests.cpp"

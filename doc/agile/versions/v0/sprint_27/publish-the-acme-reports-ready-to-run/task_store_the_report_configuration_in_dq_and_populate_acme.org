@@ -26,19 +26,22 @@ A report definition is ready to run only when every configuration document its r
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | The four documents the risk type requires, the conventions and the shared run settings publish for every ACME party, every definition binds five configurations, and all 78 definitions export a run configuration that validates against the ORE schemas. |
+| Now          | Nothing. |
 | Waiting on   | The extra documents the analysis names (simulation, sensitivity, stress test, historical return, Basel traffic light), which the product owner postponed. The complete provision also waits for the attach photos fix of another environment. |
-| Next         | Decide the extra documents, add a readiness query that lists the reports whose analytics read a document nothing stores, and rebase the branch. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
 
-- Every configuration kind that an ACME report reads has a DQ staging table, an artefact type and a publish function that writes the owning component's tables, party scoped and idempotent. The kinds are the four the risk type requires (pricing engines, today's market, curve configuration, conventions) and the extras the analysis names (simulation, sensitivity, stress test, counterparty information, netting set definitions).
+The product owner narrowed the scope on 2026-10-12. The documents that need new entity models, and the analytics and their parameters, move to follow-on tasks of this story.
+
+- Each configuration kind that the risk report type requires (pricing engines, today's market, curve configuration and conventions), and the run settings of a report, has a DQ staging table generated from its domain entity, an artefact type and a publish function that writes the owning component's tables, party scoped and idempotent.
 - Each ACME party has a dataset per kind, crafted for the reports that party runs. A dataset declares its dependency on the data it needs.
-- After a clean provision every ACME definition has a binding for each configuration type its report type requires, and the extras its analytics need. No ORE import runs.
-- The reports that read a kind nothing can store yet are listed with what they wait for, and the report design is reconciled with that list.
+- After a clean provision every ACME definition binds each configuration type its report type requires. No ORE import runs.
+- Every definition exports a run configuration that validates against the ORE schemas, and its analytics are the ones decided for its report.
+- The reports that read a kind nothing can store yet are listed with what they wait for, in the follow-on tasks.
 
 * Plan
 
@@ -229,14 +232,24 @@ via its "Verifies task" field.
 
 * Result
 
-Interim. Not closed.
+Delivered, with the scope narrowed by the product owner on 2026-10-12.
 
-A risk report configuration is now a named, shared, party-owned entity that a definition binds, and its DQ
-staging table is generated from the domain entity. The separate DQ model is gone. Each ACME party publishes
-its run settings, the conventions and its documents as datasets with declared dependencies, and every
-definition binds all five. A clean provision leaves all 78 definitions ready to export, and the export builds
-the run document from the settings and the bindings.
+A risk report configuration is a named, shared, party owned entity that a definition binds by name, and its DQ
+staging table is generated from the domain entity. The separate DQ model is deleted. Each ACME party publishes
+its pricing engines, today's market, curve configuration, run settings and conventions binding as datasets with
+declared dependencies, and every definition binds five configurations. A clean provision leaves 49 shared
+configurations (15 for each trading entity and 4 for the holding company) and 390 bindings. All 78 definitions
+export a run configuration. The export builds the run document from the configuration and the bindings, 56
+distinct exported files validate against the ORE schemas, and the exported analytics equal the ones decided for
+each report. Each configuration must switch an analytic on, and the database refuses one that does not.
 
-Still open: the extra documents some analytics read (simulation, sensitivity, stress test, historical
-return, Basel traffic light), a readiness query, and the complete provision, which waits for the attach
-photos fix.
+The analytics of each report were checked against how the 416 ORE samples use each analytic, and six
+assignments were corrected (rule D22 of the report design).
+
+Not delivered, and raised as tasks of this story: the analytics and their parameters as rows of the
+configuration, the ORE file types table with well known names and its use by the export, the analytic and
+input documents that need new entity models, a run of the exported packages in the engine, a report type for
+the platform reports, and the match of the curve quote names with the feeds. The complete provision still
+waits for the attach photos fix of another environment. The configuration holds switches and no analytic
+parameters, so reports that need a stressed window, a CSA file or collateral balances will fail at a missing
+file when the engine runs.

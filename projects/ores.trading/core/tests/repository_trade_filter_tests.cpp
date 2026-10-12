@@ -74,6 +74,17 @@ struct fixture {
         return t.id;
     }
 
+    uuid write_intra_entity(const std::string& type) {
+        auto gen = ores::testing::make_generation_context(h);
+        auto t = ores::trading::generators::generate_synthetic_trade(gen);
+        t.party_id = *ctx.party_id();
+        t.counterparty_id = std::nullopt;
+        t.counterparty_scope = ores::trading::domain::counterparty_scope::intra_entity;
+        t.trade_type = type;
+        trade_repository().write(ctx, t);
+        return t.id;
+    }
+
     std::vector<ores::trading::domain::trade> read(const trades_filter& f,
                                                    const ores::utility::domain::order& order = {}) {
         return trade_repository().read_latest(ctx, 0, 1000, order, f);
@@ -107,6 +118,16 @@ TEST_CASE("a counterparty narrows the trade list, and the total follows", tags) 
 
     CHECK(ids(f.read(on(f.counterparty))) == sorted({a, b}));
     CHECK(trade_repository().get_total_trade_count(f.ctx, on(f.counterparty)) == 2);
+}
+
+TEST_CASE("an empty counterparty member reads the trades that have no counterparty", tags) {
+    fixture f;
+    const auto internal = f.write_intra_entity("Swap");
+    f.write("Swap", f.counterparty);
+
+    trades_filter filter;
+    filter.counterparty_id = std::optional<uuid>{};
+    CHECK(ids(f.read(filter)) == std::vector<uuid>{internal});
 }
 
 TEST_CASE("a trade type narrows the list, and the members that are set must all hold", tags) {

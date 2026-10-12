@@ -82,7 +82,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Search covers one column | trade_repository.cpp | no change needed | Intended by the story. The backlog capture lists the missing columns. |
+| 2 | No test for an empty counterparty member | repository_trade_filter_tests.cpp | accept | Added a case: the empty inner optional reads the intra-entity trades. |
+| 3 | No service test for the filter_too_large guards | trade_service.cpp | decline | The generator emits the guards from the same pattern as id_one_of. |
+| 4 | Gate not re-run after the rebase | PR body | no change needed | The two failing checks cover files this PR does not touch. |
 
 * Result
 

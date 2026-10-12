@@ -8,7 +8,7 @@
 #+filetags: :filter_and_search_trades_through_the_model:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-filter-and-search-trades-through-the-model
-#+pr:
+#+pr: 3157
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3157][#3157]] | [trading] Filter and search trades through the model |
 
 * Review
 

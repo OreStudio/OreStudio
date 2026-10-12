@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-10-12
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ A quant composes an IR curve feed and sees the curve shape and sample paths befo
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-09                               |
+| Last touched | 2026-10-12                               |
 
 * Acceptance
 

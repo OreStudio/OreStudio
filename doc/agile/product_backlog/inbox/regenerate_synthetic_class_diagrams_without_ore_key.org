@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 60EAF746-AC00-4F83-AE5B-02467BCC3981
+:END:
+#+title: Regenerate the synthetic class diagrams without the ORE key
+#+description: ores.synthetic.api.puml and ores.synthetic.core.puml still show ore_key on the FX feed after PR 3152 replaced it with oresmd_uri. Find the tool that draws them and run it.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:docs:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The class diagrams =projects/ores.synthetic/api/modeling/ores.synthetic.api.puml= and =projects/ores.synthetic/core/modeling/ores.synthetic.core.puml= still show an =ore_key= field on the FX feed. PR 3152 replaced it with =oresmd_uri=. Find the tool that draws these diagrams, run it, and commit the result.
+
+* Why
+
+A diagram that names a field the code no longer has misleads the next reader. The entity relationship diagrams were regenerated in the PR. The class diagrams come from a separate tool that was not run.
+
+* References
+
+- PR 3152, Name every synthetic feed by its oresmd reference.
+
+* See also
+
+-

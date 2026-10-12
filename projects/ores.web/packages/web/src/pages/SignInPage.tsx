@@ -19,7 +19,7 @@
  *
  */
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
@@ -52,6 +52,8 @@ export interface SignInPageProps {
         readonly password: string;
     }) => Promise<SignInOutcome>;
     readonly onChooseParty: (partyId: string, parties: readonly PartySummary[]) => Promise<void>;
+    /** Whether the person is here because their session ended while they used it. */
+    readonly sessionEnded?: boolean;
 }
 
 /**
@@ -73,11 +75,16 @@ export function partyChoiceRefused(
     };
 }
 
-export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactNode {
+export function SignInPage({
+    onSignIn,
+    onChooseParty,
+    sessionEnded = false,
+}: SignInPageProps): ReactNode {
     const { t } = useTranslation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [parties, setParties] = useState<readonly PartySummary[] | undefined>(undefined);
+    const [lifetimeSeconds, setLifetimeSeconds] = useState(0);
     const [failure, setFailure] = useState<string | undefined>(undefined);
     const [busy, setBusy] = useState(false);
 
@@ -89,6 +96,7 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
             const outcome = await onSignIn({ username, password });
             if (outcome.outcome === 'party-required') {
                 setParties(outcome.parties);
+                setLifetimeSeconds(outcome.lifetimeSeconds);
             }
         } catch (error) {
             setFailure(error instanceof Error ? error.message : String(error));
@@ -96,6 +104,25 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
             setBusy(false);
         }
     };
+
+    /*
+     * The server states how long the choice lasts. When that has passed, the
+     * choice can only be refused, so the form comes back and says why without
+     * waiting for a click to find out.
+     */
+    useEffect(() => {
+        if (parties === undefined || lifetimeSeconds <= 0) {
+            return undefined;
+        }
+        const timer = setTimeout(() => {
+            setParties(undefined);
+            setPassword('');
+            setFailure(t('signIn.partyTimedOut'));
+        }, lifetimeSeconds * 1000);
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [parties, lifetimeSeconds, t]);
 
     /*
      * The token that lets a person choose a party lasts a few minutes. A person
@@ -147,6 +174,11 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
     const form = (
         <form onSubmit={(event) => void submit(event)}>
             <h1 className="text-lg font-semibold text-ink">{t('signIn.title')}</h1>
+            {sessionEnded && failure === undefined && (
+                <div className="mt-4">
+                    <Notice tone="warn">{t('signIn.sessionEnded')}</Notice>
+                </div>
+            )}
             {failure !== undefined && (
                 <div className="mt-4">
                     <Notice tone="error">{failure}</Notice>

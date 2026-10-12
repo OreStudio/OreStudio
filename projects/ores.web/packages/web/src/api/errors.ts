@@ -120,8 +120,51 @@ export function isExpectedRefusal(error: unknown): boolean {
     return error instanceof ApiFailure && error.status === 401;
 }
 
-/** Reports a failure's own sentence, unless it is an expected refusal. */
+/**
+ * Whether a failure says the session is over: the token ran out, or the server
+ * no longer holds the session. Any other 401 is not about the session. A wrong
+ * password is a 401 too, and the person is still signed in.
+ */
+export function isSessionEnded(error: unknown): boolean {
+    return (
+        error instanceof ApiFailure &&
+        error.status === 401 &&
+        (error.code === 'session-expired' || error.code === 'not-authenticated')
+    );
+}
+
+const endedListeners = new Set<() => void>();
+
+/**
+ * Registers who is told when any request learns the session is over, and
+ * answers the function that removes it. The session provider is the one that
+ * listens, because it owns what a signed-in screen is made of.
+ */
+export function onSessionEnded(listener: () => void): () => void {
+    endedListeners.add(listener);
+    return () => {
+        endedListeners.delete(listener);
+    };
+}
+
+function announceSessionEnded(): void {
+    for (const listener of endedListeners) {
+        listener();
+    }
+}
+
+/**
+ * Reports a failure's own sentence, unless it is an expected refusal.
+ *
+ * A request that finds the session over does not draw a banner: it tells the
+ * session provider, which returns the person to the sign-in form and says why,
+ * so the one sentence is on the screen the person must act on.
+ */
 export function reportError(error: unknown): void {
+    if (isSessionEnded(error)) {
+        announceSessionEnded();
+        return;
+    }
     if (isExpectedRefusal(error)) {
         return;
     }
@@ -156,6 +199,12 @@ export function reportQueryError(
     error: unknown,
     query: { readonly meta?: Readonly<Record<string, unknown>> | undefined },
 ): void {
+    // A read that says the session is over says it even when it states its own
+    // failures: nothing on the screen can recover from it.
+    if (isSessionEnded(error)) {
+        announceSessionEnded();
+        return;
+    }
     if (query.meta?.['quiet'] === true) {
         return;
     }

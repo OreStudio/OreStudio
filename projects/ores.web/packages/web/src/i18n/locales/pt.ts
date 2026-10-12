@@ -613,6 +613,7 @@ const pt: SourceCatalogue = {
         chooseParty: 'Escolha uma entidade',
         choosePartyHint: 'Esta conta trabalha em mais do que uma entidade.',
         partyTimedOut: 'A sua sessão expirou, porque não escolheu uma parte a tempo. Inicie a sessão novamente.',
+        sessionEnded: 'A sua sessão terminou e foi desligado. Inicie a sessão novamente para continuar.',
         partyCategory: 'Categoria',
     },
 

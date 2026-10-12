@@ -608,6 +608,7 @@ export const en: SourceCatalogue = {
         chooseParty: 'Choose a party',
         choosePartyHint: 'This account works in more than one party.',
         partyTimedOut: 'Your sign-in timed out because you did not choose a party in time. Sign in again.',
+        sessionEnded: 'Your session has ended, so you have been signed out. Sign in again to continue.',
         partyCategory: 'Category',
     },
 

@@ -614,6 +614,7 @@ const fr: SourceCatalogue = {
         chooseParty: 'Choisir une entité',
         choosePartyHint: 'Ce compte fonctionne dans plusieurs entités.',
         partyTimedOut: 'Votre connexion a expiré, car vous n’avez pas choisi de partie à temps. Connectez-vous de nouveau.',
+        sessionEnded: 'Votre session a pris fin et vous avez été déconnecté. Connectez-vous de nouveau pour continuer.',
         partyCategory: 'Catégorie',
     },
 

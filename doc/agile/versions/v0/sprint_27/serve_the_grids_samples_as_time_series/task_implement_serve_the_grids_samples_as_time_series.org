@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-the-grid-samples-over-a-range
-#+pr:
+#+pr: 3155
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3155][#3155]] | [compute] Serve the grid's samples as time series |
 
 * Review
 

@@ -385,6 +385,28 @@ describe('the book structure steps', () => {
         expect(state.recordRaised).not.toHaveBeenCalled();
     });
 
+    it('writes directly when the policy names no part, even if the preview refuses the change', async () => {
+        const write = vi.fn(async () => refused<Book>('Closed is not allowed from here.'));
+        const raise = vi.fn();
+        const state = asStructure(
+            opened({ kind: 'set-field', field: 'bookStatus', value: 'Closed' }),
+        );
+        const server = fakeServer([], {
+            previewBook: vi.fn(async () => ({ ...ungated, refusal: 'Closed is not allowed.' })),
+            writeBook: write,
+            raiseBook: raise,
+        });
+
+        await expect(reviewOf(stepsFor(state, server)).next?.run?.()).rejects.toThrow();
+
+        // The write's own refusal, with its code and fields, is the one recorded.
+        expect(write).toHaveBeenCalled();
+        expect(raise).not.toHaveBeenCalled();
+        expect(state.recordRefusal).toHaveBeenCalledWith(
+            expect.objectContaining({ code: 'status_transition_not_allowed' }),
+        );
+    });
+
     it('finishes the walk once a request is raised, as it does once a book is written', () => {
         const waiting = { ...opened(), raised: { requestId: 'request-1', partCodes: ['finance'] } };
         const steps = stepsFor(asStructure(waiting), fakeServer([]));

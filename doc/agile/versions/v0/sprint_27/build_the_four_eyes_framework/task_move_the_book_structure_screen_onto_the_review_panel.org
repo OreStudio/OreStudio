@@ -93,7 +93,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A retry after the portfolio was written must not write it again | booksSteps.tsx | Accept | Already covered: a written portfolio turns the draft's new portfolio into an existing one, and the state test pins that a retry plans no portfolio write. No change. |
+| 2 | No policy line is shown on the new-portfolio path | ReviewStep | Accept | The review step now says the policy is asked at the confirm, so a raise there is not a surprise. |
+| 3 | Does the preview have side effects | booksServer.ts | Accept | None: it runs the real write in a transaction that is never committed, as the proposal service documents. No change. |
+| 4 | The query key may show a stale refusal | ReviewStep | Decline | The key holds the whole book, so an edit changes it and the old answer is not reused. |
+| 5 | Promise.reject() carries no error | ReviewStep | Accept | It rejects with an error that names the cause. |
+| 6 | A test for no part with a refused preview | booksSteps.test.tsx | Accept | Added: the walk writes, and the write's own refusal with its code is the one recorded. |
+| 7 | A double click raises twice | JourneyPage.tsx | Accept | The journey's confirm button is pending while the step runs, so it is disabled. No change. |
+| 8 | Import order and unreviewed translations | booksSteps.tsx, locales | Accept in part | The import is sorted. The translations stay unreviewed and are named in the PR limits. |
 
 * Result
 

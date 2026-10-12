@@ -2760,6 +2760,8 @@ const pt: SourceCatalogue = {
                 none: 'Nenhum direito é concedido neste nó.',
             },
             review: {
+                policyAtConfirm:
+                    'A política é consultada ao confirmar: a nova carteira é escrita primeiro, depois o livro é escrito ou submetido como pedido às funções que o decidem.',
                 title: 'Revisão',
                 lead: 'Nada é escrito antes de confirmar.',
                 nothing: 'Ainda nada mudou.',

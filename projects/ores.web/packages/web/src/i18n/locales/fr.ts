@@ -2769,6 +2769,8 @@ const fr: SourceCatalogue = {
                 none: "Aucun droit n'est accordé à ce nœud.",
             },
             review: {
+                policyAtConfirm:
+                    'La politique est consultée à la confirmation : le nouveau portefeuille est écrit d’abord, puis le livre est écrit ou soumis comme demande aux fonctions qui en décident.',
                 title: 'Revue',
                 lead: "Rien n'est écrit avant votre confirmation.",
                 nothing: "Rien n'a encore changé.",

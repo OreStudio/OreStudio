@@ -2734,6 +2734,8 @@ export const en: SourceCatalogue = {
                 none: 'No right is granted at this node.',
             },
             review: {
+                policyAtConfirm:
+                    'The policy is asked when you confirm: the new portfolio is written first, then the book is either written or raised as a request for the functions that decide it.',
                 title: 'Review',
                 lead: 'Nothing is written until you confirm.',
                 nothing: 'Nothing has changed yet.',

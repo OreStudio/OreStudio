@@ -36,7 +36,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
-import { LinkButton, Button, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
+import { Button, Field, Input, LinkButton, Notice, Select, Tag } from '../ui/Primitives.js';
 import { ReviewChanges } from '../inbox/ReviewPanel.js';
 import { partLabel } from '../inbox/words.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
@@ -675,7 +675,9 @@ function ReviewStep({
     const preview = useQuery({
         queryKey: ['book-review', plan?.book, plan?.version],
         queryFn: () =>
-            plan === undefined ? Promise.reject() : server.previewBook(plan.book, plan.version),
+            plan === undefined
+                ? Promise.reject(new Error('no plan'))
+                : server.previewBook(plan.book, plan.version),
         enabled: plan !== undefined && ready && plan.portfolio === undefined,
         retry: false,
         meta: { quiet: true },
@@ -713,6 +715,9 @@ function ReviewStep({
                         ))}
                     </ul>
                 </Notice>
+            )}
+            {plan?.portfolio !== undefined && (
+                <Notice tone="info">{t('journey.books.review.policyAtConfirm')}</Notice>
             )}
             {plan !== undefined && preview.data !== undefined && (
                 <ReviewChanges

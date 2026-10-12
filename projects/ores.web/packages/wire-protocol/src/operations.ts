@@ -1935,7 +1935,10 @@ export const gridUsageGroupSchema = z.object({
     results_done: z.int().nonnegative(),
     outcomes_success: z.int().nonnegative(),
     outcomes_failed: z.int().nonnegative(),
-    /** Seconds the oldest waiting result of the group has waited, 0 when none waits. */
+    /**
+     * Seconds the oldest waiting result of the group has waited, 0 when none waits.
+     * It defaults to 0 so that a compute service that predates the field still serves the view.
+     */
     oldest_unsent_seconds: z.int().nonnegative().default(0),
     /** This group's results as a fraction of every result in the view, 0 when there are none. */
     share: z.number().min(0).max(1),

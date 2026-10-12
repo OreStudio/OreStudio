@@ -75,7 +75,7 @@ export function QueueAgeNotice({ usage }: { readonly usage: GridUsageView }): Re
     const { t } = useTranslation();
     const oldest = Math.max(
         0,
-        ...usage.groups.filter((group) => !group.unavailable).map((g) => g.oldest_unsent_seconds),
+        ...usage.groups.filter((group) => !group.unavailable).map((group) => group.oldest_unsent_seconds),
     );
     const minutes = oldest / 60;
     if (minutes < QUEUE_CAUTION_MINUTES) {

@@ -276,8 +276,10 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
                     AND t.received_at > now() - interval '24 hours'),
                 count(*) FILTER (WHERE t.server_state = 5 AND t.outcome IN (3, 4)
                     AND t.received_at > now() - interval '24 hours'),
-                coalesce(floor(max(extract(epoch FROM now() - t.valid_from))
-                    FILTER (WHERE t.server_state = 2)), 0)::bigint
+                -- now() is the start of this transaction, so a version written after it has a
+                -- later valid_from. The wait of such a row is zero and not negative.
+                greatest(coalesce(floor(max(extract(epoch FROM now() - t.valid_from))
+                    FILTER (WHERE t.server_state = 2)), 0), 0)::bigint
             FROM ores_compute_results_tbl t
             WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
             GROUP BY 1

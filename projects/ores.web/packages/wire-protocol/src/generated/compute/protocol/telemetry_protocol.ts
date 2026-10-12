@@ -504,8 +504,9 @@ export interface GetGridUsageResponse {
     /**
      * @brief How long the oldest waiting result of each group has waited, in seconds.
      *
-     * Zero when the group has no result waiting. The wait is counted from the moment the
-     * result was queued.
+     * Zero when the group has no result waiting. The wait is counted from the start of the
+     * current version of the oldest waiting result, which is the time it was queued while
+     * nothing rewrites a result that is still unsent.
      */
     oldest_unsent_seconds: number[];
 }

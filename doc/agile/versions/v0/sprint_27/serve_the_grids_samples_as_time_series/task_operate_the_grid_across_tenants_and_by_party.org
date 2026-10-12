@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
-#+branch: feature/read-the-grid-samples-over-a-range
+#+branch: feature/operate-the-grid-across-tenants-and-by-party
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,22 @@ Give the grid screens one shape for two scopes: the whole grid by tenant for the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
 
-- A super admin sees every host, node, batch, workunit and result of every tenant, with a breakdown that shows each tenant's share of the grid.
-- A tenant admin sees the same screens limited to the tenant, with a breakdown by party, and sees no other tenant's rows or counters.
+- A super admin sees the work of every tenant on the grid, with a breakdown that shows each tenant's share of the grid.
+- The same read gives a tenant session its own tenant only, grouped by party, and a session that acts for a party sees that party only.
 - Batches, workunits and results carry a party id, set when the batch is created.
 - The guard script lists each widened compute policy with its reason.
-- Every host records its RAM and a cost rate. Each completed result records its cost, computed from its run time and the slot rate of its host.
-- The usage and jobs screens show cost for every role: the overall grid cost for the operator, with a breakdown by tenant, and the tenant's cost for a tenant admin, with a breakdown by party and report.
-- Idle cost is apportioned to tenants, and inside a tenant to parties and reports, in proportion to job cost. A test shows that the loaded costs plus the unallocated cost equal the host costs.
+- The grid summary of the system tenant counts the work of every tenant.
+
+The cost attribution, the tenant administrator's grid screens and the per-tenant sample rows carry on in the task "Attribute job cost and show the grid to a tenant".
 
 * Plan
 
@@ -164,10 +164,17 @@ The hosts are owned machines. Price them as the cloud would rent equivalent capa
 7. Add the cost rate and currency to the host. Compute the cost of a result when it completes. Add the cost to the usage and jobs reads, with breakdowns by tenant, party, report, host and period. Show the cost on the Usage and Jobs tabs.
 8. Document the exception in "Data read across tenants" and update the story.
 
+** Decisions taken
+
+- *Hosts need no widening.* Measured: all 26 host rows belong to the system tenant (=select tenant_id, count(*) from ores_compute_hosts_tbl=, at commit of this branch). Only batches, workunits and results get a system read policy.
+- *The read states no scope.* =grid_usage_by_scope= names no tenant or party. The policies pick the rows, and =ores_iam_current_tenant_id_fn() = system= picks the grouping.
+- *Rows before the party scope stay visible.* The party policy passes a row with no party, as the scheduler tables do, and the usage lists such work as one group with an empty key.
+- *Existing rows are not backfilled.* They show as "No party". A backfill from the submitting user would guess.
+- *The per-tenant sample rows move to the next task.* The series routes need an installation read today, so no tenant reaches the grid samples. The leak appears only when a tenant screen opens, which is the next task.
+
 ** Open decisions
 
-- Per-tenant sample rows (recommended above) or a single installation row.
-- Backfill existing rows from the submitting user's party, or leave them "Unassigned".
+- Per-tenant sample rows (recommended above) or a single installation row. Settled in the next task.
 - Whether the party user gets the Jobs tab in this task or later.
 
 * Measurements
@@ -210,3 +217,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Batches, workunits and results now carry a party id. The report submit path sets it on the batch and its workunits, and the workunit dispatcher copies it to each result. The compute policies gain a restrictive party rule and a system-tenant read, and the guard lists the three read policies with the reason that the system tenant operates the grid. The grid summary of the system tenant counts every tenant's work.
+
+A new read, =get_grid_usage=, counts batches, workunits and results by group as columns. A system-tenant session gets a group for each tenant, and any other session a group for each party it may read. The BFF serves it at =/api/operations/grid/usage= with names and shares, and the grid screen has a Usage tab. The "Data read across tenants" page documents the exception.
+
+Verified: the compute core tests pass, including three that write batches for two parties and a third tenant and read them back as a tenant, a party and the system tenant. The web, BFF and wire-protocol tests pass. Not checked on a live screen with a tenant administrator, because no tenant screen opens the grid yet.

@@ -581,6 +581,35 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+** work_available_event
+:PROPERTIES:
+:subject: compute.v1.ops.work_available
+:auth: none
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Tells idle nodes that work has been queued.
+ *
+ * A plain NATS notice with no persistence. It holds no job and no credential, so
+ * it cannot go stale or be redelivered, and it is lost if no node listens. A node
+ * that hears it asks for work at once. A node also asks every few seconds with
+ * random jitter, so a lost notice costs seconds and nothing else.
+ */
+#+end_src
+
+*** queued
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The number of results the sender queued, for a log line. A node does not act on it.
+ */
+#+end_src
+
 ** result_started_request
 :PROPERTIES:
 :subject: compute.v1.ops.result_started

@@ -73,6 +73,14 @@ struct options final {
     std::uint32_t heartbeat_interval_seconds{30};
 
     /**
+     * @brief Seconds between requests for work while the node is idle and hears no notice.
+     *
+     * The service rings a doorbell when it queues work, so an idle node asks at once. The
+     * poll is the fallback for a notice that was lost, and it is spread by jitter.
+     */
+    std::uint32_t claim_poll_seconds{5};
+
+    /**
      * @brief Interval in seconds between telemetry node-sample publishes.
      *
      * Set to 0 to disable telemetry publishing entirely.

@@ -252,6 +252,21 @@ export interface ClaimWorkResponse {
 }
 
 /**
+ * @brief Tells idle nodes that work has been queued.
+ *
+ * A plain NATS notice with no persistence. It holds no job and no credential, so
+ * it cannot go stale or be redelivered, and it is lost if no node listens. A node
+ * that hears it asks for work at once. A node also asks every few seconds with
+ * random jitter, so a lost notice costs seconds and nothing else.
+ */
+export interface WorkAvailableEvent {
+    /**
+     * @brief The number of results the sender queued, for a log line. A node does not act on it.
+     */
+    queued: number;
+}
+
+/**
  * @brief Tells the service that a wrapper node has begun a job.
  *
  * The node waits for the reply before it runs the job, so the service has
@@ -351,6 +366,7 @@ export const subjects = {
     heartbeat_message: 'compute.v1.ops.heartbeat',
     reap_work_message: 'compute.v1.ops.reap_work',
     claim_work_request: 'compute.v1.ops.claim_work',
+    work_available_event: 'compute.v1.ops.work_available',
     result_started_request: 'compute.v1.ops.result_started',
     submit_result_request: 'compute.v1.ops.submit_result',
 } as const;
@@ -365,6 +381,7 @@ export const requiresSession = {
     heartbeat_message: false,
     reap_work_message: false,
     claim_work_request: false,
+    work_available_event: false,
     result_started_request: false,
     submit_result_request: false,
 } as const;

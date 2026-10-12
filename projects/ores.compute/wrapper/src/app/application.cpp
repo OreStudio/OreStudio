@@ -22,6 +22,7 @@
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
+#include "ores.compute.wrapper/app/claim_loop.hpp"
 #include "ores.compute.wrapper/app/log_publisher.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -334,36 +335,6 @@ private:
 };
 
 /**
- * @brief Tells the service that this node has begun a job, and waits for it to record it.
- *
- * The dispatcher creates a result unsent, and nothing else says a node took it,
- * so without this no job is ever in progress. The wait matters: the node cannot
- * submit the result before the start is recorded, so a fast job cannot be
- * overwritten by its own late start. A start that cannot be recorded is logged
- * and the job runs anyway, because the result still arrives through the submit.
- */
-void announce_start(ores::nats::service::client& nats,
-                    const std::string& result_id,
-                    const std::string& tenant_id,
-                    const std::string& host_id,
-                    auto& lg) {
-    try {
-        const auto& codec = ores::nats::default_wire_codec();
-        const compute::messaging::result_started_request req{
-            .tenant_id = tenant_id, .result_id = result_id, .host_id = host_id};
-        const auto reply = nats.request_sync(
-            compute::messaging::result_started_request::nats_subject, codec.encode(req));
-        const auto resp = codec.decode<compute::messaging::result_started_response>(reply.data);
-        if (!resp || !resp->success) {
-            BOOST_LOG_SEV(lg, warn) << "result_started refused: "
-                                    << (resp ? resp->message : "failed to deserialize response");
-        }
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, warn) << "result_started failed: " << e.what();
-    }
-}
-
-/**
  * @brief Submit a finished job back to the compute service.
  *
  * Sent over the trusted wrapper channel (compute.v1.ops.submit_result), which
@@ -593,7 +564,6 @@ void process_assignment(ores::nats::service::client& nats,
 
     heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
     hb.start();
-    announce_start(nats, evt.result_id, evt.tenant_id, cfg.host_id, lg);
 
     // Outcome codes match the domain: 1=Success, 3=ClientError.
     // Start with ClientError; success path will set it to 1.
@@ -810,19 +780,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
 
-    // Ensure the durable compute assignments stream exists. Idempotent.
-    try {
-        const auto stream_name = nats.make_stream_name("compute_assignments");
-        auto admin = nats.make_admin();
-        admin.ensure_stream(
-            stream_name,
-            nats.covering_subjects({compute::messaging::work_assignment_event::nats_subject}));
-        BOOST_LOG_SEV(lg(), info) << "Compute JetStream stream ready: " << stream_name;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to ensure compute stream: " << e.what();
-        throw;
-    }
-
     // Node telemetry reporter — publishes per-node metrics to
     // compute.v1.ops.node_sample at the configured interval.
     std::unique_ptr<node_stats_reporter> reporter;
@@ -838,55 +795,29 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // last heartbeat of any kind and not from the last one sent during a job.
     heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, raw_reporter);
 
-    // Subject routing is per-triplet: the compute orchestrator publishes each
-    // assignment on compute.v1.ops.work_assignment.{tenant_id}.{platform_code}
-    // with the package URI already resolved for that platform. The deployment's
-    // wrapper fleet is the shared pool, so it consumes every tenant's
-    // assignments for its own platform; the tenant segment stays in the subject
-    // as the routing key a tenant's own pool will filter on. --tenant-id is
-    // this node's own identity for its host row and telemetry, not a filter on
-    // the work it takes. Wrappers subscribe only to their own triplet so they
-    // never see assignments they couldn't run.
-    std::string sanitised_tenant = cfg.tenant_id;
-    std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '_');
+    // A node takes work by asking for it. The service rings a plain NATS doorbell when it
+    // queues work, and the loop also asks every few seconds with jitter. --tenant-id is
+    // this node's own identity for its host row and telemetry, not a filter on the work it
+    // takes: the fleet is the shared pool for every tenant, and the service chooses fairly
+    // across tenants when it hands out a job.
     const std::string my_triplet(ores::utility::version::platform_triplet());
-    const std::string assignment_prefix(compute::messaging::work_assignment_event::nats_subject);
-    const std::string work_subject = assignment_prefix + ".*." + my_triplet;
-    const std::string durable_name = "compute_wrapper_shared_" + my_triplet;
-    const std::string queue_group = "ores.compute.wrapper." + my_triplet;
-    // Named so the subscribe reconciles the durable first: a subject rename
-    // leaves a consumer whose stored filter the server will not attach.
-    const std::string assignments_stream = nats.make_stream_name("compute_assignments");
+    claim_loop claims(
+        nats,
+        cfg.host_id,
+        my_triplet,
+        std::chrono::seconds(std::max<std::uint32_t>(1, cfg.claim_poll_seconds)),
+        [&nats, &cfg, raw_reporter](const compute::messaging::work_assignment_event& job) {
+            process_assignment(nats, job, cfg, raw_reporter, lg());
+        });
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         service_name,
-        [&nats,
-         &cfg,
-         raw_reporter,
-         &work_subject,
-         &durable_name,
-         &queue_group,
-         &assignments_stream](auto& n, auto /*verifier*/) {
-            auto sub = n.js_queue_subscribe(
-                work_subject,
-                durable_name,
-                queue_group,
-                [&nats, &cfg, raw_reporter](ores::nats::message msg) {
-                    const auto evt =
-                        ores::nats::default_wire_codec()
-                            .decode<compute::messaging::work_assignment_event>(msg.data);
-                    if (!evt) {
-                        BOOST_LOG_SEV(lg(), error)
-                            << "Failed to decode work_assignment_event: " << evt.error().what();
-                        return;
-                    }
-                    process_assignment(nats, *evt, cfg, raw_reporter, lg());
-                },
-                assignments_stream);
+        [&claims](auto& n, auto /*verifier*/) {
             std::vector<ores::nats::service::subscription> subs;
-            subs.push_back(std::move(sub));
+            subs.push_back(n.subscribe(compute::messaging::work_available_event::nats_subject,
+                                       [&claims](ores::nats::message) { claims.ring(); }));
             return subs;
         },
         [&](boost::asio::io_context& ioc) {
@@ -900,6 +831,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             idle_hb.start();
             BOOST_LOG_SEV(lg(), info) << "Idle heartbeat sender started ("
                                       << cfg.heartbeat_interval_seconds << "s interval).";
+            claims.start();
             if (reporter) {
                 reporter->start();
                 BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter started ("
@@ -907,6 +839,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             }
         },
         [&]() {
+            claims.stop();
             idle_hb.stop();
             if (reporter) {
                 reporter->stop();

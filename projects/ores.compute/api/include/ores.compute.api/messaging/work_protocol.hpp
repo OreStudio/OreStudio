@@ -306,6 +306,29 @@ struct claim_work_response {
 };
 
 /**
+ * @brief Tells idle nodes that work has been queued.
+ *
+ * A plain NATS notice with no persistence. It holds no job and no credential, so
+ * it cannot go stale or be redelivered, and it is lost if no node listens. A node
+ * that hears it asks for work at once. A node also asks every few seconds with
+ * random jitter, so a lost notice costs seconds and nothing else.
+ */
+struct work_available_event {
+    static constexpr std::string_view nats_subject = "compute.v1.ops.work_available";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
+    /**
+     * @brief The number of results the sender queued, for a log line. A node does not act on it.
+     */
+    int queued = 0;
+};
+
+/**
  * @brief Tells the service that a wrapper node has begun a job.
  *
  * The node waits for the reply before it runs the job, so the service has

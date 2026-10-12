@@ -111,10 +111,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, event_bus, nats);
 
     // Must be constructed before event_source.start() so no change is missed.
-    app::workunit_dispatcher dispatcher(nats, make_context(cfg.database), svc_nats);
+    app::workunit_dispatcher dispatcher(nats, make_context(cfg.database));
 
-    // Grid dispatch seam: creates the result rows and publishes the JetStream
-    // assignments for shell-saved workunits. It reads the in-process bus rather
+    // Grid dispatch seam: creates the result rows, queues them in the work ledger and rings
+    // the doorbell for shell-saved workunits. It reads the in-process bus rather
     // than the NATS publication, and it needs the tenant, which the typed
     // event does not state. So it reads the change the event source publishes
     // beside it and keeps the workunit's.

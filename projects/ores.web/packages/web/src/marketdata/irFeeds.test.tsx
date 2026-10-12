@@ -234,9 +234,14 @@ describe('the IR curve feed screens', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('Mean reversion speed');
-        expect(html).toContain('value="0.7"');
+        expect(html).toContain('>0.7</td>');
         expect(html).toContain('Initial short rate');
-        expect(html).toContain('value="0.03"');
+        expect(html).toContain('>0.03</td>');
+        expect(html).toContain('>Min<');
+        expect(html).toContain('>Max<');
+        expect(html).not.toContain('Allowed range');
+        expect(html).toContain('>Discard<');
+        expect(html).not.toContain('Discard changes');
         expect(html).toContain('No unsaved changes.');
         expect(html).toContain('Hull-White');
     });
@@ -250,8 +255,9 @@ describe('the IR curve feed screens', () => {
             client.setQueryData(['records', 'ir-template-entries', FEED_ID], []);
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('value="0.5"');
-        expect(html).toContain('Unsaved changes');
+        expect(html).toContain('>0.5</td>');
+        expect(html).toContain('2 unsaved changes');
+        expect(html).toContain('>New<');
         expect(html).not.toContain('No unsaved changes.');
     });
 

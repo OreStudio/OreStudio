@@ -26,6 +26,7 @@ import {
     indexTenorOf,
     irSeriesUri,
     parameterError,
+    parameterLimits,
     parameterLines,
     parameterPlan,
 } from './irCurve.js';
@@ -163,5 +164,14 @@ describe('the writes that save the parameters', () => {
             },
             version: 3,
         });
+    });
+});
+
+describe('what a parameter accepts', () => {
+    it('is named by which limits it has', () => {
+        expect(parameterLimits(undefined, undefined).kind).toBe('none');
+        expect(parameterLimits(0, undefined).kind).toBe('min');
+        expect(parameterLimits(undefined, 1).kind).toBe('max');
+        expect(parameterLimits(0, 1).kind).toBe('both');
     });
 });

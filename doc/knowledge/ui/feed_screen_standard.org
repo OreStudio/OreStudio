@@ -239,6 +239,29 @@ meaning of the saved process, so the screen converts the draft with it:
   *Reseed*. The screen waits 300 ms after typing before it asks.
 - Neither preview saves anything.
 
+** The process tab of a curve feed
+
+A curve feed's process is the engine and a fixed set of parameters, so the tab
+is the process tab above with the parts that follow from that.
+
+- The toolbar is the same: the unsaved count or "No unsaved changes.", the engine,
+  *Discard* and *Save*. There is no *Add*, and a row has no *↑*, *↓* or *Delete*,
+  because the engine states which parameters it reads.
+- The table lists the engine's parameters, read only: the parameter with its
+  symbol, the value, and the *Min* and *Max* the engine accepts. A dash means no
+  limit. The header tooltips say so, and each row's tooltip is the parameter's
+  description.
+- A click on a row opens the parameter in a dialog with the description, the value
+  and what it accepts, such as "At least 0." or "Between 0 and 1." *Done* puts the
+  value back into the table and writes nothing.
+- A parameter with no saved value is tagged /New/ and shows the engine's default. A
+  value that differs from the saved one is tinted and tagged /Changed/. A value the
+  engine refuses is shown in red, and *Save* waits.
+- A change of engine replaces the parameters, and a notice says that the old
+  engine's parameters are removed when the process is saved.
+- The previews below the table price the curve at the template's tenor entries and
+  draw sample short-rate paths, both from the values on the screen.
+
 ** The Ticks tab
 
 #+begin_src text
@@ -327,7 +350,7 @@ calibration. The screen draws what the server answers.
 | The feed kind | =marketdata/feedKind.ts= | What a kind states: fields, columns, parts, tabs |
 | The list and the page | =marketdata/FeedScreens.tsx= | =FeedsPage= and =FeedPage=, for every kind |
 | The process tab, FX | =marketdata/MixturePanel.tsx= | The list, the marks, the engine, the previews |
-| The process tab, IR | =marketdata/irFeeds.tsx= | The engine, the parameters, the curve shape and the paths |
+| The process tab, IR | =marketdata/IrProcessPanel.tsx= | The toolbar, the parameter table, the parameter dialog, the curve shape and the paths |
 | The curve template | =PartsPanel= in =refdata/records.tsx= | The tenor entries, as the parts standard sets them |
 | The part dialog | =marketdata/ComponentDialog.tsx= | One part with its help |
 | The save dialog | =marketdata/SavePartsDialog.tsx= | The reason, the order of writes, the restart, in the words of the kind |

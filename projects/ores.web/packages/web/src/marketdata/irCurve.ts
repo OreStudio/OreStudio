@@ -200,3 +200,13 @@ export function parameterPlan(
         .map((row) => ({ key: show(row['id']), version: Number(row['version']) }));
     return { changes, removals };
 }
+
+/** Which limits a parameter has, for the words that say what it accepts. */
+export function parameterLimits(
+    min: number | undefined,
+    max: number | undefined,
+): { readonly kind: 'none' | 'min' | 'max' | 'both' } {
+    if (min !== undefined && max !== undefined) return { kind: 'both' };
+    if (min !== undefined) return { kind: 'min' };
+    return max !== undefined ? { kind: 'max' } : { kind: 'none' };
+}

@@ -100,3 +100,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A history provider no longer finds a row by a key that other rows share.
+
+- Codegen derives =history_by_row_id= for a model whose declared key is not the storage key, with a further natural key and a uuid storage key. The provider of such a model reads by the row's own id.
+- Ten models are affected: party and counterparty contacts, party, counterparty and netting set identifiers, business units, portfolios, portfolio rights, CSA eligible currencies and run grants.
+- The party timeline reads its identifiers, contacts and business units by row id. It no longer filters by id and no longer states a gap for another party's row. The product owner saw the contact versions and no gap note in the browser.
+- Link tables were already covered by the link history task: they read by the parent, and each version names its link as =parent/child=.
+- The UX specification and the entity addressing page state both rules.
+
+Not done: the generic shell =history= command now needs the row id for these ten entities, and a stale key returns the dispatcher's error text (bad lexical cast) with no clearer message.

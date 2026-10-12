@@ -23,6 +23,7 @@
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/messaging/submit_decision.hpp"
+#include "ores.compute.core/repository/work_ledger_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
@@ -166,6 +167,30 @@ public:
                     break;
                 }
 
+                // A result that a node holds under a lease is finished by that node. A node whose
+                // lease ended and whose job went to another may still finish and submit, and its
+                // outcome must not overwrite the result of the node that took over.
+                const auto result_uuid = boost::lexical_cast<boost::uuids::uuid>(req->result_id);
+                repository::work_ledger_repository ledger;
+                std::optional<boost::uuids::uuid> submitter;
+                try {
+                    submitter = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
+                } catch (const boost::bad_lexical_cast&) {
+                    submitter = std::nullopt;
+                }
+                if (claimed_by_another(ledger.holder(ctx_, result_uuid), submitter)) {
+                    BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                        << "Ignoring the outcome of result " << req->result_id
+                        << " from a host that does not hold its claim";
+                    reply(nats_,
+                          msg,
+                          submit_result_response{
+                              .success = true,
+                              .message = "The result is claimed by another host; the outcome was "
+                                         "ignored."});
+                    return;
+                }
+
                 auto r = *existing;
                 // Done.
                 r.server_state = 5;
@@ -187,6 +212,7 @@ public:
                                                                    req->error_message;
                 stamp(r, tenant_ctx);
                 result_svc.save_result(r);
+                ledger.remove(ctx_, result_uuid);
 
                 // Validator: once the redundancy target is met, accept the
                 // canonical result on the workunit. The shell drain watch

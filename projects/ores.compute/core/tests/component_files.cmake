@@ -25,10 +25,12 @@ set(files
     "batch_eventing_integration_tests.cpp"
     "host_eventing_integration_tests.cpp"
     "main.cpp"
+    "messaging_assignment_grants_tests.cpp"
     "messaging_submit_decision_tests.cpp"
     "platform_eventing_integration_tests.cpp"
     "repository_app_version_platform_repository_tests.cpp"
     "repository_compute_telemetry_repository_tests.cpp"
+    "repository_work_ledger_repository_tests.cpp"
     "result_eventing_integration_tests.cpp"
     "workunit_eventing_integration_tests.cpp"
 )

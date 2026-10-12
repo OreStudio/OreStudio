@@ -205,6 +205,107 @@ struct reap_work_message {
 };
 
 /**
+ * @brief A free node asks the service for its next job.
+ *
+ * The node sends it when it has no job to run. The service takes the next
+ * waiting job for the node's platform from the work ledger, marks it as taken
+ * under a lease, and replies with everything the node needs to run it. A node
+ * therefore never holds a job it is not running. Like the heartbeat and the
+ * submit, the channel is trusted at the transport layer, because a node holds
+ * no user JWT.
+ */
+struct claim_work_request {
+    using response_type = struct claim_work_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.claim_work";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
+    /**
+     * @brief The node that asks, as its heartbeat names it.
+     */
+    std::string host_id;
+    /**
+     * @brief The platform triplet of the node, such as x64-linux. The job named in the reply has a
+     * package for it.
+     */
+    std::string platform;
+};
+
+/**
+ * @brief The job the node is to run, or the fact that none waits.
+ *
+ * A reply with success and no work says the queue holds nothing for the node's
+ * platform, and the node waits for its next poll. A reply with work carries the
+ * same fields as a pushed assignment, and the storage token in it is minted at
+ * the claim, so it lives from the moment the node takes the job and not from
+ * the moment the job was queued.
+ */
+struct claim_work_response {
+    /**
+     * @brief Whether the claim was served, with or without work.
+     */
+    bool success = false;
+    /**
+     * @brief Whether the reply names a job.
+     */
+    bool has_work = false;
+    /**
+     * @brief Why the claim was not served, when it was not.
+     */
+    std::string message;
+    /**
+     * @brief The tenant that owns the result the node must fill in. The node hands it back on
+     * submit.
+     */
+    std::string tenant_id;
+    /**
+     * @brief The result row the node must fill in.
+     */
+    std::string result_id;
+    /**
+     * @brief The workunit the result belongs to.
+     */
+    std::string workunit_id;
+    /**
+     * @brief Identifies the cached package.
+     */
+    std::string app_version_id;
+    /**
+     * @brief Engine bundle (.tar.gz) to download and cache.
+     */
+    std::string package_uri;
+    /**
+     * @brief Expected SHA256 of the downloaded package bundle.
+     */
+    std::string package_sha256;
+    /**
+     * @brief Input bundle of the job.
+     */
+    std::string input_uri;
+    /**
+     * @brief Optional configuration of the job.
+     */
+    std::string config_uri;
+    /**
+     * @brief Pre-assigned upload location for the result.
+     */
+    std::string output_uri;
+    /**
+     * @brief A capability for exactly the package, the input and the output of this job, minted at
+     * the claim.
+     */
+    std::string storage_token;
+    /**
+     * @brief The number of the attempt this claim starts, 1 for the first.
+     */
+    int attempt = 0;
+};
+
+/**
  * @brief Tells the service that a wrapper node has begun a job.
  *
  * The node waits for the reply before it runs the job, so the service has

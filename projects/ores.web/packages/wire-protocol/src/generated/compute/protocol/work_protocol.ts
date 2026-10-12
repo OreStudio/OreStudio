@@ -163,6 +163,95 @@ export interface HeartbeatMessage {
 export interface ReapWorkMessage {}
 
 /**
+ * @brief A free node asks the service for its next job.
+ *
+ * The node sends it when it has no job to run. The service takes the next
+ * waiting job for the node's platform from the work ledger, marks it as taken
+ * under a lease, and replies with everything the node needs to run it. A node
+ * therefore never holds a job it is not running. Like the heartbeat and the
+ * submit, the channel is trusted at the transport layer, because a node holds
+ * no user JWT.
+ */
+export interface ClaimWorkRequest {
+    /**
+     * @brief The node that asks, as its heartbeat names it.
+     */
+    host_id: string;
+    /**
+     * @brief The platform triplet of the node, such as x64-linux. The job named in the reply has a package for it.
+     */
+    platform: string;
+}
+
+/**
+ * @brief The job the node is to run, or the fact that none waits.
+ *
+ * A reply with success and no work says the queue holds nothing for the node's
+ * platform, and the node waits for its next poll. A reply with work carries the
+ * same fields as a pushed assignment, and the storage token in it is minted at
+ * the claim, so it lives from the moment the node takes the job and not from
+ * the moment the job was queued.
+ */
+export interface ClaimWorkResponse {
+    /**
+     * @brief Whether the claim was served, with or without work.
+     */
+    success: boolean;
+    /**
+     * @brief Whether the reply names a job.
+     */
+    has_work: boolean;
+    /**
+     * @brief Why the claim was not served, when it was not.
+     */
+    message: string;
+    /**
+     * @brief The tenant that owns the result the node must fill in. The node hands it back on submit.
+     */
+    tenant_id: string;
+    /**
+     * @brief The result row the node must fill in.
+     */
+    result_id: string;
+    /**
+     * @brief The workunit the result belongs to.
+     */
+    workunit_id: string;
+    /**
+     * @brief Identifies the cached package.
+     */
+    app_version_id: string;
+    /**
+     * @brief Engine bundle (.tar.gz) to download and cache.
+     */
+    package_uri: string;
+    /**
+     * @brief Expected SHA256 of the downloaded package bundle.
+     */
+    package_sha256: string;
+    /**
+     * @brief Input bundle of the job.
+     */
+    input_uri: string;
+    /**
+     * @brief Optional configuration of the job.
+     */
+    config_uri: string;
+    /**
+     * @brief Pre-assigned upload location for the result.
+     */
+    output_uri: string;
+    /**
+     * @brief A capability for exactly the package, the input and the output of this job, minted at the claim.
+     */
+    storage_token: string;
+    /**
+     * @brief The number of the attempt this claim starts, 1 for the first.
+     */
+    attempt: number;
+}
+
+/**
  * @brief Tells the service that a wrapper node has begun a job.
  *
  * The node waits for the reply before it runs the job, so the service has
@@ -261,6 +350,7 @@ export const subjects = {
     work_assignment_event: 'compute.v1.ops.work_assignment',
     heartbeat_message: 'compute.v1.ops.heartbeat',
     reap_work_message: 'compute.v1.ops.reap_work',
+    claim_work_request: 'compute.v1.ops.claim_work',
     result_started_request: 'compute.v1.ops.result_started',
     submit_result_request: 'compute.v1.ops.submit_result',
 } as const;
@@ -274,6 +364,7 @@ export const requiresSession = {
     work_assignment_event: false,
     heartbeat_message: false,
     reap_work_message: false,
+    claim_work_request: false,
     result_started_request: false,
     submit_result_request: false,
 } as const;

@@ -1316,6 +1316,7 @@ const pt: SourceCatalogue = {
         assetClass: 'Classe de ativos',
         edit: 'Editar',
         inspect: 'Inspecionar',
+        series: 'Série',
         title: 'URL oresmd',
         cancel: 'Cancelar',
         copy: 'Copiar',

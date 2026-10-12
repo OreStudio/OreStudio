@@ -70,6 +70,7 @@ messaging::oresmd_instrument describe_instrument(instrument_type type) {
     messaging::oresmd_instrument out;
     out.code = oresmd_uri_codec::instrument_spelling(type);
     out.ore_name = std::string(ore_name(type));
+    out.title = std::string(title_of(type));
     out.asset = std::string(name_of(row.asset));
     out.subject = std::string(name_of(row.subject));
     for (const auto& spec : row.fields)
@@ -95,6 +96,8 @@ messaging::describe_oresmd_schema_response build() {
         out.instruments.push_back(describe_instrument(static_cast<instrument_type>(i)));
     for (std::size_t i = 0; i < quote_type_count; ++i)
         out.quotes.push_back(oresmd_uri_codec::quote_spelling(static_cast<quote_type>(i)));
+    for (std::size_t i = 0; i < quote_type_count; ++i)
+        out.quote_titles.emplace_back(quote_title_of(static_cast<quote_type>(i)));
     for (const auto& row : index_rows)
         out.indexes.push_back(describe_index(row));
     out.success = true;

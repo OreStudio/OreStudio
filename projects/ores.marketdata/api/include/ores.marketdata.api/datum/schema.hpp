@@ -491,6 +491,97 @@ constexpr const schema_row& schema_of(instrument_type t) {
     return schema[static_cast<std::size_t>(t)];
 }
 
+/**
+ * @brief The words that name a series of each instrument type, in the enum's order.
+ *
+ * A title writes the series' subject as {subject} and any other of the row's
+ * fields as {field_name}, such as "{subject}/{ccy} spot". A reader fills the
+ * braces from the series identity and puts the quote title after it, so an FX
+ * spot rate reads "AUD/USD spot rate". A title may name only the row's fields,
+ * and a test checks that it does.
+ */
+inline constexpr std::array<std::string_view, instrument_type_count> titles{{
+    "{subject} zero",
+    "{subject} discount",
+    "{subject} money market",
+    "{subject} money market future",
+    "{subject} overnight index future",
+    "{subject} FRA",
+    "{subject} IMM FRA",
+    "{subject} swap",
+    "{subject} basis swap",
+    "{subject} BMA swap",
+    "{subject} cross-currency basis swap",
+    "{subject} cross-currency fixed/float swap",
+    "{subject} CDS",
+    "{subject} CDS index",
+    "{subject}/{ccy} spot",
+    "{subject}/{ccy} forward",
+    "{subject} hazard",
+    "{subject} recovery",
+    "{subject} assumed recovery",
+    "{subject} swaption",
+    "{subject} cap/floor",
+    "{subject}/{ccy} FX option",
+    "{subject} zero-coupon inflation swap",
+    "{subject} zero-coupon inflation cap/floor",
+    "{subject} year-on-year inflation swap",
+    "{subject} year-on-year inflation cap/floor",
+    "{subject} inflation seasonality",
+    "{subject} equity spot",
+    "{subject} equity forward",
+    "{subject} equity dividend",
+    "{subject} equity option",
+    "{subject} bond",
+    "{subject} bond future",
+    "{subject} bond option",
+    "{subject} bond future option",
+    "{subject} index CDS option",
+    "{subject} index CDS tranche",
+    "{subject} commodity spot",
+    "{subject} commodity forward",
+    "{subject}/{index2} correlation",
+    "{subject} commodity option",
+    "{subject} commodity calendar spread option",
+    "{subject} shape profile",
+    "{subject} CPR",
+    "{subject} rating",
+}};
+
+/// The title of series of type @p t, with its braces unfilled.
+constexpr std::string_view title_of(instrument_type t) {
+    return titles[static_cast<std::size_t>(t)];
+}
+
+/**
+ * @brief The words for each quote type, in the enum's order, such as "rate" or
+ * "log-normal volatility". The quote type none has no words.
+ */
+inline constexpr std::array<std::string_view, quote_type_count> quote_titles{{
+    "basis spread",
+    "credit spread",
+    "conventional credit spread",
+    "yield spread",
+    "hazard rate",
+    "rate",
+    "ratio",
+    "price",
+    "log-normal volatility",
+    "normal volatility",
+    "shifted log-normal volatility",
+    "base correlation",
+    "shift",
+    "transition probability",
+    "conversion factor",
+    "shape factor",
+    "",
+}};
+
+/// The words for quote type @p q.
+constexpr std::string_view quote_title_of(quote_type q) {
+    return quote_titles[static_cast<std::size_t>(q)];
+}
+
 namespace detail {
 
 constexpr bool rows_follow_the_enum() {

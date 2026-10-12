@@ -27,9 +27,9 @@ import { useTranslation } from '../i18n/Provider.js';
 import { LineChart, SERIES_COLOURS } from '../marketdata/LineChart.js';
 import { evolutionRoute, seriesOfUrl, seriesVerdict } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
+import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
-import { seriesLabel } from './evolutionView.js';
 import { instantLabel, latestFirst, pointsOf } from './seriesView.js';
 
 /** How many observations the page reads, and how many rows of them it lists. */
@@ -48,6 +48,7 @@ const LISTED = 20;
  */
 export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
+    const titled = useSeriesTitle();
     const [search] = useSearchParams();
     const uri = search.get('uri') ?? '';
     const parsed = useQuery({ ...oresmdQueries.parse(uri), enabled: uri !== '' });
@@ -93,20 +94,27 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
                 <Notice tone="warn">{t('market.evolution.errors.notListed')}</Notice>
             ) : verdict?.kind === 'shown' ? (
                 <Notice>
-                    {t('market.series.hasShape', { series: seriesLabel(verdict.listed) })}{' '}
+                    {t('market.series.hasShape', { series: titled(verdict.listed.identity) })}{' '}
                     <Link className="text-accent-bright hover:underline" to={evolutionRoute(uri)}>
                         {t('market.series.openEvolution')}
                     </Link>
                 </Notice>
             ) : listed !== undefined ? (
-                <Observations series={listed} />
+                <Observations series={listed} uri={uri} />
             ) : null}
         </div>
     );
 }
 
-function Observations({ series }: { readonly series: ListedSeries }): ReactNode {
+function Observations({
+    series,
+    uri,
+}: {
+    readonly series: ListedSeries;
+    readonly uri: string;
+}): ReactNode {
     const { t } = useTranslation();
+    const titled = useSeriesTitle();
     const read = useQuery(oresmdQueries.observations(series.series_id, READ));
     if (read.isError) return <Notice tone="error">{read.error.message}</Notice>;
     if (read.isPending) return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -115,7 +123,8 @@ function Observations({ series }: { readonly series: ListedSeries }): ReactNode 
     return (
         <section className="card space-y-4 p-6">
             <div>
-                <h2 className="text-lg font-medium">{seriesLabel(series)}</h2>
+                <h2 className="text-lg font-medium">{titled(series.identity)}</h2>
+                <p className="break-all font-mono text-xs text-ink-faint">{uri}</p>
                 <p className="text-sm text-ink-muted">
                     {observations.length === 0
                         ? t('market.series.empty')

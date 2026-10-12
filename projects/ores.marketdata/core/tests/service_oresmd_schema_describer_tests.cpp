@@ -178,3 +178,31 @@ TEST_CASE("an index family holds what the codec reads for a fixing", tags) {
         oresmd_uri_codec::read_index("oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M")
             .has_value());
 }
+
+TEST_CASE("every title names only the subject and the fields of its row", tags) {
+    const auto& answer = schema_answer();
+    for (std::size_t i = 0; i < instrument_type_count; ++i) {
+        const auto& row = answer.instruments[i];
+        CHECK_FALSE(row.title.empty());
+        CHECK(row.title.find("{subject}") != std::string::npos);
+        std::size_t at = 0;
+        while ((at = row.title.find('{', at)) != std::string::npos) {
+            const auto close = row.title.find('}', at);
+            REQUIRE(close != std::string::npos);
+            const auto name = row.title.substr(at + 1, close - at - 1);
+            INFO(row.code << " names {" << name << "}");
+            CHECK((name == "subject" || has_field(row, name)));
+            at = close;
+        }
+    }
+}
+
+TEST_CASE("the answer gives one title for each quote type, empty only for none", tags) {
+    const auto& answer = schema_answer();
+    REQUIRE(answer.quote_titles.size() == answer.quotes.size());
+    for (std::size_t i = 0; i < quote_type_count; ++i) {
+        const auto type = static_cast<quote_type>(i);
+        CHECK(answer.quote_titles[i] == quote_title_of(type));
+        CHECK(answer.quote_titles[i].empty() == (type == quote_type::none));
+    }
+}

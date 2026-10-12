@@ -1313,6 +1313,7 @@ export const en: SourceCatalogue = {
         assetClass: 'Asset class',
         edit: 'Edit',
         inspect: 'Inspect',
+        series: 'Series',
         title: 'oresmd URL',
         cancel: 'Cancel',
         copy: 'Copy',

@@ -99,6 +99,7 @@ export interface OresmdFieldSpec {
 export interface OresmdInstrument {
     code: string;
     ore_name: string;
+    title: string;
     asset: string;
     subject: string;
     fields: OresmdFieldSpec[];
@@ -141,6 +142,7 @@ export interface DescribeOresmdSchemaResponse {
     assets: string[];
     instruments: OresmdInstrument[];
     quotes: string[];
+    quote_titles: string[];
     indexes: OresmdIndexFamily[];
     success: boolean;
     message: string;

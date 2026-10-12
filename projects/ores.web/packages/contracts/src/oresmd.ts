@@ -47,6 +47,8 @@ export const oresmdFieldSpecSchema = z.object({
 export const oresmdInstrumentSchema = z.object({
     code: z.string(),
     ore_name: z.string(),
+    /** The words that name a series of the type, with {subject} and {field_name} to fill. */
+    title: z.string(),
     asset: z.string(),
     subject: z.string(),
     fields: z.array(oresmdFieldSpecSchema),
@@ -64,6 +66,8 @@ export const oresmdSchemaSchema = z.object({
     assets: z.array(z.string()),
     instruments: z.array(oresmdInstrumentSchema),
     quotes: z.array(z.string()),
+    /** The words for each quote type, in the order of `quotes`. Empty for none. */
+    quote_titles: z.array(z.string()),
     indexes: z.array(oresmdIndexFamilySchema),
 });
 export type OresmdSchema = z.infer<typeof oresmdSchemaSchema>;

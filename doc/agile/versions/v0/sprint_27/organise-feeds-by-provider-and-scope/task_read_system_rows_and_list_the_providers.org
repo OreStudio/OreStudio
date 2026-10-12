@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A tenant reads the installation's system rows through the synthetic service, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3211][#3211]] | Read system rows through the services and list the providers |
 
 * Review
 
@@ -85,3 +85,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A tenant reads the installation's system rows through the synthetic service. The generated repositories of the collection, the FX and IR feeds, the mixture components, the IR parameter values and template entries, the folders and the provider read =tenant_id = caller or system=, stated by =:system_tenant_visible: true= on each model. The row-level security policy still decides which system rows a tenant sees.
+
+The provider table's policy was tenant isolation only, so no tenant saw a system-tenant provider even in SQL. It admits the system tenant's rows now. The earlier finding that row-level security already admitted the providers was wrong; the collection and its feeds were admitted.
+
+The Market data area has a read only Providers screen: the name with the synthetic mark, the code, the kind, the number of collections that stand for the provider, and a description.
+
+Checked: the new integration test, synthetic core (43 cases) and service (56) on a recreated database; the pgTAP visibility test, 7 of 7 with Acme provisioned; the codegen drift gate for synthetic; 1409 web tests; and, as the Acme tenant administrator, =GET /api/synthetic/providers= returns all eight providers.
+
+Not met: no dataset publishes a system collection, so a tenant sees only the provider catalogue. A tenant must not start a system feed through the control plane, and that guard belongs with publishing. Both go with Seed the provider feed catalogue and Subscribe a tenant to provider feeds.

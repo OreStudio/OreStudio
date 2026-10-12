@@ -8,7 +8,7 @@
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-queue-depth-and-the-oldest-wait
-#+pr:
+#+pr: 3202
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3202][#3202]] | [compute] Show the oldest wait of the queue |
 
 * Review
 

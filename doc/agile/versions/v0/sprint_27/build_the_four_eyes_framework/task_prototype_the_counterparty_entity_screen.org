@@ -66,6 +66,7 @@ task and name that file in the Command column.
 
 * Notes
 
+- The product owner signed the prototype off on 2026-10-12, with one condition: the history, and every other part of the screen, follow the UX standards. The prototype's History tab is a plain table to keep the picture short. The product screen does not copy it: see the counterparty screen task.
 - The product owner said the screen is not the onboarding journey. Onboarding is a workflow. The screen to build is an entity screen like the parties screen, with the links a counterparty adds, so this prototype is of the record.
 - The earlier onboarding prototype stays as the record of the workflow. This one sits beside it.
 - The policy rows give the gating: the counterparty, its identifiers and its party links need Operations, and the contact information and the business centre links need nobody.

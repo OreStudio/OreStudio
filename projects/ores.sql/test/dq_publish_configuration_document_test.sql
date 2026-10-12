@@ -23,7 +23,7 @@
  *
  * The publish re-keys every uuid column of a document, so a uuid column that refers
  * outside the document would point at nothing:
- * - The uuid key columns of the three documents are the ones known to refer inside
+ * - The uuid key columns of the documents are the ones known to refer inside
  *   them, so a new uuid column is a decision and not an accident
  * - A column named as external is copied as staged
  * - A staged header with no configuration is refused
@@ -66,7 +66,9 @@ select is(
            'curve_parametric_smile_parameters', 'equity_volatility_configs',
            'commodity_volatility_configs', 'bond_future_volatility_configs',
            'curve_bootstrap_configs', 'curve_segments', 'curve_segment_curves',
-           'curve_quotes']) t)),
+           'curve_quotes']) t
+         union all
+         select 'ores_reporting_risk_report_configs_tbl')),
     'commodity_price_segment_id curve_configuration_id curve_definition_id curve_segment_id '
     'default_curve_configuration_id pricing_model_config_id pricing_model_product_id '
     'todays_market_collection_id todays_market_config_id todays_market_configuration_id',

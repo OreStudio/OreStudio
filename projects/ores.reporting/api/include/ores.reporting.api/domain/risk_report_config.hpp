@@ -34,18 +34,13 @@
 namespace ores::reporting::domain {
 
 /**
- * @brief ORE-level parameters for a risk report definition.
+ * @brief The ORE-level run settings a party shares between its risk report definitions.
  *
- * The ORE-level parameters for a risk report definition: base currency,
- * observation model, analytics flags, XVA/VaR/SIMM settings and threading.
- *
- * Each row is owned by exactly one report_definition (1:1, enforced by the
- * unique index on report_definition_id). Portfolio and book scope live in
- * separate temporal junction tables; an empty set in either junction means
- * "all visible to the tenant".
- *
- * Analytics flags use integer 0/1, not boolean, to match the project
- * convention. npv and cashflow default to enabled; all others default off.
+ * The ORE-level run settings that risk report definitions of a party share: base currency,
+ * observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition
+ * binds the configuration through report_configurations, in the slot of configuration type
+ * risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate
+ * temporal junction tables keyed by this row.
  */
 struct risk_report_config final {
     /**
@@ -64,10 +59,28 @@ struct risk_report_config final {
     boost::uuids::uuid id;
 
     /**
-     * @brief The report definition this configuration belongs to. Unique per tenant on active
-     * records, so a definition has at most one live configuration.
+     * @brief The party that owns this configuration. Set from the session that writes it, and
+     * enforced by row level security, so a party sees only its own configurations.
      */
-    boost::uuids::uuid report_definition_id;
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief Human-readable name of this configuration, unique per party. It is also the name of
+     * the reporting configuration this row is registered as, which is how a report definition binds
+     * it.
+     */
+    std::string name;
+
+    /**
+     * @brief What the configuration runs and for which reports.
+     */
+    std::string description;
+
+    /**
+     * @brief The reporting configuration this row is registered as. A report definition binds that
+     * configuration, and so reaches these settings.
+     */
+    boost::uuids::uuid configuration_id;
 
     /**
      * @brief Reporting base currency (ISO 4217 code) that all results are converted to.

@@ -135,7 +135,7 @@ void run_document_handler::get_run_document(ores::nats::message msg) {
     try {
         const auto [scope, definition] = owner_scope(*ctx, req->report_definition_id);
         service::run_document_service runs(scope);
-        const auto document = runs.get(definition);
+        const auto document = runs.get_or_generate(definition);
         if (!document) {
             reply(nats_,
                   msg,

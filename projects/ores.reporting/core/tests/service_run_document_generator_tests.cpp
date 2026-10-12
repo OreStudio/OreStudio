@@ -64,10 +64,10 @@ TEST_CASE("each switch set adds its analytic, in run order", tags) {
     CHECK(codes(generate_run_document(in)) == expected);
 }
 
-TEST_CASE("the initial margin switch runs the simm analytic", tags) {
+TEST_CASE("the initial margin switch runs the initial margin analytic", tags) {
     auto in = inputs();
     in.risk.initial_margin_enabled = 1;
-    const std::vector<std::string> expected{"simm"};
+    const std::vector<std::string> expected{"initialMargin"};
     CHECK(codes(generate_run_document(in)) == expected);
 }
 
@@ -82,12 +82,11 @@ TEST_CASE("every analytic is active and numbered from one", tags) {
     CHECK(d.analytics[1].analytic.display_order == 2);
 }
 
-TEST_CASE("a switch with no analytic type is reported and not run", tags) {
+TEST_CASE("the value-at-risk switch runs the parametric value-at-risk analytic", tags) {
     auto in = inputs();
     in.risk.parametric_var_enabled = 1;
-    CHECK(generate_run_document(in).analytics.empty());
-    const std::vector<std::string> expected{"parametric_var"};
-    CHECK(unmapped_switches(in.risk) == expected);
+    const std::vector<std::string> expected{"parametricVar"};
+    CHECK(codes(generate_run_document(in)) == expected);
 }
 
 TEST_CASE("the setup names a file for each bound type and none for the others", tags) {

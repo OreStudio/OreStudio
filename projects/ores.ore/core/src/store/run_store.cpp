@@ -31,8 +31,6 @@
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/repository/risk_report_config_repository.hpp"
-#include "ores.reporting.core/service/run_document_generator.hpp"
 #include "ores.reporting.core/service/run_document_service.hpp"
 #include <algorithm>
 #include <filesystem>
@@ -65,44 +63,14 @@ constexpr document_kind document_kinds[] = {
     {"pricing_engines", &report_run_setup::pricing_engines_file},
 };
 
+// The run settings are no input file: the run document is built from them.
+constexpr std::string_view run_settings_type = "risk_report_config";
+
 const document_kind* find_kind(std::string_view code) {
     for (const auto& k : document_kinds)
         if (k.code == code)
             return &k;
     return nullptr;
-}
-
-/**
- * @brief The run document an export writes: the one the definition stores, or
- * else the one its risk configuration and bindings describe.
- */
-reporting::messaging::run_document
-generated_or_stored(const context& ctx,
-                    reporting::service::run_document_service& runs,
-                    const boost::uuids::uuid& report_definition_id) {
-    if (auto stored = runs.get(report_definition_id))
-        return *stored;
-
-    const auto definition =
-        database::repository::read_one(ctx,
-                                       reporting::repository::report_definition_repository(),
-                                       "report definition",
-                                       report_definition_id);
-    const auto risk = reporting::repository::risk_report_config_repository().read_latest_by_report_definition_id(
-        ctx, boost::uuids::to_string(report_definition_id), 0, 1);
-    if (risk.empty())
-        throw std::invalid_argument(
-            "The report definition holds no run document and no risk configuration to build one "
-            "from.");
-
-    reporting::service::run_document_inputs in;
-    in.report_definition_id = report_definition_id;
-    in.party_id = definition.party_id;
-    in.risk = risk.front();
-    in.asof_date = in.risk.market_data_date;
-    for (const auto& b : runs.bindings(report_definition_id))
-        in.bound_types.push_back(b.configuration_type_code);
-    return reporting::service::generate_run_document(in);
 }
 
 template <typename Document>
@@ -330,7 +298,10 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
     }();
 
     reporting::service::run_document_service runs(ctx);
-    const auto document = generated_or_stored(ctx, runs, report_definition_id);
+    const auto stored = runs.get_or_generate(report_definition_id);
+    if (!stored)
+        throw std::invalid_argument("The report definition holds no run document.");
+    const auto& document = *stored;
 
     domain::ore run;
     run.Setup = domain::run_document_mapper::reverse_setup(document.setup);
@@ -342,6 +313,8 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
     input_files files;
     files[std::string(run_document_file)] = domain::save_data(run);
     for (const auto& b : runs.bindings(report_definition_id)) {
+        if (b.configuration_type_code == run_settings_type)
+            continue;
         const auto* kind = find_kind(b.configuration_type_code);
         if (kind == nullptr)
             throw std::invalid_argument(std::format(

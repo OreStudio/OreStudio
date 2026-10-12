@@ -26,7 +26,10 @@
 #include "ores.reporting.core/repository/report_analytic_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_market_binding_repository.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
+#include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.reporting.core/service/run_document_generator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -224,6 +227,30 @@ void run_document_service::remove(const boost::uuids::uuid& report_definition_id
         report_configuration_repository().remove(ctx_, boost::uuids::to_string(b.id));
         configuration_repository().remove(ctx_, boost::uuids::to_string(b.configuration_id));
     }
+}
+
+std::optional<messaging::run_document>
+run_document_service::get_or_generate(const boost::uuids::uuid& report_definition_id) {
+    if (auto stored = get(report_definition_id))
+        return stored;
+
+    const auto risk =
+        risk_report_config_repository().find_by_definition_id(
+            ctx_, boost::uuids::to_string(report_definition_id));
+    if (!risk)
+        return std::nullopt;
+
+    const auto definition = ores::database::repository::read_one(
+        ctx_, report_definition_repository(), "report definition", report_definition_id);
+
+    run_document_inputs in;
+    in.report_definition_id = report_definition_id;
+    in.party_id = definition.party_id;
+    in.risk = *risk;
+    in.asof_date = in.risk.market_data_date;
+    for (const auto& b : bindings(report_definition_id))
+        in.bound_types.push_back(b.configuration_type_code);
+    return generate_run_document(in);
 }
 
 std::vector<domain::report_configuration>

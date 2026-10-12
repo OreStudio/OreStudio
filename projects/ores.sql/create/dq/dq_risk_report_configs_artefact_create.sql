@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- Risk report configuration artefacts - the run settings a seeded report definition resolves. - Artefact Table
+-- The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_risk_report_configs_artefact_tbl" (
@@ -32,11 +32,15 @@ create table if not exists "ores_dq_risk_report_configs_artefact_tbl" (
     "tenant_id" uuid not null,
     "id" uuid not null,
     "version" integer not null,
-    "report_name" text not null,
+    "party_id" uuid not null,
+    "name" text not null,
+    "description" text null,
+    "configuration_id" uuid not null,
     "base_currency" text not null,
     "observation_model" text not null,
     "n_threads" integer not null,
     "market_data_type" text not null,
+    "market_data_date" date null,
     "npv_enabled" integer not null,
     "cashflow_enabled" integer not null,
     "curves_enabled" integer not null,
@@ -47,10 +51,20 @@ create table if not exists "ores_dq_risk_report_configs_artefact_tbl" (
     "parametric_var_enabled" integer not null,
     "initial_margin_enabled" integer not null,
     "pfe_enabled" integer not null,
+    "xva_quantile" numeric(5,4) null,
     "xva_cva_enabled" integer not null,
     "xva_dva_enabled" integer not null,
     "xva_fva_enabled" integer not null,
-    "display_order" integer not null
+    "xva_colva_enabled" integer not null,
+    "xva_dim_enabled" integer not null,
+    "xva_dim_quantile" numeric(5,4) null,
+    "xva_dim_horizon_calendar_days" integer null,
+    "xva_dim_regression_order" integer null,
+    "var_quantiles" numeric(5,4)[] null,
+    "var_method" text null,
+    "simm_version" text null,
+    "simm_calculation_currency" text null,
+    "scope_portfolio" text null
 );
 
 create index if not exists dq_risk_report_configs_artefact_dataset_idx
@@ -61,6 +75,3 @@ on ores_dq_risk_report_configs_artefact_tbl (tenant_id);
 
 create index if not exists dq_risk_report_configs_artefact_id_idx
 on ores_dq_risk_report_configs_artefact_tbl (id);
-
-create index if not exists dq_risk_report_configs_artefact_report_name_idx
-on ores_dq_risk_report_configs_artefact_tbl (report_name);

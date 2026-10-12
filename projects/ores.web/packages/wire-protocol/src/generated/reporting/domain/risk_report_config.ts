@@ -34,7 +34,10 @@ export interface RiskReportConfig {
     version: number;
     tenant_id: string;
     id: string;
-    report_definition_id: string;
+    party_id: string;
+    name: string;
+    description: string;
+    configuration_id: string;
     base_currency: string;
     observation_model: string;
     n_threads: number;

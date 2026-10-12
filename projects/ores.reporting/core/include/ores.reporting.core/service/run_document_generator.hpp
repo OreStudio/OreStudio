@@ -65,20 +65,11 @@ struct run_document_inputs {
 /**
  * @brief The analytics a risk configuration switches on, in run order.
  *
- * An analytic is included when its switch is set. The result names only
- * analytic types the run vocabulary holds, so a switch with no type is not in
- * the answer. The caller sees those through unmapped_switches.
+ * An analytic is included when its switch is set. Each name is an analytic type
+ * of the run vocabulary.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT std::vector<std::string>
 enabled_analytic_types(const ores::reporting::domain::risk_report_config& risk);
-
-/**
- * @brief The switches a risk configuration sets that no analytic type
- * represents. The run would silently omit them, so a readiness check reports
- * them.
- */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::vector<std::string>
-unmapped_switches(const ores::reporting::domain::risk_report_config& risk);
 
 /**
  * @brief Builds the run document for a definition.

@@ -1,28 +1,20 @@
 :PROPERTIES:
 :ID: 32FCDE76-1C5A-4AFC-8671-7468C0F024DB
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.risk_report_config
 #+description: Codegen entity model for the reporting =risk_report_config= table. Drives the C++ domain class, entity, mapper, repository and the SQL schema from a single literate source.
 #+type: ores.codegen.entity
 #+component: reporting
 #+filetags: :model:entity:reporting:
-#+brief: ORE-level parameters for a risk report definition.
+#+brief: The ORE-level run settings a party shares between its risk report definitions.
 #+entity_singular: risk_report_config
 #+entity_plural: risk_report_configs
 #+entity_title: Risk Report Config
 #+created: 2026-09-17
 #+updated: 2026-09-17
 
-The ORE-level parameters for a risk report definition: base currency,
-observation model, analytics flags, XVA/VaR/SIMM settings and threading.
-
-Each row is owned by exactly one =report_definition= (1:1, enforced by the
-unique index on =report_definition_id=). Portfolio and book scope live in
-separate temporal junction tables; an empty set in either junction means
-"all visible to the tenant".
-
-Analytics flags use integer 0/1, not boolean, to match the project
-convention. =npv= and =cashflow= default to enabled; all others default off.
+The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row.
 
 * Flags
 :PROPERTIES:
@@ -44,15 +36,58 @@ convention. =npv= and =cashflow= default to enabled; all others default off.
 
 UUID uniquely identifying this configuration.
 
-** report_definition_id
+** party_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
+:nullable:    false
 :natural_key: true
 :END:
 
-The report definition this configuration belongs to. Unique per tenant on
-active records, so a definition has at most one live configuration.
+The party that owns this configuration. Set from the session that writes it,
+and enforced by row level security, so a party sees only its own configurations.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+Human-readable name of this configuration, unique per party. It is also the name
+of the reporting configuration this row is registered as, which is how a report
+definition binds it.
+
+#+begin_src cpp :name generator
+std::string("Valuation")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the configuration runs and for which reports.
+
+#+begin_src cpp :name generator
+std::string("Run settings")
+#+end_src
+
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The reporting configuration this row is registered as. A report definition binds
+that configuration, and so reaches these settings.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -464,6 +499,8 @@ std::string(faker::finance::currencyCode())
 :PROPERTIES:
 :tablename:    ores_reporting_risk_report_configs_tbl
 :index_prefix: risk_report_configs
+:rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 ** Checks
@@ -496,32 +533,212 @@ checks the template emits on its own.
 | "xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3 |
 | "var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo') |
 
+* Artefact columns
+
+The staging table holds every column of the entity and one more, the scope. The
+scope is the name of the portfolio whose subtree the configuration reads, because
+a dataset cannot know the portfolio's id. =ores_reporting_publish_risk_report_configs_from_dq_fn=
+resolves the name for the party it publishes to and writes the portfolio scope row.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** party_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** configuration_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** base_currency
+:PROPERTIES:
+:type: text
+:END:
+
+** observation_model
+:PROPERTIES:
+:type: text
+:END:
+
+** n_threads
+:PROPERTIES:
+:type: integer
+:END:
+
+** market_data_type
+:PROPERTIES:
+:type: text
+:END:
+
+** market_data_date
+:PROPERTIES:
+:type: date
+:nullable: true
+:END:
+
+** npv_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** cashflow_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** curves_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** sensitivity_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** simulation_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** xva_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** stress_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** parametric_var_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** initial_margin_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** pfe_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** xva_quantile
+:PROPERTIES:
+:type: numeric(5,4)
+:nullable: true
+:END:
+
+** xva_cva_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** xva_dva_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** xva_fva_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** xva_colva_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** xva_dim_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** xva_dim_quantile
+:PROPERTIES:
+:type: numeric(5,4)
+:nullable: true
+:END:
+
+** xva_dim_horizon_calendar_days
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** xva_dim_regression_order
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** var_quantiles
+:PROPERTIES:
+:type: numeric(5,4)[]
+:nullable: true
+:END:
+
+** var_method
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** simm_version
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** simm_calculation_currency
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** scope_portfolio
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
 * Foreign keys
 
-** report_definition_id
+** configuration_id
 :PROPERTIES:
-:table:         ores_reporting_report_definitions_tbl
+:table:         ores_reporting_configurations_tbl
 :target_column: id
-:parent_entity: report_definition
+:parent_entity: configuration
 :nullable:      false
-:error_message: Invalid report_definition_id: %. No active report definition found with this id.
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
 :list_by:       true
 :END:
 
 * Insert trigger
-
-#+begin_src sql :name official_scope_check :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
-    -- An official report reads no sandbox: a config whose scope names a
-    -- sandbox portfolio or a virtual book cannot belong to an official
-    -- definition, including by moving to one.
-    if ores_reporting_definition_is_official_fn(NEW.tenant_id, NEW.report_definition_id)
-       and ores_reporting_config_scope_has_sandbox_fn(NEW.tenant_id, NEW.id) then
-        raise exception 'Invalid report_definition_id: %. The configuration scopes sandbox data and the definition is official.',
-            NEW.report_definition_id
-            using errcode = '23514';
-    end if;
-
-#+end_src
 
 ** Validations
 
@@ -569,7 +786,7 @@ checks the template emits on its own.
 
 | column                          | header             |
 |---------------------------------+--------------------|
-| report_definition_id            | Definition         |
+| name                            | Name               |
 | base_currency                   | Base Currency      |
 | observation_model               | Observation Model  |
 | market_data_type                | Market Data        |
@@ -590,9 +807,10 @@ checks the template emits on its own.
 :ID: 5C9E4B31-7A2D-4E88-9F16-3D8B0A2C6E74
 :END:
 
-Reads the current configuration for a report definition. The execution
-handler needs the config before any CRUD surface exists for it, and the
-lookup keys on the natural key rather than on =get=.
+Reads the configuration a report definition binds in the =risk_report_config=
+slot. The execution handler needs the config before any CRUD surface exists
+for it, and the definition reaches it through its binding, not through a
+column of the config.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::optional<domain::risk_report_config>
@@ -645,9 +863,9 @@ std::vector<std::string> get_portfolio_scope(context ctx, const std::string& con
 :ID: 4A7C02D9-5E13-4B6F-9C82-3A1F6D8B52E7
 :END:
 
-Lightweight row types for the two scope junction tables. Only the columns
+Lightweight row types for the two scope junction tables and the binding table. Only the columns
 scope resolution needs are declared; the junction tables have no org model
-of their own.
+of their own, and the binding belongs to its own entity.
 
 Must precede the methods that use them: paste blocks concatenate in
 sub-heading order.
@@ -662,6 +880,18 @@ struct book_scope_entity {
     std::string tenant_id;
     std::string risk_report_config_id;
     std::string book_id;
+    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+};
+
+struct binding_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_reporting_report_configurations_tbl";
+
+    std::string tenant_id;
+    std::string report_definition_id;
+    std::string configuration_type_code;
+    std::string configuration_id;
     std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
     std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
 };
@@ -694,8 +924,24 @@ risk_report_config_repository::find_by_definition_id(context ctx,
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto bound =
+        sqlgen::read<std::vector<binding_entity>> |
+        where("tenant_id"_c == tid && "report_definition_id"_c == definition_id &&
+              "configuration_type_code"_c == std::string("risk_report_config") &&
+              "valid_to"_c == max.value());
+
+    const auto bindings = execute_read_query<binding_entity, binding_entity>(
+        ctx,
+        bound,
+        [](const auto& entities) { return entities; },
+        lg(),
+        "Finding the risk report config binding");
+    if (bindings.empty())
+        return std::nullopt;
+
     const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
-                       where("tenant_id"_c == tid && "report_definition_id"_c == definition_id &&
+                       where("tenant_id"_c == tid &&
+                             "configuration_id"_c == bindings.front().configuration_id &&
                              "valid_to"_c == max.value());
 
     auto results = execute_read_query<risk_report_config_entity, domain::risk_report_config>(

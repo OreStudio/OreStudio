@@ -62,6 +62,7 @@ const std::map<std::string, std::function<std::string()>>& savers() {
     using namespace ores::ore::domain;
     static const std::map<std::string, std::function<std::string()>> table = {
         {"pricing_engines", saved_empty<pricingengines>},
+        {"risk_report_config", saved_empty<ore>},
         {"todays_market", saved_empty<todaysmarket>},
         {"simulation", saved_empty<simulation>},
         {"sensitivity", saved_empty<sensitivityanalysis>},

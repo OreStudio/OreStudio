@@ -30,23 +30,21 @@ namespace {
 
 struct switch_rule {
     int risk_report_config::*enabled;
-    const char* name;
-    std::optional<const char*> analytic_type;
+    const char* analytic_type;
 };
 
-// In the order ORE runs the analytics. The value-at-risk switch has no analytic
-// type in the vocabulary, so it has no entry to write.
+// In the order ORE runs the analytics.
 constexpr switch_rule switch_rules[] = {
-    {&risk_report_config::npv_enabled, "npv", "npv"},
-    {&risk_report_config::cashflow_enabled, "cashflow", "cashflow"},
-    {&risk_report_config::curves_enabled, "curves", "curves"},
-    {&risk_report_config::sensitivity_enabled, "sensitivity", "sensitivity"},
-    {&risk_report_config::stress_enabled, "stress", "stress"},
-    {&risk_report_config::simulation_enabled, "simulation", "simulation"},
-    {&risk_report_config::xva_enabled, "xva", "xva"},
-    {&risk_report_config::pfe_enabled, "pfe", "pfe"},
-    {&risk_report_config::initial_margin_enabled, "initial_margin", "simm"},
-    {&risk_report_config::parametric_var_enabled, "parametric_var", std::nullopt},
+    {&risk_report_config::npv_enabled, "npv"},
+    {&risk_report_config::cashflow_enabled, "cashflow"},
+    {&risk_report_config::curves_enabled, "curves"},
+    {&risk_report_config::sensitivity_enabled, "sensitivity"},
+    {&risk_report_config::stress_enabled, "stress"},
+    {&risk_report_config::simulation_enabled, "simulation"},
+    {&risk_report_config::xva_enabled, "xva"},
+    {&risk_report_config::pfe_enabled, "pfe"},
+    {&risk_report_config::initial_margin_enabled, "initialMargin"},
+    {&risk_report_config::parametric_var_enabled, "parametricVar"},
 };
 
 struct input_file {
@@ -67,16 +65,8 @@ constexpr input_file input_files[] = {
 std::vector<std::string> enabled_analytic_types(const risk_report_config& risk) {
     std::vector<std::string> r;
     for (const auto& rule : switch_rules)
-        if (risk.*rule.enabled != 0 && rule.analytic_type)
-            r.emplace_back(*rule.analytic_type);
-    return r;
-}
-
-std::vector<std::string> unmapped_switches(const risk_report_config& risk) {
-    std::vector<std::string> r;
-    for (const auto& rule : switch_rules)
-        if (risk.*rule.enabled != 0 && !rule.analytic_type)
-            r.emplace_back(rule.name);
+        if (risk.*rule.enabled != 0)
+            r.emplace_back(rule.analytic_type);
     return r;
 }
 

@@ -88,13 +88,39 @@ from ores_refdata_parties_tbl
 where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
   and valid_to = ores_utility_infinity_timestamp_fn();
 
-insert into ores_reporting_risk_report_configs_tbl (
-    id, tenant_id, version, report_definition_id, base_currency,
+insert into ores_reporting_configurations_tbl (
+    tenant_id, id, version, party_id, name, configuration_type_code, owning_component,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
-    '00000000-0000-0000-0000-0000000cf302'::uuid, ores_utility_system_tenant_id_fn(), 0,
-    '00000000-0000-0000-0000-0000000cf301'::uuid, 'USD',
-    current_user, current_user, 'system.test', 'Official reports pgTAP fixture');
+)
+select ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-0000000cf303'::uuid, 0,
+    id, 'OFFREP-FIXTURE-SETTINGS', 'risk_report_config', 'ores.reporting',
+    current_user, current_user, 'system.test', 'Official reports pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_reporting_risk_report_configs_tbl (
+    id, tenant_id, version, party_id, name, configuration_id, base_currency,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000cf302'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    id, 'OFFREP-FIXTURE-SETTINGS', '00000000-0000-0000-0000-0000000cf303'::uuid, 'USD',
+    current_user, current_user, 'system.test', 'Official reports pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_reporting_report_configurations_tbl (
+    tenant_id, id, version, party_id, report_definition_id, configuration_type_code,
+    configuration_id, modified_by, performed_by, change_reason_code, change_commentary
+)
+select ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-0000000cf304'::uuid, 0,
+    id, '00000000-0000-0000-0000-0000000cf301'::uuid, 'risk_report_config',
+    '00000000-0000-0000-0000-0000000cf303'::uuid,
+    current_user, current_user, 'system.test', 'Official reports pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
 
 create temp table t_ctx on commit drop as
 select b.tenant_id, b.party_id, b.functional_currency as ccy,
@@ -114,8 +140,7 @@ select set_config('app.current_actor', (select owner_name from t_ctx), true);
 
 create or replace function pg_temp.definition_id()
 returns uuid as $$
-    select report_definition_id from ores_reporting_risk_report_configs_tbl
-    where id = (select config_id from t_ctx) and valid_to = ores_utility_infinity_timestamp_fn();
+    select '00000000-0000-0000-0000-0000000cf301'::uuid;
 $$ language sql;
 
 create or replace function pg_temp.set_official(p_flag boolean)

@@ -193,7 +193,6 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.portfolios', 20);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.report_definitions', 40);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.risk_report_configs', 50);
 
     -- --- Synthetic Data: 2016 ORE Samples Bundle Members ---
     -- One member: the synthetic feeds dataset itself, covering every asset
@@ -245,21 +244,12 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'ore.conventions', 5);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'refdata.crm_topology_bundles', 20);
 
-    -- The generic report set, for a party with no report design of its own:
-    -- its report definitions (ore.report_definitions), then the run settings
-    -- those definitions resolve (ore.risk_report_configs). The report publish
-    -- resolves the party from params.party_id (or the tenant root).
-    --
-    -- The configurations are here and not only in risk_management, because
-    -- risk_management is published before the party exists: the profile's
-    -- publish_bundle is step 10, the parties arrive with import_lei_hierarchy
-    -- at step 20, so both report datasets are skipped with skipped_no_party
-    -- and never published again. party_reporting runs with the party stage,
-    -- once the party is there, and is the first point at which a configuration
-    -- can resolve the definition it is keyed by. It runs after
-    -- party_essentials, because both datasets read the conventions.
+    -- The generic report set, for a party with no report design of its own: its
+    -- report definitions (ore.report_definitions). The report publish resolves the
+    -- party from params.party_id (or the tenant root). It runs with the party
+    -- stage, once the party is there, and after party_essentials, because it
+    -- reads the conventions.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_reporting', 'ore.report_definitions', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_reporting', 'ore.risk_report_configs', 15);
 
     -- The ORE samples, in publish order. Party-scoped like party_essentials.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_samples', 'ore.sample_netting_agreements', 10);

@@ -233,22 +233,20 @@ std::optional<domain::risk_report_config> risk_report_config_repository::read_at
 }
 
 std::vector<domain::risk_report_config>
-risk_report_config_repository::read_latest_by_report_definition_id(
+risk_report_config_repository::read_latest_by_configuration_id(
     context ctx,
-    const std::string& report_definition_id,
+    const std::string& configuration_id,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report configs. report_definition_id: "
-                               << report_definition_id << " offset: " << offset
-                               << " limit: " << limit;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report configs. configuration_id: "
+                               << configuration_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<risk_report_config_entity>> |
-        where("tenant_id"_c == tid && "report_definition_id"_c == report_definition_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
+                       where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<risk_report_config_entity, domain::risk_report_config>(
         ctx,
@@ -257,24 +255,23 @@ risk_report_config_repository::read_latest_by_report_definition_id(
         std::nullopt,
         [](const auto& entities) { return risk_report_config_mapper::map(entities); },
         lg(),
-        "Reading latest risk report configs by report_definition_id.");
+        "Reading latest risk report configs by configuration_id.");
 }
 
-std::uint32_t risk_report_config_repository::get_total_config_count_by_report_definition_id(
-    context ctx, const std::string& report_definition_id) {
+std::uint32_t risk_report_config_repository::get_total_config_count_by_configuration_id(
+    context ctx, const std::string& configuration_id) {
     BOOST_LOG_SEV(lg(), debug)
-        << "Retrieving total active risk report configs count. report_definition_id: "
-        << report_definition_id;
+        << "Retrieving total active risk report configs count. configuration_id: "
+        << configuration_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<risk_report_config_entity>> |
-        where("tenant_id"_c == tid && "report_definition_id"_c == report_definition_id &&
-              "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
+                       where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+                             "valid_to"_c == max.value());
 
     return execute_count_query<risk_report_config_entity>(
-        ctx, query, std::nullopt, lg(), "Counting risk report configs by report_definition_id");
+        ctx, query, std::nullopt, lg(), "Counting risk report configs by configuration_id");
 }
 
 
@@ -393,6 +390,18 @@ struct book_scope_entity {
     std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
 };
 
+struct binding_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_reporting_report_configurations_tbl";
+
+    std::string tenant_id;
+    std::string report_definition_id;
+    std::string configuration_type_code;
+    std::string configuration_id;
+    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+};
+
 struct portfolio_scope_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_risk_report_config_portfolios_tbl";
@@ -414,9 +423,24 @@ risk_report_config_repository::find_by_definition_id(context ctx,
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
+    const auto bound = sqlgen::read<std::vector<binding_entity>> |
                        where("tenant_id"_c == tid && "report_definition_id"_c == definition_id &&
+                             "configuration_type_code"_c == std::string("risk_report_config") &&
                              "valid_to"_c == max.value());
+
+    const auto bindings = execute_read_query<binding_entity, binding_entity>(
+        ctx,
+        bound,
+        [](const auto& entities) { return entities; },
+        lg(),
+        "Finding the risk report config binding");
+    if (bindings.empty())
+        return std::nullopt;
+
+    const auto query =
+        sqlgen::read<std::vector<risk_report_config_entity>> |
+        where("tenant_id"_c == tid && "configuration_id"_c == bindings.front().configuration_id &&
+              "valid_to"_c == max.value());
 
     auto results = execute_read_query<risk_report_config_entity, domain::risk_report_config>(
         ctx,

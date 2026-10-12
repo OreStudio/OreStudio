@@ -68,6 +68,9 @@ constexpr document_kind document_kinds[] = {
     {"pricing_engines", &report_run_setup::pricing_engines_file},
 };
 
+// The run settings are no input file: the run document is built from them.
+constexpr std::string_view run_settings_type = "risk_report_config";
+
 const document_kind* find_kind(std::string_view code) {
     for (const auto& k : document_kinds)
         if (k.code == code)
@@ -272,6 +275,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
     input_files files;
     files[std::string(run_document_file)] = save_data(document);
     for (const auto& b : run.bindings) {
+        if (b.configuration_type_code == run_settings_type)
+            continue;
         const auto* kind = find_kind(b.configuration_type_code);
         if (kind == nullptr)
             throw std::invalid_argument(std::format(

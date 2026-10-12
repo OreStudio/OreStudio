@@ -35,7 +35,10 @@ export interface RiskReportConfigKey {
 
 export interface RiskReportConfigWrite {
     id: string;
-    report_definition_id: string;
+    party_id: string;
+    name: string;
+    description: string;
+    configuration_id: string;
     base_currency: string;
     observation_model: string;
     n_threads: number;
@@ -82,9 +85,9 @@ export interface RiskReportConfigLookup {
 }
 
 export interface RiskReportConfigsFilter {
-    report_definition_id: string | null;
+    configuration_id: string | null;
     id_one_of: string[] | null;
-    report_definition_id_one_of: string[] | null;
+    configuration_id_one_of: string[] | null;
 }
 
 export interface RiskReportConfigEvent {
@@ -177,8 +180,8 @@ export interface DeleteManyRiskReportConfigsResponse {
     result: Result;
 }
 
-export interface ListByReportDefinitionIdRiskReportConfigsRequest {
-    report_definition_id: string;
+export interface ListByConfigurationIdRiskReportConfigsRequest {
+    configuration_id: string;
     scope: Scope;
     offset: number;
     limit: number;
@@ -186,7 +189,7 @@ export interface ListByReportDefinitionIdRiskReportConfigsRequest {
     filter: RiskReportConfigsFilter | null;
 }
 
-export interface ListByReportDefinitionIdRiskReportConfigsResponse {
+export interface ListByConfigurationIdRiskReportConfigsResponse {
     result: Result;
     configs: RiskReportConfig[];
     total: number;
@@ -223,8 +226,8 @@ export const subjects = {
     put_many_risk_report_configs_request: 'reporting.v1.risk_report_configs.put_many',
     delete_risk_report_config_request: 'reporting.v1.risk_report_configs.delete',
     delete_many_risk_report_configs_request: 'reporting.v1.risk_report_configs.delete_many',
-    list_by_report_definition_id_risk_report_configs_request:
-        'reporting.v1.risk_report_configs.list_by_report_definition_id',
+    list_by_configuration_id_risk_report_configs_request:
+        'reporting.v1.risk_report_configs.list_by_configuration_id',
     list_risk_report_config_versions_request: 'reporting.v1.risk_report_configs_versions.list',
     get_risk_report_config_version_request: 'reporting.v1.risk_report_configs_versions.get',
 } as const;
@@ -241,7 +244,7 @@ export const requiresSession = {
     put_many_risk_report_configs_request: true,
     delete_risk_report_config_request: true,
     delete_many_risk_report_configs_request: true,
-    list_by_report_definition_id_risk_report_configs_request: true,
+    list_by_configuration_id_risk_report_configs_request: true,
     list_risk_report_config_versions_request: true,
     get_risk_report_config_version_request: true,
 } as const;

@@ -1307,9 +1307,10 @@ export const en: SourceCatalogue = {
      * from Home as well as from this area's hub.
      */
     oresmd: {
-        open: 'Open in the editor',
         close: 'Close',
         assetClass: 'Asset class',
+        edit: 'Edit',
+        inspect: 'Inspect',
         title: 'oresmd URL',
         cancel: 'Cancel',
         copy: 'Copy',

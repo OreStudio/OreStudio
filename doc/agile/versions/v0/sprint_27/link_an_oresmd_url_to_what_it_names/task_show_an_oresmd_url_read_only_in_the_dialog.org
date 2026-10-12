@@ -8,7 +8,7 @@
 #+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-an-oresmd-url-read-only-in-the-dialog
-#+pr:
+#+pr: 3191
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3191][#3191]] | [web] Show an oresmd URL read-only in the dialog |
 
 * Review
 

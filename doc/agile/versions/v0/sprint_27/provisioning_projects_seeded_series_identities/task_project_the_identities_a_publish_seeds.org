@@ -8,7 +8,7 @@
 #+filetags: :provisioning_projects_seeded_series_identities:sprint_27:v0:
 #+owner: marco
 #+branch: feature/project-the-identities-a-publish-seeds
-#+pr:
+#+pr: 3169
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3169][#3169]] | [marketdata] Project the identities a publish seeds |
 
 * Review
 

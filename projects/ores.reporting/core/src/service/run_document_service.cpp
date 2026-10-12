@@ -221,6 +221,7 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
             parameters.push_back(std::move(row));
         }
     }
+    ores::service::messaging::stamp_document(analytics, ctx_);
     ores::service::messaging::stamp_document(parameters, ctx_);
 
     configuration_analytic_repository().write(ctx_, analytics);

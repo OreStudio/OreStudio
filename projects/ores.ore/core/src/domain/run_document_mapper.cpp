@@ -61,7 +61,7 @@ struct int_binding {
     std::optional<int> settings_t::*member;
 };
 
-const std::array<text_binding, 21> text_bindings = {{
+const std::array<text_binding, 20> text_bindings = {{
     {"accrualDate", &settings_t::accrual_date},
     {"inputPathMarket", &settings_t::input_path_market},
     {"inputPathPortfolio", &settings_t::input_path_portfolio},

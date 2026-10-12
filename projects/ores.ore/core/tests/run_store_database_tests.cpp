@@ -136,7 +136,13 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
 
     const auto run = parse<domain::ore>(original.at("ore.xml"));
     const auto exported_run = parse<domain::ore>(exported.at("ore.xml"));
-    CHECK(parameters_of(exported_run.Setup) == parameters_of(run.Setup));
+    // The export names the files it writes. The portfolio, the market data and the
+    // fixings are data the configuration does not hold, so the export writes none
+    // of them and names none.
+    auto expected_setup = parameters_of(run.Setup);
+    for (const auto* data_file : {"portfolioFile", "marketDataFile", "fixingDataFile"})
+        expected_setup.erase(data_file);
+    CHECK(parameters_of(exported_run.Setup) == expected_setup);
     REQUIRE(exported_run.Markets);
     CHECK(parameters_of(*exported_run.Markets) == parameters_of(*run.Markets));
     REQUIRE(exported_run.Analytics.Analytic.size() == run.Analytics.Analytic.size());

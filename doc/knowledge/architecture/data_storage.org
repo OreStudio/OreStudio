@@ -67,6 +67,9 @@ the repositories and the handlers all read and write it.
 - [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]] — the write path an
   entity table expects, the purge and test-fixture exceptions, and the check
   that holds code to it.
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the one way to stage an entity's rows for DQ and
+  publish them into the service that owns them, and the legacy patterns not to
+  copy.
 
 ** Object storage
 

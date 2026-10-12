@@ -38,6 +38,14 @@ The model also carries the entity's summary capability in the =** Presentation=
 drawer: =collection_name=, =key_field=, and the =*** Columns= and
 =*** Detail fields= tables. The C++ presentation facets read that drawer.
 
+If the entity's rows arrive through DQ, stage them from this model: set
+=:ores.sql.schema.domain_entity_artefact_create.enabled: true= on it, with an
+=* Artefact columns= section only when the staging shape differs. Never add an
+=ores.dq= model for another component's entity; it duplicates the columns and
+generates a DQ stack nobody needs. Follow
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] for the rest of the
+pipeline.
+
 ** Step 2 — Create one task per layer
 
 Use =TaskCreate= to register a task for each layer. Execute them in

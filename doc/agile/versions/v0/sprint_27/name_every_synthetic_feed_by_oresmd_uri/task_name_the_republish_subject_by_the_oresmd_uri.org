@@ -71,8 +71,8 @@ task and name that file in the Command column.
   =plan_tick=. =oresmd_uri_codec::read= and =write= refuse a quote that
   =ore_key_codec= cannot name (the test =a_quote_type_no_ore_key_can_name_is_refused=
   holds that). So this task makes the subject independent of the ORE key, and
-  a hazard rate still cannot flow until the codec accepts it. That is a design
-  decision, because import, export and the curve republish all assume an ORE
+  a hazard rate still cannot flow until the codec accepts it. The capture Let the
+  oresmd URI name quotes that ORE cannot name tracks it. It is a design decision, because import, export and the curve republish all assume an ORE
   key for a quote.
 - The capture about the feed binding's claim is out of date. A binding has no
   ORE key; its natural key is the party and the source, the claim is read by

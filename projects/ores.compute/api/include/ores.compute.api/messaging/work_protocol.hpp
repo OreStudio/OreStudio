@@ -31,82 +31,13 @@
 namespace ores::compute::messaging {
 
 /**
- * @brief Asks the grid for one unit of work to run.
+ * @brief The job a node runs, as the wrapper builds it from a claim.
  *
- * Session gated: the handler checks compute::batches:write before it
- * assigns anything.
- */
-struct pull_work_request {
-    using response_type = struct pull_work_response;
-    static constexpr std::string_view nats_subject = "compute.v1.ops.pull_work";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    /**
-     * @brief The node that will run the work.
-     */
-    std::string host_id;
-};
-
-/**
- * @brief The assignment, or the reason there is none.
- *
- * A successful reply names the result, its workunit and the app version
- * whose package the node needs.
- */
-struct pull_work_response {
-    /**
-     * @brief Whether work was assigned.
-     */
-    bool success = false;
-    /**
-     * @brief The result row the node must fill in.
-     */
-    std::string result_id;
-    /**
-     * @brief The workunit the result belongs to.
-     */
-    std::string workunit_id;
-    /**
-     * @brief The app version whose cached package the node runs.
-     */
-    std::string app_version_id;
-    /**
-     * @brief Where the node fetches the job input.
-     */
-    std::string input_uri;
-    /**
-     * @brief Where the node fetches the job config.
-     */
-    std::string config_uri;
-    /**
-     * @brief Why no work was assigned, when none was.
-     */
-    std::string message;
-};
-
-/**
- * @brief The payload published to the COMPUTE JetStream stream on dispatch.
- *
- * A producer addresses it at the subject below extended with the tenant and
- * the platform code, and carries everything the wrapper needs to execute the
- * job, so no additional round trip to the server is required. A wrapper
- * subscribes only to its own triplet, so it never sees an assignment it
- * could not run.
+ * It carries everything the wrapper needs to execute the job. It is not
+ * published: the claim reply holds the same fields, and the wrapper copies
+ * them into this payload to hand them to the code that runs the job.
  */
 struct work_assignment_event {
-    static constexpr std::string_view nats_subject = "compute.v1.ops.work_assignment";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = false;
     /**
      * @brief The tenant that owns the result the node must fill in.
      *
@@ -326,56 +257,6 @@ struct work_available_event {
      * @brief The number of results the sender queued, for a log line. A node does not act on it.
      */
     int queued = 0;
-};
-
-/**
- * @brief Tells the service that a wrapper node has begun a job.
- *
- * The node waits for the reply before it runs the job, so the service has
- * recorded the result as in progress before the node can submit it. Without the
- * wait a fast job could submit first, and the late start would overwrite the
- * finished result. Like the submit, the channel is trusted at the transport
- * layer, because a node holds no user JWT.
- */
-struct result_started_request {
-    using response_type = struct result_started_response;
-    static constexpr std::string_view nats_subject = "compute.v1.ops.result_started";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = false;
-    /**
-     * @brief The tenant the assignment named; the result is scoped to it.
-     */
-    std::string tenant_id;
-    /**
-     * @brief The result the node has begun.
-     */
-    std::string result_id;
-    /**
-     * @brief The node that runs it.
-     */
-    std::string host_id;
-};
-
-/**
- * @brief Whether the start was recorded.
- *
- * A start for a result that is not unsent is not an error: the result is already
- * further on, and the reply says so in the message with success set.
- */
-struct result_started_response {
-    /**
-     * @brief Whether the start was recorded or was already moot.
-     */
-    bool success = false;
-    /**
-     * @brief Why it was not recorded, when it was not.
-     */
-    std::string message;
 };
 
 /**

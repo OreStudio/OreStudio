@@ -152,7 +152,6 @@
         <li><a href='/OreStudio/doc/developer.html'>Guide</a></li>
         <li><a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a></li>
         <li><a href='/OreStudio/doc/agile/agile.html'>Agile</a></li>
-        <li><a href='/OreStudio/agile/index.html'>Agile Board</a></li>
         <li><a href='/OreStudio/doc/llm/llm.html'>LLMs</a></li>
         <li><a href='/OreStudio/doc/prototypes/index.html'>Prototypes</a></li>
       </ul>
@@ -197,7 +196,7 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
         ("site:pages"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site/OreStudio"
          :html-preamble ores/site-preamble
@@ -212,28 +211,28 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
         ("site:images"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/"
          :base-extension "png\\|jpe?g\\|gif\\|svg"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:style"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/"
          :base-extension "css"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:pdf"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/"
          :base-extension "pdf"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:js"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/"
          :base-extension "js"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
@@ -261,7 +260,7 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
 
 (defun ores-deploy-web-app (src-dir site-dir app-name fix-tag)
   "Copy the static web app at SRC-DIR to SITE-DIR/APP-NAME/ and inject nav.
-The ores.org-js apps (graph, agile) all deploy through here so they are
+The knowledge graph deploys through here so every static web app is
 managed uniformly: copy, then patch index.html with the site chrome."
   (let ((src (expand-file-name src-dir))
         (dst (expand-file-name app-name site-dir)))
@@ -301,7 +300,7 @@ and the page carries its own links table."
 
 (defun ores-deploy-web-apps (site-dir)
   "Deploy every static web app into SITE-DIR.
-The ores.org-js apps and the doc/prototypes pages all go out this way, so
+The knowledge graph and the doc/prototypes pages all go out this way, so
 they are managed uniformly: copy the directory, then patch its index.html
 with the site chrome."
   ;; Graph: float the header and undo the body flex/padding from
@@ -309,10 +308,6 @@ with the site chrome."
   (ores-deploy-web-app
    "./external/org-roam-ui" site-dir "graph"
    "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}body{display:block;padding:0;align-items:unset;}#__next{margin-top:56px;}</style>")
-  ;; Agile board: undo the site body flex/padding; the app styles itself.
-  (ores-deploy-web-app
-   "./projects/ores.org-js/agile" site-dir "agile"
-   "<style>body{display:block;padding:0;align-items:unset;}</style>")
   ;; The prototypes: every static page under
   ;; doc/prototypes/GROUP/NAME/. They deploy where they sit, beside
   ;; the group pages that describe them, so the group pages, the
@@ -330,7 +325,7 @@ with the site chrome."
       (setq org-roam-directory (expand-file-name "./"))
       (setq org-roam-db-location (expand-file-name "./.org-roam.db"))
       (setq org-roam-file-exclude-regexp
-            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js")
+            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/")
       (require 'org-roam)
       (condition-case roam-err
           (org-roam-db-sync)

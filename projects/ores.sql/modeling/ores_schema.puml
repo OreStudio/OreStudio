@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T10:09:54.355611Z
+' Generated: 2026-10-11T23:20:31.653727Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-504 tables in 21 groups.
+505 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -316,6 +316,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_synthetic_gmm_components_artefact_tbl
   ores_dq_synthetic_ir_curve_configs_artefact_tbl
   ores_dq_synthetic_ir_curve_template_entries_artefact_tbl
+  ores_dq_synthetic_market_data_providers_artefact_tbl
   ores_dq_tags_artefact_tbl
   ores_dq_tenor_basis_swap_conventions_artefact_tbl
   ores_dq_tenor_basis_two_swap_conventions_artefact_tbl
@@ -325,7 +326,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-87 tables — ores_schema.dq_staging.puml
+88 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -484,7 +485,6 @@ entity "trading" as trading {
   ores_trading_price_types_tbl
   ores_trading_rate_instruments_tbl
   ores_trading_return_types_tbl
-  ores_trading_rpa_instruments_tbl
   ores_trading_scripted_instruments_tbl
   ores_trading_settlement_types_tbl
   ores_trading_structure_kinds_tbl
@@ -511,7 +511,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-105 tables — ores_schema.trading.puml
+104 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -651,12 +651,13 @@ entity "synthetic" as synthetic {
   ores_synthetic_ir_curve_generation_configs_tbl
   ores_synthetic_ir_curve_template_entries_tbl
   ores_synthetic_market_data_generation_configs_tbl
+  ores_synthetic_market_data_providers_tbl
   ores_synthetic_process_parameter_definitions_tbl
   ores_synthetic_yield_curve_process_types_tbl
 }
 note bottom of synthetic
 Synthetic Data Generation
-9 tables — ores_schema.synthetic.puml
+10 tables — ores_schema.synthetic.puml
 end note
 
 entity "inbox" as inbox {

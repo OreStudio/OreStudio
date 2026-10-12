@@ -19,7 +19,7 @@
  *
  */
 
-import type { AgileState, AgileStory, Board } from '@ores/contracts';
+import type { AgileState, AgileStory, Board, WorkTree } from '@ores/contracts';
 
 /** The board column a state sits in. A discovered story waits with the backlog. */
 export function columnOf(state: AgileState): AgileState {
@@ -78,4 +78,26 @@ export function percentOfTasks(story: AgileStory): number {
     return story.progress.total === 0
         ? 0
         : Math.round((100 * story.progress.done) / story.progress.total);
+}
+
+/**
+ * The story this work tree is on, or null. The journal's story wins when the
+ * board has it. Otherwise the story with a task on the tree's branch wins, and
+ * of several the one with the latest update. A tree with no branch matches none.
+ */
+export function currentStoryId(board: Board, trees: readonly WorkTree[]): string | null {
+    const own = trees.find((tree) => tree.isSession);
+    if (own === undefined) return null;
+    const journal = own.current?.storyId ?? '';
+    if (journal !== '' && board.stories.some((story) => story.id === journal)) return journal;
+    if (own.branch === '') return null;
+    const onBranch = board.stories
+        .filter((story) => story.tasks.some((task) => task.branch === own.branch))
+        .sort((a, b) => (a.updated < b.updated ? 1 : a.updated > b.updated ? -1 : 0));
+    return onBranch[0]?.id ?? null;
+}
+
+/** A title cut to the limit, with an ellipsis in the last place when it is cut. */
+export function shortTitle(title: string, limit = 28): string {
+    return title.length <= limit ? title : `${title.slice(0, limit - 1)}…`;
 }

@@ -84,13 +84,13 @@ struct ir_curve_generation_config final {
      * @brief Floating-rate index family this curve represents (oresmd's index_family: libor/euribor
      * for term IBOR-style indices, or one of the overnight/RFR-style families --
      * sofr/estr/sonia/tona/ saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
-     * zaronia/destr/polonia/nzonia/shibor/tiie/taibor), stored as a fixed lower-case token rather
+     * zaronia/destr/polonia/nzonia/shibor/tiie/taibor/cdi/
+     * czeonia/buboron/telboron/tlref/camara/ibr/hibor), stored as a fixed lower-case token rather
      * than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR") --
-     * currency_code already carries the currency half of that pair. The (currency_code,
-     * index_family) pair is validated as a whole by a hand-written composite trigger (not the
-     * codegen single-argument Validations mechanism, which cannot express a two-column lookup)
-     * against overnight_index_convention/ibor_index_convention, whose own id is currency_code + "-"
-     * + upper(index_family).
+     * currency_code already carries the currency half of that pair. Only the check below limits the
+     * family. The (currency_code, index_family) pair names an overnight_index_convention or
+     * ibor_index_convention, whose own id is currency_code + "-" + upper(index_family); the feed
+     * itself reads no convention, so a curve whose pair has no convention seeded still ticks.
      */
     std::string index_family;
 

@@ -79,6 +79,19 @@ inline ores::utility::decimal::decimal exact_decimal(double v) {
     return ores::utility::decimal::decimal{};
 }
 
+/**
+ * @brief Sets a money leaf to a stored decimal.
+ *
+ * @details The leaf keeps the decimal's own digits beside the float, so the
+ * writer prints the digits and not the nearest float's. This is the reverse of
+ * exact_decimal.
+ */
+template <typename Leaf>
+void set_exact(Leaf& leaf, const ores::utility::decimal::decimal& value) {
+    static_cast<float&>(leaf) = static_cast<float>(value.to_double());
+    leaf.lexical(value.to_string());
+}
+
 }
 
 #endif

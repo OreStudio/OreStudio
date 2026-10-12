@@ -131,11 +131,10 @@ manually authored and has no presence in the PMM.
 
 ** JavaScript Technical Space
 
-Component: =ores.org-js= (agile dashboard).
+Component: =ores.dsh_environment= (the DSH profile plugin).
 
-JavaScript is used for the =ores.org-js= agile board — a browser-side
-visualisation of the org-mode agile data exported as =graphdata.json=. All
-JavaScript is manually authored. No codegen coverage.
+JavaScript is used for the =ores.dsh_environment= plugin, which runs inside
+the DSH host. All JavaScript is manually authored. No codegen coverage.
 
 ** XML / FPML Technical Space
 

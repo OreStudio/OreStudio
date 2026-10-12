@@ -653,7 +653,6 @@ const fr: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Comptes',
         description: 'Identités pouvant se connecter ou agir en tant que service.',
         search: 'Rechercher',
         searchPlaceholder: "Nom d'utilisateur, nom ou email",
@@ -1111,6 +1110,12 @@ const fr: SourceCatalogue = {
                 open: 'Ouvrir',
                 unread: 'N’a pas pu être lu',
                 sampled: 'Échantillon de',
+                summary: {
+                    needAttention: {
+                        one: '{count} zone demande votre attention',
+                        other: '{count} zones demandent votre attention',
+                    },
+                },
                 services: {
                     title: 'Services',
                     needAttention: {
@@ -1265,6 +1270,10 @@ const fr: SourceCatalogue = {
             noDone: "Aucune tâche n'a encore de date de fin.",
         },
         board: {
+            current: 'En cours ici',
+            trees: 'Arbres de travail',
+            idle: 'Inactif',
+            thisTree: 'Cet arbre',
             search: 'Chercher des récits, tâches, environnements',
             searchLabel: 'Chercher dans le tableau',
             clear: 'Effacer',
@@ -1900,9 +1909,7 @@ const fr: SourceCatalogue = {
     },
 
     market: {
-        area: 'Données de marché',
         evolution: {
-            screen: 'Suivre l’évolution d’une courbe',
             title: 'Suivre l’évolution d’une courbe ou d’une surface',
             description:
                 'Nommez un objet et une période. Lisez les instants par nœuds sur la période, et l’objet tel qu’il est maintenant.',
@@ -1959,7 +1966,15 @@ const fr: SourceCatalogue = {
                 derived: 'Dérivé',
                 manual: 'Manuel',
             },
-            gap: 'Aucune liste de séries n’est encore lue, donc l’objet est désigné par son identité.',
+            picker: {
+                label: 'Série',
+                placeholder: 'Choisissez une série, ou saisissez son identité ci-dessous',
+                loading: 'Lecture des séries que vous pouvez voir...',
+                empty: 'Votre partie ne voit aucune série. Les données de marché que le provisionnement a semées peuvent ne pas figurer tant que leur identité n’est pas projetée. Vous pouvez saisir une identité ci-dessous.',
+                truncated:
+                    'La liste contient les {count} premières séries que votre partie peut voir. Travaillez dans une partie qui en contient moins pour voir les autres.',
+                noShape: 'aucune forme déclarée',
+            },
         },
     },
 
@@ -3402,7 +3417,6 @@ const fr: SourceCatalogue = {
                 fxFeeds: 'Flux de prix FX',
                 fxFeedsBody:
                     'Composez les flux FX synthétiques : la paire, le moteur et le mélange de chacun.',
-                evolution: 'Suivre l’évolution d’une courbe',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
@@ -3410,7 +3424,7 @@ const fr: SourceCatalogue = {
         fxFeeds: {
             title: 'Flux de prix FX',
             lead: "Les flux FX synthétiques de votre partie. Un flux ne produit rien tant qu'il n'est pas activé et démarré.",
-            add: 'Ajouter un flux',
+            add: 'Ajouter',
             addTitle: 'Ajouter un flux de prix FX',
             pair: 'Paire',
             samePair: 'Les devises de base et de cotation doivent être différentes.',
@@ -3436,8 +3450,6 @@ const fr: SourceCatalogue = {
             stop: 'Arrêter',
             choose: 'Choisir',
             chooseFeed: 'Choisir {feed}',
-            startChosen: 'Démarrer la sélection ({count})',
-            stopChosen: 'Arrêter la sélection ({count})',
             startedCount: '{count} flux démarrés.',
             stoppedCount: '{count} flux arrêtés.',
             refused: '{feed} : {message}',
@@ -3655,6 +3667,8 @@ const fr: SourceCatalogue = {
         rolesRead: 'lire les rôles et leurs droits',
         rolesAssign: 'attribuer des rôles aux personnes',
         sessionsRead: 'lire les connexions des personnes',
+        deploymentRead:
+            'voir tout le déploiement : ses locataires, ses services, sa grille, son bus de messages et ses journaux',
         curveSnapshotsRead: 'voir les courbes de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
     },

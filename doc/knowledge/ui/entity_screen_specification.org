@@ -165,6 +165,10 @@ Staff is a different list for them, built from the organisation read. See
 - Under the title, in small subdued type, is the subject's identifier. Nothing
   else. The version stands on each card, beside its title, because each card is a
   different record with its own version.
+- A trade is the one exception. The line under its title also carries the trade's
+  state, its internal version and its external version, because the two-version
+  rule of [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] is what a person reads a trade for. The cards still carry
+  their own versions.
 - The header carries no Edit button. Edit belongs to the card it changes.
 
 *** Tabs
@@ -553,6 +557,102 @@ There is no card of the person beside it. The list is the way in.
   parties as tags in the list.
 - Do not add a tab to say that something cannot be done. Say it where the
   control would be.
+
+** A trade, a structure and a package
+
+A trade is an entity made of several kinds of record, and it follows this page.
+The [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] say what a person does with it. The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it.
+
+*** The trade page
+
+| Tab | Holds |
+|-----+-------|
+| /Details/ | The identity card, fixed for the life of the trade, and the booking card |
+| /Instrument/ | The instrument the trade type routes to. One card for its terms, and one for each child table: its legs, its premium, its exercise prices |
+| /Identifiers and roles/ | The identifiers, the party roles, the portfolios and the additional fields |
+| /Links/ | The structure or package the trade is in, and the trades it is linked to |
+| /History/ | The timeline |
+
+- The identity card says why a field is fixed. The party and the counterparty
+  never change, so a change to either is a cancel and rebook, which is a
+  lifecycle event and not an Edit.
+- Edit asks for the kind of change first, and the kind bounds the fields the
+  dialog offers. This is the rule of [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]]: the reason constrains the
+  change. The dialog then says what the save will do, which version moves and
+  whether a confirmation is issued.
+- A trade that is the leg of a structure or a package says so, and says whose
+  confirmation a change reaches.
+- Recording a lifecycle event is a workflow, in the Workflows menu of the page.
+  It has steps and writes several records, and a novation books a second trade.
+
+*** Booking a trade
+
+Booking is the Add of the trade list. It opens a page and not a sequence, because
+a sequence is allowed only when it makes the task quicker, and a trader booking a
+deal knows the whole deal.
+
+- The page has four tabs: Trade, Instrument, Identifiers and Review. Book is a
+  button in the header and stays disabled until the review has nothing to refuse.
+- The trade type is a combo box, grouped by product. A trade type with no
+  instrument table is listed and cannot be chosen, and says so. The type is the
+  one choice that decides what the Instrument tab holds.
+- The Instrument tab has a tab of its own for each part of the instrument: its
+  terms, then each child table. A part with rows is edited as a table with
+  Add a row and Remove. A part that the economic digest does not read says so
+  where the person edits it.
+- A trade booked in a virtual book must be a draft, a test or a hypothetical.
+  The Review tab refuses anything else and says why.
+
+*** A structure and a package
+
+A structure is a tree: the deal the customer sees at the root, with strategies,
+packages and trades inside. A package is a structure of kind Package, so there is
+one screen and its words follow the kind. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
+
+- The tree is its own panel beside the page, as in the structure editor. A row
+  stands for the root, for each inner structure with its kind, and for each
+  trade with its product, role and notional. A click on a structure opens its
+  page, and a click on a trade selects it.
+- The page says how the kind confirms and prices: a strategy, a typed structure
+  and a dynamic structure are one deal, and a package confirms trade by trade.
+- The list shows each root with its inner structures indented under it.
+- Grouping trades is a workflow, because the kind to choose has consequences the
+  person must read first.
+
+** The entity protocol
+
+A screen of an entity reads and writes through the standard entity operations of
+the [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]], and invents no message of its own. What a screen needs from
+the server is stated as a change to the entity's model, and not as a new
+operation.
+
+- *Reads.* A list is =list= with an offset, a limit, a stated order and a filter
+  record. The reply carries the total, and the pager is built from it. A record
+  page is =get=. A set of rows for the keys on a page is =get_many= or a filter
+  with a one-of member. A history is =list= of the entity's versions. A read at an
+  instant is the =as_of= field.
+- *The filter record.* A filter has an equals member for each column the model
+  declares filterable, a one-of member for the key and the relation columns, and
+  one =search= member for the columns the model declares searchable. A screen
+  that wants to filter by a column asks for the column to be declared filterable.
+  It does not filter in the browser. A combo box that filters a list offers only
+  the values that exist, as the paging section says.
+- *A scoped read.* The trades of a book, and of the books below it, are
+  =list_by_book_id= with the subtree scope, and not a filter the screen builds.
+- *Writes.* A change is =put= with a precondition, which is the version the edit
+  started from, and a change intent: the reason code and the commentary. A set of
+  records is =put_many=, and it is one transaction. The screen never sends a
+  tenant, a party, a version it computed or a provenance field.
+- *Domain operations.* A write that touches several entities as one transaction,
+  such as booking a trade, is a domain operation in the =ops= namespace of its
+  component. It is the exception, and a screen uses one only when the common
+  verbs cannot do the job. Each use is listed on the journey as a gap to review.
+- *Events.* The change news of a screen is the entity's events. The screen names
+  the entity it shows and never guesses a subject.
+- *The registry.* Each entity declares itself once, as the record standard says,
+  and the screen reads the declaration. A trading entity gets the same kind of
+  registry entry, write schema, field table and column list as a reference data
+  record.
 
 ** Relationship views
 

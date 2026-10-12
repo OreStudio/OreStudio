@@ -23,6 +23,7 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaParts, useAreaRoot } from '../shell/AreaTrail.js';
 import { RecordList, useRecordSource } from '../refdata/RecordList.js';
 import {
     RecordDetails,
@@ -196,10 +197,23 @@ function pairOf(feed: Readonly<Record<string, unknown>>): string {
     return `${show(feed['base_currency_code'])}/${show(feed['quote_currency_code'])}`;
 }
 
+/** The synthetic mark every feed's source name starts with, so a simulated feed is never read as a real one. */
+export const SYNTHETIC_MARK = 'synthetic.';
+
+/**
+ * A feed's source name: the pair under the synthetic mark when none is given,
+ * and the given name under the mark when it lacks it. The table refuses a
+ * source name without it.
+ */
+export function syntheticSource(given: string, base: string, quote: string): string {
+    const name = given.trim() === '' ? `${base}${quote}`.toLowerCase() : given.trim();
+    return name.startsWith(SYNTHETIC_MARK) ? name : `${SYNTHETIC_MARK}${name}`;
+}
+
 /**
  * The fields that follow from the others: the ORE key from the pair, a source
- * name from the pair when none is given, and the price fields the source does
- * not use emptied, as the table requires.
+ * name under the synthetic mark, from the pair when none is given, and the
+ * price fields the source does not use emptied, as the table requires.
  */
 export function completeFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
     const base = show(write['base_currency_code']);
@@ -208,10 +222,7 @@ export function completeFeed(write: Readonly<Record<string, unknown>>): Record<s
     return {
         ...write,
         ore_key: `FX/RATE/${base}/${quote}`,
-        source_name:
-            show(write['source_name']) === ''
-                ? `synthetic.${base}${quote}`.toLowerCase()
-                : write['source_name'],
+        source_name: syntheticSource(show(write['source_name']), base, quote),
         gmm_initial_price: fixed ? write['gmm_initial_price'] : 0,
         vintage_source: fixed ? '' : write['vintage_source'],
         vintage_date: fixed ? '' : write['vintage_date'],
@@ -240,6 +251,7 @@ export function FxFeedsPage(): ReactNode {
 
 function FxFeedsList(): ReactNode {
     const { t } = useTranslation();
+    const trail = useAreaParts('marketdata', t('marketdata.fxFeeds.title'));
     const navigate = useNavigate();
     const [adding, setAdding] = useState(false);
     const source = useRecordSource(FEEDS);
@@ -282,18 +294,14 @@ function FxFeedsList(): ReactNode {
                                       pending={runs.pending}
                                       onClick={() => run('start')}
                                   >
-                                      {t('marketdata.runs.startChosen', {
-                                          count: String(chosen.size),
-                                      })}
+                                      {t('marketdata.runs.start')}
                                   </Button>
                                   <Button
                                       disabled={chosen.size === 0}
                                       pending={runs.pending}
                                       onClick={() => run('stop')}
                                   >
-                                      {t('marketdata.runs.stopChosen', {
-                                          count: String(chosen.size),
-                                      })}
+                                      {t('marketdata.runs.stop')}
                                   </Button>
                               </>
                           ),
@@ -301,10 +309,7 @@ function FxFeedsList(): ReactNode {
                     : {})}
                 title={t('marketdata.fxFeeds.title')}
                 lead={t('marketdata.fxFeeds.lead')}
-                crumbs={[
-                    { label: t('marketdata.area.title'), to: '/market-data' },
-                    { label: t('marketdata.fxFeeds.title') },
-                ]}
+                crumbs={trail}
                 pathOf={(row) => fxFeedPath(show(row['id']))}
                 addLabel={t('marketdata.fxFeeds.add')}
                 onAdd={() => setAdding(true)}
@@ -422,6 +427,7 @@ export function FxFeedPage(): ReactNode {
 
 function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
     const { t } = useTranslation();
+    const root = useAreaRoot('marketdata');
     const navigate = useNavigate();
     const id = show(feed['id']);
     const pair = pairOf(feed);
@@ -442,7 +448,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('marketdata.area.title'), to: '/market-data' },
+                    ...root,
                     { label: t('marketdata.fxFeeds.title'), to: fxFeedPath() },
                     { label: pair },
                 ]}

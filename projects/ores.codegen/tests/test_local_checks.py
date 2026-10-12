@@ -81,13 +81,10 @@ def test_a_web_change_runs_the_web_checks_and_nothing_heavy():
     assert "format" not in select(paths)
 
 
-def test_a_plugin_change_runs_only_that_plugin():
+def test_a_plugin_change_runs_only_the_plugin_check():
     environment = select(["projects/ores.dsh_environment/lib/client.js"])
     assert "dsh-environment" in environment
-    assert "dsh-kanban" not in environment
-    kanban = select(["projects/ores.dsh_kanban/lib/client.js"])
-    assert "dsh-kanban" in kanban
-    assert "dsh-environment" not in kanban
+    assert "web" not in environment
 
 
 def test_a_model_change_runs_the_drift_checks():

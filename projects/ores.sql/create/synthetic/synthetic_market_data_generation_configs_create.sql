@@ -30,14 +30,16 @@
  * (system/tenant/party) decides the sharing radius -- who consumes the same
  * generated data -- and binding_mode (bound/sandboxed) decides whether
  * that data is authoritative for real feed consumers or reachable only by
- * explicit selection. tenant_id and party_id are populated per scope
- * level: system leaves both null, tenant sets tenant_id only, party sets
- * both.
+ * explicit selection. tenant_id and party_id follow the scope: a system
+ * collection belongs to the system tenant and its system party, the party the
+ * super administrator works in; a tenant collection belongs to its tenant with
+ * no party; a party collection belongs to its tenant and party. A system
+ * collection's feeds are the installation's, and every tenant reads them.
  */
 
 create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     "id" uuid not null,
-    "tenant_id" uuid,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid null,
     "scope" text not null,
@@ -46,29 +48,31 @@ create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     "description" text not null,
     "enabled" boolean not null,
     "dataset_id" uuid null,
+    "provider_code" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ((scope = 'system' and tenant_id is null and party_id is null) or (scope = 'tenant' and tenant_id is not null and party_id is null) or (scope = 'party' and tenant_id is not null and party_id is not null))
+    check ((scope = 'system' and tenant_id = ores_utility_system_tenant_id_fn() and party_id is not null) or (scope = 'tenant' and party_id is null) or (scope = 'party' and party_id is not null))
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists market_data_generation_configs_version_uniq_idx
-on "ores_synthetic_market_data_generation_configs_tbl" (id, version)
+on "ores_synthetic_market_data_generation_configs_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists market_data_generation_configs_id_uniq_idx
-on "ores_synthetic_market_data_generation_configs_tbl" (id)
+on "ores_synthetic_market_data_generation_configs_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists market_data_generation_configs_tenant_idx
@@ -80,9 +84,12 @@ returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate tenant_id only when set (system records have NULL tenant_id)
-    if NEW.tenant_id is not null then
-        NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate provider_code (optional field -- skip validation when null)
+    if NEW.provider_code is not null then
+        NEW.provider_code := ores_synthetic_validate_market_data_provider_fn(NEW.tenant_id, NEW.provider_code);
     end if;
 
     -- At most one enabled bound config per *wider-scope-vs-narrower-scope*
@@ -129,7 +136,7 @@ begin
     -- Version management
     select version into current_version
     from "ores_synthetic_market_data_generation_configs_tbl"
-    where (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
+    where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
@@ -162,7 +169,7 @@ begin
         -- would collide with itself. clock_timestamp() always advances.
         update "ores_synthetic_market_data_generation_configs_tbl"
         set valid_to = clock_timestamp()
-        where (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
+        where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
@@ -186,7 +193,7 @@ create or replace rule ores_synthetic_market_data_generation_configs_delete_rule
 on delete to "ores_synthetic_market_data_generation_configs_tbl" do instead (
     update "ores_synthetic_market_data_generation_configs_tbl"
     set valid_to = clock_timestamp()
-    where (tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
+    where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

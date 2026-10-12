@@ -87,6 +87,7 @@ export function boardKey(sprint: string | undefined): readonly [string, string] 
 }
 
 export const AGILE_SPRINTS_KEY = ['agile-sprints'] as const;
+export const AGILE_TREES_KEY = ['agile-trees'] as const;
 export const AGILE_BACKLOG_KEY = ['agile-backlog'] as const;
 
 /** The reads of the agile browser. Quiet for the same reason as the QA reads. */
@@ -95,6 +96,13 @@ export const agileQueries = {
         queryOptions({
             queryKey: AGILE_SPRINTS_KEY,
             queryFn: () => agile.sprints(),
+            meta: QUIET,
+        }),
+
+    trees: () =>
+        queryOptions({
+            queryKey: AGILE_TREES_KEY,
+            queryFn: () => agile.trees(),
             meta: QUIET,
         }),
 

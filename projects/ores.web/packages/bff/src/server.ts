@@ -42,6 +42,7 @@ import { registerQaRoutes } from './qa.js';
 import { registerAgileRoutes } from './agile-routes.js';
 import { FileAgileStore } from './agile/file-agile-store.js';
 import type { AgileStore } from './agile/agile-store.js';
+import { GitWorkTreeSource, type WorkTreeSource } from './agile/work-trees.js';
 import { FileScenarioStore } from './scenarios/file-scenario-store.js';
 import type { ScenarioStore } from './scenarios/scenario-store.js';
 import { startHeartbeat } from './heartbeat.js';
@@ -172,6 +173,7 @@ import type { ListChangeReasonsRequest } from '@ores/wire-protocol/generated/dq/
 import type { LoadedSiteConfiguration } from './site-config.js';
 import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
+import { requireDeploymentRead } from './deployment-access.js';
 import type { Account } from '@ores/wire-protocol';
 import { PERMISSION_CODE, waysToHold } from './access-help.js';
 import { clientLogSchema, writeClientEntry } from './client-log.js';
@@ -338,6 +340,8 @@ export interface ServerDependencies {
      * browser is off.
      */
     readonly agile?: AgileStore;
+    /** Where the agile browser reads the work trees. Absent, git is asked from `config.docRoot`. */
+    readonly workTrees?: WorkTreeSource;
 }
 
 export function buildServer(dependencies: ServerDependencies): FastifyInstance {
@@ -1850,9 +1854,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
          * permission of its own, and until it does this is what keeps a
          * tenant's administrator from reading every tenant's registry row.
          */
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The tenants of a deployment are read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The tenants of a deployment');
         const query = request.query as Record<string, string | undefined>;
         const page = tenantRosterQuerySchema.safeParse({
             search: query['search'] ?? '',
@@ -1954,9 +1956,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      */
     server.get('/api/overview', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The deployment overview is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The deployment overview');
         const shown = (await readTenantTypes(session.client))
             .map((type) => type.code)
             .filter((code) => code !== SYSTEM_TENANT_TYPE && code !== TEST_TENANT_TYPE);
@@ -2114,12 +2114,15 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * session already open in it. The system tenant holds the deployment
      * itself, so it is refused here with a reason, and the database refuses it
      * too.
+     *
+     * The deployment read says the caller acts on the deployment; it is not
+     * the permission to remove a tenant. The tenant service checks
+     * `iam::tenants:delete` of its own, so a caller who holds the read and not
+     * that permission is refused there.
      */
     server.delete('/api/tenants/:code', async (request, reply) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('A tenant of the deployment is removed in system administration.');
-        }
+        await requireDeploymentRead(session, 'A tenant of the deployment');
         const { code } = request.params as { code: string };
         const body = removeTenantBodySchema.safeParse(request.body);
         if (!body.success || body.data.confirmCode !== code) {
@@ -2162,9 +2165,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      */
     server.get('/api/tenants/:code', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('A tenant of the deployment is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'A tenant of the deployment');
         const { code } = request.params as { code: string };
         const tenant = await readTenant(session.client, code);
         if (tenant === null) {
@@ -2205,9 +2206,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         readonly tenantId: string;
     }> {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('A tenant of the deployment is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'A tenant of the deployment');
         const { code } = request.params as { code: string };
         const tenant = await readTenant(session.client, code);
         if (tenant === null) {
@@ -2667,6 +2666,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         dependencies.agile ??
             (config.docRoot === undefined ? undefined : new FileAgileStore(config.docRoot)),
         scenarioStore === undefined ? undefined : (id) => scenarioStore.readDoc(id),
+        dependencies.workTrees ??
+            (config.docRoot === undefined ? undefined : new GitWorkTreeSource(config.docRoot)),
     );
     registerAuditRoutes(server, requireSession);
     registerTimelineRoutes(server, requireSession);

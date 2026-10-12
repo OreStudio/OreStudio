@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 9870DF91-2196-4538-A892-033D4C468BD7
+:END:
+#+title: Book a trade prototype
+#+description: A clickable prototype of booking a trade, as one page in tabs with the trade type in a combo box.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:ui:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+| Item          | Where |
+|---------------+-------|
+| Prototype     | [[file:book-a-trade/][the prototype]] |
+| Gemini review | none |
+| Group         | [[file:index.org][Trades prototypes]] |
+
+* Summary
+
+Booking is the journey [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]]. It is one page in tabs, because a trader booking a deal knows the whole deal, and the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] allows a guided sequence only when it makes the task quicker. The trade type is a combo box. The Instrument tab has a tab for each part of the instrument. Booking is the Add of the trade list, so the list has a Book a trade button and the page has none of a step rail.
+
+* Detail
+
+** States
+
+#+ATTR_HTML: :class hug-leading
+| Query | What it shows |
+|-------+---------------|
+| (none) | The page, on the Trade tab: the trade type combo box, the parties and the book |
+| =?tab=instrument= | The Instrument tab, with a tab for each part of the instrument |
+| =?tab=identifiers=, =?tab=review= | The other two tabs. Review lists the writes and the refusals |
+| =?like=ACME-100201= | A booking started from an existing trade |
+| =?fail=instrument= | The half-booked trade: the booking is written and the instrument is not |
+| =?fail=duplicate= | The refusal for a trade id that is already booked |
+| =?as=reader= | The screen is not drawn for a person without the right |
+
+** What the prototype argues
+
+- The trade type is a combo box grouped by product, not a grid of cards. It is one choice among 121, and a combo box is quicker to scan and to type into. The 28 types with no instrument table are listed and cannot be chosen, and the option says so.
+- The trade type decides what the Instrument tab holds, because each type routes to one instrument table. A swap has terms and legs. An FX option has terms, a premium and exercise prices. The tabs follow the parts of the instrument, as the tabs of the structure editor in the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] follow its widget.
+- A part with rows is a table with Add a row and Remove. A part the economic digest does not read says so where it is edited.
+- A virtual book holds only a draft, a test or a hypothetical. The Review tab refuses a live, real trade in a virtual book.
+- The Review tab lists the writes. =book_trade= is a domain operation, and it does not write the instrument today, so the instrument is a second, standard =put=. The half-booked state shows the outcome.
+- A composite is built from its legs. The prototype links to the structure editor, and a booked trade links to its pricing screen.
+
+** What is fake
+
+Everything. A booked trade is kept in the browser so that it appears on the trade list.
+
+** Where the code lives
+
+=doc/prototypes/trades/book-a-trade/=.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] — the structure editor and the pricing screen.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]

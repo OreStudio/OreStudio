@@ -37,3 +37,4 @@ export * from './session.js';
 export * from './qa.js';
 export * from './agile.js';
 export * from './curves.js';
+export * from './permissions.js';

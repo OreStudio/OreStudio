@@ -37,7 +37,8 @@ import {
     type SeriesRange,
     type WireTimestamp,
 } from '@ores/wire-protocol';
-import { invalidRequest, notPermitted } from './errors.js';
+import { requireDeploymentRead } from './deployment-access.js';
+import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -255,9 +256,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/services', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The services of a deployment are read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The services of a deployment');
         /*
          * The read takes no fields, and the request schema is strict, so a
          * query that names one is refused at the boundary rather than stripped
@@ -290,9 +289,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/grid', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The grid of a deployment is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The grid of a deployment');
         if (!gridStatsRequestSchema.safeParse(request.query ?? {}).success) {
             throw invalidRequest('The grid read takes no query fields.');
         }
@@ -353,9 +350,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/grid/series', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The grid series of a deployment is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The grid series of a deployment');
         const parsed = gridSeriesRequestSchema.safeParse(request.query ?? {});
         if (!parsed.success) {
             throw invalidRequest('The grid series read takes a range of 1h, 24h or 7d.');
@@ -410,9 +405,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/bus', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted('The message bus of a deployment is read in system administration.');
-        }
+        await requireDeploymentRead(session, 'The message bus of a deployment');
         const parsed = busRequestSchema.safeParse(request.query ?? {});
         if (!parsed.success) {
             throw invalidRequest('The message bus read takes a range of 15m, 1h or 6h.');
@@ -459,11 +452,7 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/logs', async (request) => {
         const session = requireSession(request);
-        if (session.mode !== 'system-administration') {
-            throw notPermitted(
-                'The telemetry logs of a deployment are read in system administration.',
-            );
-        }
+        await requireDeploymentRead(session, 'The telemetry logs of a deployment');
         const parsed = logsRequestSchema.safeParse(request.query ?? {});
         if (!parsed.success) {
             throw invalidRequest(

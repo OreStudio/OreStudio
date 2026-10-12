@@ -20,12 +20,20 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import type { AgileState, AgileStory, AgileTask, Board } from '@ores/contracts';
+import type { AgileState, AgileStory, AgileTask, Board, WorkTree } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Input, Notice, Select, Tag, cx } from '../ui/Primitives.js';
-import { columnOf, columnsOf, percentOfTasks, shownDay, visibleStories } from './board.js';
+import {
+    columnOf,
+    columnsOf,
+    currentStoryId,
+    percentOfTasks,
+    shortTitle,
+    shownDay,
+    visibleStories,
+} from './board.js';
 import { docRoute } from './DocPanel.js';
 import { agileQueries } from './queries.js';
 
@@ -61,6 +69,7 @@ export function BoardTab(): ReactNode {
     const sprint = search.get('sprint') ?? undefined;
     const sprints = useQuery(agileQueries.sprints());
     const board = useQuery(agileQueries.board(sprint));
+    const trees = useQuery(agileQueries.trees());
     const [text, setText] = useState('');
     const [epic, setEpic] = useState<string | null>(null);
     const [openId, setOpenId] = useState<string | null>(null);
@@ -94,6 +103,7 @@ export function BoardTab(): ReactNode {
     const stories = visibleStories(data.stories, { text, epic });
     const open = data.stories.find((story) => story.id === openId);
     const filtered = text !== '' || epic !== null;
+    const current = trees.data === undefined ? null : currentStoryId(data, trees.data);
 
     return (
         <div className="space-y-4">
@@ -101,8 +111,9 @@ export function BoardTab(): ReactNode {
                 board={data}
                 names={names ?? [data.sprint.name]}
                 onSprint={pickSprint}
-                onRefresh={() => void board.refetch()}
+                onRefresh={() => void Promise.all([board.refetch(), trees.refetch()])}
             />
+            {trees.data !== undefined && trees.data.length > 0 && <TreeStrip trees={trees.data} />}
             <Tiles board={data} />
             <div className="flex flex-wrap items-center gap-2">
                 <Input
@@ -167,6 +178,7 @@ export function BoardTab(): ReactNode {
                                             key={story.id}
                                             story={story}
                                             selected={story.id === openId}
+                                            current={story.id === current}
                                             onOpen={() => setOpenId(story.id)}
                                         />
                                     ))
@@ -272,15 +284,24 @@ function Tiles({ board }: { readonly board: Board }): ReactNode {
 function StoryCard({
     story,
     selected,
+    current,
     onOpen,
 }: {
     readonly story: AgileStory;
     readonly selected: boolean;
+    /** The story this work tree is on. */
+    readonly current: boolean;
     readonly onOpen: () => void;
 }): ReactNode {
     const { t, plural } = useTranslation();
+    const ref = useRef<HTMLButtonElement>(null);
+    // The page opens on the story this tree is on, which may be below the fold.
+    useEffect(() => {
+        if (current) ref.current?.scrollIntoView?.({ block: 'nearest' });
+    }, [current]);
     return (
         <button
+            ref={ref}
             type="button"
             aria-pressed={selected}
             className={cx('card block w-full space-y-2 p-3 text-left', selected && 'border-accent')}
@@ -292,6 +313,11 @@ function StoryCard({
                 {story.epic !== '' && (
                     <Tag small tone="muted">
                         {story.epic}
+                    </Tag>
+                )}
+                {current && (
+                    <Tag small tone="accent">
+                        {t('development.board.current')}
                     </Tag>
                 )}
             </span>
@@ -434,5 +460,39 @@ function TaskRow({ task }: { readonly task: AgileTask }): ReactNode {
                 </dl>
             )}
         </li>
+    );
+}
+
+/**
+ * Every work tree and the work item it is on, one chip each. The chips are
+ * read-only and change nothing on the board. The chip of the tree the BFF reads
+ * says so.
+ */
+export function TreeStrip({ trees }: { readonly trees: readonly WorkTree[] }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-wrap gap-2" aria-label={t('development.board.trees')}>
+            {trees.map((tree) => (
+                <span
+                    key={tree.label}
+                    title={tree.current?.taskTitle ?? tree.branch}
+                    className={cx(
+                        'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px]',
+                        tree.isSession
+                            ? 'border-accent text-accent-bright'
+                            : 'border-line text-ink-muted',
+                    )}
+                >
+                    <span className="font-mono">{tree.label}</span>
+                    {tree.current !== null && <StateTag state={tree.current.state} />}
+                    <span>
+                        {tree.current === null || tree.current.taskTitle === ''
+                            ? t('development.board.idle')
+                            : shortTitle(tree.current.taskTitle)}
+                    </span>
+                    {tree.isSession && <b>{t('development.board.thisTree')}</b>}
+                </span>
+            ))}
+        </div>
     );
 }

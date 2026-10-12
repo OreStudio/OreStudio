@@ -8,8 +8,8 @@
 --   - The two use cases for simulated data: the consistent world
 --     (every party sees the same market) and scenario data
 --     (future, sandbox-scoped, permission-controlled)
---   - Sim config ownership: the system party owns the theme; the
---     theme is published once per environment
+--   - Sim config ownership: the system party owns the synthetic feeds
+--     dataset; the dataset is published once per environment
 --   - The consumption contract: feed_binding per (tenant, party)
 --   - Ingest fan-out: one subscription per (source_name, tenant,
 --     party), each writing observations under its own party
@@ -20,14 +20,14 @@
 --   - Producer internals: stochastic processes, tick clocks,
 --     vintage resolution -- existing behavior, unchanged
 --   - Vendor (non-synthetic) producers -- unchanged
--- External inputs: the published theme (DQ datasets), the feed
+-- External inputs: the published synthetic feeds datasets, the feed
 -- configs the system party owns.
 
 config {
     -- Decisions (2026-08-12):
-    --   System-party ownership: the sim theme publishes once, to the
-    --     system party, as part of tenant provisioning. Offices do
-    --     not publish themes. Users cannot see or override the
+    --   System-party ownership: the synthetic feeds dataset publishes
+    --     once, to the system party, as part of tenant provisioning.
+    --     Offices do not publish feeds datasets. Users cannot see or override the
     --     config: tenant and RLS isolation hide it. This is the
     --     "no override" guarantee of the consistent world.
     --   One producer per source: the feed controller keys feeds by
@@ -71,22 +71,23 @@ config {
 -- Entities
 -- ------------------------------------------------------------
 
--- A published theme (e.g. "FX Driver Rates 2026-05-05"): a DQ
+-- A published synthetic feeds dataset (e.g. "Bloomberg"): a DQ
 -- dataset published into synthetic configs and folders. Owned by the
 -- system party (see config); every party consumes its sources.
-entity SimTheme {
+entity SimFeedsDataset {
     name: String
     owner: `SYSTEM_PARTY`
 
-    feeds: SimFeed with theme = this
+    feeds: SimFeed with dataset = this
 }
 
 -- One synthetic producer: publishes ticks on
 -- synthetic.v1.ops.tick.<source_name>. The source_name is namespaced by
--- theme and pair ("synthetic.<theme>.<pair>"), not by party: there is
+-- provider (or collection) and pair ("synthetic.<provider>.<pair>"), not
+-- by party: there is
 -- exactly one producer per source per environment (config).
 entity SimFeed {
-    theme: SimTheme
+    dataset: SimFeedsDataset
     source_name: String
     ore_key: String
 

@@ -645,7 +645,6 @@ export const en: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Accounts',
         description: 'Identities that can sign in or act as a service.',
         search: 'Search',
         searchPlaceholder: 'Username, name, or email',
@@ -1094,6 +1093,12 @@ export const en: SourceCatalogue = {
                 open: 'Open',
                 unread: 'Could not be read',
                 sampled: 'Sampled',
+                summary: {
+                    needAttention: {
+                        one: '{count} area needs attention',
+                        other: '{count} areas need attention',
+                    },
+                },
                 services: {
                     title: 'Services',
                     needAttention: {
@@ -1251,6 +1256,10 @@ export const en: SourceCatalogue = {
             noDone: 'No task has a finish date yet.',
         },
         board: {
+            current: 'Current',
+            trees: 'Work trees',
+            idle: 'Idle',
+            thisTree: 'This tree',
             search: 'Search stories, tasks, environments',
             searchLabel: 'Search the board',
             clear: 'Clear',
@@ -1879,9 +1888,7 @@ export const en: SourceCatalogue = {
     },
 
     market: {
-        area: 'Market data',
         evolution: {
-            screen: 'Watch a curve evolve',
             title: 'Watch a curve or surface evolve',
             description:
                 'Name an object and a range. Read the instants by nodes over the range, and the object as it stands now.',
@@ -1937,7 +1944,15 @@ export const en: SourceCatalogue = {
                 derived: 'Derived',
                 manual: 'Manual',
             },
-            gap: 'No list of series is read yet, so the object is named by its identity.',
+            picker: {
+                label: 'Series',
+                placeholder: 'Choose a series, or type its identity below',
+                loading: 'Reading the series you can see...',
+                empty: 'Your party can see no series. Market data that provisioning seeded may not be listed until its identity is projected. You can still type an identity below.',
+                truncated:
+                    'The list holds the first {count} series your party can see. Work in a party that holds fewer series to see the rest.',
+                noShape: 'no shape declared',
+            },
         },
     },
 
@@ -3352,7 +3367,6 @@ export const en: SourceCatalogue = {
                 fxFeeds: 'FX price feeds',
                 fxFeedsBody:
                     'Compose the synthetic FX feeds: the pair, the engine and the mixture each one draws from.',
-                evolution: 'Watch a curve evolve',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3360,7 +3374,7 @@ export const en: SourceCatalogue = {
         fxFeeds: {
             title: 'FX price feeds',
             lead: 'The synthetic FX feeds of your party. A feed produces nothing until it is enabled and started.',
-            add: 'Add feed',
+            add: 'Add',
             addTitle: 'Add an FX price feed',
             pair: 'Pair',
             samePair: 'The base and quote currencies must differ.',
@@ -3385,8 +3399,6 @@ export const en: SourceCatalogue = {
             stop: 'Stop',
             choose: 'Choose',
             chooseFeed: 'Choose {feed}',
-            startChosen: 'Start chosen ({count})',
-            stopChosen: 'Stop chosen ({count})',
             startedCount: 'Started {count} feeds.',
             stoppedCount: 'Stopped {count} feeds.',
             refused: '{feed}: {message}',
@@ -3600,6 +3612,8 @@ export const en: SourceCatalogue = {
         rolesRead: 'read roles and their grants',
         rolesAssign: 'give roles to people',
         sessionsRead: "read people's sign-ins",
+        deploymentRead:
+            'see the whole deployment: its tenants, services, grid, message bus and logs',
         curveSnapshotsRead: 'see the market data curves',
         fxFeedsRead: 'see the synthetic FX price feeds',
     },

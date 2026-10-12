@@ -753,32 +753,6 @@ for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
--- -----------------------------------------------------------------------------
--- Risk Participation Agreement Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_rpa_instruments_tbl enable row level security;
-
-drop policy if exists rpa_instruments_tenant_isolation_policy
-    on ores_trading_rpa_instruments_tbl;
-
-create policy rpa_instruments_tenant_isolation_policy on ores_trading_rpa_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists rpa_instruments_party_isolation_policy
-    on ores_trading_rpa_instruments_tbl;
-
-create policy rpa_instruments_party_isolation_policy
-on ores_trading_rpa_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
 -- =============================================================================
 -- Per-Type FX Instrument Tables (Phase 2)
 -- =============================================================================

@@ -45,7 +45,7 @@
   "Directory to scan for org documents.")
 
 (defvar ores/link-check-exclude
-  "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
+  "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/"
   "Directories the site build does not publish.")
 
 (defun ores/link-check-files ()

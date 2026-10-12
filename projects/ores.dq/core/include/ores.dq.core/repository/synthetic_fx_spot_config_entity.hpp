@@ -56,6 +56,7 @@ struct synthetic_fx_spot_config_entity {
     std::string price_source;
     std::optional<std::string> vintage_source;
     std::optional<std::string> vintage_date;
+    std::optional<std::string> provider_code;
 };
 
 std::ostream& operator<<(std::ostream& s, const synthetic_fx_spot_config_entity& v);

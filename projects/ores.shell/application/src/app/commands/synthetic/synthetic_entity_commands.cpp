@@ -25,6 +25,7 @@
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_process_parameter_value_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_template_entry_commands.hpp"
 #include "ores.shell/app/commands/synthetic/market_data_generation_config_commands.hpp"
+#include "ores.shell/app/commands/synthetic/market_data_provider_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_parameter_definition_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
 
@@ -46,6 +47,7 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     ir_curve_generation_config_process_parameter_value_commands::register_commands(root_menu,
                                                                                    session);
     market_data_generation_config_commands::register_commands(root_menu, session);
+    market_data_provider_commands::register_commands(root_menu, session);
     yield_curve_process_type_commands::register_commands(root_menu, session);
     yield_curve_process_parameter_definition_commands::register_commands(root_menu, session);
 }

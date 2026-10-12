@@ -27,7 +27,7 @@ import type { AccountAccess } from '@ores/wire-protocol/browser';
 import type { RecordRow, SyntheticResourceView } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
-import { completeFeed, feedWrite, FxFeedPage, FxFeedsPage } from './fxFeeds.js';
+import { completeFeed, feedWrite, FxFeedPage, FxFeedsPage, syntheticSource } from './fxFeeds.js';
 import { MarketDataPage } from './MarketDataPage.js';
 
 const FEED_ID = '55555555-5555-4555-8555-555555555555';
@@ -146,18 +146,28 @@ describe('the fields a feed derives', () => {
             completeFeed({
                 base_currency_code: 'EUR',
                 quote_currency_code: 'USD',
-                source_name: 'synthetic.themes.eurusd',
+                source_name: 'synthetic.feeds.eurusd',
                 price_source: 'vintage',
                 gmm_initial_price: null,
                 vintage_source: 'ore.reference',
                 vintage_date: '2016-02-05',
             }),
         ).toMatchObject({
-            source_name: 'synthetic.themes.eurusd',
+            source_name: 'synthetic.feeds.eurusd',
             gmm_initial_price: 0,
             vintage_source: 'ore.reference',
             vintage_date: '2016-02-05',
         });
+    });
+});
+
+describe('the synthetic mark', () => {
+    it('puts every source name under the synthetic mark, once', () => {
+        expect(syntheticSource('', 'EUR', 'USD')).toBe('synthetic.eurusd');
+        expect(syntheticSource('desk.eurusd', 'EUR', 'USD')).toBe('synthetic.desk.eurusd');
+        expect(syntheticSource('synthetic.desk.eurusd', 'EUR', 'USD')).toBe(
+            'synthetic.desk.eurusd',
+        );
     });
 });
 
@@ -200,7 +210,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain('EUR/USD');
         expect(html).toContain('synthetic.eurusd');
         expect(html).toContain('Geometric');
-        expect(html).toContain('Add feed');
+        expect(html).toContain('>Add<');
         expect(html).toContain('Search…');
     });
 
@@ -281,8 +291,8 @@ describe('the FX feed screens', () => {
         expect(html).toContain('>Running<');
         expect(html).toContain('>Stopped<');
         expect(html).toContain('Choose synthetic.gbpusd');
-        expect(html).toContain('Start chosen (0)');
-        expect(html).toContain('Stop chosen (0)');
+        expect(html).toContain('>Start<');
+        expect(html).toContain('>Stop<');
     });
 
     it('offers a reader the status but no start or stop', () => {
@@ -298,7 +308,7 @@ describe('the FX feed screens', () => {
             );
         });
         expect(html).toContain('>Stopped<');
-        expect(html).not.toContain('Start chosen');
+        expect(html).not.toContain('>Start<');
         expect(html).not.toContain('aria-label="Choose ');
     });
 

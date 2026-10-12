@@ -13,7 +13,7 @@
 
 The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it.
 
-2 prototypes answer to this group. Each one is a static page under
+1 prototype answers to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -27,7 +27,6 @@ generated alternative kept beside the agreed design, never instead of it.
 | Prototype                             | What it argues | Open it | Review |
 |---------------------------------------+----------------+---------+--------|
 | Shape the book structure              | A book is a leaf under a portfolio, so shaping the structure means showing what a book reads from its portfolio, keeping the tenant’s own books apart from the shared taxonomy they name, refusing a close the book cannot make, and a second person's approval for every gated act: the request waits, the checker decides, and a decline leaves the book alone. | [[file:shape-the-book-structure/][prototype]] | none |
-| [[file:trade-entry.org][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. No journey group owns the trading desk, so this prototype answers to the book it books into. | [[file:trade-entry/][prototype]] | none |
 
 * Adding a prototype
 

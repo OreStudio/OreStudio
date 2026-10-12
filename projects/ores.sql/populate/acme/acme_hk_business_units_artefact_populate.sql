@@ -60,6 +60,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1b46ae4a-d742-5e50-a01c-570e51808fcd', 0, 'IR Swaps Hong Kong', '87610f63-6cca-525a-b311-65b163df00ed', 'acme_hk.ir_swaps', 'HKHK', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc', 0, 'Credit Trading Hong Kong', '87610f63-6cca-525a-b311-65b163df00ed', 'acme_hk.credit_trading', 'HKHK', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd4191374-ae29-5672-afae-62f15a8d2ca1', 0, 'FX Rates Hong Kong', '87610f63-6cca-525a-b311-65b163df00ed', 'acme_hk.fx_rates', 'HKHK', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 0, 'Treasury Hong Kong', null, 'acme_hk.treasury', 'HKHK', 'DIVISION'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '7a577348-efc7-52ca-ae73-2d56a9b09535', 0, 'Middle Office Hong Kong', null, 'acme_hk.middle_office', 'HKHK', 'COST_CENTRE'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fe95e779-6356-5cab-bcfd-2ef6de13274f', 0, 'Market Risk Hong Kong', null, 'acme_hk.market_risk', 'HKHK', 'COST_CENTRE');
 end $$;

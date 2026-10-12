@@ -26,6 +26,7 @@ import { MOVED, PATHS } from './shell/paths.js';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
+import { AreaTrail } from './shell/AreaTrail.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { EntityEventsProvider } from './events/EntityEvents.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
@@ -505,7 +506,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <OperationsArea mode={view.mode} />
+                        <OperationsArea />
                     ),
                     'workspace',
                 )}
@@ -576,8 +577,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <EvolutionPage />
+                    (view) => (
+                        <EvolutionPage partyId={view.party.id} />
                     ),
                     'workspace',
                 )}
@@ -590,7 +591,9 @@ export function AppRoutes({
             />
             <Route
                 path="/tenants/new"
-                element={signedIn(gate.version, session, shell, () => newTenantJourney)}
+                element={signedIn(gate.version, session, shell, () => (
+                    <NewTenantScreen>{newTenantJourney}</NewTenantScreen>
+                ))}
             />
             <Route
                 path="/tenants/runs/:instanceId"
@@ -682,7 +685,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <OrganisationPage mode={view.mode} />
+                        <OrganisationPage />
                     ),
                     'workspace',
                 )}
@@ -724,7 +727,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <RefdataPage mode={view.mode} />
+                        <RefdataPage />
                     ),
                     'workspace',
                 )}
@@ -735,7 +738,7 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
+                    (view) => (
                         <MarketDataPage />
                     ),
                     'workspace',
@@ -1249,6 +1252,17 @@ function signedIn(
                 <RefusalGuard>{screen(view, version)}</RefusalGuard>
             </AppShell>
         </EntityEventsProvider>
+    );
+}
+
+/** The trail of the journey that adds a tenant: Home, Tenants, Add tenant. */
+function NewTenantScreen({ children }: { readonly children: ReactNode }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <>
+            <AreaTrail area="tenants" screen={t('tenants.add')} />
+            {children}
+        </>
     );
 }
 

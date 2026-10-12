@@ -45,9 +45,11 @@ namespace ores::synthetic::domain {
  * (system/tenant/party) decides the sharing radius -- who consumes the same
  * generated data -- and binding_mode (bound/sandboxed) decides whether
  * that data is authoritative for real feed consumers or reachable only by
- * explicit selection. tenant_id and party_id are populated per scope
- * level: system leaves both null, tenant sets tenant_id only, party sets
- * both.
+ * explicit selection. tenant_id and party_id follow the scope: a system
+ * collection belongs to the system tenant and its system party, the party the
+ * super administrator works in; a tenant collection belongs to its tenant with
+ * no party; a party collection belongs to its tenant and party. A system
+ * collection's feeds are the installation's, and every tenant reads them.
  */
 struct market_data_generation_config final {
     /**
@@ -58,7 +60,7 @@ struct market_data_generation_config final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::optional<utility::uuid::tenant_id> tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Surrogate UUID uniquely identifying this configuration.
@@ -66,16 +68,17 @@ struct market_data_generation_config final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Owning party (legal entity) this configuration belongs to, when scope is party. Null
-     * for tenant/system scope. Not a natural key: a party can legitimately own several containers
-     * (e.g. "Basic" and "Realistic" published from different DQ datasets), so no uniqueness is
-     * enforced beyond the surrogate id.
+     * @brief Owning party (legal entity) this configuration belongs to: the party for party scope,
+     * the system tenant's system party for system scope, and null for tenant scope. Not a natural
+     * key: a party can legitimately own several containers (e.g. "Basic" and "Realistic" published
+     * from different DQ datasets), so no uniqueness is enforced beyond the surrogate id.
      */
     std::optional<boost::uuids::uuid> party_id;
 
     /**
-     * @brief Sharing radius: who consumes the same generated data. system leaves both tenant_id and
-     * party_id null, tenant sets tenant_id only, party sets both. Orthogonal to binding_mode.
+     * @brief Sharing radius: who consumes the same generated data. system sets the system tenant
+     * and its system party, tenant sets tenant_id only, party sets both. Orthogonal to
+     * binding_mode.
      */
     domain::scope scope = domain::scope::party;
 
@@ -108,6 +111,14 @@ struct market_data_generation_config final {
      * of origin.
      */
     std::optional<boost::uuids::uuid> dataset_id;
+
+    /**
+     * @brief The simulated market data provider this collection stands for
+     * (market_data_provider.code), such as bloomberg, or generic for a system collection that
+     * stands for no provider in particular. Optional at every scope: a party's test collection
+     * usually names none. Its feeds' source names start synthetic.<provider_code>. when it is set.
+     */
+    std::optional<std::string> provider_code;
 
     /**
      * @brief Username of the person who last modified this market data generation config.

@@ -153,25 +153,29 @@ The test for a screen is one question: which topic would a person look in?
 |-------+------------------------------|
 | Reference data | What are the things the work is made of? |
 | Organisation | Who is here, and what may they do? |
+| Trades | What does the tenant hold, and what happens to it? |
 | Requests | What is waiting for an answer? |
 | Operations | How is the installation running, and who has signed in? |
+| Development | What is the team doing to the product, and what can a tester run? |
 | Tenants | Which tenants does this installation hold? |
 
 ** The areas
 
 #+begin_src text
-  Home   Reference data   Organisation   Market data   Requests   Operations   Tenants
+  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Development   Tenants
 #+end_src
 
 | Area | Screens | Drawn when the person holds the read of |
 |------+---------+------------------------------------------|
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
-| Organisation | People (Staff for a member), Hierarchy, Roles and Rescue access | Any one of those screens |
+| Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
 | Market data | The prices and curves the platform receives or generates: the FX price feeds and the curve evolution | Any one of those screens |
+| Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
-| Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Any one of those screens |
-| Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
+| Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
+| Development | The tests a tester can run, the board and the backlog, and the documents they open | Always |
+| Tenants | The tenants, their parties and people, and onboarding | The read of the deployment |
 
 Requests is the one entry that is not a topic. It is an inbox: the work that
 waits for a person, with the notification bell beside it. It is not in
@@ -180,7 +184,15 @@ because four-eyes approval will cover reference data as well as access. Every
 person has their own requests, so the entry is drawn for everyone.
 
 Tenants is last because it serves only the installation, and it is drawn only
-for a session that acts on the deployment (see [[*How today's menu differs][How today's menu differs]]).
+for a person who holds the read of the deployment (see [[*The deployment read][The deployment read]]).
+
+*** Market data
+
+Market data is its own area. It holds data that changes by the minute: the feeds
+that generate prices and the curves built from them. Reference data is a list
+that changes by the month, and a person who looks for a curve does not look in
+it. It has two screens, FX price feeds and Watch a curve evolve, each drawn for a
+person who holds its read.
 
 *** Reference data
 
@@ -203,11 +215,35 @@ build they use. So the Operations area is drawn for every person. A later screen
 that serves only some people is added to Operations and guarded by its read. It
 does not get an area of its own.
 
+*** Trades
+
+| Cards | Journeys |
+|-------+----------|
+| Trades, with the Book a trade button, and the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] |
+| Structures and packages | [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]], and [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
+
+A trade is an entity, so it has a list and a page of its own and is not a card
+of Reference data. Trades is its own area because the question a person asks of
+it differs from the question they ask of reference data: reference data is what
+the work is made of, and a trade is what the tenant holds. A structure is the
+tree of a deal, and a package is a structure of kind Package, so one screen
+serves both. The Trade entry prototype named its subject a structure and sat
+under Books and portfolios. It now sits with the other prototypes of this area:
+see the [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]].
+
+*Book a trade* is the Add of the trade list: a button in the list header that
+opens the new-trade page. It is not a workflow, because the page has no step
+rail. It is one page in tabs, and the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] says how.
+
 ** The account menu
 
 The account menu stands in the header with the notification bell. It holds My
 profile, My access, Where I work, Security and signing out. These are not
 areas. A person reaches each in one place, as the entity specification says.
+Each has a breadcrumb of Home, then the page, because it belongs to no area.
+
+Every screen has a breadcrumb. Home is the one page without one, because it is
+the first step of every trail.
 
 ** Where a screen belongs
 
@@ -216,13 +252,16 @@ areas. A person reaches each in one place, as the entity specification says.
 | Parties, and its workflows Onboard a party and Onboard a counterparty | Reference data | A party is reference data. The journeys group it with the countries, currencies and business centres it connects to |
 | Shape the book structure, Define instrument conventions | Reference data | They are workflows on shared lists |
 | Currencies, Currency pairs, Desk groups, Holiday calendars, Classifications | Reference data | They are the shared lists |
-| People (Staff for a member), Hierarchy | Organisation | They are about the people of the tenant |
+| Staff, Hierarchy | Organisation | They are about the people of the tenant |
 | Roles | Organisation | A role is held by a person |
-| Rescue access | Organisation | It acts on one person's account |
+| Rescue access | Organisation | It acts on one person's account: it unlocks it. Sign-ins only reads sessions, so the two are not the same kind of screen and do not share an area |
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
+| Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
-| FX price feeds | Market data | A feed generates the prices that market data holds |
+| FX price feeds, Watch a curve evolve | Market data | A feed generates the prices that market data holds, and a curve is one of them |
+| Trades, Book a trade, Import a portfolio from ORE, Export a portfolio to ORE | Trades | A trade is held by the tenant and is not a shared list |
+| Structures and packages, Group trades | Trades | A structure is the tree of a deal made of trades |
 | Tenants | Tenants | The roster of the installation |
 
 ** Addresses
@@ -239,38 +278,57 @@ the same thing. A screen has one address.
 | Shape the book structure | =/refdata/books/structure= |
 | Define instrument conventions | =/refdata/conventions= |
 | Classifications | =/refdata/classifications= |
-| People | =/organisation/people= |
+| Staff | =/organisation/people= |
 | Hierarchy | =/organisation/hierarchy= |
 | Roles | =/organisation/roles= |
 | Rescue access | =/organisation/rescue= |
 | Sign-ins | =/operations/sign-ins= |
+| Development, with its tabs Tests, Board and Backlog | =/development= |
+| A test scenario | =/development/tests/:id= |
+| A document | =/development/docs/:id= |
+| Trades | =/trades= |
+| Book a trade | =/trades/new= |
+| A trade's page | =/trades/:id= |
+| Import a portfolio from ORE | =/trades/import= |
+| Export a portfolio to ORE | =/trades/export= |
+| Structures and packages | =/trades/structures= |
+| A structure's or package's page | =/trades/structures/:id= |
+| Group trades | =/trades/structures/new= |
 
 The earlier addresses (=/parties=, =/people=, =/hierarchy=, =/staff=, =/roles=,
 =/rescue=, =/audit=, =/classifications=, =/reporting-lines=) redirect to the new
 ones, so a saved link still works.
 
+** The deployment read
+
+Some screens read the installation as a whole, across every tenant: Tenants, and
+the Running services, Compute grid, Message bus and Telemetry logs cards of
+Operations. They are drawn, and the server serves them, for a person who holds
+=installation::deployment:read=. The session mode is not consulted.
+
+- The code is in the =installation= component. The wildcard =*= does not cover an
+  installation code, because a tenant's administrator holds =*= and would then
+  see the installation. Only the code itself, or =installation::*=, grants one.
+  The rule is stated once for the services (=grants= in =ores.security=) and once
+  for the browser and the BFF (=permissionCovers= in =@ores/contracts=).
+- The super administrator role holds the code by name. Another role is given it
+  the same way, and a person asks for that role through a request.
+- The BFF reads the caller's roles for each call and refuses a caller who does
+  not hold the code. A grant the caller lost stops the next read.
+
 ** How today's menu differs
 
-The menu, the Reference data cards, the addresses and the cards follow this
-page. One difference is left.
+The menu, the cards, the addresses and the breadcrumbs follow this page.
 
-| Where | Today | The rule |
-|-------+-------+----------|
-| Tenants, and the Services, Grid, Message queue and Telemetry cards | Drawn only where the session acts on the deployment (the =installation= scope), because the server guards these reads by the session mode | Drawn by a read |
+** Not built yet
 
-** Open points
+The Trades area has journeys and prototypes and no web screens yet. The BFF has
+no trading route, and the trade list can filter only by trade id until the model
+declares the columns a person searches by. The area is in the menu order above,
+and it is drawn when its first screen exists and a person holds its read.
 
-- The installation screens read the whole installation, and the server guards
-  them by the session mode. They need a read of their own, so that the read
-  decides who sees them. A tenant's administrator holds every read, so a read
-  that the wildcard grants would show them the installation. The new read must
-  be one that the wildcard of a tenant does not grant.
-- Whether Rescue access belongs in Organisation, because it acts on a person, or
-  in Operations with Sign-ins, because it answers a problem with signing in.
-  This page puts it in Organisation.
-- Market data (curves, surfaces and their feeds) has journeys and no web
-  screens yet. When it has screens it may need an area of its own, because it is
-  data that changes by the minute and not a list that changes by the month.
+Market data has no screen for curve surfaces or for feeds of other kinds yet.
+They are added to the Market data area when they have screens.
 
 ** Changing the menu
 
@@ -282,7 +340,11 @@ Work in this order. Each step ends in something to check.
 3. Add the screen to the area page as a card, drawn only for a person who holds
    the read.
 4. Give the screen a breadcrumb of Home, the area and the screen.
-5. Check it with a person who holds the read and a person who does not. The
+5. Run the walk, =shell/walk.test.tsx=. It opens every screen of the cards, every
+   area page and each page of a person themselves, and checks the address is under
+   its area and the trail is Home, the area, the screen. A route the walk does not
+   know fails it.
+6. Check it with a person who holds the read and a person who does not. The
    first sees the card. The second sees neither the card nor, when it was the
    only one, the area.
 

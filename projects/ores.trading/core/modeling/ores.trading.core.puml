@@ -1023,20 +1023,6 @@ namespace ores #F2F2F2 {
                 +list_return_type_versions(ores::nats::message msg) : void
                 +get_return_type_version(ores::nats::message msg) : void
             }
-            class rpa_instrument_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-                +list_rpa_instruments(ores::nats::message msg) : void
-                +get_rpa_instrument(ores::nats::message msg) : void
-                +get_many_rpa_instruments(ores::nats::message msg) : void
-                +put_rpa_instrument(ores::nats::message msg) : void
-                +put_many_rpa_instruments(ores::nats::message msg) : void
-                +delete_rpa_instrument(ores::nats::message msg) : void
-                +delete_many_rpa_instruments(ores::nats::message msg) : void
-                +list_rpa_instrument_versions(ores::nats::message msg) : void
-                +get_rpa_instrument_version(ores::nats::message msg) : void
-            }
             class scripted_instrument_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -4757,55 +4743,6 @@ namespace ores #F2F2F2 {
                 -replace_claim(context ctx, const domain::return_type& v) : ores::utility::domain::precondition
                 -apply_claim(context ctx, const domain::return_type& v, const ores::utility::domain::precondition& claim) : domain::return_type
             }
-            class rpa_instrument_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +trade_id : sqlgen::PrimaryKey<string>
-                +tenant_id : string
-                +workspace_id : string
-                +version : int
-                +party_id : string
-                +start_date : string
-                +maturity_date : string
-                +reference_counterparty : string
-                +participation_rate : double
-                +protection_fee : optional<double>
-                +description : optional<string>
-                +modified_by : string
-                +performed_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +valid_from : db_timestamp
-                +valid_to : db_timestamp
-            }
-            class rpa_instrument_mapper {
-                -lg() : [[nodiscard]] static auto&
-                +map(const rpa_instrument_entity& v) : domain::rpa_instrument
-                +map(const domain::rpa_instrument& v) : rpa_instrument_entity
-                +map(const vector<rpa_instrument_entity>& v) : vector<domain::rpa_instrument>
-                +map(const vector<domain::rpa_instrument>& v) : vector<rpa_instrument_entity>
-            }
-            class rpa_instrument_repository {
-                +remove_status : enum class
-                -lg() : [[nodiscard]] static auto&
-                +sql() : string
-                +write(context ctx, const domain::rpa_instrument& v) : void
-                +write(context ctx, const vector<domain::rpa_instrument>& v) : void
-                +write(context ctx, const domain::rpa_instrument& v, const ores::utility::domain::precondition& claim) : void
-                +write(context ctx, const vector<domain::rpa_instrument>& v, const vector<ores::utility::domain::precondition>& claims) : void
-                +read_latest(context ctx) : vector<domain::rpa_instrument>
-                +read_latest(context ctx, const string& trade_id) : vector<domain::rpa_instrument>
-                +read_latest(context ctx, const vector<string>& trade_ids) : vector<domain::rpa_instrument>
-                +read_all(context ctx, const string& trade_id) : vector<domain::rpa_instrument>
-                +read_at_version(context ctx, const string& trade_id, uint32_t version) : optional<domain::rpa_instrument>
-                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::rpa_instrument>
-                +get_total_rpa_instrument_count(context ctx) : uint32_t
-                +remove(context ctx, const string& trade_id) : void
-                +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
-                +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::rpa_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::rpa_instrument& v, const ores::utility::domain::precondition& claim) : domain::rpa_instrument
-            }
             class scripted_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
@@ -7283,32 +7220,6 @@ namespace ores #F2F2F2 {
                 +delete_return_types(const vector<string>& codes) : void
                 +get_return_type_history(const string& code) : vector<domain::return_type>
                 -prepare_change(const messaging::return_type_change& change, const ores::utility::domain::change_intent& intent, domain::return_type& out) : ores::utility::domain::result
-            }
-            class rpa_instrument_service {
-                -ctx_ : context
-                -repo_ : repository::rpa_instrument_repository
-                -lg() : [[nodiscard]] static auto&
-                +rpa_instrument_service(context ctx)
-                +list_rpa_instruments(const messaging::list_rpa_instruments_request& request) : messaging::list_rpa_instruments_response
-                +get_rpa_instrument(const messaging::get_rpa_instrument_request& request) : messaging::get_rpa_instrument_response
-                +get_many_rpa_instruments(const messaging::get_many_rpa_instruments_request& request) : messaging::get_many_rpa_instruments_response
-                +put_rpa_instrument(const messaging::put_rpa_instrument_request& request) : messaging::put_rpa_instrument_response
-                +put_many_rpa_instruments(const messaging::put_many_rpa_instruments_request& request) : messaging::put_many_rpa_instruments_response
-                +delete_rpa_instrument(const messaging::delete_rpa_instrument_request& request) : messaging::delete_rpa_instrument_response
-                +delete_many_rpa_instruments(const messaging::delete_many_rpa_instruments_request& request) : messaging::delete_many_rpa_instruments_response
-                +list_rpa_instrument_versions(const messaging::list_rpa_instrument_versions_request& request) : messaging::list_rpa_instrument_versions_response
-                +get_rpa_instrument_version(const messaging::get_rpa_instrument_version_request& request) : messaging::get_rpa_instrument_version_response
-                +list_rpa_instruments(uint32_t offset, uint32_t limit) : vector<domain::rpa_instrument>
-                +count_rpa_instruments() : uint32_t
-                +get_rpa_instrument_at_version(const boost::uuids::uuid& trade_id, uint32_t version) : optional<domain::rpa_instrument>
-                +get_rpa_instrument(const boost::uuids::uuid& trade_id) : optional<domain::rpa_instrument>
-                +get_rpa_instruments(const vector<string>& trade_ids) : vector<domain::rpa_instrument>
-                +save_rpa_instrument(const domain::rpa_instrument& rpa_instrument) : void
-                +save_rpa_instruments(const vector<domain::rpa_instrument>& rpa_instruments) : void
-                +delete_rpa_instrument(const boost::uuids::uuid& trade_id) : void
-                +delete_rpa_instruments(const vector<string>& trade_ids) : void
-                +get_rpa_instrument_history(const string& trade_id) : vector<domain::rpa_instrument>
-                -prepare_change(const messaging::rpa_instrument_change& change, const ores::utility::domain::change_intent& intent, domain::rpa_instrument& out) : ores::utility::domain::result
             }
             class scripted_instrument_service {
                 -ctx_ : context

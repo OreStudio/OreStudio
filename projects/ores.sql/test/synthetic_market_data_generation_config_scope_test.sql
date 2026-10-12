@@ -28,7 +28,7 @@
 
 begin;
 
-select plan(6);
+select plan(7);
 
 -- =============================================================================
 -- Test 1: A tenant-scope bound config followed by a conflicting
@@ -93,11 +93,37 @@ select throws_ok(
 select throws_ok(
     $$insert into ores_synthetic_market_data_generation_configs_tbl
       (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-      values (gen_random_uuid(), null, 0, gen_random_uuid(), 'system', 'sandboxed', 'scope_test_malformed_system', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
+      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, null, 'system', 'sandboxed', 'scope_test_malformed_system', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
     '23514',
     NULL,
-    'scope=system with a non-null party_id violates the scope/nullability check constraint'
+    'scope=system with no party violates the scope check constraint: a system collection belongs to the system party'
 );
+
+create temporary table t_other_tenant on commit drop as
+select id from ores_iam_tenants_tbl
+where id <> ores_utility_system_tenant_id_fn()
+  and valid_to = ores_utility_infinity_timestamp_fn()
+order by id
+limit 1;
+
+-- Act as that tenant, so row-level security admits the write and only the
+-- check constraint can refuse it; then act as the system tenant again.
+select set_config('app.current_tenant_id', coalesce((select id::text from t_other_tenant),
+    ores_utility_system_tenant_id_fn()::text), true);
+
+select case when not exists(select 1 from t_other_tenant)
+    then skip('no other tenant is provisioned', 1)
+    else throws_ok(
+        format($$insert into ores_synthetic_market_data_generation_configs_tbl
+          (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
+          values (gen_random_uuid(), %L::uuid, 0, gen_random_uuid(), 'system', 'sandboxed', 'scope_test_system_elsewhere', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
+          (select id from t_other_tenant)),
+        '23514',
+        NULL,
+        'scope=system outside the system tenant violates the scope check constraint')
+    end;
+
+select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
 -- =============================================================================
 -- Test 6: Two enabled bound configs for the SAME party never conflict --

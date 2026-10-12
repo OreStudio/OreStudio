@@ -28,8 +28,8 @@ so nothing can export it. A type is routed where the ORE importer writes it.
 =product_type= is the asset class the refdata taxonomy carries, not the
 table the type routes to. RiskParticipationAgreement is a credit product
 whose importer has always written the credit table, so it is classified
-=credit= and routed there; its columns on the old =rpa_instruments= table
-were never written by any mapper. InflationSwap is an inflation product
+=credit= and routed there. The table that was meant to hold its facts was
+never written by any mapper, and it is retired. InflationSwap is an inflation product
 whose importer writes the rates family's tables; it stays classified
 =swap= and routed to =rate_instruments= until an inflation family is
 scaffolded, and the reason is recorded on the rates story.

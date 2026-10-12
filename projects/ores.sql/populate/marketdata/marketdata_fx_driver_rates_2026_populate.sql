@@ -32,9 +32,9 @@
  *
  * Date: 2026-05-05, a single current-regime snapshot (unlike the 2016
  * dataset's 25 vintages across the year) -- this dataset exists
- * specifically to ground synthetic.themes.realistic_2026 in a
- * real current FX vintage instead of reusing 2016-02-05 data, closing
- * the gap noted in that dataset's own description.
+ * specifically to ground the current-regime synthetic feeds
+ * (synthetic.feeds.bloomberg) in a real current FX vintage instead of
+ * reusing 2016-02-05 data.
  *
  * Values fetched via tools/fetch_fed_h10_rates.sh (a thin bash wrapper
  * around tools/fetch_fed_h10_rates.py, committed - reused for any future
@@ -94,7 +94,7 @@ BEGIN
         'FX Driver Rates 2026-05-05',
         'One real Federal Reserve H.10 FX spot vintage at 2026-05-05, the same minimal USD-hub spanning tree over EUR/USD/GBP/CHF/JPY/SEK/AUD/CAD/NZD/ZAR/MXN/INR/NOK/DKK as the 2016 dataset.',
         'ORESTUDIO',
-        'Seed data for the 2026 Realistic synthetic FX theme and the FX driver rates Librarian bundle',
+        'Seed data for the Bloomberg synthetic feeds and the FX driver rates Librarian bundle',
         '2026-05-05',
         'Internal Use Only',
         'market_data_observations'
@@ -172,7 +172,7 @@ begin
         r.source_url,
         v_retrieved_at
     from (values
-        -- 2026-05-05: current-regime reference vintage for the 2026 Realistic synthetic theme.
+        -- 2026-05-05: current-regime reference vintage for the Bloomberg synthetic feeds.
         ('AUD/USD', date '2026-05-05', 0.7196, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2026-05-05', 1.1707, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
         ('GBP/USD', date '2026-05-05', 1.3576, 'https://www.federalreserve.gov/releases/h10/hist/dat00_uk.htm'),

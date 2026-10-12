@@ -46,7 +46,7 @@ export function WorkflowMenu({ on }: { readonly on: CardId }): ReactNode {
 
     const workflows = workflowsOn(on)
         .map(cardOf)
-        .filter((card) => offered(card, holds, 'application'));
+        .filter((card) => offered(card, holds));
     if (workflows.length === 0) {
         return null;
     }

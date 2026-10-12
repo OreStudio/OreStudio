@@ -233,7 +233,15 @@ import_service::import(const messaging::import_market_data_request& req) {
         // triple fallback: every row carries an identity, and a row an earlier
         // database named synthetically is not the series this key is -- reusing it
         // would keep the synthetic name for good.
-        auto existing = series_repo.read_latest_by_uri(ctx_, oresmd_uri);
+        //
+        // A series belongs to one party and the series table is isolated by tenant
+        // alone, so the lookup names the party. Without it a second party importing
+        // the same file would reuse the first party's series and then be refused when
+        // it wrote the axes that party owns. A context with no party looks across
+        // the tenant, as before.
+        const auto party = ctx_.party_id();
+        auto existing = series_repo.read_latest_by_uri(
+            ctx_, oresmd_uri, party ? boost::uuids::to_string(*party) : std::string{});
         if (!existing.empty()) {
             const auto id = existing.front().id;
             series_cache.emplace(key, id);

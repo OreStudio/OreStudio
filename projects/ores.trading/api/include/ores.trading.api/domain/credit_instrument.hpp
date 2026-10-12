@@ -182,12 +182,12 @@ struct credit_instrument final {
     std::string linked_asset_code;
 
     /**
-     * @brief CBO tranche attachment point as decimal. Null when not set.
+     * @brief CBO tranche attachment point as a fraction. Null when not set.
      */
     std::optional<double> tranche_attachment;
 
     /**
-     * @brief CBO tranche detachment point as decimal. Null when not set.
+     * @brief CBO tranche detachment point as a fraction. Null when not set.
      */
     std::optional<double> tranche_detachment;
 

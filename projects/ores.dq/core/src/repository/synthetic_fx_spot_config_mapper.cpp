@@ -58,6 +58,7 @@ synthetic_fx_spot_config_mapper::map(const synthetic_fx_spot_config_entity& v) {
     r.price_source = v.price_source;
     r.vintage_source = v.vintage_source;
     r.vintage_date = v.vintage_date;
+    r.provider_code = v.provider_code;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -82,6 +83,7 @@ synthetic_fx_spot_config_mapper::map(const domain::synthetic_fx_spot_config& v) 
     r.price_source = v.price_source;
     r.vintage_source = v.vintage_source;
     r.vintage_date = v.vintage_date;
+    r.provider_code = v.provider_code;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

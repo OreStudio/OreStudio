@@ -32,7 +32,7 @@ import { AreaTrail } from '../shell/AreaTrail.js';
  * shared lists they connect to. The cards come from the one registry the other
  * areas and Home draw from.
  */
-export function RefdataPage({ mode }: { readonly mode: SessionMode }): ReactNode {
+export function RefdataPage(): ReactNode {
     const { t } = useTranslation();
     return (
         <div className="space-y-6">
@@ -40,7 +40,7 @@ export function RefdataPage({ mode }: { readonly mode: SessionMode }): ReactNode
                 <AreaTrail area="refdata" />
                 <PageHeader title={t('refdata.area.title')} description={t('refdata.area.lead')} />
             </div>
-            <AreaCards area="refdata" mode={mode} />
+            <AreaCards area="refdata" />
         </div>
     );
 }

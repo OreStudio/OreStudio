@@ -357,23 +357,23 @@ Reference asset code for CreditLinkedSwap. Empty otherwise.
 
 ** tranche_attachment
 :PROPERTIES:
-:type:     numeric(38, 12)
+:type:     double precision
 :cpp_type: std::optional<double>
 :nullable: true
 :economic: true
 :END:
 
-CBO tranche attachment point as decimal. Null when not set.
+CBO tranche attachment point as a fraction. Null when not set.
 
 ** tranche_detachment
 :PROPERTIES:
-:type:     numeric(38, 12)
+:type:     double precision
 :cpp_type: std::optional<double>
 :nullable: true
 :economic: true
 :END:
 
-CBO tranche detachment point as decimal. Null when not set.
+CBO tranche detachment point as a fraction. Null when not set.
 
 * Foreign keys
 

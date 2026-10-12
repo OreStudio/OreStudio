@@ -85,6 +85,7 @@
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
 #include "ores.dq.core/messaging/subject_area_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
+#include "ores.dq.core/messaging/synthetic_market_data_provider_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/presentation/subject_area_history_field_mapper.hpp"
@@ -363,6 +364,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(synthetic_fx_spot_config_subs.begin()),
                     std::make_move_iterator(synthetic_fx_spot_config_subs.end()));
+    }
+    {
+        auto synthetic_market_data_provider_subs =
+            register_synthetic_market_data_provider_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(synthetic_market_data_provider_subs.begin()),
+                    std::make_move_iterator(synthetic_market_data_provider_subs.end()));
     }
 
     // =========================================================================

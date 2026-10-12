@@ -7,41 +7,54 @@
 #+level: s1
 #+filetags: :synthetic:refdata:sql:codegen:organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-providers-and-feed-scope
+#+pr: 3151
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A provider is system reference data, seeded with the main vendors,
+exchanges, a broker and a generic provider, and published through DQ. A
+collection has a scope and may name its provider, every feed carries the
+synthetic mark, and the ACME reports' FX and IR currencies have feeds from
+one provider.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
--
+- The provider catalogue is generated across every layer and published into
+  the system tenant from the =system_core= bundle.
+- A collection's scope ties its tenant and party: a system collection is the
+  system tenant's and its system party's; row-level security lets every
+  tenant read it.
+- Every feed's source name starts =synthetic.=, and the feed tables check it.
+- The ACME reports' FX spots and IR curves have feeds, set up by one synthetic
+  feeds dataset that names its provider.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Model the provider catalogue in =ores.synthetic= and publish it through DQ;
+tie scope to tenant and party on the collection and widen row-level security
+for system collections; mark every feed synthetic; then replace the 2026
+Realistic dataset with a Bloomberg feeds dataset that covers the ACME
+currencies, published the one way synthetic feeds are published.
 
 * Measurements
 
@@ -59,6 +72,28 @@ task and name that file in the Command column.
 
 * Notes
 
+- The "synthetic theme" is renamed to the synthetic feeds dataset: artefact
+  type =synthetic_feeds=, =ores_synthetic_publish_feeds_from_dq_fn= on
+  =synthetic.v1.ops.publish_feeds_from_dq=, dataset codes =synthetic.feeds.*=,
+  and the =start_market_feeds= step's =dataset= argument. It is the one way to
+  set up synthetic feeds.
+- =synthetic.feeds.bloomberg= replaces the 2026 Realistic dataset, in the
+  =synthetic_bloomberg= bundle: a USD spot for 26 currencies and an
+  overnight-benchmark curve for 28, which covers the currency gaps of
+  [[id:E2FA0F12-2972-468B-93E8-2097E9E40113][the ACME feeds capture]]. Each feed
+  row names its provider (=provider_code= on the FX and IR artefacts); the
+  collection names the provider when every row agrees. The 2016 ORE Samples
+  dataset is unchanged beyond the rename.
+- The IR index families gained =cdi=, =czeonia=, =buboron=, =telboron=,
+  =tlref=, =camara=, =ibr= and =hibor=, named as ORE's conventions name them,
+  with matching overnight index conventions.
+- A first attempt published Bloomberg as a system collection through a
+  second publish path. It was reverted: it duplicated the one path, and the
+  generated repositories do not read the system tenant, so no tenant could
+  bind to it.
+- The dead party provisioning plan (=party_provisioning_plan.hpp=, a
+  hard-coded bundle list nothing called) is deleted.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -74,12 +109,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3151][#3151]] | [synthetic] Model market data providers and feed scope, and set up the ACME feeds with Bloomberg |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: misspell flags "existant" and "sucesso" | i18n/locales/fr.ts, pt.ts | Declined | Correct French and Portuguese; neither line is in this change. |
+| 2 | Local review: the provider DQ artefact uses a separate ores.dq model, a legacy pattern | ores.dq.synthetic_market_data_provider.org | Deferred | Moved by [[id:2FC7FD9E-9098-459F-A0A2-C1E63FD710FD][Move the duplicated DQ models onto their owners]]. |
+| 3 | Local review: system collections are readable in SQL only | synthetic repositories | Deferred | Recorded in the Result and the provider catalogue page; the subscription task takes it up. |
+| 4 | PR #3151: replace_all closes rows with current_timestamp, which falls before a same-transaction valid_from | synthetic_publish_from_dq_create.sql | Accepted | Every close in the file uses clock_timestamp(); a pgTAP case fails on the old function and passes on the fix. |
+| 5 | PR #3151: nothing in SQL ties a source name to the provider | fx/ir feed tables | Declined | The feed tables have no provider column; the one publish path builds the name. The provider catalogue page says it holds by construction. |
+| 6 | PR #3151: the provider validator passes everything during bootstrap | ores_synthetic_validate_market_data_provider_fn | Declined | The providers ship in system_core, which system provisioning publishes before any tenant bundle; the feeds test publishes the catalogue first. |
+| 7 | PR #3151: the system collection helper has no tenant filter | synthetic_rls_policies_create.sql | Accepted | A comment states why: the scope check puts every system-scoped row in the system tenant. |
+| 8 | PR #3151: the provider publish refusal uses raise exception, not ores_outcome_raise_fn | synthetic_publish_from_dq_create.sql | Declined | No outcome code fits a publish aimed at the wrong tenant; it is an operator error, like the neighbouring dataset-not-found raises. |
 
 * Result
+
+Shipped:
+
+- =market_data_provider= in =ores.synthetic=, generated across every layer,
+  with eight providers published from DQ into the system tenant.
+- Collection scope tied to tenant and party, the conflict guard kept, row-level
+  security widened for system collections, and the synthetic mark checked on
+  the FX and IR feed tables.
+- The "synthetic theme" renamed to the synthetic feeds dataset, the one way to
+  set up feeds; a feed row may name its provider.
+- =synthetic.feeds.bloomberg= replaces the 2026 Realistic dataset: 26 USD
+  spots and 28 overnight-benchmark curves plus the USD FOMC short end, with
+  eight new IR index families and their conventions.
+
+Not met: a system collection is readable in SQL but not through the
+services, because the generated repositories read the caller's own tenant
+alone, so no dataset publishes one yet. Tenants consume the Bloomberg feeds
+from their own party collection.
+[[id:CDA9C6C5-3D37-4736-8C1F-2DE8918696E4][Subscribe a tenant to provider feeds]]
+takes up system feeds a tenant subscribes to. The provider catalogue's DQ
+artefact follows a legacy pattern;
+[[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]]
+moves it.

@@ -201,7 +201,7 @@ PATH_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             ".prettierrc.yaml",
         ),
     ),
-    ("plugins", ("projects/ores.dsh_environment/*", "projects/ores.dsh_kanban/*")),
+    ("plugins", ("projects/ores.dsh_environment/*",)),
     ("tooling", ("projects/ores.compass/*", "build/scripts/*")),
     ("ci", (".github/*", "projects/ores.codegen/library/templates/*")),
 )
@@ -684,18 +684,6 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("plugins",),
         paths=("projects/ores.dsh_environment/*",),
         cwd="projects/ores.dsh_environment",
-    ),
-    Check(
-        id="dsh-kanban",
-        title="The DSH kanban plugin passes its own checks",
-        argv=(
-            "bash",
-            "-c",
-            "node scripts/check-manifest.mjs && node --check lib/client.js && node --test",
-        ),
-        classes=("plugins",),
-        paths=("projects/ores.dsh_kanban/*",),
-        cwd="projects/ores.dsh_kanban",
     ),
     Check(
         id="codegen-tests",

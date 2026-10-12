@@ -84,19 +84,14 @@ export function axisOf(view: GridSeriesView): ChartAxis {
 }
 
 /**
- * The work still in flight, by result state.
+ * The work in flight: the results that wait and the results that run.
  *
- * The finished count only grows, so stacking it would flatten the rest; it is
- * drawn as throughput instead.
+ * A result that is inactive is not in flight. It was retired, or it has not been
+ * sent, and its count only grows. Stacked here it would set the scale of the
+ * chart and flatten the load a person came to see, so it is left out.
  */
 export function loadSeries(view: GridSeriesView, t: Translator['t']): readonly ChartSeries[] {
     return [
-        {
-            key: 'inactive',
-            label: t('operations.grid.series.load.inactive'),
-            values: view.grid.results_inactive,
-            tone: 'muted',
-        },
         {
             key: 'unsent',
             label: t('operations.grid.series.load.unsent'),

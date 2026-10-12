@@ -1752,7 +1752,6 @@ const pt: SourceCatalogue = {
                 load: {
                     title: 'Carga',
                     caption: 'Trabalho em curso por estado do resultado',
-                    inactive: 'Inativo',
                     unsent: 'Por enviar',
                     inProgress: 'Em curso',
                 },

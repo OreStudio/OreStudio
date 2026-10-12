@@ -51,3 +51,13 @@ creation and have the store decide it, and the compensation reads disappear.
 * See also
 
 -
+
+* Discarded
+
+Out of date. A feed binding no longer has an ORE key: its natural key is the
+party and the source, and the unique index states that pair. A write is claimed
+by the row's id, so a second party's new row claims nothing that the first
+party holds. A read by source keeps the session party's row, because another
+party can hold the same source. Read from the code on the branch that made the
+republish subject independent of the ORE key; not run against a provisioned tenant.
+

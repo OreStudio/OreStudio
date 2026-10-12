@@ -36,7 +36,7 @@ namespace ores::marketdata::service::app {
 enum class tick_drop {
     /// No enabled feed binding names the tick's source.
     unbound_source,
-    /// The tick's URI names no datum the ORE key codec can write.
+    /// The tick's URI names no datum the oresmd URI codec can read and write.
     unnameable_datum,
     /// The tick's value is not a number.
     not_a_number

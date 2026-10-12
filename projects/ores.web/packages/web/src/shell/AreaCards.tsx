@@ -25,7 +25,16 @@ import { useHeld } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { MENU, offered } from './areas.js';
-import { ACCOUNT_CARDS, AREA_CARDS, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
+import {
+    ACCOUNT_CARDS,
+    AREA_CARDS,
+    FOLDERS,
+    FOLDER_CARDS,
+    cardOf,
+    type CardArea,
+    type CardId,
+    type FolderCard,
+} from './cards.js';
 
 /** The cards of one list that this person is offered, named and worded in their language. */
 function useTiles(ids: readonly CardId[]): readonly Tile[] {
@@ -50,6 +59,12 @@ function useTiles(ids: readonly CardId[]): readonly Tile[] {
  */
 export function AreaCards({ area }: { readonly area: CardArea }): ReactNode {
     const ids: readonly CardId[] = AREA_CARDS[area];
+    return <Tiles tiles={useTiles(ids)} dense />;
+}
+
+/** The cards of a folder inside an area, as the folder's page draws them. */
+export function FolderCards({ folder }: { readonly folder: FolderCard }): ReactNode {
+    const ids: readonly CardId[] = FOLDER_CARDS[folder];
     return <Tiles tiles={useTiles(ids)} dense />;
 }
 

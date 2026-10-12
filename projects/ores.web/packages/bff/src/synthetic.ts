@@ -62,6 +62,7 @@ import {
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
 import { subjects as fxSimpleSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_simple_protocol';
+import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
 import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
@@ -761,6 +762,43 @@ export function registerSyntheticRoutes(
                 };
             }),
         };
+    });
+
+    /**
+     * The children of one folder, or the roots, with the feeds under each at any
+     * depth and how many run. The service counts, so no screen reads the feeds.
+     */
+    server.get('/api/synthetic/feed-folders', async (request) => {
+        const session = requireSession(request);
+        const query = input(
+            z.object({ parent: z.string().trim().max(100).default('') }).strict(),
+            request.query,
+        );
+        const reply = await session.client.callAuthenticated(
+            feedOverviewSubjects.list_feed_folders_request,
+            { parent_id: query.parent },
+            operationReplySchema.extend({
+                folders: z
+                    .array(
+                        z.object({
+                            id: z.string(),
+                            parent_id: z.string(),
+                            name: z.string(),
+                            kind: z.string(),
+                            scope: z.string(),
+                            provider_code: z.string(),
+                            binding_mode: z.string(),
+                            fx_feeds: z.int(),
+                            ir_feeds: z.int(),
+                            running_feeds: z.int(),
+                            has_children: z.boolean(),
+                        }),
+                    )
+                    .default([]),
+            }),
+        );
+        refuseUnless(reply, upstreamFailure);
+        return { folders: reply.folders };
     });
 
     /** The source names of the feeds running now, of every kind the caller may see. */

@@ -93,6 +93,8 @@ import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage, FxFeedsPage } from './marketdata/fxFeeds.js';
 import { IrFeedPage, IrFeedsPage } from './marketdata/irFeeds.js';
+import { FeedOverviewPage } from './marketdata/FeedOverviewPage.js';
+import { SyntheticPage } from './marketdata/SyntheticPage.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -767,7 +769,31 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/market-data/fx-feeds"
+                path={PATHS.synthetic}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <SyntheticPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.feedOverview}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FeedOverviewPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.fxFeeds}
                 element={signedIn(
                     gate.version,
                     session,
@@ -779,7 +805,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/market-data/fx-feeds/:id"
+                path={`${PATHS.fxFeeds}/:id`}
                 element={signedIn(
                     gate.version,
                     session,
@@ -791,7 +817,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/market-data/ir-feeds"
+                path={PATHS.irFeeds}
                 element={signedIn(
                     gate.version,
                     session,
@@ -803,7 +829,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/market-data/ir-feeds/:id"
+                path={`${PATHS.irFeeds}/:id`}
                 element={signedIn(
                     gate.version,
                     session,

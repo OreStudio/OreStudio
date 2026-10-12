@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 593E2632-0CD4-45E4-9672-3BFB581924AD
+:END:
+#+title: Task: Build the Synthetic page and the feed overview
+#+description: A Synthetic folder under Market data, and the feed overview: columns by scope, provider and feed kind with the counts and the running roll-up, and start and stop of a provider or a kind.
+#+type: task
+#+level: s1
+#+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person sees what runs, by scope, provider and feed kind, and starts or stops a provider or a kind, on the screens the Browse the feed tree prototype argued.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- Market data has a Synthetic folder card. The Synthetic page holds the feed overview and the FX and IR feed cards.
+- The feed overview drills down by scope, provider and feed kind in columns, shows the feeds, the running roll-up and the ticks, and never lists a feed.
+- A server read returns a folder's children with their counts and run state, so no screen reads all feeds.
+- Start and stop of a provider or a kind use the existing folder routes and report what started, what was already running and what was skipped.
+
+* Plan
+
+The shape is the [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] and the
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] page.
+
+- A service read, =synthetic.v1.ops.list_feed_folders=, returns the children of one folder
+  with the FX and IR feeds under each and the running ones. The roll-up is a pure function
+  of the API library, =children_with_counts=, unit tested without a database; the handler
+  runs three queries (the folders with their collection, the feeds grouped by folder, and
+  the running source names grouped by folder) and calls it.
+- The BFF route =GET /api/synthetic/feed-folders?parent=<id>= relays it.
+- A folder card inside an area is new to the shell. A card names its folder with =in=, the
+  Synthetic folder card is drawn on the Market data page, and the folder's page draws its
+  cards. The feed screens move to =/market-data/synthetic/fx-feeds= and =ir-feeds=, and
+  the earlier addresses redirect. Their trails gain the Synthetic step.
+- The overview derives its columns from the hierarchy as it is: a collection folder is a
+  provider (or generic), and its asset class folders are the feed kinds. System feeds are
+  the collections whose scope says system.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Until a dataset publishes a system collection, the overview shows the existing collections
+  under Test feeds, and the System feeds column is empty. The tree's System feeds root and
+  its provider level appear with the catalogue.
+- The provider's name comes from the catalogue when the tenant can read it, and from the
+  provider code with a capital otherwise. A tenant reads the catalogue once the task Read
+  system rows through the services has merged.
+- The Feed tree and the feed page's trail through it are the next slice.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3215][#3215]] | Add the Synthetic folder and the feed overview |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Market data has a Synthetic folder, and the folder holds the Feed overview, FX price feeds and IR curve feeds. The feed screens moved to =/market-data/synthetic/...= with redirects from the earlier addresses, and their trails gained the Synthetic step. A card names its folder with =in=, which is new to the shell, and the walk of every screen's trail follows it.
+
+The Feed overview drills down by scope, provider and feed kind. Every node shows its FX and IR feeds and what runs, and the chosen node has Start and Stop, which ask first and report in a toast. A new service read, =synthetic.v1.ops.list_feed_folders=, returns a folder's children with the counts and the running ones, so the page reads a few folders and never the feeds. The roll-up is a pure function with its own tests.
+
+Checked: the synthetic api suite (61 cases), the BFF route tests (51), 1441 web tests, the synthetic drift gate, and, as the Acme tenant administrator, the folder read and a start of the 2016 ORE Samples collection through the folder route, which started 17 feeds and showed 17 running under it.
+
+Not met: the Feed tree, and a feed page's trail through it, are the next slice. No dataset publishes a system collection, so System feeds is empty. The screens were not looked at in a browser by the author.

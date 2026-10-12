@@ -19,6 +19,7 @@
  */
 #include "registrar.hpp"
 #include "feed_config_handler.hpp"
+#include "feed_overview_handler.hpp"
 #include "folder_feed_control_handler.hpp"
 #include "fx_mixture_conversion_handler.hpp"
 #include "fx_simple_conversion_handler.hpp"
@@ -123,6 +124,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier, &registry](ores::nats::message msg) {
             fx_mixture_conversion_handler h(nats, ctx, verifier, registry);
             h.convert(std::move(msg));
+        }));
+
+    // The children of a folder with the feeds under each and what runs, for the
+    // feed overview and the feed tree. The read of any kind's feed configs opens it.
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::list_feed_folders_request::nats_subject),
+        queue,
+        [&nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_overview_handler h(nats, ctrl, ctx, verifier, registry);
+            h.list(std::move(msg));
         }));
 
     // The simple and the advanced view of an FX feed's mixture: FX only,

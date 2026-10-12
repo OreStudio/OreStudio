@@ -31,7 +31,7 @@ const CURRENT = new Set<string>(Object.values(PATHS));
 describe('the addresses of the screens', () => {
     it('sit under their area', () => {
         for (const [name, path] of Object.entries(PATHS)) {
-            expect(path, name).toMatch(/^\/(refdata|organisation|operations)(\/|$)/);
+            expect(path, name).toMatch(/^\/(refdata|organisation|operations|market-data)(\/|$)/);
         }
         expect(PATHS.parties).toBe('/refdata/parties');
         expect(PATHS.rescue).toBe('/organisation/rescue');
@@ -52,7 +52,7 @@ describe('the addresses of the screens', () => {
 
     it('send every earlier address to a screen under an area', () => {
         for (const [, to] of MOVED) {
-            expect(to).toMatch(/^\/(refdata|organisation|operations)\//);
+            expect(to).toMatch(/^\/(refdata|organisation|operations|market-data)\//);
         }
     });
 });

@@ -54,6 +54,12 @@ export interface CardDef extends Pick<MenuItem, 'permission'> {
      * no such screen is drawn in the area's Workflows group.
      */
     readonly on?: string;
+    /**
+     * The folder card that holds this screen, for a screen inside a folder
+     * inside an area, such as the feed overview in Synthetic. The area page
+     * draws the folder card, and the folder's page draws this one.
+     */
+    readonly in?: string;
 }
 
 export const CARDS = {
@@ -132,21 +138,46 @@ export const CARDS = {
         icon: 'classification',
         screenTitleKey: 'refdata.classifications.title',
     },
+    synthetic: {
+        titleKey: 'marketdata.area.screens.synthetic',
+        bodyKey: 'marketdata.area.screens.syntheticBody',
+        to: PATHS.synthetic,
+        icon: 'chart',
+        permission: [
+            'synthetic::fx_spot_generation_configs:read',
+            'synthetic::ir_curve_generation_configs:read',
+        ],
+        screenTitleKey: 'marketdata.synthetic.title',
+    },
+    feedOverview: {
+        titleKey: 'marketdata.area.screens.feedOverview',
+        bodyKey: 'marketdata.area.screens.feedOverviewBody',
+        to: PATHS.feedOverview,
+        icon: 'chart',
+        permission: [
+            'synthetic::fx_spot_generation_configs:read',
+            'synthetic::ir_curve_generation_configs:read',
+        ],
+        screenTitleKey: 'marketdata.feedOverview.title',
+        in: 'synthetic',
+    },
     fxFeeds: {
         titleKey: 'marketdata.area.screens.fxFeeds',
         bodyKey: 'marketdata.area.screens.fxFeedsBody',
-        to: '/market-data/fx-feeds',
+        to: PATHS.fxFeeds,
         icon: 'trend',
         permission: 'synthetic::fx_spot_generation_configs:read',
         screenTitleKey: 'marketdata.fxFeeds.title',
+        in: 'synthetic',
     },
     irFeeds: {
         titleKey: 'marketdata.area.screens.irFeeds',
         bodyKey: 'marketdata.area.screens.irFeedsBody',
-        to: '/market-data/ir-feeds',
+        to: PATHS.irFeeds,
         icon: 'trend',
         permission: 'synthetic::ir_curve_generation_configs:read',
         screenTitleKey: 'marketdata.irFeeds.title',
+        in: 'synthetic',
     },
     curveEvolution: {
         titleKey: 'market.evolution.title',
@@ -278,12 +309,22 @@ export const AREA_CARDS = {
         'conventions',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
-    marketdata: ['fxFeeds', 'irFeeds', 'curveEvolution'],
+    marketdata: ['synthetic', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;
 
 export type CardArea = keyof typeof AREA_CARDS;
+
+/**
+ * The cards of each folder card inside an area, in the order the folder's page
+ * draws them. A folder holds screens, not other folders.
+ */
+export const FOLDER_CARDS = {
+    synthetic: ['feedOverview', 'fxFeeds', 'irFeeds'],
+} as const satisfies Record<string, readonly CardId[]>;
+
+export type FolderCard = keyof typeof FOLDER_CARDS;
 
 /** The address of each area's page, which is also the start of every address inside it. */
 export const AREA_PAGE: Record<CardArea, string> = {
@@ -314,9 +355,12 @@ export function screenAreaOf(id: CardId): CardArea | undefined {
 
 /** The area whose page draws this card, or undefined for a card outside the areas. */
 export function areaOfCard(id: CardId): CardArea | undefined {
-    return (Object.keys(AREA_CARDS) as CardArea[]).find((area) =>
-        (AREA_CARDS[area] as readonly CardId[]).includes(id),
-    );
+    const inside = (CARDS[id] as CardDef).in;
+    return inside === undefined
+        ? (Object.keys(AREA_CARDS) as CardArea[]).find((area) =>
+              (AREA_CARDS[area] as readonly CardId[]).includes(id),
+          )
+        : areaOfCard(inside as CardId);
 }
 
 /**

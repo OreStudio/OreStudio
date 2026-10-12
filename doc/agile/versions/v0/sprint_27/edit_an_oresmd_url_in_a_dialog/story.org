@@ -21,11 +21,11 @@ A person never writes an oresmd URL by hand. A dialog offers the schema row of t
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded and broken into tasks. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Describe the oresmd schema to a client. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -44,8 +44,8 @@ A person never writes an oresmd URL by hand. A dialog offers the schema row of t
 | [[id:BEBAD3C1-05E0-43DF-AD66-0A347932577F][Describe the oresmd schema to a client]] | DONE | 2026-10-12 | 2026-10-12 | Add an operation to ores.marketdata that describes the oresmd schema: the kinds, the instrument and quote types, and for each row its fields, whether each is required or left out, and where its codes come from. The codec's own table is the source. |
 | [[id:0E611D4A-6B3A-4D2F-8385-B65EFAB668D1][Parse and compose an oresmd URL on the server]] | DONE | 2026-10-12 | 2026-10-12 | Add two operations to ores.marketdata that call the codec: parse a URL into its fields, or say why the codec refuses it, and compose a set of fields into the URL in the codec's spelling. The reader's strict rules are the validation. |
 | [[id:3BA119DA-7FF6-4FD3-A5D5-F3C2B7BC0FA3][Serve the oresmd operations from the BFF]] | DONE | 2026-10-12 | 2026-10-12 | Add BFF routes for the schema, parse and compose operations, behind the session check, with the contracts that the browser parses. |
-| [[id:ABC94C47-612F-4FC7-B94E-F00884024444][Build the oresmd URL editor dialog]] | BACKLOG | | | Build the accepted editor of the prototype, the composer of variant A, as a component any screen calls the way variant C does any screen calls: it opens in a modal over the screen, loads the URL it is given, offers the schema row of the chosen kind with the codes the system keeps as pickers, validates through the server, and writes the edited URI back on Apply. |
-| [[id:4E63C9A8-EB1E-45A9-88A6-17C13E1CA32D][Open the editor from the IR and FX feed screens]] | BACKLOG | | | Draw the market data URI of an IR curve feed and an FX feed as a button that opens the editor, as the prototype does. It needs the feed screens of PR 3152, which names every synthetic feed by its oresmd series and draws the IR curve feeds. |
+| [[id:ABC94C47-612F-4FC7-B94E-F00884024444][Build the oresmd URL editor dialog]] | DONE | 2026-10-12 | 2026-10-12 | Build the accepted editor of the prototype, the composer of variant A, as a component any screen calls the way variant C does any screen calls: it opens in a modal over the screen, loads the URL it is given, offers the schema row of the chosen kind with the codes the system keeps as pickers, validates through the server, and writes the edited URI back on Apply. |
+| [[id:4E63C9A8-EB1E-45A9-88A6-17C13E1CA32D][Open the editor from the IR and FX feed screens]] | DONE | 2026-10-12 | 2026-10-12 | Draw the market data URI of an IR curve feed and an FX feed as a button that opens the editor, as the prototype does. It needs the feed screens of PR 3152, which names every synthetic feed by its oresmd series and draws the IR curve feeds. |
 
 ** Build order
 
@@ -67,12 +67,21 @@ A person never writes an oresmd URL by hand. A dialog offers the schema row of t
 
 * Open questions
 
-The first tasks do not need an answer to these.
+These stayed open when the story closed. The editor is built as a modal and warns only through the codec's own refusal.
 
 - Does the real screen use a modal over the dialog, or an inline field? The prototype draws a modal.
-- Does Apply write a changed URI back to a stored record, or does the first cut only read? A series is keyed by its URI, so changing one is not an edit of a field.
 - Does the real writer encode the RFC 3986 sub-delimiters in the subject path, or keep them plain as the record's examples do?
 - Is a value outside the catalogue a warning or a refusal? The codec accepts what ORE accepts, and the catalogue omits some of it.
+
+* Result
+
+The oresmd URL editor is in ores.web as =OresmdEditorDialog=, and any screen can call it. The grammar stays on the server: three operations of =ores.marketdata=, one that describes the schema, one that parses a URL into its parts and one that composes parts into the codec's spelling, serve three BFF routes behind the session check. The editor is the accepted composer of the prototype. It offers quote, series and fixing, draws one input for each field of the chosen row, suggests the currencies and the day counters the system keeps, asks the codec after each pause, and offers Copy and Apply only for a URI the codec wrote for what is on screen. =OresmdUrl= draws a URL with a button that opens it in the editor, and the IR curve feed and the FX feed screens call it from their Details tab.
+
+The three operations need =marketdata::market_series:read=, as decided on 2026-10-12. The feed screens open the editor without Apply, because a feed's URI follows from its currencies and its curve.
+
+Tests: the codec's catalogue round-trips through parse and compose, the BFF checks the routes and the shapes against the generated twin, and the editor was driven in headless Chrome against a mock of the routes. No run against the real services has been made.
+
+Follow-ups, none filed yet: a run of the editor against the real services; suggestions for the tenors, the curve ids, the index names and the other catalogues of the prototype's field-source view, which need readers in the web; the format of 12 web files on main that other sessions own; the French and Portuguese text, which needs a speaker.
 
 * Out of scope
 

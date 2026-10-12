@@ -134,6 +134,7 @@ domain::bond_leg_rate to_domain(const messaging::bond_leg_rate_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_leg_rates_response

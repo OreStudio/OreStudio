@@ -119,6 +119,7 @@ to_domain(const messaging::yield_curve_process_parameter_definition_write& write
     return v;
 }
 
+
 }
 
 messaging::list_yield_curve_process_parameter_definitions_response

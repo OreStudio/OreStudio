@@ -110,6 +110,7 @@ to_domain(const messaging::balance_guaranteed_swap_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_balance_guaranteed_swap_instruments_response

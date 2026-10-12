@@ -47,8 +47,7 @@
 \ir ./reporting_report_definitions_populate.sql
 
 \echo ''
-\echo '--- Risk Report Config Seed Data ---'
-\ir ./reporting_risk_report_configs_populate.sql
+\echo '--- Reporting Dataset Dependencies ---'
 \ir ./reporting_dataset_dependency_populate.sql
 
 \echo ''

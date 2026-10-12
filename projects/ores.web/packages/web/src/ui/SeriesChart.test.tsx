@@ -105,9 +105,7 @@ describe('the paths', () => {
 describe('the axis labels', () => {
     it('states the time for a short bucket and the date as well for a wide one', () => {
         expect(axisLabel(AXIS, 3)).toBe('10:03');
-        expect(
-            axisLabel({ ...AXIS, bucketSeconds: 1800 }, 2),
-        ).toBe('10-11 11:00');
+        expect(axisLabel({ ...AXIS, bucketSeconds: 1800 }, 2)).toBe('10-11 11:00');
     });
 
     it('states nothing for a start it cannot read', () => {

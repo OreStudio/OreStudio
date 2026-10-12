@@ -104,6 +104,7 @@ domain::currency_market_tier to_domain(const messaging::currency_market_tier_wri
     return v;
 }
 
+
 }
 
 messaging::list_currency_market_tiers_response

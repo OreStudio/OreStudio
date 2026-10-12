@@ -127,6 +127,7 @@ domain::credit_instrument to_domain(const messaging::credit_instrument_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_credit_instruments_response credit_instrument_service::list_credit_instruments(

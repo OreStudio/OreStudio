@@ -104,6 +104,7 @@ domain::yield_curve_process_type to_domain(const messaging::yield_curve_process_
     return v;
 }
 
+
 }
 
 messaging::list_yield_curve_process_types_response

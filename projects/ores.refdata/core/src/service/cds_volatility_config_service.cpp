@@ -112,6 +112,7 @@ domain::cds_volatility_config to_domain(const messaging::cds_volatility_config_w
     return v;
 }
 
+
 }
 
 messaging::list_cds_volatility_configs_response

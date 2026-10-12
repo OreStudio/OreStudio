@@ -103,6 +103,7 @@ domain::account_type to_domain(const messaging::account_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_account_types_response

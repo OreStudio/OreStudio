@@ -44,6 +44,36 @@ struct line_outcome {
     boost::uuids::uuid entity_id;
     std::vector<std::string> columns;
     std::string refusal;
+    /**
+     * @brief The parts the policy names for this line alone.
+     */
+    std::vector<std::string> part_codes;
+};
+
+/**
+ * @brief One column of a stored line beside the live book's value.
+ *
+ * The values are text, because a screen draws them. The before is empty when
+ * the line creates the book.
+ */
+struct field_delta {
+    std::string name;
+    std::string before;
+    std::string after;
+    bool changed = false;
+};
+
+/**
+ * @brief One stored line as a decider reads it: the operation, the book it
+ * names, and each column beside the live value.
+ */
+struct line_delta {
+    int line_no = 0;
+    std::string operation;
+    boost::uuids::uuid entity_id;
+    int base_version = 0;
+    bool applied = false;
+    std::vector<field_delta> fields;
 };
 
 /**
@@ -136,6 +166,15 @@ public:
      */
     book_proposal raise(const std::vector<ores::refdata::domain::book_change>& lines,
                         const std::string& reason);
+
+    /**
+     * @brief The stored lines of a request, each beside the live book.
+     *
+     * Reads only. A put lists every column with whether the line changes it,
+     * against the book at the version the maker read, so a line that has applied
+     * still shows what it changed. A delete lists none.
+     */
+    std::vector<line_delta> deltas(const std::string& request_id);
 
     /**
      * @brief Runs the stored lines of a request through the real write again

@@ -1,0 +1,98 @@
+[
+  {
+    "company_code": "acme_group",
+    "id": "971768fb-562d-5102-9e55-fb1d630e5e59",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1a57ead2-29c3-5220-8423-72aff0672f9b",
+    "pricing_model_product_id": "d325f531-784e-54ce-9827-4cab70632931",
+    "parameter_scope": "engine",
+    "parameter_name": "TimestepPeriod",
+    "parameter_value": "6M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "id": "82fba54c-962c-5164-986b-1e174bb52de5",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1a57ead2-29c3-5220-8423-72aff0672f9b",
+    "pricing_model_product_id": null,
+    "parameter_scope": "global",
+    "parameter_name": "ContinueOnCalibrationError",
+    "parameter_value": "true",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "0db9bf83-2655-5fc5-864d-33bc08e28f95",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_model_product_id": "d6476b86-e080-5f65-bc2c-79968557555e",
+    "parameter_scope": "engine",
+    "parameter_name": "TimestepPeriod",
+    "parameter_value": "6M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "be880086-1360-59d0-a8ef-0249c9b6c3f5",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_model_product_id": null,
+    "parameter_scope": "global",
+    "parameter_name": "ContinueOnCalibrationError",
+    "parameter_value": "true",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "799bcc7c-b7b2-5a2b-b7e7-8b3e81b06920",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "pricing_model_product_id": "bd19422d-094c-57c7-8542-a52da54f2ee1",
+    "parameter_scope": "engine",
+    "parameter_name": "TimestepPeriod",
+    "parameter_value": "6M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "05a5fd01-484b-54d4-b470-2563793f2a86",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "pricing_model_product_id": null,
+    "parameter_scope": "global",
+    "parameter_name": "ContinueOnCalibrationError",
+    "parameter_value": "true",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "777fc3d9-24d9-54cb-ac25-a79eafd8b414",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "pricing_model_product_id": "f6fb7544-44bc-51f0-bda9-956d621a02ad",
+    "parameter_scope": "engine",
+    "parameter_name": "TimestepPeriod",
+    "parameter_value": "6M",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "2b17550c-524c-5cf1-b2b5-88743c00653b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "pricing_model_product_id": null,
+    "parameter_scope": "global",
+    "parameter_name": "ContinueOnCalibrationError",
+    "parameter_value": "true",
+    "position": 0
+  }
+]

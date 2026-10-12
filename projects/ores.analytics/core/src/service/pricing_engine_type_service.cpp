@@ -102,6 +102,7 @@ domain::pricing_engine_type to_domain(const messaging::pricing_engine_type_write
     return v;
 }
 
+
 }
 
 messaging::list_pricing_engine_types_response

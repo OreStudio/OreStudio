@@ -158,7 +158,9 @@ The domain concepts are in [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] a
 [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]; here is the code path.
 
 1. *Config.* =ir_curve_bootstrap_configs= names one curve: output
-   series, party, source series, =curve_family_role= (FUNDING /
+   series, party, source series, the =currency_code= and the =index_tenor=
+   of the index the curve stands for (=1D= for an overnight index, such as
+   =6M= for a term index), =curve_family_role= (FUNDING /
    PROJECTION), =discount_curve_config_id=, =interpolation_method=,
    =day_count_convention=, and =split_tenor_code= — the tenor at which
    the short-end and long-end methods divide.
@@ -167,6 +169,12 @@ The domain concepts are in [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] a
    (DEPOSIT/FRA/SWAP), =sequence_index=. Order is the fixed-leg
    schedule: a SWAP pillar's fixed-leg dates are the end dates of all
    prior pillars plus its own.
+   The currency and the index tenor are the two segments of a pillar's
+   series that a pillar cannot supply. The series is an =ir_swap= series
+   whose =fwd_start= is the pillar's start and whose =tenor= is the index
+   tenor, as [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
+   describes, and the synthetic feed that writes it states the same two
+   segments; see [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]].
 3. *Resolve + quote.* =curve_republish_resolver.cpp= sorts pillars by
    =sequence_index= and, per pillar: resolves both tenor codes to
    dates via the tenor resolver, and looks up the observed rate. The

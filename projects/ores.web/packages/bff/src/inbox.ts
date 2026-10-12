@@ -29,13 +29,15 @@ import {
     readMyNotifications,
     readMyRequests,
     readRequest,
+    readRequestChanges,
+    readRequestChecks,
     readRequestQueue,
     readRequestStory,
     readUnreadNotificationCount,
     withdrawRequest,
 } from '@ores/wire-protocol';
 import type { RequestViewer } from '@ores/wire-protocol';
-import { invalidRequest } from './errors.js';
+import { invalidRequest, notFound } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -89,6 +91,13 @@ const intentBodySchema = z.object({
 
 const decideBodySchema = intentBodySchema.extend({
     decisionCode: z.enum(DECISION_CODES),
+    // The part the decider answers for. A request that names no parts takes none.
+    partCode: z
+        .string()
+        .trim()
+        .max(100)
+        .regex(/^[a-z][a-z0-9_]*$/)
+        .default(''),
 });
 
 /**
@@ -211,6 +220,44 @@ export function registerInboxRoutes(
         return await readRequestStory(session.client, requestIdOf(request));
     });
 
+    /**
+     * What the request proposes, for any kind: the operation, the thing it is
+     * about, and each field beside the value it would replace.
+     *
+     * The request is read first, because the kind decides where its lines are
+     * kept. A request the person may not open is not found, as it is when it is
+     * opened.
+     */
+    server.get('/api/requests/:id/changes', async (request) => {
+        const session = requireSession(request);
+        const requestId = requestIdOf(request);
+        const found = await readRequest(session.client, requestId, viewerOf(session));
+        if (found === null) {
+            throw notFound('No such request.');
+        }
+        return {
+            requestId,
+            kindCode: found.kindCode,
+            changes: await readRequestChanges(session.client, found),
+        };
+    });
+
+    /**
+     * What running the request's lines through the real write now says.
+     *
+     * The live record may have moved since the request was raised, so a decider
+     * reads the checks as they stand.
+     */
+    server.get('/api/requests/:id/checks', async (request) => {
+        const session = requireSession(request);
+        const requestId = requestIdOf(request);
+        const found = await readRequest(session.client, requestId, viewerOf(session));
+        if (found === null) {
+            throw notFound('No such request.');
+        }
+        return { requestId, ...(await readRequestChecks(session.client, found)) };
+    });
+
     /** Approves, refuses, holds or resumes a request, against the version read. */
     server.post('/api/requests/:id/decision', async (request, reply) => {
         const session = requireSession(request);
@@ -226,6 +273,7 @@ export function registerInboxRoutes(
             version: body.data.version,
             decisionCode: body.data.decisionCode,
             comment: body.data.comment,
+            partCode: body.data.partCode,
         });
         return reply.code(204).send();
     });

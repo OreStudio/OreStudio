@@ -103,6 +103,7 @@ domain::party_status to_domain(const messaging::party_status_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_party_statuses_response

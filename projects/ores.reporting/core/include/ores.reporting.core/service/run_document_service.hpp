@@ -62,6 +62,16 @@ public:
     std::optional<messaging::run_document> get(const boost::uuids::uuid& report_definition_id);
 
     /**
+     * @brief The definition's stored run document, or else the one its risk
+     * configuration and bindings describe.
+     *
+     * Empty when the definition holds neither a run document nor a risk
+     * configuration.
+     */
+    std::optional<messaging::run_document>
+    get_or_generate(const boost::uuids::uuid& report_definition_id);
+
+    /**
      * @brief Creates a configuration of a type and binds it to the definition
      * in that type's slot.
      *

@@ -21,16 +21,22 @@
 
 import { z } from 'zod';
 
-/** One tick as the screen plots it: when, and the price as a number. */
+/**
+ * One tick as the screen plots it: when, the price as a number, and the oresmd
+ * URI of the datum it is a value of. An FX feed makes one datum, and a curve
+ * feed makes one for each pillar of the curve, all at the same time.
+ */
 export interface FeedTick {
     readonly at: string;
     readonly value: number;
+    readonly uri: string;
 }
 
 /** The part of a tick the buffer keeps. The producer writes the price as decimal text. */
 export const marketTickSchema = z.object({
     value: z.string(),
     observation_time: z.string(),
+    oresmd_uri: z.string().default(''),
 });
 
 /** Listens on a subject for ticks, and returns the way to stop. */
@@ -88,7 +94,7 @@ export class FeedTickBuffers {
             const stop = this.#subscribe(tickSubjectFor(name), (tick) => {
                 const value = Number(tick.value);
                 if (!Number.isFinite(value)) return;
-                ticks.push({ at: tick.observation_time, value });
+                ticks.push({ at: tick.observation_time, value, uri: tick.oresmd_uri });
                 if (ticks.length > this.#capacity) ticks.splice(0, ticks.length - this.#capacity);
             });
             this.#runs.set(name, { ticks, stop });

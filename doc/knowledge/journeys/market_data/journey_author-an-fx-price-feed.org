@@ -22,7 +22,7 @@ each step needs.
 "I want this feed to produce the pair I mean, at a believable price, so the
 desk can test against something that behaves like the market." The journey is
 done when the config and its mixture are saved and read back with the pair, the
-derived ORE key, the tick rate and the process the person chose, and when the
+derived oresmd URI, the tick rate and the process the person chose, and when the
 sample paths the screen drew look like a price rather than a number.
 
 * Actor and trigger
@@ -44,7 +44,7 @@ screen calls it the feed.
 
 1. *Find the feed.* The person opens *Market data*, then *Synthetic*, and reads
    the folder tree. The system lists the party's FX feeds under their folder:
-   the base and quote codes, the ORE key, the source name, the tick rate, the
+   the base and quote codes, the oresmd URI, the source name, the tick rate, the
    engine and the enabled and auto-start flags. The person filters the list by
    pair or by source name.
 2. *Open or start a feed.* The person selects a feed and the system shows the
@@ -52,7 +52,8 @@ screen calls it the feed.
    same editor empty. Opening a feed reads its mixture of =gmm_component= rows
    beside the config, because the two are one answer.
 3. *Name the instrument.* The person enters the base and quote currency codes.
-   The system derives the ORE key, =FX/RATE/EUR/USD=, from the pair, and
+   The system derives the oresmd quote URI,
+   =oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD=, from the pair, and
    suggests a source name from it. The person may change the source name and
    add a description. The system offers the currency codes from the reference
    data and the pairs from the pair catalogue, and it states the pair is not
@@ -103,7 +104,7 @@ behaviour, the mixture and the rules sit in the middle in the order the save
 reads them, and the two previews sit beside them, so the person reads the
 choice and what it does at once. Save sits at the end of the form it commits.
 
-#+caption: FX feed authoring: the pair and derived ORE key, the price behaviour and the mixture of Gaussians, the validation rules, and the return distribution and sample paths they imply.
+#+caption: FX feed authoring: the pair and derived oresmd URI, the price behaviour and the mixture of Gaussians, the validation rules, and the return distribution and sample paths they imply.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_author-an-fx-price-feed.png]]
 
@@ -132,7 +133,7 @@ two numbers.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =fx_spot_generation_config= | The feed row: the pair, the derived ORE key, the source name, the tick rate, the engine, the initial price and where it comes from, the enabled and auto-start flags, and the folder it sits under | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
+| =fx_spot_generation_config= | The feed row: the pair, the derived oresmd URI, the source name, the tick rate, the engine, the initial price and where it comes from, the enabled and auto-start flags, and the folder it sits under | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
 | =gmm_component= | The mixture the process draws from: one weighted Gaussian per row, with its index, description, mean, standard deviation and weight | [[id:0F0FB279-A707-4BA5-A1A2-40F46E591EB6][ores.synthetic.gmm_component]] |
 | =market_data_generation_config= | The named container the feed belongs to, which supplies the collection the tree groups the feed under | [[id:8771702C-0BC4-4955-8D7E-DDBE2497D5B3][ores.synthetic.market_data_generation_config]] |
 | =folder= | The hierarchy node the feed hangs from, so a person finds it in the tree rather than by its source name | [[id:5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7][ores.synthetic.folder]] |
@@ -140,8 +141,8 @@ two numbers.
 The pair is two soft references: =base_currency_code= and
 =quote_currency_code= are text and point at =ores.refdata.currency= without a
 declared foreign key. The ticks a saved feed produces land in a =market_series=
-whose oresmd URI is derived from the ORE key, and the feed references that
-series only through the key. Both configs and components are versioned, so each
+whose series URI is derived from the feed's quote URI by =series_of=, and the feed references
+that series only through the URI. [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] states how a series names a curve or a rate. Both configs and components are versioned, so each
 has a history, and the mixture is stored as rows and never as a blob.
 
 * Operations and messages

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3D0A848D-458F-4ACC-8E1A-12D0D083F4F8
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_bootstrap_config
 #+description: Codegen entity model for the refdata =curve_bootstrap_config= table. The bootstrap settings of one ORE curve.

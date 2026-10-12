@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: E5A10C2E-E4E6-49C4-A4D0-78A6F0E2CBE2
+:END:
+#+title: Story: Filter and search trades through the model
+#+description: Declare the filterable, searchable and sortable columns of the trade in its model, so that the standard list filter can find a trade by its counterparty and its trade type and search by type. The trade screens need this and no new operation.
+#+type: story
+#+level: s2
+#+filetags: :trading:codegen:nats:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The trade model declares which columns a list can filter, search and sort by. The generated protocol, repository and wire types carry them, and a test shows the list narrowed by each.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The trade model declares the counterparty and the trade type filterable, the trade type searchable, and the sortable columns.
+- The generated filter record, repository and wire types carry the members.
+- A repository test narrows the trade list by counterparty, by trade type and by search, and reports the total.
+- The columns that cannot be declared yet, and why, are recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7B7A868E-5AFC-40D4-8F0F-BC9CB0CBC8DE][Scaffold story: Filter and search trades through the model]] | DONE | 2026-10-11 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5979F433-BC7D-4D74-8082-3F767834EE54][Declare the trade list's filter and search columns]] | DONE | 2026-10-12 | 2026-10-12 | Initial task for: Filter and search trades through the model |
+
+* Decisions
+
+- The trade model declares columns, and the generator emits the filter members. No hand-written filter code.
+- Only columns of the trade itself are declared. The identifier, state and book live in child tables and stay in the backlog capture.
+
+* Out of scope
+
+- Search by identifier, filter by state and book, enum column filters and child-table reads. See the backlog capture.
+
+* Result
+
+The trade list filters by counterparty and trade type, and searches and sorts by trade type, through the standard filter record. A repository test covers each, with the total.

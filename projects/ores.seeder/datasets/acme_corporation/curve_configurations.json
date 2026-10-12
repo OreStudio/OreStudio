@@ -1,0 +1,38 @@
+[
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8b56a295-a1a9-52aa-8064-26fad58bfa65",
+    "name": "Group curve configuration",
+    "description": "The curves ACME Corporation Group marks its trades on.",
+    "configuration_id": "f521021d-e301-569f-b087-960a7a790f42"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "name": "UK curve configuration",
+    "description": "The curves ACME Corporation UK marks its trades on.",
+    "configuration_id": "e9e5cac4-f810-5d57-aac4-83909070410c"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "name": "US curve configuration",
+    "description": "The curves ACME Corporation US marks its trades on.",
+    "configuration_id": "262f620f-a2cc-550c-89fb-ce6136a8869e"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "name": "HK curve configuration",
+    "description": "The curves ACME Corporation HK marks its trades on.",
+    "configuration_id": "df52891d-3f1c-55b3-bfab-12a111b20d58"
+  }
+]

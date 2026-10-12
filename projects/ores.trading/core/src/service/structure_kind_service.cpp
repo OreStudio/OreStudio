@@ -102,6 +102,7 @@ domain::structure_kind to_domain(const messaging::structure_kind_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_structure_kinds_response structure_kind_service::list_structure_kinds(

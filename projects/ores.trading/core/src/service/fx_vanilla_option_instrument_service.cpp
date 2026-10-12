@@ -118,6 +118,7 @@ to_domain(const messaging::fx_vanilla_option_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fx_vanilla_option_instruments_response

@@ -117,6 +117,7 @@ domain::yield_curve_config to_domain(const messaging::yield_curve_config_write& 
     return v;
 }
 
+
 }
 
 messaging::list_yield_curve_configs_response yield_curve_config_service::list_yield_curve_configs(

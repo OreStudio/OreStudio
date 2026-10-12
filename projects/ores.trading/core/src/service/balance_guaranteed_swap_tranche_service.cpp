@@ -113,6 +113,7 @@ to_domain(const messaging::balance_guaranteed_swap_tranche_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_balance_guaranteed_swap_tranches_response

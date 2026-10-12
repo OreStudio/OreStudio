@@ -230,3 +230,4 @@ UI.
 * See also
 
 - [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how ORE Studio names a curve or a surface: as a series, by its series URI.

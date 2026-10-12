@@ -525,9 +525,15 @@ describe('GET /api/operations/grid/series', () => {
             'compute.v1.ops.get_node_series',
         ]);
         for (const call of asked) {
-            const input = call.body as { bucketSeconds: number; startTime: string; endTime: string };
+            const input = call.body as {
+                bucketSeconds: number;
+                startTime: string;
+                endTime: string;
+            };
             expect(input.bucketSeconds).toBe(300);
-            const spanMs = Date.parse(input.endTime.replace(' ', 'T')) - Date.parse(input.startTime.replace(' ', 'T'));
+            const spanMs =
+                Date.parse(input.endTime.replace(' ', 'T')) -
+                Date.parse(input.startTime.replace(' ', 'T'));
             expect(spanMs).toBe(24 * 60 * 60 * 1000);
         }
         expect(calls.filter((call) => call.subject === 'compute.v1.hosts.list')).toHaveLength(1);

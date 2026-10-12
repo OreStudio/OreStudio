@@ -108,6 +108,7 @@ domain::app_version to_domain(const messaging::app_version_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_app_versions_response

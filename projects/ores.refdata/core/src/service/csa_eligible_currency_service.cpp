@@ -108,6 +108,7 @@ domain::csa_eligible_currency to_domain(const messaging::csa_eligible_currency_w
     return v;
 }
 
+
 }
 
 messaging::list_csa_eligible_currencies_response

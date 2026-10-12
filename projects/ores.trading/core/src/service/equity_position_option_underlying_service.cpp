@@ -117,6 +117,7 @@ to_domain(const messaging::equity_position_option_underlying_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_equity_position_option_underlyings_response

@@ -108,6 +108,7 @@ domain::methodology to_domain(const messaging::methodology_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_methodologies_response

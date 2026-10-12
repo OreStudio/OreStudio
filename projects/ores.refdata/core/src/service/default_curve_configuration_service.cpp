@@ -131,6 +131,7 @@ to_domain(const messaging::default_curve_configuration_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_default_curve_configurations_response

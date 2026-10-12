@@ -103,6 +103,7 @@ domain::party_type to_domain(const messaging::party_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_party_types_response

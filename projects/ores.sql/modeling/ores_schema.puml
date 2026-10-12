@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T23:20:31.653727Z
+' Generated: 2026-10-12T10:59:04.698805Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-505 tables in 21 groups.
+545 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -244,8 +244,10 @@ entity "dq_staging" as dq_staging {
   ores_dq_badge_definitions_artefact_tbl
   ores_dq_badge_mappings_artefact_tbl
   ores_dq_badge_severities_artefact_tbl
+  ores_dq_base_correlation_configs_artefact_tbl
   ores_dq_benchmark_rates_artefact_tbl
   ores_dq_bma_basis_swap_conventions_artefact_tbl
+  ores_dq_bond_future_volatility_configs_artefact_tbl
   ores_dq_bond_yield_conventions_artefact_tbl
   ores_dq_books_artefact_tbl
   ores_dq_business_centres_artefact_tbl
@@ -254,13 +256,17 @@ entity "dq_staging" as dq_staging {
   ores_dq_calendar_events_artefact_tbl
   ores_dq_calendar_types_artefact_tbl
   ores_dq_calendars_artefact_tbl
+  ores_dq_cap_floor_volatility_configs_artefact_tbl
   ores_dq_cashflow_types_artefact_tbl
   ores_dq_cds_conventions_artefact_tbl
+  ores_dq_cds_volatility_configs_artefact_tbl
+  ores_dq_cds_volatility_terms_artefact_tbl
   ores_dq_cms_spread_option_conventions_artefact_tbl
   ores_dq_code_domains_artefact_tbl
   ores_dq_coding_schemes_artefact_tbl
   ores_dq_commodity_forward_conventions_artefact_tbl
   ores_dq_commodity_future_conventions_artefact_tbl
+  ores_dq_commodity_volatility_configs_artefact_tbl
   ores_dq_counterparty_aliases_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_bundles_artefact_tbl
@@ -275,15 +281,38 @@ entity "dq_staging" as dq_staging {
   ores_dq_currency_pair_convention_calendars_artefact_tbl
   ores_dq_currency_pair_conventions_artefact_tbl
   ores_dq_currency_pairs_artefact_tbl
+  ores_dq_curve_bootstrap_configs_artefact_tbl
+  ores_dq_curve_configuration_sections_artefact_tbl
+  ores_dq_curve_configurations_artefact_tbl
+  ores_dq_curve_correlation_configs_artefact_tbl
+  ores_dq_curve_definitions_artefact_tbl
+  ores_dq_curve_global_reports_artefact_tbl
+  ores_dq_curve_parametric_smile_parameters_artefact_tbl
+  ores_dq_curve_parametric_smiles_artefact_tbl
+  ores_dq_curve_quotes_artefact_tbl
+  ores_dq_curve_report_configurations_artefact_tbl
+  ores_dq_curve_security_configs_artefact_tbl
+  ores_dq_curve_segment_curves_artefact_tbl
+  ores_dq_curve_segments_artefact_tbl
+  ores_dq_curve_volatility_configs_artefact_tbl
+  ores_dq_default_curve_configs_artefact_tbl
+  ores_dq_default_curve_configurations_artefact_tbl
   ores_dq_deposit_conventions_artefact_tbl
   ores_dq_entity_classifications_artefact_tbl
+  ores_dq_equity_curve_configs_artefact_tbl
+  ores_dq_equity_volatility_configs_artefact_tbl
   ores_dq_fra_conventions_artefact_tbl
   ores_dq_future_conventions_artefact_tbl
   ores_dq_fx_option_conventions_artefact_tbl
+  ores_dq_fx_volatility_configs_artefact_tbl
   ores_dq_ibor_index_conventions_artefact_tbl
   ores_dq_image_tags_artefact_tbl
   ores_dq_images_artefact_tbl
+  ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl
+  ores_dq_inflation_curve_configs_artefact_tbl
+  ores_dq_inflation_seasonality_factors_artefact_tbl
   ores_dq_inflation_swap_conventions_artefact_tbl
+  ores_dq_intraday_power_curve_configs_artefact_tbl
   ores_dq_intraday_power_load_conventions_artefact_tbl
   ores_dq_ip2country_artefact_tbl
   ores_dq_lei_bic_artefact_tbl
@@ -305,13 +334,18 @@ entity "dq_staging" as dq_staging {
   ores_dq_payment_frequencies_artefact_tbl
   ores_dq_person_roles_artefact_tbl
   ores_dq_portfolios_artefact_tbl
+  ores_dq_pricing_model_configs_artefact_tbl
+  ores_dq_pricing_model_product_parameters_artefact_tbl
+  ores_dq_pricing_model_products_artefact_tbl
   ores_dq_regulatory_corporate_sectors_artefact_tbl
+  ores_dq_report_configurations_artefact_tbl
   ores_dq_report_definitions_artefact_tbl
   ores_dq_reporting_regimes_artefact_tbl
   ores_dq_risk_report_configs_artefact_tbl
   ores_dq_supervisory_bodies_artefact_tbl
   ores_dq_swap_conventions_artefact_tbl
   ores_dq_swap_index_conventions_artefact_tbl
+  ores_dq_swaption_volatility_configs_artefact_tbl
   ores_dq_synthetic_fx_spot_configs_artefact_tbl
   ores_dq_synthetic_gmm_components_artefact_tbl
   ores_dq_synthetic_ir_curve_configs_artefact_tbl
@@ -321,12 +355,18 @@ entity "dq_staging" as dq_staging {
   ores_dq_tenor_basis_swap_conventions_artefact_tbl
   ores_dq_tenor_basis_two_swap_conventions_artefact_tbl
   ores_dq_tenor_schedules_artefact_tbl
+  ores_dq_todays_market_collections_artefact_tbl
+  ores_dq_todays_market_configs_artefact_tbl
+  ores_dq_todays_market_configuration_bindings_artefact_tbl
+  ores_dq_todays_market_configurations_artefact_tbl
+  ores_dq_todays_market_entries_artefact_tbl
+  ores_dq_yield_curve_configs_artefact_tbl
   ores_dq_zero_conventions_artefact_tbl
   ores_dq_zero_inflation_index_conventions_artefact_tbl
 }
 note bottom of dq_staging
 Data Staging
-88 tables — ores_schema.dq_staging.puml
+128 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {

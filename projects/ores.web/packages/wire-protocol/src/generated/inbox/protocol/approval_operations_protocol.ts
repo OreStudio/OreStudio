@@ -344,6 +344,53 @@ export interface GetApprovalHistoryResponse {
     versions: ApprovalRequestVersion[];
 }
 
+/**
+ * @brief Where one part of a request stands.
+ *
+ * A request that needs several functions to approve lists one of these for each.
+ * The state says what a person reading the request needs to know: whether the
+ * part has answered, whether its turn has come, or whether an earlier part
+ * must answer first.
+ */
+export interface ApprovalPartProgress {
+    code: string;
+    name: string;
+    answer_order: number;
+    /**
+     * @brief approved, refused, waiting (its turn has come) or later (an earlier part
+     * must answer first).
+     */
+    state: string;
+    /**
+     * @brief The account that answered the part, as a UUID string, or empty.
+     */
+    decided_by: string;
+    decided_at: string;
+    comment: string;
+}
+
+/**
+ * @brief Reads where each part of one request stands.
+ *
+ * Answered when the caller raised the request, and when the caller may decide
+ * a request of its kind. Answered as not found otherwise, as opening the
+ * request is. The person who asked is the one who waits on the parts, so the
+ * entity read of the parts, which gates on the administrator's permission,
+ * cannot serve them.
+ */
+export interface GetApprovalPartsRequest {
+    request_id: string;
+}
+
+export interface GetApprovalPartsResponse {
+    result: Result;
+    /**
+     * @brief The parts in the order they answer in. Empty for a request that names
+     * no parts.
+     */
+    parts: ApprovalPartProgress[];
+}
+
 export const subjects = {
     raise_approval_request_request: 'inbox.v1.ops.raise_approval',
     withdraw_approval_request_request: 'inbox.v1.ops.withdraw_approval',
@@ -355,6 +402,7 @@ export const subjects = {
     remind_expiring_approvals_request: 'inbox.v1.ops.remind_expiring_approvals',
     retry_stalled_applies_request: 'inbox.v1.ops.retry_stalled_applies',
     get_approval_history_request: 'inbox.v1.ops.get_approval_history',
+    get_approval_parts_request: 'inbox.v1.ops.get_approval_parts',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -372,4 +420,5 @@ export const requiresSession = {
     remind_expiring_approvals_request: false,
     retry_stalled_applies_request: false,
     get_approval_history_request: true,
+    get_approval_parts_request: true,
 } as const;

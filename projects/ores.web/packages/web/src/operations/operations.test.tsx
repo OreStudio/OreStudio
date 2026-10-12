@@ -945,7 +945,12 @@ describe('the compute grid screen', () => {
     });
 
     it('says no host names a node rather than printing the id as a name', () => {
-        const html = withProviders(<GridPage />, '/?tab=nodes', [], gridView({ nodes: [NAMELESS_NODE] }));
+        const html = withProviders(
+            <GridPage />,
+            '/?tab=nodes',
+            [],
+            gridView({ nodes: [NAMELESS_NODE] }),
+        );
 
         expect(html).toContain('c30b9d47-0000-4000-8000-000000000003');
         expect(html).toContain('no host names it');
@@ -1459,7 +1464,16 @@ describe('the grid over time', () => {
 
     it('opens a machine to the nodes that run on it', () => {
         const seeded = (path: string): string =>
-            withProviders(<GridPage />, path, [], gridView(), busView(), logsView(), [], gridSeriesView());
+            withProviders(
+                <GridPage />,
+                path,
+                [],
+                gridView(),
+                busView(),
+                logsView(),
+                [],
+                gridSeriesView(),
+            );
 
         // Each machine on the overview links to the node list narrowed to it.
         expect(seeded('/')).toContain('href="/operations/grid?tab=nodes&amp;machine=rack-a"');
@@ -1483,7 +1497,16 @@ describe('the grid over time', () => {
 
     it('shows a computer’s hardware on its page, and its processors and memory in the machines table', () => {
         const seeded = (path: string): string =>
-            withProviders(<GridPage />, path, [], gridView(), busView(), logsView(), [], gridSeriesView());
+            withProviders(
+                <GridPage />,
+                path,
+                [],
+                gridView(),
+                busView(),
+                logsView(),
+                [],
+                gridSeriesView(),
+            );
 
         const page = seeded('/?tab=nodes&machine=rack-a');
         expect(page).toContain('Processors');
@@ -1511,7 +1534,16 @@ describe('the grid over time', () => {
 
     it('keeps the grid screen on three tabs, so each page stays short', () => {
         const seeded = (path: string): string =>
-            withProviders(<GridPage />, path, [], gridView(), busView(), logsView(), [], gridSeriesView());
+            withProviders(
+                <GridPage />,
+                path,
+                [],
+                gridView(),
+                busView(),
+                logsView(),
+                [],
+                gridSeriesView(),
+            );
 
         const overview = seeded('/');
         expect(overview).toContain('role="tablist"');
@@ -1640,7 +1672,10 @@ describe('the node heatmap and the node page', () => {
                 <TranslationProvider>
                     <MemoryRouter initialEntries={[`/operations/grid/nodes/${hostId}`]}>
                         <Routes>
-                            <Route path="/operations/grid/nodes/:hostId" element={<GridNodePage />} />
+                            <Route
+                                path="/operations/grid/nodes/:hostId"
+                                element={<GridNodePage />}
+                            />
                         </Routes>
                     </MemoryRouter>
                 </TranslationProvider>
@@ -1658,6 +1693,13 @@ describe('the node heatmap and the node page', () => {
         expect(html).toContain('>Task time<');
         expect(html).toContain('>Data moved<');
         expect(html).toContain('href="/operations/grid?tab=nodes"');
+    });
+
+    it('trails back through the grid and the machine the node runs on', () => {
+        const html = renderNodePage(NODE_A, seriesWithNodes());
+
+        expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations/grid?tab=nodes&amp;machine=rack-a"');
     });
 
     it('says a node that reported nothing in the range reported nothing', () => {

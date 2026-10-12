@@ -107,6 +107,7 @@ domain::structure_member to_domain(const messaging::structure_member_write& writ
     return v;
 }
 
+
 }
 
 messaging::list_structure_members_response structure_member_service::list_structure_members(

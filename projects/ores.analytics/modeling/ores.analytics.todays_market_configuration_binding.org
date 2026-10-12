@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D4C3A135-0155-4E56-99EA-096BC7CBE231
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.analytics.todays_market_configuration_binding
 #+description: Codegen entity model for the analytics =todays_market_configuration_binding= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

@@ -108,6 +108,7 @@ domain::role to_domain(const messaging::role_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_roles_response

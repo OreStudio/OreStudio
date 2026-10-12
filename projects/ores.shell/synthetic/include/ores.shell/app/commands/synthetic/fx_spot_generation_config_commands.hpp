@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key>
+     * @brief add <config_id> <base_currency_code> <quote_currency_code> <source_name> <oresmd_uri>
      * <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start>
      * <vintage_source> <vintage_date> <folder_id> <reason> <commentary>
      */
@@ -97,7 +97,7 @@ public:
 
     /**
      * @brief set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name>
-     * <ore_key> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled>
+     * <oresmd_uri> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled>
      * <auto_start> <vintage_source> <vintage_date> <folder_id> <reason> <commentary> [--version
      * <n>]
      */
@@ -107,7 +107,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code>
-     * <source_name> <ore_key> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type>
+     * <source_name> <oresmd_uri> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type>
      * <enabled> <auto_start> <vintage_source> <vintage_date> <folder_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

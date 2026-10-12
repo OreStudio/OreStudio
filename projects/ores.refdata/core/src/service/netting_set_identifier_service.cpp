@@ -109,6 +109,7 @@ domain::netting_set_identifier to_domain(const messaging::netting_set_identifier
     return v;
 }
 
+
 }
 
 messaging::list_netting_set_identifiers_response

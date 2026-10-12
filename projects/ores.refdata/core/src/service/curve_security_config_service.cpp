@@ -111,6 +111,7 @@ domain::curve_security_config to_domain(const messaging::curve_security_config_w
     return v;
 }
 
+
 }
 
 messaging::list_curve_security_configs_response

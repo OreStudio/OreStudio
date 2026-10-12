@@ -108,6 +108,7 @@ domain::trade_portfolio to_domain(const messaging::trade_portfolio_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_trade_portfolios_response trade_portfolio_service::list_trade_portfolios(

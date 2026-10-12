@@ -83,6 +83,22 @@ struct stalled_apply {
 };
 
 /**
+ * @brief Where one part of a request stands.
+ *
+ * The state is approved or refused when the part has answered, waiting when its
+ * turn has come, and later when an earlier part must answer first.
+ */
+struct part_progress {
+    std::string code;
+    std::string name;
+    int answer_order = 0;
+    std::string state;
+    std::string decided_by;
+    std::string decided_at;
+    std::string comment;
+};
+
+/**
  * @brief A request whose deadline is close, and the people who may answer it.
  */
 struct expiring_request {
@@ -156,6 +172,14 @@ public:
      * answer order has.
      */
     std::vector<domain::approval_part> open_parts_of(const std::string& request_id);
+
+    /**
+     * @brief Where each part of a request stands, in the order the parts answer.
+     *
+     * A part that has answered names who answered and when. Empty for a request
+     * that names no parts.
+     */
+    std::vector<part_progress> progress_of(const std::string& request_id);
 
     /**
      * @brief A part, read from the system tenant's catalogue.

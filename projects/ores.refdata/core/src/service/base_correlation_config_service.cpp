@@ -122,6 +122,7 @@ domain::base_correlation_config to_domain(const messaging::base_correlation_conf
     return v;
 }
 
+
 }
 
 messaging::list_base_correlation_configs_response

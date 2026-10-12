@@ -112,6 +112,7 @@ to_domain(const messaging::todays_market_configuration_binding_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_todays_market_configuration_bindings_response

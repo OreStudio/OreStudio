@@ -111,6 +111,7 @@ to_domain(const messaging::cms_spread_option_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_cms_spread_option_conventions_response

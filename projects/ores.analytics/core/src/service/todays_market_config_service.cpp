@@ -110,6 +110,7 @@ domain::todays_market_config to_domain(const messaging::todays_market_config_wri
     return v;
 }
 
+
 }
 
 messaging::list_todays_market_configs_response

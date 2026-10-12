@@ -109,6 +109,7 @@ domain::trade_activity to_domain(const messaging::trade_activity_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_trade_activities_response trade_activity_service::list_trade_activities(

@@ -1,0 +1,122 @@
+[
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0474babb-d95f-5397-b4c6-184438759bc8",
+    "todays_market_config_id": "f922f760-0d6b-5bf1-8f70-deac22c4f381",
+    "collection": "DiscountingCurves",
+    "collection_id": "ois",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3866725e-0007-52b8-9b4c-72c27044f709",
+    "todays_market_config_id": "f922f760-0d6b-5bf1-8f70-deac22c4f381",
+    "collection": "IndexForwardingCurves",
+    "collection_id": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2b523fd2-758d-5af3-95ad-a5f9f12e2179",
+    "todays_market_config_id": "f922f760-0d6b-5bf1-8f70-deac22c4f381",
+    "collection": "FxSpots",
+    "collection_id": "default",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "be1f9a5b-9354-5e1a-a225-2d4cdf89875a",
+    "todays_market_config_id": "9a9cf3ba-ad78-59ae-9e4f-ccc0e8b1e32b",
+    "collection": "DiscountingCurves",
+    "collection_id": "ois",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fdafc8ed-691b-5953-83ab-7d52b2b214fd",
+    "todays_market_config_id": "9a9cf3ba-ad78-59ae-9e4f-ccc0e8b1e32b",
+    "collection": "IndexForwardingCurves",
+    "collection_id": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5151990b-a694-5349-b6c0-4b9cd00045b1",
+    "todays_market_config_id": "9a9cf3ba-ad78-59ae-9e4f-ccc0e8b1e32b",
+    "collection": "FxSpots",
+    "collection_id": "default",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a62d2b10-ece0-5bfa-aee5-ed4c4ba4d8c8",
+    "todays_market_config_id": "135d59a9-075e-50d1-81f6-83f6b866c18a",
+    "collection": "DiscountingCurves",
+    "collection_id": "ois",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3223aa51-880e-5a19-9234-41749f99995c",
+    "todays_market_config_id": "135d59a9-075e-50d1-81f6-83f6b866c18a",
+    "collection": "IndexForwardingCurves",
+    "collection_id": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "151a844e-796a-57fd-9da7-3ab8a01c620e",
+    "todays_market_config_id": "135d59a9-075e-50d1-81f6-83f6b866c18a",
+    "collection": "FxSpots",
+    "collection_id": "default",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d726e725-c0de-5ea7-a6f3-7794779a306e",
+    "todays_market_config_id": "512eaa01-5828-5e84-8728-aa1b106e4b0f",
+    "collection": "DiscountingCurves",
+    "collection_id": "ois",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f2570fde-2a38-5628-b0d2-3ac49a435252",
+    "todays_market_config_id": "512eaa01-5828-5e84-8728-aa1b106e4b0f",
+    "collection": "IndexForwardingCurves",
+    "collection_id": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f3049a53-0399-57fc-a6e8-07efb17a87b8",
+    "todays_market_config_id": "512eaa01-5828-5e84-8728-aa1b106e4b0f",
+    "collection": "FxSpots",
+    "collection_id": "default",
+    "position": 2
+  }
+]

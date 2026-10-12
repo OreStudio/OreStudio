@@ -26,7 +26,7 @@ Nothing publishes the bindings from a definition to its documents. Publish them 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Retired on 2026-10-12, delivered. The task "Store the report configuration documents in DQ and populate ACME's" publishes each definition with its bindings by name, and the definitions dataset of each party depends on the configuration datasets. A clean provision leaves every definition bound to five configurations.

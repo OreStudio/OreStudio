@@ -37,6 +37,11 @@ export interface BookLineOutcome {
     entity_id: string;
     columns: string[];
     refusal: string;
+    /**
+     * @brief The parts the policy names for this line alone, which decide it. The
+     * request needs the union over its lines.
+     */
+    part_codes: string[];
 }
 
 /**
@@ -88,9 +93,74 @@ export interface RaiseBookChangesResponse {
     part_codes: string[];
 }
 
+/**
+ * @brief One column of a proposed line beside the live book's value.
+ *
+ * The values are text whatever the column's type, because a screen draws them
+ * and does not compute with them. The before is empty when the line creates
+ * the book.
+ */
+export interface BookFieldDelta {
+    name: string;
+    before: string;
+    after: string;
+    changed: boolean;
+}
+
+/**
+ * @brief One line of a request as the decider reads it: the operation, the book
+ * it names, and each column beside the live value.
+ */
+export interface BookChangeDelta {
+    line_no: number;
+    operation: string;
+    entity_id: string;
+    base_version: number;
+    applied: boolean;
+    fields: BookFieldDelta[];
+}
+
+/**
+ * @brief Reads the lines a request holds, each beside the live book.
+ *
+ * Answered to the person who raised the request, to whoever may decide its
+ * kind, and to whoever may read the tenant's requests. Answered as not found
+ * otherwise, as opening the request is.
+ */
+export interface GetBookChangesRequest {
+    request_id: string;
+}
+
+export interface GetBookChangesResponse {
+    result: Result;
+    /**
+     * @brief The lines in line order.
+     */
+    changes: BookChangeDelta[];
+}
+
+/**
+ * @brief Runs the lines a request holds through the real write again and
+ * writes nothing.
+ *
+ * The live book may have moved since the request was raised, so the checks a
+ * decider reads are run now. Answered to the same callers as the lines are.
+ */
+export interface RecheckBookChangesRequest {
+    request_id: string;
+}
+
+export interface RecheckBookChangesResponse {
+    result: Result;
+    lines: BookLineOutcome[];
+    part_codes: string[];
+}
+
 export const subjects = {
     preview_book_changes_request: 'refdata.v1.ops.preview_book_changes',
     raise_book_changes_request: 'refdata.v1.ops.raise_book_changes',
+    get_book_changes_request: 'refdata.v1.ops.get_book_changes',
+    recheck_book_changes_request: 'refdata.v1.ops.recheck_book_changes',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -100,4 +170,6 @@ export const subjects = {
 export const requiresSession = {
     preview_book_changes_request: true,
     raise_book_changes_request: true,
+    get_book_changes_request: true,
+    recheck_book_changes_request: true,
 } as const;

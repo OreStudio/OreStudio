@@ -106,6 +106,7 @@ domain::tenor to_domain(const messaging::tenor_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenors_response

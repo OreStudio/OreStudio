@@ -137,10 +137,7 @@ export function fleetSeries(view: GridSeriesView, t: Translator['t']): readonly 
 }
 
 /** The results that finished in each interval. */
-export function throughputSeries(
-    view: GridSeriesView,
-    t: Translator['t'],
-): readonly ChartSeries[] {
+export function throughputSeries(view: GridSeriesView, t: Translator['t']): readonly ChartSeries[] {
     return [
         {
             key: 'finished',
@@ -281,7 +278,9 @@ export function heatmapRow(
         if (held === 0) {
             return null;
         }
-        return metric === 'work' ? (work[index] ?? 0) : (fetched[index] ?? 0) + (uploaded[index] ?? 0);
+        return metric === 'work'
+            ? (work[index] ?? 0)
+            : (fetched[index] ?? 0) + (uploaded[index] ?? 0);
     });
 }
 
@@ -337,10 +336,7 @@ export function NodeHeatmap({ view }: { readonly view: GridSeriesView }): ReactN
     const nodes = view.nodes.list;
     const count = view.bucket_count;
     const rows = nodes.map((_, index) => heatmapRow(view, index, metric));
-    const maximum = rows.reduce(
-        (top, row) => Math.max(top, ...row.map((value) => value ?? 0)),
-        0,
-    );
+    const maximum = rows.reduce((top, row) => Math.max(top, ...row.map((value) => value ?? 0)), 0);
     const tone = HEATMAP_TONE[metric];
     const axis = axisOf(view);
     const toneClass = tone === 'warn' ? 'text-warn' : 'text-accent';
@@ -354,7 +350,8 @@ export function NodeHeatmap({ view }: { readonly view: GridSeriesView }): ReactN
                 <ul className="space-y-0.5">
                     {nodes.map((node, index) => {
                         const row = rows[index] ?? [];
-                        const newMachine = index === 0 || nodes[index - 1]?.machine !== node.machine;
+                        const newMachine =
+                            index === 0 || nodes[index - 1]?.machine !== node.machine;
                         return (
                             <li key={node.host_id}>
                                 {newMachine && (
@@ -407,7 +404,10 @@ export function NodeHeatmap({ view }: { readonly view: GridSeriesView }): ReactN
                                                     width={1}
                                                     height={1}
                                                     className="fill-current"
-                                                    opacity={(0.2 + 0.8 * (value / maximum)).toFixed(2)}
+                                                    opacity={(
+                                                        0.2 +
+                                                        0.8 * (value / maximum)
+                                                    ).toFixed(2)}
                                                 />
                                             );
                                         })}

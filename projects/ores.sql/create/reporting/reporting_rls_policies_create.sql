@@ -58,52 +58,6 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
--- Risk Report Configs
--- -----------------------------------------------------------------------------
-alter table ores_reporting_risk_report_configs_tbl enable row level security;
-
-drop policy if exists risk_report_configs_tenant_isolation_policy
-    on ores_reporting_risk_report_configs_tbl;
-
-create policy risk_report_configs_tenant_isolation_policy
-on ores_reporting_risk_report_configs_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists risk_report_configs_party_isolation_policy
-    on ores_reporting_risk_report_configs_tbl;
-
-create policy risk_report_configs_party_isolation_policy
-on ores_reporting_risk_report_configs_tbl
-as restrictive
-for all using (
-    ores_iam_visible_party_ids_fn() is null
-    or exists (
-        select 1
-        from ores_reporting_report_definitions_tbl rd
-        where rd.tenant_id = ores_reporting_risk_report_configs_tbl.tenant_id
-          and rd.id = ores_reporting_risk_report_configs_tbl.report_definition_id
-          and rd.party_id = any(ores_iam_visible_party_ids_fn())
-          and rd.valid_to = ores_utility_infinity_timestamp_fn()
-    )
-)
-with check (
-    ores_iam_visible_party_ids_fn() is null
-    or exists (
-        select 1
-        from ores_reporting_report_definitions_tbl rd
-        where rd.tenant_id = ores_reporting_risk_report_configs_tbl.tenant_id
-          and rd.id = ores_reporting_risk_report_configs_tbl.report_definition_id
-          and rd.party_id = any(ores_iam_visible_party_ids_fn())
-          and rd.valid_to = ores_utility_infinity_timestamp_fn()
-    )
-);
-
--- -----------------------------------------------------------------------------
 -- Risk Report Config Portfolios
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_risk_report_config_portfolios_tbl enable row level security;
@@ -131,13 +85,9 @@ for all using (
     or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
-        join ores_reporting_report_definitions_tbl rd
-          on rd.tenant_id = rc.tenant_id
-         and rd.id = rc.report_definition_id
-         and rd.valid_to = ores_utility_infinity_timestamp_fn()
         where rc.tenant_id = ores_reporting_risk_report_config_portfolios_tbl.tenant_id
           and rc.id = ores_reporting_risk_report_config_portfolios_tbl.risk_report_config_id
-          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.party_id = any(ores_iam_visible_party_ids_fn())
           and rc.valid_to = ores_utility_infinity_timestamp_fn()
     )
 )
@@ -146,13 +96,9 @@ with check (
     or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
-        join ores_reporting_report_definitions_tbl rd
-          on rd.tenant_id = rc.tenant_id
-         and rd.id = rc.report_definition_id
-         and rd.valid_to = ores_utility_infinity_timestamp_fn()
         where rc.tenant_id = ores_reporting_risk_report_config_portfolios_tbl.tenant_id
           and rc.id = ores_reporting_risk_report_config_portfolios_tbl.risk_report_config_id
-          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.party_id = any(ores_iam_visible_party_ids_fn())
           and rc.valid_to = ores_utility_infinity_timestamp_fn()
     )
 );
@@ -185,13 +131,9 @@ for all using (
     or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
-        join ores_reporting_report_definitions_tbl rd
-          on rd.tenant_id = rc.tenant_id
-         and rd.id = rc.report_definition_id
-         and rd.valid_to = ores_utility_infinity_timestamp_fn()
         where rc.tenant_id = ores_reporting_risk_report_config_books_tbl.tenant_id
           and rc.id = ores_reporting_risk_report_config_books_tbl.risk_report_config_id
-          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.party_id = any(ores_iam_visible_party_ids_fn())
           and rc.valid_to = ores_utility_infinity_timestamp_fn()
     )
 )
@@ -200,13 +142,9 @@ with check (
     or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
-        join ores_reporting_report_definitions_tbl rd
-          on rd.tenant_id = rc.tenant_id
-         and rd.id = rc.report_definition_id
-         and rd.valid_to = ores_utility_infinity_timestamp_fn()
         where rc.tenant_id = ores_reporting_risk_report_config_books_tbl.tenant_id
           and rc.id = ores_reporting_risk_report_config_books_tbl.risk_report_config_id
-          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.party_id = any(ores_iam_visible_party_ids_fn())
           and rc.valid_to = ores_utility_infinity_timestamp_fn()
     )
 );

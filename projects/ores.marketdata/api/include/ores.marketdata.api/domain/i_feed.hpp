@@ -24,19 +24,9 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::marketdata::domain {
-
-/**
- * @brief The feed's qualifier plus role, joined with a unit separator -- the
- * identity a feed's consumers look observations up by. Two feeds conflict when
- * their conflict keys are equal (same qualifier AND same role; a discount curve
- * and a projection curve for the same qualifier coexist). A feed with no role
- * (e.g. FX spot) still produces a deterministic key.
- */
-inline std::string feed_conflict_key(const std::string& qualifier, const std::string& role) {
-    return qualifier + '\x1f' + role;
-}
 
 /**
  * @brief Common interface for a synthetic market-data producer feed.
@@ -51,8 +41,8 @@ inline std::string feed_conflict_key(const std::string& qualifier, const std::st
  * (fx_spot_feed, ir_curve_feed) under per-kind factory registrations.
  *
  * The interface exposes the identity every producer already carries:
- * source_name (unique per producer), qualifier (the published
- * market-data key consumers look up), and role (oresmd's curve_role for
+ * source_name (unique per producer), series_uris (the oresmd series the feed
+ * publishes into, which consumers look up), and role (oresmd's curve_role for
  * curves; empty for FX). Lifecycle is start()/stop().
  *
  * Threading model: start() blocks the calling thread until stop() is
@@ -78,14 +68,24 @@ public:
     virtual const std::string& source_name() const = 0;
 
     /**
-     * @brief The published market-data key consumers look up, e.g. "EUR/USD"
-     * for FX spot, "USD/SOFR" for an IR curve family.
+     * @brief The oresmd series this feed publishes points into, as series URIs.
+     *
+     * A curve, a surface or a rate is a series (see the oresmd URI note), so this
+     * is the identity consumers look the feed's data up by. An FX spot feed names
+     * one series, e.g.
+     * "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD". An IR
+     * curve feed names one series for the pillars that start at spot and one for
+     * each later start date. Two feeds must not run while their lists share a
+     * series. A feed that names no series has an empty list and conflicts with
+     * nothing.
      */
-    virtual const std::string& qualifier() const = 0;
+    virtual const std::vector<std::string>& series_uris() const = 0;
 
     /**
-     * @brief The series role this feed publishes under (oresmd's curve_role);
-     * empty for feeds without roles (FX spot).
+     * @brief The use this feed's curve is built for, such as "discount" or
+     * "projection"; empty for feeds without roles (FX spot). The oresmd grammar
+     * holds no role, so the role is the feed's own data and plays no part in
+     * which series the feed owns.
      */
     virtual const std::string& role() const = 0;
 
@@ -103,13 +103,6 @@ public:
      * a producer's kind is fixed for its lifetime.
      */
     virtual std::string_view kind() const = 0;
-
-    /**
-     * @brief The identity two feeds must not share while both run (see
-     * feed_conflict_key). Controllers reject a start whose conflict key is
-     * already held by a different running feed.
-     */
-    virtual std::string conflict_key() const = 0;
 
     /**
      * @brief Start the tick loop; blocks until stop() is called from another

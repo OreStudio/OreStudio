@@ -117,6 +117,7 @@ to_domain(const messaging::bond_future_volatility_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_future_volatility_configs_response

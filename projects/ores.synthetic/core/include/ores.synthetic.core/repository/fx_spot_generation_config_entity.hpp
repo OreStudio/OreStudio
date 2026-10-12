@@ -56,7 +56,7 @@ struct fx_spot_generation_config_entity {
     std::string quote_currency_code;
 
     std::string source_name;
-    std::string ore_key;
+    std::string oresmd_uri;
     std::string price_source = "vintage";
     double gmm_initial_price = 0.0;
     int ticks_per_hour = 0;

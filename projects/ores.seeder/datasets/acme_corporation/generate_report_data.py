@@ -28,6 +28,9 @@ Usage:
 import json
 import os
 
+import generate_configuration_data as documents
+import generate_risk_config_data as risk
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # The legal entities and what each one is.
@@ -104,6 +107,20 @@ def check_prerequisites(company, records):
             raise SystemExit(f"{company} runs {name} without {sorted(missing)} (D6)")
 
 
+def bindings(company, records):
+    """Every definition binds the document of each type its entity holds, and the run
+    settings its report needs. The risk report type requires all of them."""
+    return [{
+        "company_code": company,
+        "version": 0,
+        "report_name": r["name"],
+        "configuration_type_code": type_code,
+        "configuration_name": name,
+    } for r in records for type_code, name in (
+        [(t, documents.document_name(company, t)) for t in documents.DOCUMENT_NAMES]
+        + [("risk_report_config", risk.configuration_name(company, r["name"]))])]
+
+
 def report_definitions():
     catalogue = load("report_catalogue")
     records = []
@@ -115,7 +132,12 @@ def report_definitions():
 
 
 def main():
-    write("report_definitions", report_definitions())
+    definitions = report_definitions()
+    write("report_definitions", definitions)
+    write("report_configurations", [
+        b for company in ENTITIES
+        for b in bindings(company, [r for r in definitions if r["company_code"] == company])])
+    write("risk_report_configs", risk.risk_report_configs(definitions, risk.load("portfolios")))
 
 
 if __name__ == "__main__":

@@ -90,11 +90,11 @@ A bare codename matches a folder at any depth. Two folders named =fx= under
 different collections therefore produce an ambiguous match, and the command
 prints the candidates instead of choosing one.
 
-A feed token is a UUID, an ore key, or a =source_name=. =resolve_feed=
+A feed token is a UUID, an oresmd URI, or a =source_name=. =resolve_feed=
 probes the FX spot config family first and the IR curve family second. A
 UUID is matched against the config ids in that same order. A name is matched
-against an FX config's ore key or source name, and then against an IR curve
-config's source name only, because an IR curve config carries no ore key. A
+against an FX config's oresmd URI or source name, and then against an IR curve
+config's source name only, because an IR curve config names several series and not one URI. A
 token shared by several visible feeds is reported as ambiguous, with each
 feed's =source_name= listed.
 
@@ -158,3 +158,4 @@ found no entry rather than that the data is missing.
 - The command group is
   =projects/ores.shell/application/src/app/commands/synthetic_commands.cpp=,
   built by =synthetic_commands::register_commands=.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — the series URI that a feed owns and that two feeds must not share.

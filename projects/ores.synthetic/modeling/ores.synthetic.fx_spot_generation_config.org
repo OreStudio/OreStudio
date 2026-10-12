@@ -111,7 +111,7 @@ Stable source name carried as provenance of generated observations (e.g.
 std::string("synthetic.") + std::string(faker::finance::currencyCode())
 #+end_src
 
-** ore_key
+** oresmd_uri
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
@@ -120,11 +120,14 @@ std::string("synthetic.") + std::string(faker::finance::currencyCode())
 :searchable: true
 :END:
 
-ORE market key identifying the FX spot rate produced (e.g. "FX/RATE/EUR/USD").
-Derived from the currency pair; not entered directly.
+The oresmd quote URI of the FX spot rate this feed produces (e.g.
+"oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD").
+Derived from the currency pair; not entered directly. A feed built from the
+config reads it with the strict oresmd codec, and refuses a URI that is not an
+fx_spot quote or whose currencies differ from the base and the quote currency.
 
 #+begin_src cpp :name generator
-std::string("FX/RATE/EUR/USD")
+std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
 #+end_src
 
 ** price_source
@@ -221,7 +224,7 @@ never auto-started -- e.g. a legacy/alternate-index variant living
 alongside a currency's primary config so the two never silently fight
 over the same published qualifier at boot). Starting a feed --
 whether auto-start-at-boot or a manual Start -- is rejected outright
-if another feed is already running for the same ore_key; nothing
+if another feed is already running for the same oresmd_uri; nothing
 auto-disables the running one, so switching requires an explicit Stop
 then Start.
 
@@ -299,7 +302,7 @@ std::nullopt
 | "base_currency_code" <> "quote_currency_code"         |
 | "source_name" <> ''                                   |
 | "source_name" like 'synthetic.%'                      |
-| "ore_key" <> ''                                       |
+| "oresmd_uri" like 'oresmd://fx/%?type=quote&instrument=fx_spot&quote=rate&ccy=%' |
 | "ticks_per_hour" > 0                                  |
 | "process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')   |
 | "price_source" in ('fixed', 'vintage')                |
@@ -367,7 +370,7 @@ std::nullopt
 | base_currency_code  | Base         |
 | quote_currency_code | Quote        |
 | source_name         | Source       |
-| ore_key             | ORE Key      |
+| oresmd_uri          | oresmd URI   |
 | price_source        | Price Source |
 | ticks_per_hour      | Ticks/Hour   |
 | enabled             | Enabled      |
@@ -422,7 +425,7 @@ the formatter function needs, if any.
 | BaseCurrencyCode   | base_currency_code  | Base Currency       | string    | 100   |                   |                                |
 | QuoteCurrencyCode  | quote_currency_code | Quote Currency      | string    | 100   |                   |                                |
 | SourceName         | source_name         | Source Name         | string    | 180   |                   |                                |
-| OreKey             | ore_key             | ORE Key             | string    | 180   |                   |                                |
+| OresmdUri          | oresmd_uri          | oresmd URI          | string    | 180   |                   |                                |
 | PriceSource        | price_source        | Price Source        | string    | 100   |                   |                                |
 | GmmInitialPrice    | gmm_initial_price   | Initial Price       | double    | 100   |                   |                                |
 | TicksPerHour       | ticks_per_hour      | Ticks/Hr            | int       | 80    |                   |                                |

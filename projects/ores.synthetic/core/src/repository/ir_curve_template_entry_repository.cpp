@@ -101,11 +101,19 @@ filter_condition(const std::optional<messaging::ir_curve_template_entries_filter
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->ir_curve_config_id)
+        r.push_back(equals("ir_curve_config_id", filter_value(*filter->ir_curve_config_id)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->ir_curve_config_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->ir_curve_config_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("ir_curve_config_id", std::move(values)));
     }
     return all_of(std::move(r));
 }

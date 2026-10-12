@@ -106,6 +106,7 @@ domain::callable_swap_instrument to_domain(const messaging::callable_swap_instru
     return v;
 }
 
+
 }
 
 messaging::list_callable_swap_instruments_response

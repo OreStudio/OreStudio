@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/book_changes/book_change.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+book_changes list --limit 1

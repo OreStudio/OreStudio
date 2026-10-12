@@ -102,6 +102,7 @@ domain::fra_convention to_domain(const messaging::fra_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fra_conventions_response fra_convention_service::list_fra_conventions(

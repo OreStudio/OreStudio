@@ -1,0 +1,229 @@
+:PROPERTIES:
+:ID: A4822F9C-4D8C-41B1-8E70-CE7EBC1C71F9
+:END:
+#+title: ores.synthetic.convert_fx_simple
+#+description: Codegen operation model for converting an FX feed's mixture between the simple and the advanced view.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: convert_fx_simple
+#+namespace: ores::synthetic::messaging
+#+brief: FX mixture conversion between the simple and the advanced view.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+The mixture an FX feed's engine reads for the simple view, and back.
+
+The simple view asks how far the price drifts and how far it moves in an hour,
+and how often it jumps; or, for the mean-reverting engine, how long the price
+takes to come half way back. The advanced view is the mixture itself: a mean,
+a deviation and a weight for each component. Every figure of the simple view is
+per hour, so it does not depend on the feed's rate. The service turns the one
+into the other, beside the engines it describes. Nothing is stored.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** convert_fx_simple_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.convert_fx_simple
+:response: convert_fx_simple_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request a mixture in the terms of the simple view, or the other way.
+ *
+ * Stateless: the caller names the values as they stand on its screen.
+ */
+#+end_src
+
+*** process_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The engine the mixture is read by: geometric, arithmetic or ornstein_uhlenbeck. */
+#+end_src
+
+*** to_simple
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True to read the mixture as the simple view; false to write the simple view as a mixture. */
+#+end_src
+
+*** initial_price
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The price that scales between log-returns and price units. */
+#+end_src
+
+*** ticks_per_hour
+:PROPERTIES:
+:cpp_type: int
+:default: 3600
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed's rate, which turns a figure per hour into one per update. */
+#+end_src
+
+*** gmm_means
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief Component means, when reading a mixture; means, stdevs and weights have equal size. */
+#+end_src
+
+*** gmm_stdevs
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief Component standard deviations, when reading a mixture. */
+#+end_src
+
+*** gmm_weights
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief Component weights, when reading a mixture; the first is κ under the Ornstein-Uhlenbeck engine. */
+#+end_src
+
+*** trend_pct_per_hour
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The simple view's drift, as a percent of the price over an hour. */
+#+end_src
+
+*** volatility_pct_per_hour
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The simple view's volatility, as a percent of the price over an hour. */
+#+end_src
+
+*** jump_share_pct
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The percent of updates that come from the jump regime. */
+#+end_src
+
+*** half_life_minutes
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief Minutes to come half way back to the long-run price; read by Ornstein-Uhlenbeck only. */
+#+end_src
+
+** convert_fx_simple_response
+#+begin_src cpp :name comment
+/**
+ * @brief The converted values, and why there are none when there are none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** has_simple_form
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief False when the simple view only approximates the mixture; message then says why. */
+#+end_src
+
+*** trend_pct_per_hour
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The simple view's drift, as a percent of the price over an hour. */
+#+end_src
+
+*** volatility_pct_per_hour
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The simple view's volatility, as a percent of the price over an hour. */
+#+end_src
+
+*** jump_share_pct
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The percent of updates that come from the jump regime. */
+#+end_src
+
+*** half_life_minutes
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief Minutes to come half way back to the long-run price. */
+#+end_src
+
+*** gmm_means
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The mixture's means. */
+#+end_src
+
+*** gmm_stdevs
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The mixture's standard deviations. */
+#+end_src
+
+*** gmm_weights
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The mixture's weights, κ first under the Ornstein-Uhlenbeck engine. */
+#+end_src
+

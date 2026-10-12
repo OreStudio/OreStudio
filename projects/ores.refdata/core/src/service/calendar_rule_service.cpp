@@ -115,6 +115,7 @@ domain::calendar_rule to_domain(const messaging::calendar_rule_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_calendar_rules_response

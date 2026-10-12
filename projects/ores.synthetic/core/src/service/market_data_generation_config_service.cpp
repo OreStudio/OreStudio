@@ -114,6 +114,7 @@ to_domain(const messaging::market_data_generation_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_market_data_generation_configs_response

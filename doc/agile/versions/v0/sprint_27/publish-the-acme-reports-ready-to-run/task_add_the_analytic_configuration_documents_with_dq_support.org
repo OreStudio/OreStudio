@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 721F4695-4B63-41FD-B15D-B1FF92CEB27E
+:END:
+#+title: Task: Add the analytic configuration documents with DQ support
+#+description: Add the entities, document stores and DQ staging for the documents that analytics read: simulation, sensitivity, stress test, historical return, Basel traffic light, SIMM calibration and credit simulation.
+#+type: task
+#+level: s1
+#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Several analytics read a configuration document that has no entity model, no store or no DQ support. The simulation document has 18 entities and the sensitivity document 58 in the ORE schemas. The stress test and the credit simulation have models but no document store, and the historical return, Basel traffic light and SIMM calibration documents have nothing. Add what is missing for each, add the DQ staging and the publish for each, craft the ACME documents for the reports that read them, and bind them. This task takes over the work of the backlog story Complete the ORE report configuration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. The file naming work can run beside it. |
+| Next         | Check the state of each of the seven documents against the entity models and stores that exist, and decide the order. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- Each of the seven documents has entity models, a document store, mappers that round trip the ORE samples, and a service operation to read and write it.
+- Each document has DQ staging generated from its entities, an artefact type, a publish function on the shared document publish, and a dataset for each ACME party that declares its dependencies.
+- The reports that read a document bind one: the exposure and capital reports bind the simulation, the sensitivity reports and FRTB bind the sensitivity document, Stressed VaR binds the historical return document, and P&L Attribution binds the simulation and the sensitivity documents.
+- The readiness check lists no report as blocked on a missing analytic document.
+
+* Plan
+
+1. For each document (simulation, sensitivity, stress test, historical return, Basel traffic light, SIMM calibration, credit simulation), record what exists: model, store, mapper, round trip test.
+2. Move the open tasks of the backlog story "Complete the ORE report configuration" into this work, or close them in its favour.
+3. Add the missing entity models and document stores, with mappers that round trip the ORE samples.
+4. Add the DQ staging, artefact type and publish function for each, on the shared document publish.
+5. Craft the ACME documents for the reports that read them and register a dataset for each party with its dependencies.
+6. Bind the documents in the bindings of the definitions, and update the readiness check.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The reports that wait for these documents are listed in the analysis "What each ACME report needs to run". After the correction of the analytics they are: the exposure reports (simulation and netting), Model Calibration (simulation), the sensitivity reports and FRTB (sensitivity), Stressed VaR (historical return and simulation), and P&L Attribution (simulation and sensitivity).
+
+The task is large. Split it by document when it starts, in the order of the number of reports each document unblocks.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

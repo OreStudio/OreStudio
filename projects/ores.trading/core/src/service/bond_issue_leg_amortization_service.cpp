@@ -118,6 +118,7 @@ to_domain(const messaging::bond_issue_leg_amortization_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_issue_leg_amortizations_response

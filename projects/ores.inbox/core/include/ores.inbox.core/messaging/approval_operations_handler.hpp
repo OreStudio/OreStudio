@@ -501,6 +501,60 @@ public:
     }
 
     /**
+     * @brief Reads where each part of one request stands.
+     *
+     * The same entitlement as opening the request: the person who asked is the
+     * one who waits on the parts, and the entity read of them gates on the
+     * administrator's permission, so it cannot answer them.
+     */
+    void get_parts(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<get_approval_parts_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  get_approval_parts_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto found = lifecycle.request(req->request_id);
+            if (!found || !may_open(*ctx, lifecycle, *found)) {
+                reply(nats_,
+                      msg,
+                      get_approval_parts_response{
+                          .result = approval_result(outcome::missing, "not_found", "")});
+                return;
+            }
+            get_approval_parts_response answer;
+            answer.result = approval_result(outcome::ok, "", "");
+            for (const auto& p : lifecycle.progress_of(req->request_id)) {
+                answer.parts.push_back(approval_part_progress{.code = p.code,
+                                                              .name = p.name,
+                                                              .answer_order = p.answer_order,
+                                                              .state = p.state,
+                                                              .decided_by = p.decided_by,
+                                                              .decided_at = p.decided_at,
+                                                              .comment = p.comment});
+            }
+            reply(nats_, msg, answer);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error reading the parts of approval request " << req->request_id << ": "
+                << e.what();
+            reply(nats_,
+                  msg,
+                  get_approval_parts_response{
+                      .result = approval_result(outcome::failed, "read_failed", e.what())});
+        }
+    }
+
+    /**
      * @brief Reads every version of one request, newest first.
      *
      * The same entitlement as opening the request, because the versions are the

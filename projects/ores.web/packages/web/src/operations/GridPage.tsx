@@ -631,9 +631,7 @@ export function GridPage(): ReactNode {
 
             {tab === 'usage' && <GridUsageTab />}
 
-            {tab === 'nodes' && (
-                <NodesTab nodes={view.nodes} />
-            )}
+            {tab === 'nodes' && <NodesTab nodes={view.nodes} />}
 
             {tab === 'heatmap' && <GridNodeLoad range={range} onRange={setRange} />}
 

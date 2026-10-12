@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T23:20:31.653727Z
+' Generated: 2026-10-12T10:59:04.698805Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 88
+Tables: 128
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -200,6 +200,36 @@ package "dq_staging" #F3E5F5 {
     Reference data defining severity levels used to classify badges. Codes align with Bootstrap 5 contextual classes so browser rendering requires no translation layer. Values: secondary, info, success, warning, danger, primary. - Artefact Table
     end note
 
+    entity ores_dq_base_correlation_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * terms : text
+        * detachment_points : text
+        * settlement_days : double
+        * calendar : text
+        * business_day_convention : text
+        * day_counter : text
+          extrapolate : text
+          quote_name : text
+          start_date : text
+          rule : text
+          adjust_for_losses : text
+          index_term : text
+          index_spread : text
+          currency : text
+          calibrate_constituents_to_index_spread : text
+          use_assumed_recovery : text
+    }
+
+    note right of ores_dq_base_correlation_configs_artefact_tbl
+    The settings of one BaseCorrelation entry of a curveconfig.xml, one row per curve_definition in the BaseCorrelations section: a credit index tranche correlation surface over terms and detachment points. The schema also allows RecoveryGrid, RecoveryProbabilities and QuoteTypes lists, which no corpus document writes; the mapper refuses an entry that has them rather than lose them. - Artefact Table
+    end note
+
     entity ores_dq_benchmark_rates_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -237,6 +267,29 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_bma_basis_swap_conventions_artefact_tbl
     Describes how ORE builds a basis swap whose two legs reference a BMA municipal index and an IBOR or overnight index, and how each leg's payments are scheduled. Corresponds to the <BMABasisSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Three fields are required and the rest are optional. The corpus sets the two payment lags, the settlement days, the index payment period and the overnight lockout days in one element each, and never sets either payment calendar or either payment convention. - Artefact Table
+    end note
+
+    entity ores_dq_bond_future_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * contract_name : text
+          day_counter : text
+          calendar : text
+          yield_curve_id : text <<FK>>
+          strike_factor : double
+          use_only_put_call : text
+          prefer_out_of_the_money : text
+          treat_as_european : text
+        * has_volatility_config : boolean
+    }
+
+    note right of ores_dq_bond_future_volatility_configs_artefact_tbl
+    The settings of one BondFutureVolatility entry of a curveconfig.xml, one row per curve_definition in the BondFutureVolatilities section: the future contract and the yield curve the surface is built with. Its volatility configurations, written directly or inside a VolatilityConfig element, are rows of curve_volatility_config. No corpus document writes this section; it is modelled from the schema so a document that does is held rather than refused. A OneDimSolverConfig is refused, as for equity and commodity volatilities. - Artefact Table
     end note
 
     entity ores_dq_bond_yield_conventions_artefact_tbl  #F7E5FF {
@@ -379,6 +432,56 @@ package "dq_staging" #F3E5F5 {
     Validated enumeration of named date collections consumed by ORE and QuantLib: business-day/holiday calendars (TARGET, UnitedStates, UnitedStates.GovernmentBond, ...), central-bank meeting calendars, and other calendar-shaped reference data. Each row is one concrete QuantLib/ORE calendar token — sub-market variants (e.g. UnitedStates.NYSE vs UnitedStates.GovernmentBond) are separate rows, not a joined variant field, so the code column always matches ORE's XML <Calendar> vocabulary verbatim. Classified by [[id:1A454661-81B5-4F8F-93A6-06547412DD84][calendar_type]] and associated with the [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]] whose calendar it is — supranational calendars (TARGET) use the ZZ sentinel (ISO 3166-1's own reserved user-assigned code) rather than a nullable country reference, since no single country owns them. - Artefact Table
     end note
 
+    entity ores_dq_cap_floor_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          volatility_type : text
+          output_volatility_type : text
+          model_shift : double
+          output_shift : double
+          extrapolation : text
+          interpolation_method : text
+          include_atm : text
+          day_counter : text
+          calendar : text
+          business_day_convention : text
+          tenors : text
+          strikes : text
+          optional_quotes : text
+          ibor_index : text
+          index : text
+          rate_computation_period : text
+          on_cap_settlement_days : integer
+          discount_curve : text
+          atm_tenors : text
+          settlement_days : integer
+          interpolate_on : text
+          time_interpolation : text
+          strike_interpolation : text
+          input_type : text
+          quote_includes_index_name : text
+          flat_first_period : text
+          use_effecive_volatility : text
+          use_effective_volatility : text
+        * has_proxy_config : boolean
+          proxy_source_curve_id : text <<FK>>
+          proxy_source_index : text
+          proxy_source_rate_computation_period : text
+          proxy_target_index : text
+          proxy_target_rate_computation_period : text
+          proxy_target_on_cap_settlement_days : integer
+          proxy_scaling_factor : double
+    }
+
+    note right of ores_dq_cap_floor_volatility_configs_artefact_tbl
+    The settings of one CapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the CapFloorVolatilities section: the cap and floor surface's tenors and strikes, the index and discount curve it is stripped with, and how it interpolates. Its Report is a row of curve_report_configuration, its BootstrapConfig a row of curve_bootstrap_config and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so its fields are the proxy_ columns, and has_proxy_config says whether the entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling kept for old documents, and UseEffectiveVolatility; each has its own column so either round trips. - Artefact Table
+    end note
+
     entity ores_dq_cashflow_types_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -415,6 +518,44 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_cds_conventions_artefact_tbl
     Defines the settlement lag, premium payment schedule, and accrual rules for a vanilla CDS. Corresponds to the <CDS> element in ORE conventions.xml. The rule field governs IMM dates and standard CDS roll dates. - Artefact Table
+    end note
+
+    entity ores_dq_cds_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          expiries : text
+          day_counter : text
+          calendar : text
+          strike_type : text
+          quote_name : text
+          strike_factor : double
+    }
+
+    note right of ores_dq_cds_volatility_configs_artefact_tbl
+    The settings of one CDSVolatility entry of a curveconfig.xml, one row per curve_definition in the CDSVolatilities section: the expiries the surface is quoted at, how its strikes are quoted, and its day counter and calendar. Its Terms are rows of cds_volatility_term, and the surface it is built as, when it names one, a row of curve_volatility_config. The schema also allows a PriceInfo element, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+    end note
+
+    entity ores_dq_cds_volatility_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * label : text
+        * curve : text
+          maturity : text
+        * position : integer
+    }
+
+    note right of ores_dq_cds_volatility_terms_artefact_tbl
+    One Term of a CDS volatility's Terms list: the term's label, the default curve the term is priced with, and an optional maturity, in the order the document lists them. - Artefact Table
     end note
 
     entity ores_dq_cms_spread_option_conventions_artefact_tbl  #F7E5FF {
@@ -554,6 +695,33 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_commodity_future_conventions_artefact_tbl
     Describes how ORE builds a commodity future: when it expires, which contract months it lists, how its expiry anchors to a day of the month or a weekday, and the schedule of the options written on it. Corresponds to the <CommodityFuture> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Thirty of the element's thirty-four fields are modelled here, as forty columns, because the element's nested structs are flattened rather than given tables of their own. AnchorDay becomes seven columns, OptionNthWeekday two more, and OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants, so flattening it is what lets a commodity future round trip at all. Five files carry the element, in eight hundred and eight elements, and two of them carried nothing else unmodelled when it landed. Four more fields hold lists, and each is written as a text column rather than counted: AveragingData becomes eight columns, and ProhibitedExpiries, FutureContinuationMappings and OptionContinuationMappings become one text column each, holding comma-separated dates and from:to pairs. A column is a weaker home than a table, and it is what keeps the field in the element's round trip rather than excluding the file from it. - Artefact Table
+    end note
+
+    entity ores_dq_commodity_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+          instrument_type : text
+          calendar_spread_offset : integer
+          calendar_spread_underlying_name : text
+          day_counter : text
+          calendar : text
+          future_conventions : text
+          option_expiry_roll_days : text
+          price_curve_id : text <<FK>>
+          yield_curve_id : text <<FK>>
+          quote_suffix : text
+          prefer_out_of_the_money : text
+        * has_volatility_config : boolean
+    }
+
+    note right of ores_dq_commodity_volatility_configs_artefact_tbl
+    The settings of one CommodityVolatility entry of a curveconfig.xml, one row per curve_definition in the CommodityVolatilities section: the currency, the instrument the surface is quoted on, and the price curve, yield curve and future convention it is built with. Its volatility configurations, written directly or inside a VolatilityConfig element, are rows of curve_volatility_config. Its Report is a row of curve_report_configuration. The schema also allows a OneDimSolverConfig, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
     end note
 
     entity ores_dq_counterparty_aliases_artefact_tbl  #F7E5FF {
@@ -830,6 +998,399 @@ package "dq_staging" #F3E5F5 {
     Currency pair identity: base/quote legs, deliverability, classification, and fixing source. Conventions (pip factor, tick size, calendars, business day convention) live 1:1 in [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]], matching the codebase's existing *_convention entity family. spot_days, calendars, and G11 membership are *derived* at read time from the two legs, not stored here — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the full design rationale. - Artefact Table
     end note
 
+    entity ores_dq_curve_bootstrap_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          default_curve_configuration_id : uuid <<FK>>
+          accuracy : double
+          global_accuracy : double
+          dont_throw : boolean
+          max_attempts : integer
+          max_factor : double
+          min_factor : double
+          dont_throw_steps : integer
+          global : boolean
+          smoothness_lambda : double
+    }
+
+    note right of ores_dq_curve_bootstrap_configs_artefact_tbl
+    The BootstrapConfig of one curve entry. Five section types carry the same element, so it is one table keyed to the entry rather than columns on each section's row. A row exists exactly when the entry writes the element: fourteen corpus yield curves write it empty, and the export writes them back empty. - Artefact Table
+    end note
+
+    entity ores_dq_curve_configuration_sections_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_configuration_id : uuid <<FK>>
+        * section_code : text
+    }
+
+    note right of ores_dq_curve_configuration_sections_artefact_tbl
+    Which section elements a curveconfig.xml document writes. A document may write a section with no entries -- sixteen of the nineteen sections appear empty somewhere in the corpus, BaseCorrelations and Correlations fifteen times each -- and the export must write it back. Entries alone cannot say that, so each section element the document writes is one row here, whether it holds entries or not. - Artefact Table
+    end note
+
+    entity ores_dq_curve_configurations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+          configuration_id : uuid <<FK>>
+    }
+
+    note right of ores_dq_curve_configurations_artefact_tbl
+    One curveconfig.xml document, held as the thing its curve entries hang off. The document itself is only a list of sections, and the entries are rows of curve_definition. This row is the document's identity, so that a tenant may hold more than one and a report may choose between them through the reporting configuration it is registered as. - Artefact Table
+    end note
+
+    entity ores_dq_curve_correlation_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * correlation_type : text
+          index_1 : text
+          index_2 : text
+          conventions : text
+          swaption_volatility : text
+          discount_curve : text
+          currency : text
+          dimension : text
+          quote_type : text
+          extrapolation : text
+          day_counter : text
+          calendar : text
+          business_day_convention : text
+          option_tenors : text
+    }
+
+    note right of ores_dq_curve_correlation_configs_artefact_tbl
+    The settings of one Correlation entry of a curveconfig.xml, one row per curve_definition in the Correlations section: the correlation between two indices over option tenors, given directly or implied from CMS spread options. - Artefact Table
+    end note
+
+    entity ores_dq_curve_definitions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_configuration_id : uuid <<FK>>
+        * section_code : text
+        * curve_id : text <<FK>>
+          description : text
+        * position : integer
+    }
+
+    note right of ores_dq_curve_definitions_artefact_tbl
+    One curve entry of one section of a curveconfig.xml, held as the identity every part of the entry hangs off: the document it belongs to, its section, its CurveId and CurveDescription, and its place in the document. The settings that follow differ by section and live on a detail row per section family, as typed columns: yield_curve_config for YieldCurves. The lists an entry holds are child rows keyed to this one: its segments in curve_segment, its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config. So one table of quotes serves every section, and a reference to a curve is a reference to this row whatever its section. The natural key is the document, the section and the curve id together: EUR-ESTR names a curve inside one section of one document, another section may name its own, and two documents may define the same curve differently. - Artefact Table
+    end note
+
+    entity ores_dq_curve_global_reports_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_configuration_id : uuid <<FK>>
+        * family : text
+        * has_report : boolean
+          report_on_delta_grid : text
+          report_on_moneyness_grid : text
+          report_on_strike_grid : text
+          report_on_strike_spread_grid : text
+          deltas : text
+          moneyness : text
+          strikes : text
+          strike_spreads : text
+          expiries : text
+          pillar_dates : text
+          underlying_tenors : text
+          continuation_expiry : text
+        * position : integer
+    }
+
+    note right of ores_dq_curve_global_reports_artefact_tbl
+    The document level ReportConfiguration of a curveconfig.xml gives report settings per curve family: FX, equity, commodity, swaption, cap and floor and inflation cap and floor volatilities, yield curves and default curves. Each family element the document writes is one row here, keyed to the document, and has_report says whether the element holds a Report. An entry's own Report overrides these and is a row of curve_report_configuration. The columns are those of curve_report_configuration. The yield curve family's report writes only PillarDates. A ReportConfiguration element that writes no family appears in no corpus document, and the mapper refuses it, because rows cannot record it. - Artefact Table
+    end note
+
+    entity ores_dq_curve_parametric_smile_parameters_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * name : text
+          initial_value : text
+        * calibration : text
+        * position : integer
+    }
+
+    note right of ores_dq_curve_parametric_smile_parameters_artefact_tbl
+    One Parameter of a parametric smile, such as SABR's alpha: its name, its initial value and how it is calibrated, in the order the document lists them. - Artefact Table
+    end note
+
+    entity ores_dq_curve_parametric_smiles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * max_calibration_attempts : integer
+        * exit_early_error_threshold : double
+        * max_acceptable_error : double
+          residual_correction_dimension : text
+    }
+
+    note right of ores_dq_curve_parametric_smiles_artefact_tbl
+    The ParametricSmileConfiguration of a volatility entry: how the smile's parameters are calibrated, and its residual correction. FX, swaption and cap and floor volatilities write it on the entry, so it is one row per entry, keyed to the entry's curve_definition. Its parameters are rows of curve_parametric_smile_parameter. - Artefact Table
+    end note
+
+    entity ores_dq_curve_quotes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          curve_segment_id : uuid <<FK>>
+          default_curve_configuration_id : uuid <<FK>>
+          commodity_price_segment_id : uuid <<FK>>
+          quote_list : text
+          quote_text : text
+          optional_flag : text
+          rate_quote : text
+          spread_quote : text
+        * position : integer
+    }
+
+    note right of ores_dq_curve_quotes_artefact_tbl
+    One market quote a curve is built from. A quote sits either directly on the curve entry or inside one of its segments, or in a default curve's configuration, and the row names the curve entry as well so the quotes of a curve can be read without walking its segments or configurations. Almost every list is of Quote elements, each a market point and an optional optional attribute. An average OIS segment lists CompositeQuote elements instead, each a rate quote and a spread quote. A row is one or the other: a quote_text, or a rate_quote with a spread_quote. - Artefact Table
+    end note
+
+    entity ores_dq_curve_report_configurations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          report_on_delta_grid : text
+          report_on_moneyness_grid : text
+          report_on_strike_grid : text
+          report_on_strike_spread_grid : text
+          deltas : text
+          moneyness : text
+          strikes : text
+          strike_spreads : text
+          expiries : text
+          pillar_dates : text
+          underlying_tenors : text
+          continuation_expiry : text
+    }
+
+    note right of ores_dq_curve_report_configurations_artefact_tbl
+    The Report element of a volatility or correlation entry: which grids the built surface is reported on, and the points of each. Ten section types carry the same element, so it is one table keyed to the entry. A row exists exactly when the entry writes the element. The grids are comma separated lists in ORE's own text, held as written. - Artefact Table
+    end note
+
+    entity ores_dq_curve_security_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          spread_quote : text
+          recovery_rate_quote : text
+          cpr_quote : text
+          price_quote : text
+          conversion_factor : text
+    }
+
+    note right of ores_dq_curve_security_configs_artefact_tbl
+    The settings of one Security entry of a curveconfig.xml, one row per curve_definition in the Securities section. A security entry names the market quotes a bond is priced from, each optional: its spread, its recovery rate, its prepayment rate, its price and its conversion factor. - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_curves_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * role : text
+        * curve : text
+          index_name : text
+          weight : double
+        * position : integer
+    }
+
+    note right of ores_dq_curve_segment_curves_artefact_tbl
+    The lists of curves some segments hold. A fitted bond and a bond yield shifted segment list the curves their bonds' indices are projected on, as IndexCurves, IborIndexCurves and InflationIndexCurves; a yield plus default segment lists its default curves, each with a weight. Each entry is one row, and role names the list it came from. - Artefact Table
+    end note
+
+    entity ores_dq_curve_segments_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * segment_type : text
+        * position : integer
+          conventions : text
+          pillar_choice : text
+          priority : integer
+          min_distance : integer
+          projection_curve : text
+          discount_curve : text
+          spot_rate : text
+          projection_curve_domestic : text
+          projection_curve_foreign : text
+          projection_curve_pay : text
+          projection_curve_receive : text
+          projection_curve_long : text
+          projection_curve_short : text
+          reference_curve : text
+          reference_curve_2 : text
+          weight_1 : double
+          weight_2 : double
+          ibor_index : text
+          rfr_curve : text
+          rfr_index : text
+          spread : numeric(38, 12)
+          base_curve : text
+          base_curve_currency : text
+          numerator_curve : text
+          numerator_curve_currency : text
+          denominator_curve : text
+          denominator_curve_currency : text
+          extrapolate_flat : boolean
+    }
+
+    note right of ores_dq_curve_segments_artefact_tbl
+    A yield curve is bootstrapped from one or more segments, and each states its Type: Deposit, Cross Currency Basis Swap, Average OIS and eighteen more. The type fixes the segment element it is written under, so the row holds only the type and refers to curve_segment_type, and a type written under the wrong element cannot be stored. The twelve segment elements share a skeleton and differ in a few settings each: projection curves for simple and tenor basis segments, a discount curve and a spot rate for cross currency ones, a reference curve for zero spread ones. Each setting is its own typed column, null where the segment's element has no such setting. The lists a segment holds are child rows: its quotes in curve_quote, and the index curves and default curves of the bond and default based segments in curve_segment_curve. The convention a segment names may be any of ORE's convention kinds, which are one table each, so a function that looks in all of them checks the reference. - Artefact Table
+    end note
+
+    entity ores_dq_curve_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * kind : text
+        * is_wrapped : boolean
+          priority : integer
+          quote_type : text
+          volatility_type : text
+          exercise_type : text
+          strikes : text
+          expiries : text
+          time_interpolation : text
+          strike_interpolation : text
+          extrapolation : text
+          time_extrapolation : text
+          time_extrapolation_variance : text
+          strike_extrapolation : text
+          calendar : text
+          quote : text
+          interpolation : text
+          enforce_monotone_variance : boolean
+          delta_type : text
+          atm_type : text
+          atm_delta_type : text
+          put_deltas : text
+          call_deltas : text
+          future_price_correction : text
+          proxy_volatility_curve : text
+          fx_volatility_curve : text
+          correlation_curve : text
+          cds_volatility_curve : text
+        * position : integer
+    }
+
+    note right of ores_dq_curve_volatility_configs_artefact_tbl
+    One way a volatility entry's surface may be built. CDS, equity and commodity volatilities each name one or more volatility configurations, each with an optional priority; ORE builds the first that succeeds. kind names the element the document wrote, and the columns that kind uses are set. An entry writes a kind either directly or inside a VolatilityConfig element, which holds at most one of each kind; is_wrapped says which. The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface, DeltaSurface and ProxySurface. A Curve kind's quotes are rows of curve_quote on the entry, in the list Curve or VolatilityConfig/Curve. MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface appear in no corpus document, and the mapper refuses them. - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+    }
+
+    note right of ores_dq_default_curve_configs_artefact_tbl
+    The settings of one DefaultCurve entry of a curveconfig.xml that do not depend on how the curve is built, one row per curve_definition in the DefaultCurves section. That is only its currency: everything else belongs to a configuration, a row of default_curve_configuration. - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_configurations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * is_inline : boolean
+          priority : integer
+          default_curve_type : text
+          discount_curve : text
+          day_counter : text
+          recovery_rate : text
+          start_date : text
+        * has_quotes : boolean
+          benchmark_curve : text
+          reinterpreted_yield_curve : text
+          source_curve : text
+          pillars : text
+          spot_lag : integer
+          calendar : text
+          conventions : text
+          extrapolation : text
+          running_spread : numeric(38, 12)
+          index_term : text
+          imply_default_from_market : text
+          allow_negative_rates : text
+          price_is_upfront : text
+          initial_state : text
+          states : text
+        * position : integer
+    }
+
+    note right of ores_dq_default_curve_configurations_artefact_tbl
+    One way a default curve may be built. A DefaultCurve either writes its settings inline, or lists them as Configurations, each with a priority; ORE builds the first configuration that succeeds. The corpus writes 144 curves inline and 189 with configurations, nine of them with two, and never both. Each inline curve is one row with is_inline set; each listed configuration is one row with its priority. The quotes a configuration is built from are rows of curve_quote, and its BootstrapConfig a row of curve_bootstrap_config, both naming this row. Pillars and States are comma separated lists in ORE's own text, held as written. The schema also allows SourceCurves and SwitchDates lists, which no corpus document writes; the mapper refuses an entry that has them rather than lose them. - Artefact Table
+    end note
+
     entity ores_dq_deposit_conventions_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -863,6 +1424,58 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_entity_classifications_artefact_tbl
     Financial Entity Indicator as defined by the CFTC. - Artefact Table
+    end note
+
+    entity ores_dq_equity_curve_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+          calendar : text
+        * forecasting_curve : text
+        * equity_type : text
+          exercise_style : text
+        * spot_quote : text
+        * has_quotes : boolean
+          day_counter : text
+        * has_dividend_interpolation : boolean
+          dividend_interpolation_variable : text
+          dividend_interpolation_method : text
+          dividend_extrapolation : text
+          extrapolation : text
+    }
+
+    note right of ores_dq_equity_curve_configs_artefact_tbl
+    The settings of one EquityCurve entry of a curveconfig.xml, one row per curve_definition in the EquityCurves section: the equity's spot quote and forecasting curve, how its forward curve is given, and how its dividends interpolate. The quotes the forward curve is built from are rows of curve_quote. Three corpus entries write an empty Quotes element, so has_quotes holds whether the element is there. 101 write an empty Calendar; the column then holds the empty text the document wrote. A calendar that is not empty is checked by ores_refdata_validate_calendar_fn. - Artefact Table
+    end note
+
+    entity ores_dq_equity_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          equity_id : text <<FK>>
+        * currency : text
+          dimension : text
+          expiries : text
+          strikes : text
+          day_counter : text
+          time_extrapolation : text
+          strike_extrapolation : text
+          calendar : text
+          prefer_out_of_the_money : text
+        * has_volatility_config : boolean
+    }
+
+    note right of ores_dq_equity_volatility_configs_artefact_tbl
+    The settings of one EquityVolatility entry of a curveconfig.xml, one row per curve_definition in the EquityVolatilities section: the equity, its currency, and the settings the older form of the entry writes directly (dimension, expiries, strikes and extrapolation). Its volatility configurations, written directly or inside a VolatilityConfig element, are rows of curve_volatility_config. Its Report is a row of curve_report_configuration. The schema also allows a OneDimSolverConfig, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
     end note
 
     entity ores_dq_fra_conventions_artefact_tbl  #F7E5FF {
@@ -921,6 +1534,39 @@ package "dq_staging" #F3E5F5 {
     Describes how ORE quotes an FX option: which strike counts as at the money, how the delta is measured, and what happens beyond a switch tenor. Corresponds to the <FxOption> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
     end note
 
+    entity ores_dq_fx_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * dimension : text
+          smile_type : text
+          smile_interpolation : text
+          deltas : text
+          smile_delta : text
+          conventions : text
+          expiries : text
+          fx_spot_id : text <<FK>>
+          fx_foreign_curve_id : text <<FK>>
+          fx_domestic_curve_id : text <<FK>>
+          calendar : text
+          day_counter : text
+          fx_index_tag : text
+          base_volatility_1 : text
+          base_volatility_2 : text
+          smile_extrapolation : text
+          time_interpolation : text
+          time_weighting : text
+          butterfly_error_tolerance : double
+    }
+
+    note right of ores_dq_fx_volatility_configs_artefact_tbl
+    The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension and smile, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+    end note
+
     entity ores_dq_ibor_index_conventions_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -967,6 +1613,86 @@ package "dq_staging" #F3E5F5 {
     An image is a named document the platform renders, such as a currency flag or a commodity icon. The bytes are format-agnostic: an SVG document, a JPEG, or any other media type mime_type names. The database stores them base64-encoded in a text column, and the domain type carries the raw bytes. Images carry tags through the image_tag junction, and an image arrives either by upload or from the data-quality publish path. - Artefact Table
     end note
 
+    entity ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * inflation_type : text
+        * quote_type : text
+        * volatility_type : text
+        * extrapolation : text
+        * tenors : text
+          settlement_days : integer
+          cap_strikes : text
+          floor_strikes : text
+          strikes : text
+        * calendar : text
+        * day_counter : text
+        * business_day_convention : text
+        * index : text
+        * index_curve : text
+          index_interpolated : text
+        * observation_lag : text
+        * yield_term_structure : text
+          quote_index : text
+          conventions : text
+    }
+
+    note right of ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl
+    The settings of one InflationCapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the InflationCapFloorVolatilities section: a zero coupon or year on year inflation cap and floor surface over tenors and strikes, with the index and curves it is built from. Its Report is a row of curve_report_configuration and its BootstrapConfig a row of curve_bootstrap_config, both keyed to the entry. - Artefact Table
+    end note
+
+    entity ores_dq_inflation_curve_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * nominal_term_structure : text
+        * inflation_type : text
+          conventions : text
+        * has_quotes : boolean
+          extrapolation : text
+        * calendar : text
+          day_counter : text
+        * lag : text
+        * frequency : text
+          base_rate : text
+          tolerance : double
+        * has_seasonality : boolean
+          seasonality_base_date : text
+          seasonality_frequency : text
+          use_last_fixing_date : text
+          interpolation_variable : text
+          interpolation_method : text
+    }
+
+    note right of ores_dq_inflation_curve_configs_artefact_tbl
+    The settings of one InflationCurve entry of a curveconfig.xml, one row per curve_definition in the InflationCurves section: the nominal curve it is built over, whether it is zero coupon or year on year, its lag and frequency, and its seasonality. The quotes it is built from are rows of curve_quote, and the seasonality factors rows of inflation_seasonality_factor. The schema also allows a list of segments, each a convention and quotes. No corpus document writes one, and the mapper refuses an entry that does rather than lose it. - Artefact Table
+    end note
+
+    entity ores_dq_inflation_seasonality_factors_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * factor : text
+        * position : integer
+    }
+
+    note right of ores_dq_inflation_seasonality_factors_artefact_tbl
+    One factor of the seasonality adjustment an inflation curve applies, one per period of the seasonality frequency, in the order the document lists them. - Artefact Table
+    end note
+
     entity ores_dq_inflation_swap_conventions_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -995,6 +1721,24 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_inflation_swap_conventions_artefact_tbl
     Describes how ORE builds an inflation swap: the calendars and conventions its legs roll on, the day count it accrues on, the zero-coupon inflation index it references, and how the index's observations are lagged and adjusted. Corresponds to the <InflationSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Ten fields are required and the rest are optional. The corpus sets all ten in all one hundred and one elements. Of the optional fields it sets only PublicationRoll, in two elements. The element also carries PublicationSchedule, which ORE types as a schedule of rule blocks, date blocks and derived schedule groups. Each block is written as one text column in a stated form: blocks are separated by semicolons and a block's fields by pipes, which is enough to keep every value the binding holds without a table of its own. Two shipped files set a schedule. - Artefact Table
+    end note
+
+    entity ores_dq_intraday_power_curve_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+        * daily_average_price_curve : text
+        * shape_quote_name : text
+          convention : text
+    }
+
+    note right of ores_dq_intraday_power_curve_configs_artefact_tbl
+    The settings of one IntradayPowerCurve entry of a curveconfig.xml, one row per curve_definition in the IntradayPowerCurves section: the daily average price curve it is shaped from, the quote that names the shape, and the convention it is built with. - Artefact Table
     end note
 
     entity ores_dq_intraday_power_load_conventions_artefact_tbl  #F7E5FF {
@@ -1354,6 +2098,60 @@ package "dq_staging" #F3E5F5 {
     Represents organizational, risk, or reporting groupings. Never holds trades directly. Supports hierarchical structure via self-referencing parent_portfolio_id. - Artefact Table
     end note
 
+    entity ores_dq_pricing_model_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+          config_variant : text
+          configuration_id : uuid <<FK>>
+    }
+
+    note right of ores_dq_pricing_model_configs_artefact_tbl
+    Header entity for a pricing model configuration. Each config contains product mappings (in pricing_model_products) and parameters (in pricing_model_product_parameters). Corresponds to ORE's pricingengine.xml. - Artefact Table
+    end note
+
+    entity ores_dq_pricing_model_product_parameters_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * pricing_model_config_id : uuid <<FK>>
+          pricing_model_product_id : uuid <<FK>>
+        * parameter_scope : text
+        * parameter_name : text
+        * parameter_value : text
+        * position : integer
+    }
+
+    note right of ores_dq_pricing_model_product_parameters_artefact_tbl
+    Stores model parameters, engine parameters, and global parameters as normalised rows for granular diffing. Product-scoped parameters have pricing_model_product_id set; global parameters have it NULL with parameter_scope = 'global'. - Artefact Table
+    end note
+
+    entity ores_dq_pricing_model_products_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * pricing_model_config_id : uuid <<FK>>
+        * pricing_engine_type_code : text
+        * model : text
+        * engine : text
+        * position : integer
+    }
+
+    note right of ores_dq_pricing_model_products_artefact_tbl
+    Detail row within a pricing model configuration. Each row maps a pricing engine type (e.g. EuropeanSwaption, CMS) to a specific model (e.g. LGM, BlackBachelier) and numerical engine (e.g. Grid, AMC). Product-specific parameters are stored in pricing_model_product_parameters. - Artefact Table
+    end note
+
     entity ores_dq_regulatory_corporate_sectors_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1366,6 +2164,26 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_regulatory_corporate_sectors_artefact_tbl
     Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table
+    end note
+
+    entity ores_dq_report_configurations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * report_name : text
+        * configuration_type_code : text
+        * configuration_name : text
+    }
+
+    note right of ores_dq_report_configurations_artefact_tbl
+    Report configuration bindings: the staging table
+    A report definition binds the configuration documents it reads, one per
+    configuration type its report type requires. A dataset that stages definitions
+    stages their bindings in this table beside them. A binding names its definition
+    and its configuration by name, never by id, because the ids of both are made
+    when they are published. The definitions publish resolves each name for the
+    target party, so the documents are published before the definitions.
     end note
 
     entity ores_dq_report_definitions_artefact_tbl  #F7E5FF {
@@ -1406,11 +2224,15 @@ package "dq_staging" #F3E5F5 {
         * tenant_id : uuid <<FK>>
         * id : uuid
         * version : integer
-        * report_name : text
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+        * configuration_id : uuid <<FK>>
         * base_currency : text
         * observation_model : text
         * n_threads : integer
         * market_data_type : text
+          market_data_date : date
         * npv_enabled : integer
         * cashflow_enabled : integer
         * curves_enabled : integer
@@ -1421,14 +2243,30 @@ package "dq_staging" #F3E5F5 {
         * parametric_var_enabled : integer
         * initial_margin_enabled : integer
         * pfe_enabled : integer
+        * portfolio_details_enabled : integer
+        * saccr_enabled : integer
+        * calibration_enabled : integer
+        * credit_curves_enabled : integer
+        * historical_var_enabled : integer
+        * pnl_explain_enabled : integer
+          xva_quantile : numeric(5,4)
         * xva_cva_enabled : integer
         * xva_dva_enabled : integer
         * xva_fva_enabled : integer
-        * display_order : integer
+        * xva_colva_enabled : integer
+        * xva_dim_enabled : integer
+          xva_dim_quantile : numeric(5,4)
+          xva_dim_horizon_calendar_days : integer
+          xva_dim_regression_order : integer
+          var_quantiles : numeric(5,4)[]
+          var_method : text
+          simm_version : text
+          simm_calculation_currency : text
+          scope_portfolio : text
     }
 
     note right of ores_dq_risk_report_configs_artefact_tbl
-    Risk report configuration artefacts - the run settings a seeded report definition resolves. - Artefact Table
+    The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
     end note
 
     entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {
@@ -1480,6 +2318,44 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_swap_index_conventions_artefact_tbl
     A named swap index, which ORE describes by pointing at the swap convention it follows rather than by restating that convention's fields. Corresponds to the <SwapIndex> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
+    entity ores_dq_swaption_volatility_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          dimension : text
+          volatility_type : text
+          interpolation : text
+          extrapolation : text
+          output_volatility_type : text
+          model_shift : text
+          output_shift : text
+          day_counter : text
+          calendar : text
+          business_day_convention : text
+          option_tenors : text
+          swap_tenors : text
+          short_swap_index_base : text
+          swap_index_base : text
+          smile_option_tenors : text
+          smile_swap_tenors : text
+          smile_spreads : text
+          quote_tag : text
+        * has_proxy_config : boolean
+          proxy_source_curve_id : text <<FK>>
+          proxy_source_short_swap_index_base : text
+          proxy_source_swap_index_base : text
+          proxy_target_short_swap_index_base : text
+          proxy_target_swap_index_base : text
+    }
+
+    note right of ores_dq_swaption_volatility_configs_artefact_tbl
+    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix and smile, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so its fields are the proxy_ columns, and has_proxy_config says whether the entry wrote it. - Artefact Table
     end note
 
     entity ores_dq_synthetic_fx_spot_configs_artefact_tbl  #F7E5FF {
@@ -1675,6 +2551,119 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_tenor_schedules_artefact_tbl
     A named schedule axis a [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor]] resolves along (story Decision D2: anchor + calendar offset + n steps). Two kinds today, distinguished by schedule_source: - CLOSED_FORM: the dates come from a closed-form rule evaluated code-side. ROLL_QUARTER is the only instance: the first business day after the 20th of March/June/September/December (the IMM quarterly rule). - EVENT_LOOKUP: the dates come from [[id:B20050A5-1245-4944-A328-2A0893C92AEC][calendar_event]] rows on a named calendar, filtered by diary entry type. FOMC_MEETING is the only instance: central_bank_meeting events on US.FOMC. calendar_code and diary_entry_type are null for closed-form schedules (no event store involved) and required for event-lookup ones -- but the binding is documented, not enforced in the schema. - Artefact Table
+    end note
+
+    entity ores_dq_todays_market_collections_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_config_id : uuid <<FK>>
+        * collection : text
+          collection_id : text <<FK>>
+        * position : integer
+    }
+
+    note right of ores_dq_todays_market_collections_artefact_tbl
+    One collection — DiscountingCurves, FxSpots, SwaptionVolatilities and the rest. A document writes up to twenty-four of them, each optional, each holding its own ordered list of entries. A document may write the same kind more than once under different ids, for example a DiscountingCurves with id default and another with id inccy. A Configuration selects one of them by that id. So the collection is a thing with an identity, an order and its own entries, and it has a table. Almost every corpus file writes the id. An entry points at its collection rather than repeating the collection's name. - Artefact Table
+    end note
+
+    entity ores_dq_todays_market_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+          config_variant : text
+          configuration_id : uuid <<FK>>
+    }
+
+    note right of ores_dq_todays_market_configs_artefact_tbl
+    One ORE todaysmarket.xml document, held as the thing the collections and the configurations hang off. The document itself carries no market data: it is an ordered set of collections, each entry naming a curve by reference, plus named configurations that select one collection of each kind by the collection's id. The entries live on todays_market_entry, the configurations on todays_market_configuration, and the references a configuration makes on todays_market_configuration_binding. This row is only the identity of the document, so that a tenant may hold more than one and a report may choose between them. - Artefact Table
+    end note
+
+    entity ores_dq_todays_market_configuration_bindings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_configuration_id : uuid <<FK>>
+        * collection : text
+        * reference : text
+        * position : integer
+    }
+
+    note right of ores_dq_todays_market_configuration_bindings_artefact_tbl
+    One reference a configuration makes. A Configuration block writes up to twenty-four of these. Each names a collection kind and the id of one collection of that kind: DiscountingCurvesId inccy selects the DiscountingCurves collection whose id is inccy. The reference is text, not a foreign key to todays_market_collection. ORE resolves it by name when it builds the market, and the export only has to write it back. Whether it should become a real key is left to the work that first resolves it, which is producing the engine input from the entities. - Artefact Table
+    end note
+
+    entity ores_dq_todays_market_configurations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_config_id : uuid <<FK>>
+        * configuration_id : text <<FK>>
+        * position : integer
+    }
+
+    note right of ores_dq_todays_market_configurations_artefact_tbl
+    One Configuration block. It is not a collection of entries: it is a bundle of references, each naming one entry of one collection, so that a report can select a coherent set of curves and volatilities by name instead of restating them. It identifies itself by a required id attribute, which is unique within a document. The references it makes live on todays_market_configuration_binding. - Artefact Table
+    end note
+
+    entity ores_dq_todays_market_entries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_config_id : uuid <<FK>>
+        * todays_market_collection_id : uuid <<FK>>
+          key_value : text
+          key_value_2 : text
+        * target : text
+          discounting : text
+        * position : integer
+    }
+
+    note right of ores_dq_todays_market_entries_artefact_tbl
+    One entry of one collection. Twenty-three of the document's twenty-four collections are this shape: an entry identifying itself by one attribute and carrying a reference as its text, in a position. The attribute is not one name. It is name for nineteen collections, currency for DiscountingCurves, pair for the two FX collections and the literal string key for SwaptionVolatilities and CapFloorVolatilities. Which one is a fact about the collection's kind, so it is held once on todays_market_collection_kind rather than repeated on every entry. SwaptionVolatilities and CapFloorVolatilities identify by two attributes at once, so key_value_2 carries the second. SwapIndexCurves is the only collection whose entry nests, and discounting carries its one child. - Artefact Table
+    end note
+
+    entity ores_dq_yield_curve_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+        * discount_curve : text
+          interpolation_variable : text
+          interpolation_method : text
+          mixed_interpolation_cutoff : integer
+          day_counter : text
+          tolerance : double
+          extrapolation : text
+          extrapolation_method : text
+          exclude_t0_from_interpolation : text
+        * has_report : boolean
+          report_pillar_dates : text
+    }
+
+    note right of ores_dq_yield_curve_configs_artefact_tbl
+    The settings of one YieldCurve entry of a curveconfig.xml, one row per curve_definition in the YieldCurves section. The entry's identity is on the definition, its segments in curve_segment, its bootstrap settings in curve_bootstrap_config; this row holds the rest, each as the column its schema type calls for. Extrapolation and ExcludeT0FromInterpolation are ORE booleans, which accept Y, true and True among other spellings. They are held as the spelling the document used, so the export writes it back unchanged. The day counter is held the same way and refers to day_counter. - Artefact Table
     end note
 
     entity ores_dq_zero_conventions_artefact_tbl  #F7E5FF {

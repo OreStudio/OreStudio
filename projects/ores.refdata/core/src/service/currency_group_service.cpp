@@ -103,6 +103,7 @@ domain::currency_group to_domain(const messaging::currency_group_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_currency_groups_response currency_group_service::list_currency_groups(

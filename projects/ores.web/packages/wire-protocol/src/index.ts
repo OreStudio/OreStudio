@@ -588,6 +588,7 @@ export {
     inboxPageSchema,
     inboxRequestDecisionViewSchema,
     inboxRequestPageSchema,
+    inboxRequestPartViewSchema,
     inboxRequestQueueSchema,
     inboxRequestRoleViewSchema,
     inboxRequestStorySchema,
@@ -598,6 +599,7 @@ export {
     readMyNotifications,
     readMyRequests,
     readRequest,
+    readRequestParts,
     readRequestQueue,
     readRequestStory,
     readUnreadNotificationCount,
@@ -607,6 +609,7 @@ export type {
     InboxNotificationView,
     InboxPage,
     InboxRequestDecisionView,
+    InboxRequestPartView,
     InboxRequestQueue,
     InboxRequestedRole,
     InboxRequestRoleView,
@@ -616,6 +619,28 @@ export type {
     InboxStoryField,
     RequestViewer,
 } from './inbox.js';
+
+// What a request proposes and what running it again says, for any kind of
+// request, and the book changes a maker previews and raises.
+export {
+    bookPreviewViewSchema,
+    bookRaiseViewSchema,
+    previewBookChanges,
+    raiseBookChanges,
+    readRequestChanges,
+    readRequestChecks,
+    requestChangesViewSchema,
+    requestChecksViewSchema,
+} from './request-changes.js';
+export type {
+    BookLineInput,
+    BookPreview,
+    BookRaise,
+    RequestChange,
+    RequestCheck,
+    RequestChecks,
+    RequestFieldChange,
+} from './request-changes.js';
 
 // The timeline. One subject's story in one stream, whichever subject it is.
 export {

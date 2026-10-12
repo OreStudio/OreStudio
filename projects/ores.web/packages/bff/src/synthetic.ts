@@ -42,6 +42,9 @@ import {
     type IrCurveGenerationConfigWrite,
     type IrCurveGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_generation_config_protocol';
+import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
+import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
+import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
 import { subjects as irOperationSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_operations_protocol';
 import {
     subjects as parameterValueSubjects,
@@ -58,6 +61,8 @@ import {
     type MarketDataGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
+import { subjects as fxSimpleSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_simple_protocol';
+import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
     subjects as definitionSubjects,
@@ -133,6 +138,8 @@ interface SyntheticResource {
     readonly writes?: z.ZodType<Record<string, unknown>>;
     readonly readOnlyBecause?: string;
     readonly systemOwned?: true;
+    /** The permission namespace, when the rows belong to another service than the synthetic one. */
+    readonly namespace?: 'refdata';
     readonly search?: true;
     readonly sortable?: readonly string[];
     readonly parentField?: string;
@@ -205,7 +212,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             'base_currency_code',
             'quote_currency_code',
             'source_name',
-            'ore_key',
+            'oresmd_uri',
             'ticks_per_hour',
         ],
         subjects: {
@@ -220,7 +227,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             base_currency_code: code,
             quote_currency_code: code,
             source_name: label,
-            ore_key: label,
+            oresmd_uri: label,
             price_source: code,
             gmm_initial_price: z.number(),
             ticks_per_hour: z.int().positive(),
@@ -300,7 +307,12 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'process_parameter_values',
-        filter: { id_one_of: null } satisfies IrCurveGenerationConfigProcessParameterValuesFilter,
+        filter: {
+            config_id: null,
+            id_one_of: null,
+            config_id_one_of: null,
+        } satisfies IrCurveGenerationConfigProcessParameterValuesFilter,
+        parentField: 'config_id',
         subjects: {
             list: parameterValueSubjects.list_ir_curve_generation_config_process_parameter_values_request,
             putMany:
@@ -322,7 +334,12 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'ir_curve_template_entries',
-        filter: { id_one_of: null } satisfies IrCurveTemplateEntriesFilter,
+        filter: {
+            ir_curve_config_id: null,
+            id_one_of: null,
+            ir_curve_config_id_one_of: null,
+        } satisfies IrCurveTemplateEntriesFilter,
+        parentField: 'ir_curve_config_id',
         subjects: {
             list: templateEntrySubjects.list_ir_curve_template_entries_request,
             putMany: templateEntrySubjects.put_many_ir_curve_template_entries_request,
@@ -376,6 +393,49 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         readOnlyBecause:
             'The server addresses a parameter definition by its name alone, which several process types share, so a write would reach whichever type it found first.',
     },
+    ...[
+        {
+            key: 'tenors',
+            entityType: 'ores.refdata.tenor',
+            rows: 'tenors',
+            subjects: {
+                list: tenorSubjects.list_tenors_request,
+                putMany: tenorSubjects.put_many_tenors_request,
+                remove: tenorSubjects.delete_tenor_request,
+                removeMany: tenorSubjects.delete_many_tenors_request,
+            },
+        },
+        {
+            key: 'instrument-codes',
+            entityType: 'ores.refdata.instrument_code',
+            rows: 'instruments',
+            subjects: {
+                list: instrumentCodeSubjects.list_instrument_codes_request,
+                putMany: instrumentCodeSubjects.put_many_instrument_codes_request,
+                remove: instrumentCodeSubjects.delete_instrument_code_request,
+                removeMany: instrumentCodeSubjects.delete_many_instrument_codes_request,
+            },
+        },
+        {
+            key: 'payment-frequencies',
+            entityType: 'ores.refdata.payment_frequency',
+            rows: 'payment_frequencies',
+            subjects: {
+                list: paymentFrequencySubjects.list_payment_frequencies_request,
+                putMany: paymentFrequencySubjects.put_many_payment_frequencies_request,
+                remove: paymentFrequencySubjects.delete_payment_frequency_request,
+                removeMany: paymentFrequencySubjects.delete_many_payment_frequencies_request,
+            },
+        },
+    ].map((lookup): SyntheticResource => ({
+        ...lookup,
+        keyField: 'code',
+        oneOf: 'code_one_of',
+        filter: { code_one_of: null },
+        namespace: 'refdata',
+        readOnlyBecause:
+            'These are reference data of the refdata service. A synthetic screen offers their codes and does not write them.',
+    })),
 ];
 
 /** The synthetic entity types whose history the history route serves. */
@@ -388,14 +448,18 @@ function resourceName(resource: SyntheticResource): string {
     return resource.subjects.list.split('.')[2] ?? '';
 }
 
-/** The FX feeds resource, which the tick read reads a feed through. */
-const FX_FEEDS = ((): SyntheticResource => {
-    const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === 'fx-feeds');
-    if (found === undefined) {
-        throw new Error('The synthetic resources have no fx-feeds.');
-    }
-    return found;
-})();
+/** The resources whose rows are feeds, which the tick read reads a feed through. */
+const FEED_KEYS = ['fx-feeds', 'ir-curve-feeds'] as const;
+
+const FEED_RESOURCES = new Map(
+    FEED_KEYS.map((key): [string, SyntheticResource] => {
+        const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === key);
+        if (found === undefined) {
+            throw new Error(`The synthetic resources have no ${key}.`);
+        }
+        return [key, found];
+    }),
+);
 
 function resourceFor(request: FastifyRequest): SyntheticResource {
     const { resource } = request.params as { resource: string };
@@ -607,10 +671,45 @@ const mixtureReplySchema = operationReplySchema.extend({
     gmm_weights: z.array(z.number()).default([]),
 });
 
+const fxSimpleSchema = z.object({
+    process_type: fxEngine,
+    to_simple: z.boolean(),
+    initial_price: z.number().positive(),
+    ticks_per_hour: z.int().positive(),
+    gmm_means: z.array(z.number()).max(100).default([]),
+    gmm_stdevs: z.array(z.number()).max(100).default([]),
+    gmm_weights: z.array(z.number()).max(100).default([]),
+    trend_pct_per_hour: z.number().default(0),
+    volatility_pct_per_hour: z.number().default(0),
+    jump_share_pct: z.number().default(0),
+    half_life_minutes: z.number().default(0),
+});
+
+const fxSimpleReplySchema = mixtureReplySchema.extend({
+    has_simple_form: z.boolean().default(false),
+    trend_pct_per_hour: z.number().default(0),
+    volatility_pct_per_hour: z.number().default(0),
+    jump_share_pct: z.number().default(0),
+    half_life_minutes: z.number().default(0),
+});
+
 const irSimulateSchema = z.object({
     process_type: code,
     parameters: parameterSpecs,
     ...runSize,
+});
+
+const irConvertSchema = z.object({
+    process_type: code,
+    to_simple: z.boolean(),
+    values: z.record(z.string().max(100), z.number()),
+});
+
+const irConvertReplySchema = operationReplySchema.extend({
+    has_simple_form: z.boolean().default(false),
+    caution: z.string().default(''),
+    parameter_names: z.array(z.string()).default([]),
+    parameter_values: z.array(z.number()).default([]),
 });
 
 const irShapeSchema = z.object({
@@ -656,9 +755,9 @@ export function registerSyntheticRoutes(
                     readOnlyBecause: because ?? null,
                     search: resource.search === true,
                     sortable: resource.sortable ?? [],
-                    readPermission: `synthetic::${resourceName(resource)}:read`,
-                    writePermission: `synthetic::${resourceName(resource)}:write`,
-                    deletePermission: `synthetic::${resourceName(resource)}:delete`,
+                    readPermission: `${resource.namespace ?? 'synthetic'}::${resourceName(resource)}:read`,
+                    writePermission: `${resource.namespace ?? 'synthetic'}::${resourceName(resource)}:write`,
+                    deletePermission: `${resource.namespace ?? 'synthetic'}::${resourceName(resource)}:delete`,
                 };
             }),
         };
@@ -684,18 +783,26 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * The newest ticks of one FX feed's current run, oldest first. The feed is
-     * read as the session first, so a feed the session cannot see has no ticks
-     * to show. Reading starts no listening: what runs is learnt from the
-     * running read, which every feed screen makes.
+     * The newest ticks of one feed's current run, oldest first. The page says
+     * which kind of feed it reads, so the feed is read through that kind's
+     * resource alone. The feed is read as the session first, so a feed the
+     * session cannot see has no ticks to show. Reading starts no listening:
+     * what runs is learnt from the running read, which every feed screen makes.
      */
     server.get('/api/synthetic/feeds/:id/ticks', async (request) => {
         const session = requireSession(request);
-        const { limit } = input(
-            z.object({ limit: z.coerce.number().int().min(1).max(TICK_CAPACITY).default(200) }),
+        const { limit, resource } = input(
+            z.object({
+                limit: z.coerce.number().int().min(1).max(TICK_CAPACITY).default(200),
+                resource: z.enum(FEED_KEYS).default('fx-feeds'),
+            }),
             request.query,
         );
-        const feed = await readByKey(session, FX_FEEDS, paramId(request));
+        const feeds = FEED_RESOURCES.get(resource);
+        if (feeds === undefined) {
+            throw notFound(`There is no feed resource ${resource}.`);
+        }
+        const feed = await readByKey(session, feeds, paramId(request));
         const sourceName = z.string().parse(feed['source_name']);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });
@@ -936,6 +1043,51 @@ export function registerSyntheticRoutes(
             gmm_means: reply.gmm_means,
             gmm_stdevs: reply.gmm_stdevs,
             gmm_weights: reply.gmm_weights,
+        };
+    });
+
+    /**
+     * An FX mixture read as the simple view, or the simple view written as a
+     * mixture, converted by the synthetic service. Nothing is stored.
+     */
+    server.post('/api/synthetic/convert/fx-simple', async (request) => {
+        const session = requireSession(request);
+        const reply = await session.client.callAuthenticated(
+            fxSimpleSubjects.convert_fx_simple_request,
+            input(fxSimpleSchema, request.body),
+            fxSimpleReplySchema,
+        );
+        refuseUnless(reply, invalidRequest);
+        const { success: _success, ...answer } = reply;
+        return answer;
+    });
+
+    /**
+     * The parameters of an IR engine in the terms of the simple view, or the
+     * simple view in the terms of the engine, converted by the synthetic
+     * service. Nothing is stored.
+     */
+    server.post('/api/synthetic/convert/ir', async (request) => {
+        const session = requireSession(request);
+        const body = input(irConvertSchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            irConvertSubjects.convert_ir_parameters_request,
+            {
+                process_type: body.process_type,
+                to_simple: body.to_simple,
+                parameter_names: Object.keys(body.values),
+                parameter_values: Object.values(body.values),
+            },
+            irConvertReplySchema,
+        );
+        refuseUnless(reply, invalidRequest);
+        return {
+            has_simple_form: reply.has_simple_form,
+            message: reply.message,
+            caution: reply.caution,
+            values: Object.fromEntries(
+                reply.parameter_names.map((name, i) => [name, reply.parameter_values[i] ?? 0]),
+            ),
         };
     });
 

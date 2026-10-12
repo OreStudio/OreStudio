@@ -109,6 +109,7 @@ domain::rate_instrument to_domain(const messaging::rate_instrument_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_rate_instruments_response rate_instrument_service::list_rate_instruments(

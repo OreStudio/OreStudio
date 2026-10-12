@@ -27,20 +27,23 @@ A feed carries three names and each answers a different question.
 - =source_name()= is the producer's unique identity within a tenant, for
   example "eur_usd_gbm_1". The feed controller keys its map of running
   feeds by this name.
-- =qualifier()= is the published market data key that consumers look up,
-  for example "EUR/USD" for an FX spot feed or "USD/SOFR" for an interest
-  rate curve family.
-- =role()= is the series role the feed publishes under, which is oresmd's
-  =curve_role= for a curve. It is empty for a feed without roles, such as
-  FX spot.
+- =series_uris()= lists the oresmd series that the feed publishes into: the
+  series URIs that consumers look up. See
+  [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]],
+  where a curve is a series. An FX spot feed reports the one series of its
+  quote, for example
+  =oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD=. An IR
+  curve feed reports each series its pillars land in.
+- =role()= is the use the feed's curve is built for, such as discount or
+  projection. The oresmd grammar does not hold a role, so the feed states it
+  in its own data and the role plays no part in what the feed owns. It is
+  empty for a feed without roles, such as FX spot.
 
-=feed_conflict_key= joins the qualifier and the role with a unit separator
-and defines the identity two feeds must not share while both run. The
-controller compares the qualifier and the role directly rather than the key
-string, and that matters for one case. A feed whose ORE key does not parse
-has an empty qualifier, and an empty qualifier conflicts with nothing even
-though its key string is not empty. A feed with an empty qualifier has no
-published market data key to protect.
+Two feeds must not run while their series overlap, because both would write
+points into one series. =feeds_conflict()= compares the two lists and finds
+whether they share a URI. A feed that names no series has an empty list and
+conflicts with nothing. Such a feed has no published market data series to
+protect.
 
 ** The lifecycle contract
 

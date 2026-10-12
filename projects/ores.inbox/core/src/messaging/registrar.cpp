@@ -161,6 +161,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             remind_expiring_approvals_request::nats_subject,
             queue_group,
             [h](ores::nats::message msg) { h->remind_expiring(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_approval_parts_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->get_parts(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             retry_stalled_applies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->retry_stalled_applies(std::move(msg));

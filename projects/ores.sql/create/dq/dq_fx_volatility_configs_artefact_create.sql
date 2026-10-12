@@ -1,0 +1,65 @@
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension and smile, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+-- =============================================================================
+
+create table if not exists "ores_dq_fx_volatility_configs_artefact_tbl" (
+    "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
+    "id" uuid not null,
+    "version" integer not null,
+    "party_id" uuid not null,
+    "curve_definition_id" uuid not null,
+    "dimension" text not null,
+    "smile_type" text null,
+    "smile_interpolation" text null,
+    "deltas" text null,
+    "smile_delta" text null,
+    "conventions" text null,
+    "expiries" text null,
+    "fx_spot_id" text null,
+    "fx_foreign_curve_id" text null,
+    "fx_domestic_curve_id" text null,
+    "calendar" text null,
+    "day_counter" text null,
+    "fx_index_tag" text null,
+    "base_volatility_1" text null,
+    "base_volatility_2" text null,
+    "smile_extrapolation" text null,
+    "time_interpolation" text null,
+    "time_weighting" text null,
+    "butterfly_error_tolerance" double precision null
+);
+
+create index if not exists dq_fx_volatility_configs_artefact_dataset_idx
+on ores_dq_fx_volatility_configs_artefact_tbl (dataset_id);
+
+create index if not exists dq_fx_volatility_configs_artefact_tenant_idx
+on ores_dq_fx_volatility_configs_artefact_tbl (tenant_id);
+
+create index if not exists dq_fx_volatility_configs_artefact_id_idx
+on ores_dq_fx_volatility_configs_artefact_tbl (id);

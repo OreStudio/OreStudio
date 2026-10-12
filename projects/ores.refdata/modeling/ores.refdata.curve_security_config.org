@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: AC6873BD-9963-4E6D-8CA2-D6FBC283C72F
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_security_config
 #+description: Codegen entity model for the refdata =curve_security_config= table. The quotes of one ORE security.

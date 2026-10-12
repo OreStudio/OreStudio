@@ -107,6 +107,7 @@ domain::change_reason to_domain(const messaging::change_reason_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_change_reasons_response

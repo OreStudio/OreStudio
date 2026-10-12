@@ -111,6 +111,7 @@ to_domain(const messaging::ir_curve_generation_config_process_parameter_value_wr
     return v;
 }
 
+
 }
 
 messaging::list_ir_curve_generation_config_process_parameter_values_response
@@ -130,6 +131,12 @@ ir_curve_generation_config_process_parameter_value_service::
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->config_id_one_of &&
+        request.filter->config_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "config_id_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

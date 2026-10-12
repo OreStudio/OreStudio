@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 22735D34-F4B3-401D-B245-CD33F4261083
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.base_correlation_config
 #+description: Codegen entity model for the refdata =base_correlation_config= table. The settings of one ORE base correlation.

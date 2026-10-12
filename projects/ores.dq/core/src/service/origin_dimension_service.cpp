@@ -102,6 +102,7 @@ domain::origin_dimension to_domain(const messaging::origin_dimension_write& writ
     return v;
 }
 
+
 }
 
 messaging::list_origin_dimensions_response origin_dimension_service::list_origin_dimensions(

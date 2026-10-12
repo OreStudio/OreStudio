@@ -101,6 +101,7 @@ domain::floating_index_type to_domain(const messaging::floating_index_type_write
     return v;
 }
 
+
 }
 
 messaging::list_floating_index_types_response

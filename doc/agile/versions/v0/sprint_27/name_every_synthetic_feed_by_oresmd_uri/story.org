@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 09E3EF10-022C-433F-80B0-96F3396AA9CC
+:END:
+#+title: Story: Name every synthetic feed by its oresmd reference
+#+description: A synthetic feed names the datum it produces by its own key: an ORE key for the FX spot feed, and a currency, index family and tenor qualifier for the IR curve feed. The rest of market data names a datum by its oresmd URI, so every feed should carry that reference instead.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every synthetic feed states the datum or the series it produces as an oresmd URI, the same reference the market data store, the ticks, the feed bindings and the screens use. Today each feed kind has a key of its own:
+
+- The FX spot feed stores an ORE key (=ore_key=, such as =FX/RATE/EUR/USD=) and converts it to a URI with =ore_key_codec= and =oresmd_uri_codec= at every use.
+- The IR curve feed stores a currency, an index family and a tenor. =ir_curve_qualifier= joins them into a string such as =USD/SOFR= or =EUR/EURIBOR-6M=, and each pillar then gets its URI from =pillar_datum_uri=. Its =vintage_series_uri= is already an oresmd URI.
+- The common =feed= interface states a =qualifier()= for every kind. The controllers compare it, with the role, to find two feeds that publish the same thing.
+
+So a reader meets a different name for each kind, and none of them is the reference the rest of market data uses.
+
+The oresmd URI already names every ORE datum: 45 instrument types in 11 asset classes (see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]). The feed model must accept the URI of any supported datum, so a new feed kind needs no key of its own.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The =feed= interface states one oresmd reference for every kind, and the collision check compares it, with the role. =qualifier()= is gone.
+- The FX spot feed model (=ores.synthetic.fx_spot_generation_config=) carries an oresmd quote URI where it carries =ore_key=. The generator derives it from the currency pair, for example =oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD=.
+- The IR curve feed model (=ores.synthetic.ir_curve_generation_config=) carries an oresmd series URI for the curve it generates, with the =curve_role=. The currency, the index family and the tenor are read from that URI, or the URI is built from them in one place, and nothing builds the old qualifier string.
+- A config is checked with the strict =oresmd_uri_codec::read=. A URI that is not the right type, or that names an instrument the feed kind cannot generate, is refused with a message that names the rule.
+- A feed derives a series URI with =series_of=, and publishes ticks under the URI it stores. No code calls =ore_key_codec= to build a feed's identity.
+- The unique-feed rule and the display name use the URI.
+- The stored rows are migrated by a SQL step, and no row keeps the old ORE key or builds the old qualifier. The columns and the =publish_from_dq= function use the new name.
+- The republish subject, today built from the ORE key, is decided and either moved or kept with a stated reason (see Decisions).
+- The Qt and web screens, the docs and the tests use the new name.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:08451F14-BD34-465C-B7AA-9686C6D022A3][Scaffold story: Name every synthetic feed by its oresmd reference]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2576F53F-5D5B-42E0-A8DB-E7E54373D1D9][Replace the ORE key and the qualifier of every synthetic feed with an oresmd reference]] | STARTED | 2026-10-11 | | Initial task for: Name every synthetic feed by its oresmd reference |
+| [[id:1503D1BB-A74E-483C-B35C-E42B28F68466][Draw the IR curve feeds on the shared feed screens]] | STARTED | 2026-10-11 | | An IR curve feed gets a list, a page, an add and edit dialog, a process tab with its parameters and previews, and a curve template tab, built on the feed kind that every asset class shares. |
+| [[id:19B36E18-2C0C-422E-98CA-3C65FDB0BD19][Name the republish subject by the oresmd URI]] | BACKLOG | | | The per consumer tick subject is built from the datum's ORE key, so a quote that has an oresmd URI and no ORE key is dropped at ingest. |
+
+* Decisions
+
+- A feed stores the URI of what it generates: the quote URI for a feed of single quotes, such as FX spot, and the series URI for a feed of curves, such as IR. The series URI of a quote feed is derived with =series_of= and never stored.
+- A curve is a series, as [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] now states. A feed reports the series it publishes into, as a list, and two feeds conflict when their lists share a series. The role is not part of a series, so a discount feed and a projection feed of one index conflict.
+- An IR curve feed builds its pillar series from the currency, the start of the pillar and the tenor of its index, which is =1D= for an overnight index and for the FOMC variant. The bootstrap config states the same currency and index tenor (=index_tenor=), so the feed that writes a pillar and the bootstrap that reads it name one series.
+- The IR config keeps its structured natural key (currency, index family, tenor). The reference is derived from it in one place, because the key is validated against the index conventions by a trigger.
+- The FOMC config and the standard curve of one currency both start at spot, so they publish into one series and conflict.
+- The feed screens are shared. =FeedKind= states what differs between asset classes, and =FeedsPage= and =FeedPage= draw the list, the page and the dialogs. The IR curve screens are the second kind.
+- Open: =market_tick_subject(tenant, party, ore_key)= builds the per consumer subject from the datum's canonical ORE key. A quote that has no ORE key, such as one with the quote type =hazard_rate=, has a URI and no key, so it cannot be republished by that subject. Decide whether the subject takes the URI (percent-encoded into a token), or whether such quotes stay out of the feeds. This touches =ores.marketdata=, not only the feeds.
+
+* Out of scope
+
+- New feed kinds. This story changes the reference of the existing kinds and keeps the field general. It builds no new kind.

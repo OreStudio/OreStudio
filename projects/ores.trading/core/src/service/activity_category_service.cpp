@@ -101,6 +101,7 @@ domain::activity_category to_domain(const messaging::activity_category_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_activity_categories_response activity_category_service::list_activity_categories(

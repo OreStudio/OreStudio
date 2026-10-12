@@ -110,6 +110,7 @@ domain::crm_enabled_derived_pair to_domain(const messaging::crm_enabled_derived_
     return v;
 }
 
+
 }
 
 messaging::list_crm_enabled_derived_pairs_response

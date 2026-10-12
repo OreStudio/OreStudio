@@ -112,6 +112,7 @@ to_domain(const messaging::instrument_option_exercise_price_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_instrument_option_exercise_prices_response

@@ -116,6 +116,7 @@ to_domain(const messaging::fx_accumulator_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fx_accumulator_instruments_response

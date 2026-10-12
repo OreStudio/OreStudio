@@ -110,6 +110,7 @@ domain::netting_agreement to_domain(const messaging::netting_agreement_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_netting_agreements_response netting_agreement_service::list_netting_agreements(

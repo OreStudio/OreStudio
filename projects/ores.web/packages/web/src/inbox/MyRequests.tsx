@@ -29,7 +29,7 @@ import { AccountPicture } from '../ui/Images.js';
 import { Button, Dialog, Field, Notice } from '../ui/Primitives.js';
 import { PersonRef } from '../access/PersonRef.js';
 import { RequestStateChip } from './RequestStateChip.js';
-import { askedFor } from './words.js';
+import { summaryOf } from './kinds.js';
 
 /** How many requests a person sees on their own page. */
 const PAGE = 50;
@@ -78,7 +78,7 @@ export function MyRequests({ showEmpty = false }: { readonly showEmpty?: boolean
                     >
                         <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2 text-sm">
-                                <span className="font-medium">{askedFor(t, request)}</span>
+                                <span className="font-medium">{summaryOf(t, request)}</span>
                                 <RequestStateChip stateCode={request.stateCode} />
                                 <span className="text-xs text-ink-faint">
                                     {t('inbox.mine.asked', {
@@ -164,7 +164,7 @@ function WithdrawDialog({
         >
             <div className="space-y-4">
                 <p className="text-sm text-ink-muted">
-                    {t('inbox.withdraw.lead', { role: askedFor(t, request) })}
+                    {t('inbox.withdraw.lead', { role: summaryOf(t, request) })}
                 </p>
                 {withdraw.isError && <Notice tone="error">{withdraw.error.message}</Notice>}
                 <Field label={t('inbox.withdraw.comment')}>

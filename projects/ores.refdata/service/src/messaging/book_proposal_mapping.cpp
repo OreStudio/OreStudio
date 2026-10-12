@@ -76,7 +76,8 @@ std::vector<book_line_outcome> to_outcomes(const service::book_preview& preview)
                        .operation = l.operation,
                        .entity_id = l.entity_id,
                        .columns = l.columns,
-                       .refusal = l.refusal});
+                       .refusal = l.refusal,
+                       .part_codes = l.part_codes});
     }
     return out;
 }

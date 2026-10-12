@@ -30,7 +30,7 @@ import { MyAccessPage } from '../access/MyAccessPage.js';
 import { AppShell } from '../components/AppShell.js';
 import { AskForRoleDialog } from './AskForRoleDialog.js';
 import { NotificationBell, notificationRoute } from './NotificationBell.js';
-import { RequestDetailPage } from './RequestDetailPage.js';
+import { RequestPage } from './RequestPage.js';
 import { RequestStoryPage } from './RequestStoryPage.js';
 import { RequestsPage } from './RequestsPage.js';
 
@@ -64,6 +64,7 @@ function mine(overrides: Partial<InboxRequestView> = {}): InboxRequestView {
         expiresAt: '',
         roles: [],
         decision: null,
+        parts: [],
         ...overrides,
     } as unknown as InboxRequestView;
 }
@@ -390,7 +391,7 @@ describe('answering one request', () => {
                     ],
                 );
             },
-            <RequestDetailPage me={me} />,
+            <RequestPage me={me} />,
             `/requests/${REQUEST}`,
             '/requests/:id',
         );

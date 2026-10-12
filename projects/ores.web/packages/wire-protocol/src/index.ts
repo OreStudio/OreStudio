@@ -623,10 +623,14 @@ export type {
 // What a request proposes and what running it again says, for any kind of
 // request, and the book changes a maker previews and raises.
 export {
+    bookPreviewViewSchema,
+    bookRaiseViewSchema,
     previewBookChanges,
     raiseBookChanges,
     readRequestChanges,
     readRequestChecks,
+    requestChangesViewSchema,
+    requestChecksViewSchema,
 } from './request-changes.js';
 export type {
     BookLineInput,

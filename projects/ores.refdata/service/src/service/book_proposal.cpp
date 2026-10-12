@@ -210,7 +210,8 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
             std::string(out.refusal.empty() ? "release savepoint " : "rollback to savepoint ") +
                 savepoint);
 
-        for (const auto& code : policy_parts(ctx, line.operation, out.columns)) {
+        out.part_codes = policy_parts(ctx, line.operation, out.columns);
+        for (const auto& code : out.part_codes) {
             if (std::ranges::find(result.part_codes, code) == result.part_codes.end())
                 result.part_codes.push_back(code);
         }

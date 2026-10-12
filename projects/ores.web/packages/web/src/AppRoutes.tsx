@@ -77,7 +77,7 @@ import { StaffOfMyParties } from './membership/StaffOfMyParties.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
-import { RequestDetailPage } from './inbox/RequestDetailPage.js';
+import { RequestPage } from './inbox/RequestPage.js';
 import { RequestStoryPage } from './inbox/RequestStoryPage.js';
 import { RequestsPage } from './inbox/RequestsPage.js';
 import { ClassificationListPage } from './refdata/ClassificationListPage.js';
@@ -957,7 +957,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <RequestDetailPage me={view.username} />
+                        <RequestPage me={view.username} />
                     ),
                     'workspace',
                 )}

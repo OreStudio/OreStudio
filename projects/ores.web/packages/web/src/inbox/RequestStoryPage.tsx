@@ -25,7 +25,8 @@ import { useParams } from 'react-router';
 import type { InboxStoryEvent } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { askedFor, sourceLabel, stateLabel } from './words.js';
+import { summaryOf } from './kinds.js';
+import { sourceLabel, stateLabel } from './words.js';
 import { formatDateTime } from '../ui/Time.js';
 import { PersonRef, useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
@@ -86,7 +87,7 @@ export function RequestStoryPage(): ReactNode {
                 area="requests"
                 steps={[
                     {
-                        label: t('inbox.request.title', { role: askedFor(t, request) }),
+                        label: t('inbox.request.title', { role: summaryOf(t, request) }),
                         to: `/requests/${encodeURIComponent(id)}`,
                     },
                 ]}
@@ -94,7 +95,7 @@ export function RequestStoryPage(): ReactNode {
             />
 
             <PageHeader
-                title={t('inbox.story.title', { role: askedFor(t, request) })}
+                title={t('inbox.story.title', { role: summaryOf(t, request) })}
                 description={t('inbox.story.lead', {
                     state: stateLabel(t, request.stateCode),
                     date: formatDateTime(request.requestedAt, language),

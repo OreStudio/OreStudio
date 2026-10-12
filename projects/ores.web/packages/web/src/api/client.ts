@@ -53,10 +53,14 @@ import {
     classificationRowSchema,
     historyVersionSchema,
     inboxNotificationPageSchema,
+    bookPreviewViewSchema,
+    bookRaiseViewSchema,
     inboxRequestPageSchema,
     inboxRequestQueueSchema,
     inboxRequestStorySchema,
     inboxRequestViewSchema,
+    requestChangesViewSchema,
+    requestChecksViewSchema,
     timelineSchema,
     type BadgePresentation,
     type ClassificationList,
@@ -65,7 +69,12 @@ import {
     type Timeline,
     type InboxNotificationView,
     type InboxPage,
+    type BookLineInput,
+    type BookPreview,
+    type BookRaise,
     type InboxRequestQueue,
+    type RequestChange,
+    type RequestChecks,
     type InboxRequestStory,
     type InboxRequestView,
     type AccountAccess,
@@ -849,6 +858,55 @@ export const api = {
         );
     },
 
+    /**
+     * What a request proposes, for any kind: the operation, the thing it is
+     * about, and each field beside the value it would replace.
+     */
+    async requestChanges(id: string): Promise<readonly RequestChange[]> {
+        return requestChangesViewSchema.parse(
+            await request(`/api/requests/${encodeURIComponent(id)}/changes`, { method: 'GET' }),
+        ).changes;
+    },
+
+    /** What running the request's lines through the real write now says. */
+    async requestChecks(id: string): Promise<RequestChecks> {
+        return requestChecksViewSchema.parse(
+            await request(`/api/requests/${encodeURIComponent(id)}/checks`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Runs the proposed book writes through the real service and writes
+     * nothing, so every refusal and the parts the policy needs come back before
+     * anyone waits.
+     */
+    async previewBookChanges(lines: readonly BookLineInput[]): Promise<BookPreview> {
+        return bookPreviewViewSchema.parse(
+            await request('/api/book-changes/preview', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ lines }),
+            }),
+        );
+    },
+
+    /**
+     * Raises one request that holds the proposed book writes. A refusal comes
+     * back as an answer with its reason and no request.
+     */
+    async raiseBookChanges(input: {
+        readonly reason: string;
+        readonly lines: readonly BookLineInput[];
+    }): Promise<BookRaise> {
+        return bookRaiseViewSchema.parse(
+            await request('/api/book-changes', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        );
+    },
+
     /** Approves, refuses, holds or resumes a request, against the version read. */
     async decideRequest(
         requestId: string,
@@ -856,6 +914,8 @@ export const api = {
             readonly version: number;
             readonly decisionCode: 'approve' | 'refuse' | 'hold' | 'resume';
             readonly comment: string;
+            /** The part the decider answers for; omitted for a request that names none. */
+            readonly partCode?: string;
         },
     ): Promise<void> {
         await request(`/api/requests/${encodeURIComponent(requestId)}/decision`, {

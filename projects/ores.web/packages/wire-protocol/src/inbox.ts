@@ -136,6 +136,7 @@ const wireApprovalRequestSchema = z.object({
 const wireApprovalDecisionSchema = z.object({
     request_id: z.string().default(''),
     decision_code: z.string().default(''),
+    part_code: z.string().nullable().default(null),
     decided_by: z.string().default(''),
     decided_at: z.string().default(''),
     comment: z.string().default(''),
@@ -1034,33 +1035,54 @@ function roleEvents(roles: readonly InboxRequestedRole[]): readonly InboxStoryEv
     return events;
 }
 
-/** The answers given on one request, when the reader may read them. */
+/**
+ * The answers given on one request, when the reader may read them.
+ *
+ * A request that needs several parts has an answer from each, so every answer is
+ * its own event and names the part it answered for.
+ */
 async function readDecisionsAbout(
     caller: AuthenticatedCaller,
     requestId: string,
 ): Promise<readonly InboxStoryEvent[]> {
-    const byRequest = await readDecisionsByRequest(caller, [requestId]);
-    const decision = byRequest.get(requestId);
-    if (decision === undefined) return [];
+    const request: ListApprovalDecisionsRequest = {
+        offset: 0,
+        limit: JOIN_PAGE,
+        order: UNORDERED,
+        filter: { request_id: requestId, id_one_of: null, request_id_one_of: null },
+        as_of: null,
+    };
+    const reply = await readJoin(
+        caller,
+        INBOX_JOIN_SUBJECTS.decisions,
+        request,
+        decisionsReplySchema,
+    );
+    const decisions = reply?.decisions ?? [];
+    if (decisions.length === 0) return [];
     // The decision names the decider by account id. Every other event in the
-    // story names a person, so the id is resolved rather than shown.
-    const named = await readUsernames(caller, [decision.decidedBy]);
-    return [
-        {
-            entityType: DECISION_ENTITY,
-            entityId: requestId,
-            kind: 'decided',
-            at: decision.decidedAt,
-            actor: named.get(decision.decidedBy) ?? decision.decidedBy,
-            version: 1,
-            reasonCode: '',
-            commentary: '',
-            fields: [
-                { name: 'Decision', value: decision.decisionCode },
-                { name: 'Comment', value: decision.comment },
-            ],
-        },
-    ];
+    // story names a person, so the ids are resolved rather than shown.
+    const named = await readUsernames(
+        caller,
+        decisions.map((decision) => decision.decided_by),
+    );
+    return decisions.map((decision) => ({
+        entityType: DECISION_ENTITY,
+        entityId: requestId,
+        kind: 'decided',
+        at: decision.decided_at,
+        actor: named.get(decision.decided_by) ?? decision.decided_by,
+        version: 1,
+        reasonCode: '',
+        commentary: '',
+        fields: [
+            { name: 'Decision', value: decision.decision_code },
+            ...(decision.part_code === null || decision.part_code === ''
+                ? []
+                : [{ name: 'Part', value: decision.part_code }]),
+            { name: 'Comment', value: decision.comment },
+        ],
+    }));
 }
 
 /**

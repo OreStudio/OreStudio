@@ -93,6 +93,7 @@
     ];
 
     var fe;
+    var PRISTINE = JSON.stringify(CPS);
     var S = {
         view: 'list', cp: 'ATLAS', tab: 'details', query: '',
         dialog: null, request: null, toast: '', reqState: 'waiting', nextRequest: 513
@@ -130,7 +131,7 @@
 
     function createFourEyes() {
         fe = FourEyes.create({
-            requestId: 'REQ-0512',
+            requestId: function () { return S.request ? S.request.id : 'REQ-0' + S.nextRequest; },
             maker: 'h.desk',
             getChanges: function () { return S.request ? S.request.changes : []; },
             subject: function () { return S.request ? 'The counterparty ' + S.request.name : 'The counterparty'; },
@@ -322,8 +323,20 @@
             contact: d.index === null ? 'Add a contact' : 'Edit the contact' }[d.kind];
     }
 
+    function problemsOf(d) {
+        var out = [];
+        if (d.kind === 'details' && d.isNew) {
+            if (d.values.code.trim() === '') out.push('Give the counterparty a short code.');
+            else if (byCode(d.values.code.trim())) out.push('The short code ' + d.values.code.trim() + ' is already used by ' + byCode(d.values.code.trim()).name + '.');
+            if (d.values.name.trim() === '') out.push('Give the counterparty a full name.');
+        }
+        if (d.kind === 'identifier' && d.values.value.trim() === '') out.push('Give the identifier a value.');
+        return out;
+    }
+
     function reviewPanel(d) {
         var changes = d.changes;
+        var problems = problemsOf(d);
         var gated = fe.gated(changes);
         var list = changes.length === 0 ? '<div class="notice info">Nothing changed. There is nothing to save.</div>' :
             '<ul class="rowlist">' + changes.map(function (ch) {
@@ -332,9 +345,11 @@
         var reason = changes.length === 0 ? '' : '<div class="grid2">' + select('Change reason', 'reason', REASONS.map(function (r) { return { value: r.code, text: r.text }; }), d.reason) +
             (gated.length > 0 ? field('Why you ask', 'why', d.why) : field('Commentary', 'why', d.why)) + '</div>';
         var label = fe.primaryLabel(changes, 'Save');
-        var blocked = changes.length === 0 || (gated.length > 0 && d.why.trim() === '');
+        var blocked = changes.length === 0 || problems.length > 0 || (gated.length > 0 && d.why.trim() === '');
+        var problemHtml = problems.length === 0 ? '' : '<div class="notice error"><b>This cannot be saved yet.</b><ul>' +
+            problems.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') + '</ul></div>';
         return '<h2 style="margin-top:0">Review the changes</h2><p class="lede">Each change is shown with the function that decides it.</p>' + list +
-            (changes.length === 0 ? '' : fe.reviewNotice(changes)) + reason +
+            problemHtml + (changes.length === 0 ? '' : fe.reviewNotice(changes)) + reason +
             '<div class="stepfoot">' + (d.kind === 'link' ? '' : '<button type="button" class="btn ghost" data-act="back">Back</button>') + '<span class="ml-auto"></span>' +
             '<button type="button" class="btn ghost" data-act="close">Cancel</button> <button type="button" class="btn primary" data-act="confirm"' + (blocked ? ' disabled' : '') + '>' + esc(label) + '</button></div>';
     }
@@ -395,9 +410,13 @@
             if (i === null) {
                 out.push(change('Add the identifier ' + f.scheme, null, f.value, DECIDER, function () { c.identifiers.push({ scheme: f.scheme, value: f.value, desc: f.desc, version: 1 }); }));
             } else {
+                var bumpedI = { done: false };
                 [['scheme', 'Scheme'], ['value', 'Value'], ['desc', 'Description']].forEach(function (p) {
                     if (i[p[0]] !== f[p[0]]) {
-                        out.push(change('Identifier ' + i.scheme + ': ' + p[1], i[p[0]], f[p[0]], DECIDER, function () { i[p[0]] = f[p[0]]; i.version += 1; }));
+                        out.push(change('Identifier ' + i.scheme + ': ' + p[1], i[p[0]], f[p[0]], DECIDER, function () {
+                            i[p[0]] = f[p[0]];
+                            if (!bumpedI.done) { i.version += 1; bumpedI.done = true; }
+                        }));
                     }
                 });
             }
@@ -406,9 +425,13 @@
             if (k === null) {
                 out.push(change('Add a ' + f.type + ' contact', null, f.email || f.phone, '', function () { c.contacts.push({ type: f.type, line1: f.line1, city: f.city, country: f.country, phone: f.phone, email: f.email, version: 1 }); }));
             } else {
+                var bumpedK = { done: false };
                 [['type', 'Type'], ['line1', 'Street'], ['city', 'City'], ['country', 'Country'], ['phone', 'Phone'], ['email', 'Email']].forEach(function (p) {
                     if (k[p[0]] !== f[p[0]]) {
-                        out.push(change('Contact ' + k.type + ': ' + p[1], k[p[0]], f[p[0]], '', function () { k[p[0]] = f[p[0]]; k.version += 1; }));
+                        out.push(change('Contact ' + k.type + ': ' + p[1], k[p[0]], f[p[0]], '', function () {
+                            k[p[0]] = f[p[0]];
+                            if (!bumpedK.done) { k.version += 1; bumpedK.done = true; }
+                        }));
                     }
                 });
             }
@@ -431,9 +454,8 @@
     /* ----------------------------------------------------- confirm and apply */
 
     function applyChanges(changes, reason, who) {
-        var c = cur();
         changes.forEach(function (ch) { ch.apply({ reason: reason }); });
-        c = cur();
+        var c = cur();
         c.version += 1;
         c.by = who;
         c.at = nowStamp();
@@ -443,7 +465,7 @@
     function confirm() {
         var d = S.dialog;
         var changes = d.changes;
-        if (changes.length === 0) return;
+        if (changes.length === 0 || problemsOf(d).length > 0) return;
         if (fe.gated(changes).length === 0) {
             applyChanges(changes, d.reason, 'h.desk');
             S.toast = 'Saved as version ' + cur().version + '. No approval was needed.';
@@ -451,8 +473,9 @@
             return;
         }
         var id = 'REQ-0' + S.nextRequest;
+        S.nextRequest += 1;
         var isNew = d.kind === 'details' && d.isNew;
-        S.request = { id: id, name: isNew ? d.values.name : cur().name, cp: isNew ? d.values.code : cur().code, baseVersion: isNew ? 0 : cur().version, changes: changes, reason: d.reason, why: d.why, live: true };
+        S.request = { dialog: d, id: id, name: isNew ? d.values.name : cur().name, cp: isNew ? d.values.code : cur().code, baseVersion: isNew ? 0 : cur().version, changes: changes, reason: d.reason, why: d.why, live: true };
         fe.raise(changes);
         S.dialog = null;
         S.view = 'request';
@@ -502,6 +525,14 @@
     /* ----------------------------------------------------------- the states */
 
     function goState(name, p) {
+        // Every state starts from the data as it was, so the bar can be walked in any order.
+        var fresh = JSON.parse(PRISTINE);
+        CPS.length = 0;
+        fresh.forEach(function (c) { CPS.push(c); });
+        S.cp = byCode(S.cp) ? S.cp : 'ATLAS';
+        S.request = null;
+        S.nextRequest = 513;
+        fe.reset();
         S.toast = '';
         S.dialog = null;
         if (name === 'list') { S.view = 'list'; return; }
@@ -548,7 +579,15 @@
         var index = n === null ? null : parseInt(n, 10);
         if (el.getAttribute('data-fe') !== null) {
             var next = fe.click(el);
-            if (next === 'review') { S.request.live = false; S.request = null; S.view = 'record'; S.tab = 'details'; }
+            if (next === 'review') {
+                var back = S.request.dialog;
+                S.request.live = false;
+                S.request = null;
+                S.view = back.kind === 'details' && back.isNew ? 'list' : 'record';
+                S.tab = { details: 'details', identifier: 'identifiers', contact: 'contacts', link: S.tab }[back.kind];
+                back.step = 'review';
+                S.dialog = back;
+            }
             else if (next === 'outcome') { applyChanges(S.request.changes, S.request.reason, fe.actors.filter(function (a) { return a.id === fe.S.actor; })[0].id); S.request.live = false; S.reqState = 'outcome'; }
             else if (next === 'waiting' || next === 'decide' || next === 'declined') { S.reqState = next; if (next === 'declined') S.request.live = false; }
             render();

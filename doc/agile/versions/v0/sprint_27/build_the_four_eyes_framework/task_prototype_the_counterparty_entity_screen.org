@@ -95,7 +95,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The request id differs between the screens | prototype.js, four-eyes.js | Accept | The shared controls read the id from the page, and the id moves on once a request is raised. One id now shows everywhere. |
+| 2 | The state bar breaks after the outcome | prototype.js | Accept | Every state starts from the mock data as it was, so the bar can be walked in any order. A test walks it after an outcome. |
+| 3 | Withdraw does not return to the review | prototype.js | Accept | Withdraw reopens the review with the edits kept. |
+| 4 | A new counterparty has no validation | prototype.js | Accept | An empty short code, an empty name, a duplicate short code and an empty identifier value block the save, with words. |
+| 5 | Versions rise once for each field | prototype.js | Accept | An identifier or a contact rises by one for each save. |
+| 6 | A dead assignment, and fe.params runs twice | prototype.js | Accept in part | The dead assignment is removed. The second params call stays, with its comment, because raising a request picks the first decider. |
+| 7 | A direct save trips a waiting request's version check | prototype.js | Accept | Kept on purpose, and the design note says so. |
 
 * Result
 

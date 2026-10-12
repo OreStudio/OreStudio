@@ -85,7 +85,7 @@
         style.textContent = CSS;
         document.head.appendChild(style);
 
-        var requestId = cfg.requestId || 'REQ-0413';
+        var requestId = function () { return typeof cfg.requestId === 'function' ? cfg.requestId() : (cfg.requestId || 'REQ-0413'); };
         var fe = {
             actors: ACTORS,
             states: ['waiting', 'decide', 'declined'],
@@ -161,7 +161,7 @@
                 return '<tr><td>' + esc(part) + '</td><td>' + esc(who ? who.name : '—') + holds + '</td><td>' + state + '</td></tr>';
             }).join('');
             return '<div class="fe-center"><div class="fe-mark">⏳</div><h2>The request is raised</h2>' +
-                '<p><span class="fe-mono">' + esc(requestId) + '</span> was raised by ' + esc(maker.name) + ' (' + esc(maker.part) + ') for ' +
+                '<p><span class="fe-mono">' + esc(requestId()) + '</span> was raised by ' + esc(maker.name) + ' (' + esc(maker.part) + ') for ' +
                 changes.length + ' change' + (changes.length === 1 ? '' : 's') + '. ' + esc(cfg.subject()) +
                 ' stays as it is until every decider answers. The request is written down, so you can leave this screen and find it under <b>My requests</b>.</p></div>' +
                 '<table class="fe-table"><thead><tr><th>Decider</th><th>Person</th><th>Answer</th></tr></thead><tbody>' + rows + '</tbody></table>' +
@@ -205,7 +205,7 @@
                 already ? '<div class="fe-notice">' + esc(actor.part) + ' has already ' + esc(already) + ' this request.</div>' :
                 failing ? '<div class="fe-notice error"><span class="fe-title">A check failed</span>This request cannot be approved while a check fails. Decline it, or have the maker fix the cause.</div>' : '';
             return '<div class="fe-panel"><label class="fe-field"><span>Acting as</span><select data-fe-actor="1">' + options + '</select></label></div>' +
-                '<div class="fe-panel"><h3>Request ' + esc(requestId) + ' · raised by ' + esc(maker.name) + '</h3>' + delta + '</div>' +
+                '<div class="fe-panel"><h3>Request ' + esc(requestId()) + ' · raised by ' + esc(maker.name) + '</h3>' + delta + '</div>' +
                 '<div class="fe-panel"><h3>Checks</h3>' + checks + '</div>' + why +
                 '<div class="fe-panel"><label class="fe-field"><span>Comment · required</span>' +
                 '<input data-fe-comment="1" data-focus="fe-comment" placeholder="Why you approve or decline" value="' + esc(S.comment) + '"></label>' +
@@ -217,7 +217,7 @@
             var actor = actorOf(S.actor) || ACTORS[0];
             var note = S.declinedComment ? ': “' + esc(S.declinedComment) + '”' : '';
             return '<div class="fe-center"><div class="fe-mark">✕</div><h2>The request was declined</h2>' +
-                '<p>' + esc(actor.name) + ' (' + esc(actor.part) + ') declined <span class="fe-mono">' + esc(requestId) + '</span>' + note + '.</p></div>' +
+                '<p>' + esc(actor.name) + ' (' + esc(actor.part) + ') declined <span class="fe-mono">' + esc(requestId()) + '</span>' + note + '.</p></div>' +
                 '<table class="fe-table"><tbody>' +
                 '<tr><td>What changed</td><td>Nothing. ' + esc(cfg.subject()) + ' keeps its version and no new version is written.</td></tr>' +
                 '<tr><td>What the maker can do</td><td>Change the request and raise it again, or leave it. The declined request stays on record.</td></tr></tbody></table>' +

@@ -71,6 +71,11 @@ The decision screen runs two checks: the person who asked is not the person who
 answers, and the counterparty is still at the version the maker read. The
 =?check=stale= switch makes the second fail, and an approval is then refused.
 
+A direct save moves the counterparty to a new version. A request that was raised against
+the old version then fails its version check when the checker opens it, and the maker raises
+it again from the current record. The prototype keeps this on purpose: it is the stale write
+the check exists to stop.
+
 ** What is fake
 
 The data, the identity of the actors, the clock, and every write. Nothing is saved

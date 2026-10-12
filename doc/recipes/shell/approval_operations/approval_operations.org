@@ -222,3 +222,24 @@ It is addressed at =inbox.v1.ops.get_approval_history=.
 approval_operations get-approval-history __none__
 #+end_src
 
+** =get-approval-parts=
+:PROPERTIES:
+:ID: 389CAC97-4B74-5276-AC1D-07203B506FDD
+:END:
+
+Sends =get_approval_parts_request= and prints =get_approval_parts_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations get-approval-parts <request_id>
+#+end_example
+
+It is addressed at =inbox.v1.ops.get_approval_parts=.
+
+#+name: approval_operations-get-approval-parts
+#+begin_src ores-shell :tangle approval_operations-get-approval-parts.ores :exports none
+approval_operations get-approval-parts __none__
+#+end_src
+

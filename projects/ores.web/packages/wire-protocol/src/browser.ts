@@ -240,12 +240,7 @@ export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
 export { gridViewSchema, gridNodeRowSchema } from './operations.js';
 export type { GridNodeRow, GridView } from './operations.js';
 export { SERIES_RANGES, gridSeriesViewSchema, gridUsageViewSchema } from './operations.js';
-export type {
-    GridSeriesView,
-    GridUsageGroup,
-    GridUsageView,
-    SeriesRange,
-} from './operations.js';
+export type { GridSeriesView, GridUsageGroup, GridUsageView, SeriesRange } from './operations.js';
 
 // The message bus the operations screen reads, as the BFF serves it: the NATS
 // server samples and one row per stream, each the newest sample of the range.
@@ -290,6 +285,7 @@ export {
     inboxPageSchema,
     inboxRequestDecisionViewSchema,
     inboxRequestPageSchema,
+    inboxRequestPartViewSchema,
     inboxRequestQueueSchema,
     inboxRequestRoleViewSchema,
     inboxRequestStorySchema,
@@ -309,6 +305,7 @@ export type {
     InboxNotificationView,
     InboxPage,
     InboxRequestDecisionView,
+    InboxRequestPartView,
     InboxRequestQueue,
     InboxRequestedRole,
     InboxRequestRoleView,

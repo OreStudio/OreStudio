@@ -245,6 +245,107 @@ std::vector<domain::book_change> lines_of(const ores::database::context& ctx,
 
 }
 
+namespace {
+
+std::string text_of(const boost::uuids::uuid& v) {
+    return boost::uuids::to_string(v);
+}
+
+std::string text_of(const std::optional<boost::uuids::uuid>& v) {
+    return v ? boost::uuids::to_string(*v) : std::string{};
+}
+
+std::string text_of(bool v) {
+    return v ? "true" : "false";
+}
+
+std::string text_of(const std::string& v) {
+    return v;
+}
+
+/**
+ * @brief A column of the book beside the same column of a line, as text.
+ *
+ * The names are the columns the policy names, so a screen and the policy read
+ * one vocabulary.
+ */
+template <typename BookMember, typename LineMember>
+field_delta delta_of(const char* name,
+                     const std::optional<domain::book>& live,
+                     BookMember book_member,
+                     const domain::book_change& line,
+                     LineMember line_member) {
+    field_delta d;
+    d.name = name;
+    d.after = text_of(line.*line_member);
+    if (live)
+        d.before = text_of((*live).*book_member);
+    d.changed = !live || d.before != d.after;
+    return d;
+}
+
+}
+
+std::vector<line_delta> book_proposal_service::deltas(const std::string& request_id) {
+    const auto rows = lines_of(ctx_, request_id);
+    book_service svc(ctx_);
+
+    std::vector<line_delta> out;
+    out.reserve(rows.size());
+    for (const auto& line : rows) {
+        line_delta d{.line_no = line.line_no,
+                     .operation = line.operation,
+                     .entity_id = line.entity_id,
+                     .base_version = line.base_version,
+                     .applied = line.applied,
+                     .fields = {}};
+        if (line.operation == "put") {
+            const auto live = svc.get_book(line.entity_id);
+            using B = domain::book;
+            using L = domain::book_change;
+            d.fields = {
+                delta_of("party_id", live, &B::party_id, line, &L::party_id),
+                delta_of("name", live, &B::name, line, &L::name),
+                delta_of("description", live, &B::description, line, &L::description),
+                delta_of("parent_portfolio_id",
+                         live,
+                         &B::parent_portfolio_id,
+                         line,
+                         &L::parent_portfolio_id),
+                delta_of("owner_unit_id", live, &B::owner_unit_id, line, &L::owner_unit_id),
+                delta_of("functional_currency",
+                         live,
+                         &B::functional_currency,
+                         line,
+                         &L::functional_currency),
+                delta_of("gl_account_ref", live, &B::gl_account_ref, line, &L::gl_account_ref),
+                delta_of("cost_center", live, &B::cost_center, line, &L::cost_center),
+                delta_of("book_status", live, &B::book_status, line, &L::book_status),
+                delta_of("regulatory_book_type",
+                         live,
+                         &B::regulatory_book_type,
+                         line,
+                         &L::regulatory_book_type),
+                delta_of("book_purpose_type",
+                         live,
+                         &B::book_purpose_type,
+                         line,
+                         &L::book_purpose_type),
+                delta_of("ledger_feed_type", live, &B::ledger_feed_type, line, &L::ledger_feed_type),
+                delta_of("is_sweepable", live, &B::is_sweepable, line, &L::is_sweepable),
+                delta_of("rates_centre_code",
+                         live,
+                         &B::rates_centre_code,
+                         line,
+                         &L::rates_centre_code),
+                delta_of("sandbox_id", live, &B::sandbox_id, line, &L::sandbox_id),
+            };
+        }
+        out.push_back(std::move(d));
+    }
+    return out;
+}
+
 book_preview book_proposal_service::recheck(const std::string& request_id) {
     const auto rows = lines_of(ctx_, request_id);
     if (rows.size() > max_lines)

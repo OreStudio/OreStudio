@@ -31,6 +31,7 @@ import {
     subjects as approvalSubjects,
     type DecideApprovalRequestRequest,
     type GetApprovalHistoryRequest,
+    type GetApprovalPartsRequest,
     type GetApprovalRequest,
     type ListApprovalQueueRequest,
     type ListMyApprovalRequestsRequest,
@@ -86,6 +87,7 @@ export const INBOX_SUBJECTS = {
     queue: approvalSubjects.list_approval_queue_request,
     getRequest: approvalSubjects.get_approval_request,
     getRequestHistory: approvalSubjects.get_approval_history_request,
+    getRequestParts: approvalSubjects.get_approval_parts_request,
     withdraw: approvalSubjects.withdraw_approval_request_request,
     decide: approvalSubjects.decide_approval_request_request,
     myNotifications: notificationSubjects.list_my_notifications_request,
@@ -212,6 +214,23 @@ const requestRolesReplySchema = z.object({
         .default([]),
 });
 
+const requestPartsReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    parts: z
+        .array(
+            z.object({
+                code: z.string().default(''),
+                name: z.string().default(''),
+                answer_order: z.int().nonnegative().default(0),
+                state: z.string().default(''),
+                decided_by: z.string().default(''),
+                decided_at: z.string().default(''),
+                comment: z.string().default(''),
+            }),
+        )
+        .default([]),
+});
+
 const requestHistoryReplySchema = z.object({
     result: resultEnvelopeSchema,
     versions: z
@@ -306,6 +325,24 @@ export const inboxRequestDecisionViewSchema = z.object({
 });
 
 /**
+ * Where one part of a request stands, as a screen draws it.
+ *
+ * A request that needs several functions to approve lists one of these for
+ * each. `stateCode` is approved or refused once the part has answered, waiting
+ * when its turn has come, and later when an earlier part must answer first.
+ * `decidedBy` is the account's username when the join could read it.
+ */
+export const inboxRequestPartViewSchema = z.object({
+    code: z.string().default(''),
+    name: z.string().default(''),
+    answerOrder: z.int().nonnegative().default(0),
+    stateCode: z.string().default(''),
+    decidedBy: z.string().default(''),
+    decidedAt: z.string().default(''),
+    comment: z.string().default(''),
+});
+
+/**
  * One approval request as a screen draws it.
  *
  * `kindCode` and `stateCode` are the server's own codes, and the screen
@@ -325,6 +362,8 @@ export const inboxRequestViewSchema = z.object({
     expiresAt: z.string().default(''),
     roles: z.array(inboxRequestRoleViewSchema).default([]),
     decision: inboxRequestDecisionViewSchema.nullable().default(null),
+    // The parts are read for one request, not for a page, so a list draws none.
+    parts: z.array(inboxRequestPartViewSchema).default([]),
 });
 
 /**
@@ -405,6 +444,7 @@ export type InboxStoryField = TimelineField;
 export type InboxStoryEvent = TimelineEvent;
 export type InboxRequestStory = z.infer<typeof inboxRequestStorySchema>;
 export type InboxRequestRoleView = z.infer<typeof inboxRequestRoleViewSchema>;
+export type InboxRequestPartView = z.infer<typeof inboxRequestPartViewSchema>;
 export type InboxRequestDecisionView = z.infer<typeof inboxRequestDecisionViewSchema>;
 export type InboxRequestView = z.infer<typeof inboxRequestViewSchema>;
 export type InboxNotificationView = z.infer<typeof inboxNotificationViewSchema>;
@@ -712,6 +752,7 @@ function toRequestView(
         expiresAt: wire.expires_at ?? '',
         roles: join.rolesByRequest.get(wire.id) ?? [],
         decision: namedDecision(join.decisionByRequest.get(wire.id), join.usernameByAccount),
+        parts: [],
     };
 }
 
@@ -817,7 +858,52 @@ export async function readRequest(
     ok(INBOX_SUBJECTS.getRequest, reply.result);
     if (reply.request === null) return null;
     const join = await joinRequests(caller, [reply.request.id], true, viewer);
-    return toRequestView(reply.request, join);
+    const parts = await readRequestParts(caller, reply.request.id, viewer);
+    return { ...toRequestView(reply.request, join), parts };
+}
+
+/**
+ * Where each part of one request stands.
+ *
+ * The operation answers the person who asked as well as whoever may decide, so
+ * a maker sees who still has to answer. A request the caller may not open, or
+ * one that names no parts, answers none. The people who answered are named by
+ * username where the join can read the account.
+ */
+export async function readRequestParts(
+    caller: AuthenticatedCaller,
+    requestId: string,
+    viewer: RequestViewer,
+): Promise<InboxRequestPartView[]> {
+    const request: GetApprovalPartsRequest = { request_id: requestId };
+    let reply: z.infer<typeof requestPartsReplySchema>;
+    try {
+        reply = await caller.callAuthenticated(
+            INBOX_SUBJECTS.getRequestParts,
+            request,
+            requestPartsReplySchema,
+        );
+    } catch (error) {
+        if (isRefusal(error)) return [];
+        throw error;
+    }
+    if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') return [];
+    ok(INBOX_SUBJECTS.getRequestParts, reply.result);
+
+    const names = await readUsernames(
+        caller,
+        reply.parts.map((part) => part.decided_by).filter((id) => id !== ''),
+    );
+    if (viewer.accountId !== '') names.set(viewer.accountId, viewer.username);
+    return reply.parts.map((part) => ({
+        code: part.code,
+        name: part.name,
+        answerOrder: part.answer_order,
+        stateCode: part.state,
+        decidedBy: names.get(part.decided_by) ?? part.decided_by,
+        decidedAt: part.decided_at,
+        comment: part.comment,
+    }));
 }
 
 /**

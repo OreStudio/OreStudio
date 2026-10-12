@@ -386,6 +386,7 @@ describe('inbox routes', () => {
                         decidedAt: '2026-10-05 10:00:00Z',
                         comment: 'Desk needs it',
                     },
+                    parts: [],
                 },
             ],
             total: 1,
@@ -421,6 +422,7 @@ describe('inbox routes', () => {
                     expiresAt: '',
                     roles: [],
                     decision: null,
+                    parts: [],
                 },
             ],
             total: 1,
@@ -599,6 +601,7 @@ describe('inbox routes', () => {
                     expiresAt: '',
                     roles: [{ roleId: TRADING, name: 'Trading', description: 'Trading role' }],
                     decision: null,
+                    parts: [],
                 },
             ],
             total: 1,
@@ -653,6 +656,7 @@ describe('inbox routes', () => {
                     decidedAt: '2026-10-05 10:00:00Z',
                     comment: 'Desk needs it',
                 },
+                parts: [],
             },
         ]);
     });
@@ -899,5 +903,476 @@ describe('inbox routes', () => {
             401, 401, 401, 401, 401, 401, 401,
         ]);
         expect(withCookie.statusCode).toBe(200);
+    });
+});
+
+const BOOK = '88888888-8888-4888-8888-888888888888';
+const BOOK_REQUEST = '99999999-9999-4999-8999-999999999999';
+
+/** A book change request as the inbox serves it. */
+function wireBookRequest() {
+    return { ...wireRequest(BOOK_REQUEST, DANIEL), kind_code: 'refdata.book_change' };
+}
+
+/** The reads one request needs besides its parts, for a request raised by Daniel. */
+function requestReads(requestId: string, request: unknown) {
+    return {
+        'inbox.v1.ops.get_approval': { result: OK, request },
+        'iam.v1.ops.get_request_roles': { result: OK, roles: [] },
+        'iam.v1.role_grant_requests.list': {
+            result: OK,
+            role_grant_requests: [{ request_id: requestId, account_id: DANIEL }],
+            total: 1,
+        },
+        'iam.v1.accounts.list': {
+            result: OK,
+            accounts: [
+                { id: DANIEL, username: 'daniel' },
+                { id: AUDIT, username: 'audit' },
+            ],
+            total: 2,
+        },
+        'inbox.v1.approval_decisions.list': { result: OK, decisions: [], total: 0 },
+    };
+}
+
+describe('the parts, changes and checks of a request', () => {
+    it('names each part of the request with who answered it', async () => {
+        const { server, cookies } = buildTestServer({
+            ...requestReads(BOOK_REQUEST, wireBookRequest()),
+            'inbox.v1.ops.get_approval_parts': {
+                result: OK,
+                parts: [
+                    {
+                        code: 'controller',
+                        name: 'Controller',
+                        answer_order: 1,
+                        state: 'approved',
+                        decided_by: AUDIT,
+                        decided_at: '2026-10-04 10:00:00Z',
+                        comment: 'Fine',
+                    },
+                    {
+                        code: 'finance',
+                        name: 'Finance',
+                        answer_order: 2,
+                        state: 'waiting',
+                        decided_by: '',
+                        decided_at: '',
+                        comment: '',
+                    },
+                ],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${BOOK_REQUEST}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().parts).toEqual([
+            {
+                code: 'controller',
+                name: 'Controller',
+                answerOrder: 1,
+                stateCode: 'approved',
+                decidedBy: 'audit',
+                decidedAt: '2026-10-04 10:00:00Z',
+                comment: 'Fine',
+            },
+            {
+                code: 'finance',
+                name: 'Finance',
+                answerOrder: 2,
+                stateCode: 'waiting',
+                decidedBy: '',
+                decidedAt: '',
+                comment: '',
+            },
+        ]);
+    });
+
+    it('draws no parts when the parts are refused, and still answers the request', async () => {
+        const { server, cookies } = buildTestServer({
+            ...requestReads(BOOK_REQUEST, wireBookRequest()),
+            'inbox.v1.ops.get_approval_parts': { result: DENIED, parts: [] },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${BOOK_REQUEST}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().parts).toEqual([]);
+    });
+
+    it('answers the lines of a book change request beside the live book', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            ...requestReads(BOOK_REQUEST, wireBookRequest()),
+            'inbox.v1.ops.get_approval_parts': { result: OK, parts: [] },
+            'refdata.v1.ops.get_book_changes': {
+                result: OK,
+                changes: [
+                    {
+                        line_no: 1,
+                        operation: 'put',
+                        entity_id: BOOK,
+                        base_version: 4,
+                        applied: false,
+                        fields: [
+                            {
+                                name: 'book_status',
+                                before: 'Active',
+                                after: 'Frozen',
+                                changed: true,
+                            },
+                            { name: 'description', before: 'Desk', after: 'Desk', changed: false },
+                        ],
+                    },
+                ],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${BOOK_REQUEST}/changes`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            requestId: BOOK_REQUEST,
+            kindCode: 'refdata.book_change',
+            changes: [
+                {
+                    lineNo: 1,
+                    operation: 'put',
+                    subjectId: BOOK,
+                    baseVersion: 4,
+                    applied: false,
+                    fields: [
+                        { name: 'book_status', before: 'Active', after: 'Frozen', changed: true },
+                        { name: 'description', before: 'Desk', after: 'Desk', changed: false },
+                    ],
+                },
+            ],
+        });
+        expect(
+            calls.find((call) => call.subject === 'refdata.v1.ops.get_book_changes')?.body,
+        ).toEqual({
+            request_id: BOOK_REQUEST,
+        });
+    });
+
+    it('answers the roles of a role request as lines of the same shape', async () => {
+        const { server, cookies } = buildTestServer({
+            ...requestReads(REQUEST, wireRequest(REQUEST, DANIEL)),
+            ...joins(),
+            'inbox.v1.ops.get_approval': { result: OK, request: wireRequest(REQUEST, DANIEL) },
+            'inbox.v1.ops.get_approval_parts': { result: OK, parts: [] },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${REQUEST}/changes`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.json().changes).toEqual([
+            {
+                lineNo: 1,
+                operation: 'grant',
+                subjectId: TRADING,
+                baseVersion: 0,
+                applied: false,
+                fields: [
+                    { name: 'role', before: '', after: 'Trading', changed: true },
+                    { name: 'description', before: '', after: 'Trading role', changed: true },
+                ],
+            },
+        ]);
+    });
+
+    it('answers no lines for a kind that keeps none', async () => {
+        const other = { ...wireRequest(REQUEST, DANIEL), kind_code: 'unknown.kind' };
+        const { server, cookies, calls } = buildTestServer({
+            ...requestReads(REQUEST, other),
+            'inbox.v1.ops.get_approval_parts': { result: OK, parts: [] },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${REQUEST}/changes`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.json().changes).toEqual([]);
+        expect(calls.map((call) => call.subject)).not.toContain('refdata.v1.ops.get_book_changes');
+    });
+
+    it('answers a request the reader may not open as not found', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.get_approval': { result: { outcome: 'missing' }, request: null },
+        });
+
+        const [changes, checks] = await Promise.all([
+            server.inject({ method: 'GET', url: `/api/requests/${REQUEST}/changes`, cookies }),
+            server.inject({ method: 'GET', url: `/api/requests/${REQUEST}/checks`, cookies }),
+        ]);
+        await server.close();
+
+        expect(changes.statusCode).toBe(404);
+        expect(checks.statusCode).toBe(404);
+    });
+
+    it('answers what running the lines again says, line by line', async () => {
+        const { server, cookies } = buildTestServer({
+            ...requestReads(BOOK_REQUEST, wireBookRequest()),
+            'inbox.v1.ops.get_approval_parts': { result: OK, parts: [] },
+            'refdata.v1.ops.recheck_book_changes': {
+                result: OK,
+                lines: [
+                    { line_no: 1, operation: 'put', entity_id: BOOK, columns: [], refusal: '' },
+                    {
+                        line_no: 2,
+                        operation: 'put',
+                        entity_id: BOOK,
+                        columns: [],
+                        refusal: 'The book moved.',
+                    },
+                ],
+                part_codes: ['finance'],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${BOOK_REQUEST}/checks`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.json()).toEqual({
+            requestId: BOOK_REQUEST,
+            lines: [
+                { lineNo: 1, operation: 'put', subjectId: BOOK, refusal: '' },
+                { lineNo: 2, operation: 'put', subjectId: BOOK, refusal: 'The book moved.' },
+            ],
+            partCodes: ['finance'],
+        });
+    });
+
+    it('sends the part a decision answers for', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'inbox.v1.ops.decide_approval': { result: OK, request: null },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/requests/${BOOK_REQUEST}/decision`,
+            cookies,
+            payload: { version: 3, decisionCode: 'approve', comment: '', partCode: 'finance' },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(204);
+        expect(calls[0]?.body).toMatchObject({ part_code: 'finance' });
+    });
+
+    it('refuses a part code that is not a code, before deciding anything', async () => {
+        const { server, cookies, calls } = buildTestServer({});
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/requests/${BOOK_REQUEST}/decision`,
+            cookies,
+            payload: { version: 3, decisionCode: 'approve', comment: '', partCode: 'Fin ance' },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+});
+
+const bookLine = {
+    operation: 'put',
+    entityId: BOOK,
+    baseVersion: 0,
+    partyId: TRADING,
+    name: 'Rates desk',
+    description: 'A desk',
+    parentPortfolioId: AUDIT,
+    ownerUnitId: null,
+    functionalCurrency: 'GBP',
+    glAccountRef: '',
+    costCenter: 'CC1',
+    bookStatus: 'Active',
+    regulatoryBookType: 'Trading',
+    bookPurposeType: 'Trading',
+    ledgerFeedType: 'None',
+    isSweepable: false,
+    ratesCentreCode: '',
+    sandboxId: null,
+};
+
+describe('the book changes a maker proposes', () => {
+    it('previews the lines as the server reads them and answers the parts', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'refdata.v1.ops.preview_book_changes': {
+                result: OK,
+                lines: [
+                    {
+                        line_no: 1,
+                        operation: 'put',
+                        entity_id: BOOK,
+                        columns: ['cost_center'],
+                        refusal: '',
+                    },
+                ],
+                part_codes: ['finance'],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/book-changes/preview',
+            cookies,
+            payload: { lines: [bookLine] },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            lines: [
+                {
+                    lineNo: 1,
+                    operation: 'put',
+                    subjectId: BOOK,
+                    refusal: '',
+                    columns: ['cost_center'],
+                },
+            ],
+            partCodes: ['finance'],
+        });
+        const sent = calls[0]?.body as { lines: Record<string, unknown>[] };
+        expect(sent.lines).toHaveLength(1);
+        expect(sent.lines[0]).toMatchObject({
+            tenant_id: SYSTEM_TENANT,
+            operation: 'put',
+            entity_id: BOOK,
+            base_version: 0,
+            cost_center: 'CC1',
+            owner_unit_id: null,
+        });
+    });
+
+    it('raises one request and answers its identifier', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'refdata.v1.ops.raise_book_changes': {
+                result: OK,
+                request_id: BOOK_REQUEST,
+                lines: [],
+                part_codes: ['finance'],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/book-changes',
+            cookies,
+            payload: { reason: 'Open the desk', lines: [bookLine] },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            requestId: BOOK_REQUEST,
+            refusalCode: '',
+            partCodes: ['finance'],
+        });
+        expect(calls[0]?.body).toMatchObject({ reason: 'Open the desk' });
+    });
+
+    it('answers a refused raise with its reason and no request', async () => {
+        const { server, cookies } = buildTestServer({
+            'refdata.v1.ops.raise_book_changes': {
+                result: {
+                    outcome: 'invalid',
+                    code: 'needs_no_request',
+                    message: 'Write it directly.',
+                },
+                request_id: null,
+                lines: [],
+                part_codes: [],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/book-changes',
+            cookies,
+            payload: { reason: 'Rename', lines: [bookLine] },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            requestId: null,
+            refusalCode: 'needs_no_request',
+            refusalMessage: 'Write it directly.',
+        });
+    });
+
+    it('refuses a body it cannot read before sending anything', async () => {
+        const { server, cookies, calls } = buildTestServer({});
+
+        const responses = await Promise.all([
+            server.inject({
+                method: 'POST',
+                url: '/api/book-changes/preview',
+                cookies,
+                payload: { lines: [] },
+            }),
+            server.inject({
+                method: 'POST',
+                url: '/api/book-changes',
+                cookies,
+                payload: { reason: '', lines: [bookLine] },
+            }),
+            server.inject({
+                method: 'POST',
+                url: '/api/book-changes',
+                cookies,
+                payload: { reason: 'x', lines: [{ ...bookLine, operation: 'merge' }] },
+            }),
+        ]);
+        await server.close();
+
+        expect(responses.map((response) => response.statusCode)).toEqual([400, 400, 400]);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('refuses the routes without a session', async () => {
+        const { server } = buildTestServer({});
+
+        const responses = await Promise.all([
+            server.inject({ method: 'POST', url: '/api/book-changes/preview', payload: {} }),
+            server.inject({ method: 'POST', url: '/api/book-changes', payload: {} }),
+            server.inject({ method: 'GET', url: `/api/requests/${REQUEST}/changes` }),
+            server.inject({ method: 'GET', url: `/api/requests/${REQUEST}/checks` }),
+        ]);
+        await server.close();
+
+        expect(responses.map((response) => response.statusCode)).toEqual([401, 401, 401, 401]);
     });
 });

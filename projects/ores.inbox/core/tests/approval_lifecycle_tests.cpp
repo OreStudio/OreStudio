@@ -396,3 +396,60 @@ TEST_CASE("a_request_that_is_not_approved_cannot_fail_to_apply", tags) {
     CHECK(refused.outcome == "conflict");
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
+
+TEST_CASE("the_progress_of_a_request_says_which_part_answered_which_waits_and_which_is_later", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Open a book", asker.id, {"controller", "finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto before = lifecycle.progress_of(id);
+    REQUIRE(before.size() == 2);
+    CHECK(before[0].code == "controller");
+    CHECK(before[0].state == "waiting");
+    CHECK(before[1].code == "finance");
+    CHECK(before[1].state == "later");
+    CHECK(before[0].decided_by.empty());
+
+    REQUIRE(lifecycle.decide(id, raised.version, "approve", controller.id, "Fine", "controller")
+                .outcome == "ok");
+
+    const auto after = lifecycle.progress_of(id);
+    REQUIRE(after.size() == 2);
+    CHECK(after[0].state == "approved");
+    CHECK(after[0].decided_by == boost::uuids::to_string(controller.id));
+    CHECK(after[0].comment == "Fine");
+    CHECK_FALSE(after[0].decided_at.empty());
+    CHECK(after[1].state == "waiting");
+}
+
+TEST_CASE("a_refused_part_is_shown_as_refused", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Open a book", asker.id, {"controller", "finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+
+    REQUIRE(lifecycle.decide(id, raised.version, "refuse", controller.id, "No", "controller")
+                .outcome == "ok");
+
+    const auto progress = lifecycle.progress_of(id);
+    REQUIRE(progress.size() == 2);
+    CHECK(progress[0].state == "refused");
+    CHECK(progress[0].comment == "No");
+}
+
+TEST_CASE("a_request_that_names_no_parts_has_no_progress", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Why", asker.id);
+
+    CHECK(lifecycle.progress_of(boost::uuids::to_string(raised.id)).empty());
+}

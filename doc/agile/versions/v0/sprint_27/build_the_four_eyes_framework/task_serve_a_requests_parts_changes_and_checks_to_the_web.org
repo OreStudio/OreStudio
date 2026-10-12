@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 4F731BF8-D63D-428E-849D-ED0D263E0873
+:END:
+#+title: Task: Serve a request's parts, changes and checks to the web
+#+description: Let the BFF answer a request's parts with who answered, its proposed changes as field deltas, its checks, a preview and a raise of book changes, and a decision that names its part.
+#+type: task
+#+level: s1
+#+filetags: :build_the_four_eyes_framework:sprint_27:v0:
+#+owner: marco
+#+branch: feature/serve-a-requests-parts-changes-and-checks-to-the-web
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The web can draw any request's parts, delta and checks and raise a book change, from BFF routes that need no knowledge of the kind.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A request read names its parts, each with its state and who answered.
+- A request's changes come back as field deltas, whichever kind holds them.
+- A request's checks come back as the outcome of running its lines again.
+- A preview and a raise of book changes are BFF routes.
+- A decision names the part it answers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+- Split from "Draw every request with one set of screens": the screens need data the web could not read, so this task serves it and the next draws it.
+- Read the parts in the inbox, in one operation open to the person who asked as well as the deciders. The entity read of the parts gates on the administrator's permission, so a maker could not see who still has to answer.
+- Read the lines of a book change request beside the live book in refdata, and run them again for the checks. Both open to the same people as the request.
+- Give the wire layer one shape for the lines of any kind: an operation, a subject, and each field with its before and after. A book change fills it from its typed lines and a role request from the roles it asks for.
+- Add BFF routes for the changes, the checks, the preview and the raise of book changes, and let a decision name its part.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The product owner's task list had one task for the screens. The screens need data no read gave them, so I split the data from the drawing. The screens task follows.
+- A request read now carries its parts. A list of requests carries none, because the parts are read for one request.
+- The field delta is text, because a screen draws it and does not compute with it. It is a display shape, not a store of the change: the typed pending rows stay the record.
+- A kind this build does not know has no lines. A screen draws it as a request with nothing to show.
+- The book column list appears once more, in the delta. The policy keeps its own reading in the generated service. A second generated reading for display is worth a later task.
+- The preview and raise bodies send placeholder values for the fields the server ignores (the request, the line number, the provenance, the time). I have not run them against the running services.
+- The check that no test case sits inside a conditional block names one case in the platform tests. It is on main and not in this change.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The web can read a request's parts, its changes as field deltas and its checks, and can preview and raise a book change, from routes that need no knowledge of the kind.
+
+- =inbox.v1.ops.get_approval_parts= says where each part stands (approved, refused, waiting or later), who answered and when, to the person who asked and to whoever may decide.
+- =refdata.v1.ops.get_book_changes= answers the lines beside the live book, and =refdata.v1.ops.recheck_book_changes= runs them through the real write again.
+- A request read carries =parts=. =GET /api/requests/:id/changes= and =/checks= answer for any kind, =POST /api/book-changes/preview= and =/api/book-changes= preview and raise, and a decision names its part.
+
+Evidence: =ores.inbox.core.tests= (59 cases), =ores.refdata.core.tests= (375 cases) and =ores.shell.inbox.tests= (285 cases) pass, with three new part progress cases and two new delta cases. The BFF suite has 14 new cases for the parts, changes, checks, part code and the book routes. The workspace typecheck is clean, and the wire (14), BFF (710), web (1229) and contracts suites pass. The catalogue drift sweep, handler permission, pasted block symbol, cmake source, derived-model and pattern use checks pass.
+
+Not done here: a run against the running services, and the screens that draw this data.

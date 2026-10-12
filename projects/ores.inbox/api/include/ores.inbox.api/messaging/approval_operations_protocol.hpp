@@ -445,6 +445,62 @@ struct get_approval_history_response {
     std::vector<approval_request_version> versions;
 };
 
+/**
+ * @brief Where one part of a request stands.
+ *
+ * A request that needs several functions to approve lists one of these for each.
+ * The state says what a person reading the request needs to know: whether the
+ * part has answered, whether its turn has come, or whether an earlier part
+ * must answer first.
+ */
+struct approval_part_progress {
+    std::string code;
+    std::string name;
+    int answer_order = 0;
+    /**
+     * @brief approved, refused, waiting (its turn has come) or later (an earlier part
+     * must answer first).
+     */
+    std::string state;
+    /**
+     * @brief The account that answered the part, as a UUID string, or empty.
+     */
+    std::string decided_by;
+    std::string decided_at;
+    std::string comment;
+};
+
+/**
+ * @brief Reads where each part of one request stands.
+ *
+ * Answered when the caller raised the request, and when the caller may decide
+ * a request of its kind. Answered as not found otherwise, as opening the
+ * request is. The person who asked is the one who waits on the parts, so the
+ * entity read of the parts, which gates on the administrator's permission,
+ * cannot serve them.
+ */
+struct get_approval_parts_request {
+    using response_type = struct get_approval_parts_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.get_approval_parts";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+};
+
+struct get_approval_parts_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The parts in the order they answer in. Empty for a request that names
+     * no parts.
+     */
+    std::vector<approval_part_progress> parts;
+};
+
 }
 
 #endif

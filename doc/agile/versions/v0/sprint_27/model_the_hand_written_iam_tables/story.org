@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 575E321C-CF36-4E2F-87C9-E29D8C698D3A
+:END:
+#+title: Story: Model the hand-written IAM tables
+#+description: Five IAM tables have no model: account_role, role_permission, auth_event, run_token_issue and session_sample. The codegen drift check compares a model with its output, so it cannot see them and reports the component clean. Each gets a model and is generated, and its callers move to the generated code.
+#+type: story
+#+level: s2
+#+filetags: :iam:codegen:drift:sprint_27:v0:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every IAM table that holds data has a model, so the drift check covers it and no table is written by hand.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-12                               |
+
+* Acceptance
+
+- account_role, role_permission, auth_event, run_token_issue and session_sample each have a model and are generated.
+- No hand-written entity, mapper, repository or table remains for them.
+- The person timeline shows a role that was taken away.
+- The IAM tests and the pgTAP tests pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7C5269E1-7F8B-449A-B747-88169B4B8E9D][Scaffold story: Model the hand-written IAM tables]] | STARTED | 2026-10-12 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E28819FD-7555-4744-AFC1-8BF60D2E9468][Model account_role as a junction]] | BACKLOG | | | Initial task for: Model the hand-written IAM tables |
+| [[id:79222DEC-CB96-4514-A5BE-3969C32A5E53][Model role_permission]] | BACKLOG | | | Generate the table that holds which permissions a role holds, and move its callers to the generated code. |
+| [[id:DD0CADA6-5F29-450D-BF25-9E3674EC13B0][Model auth_event]] | BACKLOG | | | Generate the authentication audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
+| [[id:9A3B0B97-57CA-4D6A-A077-6CD5BD464937][Model run_token_issue]] | BACKLOG | | | Generate the run-token audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
+| [[id:6598DC0C-5369-4EAC-AF3C-128192773747][Model session_sample]] | BACKLOG | | | Generate the session telemetry table and move its callers to the generated code. |
+
+* Decisions
+
+* Out of scope
+
+-

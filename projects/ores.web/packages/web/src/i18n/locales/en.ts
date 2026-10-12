@@ -1657,7 +1657,11 @@ export const en: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Usage by tenant', party: 'Usage by party' },
-                note: 'A share is the group’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                note: {
+                    tenant: 'Each tenant is read inside the tenant, because no one tenant’s work is visible from another. A share is the tenant’s results as a fraction of the results that could be read. Succeeded and failed count the last 24 hours.',
+                    party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                },
+                unavailable: 'Could not be read',
                 empty: 'No work has run on the grid yet.',
                 unassigned: 'No party',
                 columns: {

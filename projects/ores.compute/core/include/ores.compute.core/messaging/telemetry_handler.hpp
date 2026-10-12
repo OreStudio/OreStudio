@@ -203,10 +203,11 @@ public:
     /**
      * @brief Handle compute.v1.ops.get_grid_usage (request/reply).
      *
-     * Returns the work of the grid counted by group. The session decides the
-     * scope: the system tenant reads every tenant and gets a group for each
-     * tenant, and any other session gets a group for each party it may read.
-     * The read needs the permission to view batches.
+     * Returns the work of the session's tenant counted by party. The policies
+     * decide the rows, so a tenant's administrator reads the tenant and a person
+     * who acts for parties reads those parties. A session of the system tenant
+     * reads the system tenant's work only: the operator reads another tenant by
+     * entering it. The read needs the permission to view batches.
      */
     void get_grid_usage(ores::nats::message msg) {
         BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;

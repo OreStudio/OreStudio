@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The browser never decides whether a URL is valid. The codec does, and the answer
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -85,3 +85,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The server answers two operations, =marketdata.v1.ops.parse_oresmd_uri= and =marketdata.v1.ops.compose_oresmd_uri=. Parse reads a URI through the codec into its kind (quote, series or fixing), instrument, quote, asset, subject and other fields, or answers the codec's reason in its own words. A fixing goes through the index reader, and its refusal is shown when the URI says =type=fixing=. Compose takes the same parts and writes the URI in the codec's canonical spelling. A field with no text is a field the URI leaves out. A field the row does not list, a field given twice, a coordinate in a series, a value of the wrong form and a missing required field are each refused, and the words are the codec's. A refusal is an answer with =success= false and not a fault.
+
+The operations are modelled in =ores.marketdata.operations= and the C++ header and the TypeScript twin are generated. =oresmd_uri_service= holds the two calls, =oresmd_uri_handler= serves them, and the registrar subscribes both. Both need =marketdata::market_series:read=, as the story decides. A URI, a subject or a field's text over 2048 characters, or more than 64 fields, is refused before the codec sees it, because the request comes from a browser.
+
+Tests: 12 cases and 71 assertions pass in =ores.marketdata.core.tests=. Every URI the codec writes for the ORE reference catalogue, more than 100 quotes and series, and every fixing URI it writes for the index forms and corpus, more than 40, parses and composes back to the same text. The refusals are compared with the codec's own error text. The field order of a compose request does not change the URI. The limits are tested. The handler has no unit test, as no other marketdata handler has one.

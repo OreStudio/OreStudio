@@ -147,6 +147,74 @@ export interface DescribeOresmdSchemaResponse {
 }
 
 /**
+ * @brief One field of an oresmd URI: its name and the text it holds.
+ *
+ * The text is in the spelling a URI writes. The path of a URI is the subject, and
+ * it is not one of these.
+ */
+export interface OresmdUriField {
+    name: string;
+    text: string;
+}
+
+/**
+ * @brief Asks the codec to read an oresmd URI.
+ *
+ * The codec's reader is strict, so a URI that is not in its own spelling is
+ * refused with the rule that failed. A URI longer than the codec's limit is
+ * refused without being read.
+ */
+export interface ParseOresmdUriRequest {
+    uri: string;
+}
+
+/**
+ * @brief The parts of an oresmd URI, or why the codec refuses it.
+ *
+ * `kind` is quote, series or fixing. For a quote or a series `instrument` is the
+ * text under `instrument=` and `quote` is the text under `quote=`. For a fixing
+ * `instrument` is the index family and `quote` is empty. `subject` is the path.
+ * `fields` holds the other fields the URI states, in schema order, and leaves
+ * out one the URI leaves out.
+ */
+export interface ParseOresmdUriResponse {
+    kind: string;
+    instrument: string;
+    quote: string;
+    asset: string;
+    subject: string;
+    fields: OresmdUriField[];
+    success: boolean;
+    message: string;
+}
+
+/**
+ * @brief Asks the codec to write an oresmd URI from its parts.
+ *
+ * A field with no text is a field the URI leaves out. The codec decides whether
+ * the parts make a URI: a required field that is missing, a field the row does
+ * not list, a field given twice and a value of the wrong form are each refused.
+ */
+export interface ComposeOresmdUriRequest {
+    kind: string;
+    instrument: string;
+    quote: string;
+    subject: string;
+    fields: OresmdUriField[];
+}
+
+/**
+ * @brief The oresmd URI the codec writes, or why the parts make none.
+ *
+ * The URI is the codec's canonical text, so a stored URI compares as text.
+ */
+export interface ComposeOresmdUriResponse {
+    uri: string;
+    success: boolean;
+    message: string;
+}
+
+/**
  * @brief Requests the typed identity of each series the caller can see.
  *
  * A party reads only its own series, so the list is the caller's view and not the
@@ -900,6 +968,8 @@ export interface MarketTick {
 export const subjects = {
     resolve_series_identity_request: 'marketdata.v1.ops.resolve_series_identity',
     describe_oresmd_schema_request: 'marketdata.v1.ops.describe_oresmd_schema',
+    parse_oresmd_uri_request: 'marketdata.v1.ops.parse_oresmd_uri',
+    compose_oresmd_uri_request: 'marketdata.v1.ops.compose_oresmd_uri',
     list_series_identities_request: 'marketdata.v1.ops.list_series_identities',
     get_crm_rate_request: 'marketdata.v1.ops.get_crm_rate',
     get_crm_rates_request: 'marketdata.v1.ops.get_crm_rates',
@@ -925,6 +995,8 @@ export const subjects = {
 export const requiresSession = {
     resolve_series_identity_request: true,
     describe_oresmd_schema_request: true,
+    parse_oresmd_uri_request: true,
+    compose_oresmd_uri_request: true,
     list_series_identities_request: true,
     get_crm_rate_request: true,
     get_crm_rates_request: true,

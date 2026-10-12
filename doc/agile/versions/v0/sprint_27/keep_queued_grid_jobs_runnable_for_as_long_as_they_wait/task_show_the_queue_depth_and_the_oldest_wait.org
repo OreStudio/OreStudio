@@ -26,11 +26,11 @@ A person sees how many jobs wait and for how long, and the warning rests on the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
-| Now          | Built and verified; in review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then retire the assignments stream. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance

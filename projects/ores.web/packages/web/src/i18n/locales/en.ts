@@ -1662,6 +1662,10 @@ export const en: SourceCatalogue = {
                     party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
                 },
                 unavailable: 'Could not be read',
+                age: {
+                    caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
+                    over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
+                },
                 empty: 'No work has run on the grid yet.',
                 unassigned: 'No party',
                 columns: {
@@ -1672,6 +1676,7 @@ export const en: SourceCatalogue = {
                     results: 'Results',
                     inProgress: 'Running',
                     unsent: 'Waiting',
+                    oldest: 'Oldest wait',
                     done: 'Finished',
                     succeeded: 'Succeeded',
                     failed: 'Failed',

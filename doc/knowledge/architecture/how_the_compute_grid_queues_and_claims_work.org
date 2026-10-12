@@ -101,7 +101,7 @@ The server counts the entries of a tenant in the queue when a batch is dispatche
 
 *** What a person sees
 
-A tenant reads the depth of its queue and the age of its oldest waiting job from its own results. The operator reads them for each tenant by entering it, as for the usage, because the ledger is for the service alone. The grid screen shows both. The warning on the grid screen that says the queue is over capacity uses the same figures.
+A tenant reads the depth of its queue and the age of its oldest waiting job from its own results. The operator reads them for each tenant by entering it, as for the usage, because the ledger is for the service alone. The Usage tab of the grid screen shows the wait of the oldest waiting job for each tenant or party, and warns when it nears or passes the hour that a job can wait. The warning on the Load tab that says the queue is over capacity stays an estimate from the rate of the grid, because the usage read enters every tenant and is not polled.
 
 ** What stays on JetStream
 

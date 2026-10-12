@@ -58,6 +58,7 @@ interface UsageRow {
     readonly results_done: number;
     readonly outcomes_success: number;
     readonly outcomes_failed: number;
+    readonly oldest_unsent_seconds: number;
     readonly unavailable: boolean;
 }
 
@@ -94,6 +95,7 @@ async function usageByParty(
         results_done: usage.results_done[i] ?? 0,
         outcomes_success: usage.outcomes_success[i] ?? 0,
         outcomes_failed: usage.outcomes_failed[i] ?? 0,
+        oldest_unsent_seconds: usage.oldest_unsent_seconds[i] ?? 0,
         unavailable: false,
     }));
 }
@@ -142,6 +144,7 @@ async function usageByTenant(
                 results_done: sumOf(usage.results_done),
                 outcomes_success: sumOf(usage.outcomes_success),
                 outcomes_failed: sumOf(usage.outcomes_failed),
+                oldest_unsent_seconds: Math.max(0, ...usage.oldest_unsent_seconds),
                 unavailable: false,
             });
         } catch (error) {
@@ -157,6 +160,7 @@ async function usageByTenant(
                 results_done: 0,
                 outcomes_success: 0,
                 outcomes_failed: 0,
+                oldest_unsent_seconds: 0,
                 unavailable: true,
             });
         }

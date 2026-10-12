@@ -236,6 +236,7 @@ public:
             resp.results_done = std::move(usage.results_done);
             resp.outcomes_success = std::move(usage.outcomes_success);
             resp.outcomes_failed = std::move(usage.outcomes_failed);
+            resp.oldest_unsent_seconds = std::move(usage.oldest_unsent_seconds);
             resp.success = true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "get_grid_usage failed: " << e.what();

@@ -559,6 +559,14 @@ struct get_grid_usage_response {
      * @brief Results that finished with an error or no reply in the last 24 hours.
      */
     std::vector<std::int64_t> outcomes_failed;
+    /**
+     * @brief How long the oldest waiting result of each group has waited, in seconds.
+     *
+     * Zero when the group has no result waiting. The wait is counted from the start of the
+     * current version of the oldest waiting result, which is the time it was queued while
+     * nothing rewrites a result that is still unsent.
+     */
+    std::vector<std::int64_t> oldest_unsent_seconds;
 };
 
 }

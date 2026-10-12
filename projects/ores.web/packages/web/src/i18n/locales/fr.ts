@@ -1682,6 +1682,10 @@ const fr: SourceCatalogue = {
                     party: 'La part d’une partie est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
                 },
                 unavailable: 'N’a pas pu être lu',
+                age: {
+                    caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
+                    over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
+                },
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',
                 unassigned: 'Aucune partie',
                 columns: {
@@ -1692,6 +1696,7 @@ const fr: SourceCatalogue = {
                     results: 'Résultats',
                     inProgress: 'En cours',
                     unsent: 'En attente',
+                    oldest: 'Plus ancienne attente',
                     done: 'Terminés',
                     succeeded: 'Réussis',
                     failed: 'Échoués',

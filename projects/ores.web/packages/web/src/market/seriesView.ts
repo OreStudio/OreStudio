@@ -74,16 +74,23 @@ export function latestFirst(
  * plain format. Only an FX spot rate has them: they come from the convention of
  * its currency pair, whose code is the unit currency over the quoted currency.
  */
+export const MAX_PLACES = 10;
+
+/** Whether a series is an FX spot rate, the one kind of series that has conventions to format by. */
+export function isSpotRate(identity: TitledIdentity): boolean {
+    return identity.instrument_type === 'fx_spot' && identity.quote_type === 'rate';
+}
+
 export function placesOf(
     identity: TitledIdentity,
     conventions: readonly RecordRow[],
 ): number | undefined {
-    if (identity.instrument_type !== 'fx_spot' || identity.quote_type !== 'rate') return undefined;
+    if (!isSpotRate(identity)) return undefined;
     const quoted = identity.fields.find((field) => field.name === 'ccy')?.text;
     if (quoted === undefined) return undefined;
     const row = conventions.find((c) => c['pair_code'] === `${identity.scope}/${quoted}`);
     const places = Number(row?.['decimal_places']);
-    return Number.isInteger(places) && places >= 0 && places <= 10 ? places : undefined;
+    return Number.isInteger(places) && places >= 0 && places <= MAX_PLACES ? places : undefined;
 }
 
 /** A value with a fixed number of places, or in the plain format of up to seven digits when none is known. */

@@ -34,6 +34,7 @@ import {
     formatText,
     formatValue,
     instantLabel,
+    isSpotRate,
     latestFirst,
     placesOf,
     pointsOf,
@@ -126,7 +127,9 @@ function Observations({
     const conventions = useQuery(oresmdQueries.pairConventions());
     const places = placesOf(series.identity, conventions.data ?? []);
     if (read.isError) return <Notice tone="error">{read.error.message}</Notice>;
-    if (read.isPending) return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    // A spot rate waits for its convention, so the values do not change format as it loads.
+    if (read.isPending || (isSpotRate(series.identity) && conventions.isPending))
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     const { observations, total } = read.data;
     const points = pointsOf(observations);
     return (

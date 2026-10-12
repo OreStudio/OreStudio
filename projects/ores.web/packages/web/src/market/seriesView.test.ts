@@ -26,6 +26,7 @@ import {
     formatValue,
     instantLabel,
     latestFirst,
+    MAX_PLACES,
     placesOf,
     pointsOf,
 } from './seriesView.js';
@@ -104,6 +105,15 @@ describe('placesOf', () => {
     it('keeps the plain format for a series that is not an FX spot rate', () => {
         expect(placesOf(spot('AUD', 'USD', 'price'), conventions)).toBeUndefined();
         expect(placesOf(spot('AUD', 'USD', 'rate', 'fx_fwd'), conventions)).toBeUndefined();
+    });
+
+    it('accepts the largest number of places and rejects one more', () => {
+        const at = (places: number) =>
+            [
+                { version: 1, pair_code: 'AUD/USD', decimal_places: places },
+            ] as unknown as RecordRow[];
+        expect(placesOf(spot('AUD', 'USD'), at(MAX_PLACES))).toBe(MAX_PLACES);
+        expect(placesOf(spot('AUD', 'USD'), at(MAX_PLACES + 1))).toBeUndefined();
     });
 
     it('ignores a convention whose places are not a sane number', () => {

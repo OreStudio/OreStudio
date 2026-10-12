@@ -8,7 +8,7 @@
 #+filetags: :iam:provisioning:feeds:bug:organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
 #+branch: feature/start-the-feeds-after-the-parties-exist
-#+pr:
+#+pr: 3172
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3172][#3172]] | [iam,marketdata] Bind feeds after the parties exist and ingest ticks again |
 
 * Review
 

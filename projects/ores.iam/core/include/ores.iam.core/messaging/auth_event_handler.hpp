@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
-#include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -88,7 +88,7 @@ public:
         }
 
         try {
-            repository::auth_event_repository repo(req_ctx);
+            repository::auth_event_log repo(req_ctx);
             const auto rows = repo.read_events(req_ctx,
                                                req_ctx.tenant_id().to_string(),
                                                request->account_id,

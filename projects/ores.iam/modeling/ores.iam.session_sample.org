@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 7EC22FE9-05EB-48B1-8013-BD446B360ADB
+:END:
+#+title: ores.iam.session_sample
+#+description: Codegen entity model for the iam session_samples hypertable, session telemetry captured at heartbeat frequency.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: session_sample
+#+entity_plural: session_samples
+#+entity_title: Session Sample
+#+brief: Bytes and latency captured for a session at one heartbeat; a TimescaleDB hypertable partitioned by sample_time.
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+One sample of a session's traffic: the bytes it sent and received and the latency
+of the heartbeat. The rows are append-only, so the model states =:current_state:=.
+
+The table is tenant-scoped. TimescaleDB columnstore compression is not enabled on
+it, because it is incompatible with row-level security, which the table needs for
+tenant isolation.
+
+The table is internal, so only the data layer and the SQL schema are generated.
+The wire message that carries samples is =ores.iam.session_samples_messages=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: true
+:profile:       readonly-timeseries
+:subcomponent:  api
+:END:
+
+* Columns
+
+** session_id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The session the sample belongs to. It sits in the primary key beside the
+partition column.
+
+** sample_time
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:primary_key: true
+:nullable:    false
+:END:
+
+When the sample was taken. The partition column.
+
+** bytes_sent
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes the session sent.
+
+** bytes_received
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes the session received.
+
+** latency_ms
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+The latency of the heartbeat, in milliseconds.
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ss
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                     ores_iam_session_samples_tbl
+:current_state:                 true
+:hypertable:                    true
+:hypertable_partition_column:   sample_time
+:hypertable_chunk_interval:     1 day
+:hypertable_retention_interval: 30 days
+:no_audit_columns:              true
+:suppress_nk_index:             true
+:rls_tenant_isolation:          true
+:END:
+
+** Indexes
+
+| name    | columns                    | unique | current_only | where_extra |
+|---------+----------------------------+--------+--------------+-------------|
+| session | session_id, sample_time desc | false  | false        |             |
+
+* Physical space
+
+The table is internal, so only the data layer and the SQL schema are generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell-command              | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

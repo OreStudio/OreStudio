@@ -24,7 +24,7 @@
 #include "ores.iam.core/repository/permission_repository.hpp"
 #include "ores.iam.core/repository/role_permission_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.iam.core/repository/run_token_issue_repository.hpp"
+#include "ores.iam.core/repository/run_token_issue_log.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/run_grant_operations_service.hpp"
 #include "ores.iam.core/service/run_grant_service.hpp"
@@ -269,7 +269,7 @@ TEST_CASE("exchange_run_grant_issues_a_token_naming_the_grant_the_run_and_the_se
               .count());
 
     // Each issue appends one row, and the grant has served one run.
-    ores::iam::repository::run_token_issue_repository issues(f.h.context());
+    ores::iam::repository::run_token_issue_log issues(f.h.context());
     CHECK(issues.distinct_runs(f.grant_id) == 1);
     CHECK(issues.exists(f.grant_id, "run-1"));
 }

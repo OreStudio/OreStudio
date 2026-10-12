@@ -17,43 +17,65 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Auth Event Table
+ *
+ * One row per authentication event. The rows are append-only, so the model states
+ * :current_state:: an event is a fact about an instant, and the bi-temporal pair
+ * has no meaning on it.
+ *
+ * The table is the system's audit log of who signed in and who failed to. It
+ * carries no row-level security and no tenant column of the generated kind. Its
+ * tenant_id is an ordinary text column, because an event can happen before a
+ * tenant is known, and the empty string then says so. The read in
+ * ores.iam.auth_event_operations scopes on that column itself.
+ *
+ * The table is internal: its protocol, handler and shell commands are the
+ * hand-written operation model's, so only the data layer and the SQL schema are
+ * generated here. The two continuous aggregates and their retention are a
+ * paste block in the SQL section, because the generator states the hypertable and
+ * the raw table's retention and nothing above them.
+ */
 
--- =============================================================================
--- Auth event telemetry: one row per authentication event (login, logout,
--- token refresh, max_session_exceeded). Designed for TimescaleDB hypertable.
--- Partitioned by event_time. No RLS — this is a system-level audit log
--- accessible only via the system DB role.
---
--- Event types:
---   login_success         - successful login
---   login_failure         - failed login attempt (wrong credentials, locked, etc.)
---   logout                - explicit logout
---   token_refresh         - JWT refreshed successfully
---   max_session_exceeded  - refresh rejected: max session duration reached
---   tenant_entered        - a system administrator entered this tenant
---   tenant_left           - a system administrator left this tenant
---   signup_success        - new account created via signup
---   signup_failure        - signup rejected
--- =============================================================================
-
-create table if not exists ores_iam_auth_events_tbl (
-    "id"            text not null,
-    "event_time"    timestamp with time zone not null,
-    "tenant_id"     text not null default '',
-    "account_id"    text not null default '',
-    "event_type"    text not null,
-    "username"      text not null default '',
-    "session_id"    text not null default '',
-    "party_id"      text not null default '',
-    "error_detail"  text not null default '',
-    primary key (id, event_time)
+create table if not exists "ores_iam_auth_events_tbl" (
+    "id" text not null,
+    "event_time" timestamp with time zone not null,
+    "tenant_id" text not null default '',
+    "account_id" text not null default '',
+    "event_type" text not null,
+    "username" text not null default '',
+    "session_id" text not null default '',
+    "party_id" text not null default '',
+    "error_detail" text not null default '',
+    primary key (id, event_time),
+    check ("id" <> '')
 );
 
+
+
 create index if not exists auth_events_tenant_time_idx
-on ores_iam_auth_events_tbl (tenant_id, event_time desc);
+on "ores_iam_auth_events_tbl" (tenant_id, event_time desc);
 
 create index if not exists auth_events_event_type_idx
-on ores_iam_auth_events_tbl (event_type, event_time desc);
+on "ores_iam_auth_events_tbl" (event_type, event_time desc);
+
+create or replace function ores_iam_auth_events_insert_fn()
+returns trigger as $$
+declare
+begin
+
+
+    return NEW;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger ores_iam_auth_events_insert_trg
+before insert on "ores_iam_auth_events_tbl"
+for each row execute function ores_iam_auth_events_insert_fn();
 
 do $$
 declare
@@ -64,92 +86,100 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
-        raise notice 'TimescaleDB detected - creating hypertable (1-day chunks)';
+        raise notice 'TimescaleDB detected - creating hypertable (1 day chunks)';
 
         perform public.create_hypertable(
-            'ores_iam_auth_events_tbl',
+            '"ores_iam_auth_events_tbl"',
             'event_time',
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
-
+        -- A hypertable grows without bound unless a retention policy drops the
+        -- chunks that have aged out. The licence decides whether the policy can
+        -- be set: the community edition has no retention job, so the model's
+        -- interval is reported rather than silently ignored.
         declare
             current_license text;
         begin
             select current_setting('timescaledb.license', true) into current_license;
-
             if current_license = 'timescale' then
-                -- Hourly aggregate: count of each event type per tenant
-                execute $sql$
-                    create materialized view if not exists ores_iam_auth_events_hourly_vw
-                    with (timescaledb.continuous) as
-                    select
-                        public.time_bucket('1 hour', event_time) as hour,
-                        tenant_id,
-                        event_type,
-                        count(*) as event_count
-                    from ores_iam_auth_events_tbl
-                    group by hour, tenant_id, event_type
-                    with no data
-                $sql$;
-
-                perform public.add_continuous_aggregate_policy(
-                    'ores_iam_auth_events_hourly_vw',
-                    start_offset => interval '1 day',
-                    end_offset => interval '15 minutes',
-                    schedule_interval => interval '15 minutes',
-                    if_not_exists => true
-                );
-                raise notice 'Created ores_iam_auth_events_hourly_vw continuous aggregate';
-
-                -- Daily aggregate: count of each event type per tenant
-                execute $sql$
-                    create materialized view if not exists ores_iam_auth_events_daily_vw
-                    with (timescaledb.continuous) as
-                    select
-                        public.time_bucket('1 day', event_time) as day,
-                        tenant_id,
-                        event_type,
-                        count(*) as event_count,
-                        count(distinct account_id) filter (
-                            where account_id != '') as unique_accounts
-                    from ores_iam_auth_events_tbl
-                    group by day, tenant_id, event_type
-                    with no data
-                $sql$;
-
-                perform public.add_continuous_aggregate_policy(
-                    'ores_iam_auth_events_daily_vw',
-                    start_offset => interval '3 days',
-                    end_offset => interval '1 hour',
-                    schedule_interval => interval '1 hour',
-                    if_not_exists => true
-                );
-                raise notice 'Created ores_iam_auth_events_daily_vw continuous aggregate';
-
-                -- Retention: keep raw events for 90 days, daily aggregates for 3 years
                 perform public.add_retention_policy(
-                    'ores_iam_auth_events_tbl',
+                    '"ores_iam_auth_events_tbl"',
                     drop_after => interval '90 days',
                     if_not_exists => true
                 );
-                perform public.add_retention_policy(
-                    'ores_iam_auth_events_hourly_vw',
-                    drop_after => interval '90 days',
-                    if_not_exists => true
-                );
-                perform public.add_retention_policy(
-                    'ores_iam_auth_events_daily_vw',
-                    drop_after => interval '3 years',
-                    if_not_exists => true
-                );
-                raise notice 'Configured retention policies for auth events';
             else
-                raise notice 'TimescaleDB Apache license - continuous aggregates and retention policies skipped';
+                raise notice 'TimescaleDB community edition - no retention policy is set for ores_iam_auth_events_tbl';
             end if;
         end;
-
     else
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
+    end if;
+end $$;
+do $$
+declare
+    current_license text;
+begin
+    if not exists (select 1 from pg_extension where extname = 'timescaledb') then
+        return;
+    end if;
+    select current_setting('timescaledb.license', true) into current_license;
+    if current_license = 'timescale' then
+        execute $sql$
+            create materialized view if not exists ores_iam_auth_events_hourly_vw
+            with (timescaledb.continuous) as
+            select
+                public.time_bucket('1 hour', event_time) as hour,
+                tenant_id,
+                event_type,
+                count(*) as event_count
+            from ores_iam_auth_events_tbl
+            group by hour, tenant_id, event_type
+            with no data
+        $sql$;
+
+        perform public.add_continuous_aggregate_policy(
+            'ores_iam_auth_events_hourly_vw',
+            start_offset => interval '1 day',
+            end_offset => interval '15 minutes',
+            schedule_interval => interval '15 minutes',
+            if_not_exists => true
+        );
+
+        execute $sql$
+            create materialized view if not exists ores_iam_auth_events_daily_vw
+            with (timescaledb.continuous) as
+            select
+                public.time_bucket('1 day', event_time) as day,
+                tenant_id,
+                event_type,
+                count(*) as event_count,
+                count(distinct account_id) filter (
+                    where account_id != '') as unique_accounts
+            from ores_iam_auth_events_tbl
+            group by day, tenant_id, event_type
+            with no data
+        $sql$;
+
+        perform public.add_continuous_aggregate_policy(
+            'ores_iam_auth_events_daily_vw',
+            start_offset => interval '3 days',
+            end_offset => interval '1 hour',
+            schedule_interval => interval '1 hour',
+            if_not_exists => true
+        );
+
+        perform public.add_retention_policy(
+            'ores_iam_auth_events_hourly_vw',
+            drop_after => interval '90 days',
+            if_not_exists => true
+        );
+        perform public.add_retention_policy(
+            'ores_iam_auth_events_daily_vw',
+            drop_after => interval '3 years',
+            if_not_exists => true
+        );
+    else
+        raise notice 'TimescaleDB Apache license - continuous aggregates skipped';
     end if;
 end $$;

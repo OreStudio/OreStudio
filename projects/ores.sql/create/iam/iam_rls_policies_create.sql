@@ -358,22 +358,6 @@ for all using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
--- Session Samples
--- -----------------------------------------------------------------------------
-alter table ores_iam_session_samples_tbl enable row level security;
-
-drop policy if exists session_samples_tenant_isolation_policy
-    on ores_iam_session_samples_tbl;
-
-create policy session_samples_tenant_isolation_policy on ores_iam_session_samples_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
--- -----------------------------------------------------------------------------
 -- Role Grant Request Roles (many-to-many)
 -- -----------------------------------------------------------------------------
 alter table ores_iam_role_grant_request_roles_tbl enable row level security;

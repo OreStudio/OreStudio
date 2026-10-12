@@ -26,11 +26,11 @@ Every party a tenant run creates is bound to the run's synthetic feeds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -40,9 +40,9 @@ Every party a tenant run creates is bound to the run's synthetic feeds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Make the feed step need provision_party, so it binds the parties the import
+creates. Verify on a fresh acme_demo provision that every party is bound and
+stores Bloomberg prices.
 
 * Measurements
 
@@ -84,3 +84,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped:
+
+- =start_market_feeds= needs =provision_party= as well as =publish_bundle=,
+  so it binds every party the LEI import creates. A fresh =acme_demo=
+  provision bound all five Acme parties to the 55 Bloomberg sources; before,
+  only the system party was bound.
+- The verification found a second bug, on main since =80dcac6037=: the feed
+  ingest loop subscribed to an already-prefixed wildcard that =subscribe()=
+  prefixed again, so no synthetic tick was stored in any environment. The
+  loop subscribes to the relative wildcard, and a test that publishes a tick
+  on the bus fails on the old subscription and passes on the fix.
+
+After both fixes every Acme party stores Bloomberg FX ticks and IR curve
+ticks.

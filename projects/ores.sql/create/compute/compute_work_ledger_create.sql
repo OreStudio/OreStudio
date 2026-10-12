@@ -83,6 +83,10 @@ where state = 'claimed';
 -- comparison that is also the system tenant, so it admits no tenant's rows to
 -- anyone else and is not a widening.
 -- =============================================================================
+-- Both comparisons are needed. The first admits the session's own tenant, which
+-- is every table's rule. The second admits only the system tenant, which is what
+-- makes the ledger the installation's: a tenant's session passes the first test
+-- for its own rows and fails the second.
 alter table ores_compute_work_ledger_tbl enable row level security;
 
 drop policy if exists work_ledger_installation_policy

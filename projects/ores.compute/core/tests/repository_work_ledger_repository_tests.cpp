@@ -23,8 +23,11 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <future>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -185,7 +188,7 @@ TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load", tag
     CHECK(claimed->result_id == urgent.result_id);
 }
 
-TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_keeps_its_attempts", tags) {
+TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_gives_the_attempt_back", tags) {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -200,7 +203,35 @@ TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_keeps_its_attempts",
     const auto again = ledger.claim(cleanup.system(), host, platform, seconds(300));
     REQUIRE(again.has_value());
     CHECK(again->result_id == queued.result_id);
-    CHECK(again->attempts == 2);
+    // The claim that was given back never ran, so it does not count as an attempt.
+    CHECK(again->attempts == 1);
+}
+
+TEST_CASE("concurrent_claims_never_take_the_same_entry", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    constexpr int entries = 6;
+    for (int i = 0; i < entries; ++i)
+        cleanup.add(entry_for(platform, random_uuid()));
+
+    // Twelve claims race for six entries. Each entry goes to exactly one claim.
+    std::vector<std::future<std::optional<ores::compute::repository::claimed_entry>>> claims;
+    for (int i = 0; i < 2 * entries; ++i) {
+        claims.push_back(std::async(std::launch::async, [&cleanup, &platform] {
+            return work_ledger_repository().claim(
+                cleanup.system(), random_uuid(), platform, seconds(300));
+        }));
+    }
+    std::vector<boost::uuids::uuid> taken;
+    for (auto& claim : claims) {
+        if (const auto entry = claim.get())
+            taken.push_back(entry->result_id);
+    }
+
+    CHECK(taken.size() == entries);
+    std::ranges::sort(taken);
+    CHECK(std::ranges::adjacent_find(taken) == taken.end());
 }
 
 TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", tags) {

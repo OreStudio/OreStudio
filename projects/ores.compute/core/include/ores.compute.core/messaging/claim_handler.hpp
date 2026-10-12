@@ -104,7 +104,12 @@ private:
     static constexpr int max_dropped = 50;
 
     claim_work_response serve(const claim_work_request& req) {
-        const auto host = boost::lexical_cast<boost::uuids::uuid>(req.host_id);
+        boost::uuids::uuid host;
+        try {
+            host = boost::lexical_cast<boost::uuids::uuid>(req.host_id);
+        } catch (const boost::bad_lexical_cast&) {
+            throw std::invalid_argument("The host id is not a UUID: " + req.host_id);
+        }
         repository::work_ledger_repository ledger;
         for (int dropped = 0; dropped <= max_dropped; ++dropped) {
             const auto entry = ledger.claim(ctx_, host, req.platform, lease);
@@ -113,11 +118,25 @@ private:
                 none.success = true;
                 return none;
             }
-            auto assignment = complete(ledger, *entry, host, req.platform);
+            std::optional<claim_work_response> assignment;
+            try {
+                assignment = complete(ledger, *entry, host, req.platform);
+            } catch (...) {
+                // The entry was taken and the claim failed for a reason not handled below, such as
+                // a database error. Give the entry back, so it is not left claimed with no node
+                // working on it, and let the failure end this claim.
+                try {
+                    ledger.release(ctx_, entry->result_id);
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(claim_handler_lg(), ores::logging::error)
+                        << "Could not release result " << boost::uuids::to_string(entry->result_id)
+                        << " after a failed claim: " << e.what();
+                }
+                throw;
+            }
             if (assignment)
                 return *assignment;
-            // The entry was dropped or the claim could not be completed; a failure that
-            // stops the claim answers from complete() by throwing.
+            // The entry was dropped because its result can no longer run. Take the next one.
         }
         claim_work_response none;
         none.success = true;
@@ -212,12 +231,16 @@ private:
             ores::service::messaging::stamp(taken, tenant_ctx);
             result_svc.save_result(taken);
         } catch (const std::exception& e) {
-            // The result changed since it was read: it was retired or finished. Drop the entry.
-            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::info)
-                << "Dropping ledger entry for result " << result_id
-                << ": the result changed while it was claimed (" << e.what() << ")";
-            ledger.remove(ctx_, entry.result_id);
-            return std::nullopt;
+            // The result could not be marked. Either it changed since it was read, because it was
+            // retired or finished, or the database failed. The entry goes back and the claim
+            // stops. If the result was retired, the next claim finds it no longer unsent and
+            // drops the entry. If the database failed, the next claim tries again. Deleting the
+            // entry here would lose a job that the database failure left unsent.
+            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::warn)
+                << "Giving back ledger entry for result " << result_id
+                << ": the result could not be marked in progress (" << e.what() << ")";
+            ledger.release(ctx_, entry.result_id);
+            throw;
         }
 
         claim_work_response assignment;

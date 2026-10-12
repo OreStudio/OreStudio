@@ -124,7 +124,8 @@ std::optional<claimed_entry> work_ledger_repository::claim(context ctx,
 void work_ledger_repository::release(context ctx, const boost::uuids::uuid& result_id) {
     static const std::string sql = R"(
         UPDATE ores_compute_work_ledger_tbl
-        SET state = 'queued', host_id = NULL, claimed_at = NULL, lease_expires_at = NULL
+        SET state = 'queued', host_id = NULL, claimed_at = NULL, lease_expires_at = NULL,
+            attempts = greatest(attempts - 1, 0)
         WHERE result_id = $1::uuid AND state = 'claimed'
     )";
     execute_parameterized_command(

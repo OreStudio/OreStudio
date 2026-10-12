@@ -99,10 +99,12 @@ public:
                                        std::chrono::seconds lease);
 
     /**
-     * @brief Give a claimed entry back to the queue, keeping its attempts.
+     * @brief Give a claimed entry back to the queue, as if it had not been taken.
      *
      * Used when a claim cannot be completed after the entry was taken, for
-     * example when no storage token could be minted.
+     * example when no storage token could be minted. The attempt the claim
+     * added is given back, because no node ran the job, so an outage of a
+     * service the claim needs never counts against the job's attempts.
      */
     void release(context ctx, const boost::uuids::uuid& result_id);
 

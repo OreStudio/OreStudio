@@ -23,9 +23,9 @@ A job that waits in the grid queue for any length of time still runs when a node
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Findings and options written.          |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | The first task settles the decision.   |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -52,11 +52,36 @@ Measured on the dev database that morning:
 
 | What | Value | How |
 |------+-------+-----|
-| Client errors in the last 3 hours | 4276, all with HTTP 401 | =select outcome, error_message, count(*) from ores_compute_results_tbl= grouped over the received time |
+| Client errors in the last 3 hours | 4276, all with HTTP 401 | the third query below. The first query shows the same message for the last 2 hours, with the object id the only difference |
 | Successes among them | 0 | the same query |
-| Age of those results at failure | every one more than 4 hours | the result's first version time against its received time |
-| Oldest unsent result | 9 hours 9 minutes | =min(valid_from)= of the unsent results |
+| Age of those results at failure | every one more than 4 hours, counted from the result's first version and not from its failure | the second query below |
+| Oldest unsent result | 9 hours 9 minutes | the second query below |
 | Messages in the assignments stream | 17,520, newest 8 hours old | =nats stream ls= |
+
+The queries, run on the dev database on 2026-10-12 with =compass sql -- -f=. The numbers describe that database and no commit.
+
+#+begin_src sql
+select outcome, left(error_message, 200) as msg, count(*), max(received_at)
+from ores_compute_results_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and server_state = 5 and received_at > now() - interval '2 hours'
+group by 1, 2 order by 3 desc;
+
+select 'unsent now' as what, count(*), min(valid_from) as oldest, now() - min(valid_from) as age
+from ores_compute_results_tbl
+where valid_to = ores_utility_infinity_timestamp_fn() and server_state = 2;
+
+with created as (select id, min(valid_from) as created_at from ores_compute_results_tbl group by id)
+select width_bucket(extract(epoch from (r.received_at - c.created_at)) / 60, 0, 240, 8) as bucket_30min,
+       count(*) filter (where r.outcome = 3) as client_error,
+       count(*) filter (where r.outcome = 1) as success
+from ores_compute_results_tbl r join created c on c.id = r.id
+where r.valid_to = ores_utility_infinity_timestamp_fn()
+  and r.server_state = 5 and r.received_at > now() - interval '3 hours'
+group by 1 order by 1;
+#+end_src
+
+The last query puts every failure in the overflow bucket, which is a wait of more than 4 hours.
 
 ** Why it happens
 
@@ -66,7 +91,7 @@ Three facts combine.
 2. The assignments live in a JetStream stream. A node takes them in order and at its own pace. A stream keeps them for seven days, and it outlives a restart of the services and a recreate of the database.
 3. A node does not check the token before it starts. It downloads the input, receives HTTP 401 and reports a client error. The server treats that as the final outcome of the result. Nothing puts the result back in the queue.
 
-So a job that waits longer than one hour is certain to fail. A job fails in milliseconds, so the nodes look idle while the queue drains by failing.
+So a job that waits longer than one hour is certain to fail. A failed job takes about a second, as the wrapper log shows one failure each second on one node, so the nodes look idle while the queue drains by failing.
 
 ** What the grid will meet
 
@@ -81,6 +106,7 @@ The assignment carries no token. The node asks for one when it starts a job, for
 - For: removes the cause. The token covers the work and not the wait. A queued job holds no credential, which is safer.
 - Against: a node makes one more round trip per job. The assignment needs a new call, and the wrapper changes.
 - Open: how a node proves it may ask. The node holds no standing credential today.
+- Direction to check: the compute service mints the token when a node claims the job, over the node's NATS identity. The NATS client certificate proves that identity. It is one certificate for the whole wrapper role and not one for each node, so it says "a wrapper" and not "this wrapper". A node-held credential that outlives the job would bring back the standing credential that option 2 is criticised for, so the token must be minted for one job and expire with it.
 
 *** Give the token a life as long as the longest wait
 
@@ -110,6 +136,14 @@ The dispatcher keeps a result unsent in the database and publishes its assignmen
 * Decisions
 
 None yet. The recommendation, to settle in the first task: take the credential off the queue. Mint the token when a node takes the job. Keep the queue in the database, order it by priority and age, and publish an assignment only when a node can take it. Bound the queue per tenant, so one tenant's burst cannot starve the others, and state what happens to a job that waits past the bound.
+
+The candidate rules for a job that waits past the bound, for the first task to choose from:
+
+- Refuse the submit, so the caller learns at once and nothing waits unseen.
+- Expire the job after a stated wait, mark it so a person sees why, and let the caller submit it again.
+- Shed the oldest job of the tenant with the longest queue, which keeps the newest work and loses the oldest.
+
+Refusing at submit is the plainest and the only one that never loses work a person believes is queued.
 
 * Out of scope
 

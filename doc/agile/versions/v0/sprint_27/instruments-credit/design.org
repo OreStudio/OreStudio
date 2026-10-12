@@ -334,14 +334,20 @@ The units are ordered so each ends in a check and none depends on a later one.
 | 1 | Analyse the credit family and propose its relational data model | this page |
 | 2 | Carry the credit digits: lexical leaves for the credit money members, and the tranche columns agree with their domain type | a mapper test per money member; the goldens that change are numeric text |
 | 3 | Retire the unproduced =rpa_instruments= table | the tree builds and passes without its 47 files |
-| 4 | Author the credit family header and its fact tables | codegen drift clean; the generated eventing tests pass |
-| 5 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
+| 4 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
+| 5 | Author the credit family header and its fact tables | codegen drift clean; the generated eventing tests pass |
 | 6 | Close the credit round trip: the agreement's required elements and underlying, the dropped elements | the mapper round trip per product |
 | 7 | Map the credit dates into the common-date view | a probe across a swap and a credit trade |
 | 8 | Prove the credit round trip over the corpus | eight documents, eight trades, equal family rows |
 
 Retiring the agreement table is its own unit because it touches 47 files and
 a rates wire variant, and it can land before the new tables exist.
+
+The legs land before the header. The leg and basket tables are keyed by the
+trade, not by the header, so they stand without it. The header unit removes the
+currency, notional, spread, day count and payment frequency columns from the
+credit table, and the legs are where those values go, so the legs must exist
+first or the header unit would drop data.
 
 ** Open questions
 

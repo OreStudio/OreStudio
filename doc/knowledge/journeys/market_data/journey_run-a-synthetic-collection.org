@@ -94,13 +94,17 @@ above the act.
 
 * Prototype
 
-Two design notes answer this journey, one per window it composes.
+Three design notes answer this journey.
 
 - [[id:768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC][Market simulator prototype]] — the composite window: the feed tree, the selection summary and the live chart, and the cascade start and stop.
   - Variants :: =a= feed table, =b= live chart, =c= cascade
   - States :: =running=, =allstopped=, =novintage= (which refuses every vintage-backed contributor)
   - Source :: =doc/prototypes/market_data/synthetic-market-simulator/index.html=
   - Open :: =/OreStudio/doc/prototypes/market_data/synthetic-market-simulator/= once the site is built, or the file directly
+- [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] — the synthetic area that succeeds the simulator: a feed overview, a feed tree whose feeds open their pages, and a breadcrumb back through the tree.
+  - Screens :: =market=, =synthetic=, =overview=, =tree=, =feed=
+  - States :: =mixed=, =stopped=, =scale=, =search=
+  - Source :: =doc/prototypes/market_data/browse-the-feed-tree/index.html=
 - [[id:2AE8A650-BE21-43C6-B01F-98CB8F705B31][Manage synthetic collections prototype]] — the collections window: the list, the detail form and the coverage.
   - Variants :: =A= list, =B= detail form, =C= coverage
   - States :: =basic=, =realistic=, =uniform=, =empty=

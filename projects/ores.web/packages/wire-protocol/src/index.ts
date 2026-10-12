@@ -114,6 +114,7 @@ export {
     TENANT_TYPE_SUBJECTS,
     listTenantTypesRequestSchema,
     readTenantTypes,
+    TEST_TENANT_TYPE,
 } from './tenant-types.js';
 
 export {
@@ -139,6 +140,7 @@ export type {
     WireTenantPage,
 } from './tenants.js';
 export { readPartiesPage } from './party-page.js';
+export { readGridUsage } from './grid-usage.js';
 export {
     ACCESS_SUBJECTS,
     deleteRole,

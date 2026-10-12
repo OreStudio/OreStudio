@@ -325,3 +325,36 @@ describe('kindTone', () => {
         });
     });
 });
+
+describe('what a bulk import looks like', () => {
+    const imports = Array.from({ length: 6 }, (_, i) =>
+        event({
+            entityType: 'ores.refdata.party_currency',
+            entityId: `p/C${String(i)}`,
+            kind: 'raised',
+            at: `2026-10-04 10:00:0${String(9 - i)}Z`,
+            actor: 'ores_refdata_service',
+            version: 1,
+            reasonCode: 'system.external_data_import',
+            commentary: 'Imported from DQ dataset: Party Currencies',
+            fields: [{ name: 'Currency', value: `C${String(i)}` }],
+        }),
+    );
+
+    it('is one row, with the comment said once and the members listed beneath it', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <Timeline
+                    timeline={{ subject: 'party', id: 'p', events: imports, gaps: [] }}
+                    recordName={(e) => `Currency ${e.fields[0]?.value ?? ''}`}
+                />
+            </TranslationProvider>,
+        );
+
+        expect(html.match(/data-batch/g)).toHaveLength(1);
+        expect(html.match(/Imported from DQ dataset: Party Currencies/g)).toHaveLength(1);
+        expect(html).toContain('6 × party currency');
+        expect(html).toContain('6 entries');
+        for (let i = 0; i < 6; i++) expect(html).toContain(`Currency C${String(i)}`);
+    });
+});

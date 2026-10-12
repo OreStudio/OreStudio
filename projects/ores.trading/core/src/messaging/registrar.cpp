@@ -53,6 +53,7 @@
 #include "ores.trading.core/messaging/booking_nature_type_registrar.hpp"
 #include "ores.trading.core/messaging/callable_swap_call_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/commodity_basket_constituent_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/credit_basket_constituent_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/counterparty_scope_type_registrar.hpp"
 #include "ores.trading.core/messaging/entry_channel_type_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
@@ -222,6 +223,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_bond_trs_history_provider(hist_registry);
     register_callable_swap_call_date_history_provider(hist_registry);
     register_commodity_basket_constituent_history_provider(hist_registry);
+    register_credit_basket_constituent_history_provider(hist_registry);
     register_equity_position_option_underlying_history_provider(hist_registry);
     register_exercise_type_history_provider(hist_registry);
     register_flexi_swap_lower_notional_history_provider(hist_registry);

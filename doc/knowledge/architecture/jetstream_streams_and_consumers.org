@@ -15,8 +15,8 @@ JetStream is the persistence and delivery layer of NATS. Plain NATS delivers a
 message to whoever is subscribed at that instant and forgets it; JetStream
 writes messages into a named *stream* and lets a *consumer* read them later,
 from where it left off. ORE Studio uses it for three things and no more: the
-market data a service must not lose while its consumer is restarting, the
-workflow engine's commands, and compute work assignments. Five streams exist,
+market data a service must not lose while its consumer is restarting, and the
+workflow engine's commands. Four streams exist,
 each with a subject filter, and a durable consumer is the one kind of
 subscription that survives a service restart. The failure to know about is that
 a *subject rename* reconciles the stream and strands the consumers, so the
@@ -48,9 +48,14 @@ outlive both the publisher and the subscriber.
 - *The workflow engine.* A workflow run is a sequence of persisted steps. The
   engine subscribes durably, so a run that is mid-flight when the engine
   restarts resumes rather than stalls.
-- *Compute assignments.* A wrapper takes work from a shared stream, so a
-  wrapper that is down does not lose an assignment meant for it and a fleet of
-  wrappers shares the queue.
+
+Compute work does not use JetStream. A queue of jobs that wait for hours does
+not suit a push consumer, so the queue is a table in the database and a free
+node claims a job from it. See
+[[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]].
+A deployment that ran an earlier wrapper may still hold a stream named
+=compute_assignments= and a durable consumer on it. Nothing reads or writes
+them now, and they may be deleted.
 
 Nothing else uses JetStream. An entity operation has its answer in the reply
 and needs no history, so it stays on plain request/reply.
@@ -90,7 +95,7 @@ subject heal.
 
 * The streams we create
 
-Five exist, and each is created by the service that owns the data in it:
+Four exist, and each is created by the service that owns the data in it:
 
 | Stream (after the prefix) | Subject filter | Created by |
 |---------------------------+----------------+------------|
@@ -98,7 +103,6 @@ Five exist, and each is created by the service that owns the data in it:
 | =synthetic_ticks= | =synthetic.v1.ops.tick.>= | =ores.marketdata.service= and =ores.synthetic.service= |
 | =synthetic_sandbox_ticks= | =synthetic.v1.ops.sandbox_tick.>= | =ores.synthetic.service= |
 | =workflow= | =workflow.v1.ops.start_workflow= and =workflow.v1.ops.step_completed= | =ores.workflow.service= |
-| =compute_assignments= | =compute.v1.ops.work_assignment.>= | =ores.compute.wrapper= |
 
 =synthetic_ticks= is created by two services on purpose: the marketdata ingest
 loop has to be able to read synthetic ticks whether or not the synthetic
@@ -111,10 +115,7 @@ second caller finds it and reconciles rather than failing.
 |----------+---------+---------|
 | =workflow-engine-start= | =workflow.v1.ops.start_workflow= | =ores.workflow.service= |
 | =workflow-engine-step-completed= | =workflow.v1.ops.step_completed= | =ores.workflow.service= |
-| =compute_wrapper_shared_<triplet>= | =compute.v1.ops.work_assignment.<triplet>.>= | one per =ores.compute.wrapper= |
 
-A durable is named, so the wrapper's name carries its platform triplet: several
-wrapper shapes may run against one deployment, and each needs its own position.
 The two engine consumers are a single position each, because the engine is a
 single logical reader.
 

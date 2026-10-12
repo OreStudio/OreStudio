@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 441F3512-3189-4A45-9191-2F235C5D7E50
+:END:
+#+title: Story: Link an oresmd URL to what it names
+#+description: A click on an oresmd URL opens the object it names, as a link does everywhere else, and a small icon button beside it opens the URL in the editor. The editor has a read-only view laid out like the non-edit mode of the record screens, with labels and values and no inputs.
+#+type: story
+#+level: s2
+#+filetags: :web:marketdata:oresmd:ux:sprint_27:v0:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An oresmd URL behaves like every other reference in the app. The link goes to the thing it names, a series to its page. A small icon button opens the URL in the dialog, which shows it as labelled values in the layout of the record screens when the screen cannot change it, and as the editor when it can.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Scaffolded and broken into tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Open a series on the Evolution page from an oresmd URL. |
+| Last touched  | 2026-10-12                               |
+
+* Acceptance
+
+- A series URL and a quote URL are a link to the page of their series when the party has the series: the Evolution page for a series with an axis and the series page for one without. A link opens in a new tab and copies as a link. A fixing, a series the party does not have and a URL the codec refuses are plain text.
+- A button beside the URL opens the dialog: Inspect for the read-only view and Edit where the screen stores the URL.
+- The read-only view of the dialog shows the kind, the instrument, the quote, the path and the fields as labels and values in the layout of the record screens, with the codec's URL under them and Copy, and no inputs.
+- A series with no axis, such as an FX spot rate, has a page that draws its values over time.
+- The IR curve feed and the FX feed screens use the link and the button, and a tooltip on the label says the oresmd URI is the series the feed writes to.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E92A8525-45D0-4154-A815-27296B14A05F][Scaffold story: Link an oresmd URL to what it names]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:26300A39-44B3-48A9-8080-9F9AE32427CF][Open a series on the Evolution page from an oresmd URL]] | BACKLOG | | | Let the Evolution page take an oresmd URL in its address, read it through the server's parse, and open the series it names. A series URL names its own series, and a quote URL names the series its datum belongs to, from the identity fields of its row. A fixing names no series. |
+| [[id:146E5F47-A43A-4A92-8C03-046B6F588F0B][Show an oresmd URL read-only in the dialog]] | BACKLOG | | | Give the dialog a read-only view for a screen that cannot change the URL. It is laid out like the non-edit mode of the record screens: label and value pairs in a grid, with the kind, the instrument, the quote, the path and each field, and the codec's URL under them with Copy. It has no inputs. A screen that stores the URL gets the editor. |
+| [[id:F7CCB2D7-AD2E-4D3D-B478-DCF34B85AFD3][Draw an oresmd URL as a link with a button]] | BACKLOG | | | Change OresmdUrl so the URL is a link to what it names when the party has the series, and a button beside it, Inspect or Edit, opens the dialog. |
+| [[id:89AF03DA-A6EF-472C-A473-853A3F5159AD][Read a series' observations in the BFF]] | BACKLOG | | | Add a BFF route that reads the latest observations of one series through the server's observation list, filtered by the series id and ordered by time, so a page can draw a series that has no axis. The server checks the permission and the party. |
+| [[id:5114C1FA-0CA4-4B13-9D89-63CE54E5A49E][Show a series as a time series]] | BACKLOG | | | Add a series page that draws the values of one series over time with the line chart and lists the latest observations, for a series that declares no axis, such as an FX spot rate. It opens from an oresmd URL in the address, and says in words when the party has no such series or the series has no observation yet. |
+| [[id:BF4B13D6-0E42-4DB7-B3D0-1BC749B20B66][Explain the oresmd URI on the feed screens]] | BACKLOG | | | The oresmd URI of a feed is its target: the series the feed writes its values to. Say so in a tooltip on the label of the Details row, so a reader knows what the URI means before inspecting it. |
+| [[id:A42BD55E-C2D5-4929-B961-52BA87304B77][Title a series in words]] | BACKLOG | | | Give each instrument type and quote type a title template in the oresmd schema, and show a series by that title, so AUD/USD spot rate replaces fx / AUD / fx_spot / rate · ccy=USD. |
+
+** Build order
+
+| Step | Task | Needs |
+|------+------+-------|
+| 1 | Open a series on the Evolution page from an oresmd URL | nothing |
+| 2 | Show an oresmd URL read-only in the dialog | nothing |
+| 3 | Read a series' observations in the BFF | nothing |
+| 4 | Show a series as a time series | 1 and 3 |
+| 5 | Draw an oresmd URL as a link with a button | 1, 2 and 4 |
+| 6 | Explain the oresmd URI on the feed screens | nothing |
+| 7 | Title a series in words | 4 |
+
+* Decisions
+
+- A click on an oresmd URL goes to the object it names. This is the least astonishing result: a link goes to a thing, a real address opens in a new tab and copies as a link, and the other references of the app work this way. Editing is a different intention, so it is a separate small button. Marco agreed on 2026-10-12.
+- The button is the text Inspect, or Edit where a screen stores the URL. An icon was tried and not signed off, so the icon table is unchanged. Marco decided this on 2026-10-12.
+- The read-only view of the dialog is laid out as the non-edit mode of the record screens: label and value pairs in a grid, and no inputs, so a URL is read the same way everywhere. Marco asked for this on 2026-10-12.
+- The object of a series URL is its series. The object of a quote URL is the series of its datum, because a quote is one point of a series and the series has the page. The identity the page needs is the asset, the path as the scope, the instrument, the quote type and the identity fields of the row, which the series list already builds from the same URL. A fixing names no series, so it has no link.
+- A series has a page whatever its shape. The Evolution page reads a composite object, a grid of instants by nodes, so it needs an axis. A series with one value at each instant, such as an FX spot rate, is a plain time series, and its page draws the observations with the line chart. The link goes to the Evolution page for a series with an axis and to the series page for one without, and is plain text only where the party has no such series. Marco asked for this on 2026-10-12, after the first cut hid the link for a spot rate.
+- The oresmd URI of a feed is its target: the series the feed writes its values to. A tooltip on the label says so.
+- A series the party does not have, a series with no axis on the Evolution page, a series with no observation and a URL the codec refuses are each said in words and never as a server error. Marco asked for this on 2026-10-12.
+- The read-only view of the dialog was signed off by Marco on 2026-10-12.
+- The link carries the URL in the address, as =uri=, and the Evolution page reads it through the server's parse. The link holds no part of the grammar.
+
+* Out of scope
+
+- A page for a quote or a fixing of its own.
+- Writing a URL back from the feed screens. A feed's URL follows from its currencies and its curve.
+- Changing the editor's grammar or the server's operations.

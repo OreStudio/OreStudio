@@ -204,6 +204,50 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 
 }
 {{/domain_entity}}
+{{#junction}}
+#include "ores.{{component_core}}/presentation/{{name_singular}}_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <string>
+#include <vector>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_left_or_right}}
+
+namespace ores::{{component}}::presentation {
+
+std::vector<ores::diff::domain::field_value>
+render_{{name_singular}}_fields(const repository::{{name_singular}}_history_row& v) {
+    using ores::diff::domain::field_value;
+    std::vector<field_value> fields;
+
+    // The link's id is both keys, parent first, so a stream of many links can
+    // tell one link's versions from another's.
+    fields.push_back({.name = "ID",
+                      .value = {{{history_parent.history_value}}} + "/" + {{{history_child.history_value}}}});
+    fields.push_back({.name = "{{history_parent.column_title}}", .value = {{{history_parent.history_value}}}});
+    fields.push_back({.name = "{{history_child.column_title}}", .value = {{{history_child.history_value}}}});
+{{#columns}}
+    fields.push_back({.name = "{{{history_title}}}", .value = {{{history_value}}}});
+{{/columns}}
+    fields.push_back({.name = "Closed At",
+                      .value = v.closed_at ? ores::platform::time::datetime::to_iso8601_utc(*v.closed_at)
+                                           : std::string()});
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.link.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.link.performed_by});
+    fields.push_back(
+        {.name = provenance_fields::change_reason_code, .value = v.link.change_reason_code});
+    fields.push_back({.name = provenance_fields::change_commentary, .value = v.link.change_commentary});
+    fields.push_back({.name = provenance_fields::recorded_at,
+                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+
+    return fields;
+}
+
+}
+{{/junction}}
 #+end_src
 
 * See also

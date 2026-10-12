@@ -59,6 +59,7 @@
 #include "ores.trading.service/messaging/commodity_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/composite_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/composite_leg_event_registrar.hpp"
+#include "ores.trading.service/messaging/credit_basket_constituent_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
@@ -297,6 +298,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto composite_instrument_sub =
         ores::trading::service::messaging::register_composite_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto credit_basket_constituent_sub =
+        ores::trading::service::messaging::register_credit_basket_constituent_event_mapping(
             event_source, event_bus, nats);
     auto credit_instrument_sub =
         ores::trading::service::messaging::register_credit_instrument_event_mapping(

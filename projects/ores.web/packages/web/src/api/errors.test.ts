@@ -27,6 +27,8 @@ import {
     describeFailure,
     dismiss,
     dismissAll,
+    isSessionEnded,
+    onSessionEnded,
     report,
     reportError,
     reportQueryError,
@@ -182,5 +184,30 @@ describe('a query that states its own failure', () => {
         expect(describeFailure(failure)).toBe(
             'The ledger is closed. (GET /api/books, request 12345678)',
         );
+    });
+});
+
+describe('a session that ended', () => {
+    const ended = (code: string, status = 401): ApiFailure =>
+        new ApiFailure(status, { code, message: 'x' } as never);
+
+    it('is recognised by a 401 that says the session expired or is missing', () => {
+        expect(isSessionEnded(ended('session-expired'))).toBe(true);
+        expect(isSessionEnded(ended('not-authenticated'))).toBe(true);
+        expect(isSessionEnded(ended('forbidden', 403))).toBe(false);
+        expect(isSessionEnded(new Error('boom'))).toBe(false);
+    });
+
+    it('is announced once to listeners and kept out of the error store', () => {
+        dismissAll();
+        let heard = 0;
+        const stop = onSessionEnded(() => {
+            heard += 1;
+        });
+        reportError(ended('session-expired'), 'list parties');
+        stop();
+        reportError(ended('session-expired'), 'list parties');
+        expect(heard).toBe(1);
+        expect(current()).toHaveLength(0);
     });
 });

@@ -698,6 +698,8 @@ const fr: SourceCatalogue = {
         failed: 'Échec de la connexion.',
         chooseParty: 'Choisir une entité',
         choosePartyHint: 'Ce compte fonctionne dans plusieurs entités.',
+        partyTimedOut: 'Votre connexion a expiré, car vous n’avez pas choisi de partie à temps. Connectez-vous de nouveau.',
+        sessionEnded: 'Votre session a pris fin et vous avez été déconnecté. Connectez-vous de nouveau pour continuer.',
         partyCategory: 'Catégorie',
     },
 
@@ -1675,7 +1677,15 @@ const fr: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Utilisation par locataire', party: 'Utilisation par partie' },
-                note: 'La part d’un groupe est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                note: {
+                    tenant: 'Chaque locataire est lu à l’intérieur du locataire, car le travail d’un locataire n’est pas visible depuis un autre. La part d’un locataire est la fraction de ses résultats parmi les résultats qui ont pu être lus. Réussis et échoués comptent les dernières 24 heures.',
+                    party: 'La part d’une partie est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                },
+                unavailable: 'N’a pas pu être lu',
+                age: {
+                    caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
+                    over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
+                },
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',
                 unassigned: 'Aucune partie',
                 columns: {
@@ -1686,6 +1696,7 @@ const fr: SourceCatalogue = {
                     results: 'Résultats',
                     inProgress: 'En cours',
                     unsent: 'En attente',
+                    oldest: 'Plus ancienne attente',
                     done: 'Terminés',
                     succeeded: 'Réussis',
                     failed: 'Échoués',
@@ -1759,7 +1770,6 @@ const fr: SourceCatalogue = {
                 load: {
                     title: 'Charge',
                     caption: 'Travail en cours par état de résultat',
-                    inactive: 'Inactif',
                     unsent: 'Non envoyé',
                     inProgress: 'En cours',
                 },
@@ -2296,6 +2306,9 @@ const fr: SourceCatalogue = {
         current: 'Version actuelle',
         field: 'Champ',
         noChanges: 'Aucune modification',
+        batch: {
+            entries: '{count} entrées',
+        },
         kind: {
             raised: 'Créé',
             changed: 'Modifié',
@@ -2303,6 +2316,7 @@ const fr: SourceCatalogue = {
             told: 'Notifié',
             decided: 'Répondu',
             granted: 'Accordé',
+            closed: 'Fermé',
             signed_in: 'Connexion',
             sign_in_failed: 'Connexion refusée',
             signed_out: 'Déconnexion',
@@ -2314,13 +2328,13 @@ const fr: SourceCatalogue = {
         gaps: 'Ce que cet historique ne peut pas montrer',
         gapFor: {
             party_country:
-                'Les pays où elle opère n’ont pas de versions, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
+                'Les pays où elle opère n’ont pas pu être lus, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
             party_currency:
-                'Les devises dans lesquelles elle opère n’ont pas de versions, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
+                'Les devises dans lesquelles elle opère n’ont pas pu être lues, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
             party_counterparty:
-                'Les contreparties avec lesquelles elle peut traiter n’ont pas de versions, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
+                'Les contreparties avec lesquelles elle peut traiter n’ont pas pu être lues, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
             account_party:
-                'Les parties où une personne travaille n’ont pas de versions, donc l’arrivée ou le départ n’apparaît pas.',
+                'Les parties où une personne travaille n’ont pas pu être lues, donc l’arrivée ou le départ n’apparaît pas.',
             account_role:
                 'Un rôle retiré n’apparaît pas, seuls les rôles détenus aujourd’hui apparaissent.',
             auth_event:
@@ -3602,6 +3616,9 @@ const fr: SourceCatalogue = {
                 identifier: 'Identifiant',
                 contact: 'Contact',
                 unit: 'Unité d’affaires',
+                country: 'Pays',
+                currency: 'Devise',
+                counterparty: 'Contrepartie',
             },
         },
     },

@@ -697,6 +697,8 @@ const pt: SourceCatalogue = {
         failed: 'Não foi possível iniciar sessão.',
         chooseParty: 'Escolha uma entidade',
         choosePartyHint: 'Esta conta trabalha em mais do que uma entidade.',
+        partyTimedOut: 'A sua sessão expirou, porque não escolheu uma parte a tempo. Inicie a sessão novamente.',
+        sessionEnded: 'A sua sessão terminou e foi desligado. Inicie a sessão novamente para continuar.',
         partyCategory: 'Categoria',
     },
 
@@ -1666,7 +1668,15 @@ const pt: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Utilização por inquilino', party: 'Utilização por parte' },
-                note: 'A quota de um grupo é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
+                note: {
+                    tenant: 'Cada inquilino é lido dentro do inquilino, porque o trabalho de um inquilino não é visível a partir de outro. A quota de um inquilino é a fração dos seus resultados entre os resultados que puderam ser lidos. Com êxito e falhados contam as últimas 24 horas.',
+                    party: 'A quota de uma parte é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
+                },
+                unavailable: 'Não foi possível ler',
+                age: {
+                    caution: 'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
+                    over: 'A tarefa em espera mais antiga espera há {time}, acima dos {limit} que uma tarefa pode esperar.',
+                },
                 empty: 'Ainda não correu trabalho na grelha.',
                 unassigned: 'Sem parte',
                 columns: {
@@ -1677,6 +1687,7 @@ const pt: SourceCatalogue = {
                     results: 'Resultados',
                     inProgress: 'A correr',
                     unsent: 'À espera',
+                    oldest: 'Espera mais antiga',
                     done: 'Concluídos',
                     succeeded: 'Com êxito',
                     failed: 'Falhados',
@@ -1750,7 +1761,6 @@ const pt: SourceCatalogue = {
                 load: {
                     title: 'Carga',
                     caption: 'Trabalho em curso por estado do resultado',
-                    inactive: 'Inativo',
                     unsent: 'Por enviar',
                     inProgress: 'Em curso',
                 },
@@ -2287,6 +2297,9 @@ const pt: SourceCatalogue = {
         current: 'Versão atual',
         field: 'Campo',
         noChanges: 'Sem alterações',
+        batch: {
+            entries: '{count} entradas',
+        },
         kind: {
             raised: 'Criado',
             changed: 'Alterado',
@@ -2294,6 +2307,7 @@ const pt: SourceCatalogue = {
             told: 'Notificado',
             decided: 'Respondido',
             granted: 'Concedido',
+            closed: 'Encerrado',
             signed_in: 'Sessão iniciada',
             sign_in_failed: 'Sessão recusada',
             signed_out: 'Sessão terminada',
@@ -2305,13 +2319,13 @@ const pt: SourceCatalogue = {
         gaps: 'O que este histórico não pode mostrar',
         gapFor: {
             party_country:
-                'Os países em que opera não têm versões, por isso não se mostra quando um é adicionado ou removido.',
+                'Os países em que opera não puderam ser lidos, por isso não se mostra quando um é adicionado ou removido.',
             party_currency:
-                'As moedas em que opera não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+                'As moedas em que opera não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
             party_counterparty:
-                'As contrapartes com que pode negociar não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+                'As contrapartes com que pode negociar não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
             account_party:
-                'As partes em que uma pessoa trabalha não têm versões, por isso não se mostra quando entra ou sai de uma.',
+                'As partes em que uma pessoa trabalha não puderam ser lidas, por isso não se mostra quando entra ou sai de uma.',
             account_role:
                 'Um papel que foi retirado não se mostra, apenas os papéis detidos agora.',
             auth_event:
@@ -3579,6 +3593,9 @@ const pt: SourceCatalogue = {
                 identifier: 'Identificador',
                 contact: 'Contacto',
                 unit: 'Unidade de negócio',
+                country: 'País',
+                currency: 'Moeda',
+                counterparty: 'Contraparte',
             },
         },
     },

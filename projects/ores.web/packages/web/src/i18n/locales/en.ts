@@ -692,6 +692,8 @@ export const en: SourceCatalogue = {
         failed: 'Sign in failed.',
         chooseParty: 'Choose a party',
         choosePartyHint: 'This account works in more than one party.',
+        partyTimedOut: 'Your sign-in timed out because you did not choose a party in time. Sign in again.',
+        sessionEnded: 'Your session has ended, so you have been signed out. Sign in again to continue.',
         partyCategory: 'Category',
     },
 
@@ -1655,7 +1657,15 @@ export const en: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Usage by tenant', party: 'Usage by party' },
-                note: 'A share is the group’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                note: {
+                    tenant: 'Each tenant is read inside the tenant, because no one tenant’s work is visible from another. A share is the tenant’s results as a fraction of the results that could be read. Succeeded and failed count the last 24 hours.',
+                    party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                },
+                unavailable: 'Could not be read',
+                age: {
+                    caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
+                    over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
+                },
                 empty: 'No work has run on the grid yet.',
                 unassigned: 'No party',
                 columns: {
@@ -1666,6 +1676,7 @@ export const en: SourceCatalogue = {
                     results: 'Results',
                     inProgress: 'Running',
                     unsent: 'Waiting',
+                    oldest: 'Oldest wait',
                     done: 'Finished',
                     succeeded: 'Succeeded',
                     failed: 'Failed',
@@ -1739,7 +1750,6 @@ export const en: SourceCatalogue = {
                 load: {
                     title: 'Load',
                     caption: 'Work in flight by result state',
-                    inactive: 'Inactive',
                     unsent: 'Unsent',
                     inProgress: 'In progress',
                 },
@@ -2268,6 +2278,9 @@ export const en: SourceCatalogue = {
         current: 'Current version',
         field: 'Field',
         noChanges: 'No changes',
+        batch: {
+            entries: '{count} entries',
+        },
         kind: {
             raised: 'Created',
             changed: 'Changed',
@@ -2275,6 +2288,7 @@ export const en: SourceCatalogue = {
             told: 'Told',
             decided: 'Answered',
             granted: 'Granted',
+            closed: 'Closed',
             signed_in: 'Signed in',
             sign_in_failed: 'Sign-in refused',
             signed_out: 'Signed out',
@@ -2286,13 +2300,13 @@ export const en: SourceCatalogue = {
         gaps: 'What this history cannot show',
         gapFor: {
             party_country:
-                'The countries it works in keep no versions, so adding or removing one is not shown.',
+                'The countries it works in could not be read, so adding or removing one is not shown.',
             party_currency:
-                'The currencies it works in keep no versions, so adding or removing one is not shown.',
+                'The currencies it works in could not be read, so adding or removing one is not shown.',
             party_counterparty:
-                'The counterparties it may trade with keep no versions, so adding or removing one is not shown.',
+                'The counterparties it may trade with could not be read, so adding or removing one is not shown.',
             account_party:
-                'The parties a person works in keep no versions, so joining or leaving one is not shown.',
+                'The parties a person works in could not be read, so joining or leaving one is not shown.',
             account_role: 'A role that was taken away is not shown, only the roles held now.',
             auth_event: 'Only the most recent sign-ins are kept, so older ones are not shown.',
             unread: 'Part of this history could not be read, so it is not shown.',
@@ -3552,6 +3566,9 @@ export const en: SourceCatalogue = {
                 identifier: 'Identifier',
                 contact: 'Contact',
                 unit: 'Business unit',
+                country: 'Country',
+                currency: 'Currency',
+                counterparty: 'Counterparty',
             },
         },
     },

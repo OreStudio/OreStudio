@@ -8,12 +8,12 @@
 #+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-whole-history-of-a-party
-#+pr:
+#+pr: 3163
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3163][#3163]] | [codegen] Give link tables a history, and draw it in the party and person timelines |
 
 * Review
 
@@ -84,3 +84,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A junction that states =:history: true= now generates its history, and the party and person timelines draw it.
+
+What changed:
+
+- Codegen: a junction model states =:history: true= (and, when the reads of its rows are guarded by another code, =:history_read_permission:=). It then gets a repository read =read_all_by_<parent>= of every version of every link of one parent, closed links included, a field mapper, and a history provider registrar. The parent is the side a list is read by. The row is a =<junction>_history_row= that holds the link, the actor and the time, and =closed_at=.
+- =ores.database= has =validity_end(valid_to)=, which answers the instant a row stopped being valid and nothing for a current row. =ores.platform= has =datetime::from_utc_format=. The ORE log parser and the test database manager now use the platform helpers, and no code outside the platform parses or formats a =std::tm= for these needs.
+- The party country, currency and counterparty links, and the account party link, state the flag. The providers are wired into the refdata and IAM registrars.
+- The timelines: the party timeline reads each kind of link by the party and the person timeline reads the party links by the account. Each link is a record of its own, its opening is "Created", a change is "Changed", and its closing is "Closed" with the time and no author. A counterparty or a party is said by name. The five gap notes that said the links keep no versions are gone, and a gap is stated only when a kind could not be read.
+
+Evidence:
+
+- Codegen: 1,382 tests pass, 8 of them new for the junction history.
+- C++: =ores.platform=, =ores.database=, =ores.ore.core=, =ores.testing=, =ores.refdata.core= and =ores.iam.core= pass. The refdata tests include a closed link, a link of another party, and the provider called through the dispatcher with each link numbered on its own.
+- Web: every workspace suite passes (1,199 tests in the web package).
+- Against a recreated database with Acme provisioned, the timeline of Acme Corporation Plc holds 27 currency, 9 country and 8 counterparty links, named, and the person timeline of =tenant_admin= holds its 5 party links. Confirmed in the browser by the product owner.
+
+Not done:
+
+- A closing has no author, because the delete rule records when a link ended and not who ended it. An end-version row would record it, and it changes every table.
+- No junction has a change event or a notify trigger, so a screen that watches links does not hear a change.
+- A party's history opened from a session that cannot see its parts shows no link entries and no gap note. That is the party-scoped rule, and it was already so for identifiers.
+- The 17 other junctions state no history. Each needs the flag and the registrar lines.

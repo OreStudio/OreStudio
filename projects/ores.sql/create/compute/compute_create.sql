@@ -43,4 +43,5 @@
 \ir ./compute_workflow_batch_links_create.sql
 \ir ./compute_grid_samples_create.sql
 \ir ./compute_node_samples_create.sql
+\ir ./compute_work_ledger_create.sql
 \ir ./compute_grid_stats_fn_create.sql

@@ -23,7 +23,7 @@ actor Operator
 participant "ores.shell" as shell
 participant "compute service" as svc
 database PostgreSQL as db
-participant "NATS\nJetStream" as js
+participant "NATS" as nats
 participant "wrapper node\n(x64-linux)" as node
 participant "ORE engine" as engine
 participant "ores.storage" as store
@@ -45,11 +45,15 @@ loop for each job (15)
     shell -> svc : save workunit (shared input bundle)
     svc -> db : insert workunit (no canonical result)
     svc -> db : insert result (Unsent)
-    svc -> js : publish assignment\ncompute.v1.ops.work_assignment.{tenant}.{platform}\n(result, workunit, package_uri, sha256,\ninput_uri, output_uri)
+    svc -> db : queue the result in the work ledger
 end
+svc -> nats : work_available notice
 svc -> db : batch status dispatched
 
-js -> node : deliver assignment (queue group\nores.compute.wrapper.{platform})
+nats -> node : work_available (plain notice)
+node -> svc : claim_work (host_id, platform)
+svc -> db : claim one ledger entry under a lease;\nresult InProgress; mint storage token
+svc --> node : assignment (result, workunit, package_uri, sha256,\ninput_uri, output_uri, storage_token)
 alt package not cached
     node -> store : GET package_uri
     store --> node : archive

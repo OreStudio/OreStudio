@@ -54,6 +54,7 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 
 const ok = { outcome: 'ok', code: '', message: '' };
 
+/** A canned reply, or a function of the request when one subject answers by entity type. */
 function buildTestServer(replies: Readonly<Record<string, unknown>>): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
@@ -71,7 +72,8 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
             if (!(subject in replies)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
-            return schema.parse(replies[subject]);
+            const reply = replies[subject];
+            return schema.parse(typeof reply === 'function' ? reply(body) : reply);
         },
         async close(): Promise<void> {
             return undefined;
@@ -812,29 +814,33 @@ describe('a party write', () => {
 });
 
 describe('GET /api/timeline for a party', () => {
-    it('reads the party and answers its story with the junctions stated as gaps', async () => {
+    it('reads the party and answers its story, with the links it holds read by the party', async () => {
         const { server, sessionId } = buildTestServer({
             'refdata.v1.parties.list': {
                 result: ok,
                 parties: [{ version: 2, id: PARTY_ID, short_code: 'ACME_UK' }],
                 total: 1,
             },
-            'refdata.v1.history.get': {
+            // The party's own versions, and no link of any kind.
+            'refdata.v1.history.get': (body: { entity_type?: string }) => ({
                 success: true,
                 message: '',
-                versions: [
-                    {
-                        version: 1,
-                        modified_by: 'priya',
-                        recorded_at: '2026-10-04 10:00:00Z',
-                        fields: [
-                            { name: 'ID', value: PARTY_ID },
-                            { name: 'Short Code', value: 'ACME_UK' },
-                        ],
-                        changes: { entries: [] },
-                    },
-                ],
-            },
+                versions:
+                    body.entity_type === 'ores.refdata.party'
+                        ? [
+                              {
+                                  version: 1,
+                                  modified_by: 'priya',
+                                  recorded_at: '2026-10-04 10:00:00Z',
+                                  fields: [
+                                      { name: 'ID', value: PARTY_ID },
+                                      { name: 'Short Code', value: 'ACME_UK' },
+                                  ],
+                                  changes: { entries: [] },
+                              },
+                          ]
+                        : [],
+            }),
             'refdata.v1.party_identifiers.list_by_party_id': { result: ok, party_identifiers: [] },
             'refdata.v1.party_contact_informations.list_by_party_id': {
                 result: ok,
@@ -854,6 +860,7 @@ describe('GET /api/timeline for a party', () => {
             gaps: { entity: string }[];
         };
         expect(story.events.map((event) => event.kind)).toEqual(['raised']);
-        expect(story.gaps.map((gap) => gap.entity)).toContain('ores.refdata.party_country');
+        // A link read that worked states no gap, even when the party holds none.
+        expect(story.gaps).toEqual([]);
     });
 });

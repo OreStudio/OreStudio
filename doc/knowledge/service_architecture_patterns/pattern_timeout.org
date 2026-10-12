@@ -85,6 +85,7 @@ Requests default to 30 seconds in =ores.nats/service/timeouts.hpp=. Steps read t
 
 - [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — every step states a deadline, and the engine fails a silent step.
 - [[id:C71A0118-63B5-4150-9C9F-007C690CBF11][Waiting, deadlines and cancellation]] — the budget belongs to the operation's definition, and expiry is a failure.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] — the lease limits how long a node may hold a job in silence.
 
 * Related patterns
 

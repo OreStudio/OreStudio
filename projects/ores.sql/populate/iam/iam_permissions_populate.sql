@@ -1150,6 +1150,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_instruments:read',                    'View credit instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_instruments:write',                   'Create and modify credit instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_instruments:delete',                  'Delete credit instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_basket_constituents:read',            'View credit basket constituents');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_basket_constituents:write',           'Create and modify credit basket constituents');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_basket_constituents:delete',          'Delete credit basket constituents');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_accumulator_instruments:read',        'View equity accumulator instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_accumulator_instruments:write',       'Create and modify equity accumulator instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_accumulator_instruments:delete',      'Delete equity accumulator instruments');

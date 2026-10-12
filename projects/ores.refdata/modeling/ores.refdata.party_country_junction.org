@@ -25,6 +25,7 @@ party-level visibility.
 * Flags
 :PROPERTIES:
 :profile: tenant-scoped-junction
+:history: true
 :END:
 
 * Left

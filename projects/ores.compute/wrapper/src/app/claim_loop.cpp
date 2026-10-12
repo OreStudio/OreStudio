@@ -134,7 +134,12 @@ void claim_loop::run() {
                     BOOST_LOG_SEV(lg(), error)
                         << "The job " << job.result_id << " ended with an error: " << e.what();
                 }
-                // The node is free again: ask at once, as more work may wait.
+                // The node is free again and asks at once, so a notice that came during the job
+                // is already answered. Clear it, or the next empty ask would return early.
+                {
+                    std::lock_guard<std::mutex> lock(mutex_);
+                    rung_ = false;
+                }
                 continue;
             }
             wait_for(pacing::poll_delay(poll_interval_, unit_random()));

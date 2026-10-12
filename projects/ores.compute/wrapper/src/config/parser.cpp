@@ -81,7 +81,7 @@ options_description make_options_description() {
         "Seconds between heartbeat messages while a job runs")(
         claim_poll_arg.c_str(),
         value<std::uint32_t>()->default_value(5),
-        "Seconds between requests for work while idle and hearing no notice")(
+        "Seconds between requests for work while idle and hearing no notice (minimum 1)")(
         telemetry_interval_arg.c_str(),
         value<std::uint32_t>()->default_value(30),
         "Seconds between telemetry node-sample publishes (0 = disabled)")(

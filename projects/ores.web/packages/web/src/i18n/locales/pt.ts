@@ -1310,9 +1310,10 @@ const pt: SourceCatalogue = {
     },
 
     oresmd: {
-        open: 'Abrir no editor',
         close: 'Fechar',
         assetClass: 'Classe de ativos',
+        edit: 'Editar',
+        inspect: 'Inspecionar',
         title: 'URL oresmd',
         cancel: 'Cancelar',
         copy: 'Copiar',

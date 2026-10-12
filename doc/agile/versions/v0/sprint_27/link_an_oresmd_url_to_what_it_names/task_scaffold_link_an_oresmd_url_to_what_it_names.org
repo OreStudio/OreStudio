@@ -8,7 +8,7 @@
 #+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
 #+owner: marco
 #+branch: feature/link-an-oresmd-url-to-what-it-names
-#+pr:
+#+pr: 3180
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3180][#3180]] | [agile] Scaffold story: Link an oresmd URL to what it names |
 
 * Review
 

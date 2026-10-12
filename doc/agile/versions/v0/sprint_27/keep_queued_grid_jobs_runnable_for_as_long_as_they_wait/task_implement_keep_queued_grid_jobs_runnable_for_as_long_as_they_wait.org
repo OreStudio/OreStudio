@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/close-the-queued-grid-jobs-story
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A job that waits in the grid queue for any length of time still runs when a node
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -42,9 +42,14 @@ A job that waits in the grid queue for any length of time still runs when a node
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The six tasks of the story did the work. This task records that each acceptance point holds and closes the story.
+
+| Acceptance point | Where it holds |
+|------------------+----------------|
+| A job that waited longer than the token lifetime runs | The claim mints the storage token when a node takes the job, so the token is fresh. A node also skips an assignment whose token has ended. |
+| The queue has a bound and a rule for a job past it | 3600 waiting jobs for each tenant, checked at dispatch. A job that loses its lease three times ends as no reply with a message. |
+| A person sees the oldest wait and the count | The Usage tab shows the waiting count and the oldest wait for each tenant (operator) or party (tenant administrator), and warns from the age. |
+| A restart or a recreate leaves no failing assignments | No assignment exists. The queue is a table, and the claim reads it. The stream is not created. |
 
 * Measurements
 
@@ -86,3 +91,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story is complete. A job now waits in a table, a free node claims it and gets a fresh storage token, a lost node loses its lease and the job goes back, and a person sees how long the oldest job has waited. Remaining follow-ups are in the inbox: the stale-host reaper and its scheduled job, and a table that is generated for an installation-owned current state.

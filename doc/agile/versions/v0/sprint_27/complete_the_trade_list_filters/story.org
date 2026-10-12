@@ -21,11 +21,11 @@ A person finds a trade by its identifier, state, book, date, counterparty, trade
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | STARTED                                |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The scaffold PR is in review.          |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Settle the open decisions, then spike the enum filter. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -80,15 +80,15 @@ Recommendation: C. The cost is a new entity: a registry entry, a permission and 
 
 ** Identifier search
 
-A trade has several identifiers (UTI, USI, internal, ORE). The summary carries them as one aggregated, searchable text column. A search then matches any scheme, ignoring case and literally, as the trade type search does.
+A trade has several identifiers (UTI, USI, internal, ORE). The summary carries them as one aggregated, searchable text column. A search then matches any scheme, ignoring case and literally, as the trade type search does. The view builds the column at query time, and no index supports a case-insensitive literal scan over it. The summary task measures a large list and decides whether a trigram index is needed.
 
 ** Enum filters
 
-The generator takes a filter member's type from the column's C++ type, so an enum column gets an enum-typed member. The repository binding and the TypeScript type are unproven. The spike proves both with =counterparty_scope=. An enum member also rejects invalid values at decode, which a text member would not.
+The generator takes a filter member's type from the column's C++ type, so an enum column gets an enum-typed member. The repository binding and the TypeScript type are unproven. The spike proves both with =counterparty_scope=. An enum member also rejects invalid values at decode, which a text member would not. The spike checks that the error is the one other invalid filters give.
 
 ** Date filters
 
-Equals on a date is useless, and the filter record has no range member. The proposal is =<column>_from= and =<column>_to=, inclusive, on date and timestamp columns that declare =:filterable: true=. This is a specification change, then a generator change, then the TypeScript twin.
+Equals on a date is useless, and the filter record has no range member. The proposal is =<column>_from= and =<column>_to=, inclusive, on date and timestamp columns that declare =:filterable: true=. A =_to= on a date column includes the whole day. On a timestamp column a =_to= given as a date means the end of that day. This is a specification change, then a generator change, then the TypeScript twin.
 
 * Decisions
 
@@ -96,7 +96,8 @@ Open, to settle before the tasks that depend on them:
 
 - Option C (=trade_summary=) against option B (cross-entity filter members). Recommended: C. The spike and the summary task depend on it.
 - The range member for dates. Recommended: =_from= and =_to=, inclusive. The range task depends on it.
-- The limit of 1000 books for a portfolio subtree. Accepted unless it proves too low.
+- The limit of 1000 books for a portfolio subtree. Above it the client refuses the scope and says why. It never truncates, because a truncated filter returns a wrong total.
+- The instant of the trade summary. One read states one =as_of=, and the view takes the state and the booking that were current at that instant, so they never come from different instants.
 
 * Order of work
 

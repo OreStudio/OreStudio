@@ -2,7 +2,7 @@
 :ID: 3BAE1673-D95B-4ED0-9AAC-1D00149B5D25
 :END:
 #+title: Task: Spike the enum filter and the by-trade read
-#+description: Initial task for: Complete the trade list's filters
+#+description: The spike for the story: the enum filter, the by-trade read and the view question.
 #+type: task
 #+level: s1
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person finds a trade by its identifier, state, book, date, counterparty, trade type or enum column from one list, and a trade page reads each child table by trade id. Every read is an ordinary entity read: a filter record, a scoped read, a total and a page.
+Prove two things the later tasks rely on: an enum filter member, and a by-trade read on a column that is also a primary key. The spike also answers how =as_of= works across the tables of a view.
 
 * Status
 
@@ -35,12 +35,10 @@ A person finds a trade by its identifier, state, book, date, counterparty, trade
 
 * Acceptance
 
-- A spike proves an enum filter member and a by-trade read on a key column, each with a repository test.
-- Each child table of a trade has a list_by_trade_id read.
-- A read-only trade summary entity lists trades with their current state and booking, and filters by state, book and counterparty.
-- The trade summary searches every identifier of a trade, ignoring case and literally.
-- The filter record has inclusive from and to members for date and timestamp columns, and the trade summary filters by trade date.
-- The entity protocol specification, the review journey and the backlog capture state what exists.
+- An enum column (=counterparty_scope=) declares =:filterable: true=, and the generated member, repository condition and TypeScript type work, with a repository test.
+- An invalid enum value gives the same error as other invalid filters.
+- A child model declares =:list_by: true= on =trade_id=, and the generated =list_by_trade_id= read works, with a repository test.
+- The result states whether the generator supports a view-backed read-only entity, and which instant a view over versioned tables answers.
 
 * Plan
 

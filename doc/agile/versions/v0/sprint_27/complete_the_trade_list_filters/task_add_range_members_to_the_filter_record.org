@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/complete-the-trade-list-filters
 #+pr:
-#+blocked_on:
+#+blocked_on: The decision on the range members.
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
@@ -35,6 +35,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
+- A =_to= given as a date on a timestamp column means the end of that day.
 - The entity protocol specification defines the from and to members.
 - The generator emits them for date and timestamp columns, and the TypeScript twin carries them.
 - The trade summary filters by trade date, and a repository test covers both bounds.

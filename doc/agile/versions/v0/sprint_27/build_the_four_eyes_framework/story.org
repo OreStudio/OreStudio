@@ -46,7 +46,7 @@ A gated write cannot take effect until every function the policy names has appro
 | [[id:5A29D64E-B073-4596-8A2C-30396FE2E798][Gate the refdata writes behind the policy]] | DONE | 2026-10-12 | 2026-10-12 | Make the generated and hand-written refdata writers refuse a gated act with approval_required, so only an approved request can make it. |
 | [[id:BAA9EA78-C57E-4539-875D-59D0FE65B6F2][Draw every request with one set of screens]] | DONE | 2026-10-12 | 2026-10-12 | Replace the role-only request pages with a review panel, a request page, a queue and a story that draw any kind through a kind descriptor. |
 | [[id:AB2D51E5-C6D0-4B17-B36B-2F6FFC2738A5][Move the book structure screen onto the review panel]] | DONE | 2026-10-12 | 2026-10-12 | Make the book structure screen raise a request for a gated change instead of writing it. |
-| [[id:77613BC7-0180-47E6-8F3D-0BCF447F6818][Move the counterparty screen onto the review panel]] | BACKLOG | | | Make the counterparty onboarding screen raise a request for a gated change instead of writing it. |
+| [[id:77613BC7-0180-47E6-8F3D-0BCF447F6818][Move the counterparty screen onto the review panel]] | BACKLOG | | | Build the counterparty as a record screen like the parties screen, where a gated change raises a request and a contact change is written directly. |
 | [[id:0705EF62-7930-4B2C-B003-E578AF0D0A16][Move the party details screen onto the review panel]] | BACKLOG | | | Make the party details screen raise a request for a gated change instead of writing it. |
 | [[id:40014A64-C176-46E6-B39F-EBA92DDC7967][Move the convention screen onto the review panel]] | BACKLOG | | | Make the instrument convention screen raise a request for every write. |
 | [[id:BE57136B-9C17-4FCB-A4EB-05AA840B11F2][Move the tenor resolution screen onto the review panel]] | BACKLOG | | | Make the tenor resolution screen raise a request for every write. |
@@ -60,6 +60,10 @@ A gated write cannot take effect until every function the policy names has appro
 | [[id:5D566A4D-343D-4D0F-BCA0-C8B0025387FC][Run the engine and the inbox service as their own database users]] | DONE | 2026-10-11 | 2026-10-11 | Prove with tests that the workflow engine and the inbox service hold the database rights the apply workflow needs, by signing in as each of their users. |
 | [[id:DD150215-C89B-4DD7-9822-269ED4773F33][Raise requests from the ORE import for gated books]] | BACKLOG | | | Make the ORE import raise approval requests for the books it creates, because the gate now refuses a direct book write. |
 | [[id:4F731BF8-D63D-428E-849D-ED0D263E0873][Serve a request's parts, changes and checks to the web]] | DONE | 2026-10-12 | 2026-10-12 | Let the BFF answer a request's parts with who answered, its proposed changes as field deltas, its checks, a preview and a raise of book changes, and a decision that names its part. |
+| [[id:A3F75AC1-7ABC-47A2-8CC6-3F75C5998C78][Prototype the counterparty entity screen]] | DONE | 2026-10-12 | 2026-10-12 | Draw the counterparty as an entity screen like the parties screen, with its identifiers, contacts and links, where a gated change raises a request and a contact change is written directly, before the product screen is built. |
+| [[id:A2F9C3A9-63A8-4E49-AD3A-D709A635DA2F][Generate the pending change for the counterparty]] | BACKLOG | | | Mark the counterparty, its identifier and its party link gated, and generate the typed pending change of each, as the book has. |
+| [[id:7C965B73-1358-43C6-B6EB-D6B30415DE08][Raise, preview and apply counterparty changes]] | BACKLOG | | | Offer the counterparty preview and raise as operations, and apply an approved request as a workflow, as the book does. |
+| [[id:1D795DBF-FD05-4E48-A693-25DE97104E1F][Gate the counterparty writes behind the policy]] | BACKLOG | | | Make the counterparty, identifier and party link writes refuse a gated act with approval_required unless an approved request carries it out. |
 
 * Decisions
 

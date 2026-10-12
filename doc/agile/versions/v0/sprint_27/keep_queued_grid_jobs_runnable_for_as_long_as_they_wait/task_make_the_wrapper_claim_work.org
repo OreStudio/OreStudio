@@ -8,7 +8,7 @@
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
 #+owner: marco
 #+branch: feature/make-the-wrapper-claim-work
-#+pr:
+#+pr: 3199
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3199][#3199]] | [compute] Make the wrapper claim its work |
 
 * Review
 

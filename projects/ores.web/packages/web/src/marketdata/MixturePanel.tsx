@@ -24,6 +24,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { EditingModeToggle, useEditingMode } from '../ui/EditingMode.js';
+import { toast } from '../ui/Toasts.js';
 import { Button, Field, Input, Notice, Select, Tag, cx } from '../ui/Primitives.js';
 import { NEW_RECORD_REASON, show, useRecordPermissions, useRecords } from '../refdata/records.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
@@ -165,11 +166,6 @@ function MixtureEditor({
     const savedPrice = Number(feed['gmm_initial_price']);
     const fixedPrice = feed['price_source'] === 'fixed' && savedPrice > 0;
     const [previewPrice, setPreviewPrice] = useState(savedPrice > 0 ? String(savedPrice) : '1');
-    const [converted, setConverted] = useState<{
-        readonly from: ProcessType;
-        readonly to: ProcessType;
-        readonly price: number;
-    } | null>(null);
     const conversion = useMutation({
         mutationFn: async (to: ProcessType) => {
             const numbers = gaussiansOf(draft);
@@ -197,13 +193,21 @@ function MixtureEditor({
                     weight: typed(out.gmm_weights[index]),
                 })),
             );
-            setConverted({ from: engine, to, price });
+            toast(
+                `${t('marketdata.mixture.converted', {
+                    from: t(`refdata.choices.process_type.${engine}`),
+                    to: t(`refdata.choices.process_type.${to}`),
+                    price: String(price),
+                })}${fixedPrice ? '' : ` ${t('marketdata.mixture.convertedAtPreview')}`}`,
+            );
+            if (to === 'arithmetic') {
+                toast(t('marketdata.process.about.arithmetic'), 'warn');
+            }
             setEngine(to);
         },
     });
     const [mode, setMode] = useEditingMode();
     const [refusal, setRefusal] = useState('');
-    const [explained, setExplained] = useState('');
     const ticksPerHour = Number(feed['ticks_per_hour']);
     const price = fixedPrice ? savedPrice : Number(previewPrice);
     const plan = savePlan(feedId, saved, draft);
@@ -260,9 +264,9 @@ function MixtureEditor({
             );
             setDraft(next);
             setRefusal('');
-            setExplained(
-                explain
-                    ? ou
+            if (explain) {
+                toast(
+                    ou
                         ? t('marketdata.fxSimple.switched.reverting', {
                               removed: String(draft.length - next.length),
                           })
@@ -270,9 +274,9 @@ function MixtureEditor({
                               from: String(draft.length),
                               to: String(next.length),
                               jump: String(Number(nextView.jump_share_pct.toPrecision(3))),
-                          })
-                    : '',
-            );
+                          }),
+                );
+            }
         } catch (error) {
             setRefusal(error instanceof Error ? error.message : String(error));
         }
@@ -343,6 +347,11 @@ function MixtureEditor({
                     )}
                     <div className="ml-auto flex flex-wrap items-center gap-2">
                         <EditingModeToggle mode={mode} onChange={setMode} />
+                        {engine === 'arithmetic' && (
+                            <span title={t('marketdata.process.about.arithmetic')}>
+                                <Tag tone="warn">{t('marketdata.process.belowZero')}</Tag>
+                            </span>
+                        )}
                         <label className="flex items-center gap-2 text-sm">
                             <span className="text-ink-muted">
                                 {t('refdata.fields.process_type')}
@@ -388,8 +397,6 @@ function MixtureEditor({
                                 onClick={() => {
                                     setDraft(saved);
                                     setEngine(savedEngine);
-                                    setConverted(null);
-                                    setExplained('');
                                 }}
                             >
                                 {t('marketdata.mixture.discard')}
@@ -406,18 +413,7 @@ function MixtureEditor({
                     )}
                 </div>
                 {conversion.isError && <Notice tone="error">{conversion.error.message}</Notice>}
-                {converted !== null && engineChanged && (
-                    <Notice tone="info">
-                        {t('marketdata.mixture.converted', {
-                            from: t(`refdata.choices.process_type.${converted.from}`),
-                            to: t(`refdata.choices.process_type.${converted.to}`),
-                            price: String(converted.price),
-                        })}
-                        {!fixedPrice && ` ${t('marketdata.mixture.convertedAtPreview')}`}
-                    </Notice>
-                )}
                 {refusal !== '' && <Notice tone="warn">{refusal}</Notice>}
-                {explained !== '' && mode === 'simple' && <Notice tone="info">{explained}</Notice>}
                 {panelView !== undefined && draft.length === 0 && (
                     <p className="text-sm text-ink-muted">{t('marketdata.mixture.none')}</p>
                 )}
@@ -905,9 +901,6 @@ function Preview({
                     </p>
                 </div>
             </div>
-            {processType === 'arithmetic' && (
-                <Notice tone="warn">{t(`marketdata.process.about.${processType}`)}</Notice>
-            )}
         </section>
     );
 }

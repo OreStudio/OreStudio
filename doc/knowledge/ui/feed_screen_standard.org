@@ -264,6 +264,16 @@ is the process tab above with the parts that follow from that.
   κ, the rate behind θ and the initial rate, and the yearly move behind σ. The
   server works these out, so the screen does no model arithmetic.
 
+*** Notices and toasts
+
+News of an action does not take a place in the page. A conversion that changed the
+person's numbers, such as a change of engine or a switch to Simple, shows as a toast in
+the bottom right corner (=ui/Toasts.tsx=). It has a close button. Information leaves
+by itself after ten seconds, and a warning stays until the person closes it. A fact
+that stays true, such as an engine that can take a price below zero, is also marked
+where it applies: a /Can go below zero/ tag beside the engine, with the full
+explanation as its tooltip. A closed toast is not lost, because the tag remains.
+
 *** Simple and Advanced
 
 A process tab offers two ways to edit the same numbers. *Advanced* is the table

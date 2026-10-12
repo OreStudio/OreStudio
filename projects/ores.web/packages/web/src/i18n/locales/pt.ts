@@ -3602,6 +3602,7 @@ const pt: SourceCatalogue = {
             title: '{pair} — trajetória de preço sintética',
         },
         process: {
+            belowZero: 'Pode ficar abaixo de zero',
             about: {
                 geometric:
                     'Geométrico: cada atualização tira um retorno logarítmico da mistura, por isso o preço fica positivo. μ é a tendência e σ a volatilidade do retorno logarítmico por atualização.',
@@ -3813,6 +3814,9 @@ const pt: SourceCatalogue = {
         askReason: 'Preciso de abrir {screen}.',
     },
 
+    toast: {
+        close: 'Fechar',
+    },
     editingMode: {
         bps: 'pb',
         number: 'Introduza um número.',

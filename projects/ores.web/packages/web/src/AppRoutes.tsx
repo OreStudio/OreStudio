@@ -33,6 +33,7 @@ import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { ErrorBanner } from './components/ErrorBanner.js';
+import { ToastViewport } from './ui/Toasts.js';
 import { setupAnswerStep } from './session/setupAnswer.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
@@ -1108,6 +1109,7 @@ export function ConnectedApp(): ReactNode {
              * said on the page beside the screen that stands in for it.
              */}
             <ErrorBanner />
+            <ToastViewport />
             <ErrorBoundary title={t('journey.failedHeading')} hint={t('journey.reloadHint')}>
                 <AppRoutes
                     gate={gate}

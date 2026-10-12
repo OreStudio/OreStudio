@@ -25,6 +25,7 @@ import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { show, useRecords } from '../refdata/records.js';
 import { EditingModeToggle, useEditingMode } from '../ui/EditingMode.js';
+import { toast } from '../ui/Toasts.js';
 import { Button, Dialog, Field, Input, Notice, Select, Tag, cx } from '../ui/Primitives.js';
 import {
     parameterLines,
@@ -98,7 +99,6 @@ export function IrProcessPanel({
     const [saving, setSaving] = useState(false);
     const [mode, setMode] = useEditingMode();
     const [refusal, setRefusal] = useState('');
-    const [explained, setExplained] = useState('');
     const lines = parameterLines(definitions.data ?? NO_ROWS, saved, engine);
     const valueOf = (line: ParameterLine): string =>
         typed[show(line.definition['id'])] ?? line.value;
@@ -130,7 +130,9 @@ export function IrProcessPanel({
             });
             setTyped((current) => ({ ...current, ...typedFrom(lines, out.values) }));
             setRefusal('');
-            setExplained(explain);
+            if (explain !== '') {
+                toast(explain);
+            }
         } catch (error) {
             setRefusal(error instanceof Error ? error.message : String(error));
         }
@@ -200,7 +202,6 @@ export function IrProcessPanel({
                                 onClick={() => {
                                     setEngine(savedEngine);
                                     setTyped({});
-                                    setExplained('');
                                 }}
                             >
                                 {t('marketdata.irProcess.discard')}
@@ -216,21 +217,12 @@ export function IrProcessPanel({
                         </div>
                     )}
                 </div>
-                {engineChanged && (
-                    <Notice tone="info">
-                        {t('marketdata.irProcess.engineChanged', {
-                            from: engineName(t, savedEngine),
-                            to: engineName(t, engine),
-                        })}
-                    </Notice>
-                )}
                 {mode === 'simple' && (
                     <p className="text-xs text-ink-faint">
                         {t(`marketdata.irSimple.engineHint.${engine}`)}
                     </p>
                 )}
                 {refusal !== '' && <Notice tone="warn">{refusal}</Notice>}
-                {explained !== '' && mode === 'simple' && <Notice tone="info">{explained}</Notice>}
                 {mode === 'simple' && reading.view === undefined && reading.reason !== '' && (
                     <Notice tone="info">
                         {t('marketdata.irSimple.byHand', { reason: reading.reason })}

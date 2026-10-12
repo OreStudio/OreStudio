@@ -3571,6 +3571,7 @@ export const en: SourceCatalogue = {
             title: '{pair} synthetic price path',
         },
         process: {
+            belowZero: 'Can go below zero',
             about: {
                 geometric:
                     'Geometric: each update draws a log-return from the mixture, so the price stays positive. μ is the drift and σ the volatility of the log-return per update.',
@@ -3779,6 +3780,9 @@ export const en: SourceCatalogue = {
         askReason: 'I need to open {screen}.',
     },
 
+    toast: {
+        close: 'Close',
+    },
     editingMode: {
         bps: 'bps',
         number: 'Enter a number.',

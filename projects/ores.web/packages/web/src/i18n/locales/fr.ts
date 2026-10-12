@@ -3630,6 +3630,7 @@ const fr: SourceCatalogue = {
             title: '{pair} — trajectoire de prix synthétique',
         },
         process: {
+            belowZero: 'Peut passer sous zéro',
             about: {
                 geometric:
                     'Géométrique : chaque mise à jour tire un rendement logarithmique du mélange, donc le prix reste positif. μ est la dérive et σ la volatilité du rendement logarithmique par mise à jour.',
@@ -3841,6 +3842,9 @@ const fr: SourceCatalogue = {
         askReason: 'J’ai besoin d’ouvrir {screen}.',
     },
 
+    toast: {
+        close: 'Fermer',
+    },
     editingMode: {
         bps: 'pb',
         number: 'Saisissez un nombre.',

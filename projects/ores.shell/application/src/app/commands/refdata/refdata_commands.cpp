@@ -6,9 +6,6 @@
 #include "ores.shell/app/commands/refdata/bond_future_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/bond_yield_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_change_commands.hpp"
-#include "ores.shell/app/commands/refdata/counterparty_change_commands.hpp"
-#include "ores.shell/app/commands/refdata/counterparty_identifier_change_commands.hpp"
-#include "ores.shell/app/commands/refdata/party_counterparty_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_status_commands.hpp"
@@ -35,8 +32,10 @@
 #include "ores.shell/app/commands/refdata/commodity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/contact_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_business_centre_commands.hpp"
+#include "ores.shell/app/commands/refdata/counterparty_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_contact_information_commands.hpp"
+#include "ores.shell/app/commands/refdata/counterparty_identifier_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_identifier_commands.hpp"
 #include "ores.shell/app/commands/refdata/country_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_driver_pair_commands.hpp"
@@ -107,6 +106,7 @@
 #include "ores.shell/app/commands/refdata/overnight_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_contact_information_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_counterparty_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_counterparty_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_country_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_currency_commands.hpp"
@@ -155,9 +155,6 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     bond_yield_convention_commands::register_commands(root_menu, session);
     book_commands::register_commands(root_menu, session);
     book_change_commands::register_commands(root_menu, session);
-    counterparty_change_commands::register_commands(root_menu, session);
-    counterparty_identifier_change_commands::register_commands(root_menu, session);
-    party_counterparty_change_commands::register_commands(root_menu, session);
     book_purpose_type_commands::register_commands(root_menu, session);
     book_status_commands::register_commands(root_menu, session);
     business_centre_commands::register_commands(root_menu, session);
@@ -184,8 +181,10 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     contact_type_commands::register_commands(root_menu, session);
     counterparty_business_centre_commands::register_commands(root_menu, session);
     counterparty_commands::register_commands(root_menu, session);
+    counterparty_change_commands::register_commands(root_menu, session);
     counterparty_contact_information_commands::register_commands(root_menu, session);
     counterparty_identifier_commands::register_commands(root_menu, session);
+    counterparty_identifier_change_commands::register_commands(root_menu, session);
     country_commands::register_commands(root_menu, session);
     crm_driver_pair_commands::register_commands(root_menu, session);
     crm_enabled_derived_pair_commands::register_commands(root_menu, session);
@@ -256,6 +255,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     party_commands::register_commands(root_menu, session);
     party_contact_information_commands::register_commands(root_menu, session);
     party_counterparty_commands::register_commands(root_menu, session);
+    party_counterparty_change_commands::register_commands(root_menu, session);
     party_country_commands::register_commands(root_menu, session);
     party_currency_commands::register_commands(root_menu, session);
     party_id_scheme_commands::register_commands(root_menu, session);

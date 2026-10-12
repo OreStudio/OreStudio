@@ -171,3 +171,39 @@ def test_the_pending_model_is_written_beside_a_junction_by_its_singular_name(tmp
     target = pc.write_derived(source)
     assert target == tmp_path / "ores.refdata.party_widget_change.org"
     assert target.exists()
+
+
+def test_a_junction_half_that_lacks_a_property_names_the_half_and_the_property():
+    broken = (JUNCTION % ":gated: true").replace(":cpp_type:      boost::uuids::uuid\n", "", 1)
+    try:
+        derived(broken, "party_widget.org")
+    except SystemExit as stop:
+        assert "the '* Left' half" in str(stop) and ":cpp_type:" in str(stop)
+    else:
+        raise AssertionError("a half with no cpp_type was derived")
+
+
+def test_a_junction_half_that_is_not_a_uuid_is_refused():
+    broken = (JUNCTION % ":gated: true").replace(":type:          uuid", ":type:          text", 1)
+    try:
+        derived(broken, "party_widget.org")
+    except SystemExit as stop:
+        assert "generates only a uuid half" in str(stop)
+    else:
+        raise AssertionError("a text half was derived")
+
+
+def test_a_generator_helper_the_rewrite_cannot_read_stops_the_derivation():
+    odd = (ENTITY % ":gated: true").replace("uuid_gen()", "uuid_gen(idx)")
+    try:
+        derived(odd)
+    except SystemExit as stop:
+        assert "uuid_gen" in str(stop)
+    else:
+        raise AssertionError("an unreadable generator helper passed")
+
+
+def test_the_derived_junction_is_a_read_only_uuid_identified_entity():
+    out = derived(JUNCTION % ":gated: true", "party_widget.org")
+    assert ":profile:   uuid-identified-lookup" in out
+    assert ":client_read_only: true" in out

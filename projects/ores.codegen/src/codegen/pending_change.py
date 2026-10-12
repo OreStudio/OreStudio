@@ -1,9 +1,13 @@
 """Derive the pending-change entity model of every gated entity model.
 
 An entity model marks itself gated with ``:gated: true`` in its ``* Flags``
-drawer. A model that holds its changes before it enforces the gate marks itself
-``:pending_change: true`` instead: it gets the pending change and its screens, and
-its writes stay direct until ``:gated: true`` turns the gate on. The pending change of such an entity is a table with the entity's own
+drawer.
+
+A model that holds its changes before it enforces the gate marks itself
+``:pending_change: true`` instead. It gets the pending change and its screens, and
+its writes stay direct until ``:gated: true`` turns the gate on.
+
+The pending change of such an entity is a table with the entity's own
 columns, the same foreign keys and the same lookup validation, plus the request
 it belongs to, a line number, the operation and the version the maker read. A
 line holds no part: the request holds the parts, chosen by the policy from the
@@ -30,6 +34,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 NAMESPACE = uuid.UUID("6d1f3a52-8c7b-4e0a-9b64-2f5d8a1c7e90")
+
+DERIVED_ON = "2026-10-10"
 
 # The columns every pending line adds, ahead of the entity's own columns.
 LINE_COLUMNS = """\
@@ -209,6 +215,11 @@ def derive_column(chunk):
     # A source model may name a generator helper that its own generator file defines
     # (uuid_gen), which the pending line's generator file does not have.
     chunk = re.sub(r"(?m)^uuid_gen\(\)$", "ctx.generate_uuid()", chunk)
+    if "uuid_gen" in chunk:
+        raise SystemExit(
+            f"the column {name} names the generator helper uuid_gen in a form the "
+            "derivation does not rewrite; write it as the bare call uuid_gen()"
+        )
     if name == "id":
         chunk = re.sub(r"(?m)^:primary_key:.*\n", "", chunk)
         assert chunk.startswith("** id\n"), "id column heading changed"
@@ -243,10 +254,19 @@ def derive_junction(source, text):
     by_name = {section_name(s): s for s in sections}
     for needed in ("Left", "Right"):
         if needed not in by_name:
-            raise SystemExit(f"{source}: gated junction has no '* {needed}' section")
+            raise SystemExit(f"{source}: a junction with a pending change has no '* {needed}' section")
 
     def half(section):
         props = dict(re.findall(r"(?m)^:(\w+):[ \t]+(.*)$", section))
+        side = section_name(section)
+        for key in ("column", "type", "cpp_type"):
+            if key not in props:
+                raise SystemExit(f"{source}: the '* {side}' half of the junction has no ':{key}:'")
+        if props["type"] != "uuid":
+            raise SystemExit(
+                f"{source}: the '* {side}' half is {props['type']}, and a pending line "
+                "generates only a uuid half"
+            )
         body = section.split(":END:", 1)[1].strip("\n")
         description = body.split("\n\n")[0].strip()
         return props["column"], props["type"], props["cpp_type"], description
@@ -267,8 +287,8 @@ def derive_junction(source, text):
         f"#+entity_singular: {new_singular}\n"
         f"#+entity_plural: {new_plural}\n"
         f"#+entity_title: {title} Change\n"
-        "#+created: 2026-10-12\n"
-        "#+updated: 2026-10-12\n\n"
+        f"#+created: {DERIVED_ON}\n"
+        f"#+updated: {DERIVED_ON}\n\n"
         f"Do not edit. Change ores.{component}.{singular} and run\n"
         "derive_pending_models.py.\n\n"
     )
@@ -330,8 +350,8 @@ def derive(source, text):
         f"#+entity_singular: {new_singular}\n"
         f"#+entity_plural: {new_plural}\n"
         f"#+entity_title: {new_title}\n"
-        "#+created: 2026-10-10\n"
-        "#+updated: 2026-10-10\n\n"
+        f"#+created: {DERIVED_ON}\n"
+        f"#+updated: {DERIVED_ON}\n\n"
         f"Do not edit. Change ores.{component}.{singular} and run\n"
         "derive_pending_models.py.\n\n"
     )

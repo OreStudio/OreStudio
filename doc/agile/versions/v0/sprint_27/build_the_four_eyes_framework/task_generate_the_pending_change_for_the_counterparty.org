@@ -93,7 +93,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The new docstring sentence sits inside an existing paragraph | pending_change.py | Accept | It has a paragraph of its own. |
+| 2 | Hard-coded dates in the junction path | pending_change.py | Accept | Both paths take one constant, so a regeneration cannot differ by path. The dates are fixed on purpose: a derived model is a copy and carries no date of its own. |
+| 3 | A junction half with a missing property fails with a bare key error | pending_change.py | Accept | The error names the half and the property. A test pins it. |
+| 4 | The generator is always the uuid one | pending_change.py | Accept | A half that is not a uuid is refused with words. A test pins it. |
+| 5 | The error text says gated for a pending-change junction | pending_change.py | Accept | The text now fits both flags. |
+| 6 | The helper rewrite reads only the bare call | pending_change.py | Accept | A helper in any other form stops the derivation, and says how to write it. A test pins it. |
+| 7 | is_gated also answers for the new flag | pending_change.py | Decline | generate.py asks one question, whether a model has a pending change, and the name stays. The gate task needs a second question, whether the gate is on, and adds its own helper then. |
+| 8 | The registrar includes and calls sit out of order | registrar.cpp and two more | Accept in part | Each new line sits beside its base entity. The event registrar's runs were sorted on main and are sorted again. The other files were not sorted on main, so they are not sorted here. |
+| 9 | The junction test names the shape only | test_pending_change.py | Accept | A case pins the read-only, uuid-identified profile. |
+| 10 | The env regeneration is unrelated | PR | Decline | It is not in the diff: .env is not tracked. The PR text mentions it because the database recreate could not run without it. |
 
 * Result
 

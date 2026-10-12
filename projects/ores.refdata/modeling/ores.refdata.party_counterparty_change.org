@@ -10,8 +10,8 @@
 #+entity_singular: party_counterparty_change
 #+entity_plural: party_counterparty_changes
 #+entity_title: Party Counterparty Change
-#+created: 2026-10-12
-#+updated: 2026-10-12
+#+created: 2026-10-10
+#+updated: 2026-10-10
 
 Do not edit. Change ores.refdata.party_counterparty and run
 derive_pending_models.py.

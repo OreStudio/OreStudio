@@ -57,7 +57,11 @@ feed_ingest_loop::~feed_ingest_loop() {
 }
 
 void feed_ingest_loop::start() {
-    const auto wildcard = nats_.subjects_below(domain::synthetic_tick_subject);
+    // subscribe() prefixes its subject for this environment, so the wildcard
+    // stays relative here. subjects_below() returns the prefixed form a stream
+    // filter needs, and passed to subscribe() it is prefixed twice and matches
+    // no tick.
+    const auto wildcard = std::string(domain::synthetic_tick_subject) + ".>";
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
     refresh();
     tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });

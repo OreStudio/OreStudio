@@ -37,9 +37,10 @@ namespace ores::marketdata::domain {
  * canonical ORE key.
  *
  * These name the base of each family, not a subject a producer uses and not
- * the wildcard a reader wants. ores.nats::client derives those: ask it for
- * `subjects_below(base)` to subscribe, or `covering_subjects({base})` to
- * provision the stream that holds them.
+ * the wildcard a reader wants. A subscription passes the relative wildcard,
+ * "<base>.>", because ores.nats::client::subscribe() adds the environment
+ * prefix itself. A stream filter needs the prefixed subjects:
+ * `covering_subjects({base})` provisions the stream that holds them.
  */
 inline constexpr std::string_view synthetic_tick_subject = "synthetic.v1.ops.tick";
 inline constexpr std::string_view synthetic_sandbox_tick_subject = "synthetic.v1.ops.sandbox_tick";

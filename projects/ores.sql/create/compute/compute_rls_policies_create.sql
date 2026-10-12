@@ -259,3 +259,20 @@ for select using (
     or party_id is null
     or party_id = any(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- Removed: the system tenant's read of every tenant's work
+-- An earlier version let a system-tenant session read every tenant's batches,
+-- workunits and results. A cross-tenant aggregate is a tenant's data and is read
+-- by entering the tenant, so the policies were withdrawn. The drops stay so a
+-- database that was provisioned with them loses them on the next run.
+-- -----------------------------------------------------------------------------
+
+drop policy if exists batches_system_read_policy
+    on ores_compute_batches_tbl;
+
+drop policy if exists workunits_system_read_policy
+    on ores_compute_workunits_tbl;
+
+drop policy if exists results_system_read_policy
+    on ores_compute_results_tbl;

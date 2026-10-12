@@ -68,14 +68,18 @@ const sumOf = (column: readonly number[]): number => column.reduce((sum, count) 
  * parties' names. A name is a convenience, so a failure to read one is not a
  * failure to read the usage: the group goes out unnamed and the screen shows its id.
  */
-async function usageByParty(session: LiveSession): Promise<readonly UsageRow[]> {
+async function usageByParty(
+    session: LiveSession,
+    onNamesFailure: (error: unknown) => void,
+): Promise<readonly UsageRow[]> {
     const usage = await readGridUsage(session.client);
     let names: ReadonlyMap<string, string> = new Map();
     if (usage.keys.some((key) => key !== '')) {
         try {
             const parties = await session.client.listParties();
             names = new Map(parties.map((party) => [party.id, party.full_name || party.short_code]));
-        } catch {
+        } catch (error) {
+            onNamesFailure(error);
             names = new Map();
         }
     }
@@ -108,11 +112,15 @@ async function usageByParty(session: LiveSession): Promise<readonly UsageRow[]> 
 async function usageByTenant(
     session: LiveSession,
     onFailure: (tenant: string, error: unknown) => void,
+    onTruncated: (listed: number, total: number) => void,
 ): Promise<readonly UsageRow[]> {
     const types = (await readTenantTypes(session.client))
         .map((type) => type.code)
         .filter((code) => code !== TEST_TENANT_TYPE);
-    const { tenants } = await listTenantsPage(session.client, { types, limit: 1000 });
+    const { tenants, totalCount } = await listTenantsPage(session.client, { types, limit: 1000 });
+    if (totalCount > tenants.length) {
+        onTruncated(tenants.length, totalCount);
+    }
     const rows: UsageRow[] = [];
     for (const tenant of tenants) {
         const name = tenant.name === '' ? tenant.code : tenant.name;
@@ -521,10 +529,19 @@ export function registerOperationsRoutes(
             await requireDeploymentRead(session, 'The grid usage of a deployment');
         }
         const rows = byTenant
-            ? await usageByTenant(session, (tenant, error) =>
-                  request.log.warn({ err: error, tenant }, 'The usage of a tenant was not read.'),
+            ? await usageByTenant(
+                  session,
+                  (tenant, error) =>
+                      request.log.warn({ err: error, tenant }, 'The usage of a tenant was not read.'),
+                  (listed, total) =>
+                      request.log.warn(
+                          { listed, total },
+                          'The usage lists the first tenants only; the roster holds more.',
+                      ),
               )
-            : await usageByParty(session);
+            : await usageByParty(session, (error) =>
+                  request.log.debug({ err: error }, 'The names of the parties were not read.'),
+              );
         const total = rows.reduce((sum, row) => sum + row.results, 0);
         return gridUsageViewSchema.parse({
             read_at: toWireTimestamp(new Date()),

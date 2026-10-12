@@ -26,11 +26,11 @@ Add a lookup entity that lists the kinds of file in the ORE universe and gives e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Count the file names in the ORE samples for every kind of file and choose the well known name of each. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -110,3 +110,9 @@ via its "Verifies task" field.
 | 5 | Schema allows a sample count of 0; run the full gate | reporting_file_types_test.sql | Partly accepted | A user row may have a count of 0. The full gate is run before merge. |
 
 * Result
+
+The =file_type= lookup is in reporting, generated through the SQL, C++ and TypeScript layers. It holds 142 file types seeded from the 416 ORE samples: 79 input documents, 14 data files, 11 intermediate files and 38 output files. Each row records the analytic that names the file, the ORE parameter, the kind, the configuration type where one exists, the well known name and the count of samples behind it. A name may be a pattern with a key, and a malformed key is refused. An analytic and a parameter name one file type only.
+
+A generator derives the seed from the samples, and the =file-types-seed= check in the local gate fails when the seed drifts from them.
+
+Not done here: the export still takes its file names from constants in the run document generator. The next task moves it to this table. The full local gate was stopped before it finished, so the merge rests on the pgTAP, suite and seed checks listed in the pull request.

@@ -21,11 +21,11 @@ Every market series a publish creates can be found by the resolver and listed by
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The change is built and proven on a real publish. It is in review. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge it, then close the story. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -42,6 +42,22 @@ Every market series a publish creates can be found by the resolver and listed by
 | [[id:F718C10F-4C0E-4AAF-9802-6A52A30498AC][Project the identities a publish seeds]] | DONE | 2026-10-12 | 2026-10-12 | Extract the identity backfill into one function and call it from the data quality publish handler once the SQL function has inserted series. |
 
 * Decisions
+
+- *Project in the C++ handler, not in the SQL function.* The data quality publish is a SQL function that inserts series
+  directly, and SQL cannot run the codec the identity projection is read through. The codec stays the only reader of the
+  URI grammar, so the handler that calls the function projects the identities afterwards.
+- *One function does it.* =project_missing= finds the series with no identity row and projects them, for a tenant or one
+  party. The backfill command and the publish handler both call it, and a second call writes nothing.
+- *The projection is not gated on the function's counts.* They count the dataset's observation rows, so a republish whose
+  observations are all skipped says nothing about the series. Running it every time also repairs series an earlier publish
+  left unprojected. One republish took the Acme tenant from 25 of 78 series projected to 79 of 79.
+- *A failed projection fails the publish step.* A missing projection must not go unseen.
+- *A series with an unreadable URI still gets a row*, with its kind and no field value, so it is not retried.
+
+*Left alone.* One system-tenant series that a SQL populate script seeds. No screen lists it.
+
+*A mistake the drift check caught.* The change was first made in a generated header. It now lives in the model, and six
+marketdata services were regenerated to main's current templates.
 
 * Out of scope
 

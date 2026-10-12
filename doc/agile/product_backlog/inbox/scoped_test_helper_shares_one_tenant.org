@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 25D92310-186E-4437-B0AD-D1A89E7F31D2
+:END:
+#+title: The test helpers isolate by test run, not by test. scoped_database_helper takes its tenant from the environment, so every test in one run shares that tenant, and a test binary run by hand with the .env tenant shares it across runs too. This is by design (the helper says no truncation is needed), but nothing says that a test must therefore use keys of its own. Two marketdata tests broke other suites intermittently by writing to a surface another suite reads, and a two-party import test failed on its first import because an earlier test had left the same surface in the shared tenant. Write the convention down in the helpers and in the testing guide: one currency pair or curve id per test, and fresh ids for anything a test writes. Consider a helper that makes a tenant of its own for tests that need one.
+#+description: The scoped test helper shares one tenant across tests, so a surface or a series one test writes is still there for the next. The helper's comment says each test run uses an isolated tenant, but without a test tenant in the environment it falls back to the system tenant, and the plain helper does the same. Two marketdata tests broke other suites intermittently because of it, and a test that imports a file twice under two parties failed on the first import for the same reason. Make each scoped helper create and use a tenant of its own, or state in its comment that it does not, and give the marketdata tests one currency pair each only as long as that holds.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Say in the testing guide that the test helpers isolate by test run and not by test. Every test in one run shares one tenant, so a test must use keys of its own, such as a currency pair or a curve id no other test uses.
+
+* Why
+
+The helper needs no truncation, so a surface or a series that one test writes is still there for the next test. Two marketdata tests broke other suites intermittently because of it: a lister test that added axes to a pair another test read, and a derived point test that shared a pair. Each now has a pair of its own, and eight clean runs followed. Nothing in the guide tells the next author to do the same.
+
+* References
+
+- =projects/ores.marketdata/core/tests/service_series_identity_lister_tests.cpp=
+- =projects/ores.marketdata/core/tests/service_manual_point_service_tests.cpp=, which picks unused pairs for the same reason
+
+* See also
+
+- The testing guide, as the place to document the convention.

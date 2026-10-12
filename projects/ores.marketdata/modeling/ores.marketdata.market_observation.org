@@ -763,7 +763,10 @@ void market_observation_repository::write_manual_point(
 Withdraws an operator's over-key of one coordinate, so the fed value applies
 again. The current manual annex row is closed, never deleted: the annex's
 history keeps it, which is what makes "the history keeps the value it
-replaced" true.
+replaced" true. The over-key's own observation row is closed with it, so that
+the value the feed last wrote shows when no later feed write has come: left in
+place, the keyed value would stay the newest row of the coordinate and read as
+a quoted one.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 void clear_manual_point(context ctx,
@@ -797,7 +800,70 @@ void market_observation_repository::clear_manual_point(
     // Closing, not deleting: the delete rule keeps the row in the annex's
     // history, so a reader still sees what the over-key replaced.
     lineage_repo.remove(txn_ctx, boost::uuids::to_string(current->id));
+
+    // The over-key's observation row goes with its annex. The delete rule keeps
+    // it in the observation history, as it does the annex.
+    std::vector<std::string> keyed_ids;
+    for (const auto& obs : read_latest_for_series(txn_ctx, series_id)) {
+        if (obs.source == "manual.operator" && obs.oresmd_uri == oresmd_uri &&
+            obs.observation_datetime == observation_datetime)
+            keyed_ids.push_back(boost::uuids::to_string(obs.id));
+    }
+    remove(txn_ctx, keyed_ids);
     uow.commit();
+}
+#+end_src
+
+*** clear_manual_points
+:PROPERTIES:
+:ID: b89966dd-1e1b-4c77-9891-fbbe82eaf884
+:END:
+
+Withdraws every operator over-key of one coordinate, whatever instant each was
+keyed at, in one transaction. Each key is stamped when it is made, so a
+coordinate adjusted twice holds two. The annex rows and the keyed observation
+rows are all closed together or not at all, and the answer is how many
+over-keys were withdrawn. A coordinate that holds none answers zero and writes
+nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::size_t clear_manual_points(context ctx,
+                                const boost::uuids::uuid& series_id,
+                                const std::string& oresmd_uri);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::size_t market_observation_repository::clear_manual_points(
+    context ctx, const boost::uuids::uuid& series_id, const std::string& oresmd_uri) {
+    BOOST_LOG_SEV(lg(), debug) << "Clearing every manual point for series: " << series_id
+                               << " coordinate: " << oresmd_uri;
+
+    unit_of_work uow(ctx);
+    const auto& txn_ctx = uow.ctx();
+
+    observation_lineage_repository lineage_repo;
+    std::vector<std::chrono::system_clock::time_point> instants;
+    for (const auto& annex : lineage_repo.read_manual_for_series(txn_ctx, series_id)) {
+        if (annex.oresmd_uri != oresmd_uri)
+            continue;
+        lineage_repo.remove(txn_ctx, boost::uuids::to_string(annex.id));
+        if (std::ranges::find(instants, annex.observation_datetime) == instants.end())
+            instants.push_back(annex.observation_datetime);
+    }
+    if (instants.empty())
+        return 0;
+
+    // The keyed observation rows go with their annex rows, so the value the feed
+    // last wrote shows. The delete rule keeps them in the observation history.
+    std::vector<std::string> keyed_ids;
+    for (const auto& obs : read_latest_for_series(txn_ctx, series_id)) {
+        if (obs.source == "manual.operator" && obs.oresmd_uri == oresmd_uri &&
+            std::ranges::find(instants, obs.observation_datetime) != instants.end())
+            keyed_ids.push_back(boost::uuids::to_string(obs.id));
+    }
+    remove(txn_ctx, keyed_ids);
+    uow.commit();
+    return instants.size();
 }
 #+end_src
 

@@ -697,8 +697,10 @@ const pt: SourceCatalogue = {
         failed: 'Não foi possível iniciar sessão.',
         chooseParty: 'Escolha uma entidade',
         choosePartyHint: 'Esta conta trabalha em mais do que uma entidade.',
-        partyTimedOut: 'A sua sessão expirou, porque não escolheu uma parte a tempo. Inicie a sessão novamente.',
-        sessionEnded: 'A sua sessão terminou e foi desligado. Inicie a sessão novamente para continuar.',
+        partyTimedOut:
+            'A sua sessão expirou, porque não escolheu uma parte a tempo. Inicie a sessão novamente.',
+        sessionEnded:
+            'A sua sessão terminou e foi desligado. Inicie a sessão novamente para continuar.',
         partyCategory: 'Categoria',
     },
 
@@ -2134,6 +2136,16 @@ const pt: SourceCatalogue = {
                 age: 'Idade',
                 source: 'Origem',
                 detail: 'Detalhe',
+                adjustActions: 'Ações',
+                adjustOpen: 'Ajustar',
+                adjustClear: 'Limpar',
+                adjustNewValue: 'Novo valor',
+                adjustSave: 'Guardar',
+                adjustSaving: 'A guardar...',
+                adjustCancel: 'Cancelar',
+                adjustAdjusting: 'Ajustar {node}',
+                adjustValueInvalid: 'Introduza o valor como um número.',
+                adjustManualNote: 'Um valor manual mantém-se até o limpar.',
                 mixed: 'Estes valores vêm de vários estados de mercado. O mais antigo tem {oldest}, e abrangem {spread}.',
                 summary: 'O valor mais antigo tem {oldest}. Os valores abrangem {spread}.',
             },
@@ -4075,6 +4087,7 @@ const pt: SourceCatalogue = {
         deploymentRead:
             'ver toda a implantação: os seus inquilinos, serviços, grelha, barramento de mensagens e registos',
         curveSnapshotsRead: 'ver as curvas de dados de mercado',
+        observationsWrite: 'ajustar à mão pontos de dados de mercado',
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
         irFeedsRead: 'ver os fluxos de curvas de taxas sintéticos',
     },

@@ -205,6 +205,49 @@ function picker(props: Partial<Parameters<typeof SeriesPicker>[0]>): string {
     );
 }
 
+describe('NowPanel adjusting', () => {
+    const adjust = {
+        identity: {
+            asset: 'fx',
+            scope: 'EUR',
+            instrument_type: 'fx_option',
+            quote_type: 'rate_lnvol',
+            party_id: '',
+            fields: [],
+        },
+        onChanged: () => undefined,
+    };
+    const withManualNode: CurveSnapshot = {
+        ...snapshot,
+        provenance: [
+            { ...snapshot.provenance[0]!, source_kind: 'manual', modified_by: 'alice' },
+            snapshot.provenance[1]!,
+        ],
+    };
+
+    it('offers nothing to adjust to a person who may not write', () => {
+        const html = render(<NowPanel snapshot={withManualNode} provenance />);
+        expect(html).not.toContain('Adjust');
+        expect(html).not.toContain('Clear');
+    });
+
+    it('offers an adjust button on each node to a person who may write', () => {
+        const html = render(<NowPanel snapshot={withManualNode} provenance adjust={adjust} />);
+        expect(html.match(/>Adjust</g)).toHaveLength(2);
+    });
+
+    it('offers to clear only the nodes a person keyed', () => {
+        const html = render(<NowPanel snapshot={withManualNode} provenance adjust={adjust} />);
+        expect(html.match(/>Clear</g)).toHaveLength(1);
+        expect(html).toContain('Manual');
+    });
+
+    it('offers no clear when no node is manual', () => {
+        const html = render(<NowPanel snapshot={snapshot} provenance adjust={adjust} />);
+        expect(html).not.toContain('>Clear<');
+    });
+});
+
 describe('SeriesPicker', () => {
     it('lists the series the party can see, named by their identity', () => {
         const html = picker({});

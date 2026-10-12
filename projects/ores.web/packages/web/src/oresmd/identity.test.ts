@@ -22,7 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CurveSeriesList, ListedSeries, OresmdParseResult } from '@ores/contracts';
 import type { IdentityForm } from '../market/evolutionView.js';
-import { evolutionRoute, seriesOfUrl, seriesVerdict } from './identity.js';
+import { evolutionRoute, seriesOfUrl, seriesRoute, seriesVerdict } from './identity.js';
 import { SCHEMA } from './testSchema.js';
 
 const parts = (over: Partial<OresmdParseResult> = {}): OresmdParseResult => ({
@@ -173,5 +173,13 @@ describe('seriesVerdict', () => {
         );
         const written: IdentityForm = { ...form, fields: '\nccy=USD\n  cap_floor=Cap  \n' };
         expect(seriesVerdict(listOf(held), written).kind).toBe('shown');
+    });
+});
+
+describe('seriesRoute', () => {
+    it('carries the whole URL, escaped, as the uri of the series page', () => {
+        expect(seriesRoute('oresmd://fx/EUR?type=quote&ccy=USD')).toBe(
+            '/market-data/series?uri=oresmd%3A%2F%2Ffx%2FEUR%3Ftype%3Dquote%26ccy%3DUSD',
+        );
     });
 });

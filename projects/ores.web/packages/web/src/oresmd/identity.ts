@@ -79,6 +79,11 @@ export function evolutionRoute(uri: string): string {
     return `/market-data/evolution?uri=${encodeURIComponent(uri)}`;
 }
 
+/** The address of the page of a series with no axis. The page reads the URL and draws the values. */
+export function seriesRoute(uri: string): string {
+    return `/market-data/series?uri=${encodeURIComponent(uri)}`;
+}
+
 /** Whether a listed series is the one a form names: the same four words and the same identity fields. */
 function isTheSeries(listed: ListedSeries, form: IdentityForm): boolean {
     const { asset, scope, instrument_type, quote_type, fields } = listed.identity;

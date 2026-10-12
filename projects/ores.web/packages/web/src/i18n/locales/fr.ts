@@ -2073,6 +2073,20 @@ const fr: SourceCatalogue = {
     },
 
     market: {
+        series: {
+            title: 'Série',
+            description: 'Les valeurs d’une série au fil du temps.',
+            noUri: 'Ouvrez une série depuis une URL oresmd.',
+            hasShape: '{series} a un axe, sa page est donc la page Évolution.',
+            openEvolution: 'Ouvrir la page Évolution',
+            chart: 'Valeurs au fil du temps',
+            empty: 'Cette série ne contient pas encore d’observation.',
+            showing: 'Les {shown} dernières observations sur {total}.',
+            at: 'Instant',
+            value: 'Valeur',
+            source: 'Source',
+            openSeries: 'Ouvrir la page de la série',
+        },
         evolution: {
             title: 'Suivre l’évolution d’une courbe ou d’une surface',
             description:

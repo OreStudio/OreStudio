@@ -23,6 +23,7 @@ import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { OresmdComposeRequest } from '@ores/contracts';
 import { api } from '../api/client.js';
 import { curves } from '../api/curves.js';
+import { series } from '../api/series.js';
 import { oresmd } from '../api/oresmd.js';
 import { refdataStore } from '../refdata/store.js';
 import { keyOf } from './editor.js';
@@ -61,6 +62,15 @@ export const oresmdQueries = {
         queryOptions({
             queryKey: ['market-series-list', partyId],
             queryFn: () => curves.seriesList(),
+            retry: false,
+            meta: QUIET,
+        }),
+
+    /** The latest observations of one series, oldest first. */
+    observations: (seriesId: string, limit: number) =>
+        queryOptions({
+            queryKey: ['series-observations', seriesId, limit],
+            queryFn: () => series.observations(seriesId, limit),
             retry: false,
             meta: QUIET,
         }),

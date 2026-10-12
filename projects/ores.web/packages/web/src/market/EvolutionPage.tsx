@@ -39,7 +39,7 @@
  */
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type {
     CurveEvolution,
@@ -49,7 +49,7 @@ import type {
 } from '@ores/contracts';
 import { curves, type CurveRange } from '../api/curves.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { seriesOfUrl, seriesVerdict } from '../oresmd/identity.js';
+import { seriesOfUrl, seriesRoute, seriesVerdict } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Button, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -381,6 +381,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
     const parsed = useQuery({ ...oresmdQueries.parse(uri), enabled: uri !== '' });
     const schema = useQuery({ ...oresmdQueries.schema(), enabled: uri !== '' });
     const [unavailable, setUnavailable] = useState<string | null>(null);
+    const [offerSeries, setOfferSeries] = useState(false);
     // The URL and the party together say what was opened, so a change of either opens again.
     const opened = useRef('');
     const openedKey = `${partyId}|${uri}`;
@@ -414,6 +415,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
         const verdict = seriesVerdict(series.data, named.form);
         if (verdict.kind !== 'shown') {
             setForm(named.form);
+            setOfferSeries(verdict.kind === 'no-shape');
             setUnavailable(
                 verdict.kind === 'not-listed'
                     ? t('market.evolution.errors.notListed')
@@ -571,7 +573,22 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
                 {uri === '' && series.isError && (
                     <Notice tone="error">{series.error.message}</Notice>
                 )}
-                {unavailable !== null && <Notice tone="warn">{unavailable}</Notice>}
+                {unavailable !== null && (
+                    <Notice tone="warn">
+                        {unavailable}
+                        {offerSeries && (
+                            <>
+                                {' '}
+                                <Link
+                                    className="text-accent-bright hover:underline"
+                                    to={seriesRoute(uri)}
+                                >
+                                    {t('market.series.openSeries')}
+                                </Link>
+                            </>
+                        )}
+                    </Notice>
+                )}
                 <div className="flex items-center gap-3">
                     <Button type="submit">{t('market.evolution.form.submit')}</Button>
                 </div>

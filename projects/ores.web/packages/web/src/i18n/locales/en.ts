@@ -2052,6 +2052,20 @@ export const en: SourceCatalogue = {
     },
 
     market: {
+        series: {
+            title: 'Series',
+            description: 'The values of one series over time.',
+            noUri: 'Open a series from an oresmd URL.',
+            hasShape: '{series} has an axis, so its page is the Evolution page.',
+            openEvolution: 'Open the Evolution page',
+            chart: 'Values over time',
+            empty: 'This series holds no observations yet.',
+            showing: 'Showing the latest {shown} of {total} observations.',
+            at: 'Instant',
+            value: 'Value',
+            source: 'Source',
+            openSeries: 'Open the series page',
+        },
         evolution: {
             title: 'Watch a curve or surface evolve',
             description:

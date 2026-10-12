@@ -38,4 +38,5 @@ export * from './qa.js';
 export * from './agile.js';
 export * from './curves.js';
 export * from './oresmd.js';
+export * from './series.js';
 export * from './permissions.js';

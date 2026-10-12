@@ -37,6 +37,7 @@ import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
 import { registerOresmdRoutes } from './oresmd.js';
+import { registerSeriesRoutes } from './series.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
@@ -2657,6 +2658,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerConventionRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
+    registerSeriesRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     const scenarioStore =

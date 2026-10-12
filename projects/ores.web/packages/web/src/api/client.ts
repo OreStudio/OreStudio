@@ -1360,7 +1360,10 @@ export const api = {
             })
             .parse(
                 await request(
-                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?limit=${String(limit)}&resource=${resource}`,
+                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?${new URLSearchParams({
+                        limit: String(limit),
+                        resource,
+                    }).toString()}`,
                     { method: 'GET' },
                 ),
             );

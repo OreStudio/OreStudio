@@ -428,7 +428,6 @@ function resourceName(resource: SyntheticResource): string {
     return resource.subjects.list.split('.')[2] ?? '';
 }
 
-/** The FX feeds resource, which the tick read reads a feed through. */
 /** The resources whose rows are feeds, which the tick read reads a feed through. */
 const FEED_KEYS = ['fx-feeds', 'ir-curve-feeds'] as const;
 
@@ -764,11 +763,11 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * The newest ticks of one feed's current run, oldest first. The page says which
-     * kind of feed it reads, so the feed is read through that kind's resource alone. The feed is
-     * read as the session first, so a feed the session cannot see has no ticks
-     * to show. Reading starts no listening: what runs is learnt from the
-     * running read, which every feed screen makes.
+     * The newest ticks of one feed's current run, oldest first. The page says
+     * which kind of feed it reads, so the feed is read through that kind's
+     * resource alone. The feed is read as the session first, so a feed the
+     * session cannot see has no ticks to show. Reading starts no listening:
+     * what runs is learnt from the running read, which every feed screen makes.
      */
     server.get('/api/synthetic/feeds/:id/ticks', async (request) => {
         const session = requireSession(request);

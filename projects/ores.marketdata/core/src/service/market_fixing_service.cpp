@@ -106,7 +106,6 @@ domain::market_fixing to_domain(const messaging::market_fixing_write& write) {
     return v;
 }
 
-
 }
 
 messaging::list_market_fixings_response

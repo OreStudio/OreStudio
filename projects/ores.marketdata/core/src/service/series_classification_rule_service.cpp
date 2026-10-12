@@ -108,7 +108,6 @@ to_domain(const messaging::series_classification_rule_write& write) {
     return v;
 }
 
-
 }
 
 messaging::list_series_classification_rules_response

@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/move-the-book-structure-screen-onto-the-review-panel
-#+pr:
+#+pr: 3173
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3173][#3173]] | [web] Move the book structure screen onto the review panel |
 
 * Review
 

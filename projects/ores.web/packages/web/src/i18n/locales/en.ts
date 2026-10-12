@@ -1806,6 +1806,7 @@ export const en: SourceCatalogue = {
                 up: 'Up',
                 down: 'Down',
                 unnamed: 'Unnamed machine',
+                total: 'Total',
                 nodes: '{running} of {total}',
                 hint: 'Nodes that report no machine are grouped here.',
             },

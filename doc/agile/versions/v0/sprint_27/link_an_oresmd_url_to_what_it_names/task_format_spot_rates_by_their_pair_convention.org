@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 84C6DE53-C113-4492-B725-FF8024016F8D
+:END:
+#+title: Task: Format spot rates by their pair convention
+#+description: Show the values of an FX spot series with the decimal places of the currency pair's convention, so the series page reads as a trader expects.
+#+type: task
+#+level: s1
+#+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
+#+owner: marco
+#+branch: feature/format-spot-rates-by-their-pair-convention
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The series page shows a spot rate as the stored text trimmed to seven significant digits. The currency pair conventions already hold decimal_places for each pair: 2 for a JPY quote and 4 for the rest. The page reads the convention of the pair and formats the chart axis and the table with it. A series that is not an FX spot keeps its present format. The page keeps asking for the latest observations by count, as now.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The series page formats an FX spot series with the decimal_places of its pair's convention, in the chart axis and in the table.
+- A pair with no convention, and a series that is not an FX spot, keep the present format.
+- The convention is read through the refdata store and a failed read leaves the present format, with no error banner.
+- A pure function formats a value for a number of places, and has tests for rounding and for places 2 and 4.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

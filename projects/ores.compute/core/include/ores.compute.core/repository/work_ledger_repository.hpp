@@ -54,6 +54,21 @@ struct claimed_entry {
 };
 
 /**
+ * @brief The number of times a job is claimed before it ends as no reply.
+ */
+inline constexpr int max_claim_attempts = 3;
+
+/**
+ * @brief A claimed entry whose lease ended, with the host that held it.
+ */
+struct expired_entry {
+    boost::uuids::uuid result_id;
+    boost::uuids::uuid work_tenant_id;
+    boost::uuids::uuid host_id;
+    int attempts = 0;
+};
+
+/**
  * @brief The queue of the compute grid, held in the work ledger.
  *
  * The ledger belongs to the installation. Only a session of the system tenant
@@ -121,6 +136,39 @@ public:
     std::size_t extend_leases(context ctx,
                               const boost::uuids::uuid& host_id,
                               std::chrono::seconds lease);
+
+    /**
+     * @brief Return every claimed entry whose lease ended to the queue, while it has attempts left.
+     *
+     * One statement, so a reaper and a claim never act on one entry twice. The entry keeps its
+     * queue time, so it goes back to its place and not to the end of the line.
+     *
+     * @return The number of entries returned.
+     */
+    std::size_t requeue_expired(context ctx, int max_attempts = max_claim_attempts);
+
+    /**
+     * @brief The claimed entries whose lease ended and that have no attempts left.
+     *
+     * Reads only. The reaper ends the result of each and then calls @c remove_expired.
+     */
+    std::vector<expired_entry> exhausted(context ctx,
+                                         int max_attempts = max_claim_attempts,
+                                         int limit = 100);
+
+    /**
+     * @brief Remove an entry only if its lease has still ended.
+     *
+     * A host that renewed the lease after the reaper read the entry keeps it.
+     *
+     * @return True when the entry was removed.
+     */
+    bool remove_expired(context ctx, const boost::uuids::uuid& result_id);
+
+    /**
+     * @brief The number of entries of a tenant that wait in the queue.
+     */
+    std::int64_t waiting(context ctx, const boost::uuids::uuid& work_tenant_id);
 
     /**
      * @brief The host that holds the claim on a result, when one does.

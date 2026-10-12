@@ -97,7 +97,7 @@ The server publishes a notice on =compute.v1.ops.work_available= when it adds Un
 
 *** The bound
 
-The server counts the entries of a tenant in the queue when a batch is dispatched. A batch that would pass the tenant's limit is refused, with a message that says how many jobs wait. A tenant therefore cannot fill the queue. The limit starts at the work that the grid finishes in the longest wait that a person accepts.
+The server counts the entries of a tenant in the queue when a batch is dispatched. A batch that would pass the tenant's limit is refused, and the service log says how many jobs wait. The dispatch runs after the workunit is committed, so the refusal does not reach the reply to the shell. The limit is 3600 jobs for each tenant. A tenant therefore cannot fill the queue. The limit starts at the work that the grid finishes in the longest wait that a person accepts.
 
 *** What a person sees
 

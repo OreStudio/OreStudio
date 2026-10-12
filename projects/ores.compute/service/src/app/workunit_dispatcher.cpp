@@ -40,6 +40,16 @@ namespace ores::compute::service::app {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+namespace {
+
+/// The most jobs of one tenant that wait in the queue. The cap is soft: the count and the
+/// inserts are not one step, so two dispatches at once can pass it by one workunit each. At the
+/// grid's pace of about 130 jobs a minute, this is a wait of about half an hour for the last job
+/// of a tenant alone in the queue.
+constexpr std::int64_t tenant_queue_limit = 3600;
+
+}
+
 workunit_dispatcher::workunit_dispatcher(ores::nats::service::client& nats,
                                          ores::database::context ctx)
     : nats_(nats)
@@ -107,6 +117,19 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
     }
 
     const auto tenant_uuid = tenant_ctx.tenant_id().to_string();
+
+    // A tenant cannot fill the queue. A dispatch that would pass the limit is refused, and the
+    // log says how many jobs wait. The workunit keeps no results until it is dispatched again.
+    const auto waiting = ores::compute::repository::work_ledger_repository().waiting(
+        ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
+    if (waiting + missing > tenant_queue_limit) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Refusing to dispatch workunit " << workunit_id << " for tenant " << tenant_uuid
+            << ": " << waiting << " job(s) already wait and the limit is "
+            << tenant_queue_limit;
+        return;
+    }
+
     ores::compute::service::result_service result_svc(tenant_ctx);
 
     for (int i = 0; i < missing; ++i) {

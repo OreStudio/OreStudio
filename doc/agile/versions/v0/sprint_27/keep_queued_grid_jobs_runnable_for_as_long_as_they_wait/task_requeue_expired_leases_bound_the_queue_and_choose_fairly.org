@@ -8,12 +8,12 @@
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
 #+owner: marco
 #+branch: feature/requeue-expired-leases-bound-the-queue-and-choose-fairly
-#+pr:
+#+pr: 3201
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A bad job ends in a visible state, one tenant cannot fill the queue, and no tena
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -41,9 +41,13 @@ A bad job ends in a visible state, one tenant cannot fill the queue, and no tena
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Decision on a result that never started: such a result does not count toward the redundancy target. A late submit for a result that is not in progress changes nothing (done in the earlier task), and a claim marks the result in progress, so a node that never claimed a job cannot produce a result for it.
+- The reaper is a service coroutine that sweeps the ledger every 15 seconds. One statement returns every expired claim with attempts left to the queue. The entry keeps its queue time.
+- A re-claim finds the result still in progress, as the lost node left it. The claim accepts that state when the entry has been claimed before.
+- A claim with no attempts left (three) ends its result as Done with outcome 4, NoReply, and the message "The lease ended with no reply after 3 attempts." The entry is then removed, only if its lease still has ended, so a late heartbeat keeps it.
+- The reaper rings the doorbell when it returns jobs, so idle nodes ask at once.
+- The bound is a limit of 3600 waiting jobs for each tenant, checked in the dispatcher. A dispatch past it is refused and the service log states how many jobs wait. The dispatch runs after the commit of the workunit, so the refusal reaches the log and not the reply to the shell.
+- Fair choice between tenants was already in the claim (fewest claimed entries first).
 
 * Measurements
 
@@ -57,7 +61,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Compute core test suite, with five new ledger cases | pass | =ctest --preset linux-clang-debug-make -R ores.compute.core.tests -j2= | branch head |
+| Expired claim with 1 attempt used goes back to queued, and is claimed again as attempt 2 | observed | two claims with real host ids, leases set past, service log and results read | branch head |
+| Expired claim with 3 attempts ends as server_state 5, outcome 4, with the lease message | observed | same run | branch head |
 
 * Notes
 
@@ -76,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3201][#3201]] | [compute] Requeue expired leases and bound the queue |
 
 * Review
 
@@ -85,3 +91,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An expired lease now returns its job to the queue while it has attempts left, and ends it as no reply with a visible message when it has none. A tenant with 3600 jobs waiting cannot dispatch more, and the service log says how many wait. Verified on the dev grid with two claims that lost their leases.

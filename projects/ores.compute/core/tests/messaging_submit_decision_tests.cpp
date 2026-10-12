@@ -27,6 +27,7 @@ namespace {
 
 const std::string tags("[messaging]");
 
+using ores::compute::messaging::claimable;
 using ores::compute::messaging::claimed_by_another;
 using ores::compute::messaging::decide_submit;
 using ores::compute::messaging::submit_action;
@@ -73,4 +74,22 @@ TEST_CASE("claimed_by_another_is_true_when_the_submitter_names_no_host", tags) {
     const auto holder = boost::uuids::random_generator()();
 
     CHECK(claimed_by_another(holder, std::nullopt));
+}
+
+TEST_CASE("claimable_runs_an_unsent_result_on_any_attempt", tags) {
+    CHECK(claimable(2, 1));
+    CHECK(claimable(2, 2));
+}
+
+TEST_CASE("claimable_runs_a_result_in_progress_only_on_a_later_attempt", tags) {
+    CHECK(!claimable(4, 1));
+    CHECK(claimable(4, 2));
+    CHECK(claimable(4, 3));
+}
+
+TEST_CASE("claimable_never_runs_a_retired_or_done_result", tags) {
+    CHECK(!claimable(1, 1));
+    CHECK(!claimable(1, 2));
+    CHECK(!claimable(5, 1));
+    CHECK(!claimable(5, 2));
 }

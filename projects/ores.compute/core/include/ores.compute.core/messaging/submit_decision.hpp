@@ -56,6 +56,18 @@ constexpr submit_action decide_submit(int server_state) {
 }
 
 /**
+ * @brief Whether a claim can hand a result to a node, from its server state and the attempt.
+ *
+ * An unsent result can always run. A result in progress can run only on a later attempt,
+ * because the reaper returned the entry to the queue after the lease of the earlier node
+ * ended, and left the result as that node marked it. A first attempt on a result in
+ * progress is an entry that points at a result another claim already took.
+ */
+constexpr bool claimable(int server_state, int attempt) {
+    return server_state == 2 || (server_state == 4 && attempt > 1);
+}
+
+/**
  * @brief Whether a result's claim belongs to a host other than the one that submits.
  *
  * The work ledger names the host that holds the claim. A result whose lease ended

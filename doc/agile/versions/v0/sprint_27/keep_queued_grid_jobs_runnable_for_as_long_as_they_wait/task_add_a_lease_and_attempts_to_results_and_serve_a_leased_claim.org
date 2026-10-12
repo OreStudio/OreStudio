@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 0FB3FEAF-420C-40F3-B888-78039D2CF028
 :END:
-#+title: Task: Add a lease and attempts to results and serve a leased claim
-#+description: A result gets a lease time and an attempt count. The server serves compute.v1.ops.claim_work: it picks the next unsent result, marks it taken, mints the storage token for that job, and replies with the assignment. The heartbeat extends the lease.
+#+title: Task: Add the work ledger and serve a leased claim
+#+description: The installation owns a ledger with one entry for each result that waits or runs, holding its lease and attempts. The dispatcher queues each result, and the server serves compute.v1.ops.claim_work from the ledger: it takes the next entry, enters the tenant to mark the result taken, and mints the storage token for that job.
 #+type: task
 #+level: s1
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
@@ -13,20 +13,20 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A free node can ask for a job and receive it, with a credential minted for that job and a lease that bounds the claim.
+A free node can ask for a job and receive it, with a credential minted for that job and a lease that bounds the claim, without any policy that lets the system tenant read another tenant's work.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,10 +35,15 @@ A free node can ask for a job and receive it, with a credential minted for that 
 
 * Acceptance
 
-- A claim picks the next unsent result with skip locked, and two claims never take one result.
-- The token in the reply is minted at the claim and covers the keys of that job.
-- A submit changes a result only when it is in progress and the host holds the claim.
-- The check and the write of a submit are one conditional update, such as =update ... where server_state = 4 and host_id = $host=, so two concurrent submits cannot both write. The first task reads the state and writes afterwards, which leaves a gap that this task closes.
+- The ledger is readable and writable by a session of the system tenant only, and a test shows that a tenant's session reads none of it.
+- The dispatcher queues each result it creates, and a submit removes its entry.
+- A claim takes the next entry for the node's platform with skip locked, and two claims never take one entry.
+- A claim chooses across tenants, so with two tenants queued the claims alternate between them.
+- A claim enters the owning tenant to mark the result in progress. A result that is no longer waiting ends the claim for that entry, which is deleted, and the server takes the next.
+- The token in the reply is minted at the claim and covers the keys of that job. If IAM refuses, the entry returns to the queue.
+- The heartbeat extends the lease of every entry the host holds.
+- A submit for a result whose entry is claimed by another host changes nothing. A result with no entry is accepted as before.
+- The check and the write of a submit are one conditional update, so two concurrent submits cannot both write. The first task reads the state and writes afterwards, which leaves a gap that this task closes.
 
 * Plan
 
@@ -86,3 +91,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The installation owns a work ledger, =ores_compute_work_ledger_tbl=, with one entry for each result that waits or runs. Only a session of the system tenant reads or writes it. The policy is written =tenant_id = current and tenant_id = system=, so it admits no tenant's rows to anyone else, and the RLS guard does not flag it. The dispatcher queues each result it creates, and the server serves =compute.v1.ops.claim_work= from the ledger.
+
+A claim takes the next entry for the node's platform in one statement with =for update skip locked=, prefers the tenant with the fewest entries claimed, then the priority and the age, and sets the host, the lease and the attempt. It then enters the owning tenant, mints the storage token for that job, and marks the result in progress. A result that is retired, done or gone ends the claim for that entry, which is dropped, and the server takes the next. The heartbeat extends the leases of a host, and a submit from a host that does not hold the claim is ignored, while a result with no entry is accepted as before.
+
+Verified by 11 repository tests against the database, including skip locked, the fair order, the priority, release, extending a lease, and that a tenant's session reads and writes none of the ledger. Pure tests cover the grant builder and the holder check. Verified live, with the push wrappers stopped: the dispatcher queued three jobs for each of two tenants, four claims alternated between the tenants and returned tokens, the ledger showed four claimed entries with leases of five minutes, a submit from another host was ignored, the holder's submit was accepted and removed its entry, and a claim dropped an entry whose result had been retired and served the next.
+
+Not done here, as planned: the wrapper does not claim yet (the next task), the push queue still runs beside the ledger so entries for results the push queue finishes are removed by the submit, and the reaper over expired leases and the bound for each tenant are in the task after next. A result with no entry is accepted as before until the push queue is removed. The ledger is hand-written and the capture "Codegen an installation-owned current-state table" records why.

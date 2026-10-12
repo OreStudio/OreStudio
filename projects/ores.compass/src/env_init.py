@@ -694,7 +694,7 @@ def run(argv, project_root: Path) -> int:
     readonly_pw = _get_or_gen(existing, "ORES_DB_READONLY_PASSWORD")
     test_ddl_pw = _get_or_gen(existing, "ORES_TEST_DB_DDL_PASSWORD")
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
-    web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "127.0.0.1")
+    web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "0.0.0.0")
     service_log_level = _env_value(existing, "ORES_SERVICE_LOG_LEVEL", "info")
     web_log_level = _env_value(existing, "ORES_WEB_LOG_LEVEL", "info")
     use_busctl = _busctl_setting(existing, args.use_busctl)
@@ -813,8 +813,8 @@ ORES_SITE_PORT={site_port}
 # The TypeScript web interface (ores.web). One process serves the browser
 # bundle and the HTTP API on this port.
 ORES_WEB_PORT={web_port}
-# Interface the process binds. 127.0.0.1 keeps it on this host; 0.0.0.0
-# exposes it to a browser on another machine.
+# Interface the process binds. 0.0.0.0 serves a browser on another machine
+# on the local network; 127.0.0.1 keeps it on this host.
 ORES_WEB_BFF_HOST={web_bff_host}
 # Log level for the ores.web BFF (pino: trace, debug, info, warn or error).
 ORES_WEB_LOG_LEVEL={web_log_level}

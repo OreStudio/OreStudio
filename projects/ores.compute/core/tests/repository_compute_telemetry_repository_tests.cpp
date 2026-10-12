@@ -638,8 +638,7 @@ TEST_CASE("grid_usage_of_the_system_tenant_groups_the_work_of_every_tenant_by_te
     const auto system = tenant_id::system();
 
     auto provision_ctx = h.context();
-    const auto third_code =
-        test_database_manager::generate_test_tenant_code("ores.compute.usage");
+    const auto third_code = test_database_manager::generate_test_tenant_code("ores.compute.usage");
     const auto third =
         tenant_id::from_string(test_database_manager::provision_test_tenant(
                                    provision_ctx, third_code, "compute usage third tenant"))

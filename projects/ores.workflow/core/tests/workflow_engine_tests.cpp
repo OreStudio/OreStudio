@@ -131,12 +131,12 @@ struct fixture {
         // run's rows are this case's own, in the test tenant.
         const auto engine_context = [&] {
             switch (where) {
-            case engine_tenant::run:
-                return h.context();
-            case engine_tenant::service:
-                return service_context();
-            case engine_tenant::workflow_service:
-                return as_workflow_service();
+                case engine_tenant::run:
+                    return h.context();
+                case engine_tenant::service:
+                    return service_context();
+                case engine_tenant::workflow_service:
+                    return as_workflow_service();
             }
             throw std::logic_error("unknown engine tenant");
         }();
@@ -147,17 +147,16 @@ struct fixture {
             where == engine_tenant::workflow_service ? engine_context : service_context();
         instance_states = load_fsm_states(states_context, "workflow_instance");
         step_states = load_fsm_states(states_context, "workflow_step");
-        engine = std::make_shared<workflow_engine>(
-            nats,
-            engine_context,
-            registry,
-            instance_states,
-            step_states,
-            // No key in a test process, which the
-            // engine documents as "attribute
-            // every record to the service
-            // account".
-            std::nullopt);
+        engine = std::make_shared<workflow_engine>(nats,
+                                                   engine_context,
+                                                   registry,
+                                                   instance_states,
+                                                   step_states,
+                                                   // No key in a test process, which the
+                                                   // engine documents as "attribute
+                                                   // every record to the service
+                                                   // account".
+                                                   std::nullopt);
     }
 
     /** @brief The tenant a run started here belongs to. */
@@ -194,12 +193,12 @@ struct fixture {
             .database = environment::get_value_or_throw("ORES_WORKFLOW_SERVICE_DB_DATABASE"),
             .port = environment::get_int_value_or_default("ORES_WORKFLOW_SERVICE_DB_PORT", 5432),
             .tenant = ores::database::service::tenant_context::system_tenant_id};
-        const ores::database::context_factory::configuration config{
-            .database_options = options,
-            .pool_size = 2,
-            .num_attempts = 3,
-            .wait_time_in_seconds = 1,
-            .service_account = options.user};
+        const ores::database::context_factory::configuration config{.database_options = options,
+                                                                    .pool_size = 2,
+                                                                    .num_attempts = 3,
+                                                                    .wait_time_in_seconds = 1,
+                                                                    .service_account =
+                                                                        options.user};
         return ores::database::context_factory::make_context(config);
     }
 
@@ -902,12 +901,11 @@ TEST_CASE("a retry is confined to the caller's own tenant", tags) {
 
     // A caller in another tenant is told the run does not exist, not that it
     // exists and is not theirs: the answer must not disclose the run.
-    const auto stranger =
-        ores::utility::uuid::tenant_id::from_string(boost::uuids::to_string(
-                                                        boost::uuids::random_generator{}()))
-            .value();
-    const auto refused = f.engine->retry_instance(
-        boost::uuids::string_generator{}(instance_id), "", stranger);
+    const auto stranger = ores::utility::uuid::tenant_id::from_string(
+                              boost::uuids::to_string(boost::uuids::random_generator{}()))
+                              .value();
+    const auto refused =
+        f.engine->retry_instance(boost::uuids::string_generator{}(instance_id), "", stranger);
     CHECK_FALSE(refused.resumed);
     CHECK(refused.reason == "Workflow instance not found.");
 
@@ -1473,8 +1471,8 @@ TEST_CASE("workflow_handler retries a run only for a permitted caller in its ten
     CHECK(malformed.message == "Invalid workflow_instance_id.");
 
     // Another tenant cannot resume this tenant's run.
-    const auto elsewhere = decode(
-        send(boost::uuids::to_string(boost::uuids::random_generator{}()), {"workflow::*"}, instance_id));
+    const auto elsewhere = decode(send(
+        boost::uuids::to_string(boost::uuids::random_generator{}()), {"workflow::*"}, instance_id));
     CHECK_FALSE(elsewhere.success);
 
     // The run's own tenant, with the grant, resumes it from the failed step.

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.inbox.core/service/approval_apply_retry.hpp"
-
 #include <exception>
 #include <utility>
 
@@ -63,9 +62,9 @@ apply_retry_outcome approval_apply_retry::run(std::chrono::system_clock::time_po
                     give_up(lifecycle, ctx, *kind, *request);
                     outcome.gave_up.push_back(stalled.request_id);
                 } else {
-                    BOOST_LOG_SEV(lg(), debug)
-                        << "Request " << stalled.request_id << " is past its window, but its run is "
-                        << status << ", so it was left alone.";
+                    BOOST_LOG_SEV(lg(), debug) << "Request " << stalled.request_id
+                                               << " is past its window, but its run is " << status
+                                               << ", so it was left alone.";
                 }
                 continue;
             }
@@ -76,17 +75,17 @@ apply_retry_outcome approval_apply_retry::run(std::chrono::system_clock::time_po
             engine_.start(*start);
             const auto resumed = engine_.retry(start->instance_id);
             if (resumed.success) {
-                BOOST_LOG_SEV(lg(), info) << "Request " << stalled.request_id
-                                          << " had a stopped apply; the engine resumed step "
-                                          << resumed.step_name << ".";
+                BOOST_LOG_SEV(lg(), info)
+                    << "Request " << stalled.request_id
+                    << " had a stopped apply; the engine resumed step " << resumed.step_name << ".";
                 outcome.resumed.push_back(stalled.request_id);
             } else {
-                BOOST_LOG_SEV(lg(), debug) << "Request " << stalled.request_id
-                                           << " was not resumed: " << resumed.message;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Request " << stalled.request_id << " was not resumed: " << resumed.message;
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Retrying the apply of request " << stalled.request_id << " failed: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Retrying the apply of request " << stalled.request_id
+                                       << " failed: " << e.what();
         }
     }
     return outcome;

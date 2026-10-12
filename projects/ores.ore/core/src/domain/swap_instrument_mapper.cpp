@@ -1470,8 +1470,9 @@ legData swap_instrument_mapper::reverse_leg(
     if (!tm.day_count_fraction_code.empty())
         ld.DayCounter = parse_code(tm.day_count_fraction_code, day_counter_count, dayCounter::A360);
     if (!tm.business_day_convention_code.empty())
-        ld.PaymentConvention = parse_code(
-            tm.business_day_convention_code, business_day_convention_count, businessDayConvention::MF);
+        ld.PaymentConvention = parse_code(tm.business_day_convention_code,
+                                          business_day_convention_count,
+                                          businessDayConvention::MF);
 
     if (!amounts.empty()) {
         legData_Notionals_t n;
@@ -1693,9 +1694,10 @@ trade swap_instrument_mapper::reverse_capfloor(
 
         cf.LegData.Currency = parse_currency_code(tm.currency);
 
-        cf.LegData.DayCounter = tm.day_count_fraction_code.empty() ?
-            dayCounter::ACT_365 :
-            parse_code(tm.day_count_fraction_code, day_counter_count, dayCounter::ACT_365);
+        cf.LegData.DayCounter =
+            tm.day_count_fraction_code.empty() ?
+                dayCounter::ACT_365 :
+                parse_code(tm.day_count_fraction_code, day_counter_count, dayCounter::ACT_365);
         if (!tm.business_day_convention_code.empty())
             cf.LegData.PaymentConvention = parse_code(tm.business_day_convention_code,
                                                       business_day_convention_count,

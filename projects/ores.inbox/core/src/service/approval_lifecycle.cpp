@@ -432,8 +432,7 @@ std::vector<stalled_apply>
 approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of) {
     // Seconds as a double hold a moment to well under a millisecond, which is
     // far finer than a window counted in hours.
-    const auto epoch_seconds =
-        std::chrono::duration<double>(as_of.time_since_epoch()).count();
+    const auto epoch_seconds = std::chrono::duration<double>(as_of.time_since_epoch()).count();
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text,"

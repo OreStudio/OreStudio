@@ -23,8 +23,8 @@
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <stdexcept>
@@ -88,7 +88,8 @@ struct recording_engine final : ores::inbox::service::apply_engine {
     }
 
     bool started_for(const std::string& request_id) const {
-        return std::ranges::any_of(started, [&](const auto& s) { return s.target_id == request_id; });
+        return std::ranges::any_of(started,
+                                   [&](const auto& s) { return s.target_id == request_id; });
     }
 };
 
@@ -128,8 +129,8 @@ TEST_CASE("an_approved_request_inside_its_window_is_started_again_and_resumed", 
     CHECK_FALSE(contains(done.gave_up, id));
     // The same run is named every time, so the start repairs a lost one and
     // changes nothing when the run exists.
-    const auto run = std::ranges::find_if(
-        engine.started, [&](const auto& s) { return s.target_id == id; });
+    const auto run =
+        std::ranges::find_if(engine.started, [&](const auto& s) { return s.target_id == id; });
     REQUIRE(run != engine.started.end());
     CHECK(std::ranges::find(engine.retried, run->instance_id) != engine.retried.end());
     CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "approved");

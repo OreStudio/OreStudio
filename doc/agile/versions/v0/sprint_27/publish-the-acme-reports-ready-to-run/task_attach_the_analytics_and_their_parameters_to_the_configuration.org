@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 3EF2E543-6429-443B-A2A0-1AA830EAD577
+:END:
+#+title: Task: Attach the analytics and their parameters to the configuration
+#+description: Replace the sixteen analytic switches of the risk report configuration with analytic rows and parameter rows on the configuration, and publish them through DQ.
+#+type: task
+#+level: s1
+#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the sixteen analytic switches of the risk report configuration with the analytics of the configuration as rows, and give each analytic its parameters, so that a configuration says which analytics a run executes and how. A report definition owns neither, because it binds a shared configuration. Publish the rows through DQ datasets that are generated from the domain entities, and populate each party's datasets with the analytics and parameters decided for its reports.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The merge of the PR that publishes the shared risk report configurations. |
+| Next         | Do the data model analysis in the Plan, then confirm the model with the product owner. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The report_analytic and report_analytic_parameter entities are removed. A configuration_analytic junction links a configuration to an analytic type with its order and active flag, and the existing configuration_parameter entity holds the parameter values. An analytic type appears once in a run document, which holds for all 416 ORE samples, so a parameter definition identifies the analytic a value belongs to.
+- The switch columns are removed from risk_report_config, and the run document is built from the analytic rows and the parameter rows. A stored run document, and the import-run path that writes the old rows, are changed or removed.
+- The DQ staging tables for the analytic rows and the parameter rows are generated from the entities. A staged row names its configuration, its analytic type and its parameter definition by name and not by id, because ids differ between databases.
+- Each ACME party publishes the analytics and the parameters decided for the reports that bind each configuration, and a test shows that the exported analytics equal the decided ones.
+- A configuration with no analytic is refused at publish or by a trigger, because a database check cannot count child rows.
+
+* Plan
+
+1. Take stock of what holds analytics today: =report_analytic=, =report_analytic_parameter=, =report_run_setup=, =report_market_binding=, the sixteen switches of =risk_report_config=, the run document builder, and the =import-run= path of the run store.
+2. Decide the model. The recommendation is a =configuration_analytic= junction between a configuration and an analytic type, with the order and the active flag, and the existing =configuration_parameter= entity for the values. A parameter definition names its scope, analytic type and name, so it already says which analytic a value belongs to. Decide what happens to the run setup and the market bindings, which are also keyed by definition.
+3. Decide how the "at least one analytic" rule is enforced, because a database check cannot count child rows. The options are a trigger on the analytic rows and a check in the publish.
+4. Remove the old entities and the switches, generate the new ones, and generate the DQ staging from them. The staged rows name the configuration, the analytic type and the parameter definition.
+5. Decide the analytics and parameters of each report from the ORE samples, record them in the report design, and publish them in each party's datasets.
+6. Build the run document from the rows, and test that the exported analytics equal the decided ones for all 78 definitions.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Names. These entities are attached to a configuration and not to a report, so none of them carries a =report_= prefix.
+
+Evidence for the model, from the 416 ORE samples: no run document repeats an analytic type, so (configuration, parameter definition) identifies a value. The first assignment of analytics to the reports was wrong in six places, and the flat switches cannot hold the parameters the corrected analytics need: the historical window of the stressed VaR, the quantiles of the VaR, and the exposure profile flags. See rule D22 of the report design.
+
+Parameters that name a file are not stored here. They are resolved from the file types table, see the tasks "Add the ORE file types table with well known names" and "Name every ORE file from the file types table".
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

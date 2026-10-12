@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 4A6FF25B-9A4D-43AC-BE57-D8B1A39AC818
+:END:
+#+title: Task: Add the ORE file types table with well known names
+#+description: Add a lookup of every kind of ORE file with the well known name it carries in the ORE samples.
+#+type: task
+#+level: s1
+#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a lookup entity that lists the kinds of file in the ORE universe and gives each its well known name. The names follow the convention of the ORE samples, so a configuration never repeats a file name. The table covers the input documents (pricing engines, conventions, curve configuration, today's market, simulation, sensitivity, stress test, netting, collateral balances and the rest), the data files (portfolio, market data, fixings), the files the engine writes for each analytic, and the intermediate files that two analytics share.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. |
+| Next         | Count the file names in the ORE samples for every kind of file and choose the well known name of each. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- An entity model, generated into the SQL, C++ and TypeScript layers, holds the file type code, a name, the kind (input document, data file, output file or intermediate file), the configuration type or analytic it belongs to, and the well known file name or name pattern.
+- The table is seeded for every file kind found in the 416 ORE samples. Each default name is the most common name in the samples, and the count that supports it is recorded.
+- A file that may be split has a name pattern with a key, for example portfolio_{{BOOK_ID}}.xml. The table can hold the pattern. Splitting itself is a later task.
+- A test compares the seeded names with the ORE samples, so a name that drifts from the convention is found.
+
+* Plan
+
+1. Build the list of file kinds from the ORE schemas and the 416 sample run documents: each configuration type has a document, the data files are the portfolio, the market data and the fixings, and each analytic has output files.
+2. For each kind, count the names the samples use and take the most common plain name. Record the count. Drop the relative prefix of the examples, because a package keeps its inputs in one folder.
+3. Model the entity: file type code, name, kind, the configuration type or analytic it belongs to, and the name or name pattern. Generate the layers from the model.
+4. Seed the table as system data. Add a test that compares the seeded names with the samples.
+5. Allow a key in the pattern, for example =portfolio_{{BOOK_ID}}.xml=, and document the syntax.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Counts from the samples, measured on 2026-10-12 over the 416 run documents: =pricingengine.xml= 189 of 416 plain uses of =pricingEnginesFile= and 150 more with a relative prefix; =netting.xml= 209 of 252 uses of =csaFile=; =collateralbalances.xml= 23 of 23; =sensitivity.xml= 70 of 76; =stresstest.xml= 15 of 19; =npv.csv= 333 of 368; =flows.csv= 314 of 336; =curves.csv= 315 of 331.
+
+The table lists names and patterns. It does not hold content. The content of an input document comes from the entities of its configuration type.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

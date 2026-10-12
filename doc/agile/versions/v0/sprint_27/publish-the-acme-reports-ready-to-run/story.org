@@ -23,10 +23,10 @@ Today a clean ACME provision leaves report definitions that cannot run. The four
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The shared risk report configurations, their datasets and the bindings are published for the four ACME parties, and all 78 definitions export a run configuration that validates. The analytics are decided but held as switches. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-11                               |
+| Next          | Merge the first PR. Then the analytics and parameters on the configuration, the file types table, and the missing documents. |
+| Last touched  | 2026-10-12                               |
 
 * Acceptance
 
@@ -45,10 +45,19 @@ Today a clean ACME provision leaves report definitions that cannot run. The four
 | [[id:4D27E679-3ABC-4FC0-8665-F9158791D205][Publish the today's market documents through DQ]] | ABANDONED | | | Add the DQ staging, dataset and publish function for the today's market configuration with its entries and collections, and publish each party's document. |
 | [[id:7231FFE9-3AA9-4616-8BF5-9BBC6A990BA4][Publish the curve configurations through DQ]] | ABANDONED | | | Add the DQ staging, dataset and publish function for the curve configuration with its sections and curve configs, and publish each party's document. |
 | [[id:2626CE80-FF9A-4DBE-9070-92E3BBB43008][Publish the conventions as a configuration document]] | ABANDONED | | | The instrument conventions already publish as a party dataset. Give each party the conventions document the report type requires, so the definition can bind to it. |
-| [[id:D3AE54A1-A629-4AA2-BA80-3A4D670685C5][Publish the report definitions with their bindings]] | BACKLOG | | | Publish each definition with its bindings to the four configuration documents, with a dataset dependency on the configuration datasets. |
-| [[id:103FD77E-958E-4FF1-A613-3AE66BC9857B][Publish the risk report configurations for the ACME parties]] | BACKLOG | | | Publish a risk report configuration for every ACME definition, with its party's base currency and a scope that resolves to books, without any ORE import. |
+| [[id:D3AE54A1-A629-4AA2-BA80-3A4D670685C5][Publish the report definitions with their bindings]] | ABANDONED | | | Publish each definition with its bindings to the four configuration documents, with a dataset dependency on the configuration datasets. |
+| [[id:103FD77E-958E-4FF1-A613-3AE66BC9857B][Publish the risk report configurations for the ACME parties]] | ABANDONED | | | Publish a risk report configuration for every ACME definition, with its party's base currency and a scope that resolves to books, without any ORE import. |
 | [[id:DFB92E3F-3722-4534-AD48-B830DA1D22C2][Prove the ACME reports are ready to run]] | BACKLOG | | | Add a readiness check that states, for each definition, what it lacks to run, and show it passes for every ACME definition after a clean provision. |
 | [[id:3A0C7559-31F3-4651-8596-262F5A0CACC5][Store the report configuration documents in DQ and populate ACME's]] | STARTED | 2026-10-11 | | Add the DQ staging and publish for every configuration document an ACME report reads, then populate ACME's own datasets so each report definition publishes with all the configuration it needs, with no ORE import. |
+| [[id:3EF2E543-6429-443B-A2A0-1AA830EAD577][Attach the analytics and their parameters to the configuration]] | BACKLOG | | | Replace the sixteen analytic switches of the risk report configuration with analytic rows and parameter rows on the configuration, and publish them through DQ. |
+| [[id:4A6FF25B-9A4D-43AC-BE57-D8B1A39AC818][Add the ORE file types table with well known names]] | BACKLOG | | | Add a lookup of every kind of ORE file with the well known name it carries in the ORE samples. |
+| [[id:D587518B-F5C9-48FE-9CEA-ADD3D75CF31B][Name every ORE file from the file types table]] | BACKLOG | | | Make the export and the run document builder look up each file name in the file types table, and resolve parameters that name an input document from the bindings. |
+| [[id:750A7C23-BFB5-4E7E-82F4-99EA337A27B4][Split an ORE file by a key]] | BACKLOG | | | Let the export write one file for each value of a key, such as one portfolio file for each book, using the name pattern of the file types table. |
+| [[id:721F4695-4B63-41FD-B15D-B1FF92CEB27E][Add the analytic configuration documents with DQ support]] | BACKLOG | | | Add the entities, document stores and DQ staging for the documents that analytics read: simulation, sensitivity, stress test, historical return, Basel traffic light, SIMM calibration and credit simulation. |
+| [[id:E22DB287-81A9-4845-957D-705D081834CE][Add the input documents the exposure reports read with DQ support]] | BACKLOG | | | Store the counterparty information, netting set definitions, collateral balances, calendar adjustment, currency configuration, reference data and IBOR fallback documents and publish them through DQ. |
+| [[id:E9AB7EC1-D6DE-447E-A59E-4A3DE4AA7FFB][Prove the exported packages run in ORE]] | BACKLOG | | | Run the exported run configuration of an ACME report through the ORE engine and compare the result with what the report describes. |
+| [[id:C91BE44A-57CA-4F5B-A2CC-DB948649D760][Give the platform reports their own report type]] | BACKLOG | | | Take System Health, Audit Trail Summary and the three trade repository reports off the ORE report type, and give them a type and a workflow of their own. |
+| [[id:6C76E6D4-7E07-45F1-A2E9-7B68696E4558][Resolve the curve quote names against the synthetic feeds]] | BACKLOG | | | Check that the quote keys of the ACME curve configurations match the series that the synthetic feeds produce, once the feed naming refactor lands. |
 
 * Decisions
 
@@ -64,6 +73,19 @@ Taken with the product owner on 2026-10-11:
 - All the static data a report needs is published through DQ datasets with
   dataset dependencies. Market data comes from the feeds.
 - Trades are out of scope.
+
+Taken on 2026-10-12:
+
+- A risk report configuration is a named, shared, party owned entity that a
+  definition binds by name. Its DQ staging is generated from the domain entity.
+- The run document is built at export from the configuration and the bindings.
+  It is not stored.
+- The analytics and their parameters belong to the configuration, not to a
+  report. Their entities carry no =report_= prefix. This is the task "Attach the
+  analytics and their parameters to the configuration".
+- The files an ORE run names have well known names. A table of file types holds
+  them, the export looks every name up in it, and a configuration repeats none.
+  A file may be split by a key, which is not a day one requirement.
 
 The rules and the reasoning are in the sprint 27 investigation
 [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]], rules D15 to D17.

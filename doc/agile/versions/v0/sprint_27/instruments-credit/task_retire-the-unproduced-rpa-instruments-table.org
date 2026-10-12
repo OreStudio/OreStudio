@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/retire-the-unproduced-rpa-instruments-table
+#+pr: 3144
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The unproduced rpa_instruments table and everything generated from it are gone, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -42,9 +42,23 @@ The unproduced rpa_instruments table and everything generated from it are gone, 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Census.* List every file named for the table and every file that mentions
+   it, under every spelling: snake case, camel case and kebab case.
+2. *Remove the named files.* The model and everything generated from it: the
+   domain type, the repository, the service, the messaging, the eventing, the
+   handler, the generator, the history mapper, the SQL create and drop scripts,
+   the shell commands, their scripts and tests, the TypeScript protocol and the
+   recipe. Keep the task and the capture pages.
+3. *Remove the references.* The RLS policies, the permission seeds, the create
+   and drop includes, the module listing, the event and handler registrations,
+   the shell aggregator, the recipe index and the five component source lists.
+   Regenerate what a script owns.
+4. *The diagrams.* Strip the table from the five diagram sources and re-render
+   the committed images.
+5. *The capture.* File the inbox capture as discarded with a note that this task
+   did the work, and regenerate the backlog indexes.
+6. *Prove it.* Build the whole tree, recreate the database from the create
+   scripts, and run the suites of every component the unit touched.
 
 * Measurements
 
@@ -58,9 +72,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tracked files named for the table before | 49 | =git ls-files= with =grep -ic "rpa_instrument\|rpa-instrument"= | e229244eba |
+| Files deleted | 47 | =git diff --cached --diff-filter=D --name-only= with =wc -l= | the PR head |
+| Lines deleted, net | 6,229 deleted and 301 inserted over 77 files | =git diff --cached --shortstat= | the PR head |
+| Tracked files named for it after | 2: this task page and the discarded capture | =git ls-files= with the same =grep= | the PR head |
+| Whole-tree build | exit 0 | =compass build= | the PR head |
+| Trading core suite | 152 cases, 1,080 assertions, all pass | =ores.trading.core.tests= after =compass db recreate= | the PR head |
+| ORE core suite | 651 cases, 482,975 assertions, all pass | =ores.ore.core.tests= | the PR head |
+| Shell trading suite | 1,109 cases, 3,132 assertions, all pass | =ores.shell.trading.tests= | the PR head |
+| Shell application, trading API and trading service suites | 40, 101 and 10 cases, all pass | the three test binaries | the PR head |
+| SQL hygiene and schema validation | 2,359 files, 0 problems; validation passed | =check_sql_hygiene.py= and =validate_schemas.sh= | the PR head |
+| Codegen tests | 1,374 passed | =pytest projects/ores.codegen/tests -q= | the PR head |
 
 * Notes
+
+- Three files outside =doc/agile= still mention the table, and all three are
+  historical: two archived plans under =doc/plans= and a prototype page that
+  holds a snapshot of the permission list. They are left as they are.
+- The capture named an =rpa_instrument= leaf of the rates wire variant. After
+  the removal a search of =projects= finds no file that mentions the table, so
+  no variant names it.
+- The two ORE suites =ores.ore.service.tests= and =ores.ore.api.tests= hold no
+  test cases, so there was nothing to run in them.
 
 * Test Scenarios
 
@@ -77,12 +110,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3144][#3144]] | [trading,sql,shell] Retire the unproduced rpa_instruments table |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The diagrams still named the table | the five diagram sources and their images | accept | Stripped and re-rendered. |
+| 2 | The inbox capture would stay open | doc/agile/product_backlog/inbox | accept | Filed as discarded with a note that this task did the work. |
+| 3 | The removal commit names the wrong task in its trailer | the removal commit | decline | A follow-up commit records the right task; the project merges with merge commits, so both messages stay visible. |
+| 4 | A database from an earlier build keeps the old table | the SQL drop scripts | decline | The project recreates the database and writes no migrations. |
+| 5 | The deleted recipe may leave dead links | doc/recipes/shell | decline | No file links to the recipe's id, and its index line is removed; CI doc-lint confirms. |
 
 * Result
+
+The unproduced =rpa_instruments= table and everything generated from it are
+gone. 47 files named for it are deleted, and the references in the SQL create,
+drop, policy and permission scripts, the registrations, the shell aggregator,
+the recipe index, the module listing, the catalogue note, the five component
+source lists and the five diagrams are removed. The inbox capture is filed
+with a note that this task did the work.
+
+The whole tree builds, the database recreates from the create scripts, and the
+trading, ORE, shell, trading API and trading service suites pass. The risk
+participation agreement still routes to the credit table, as before; its own
+facts get a table in unit 4.
+
+Acceptance met: the model and its generated files are removed, the rates wire
+variant no longer names the leaf, the inbox capture is closed, and the
+database recreates, the build and the tests pass. The drift check is run on the
+committed tree before the PR.

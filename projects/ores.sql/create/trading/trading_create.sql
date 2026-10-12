@@ -179,8 +179,6 @@
 \ir ./trading_inflation_swap_instruments_create.sql
 \ir ./trading_inflation_swap_instruments_notify_trigger_create.sql
 
-\ir ./trading_rpa_instruments_create.sql
-\ir ./trading_rpa_instruments_notify_trigger_create.sql
 
 -- Per-type FX instrument tables (depends on reference data above)
 \ir ./trading_fx_forward_instruments_create.sql

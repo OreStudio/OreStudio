@@ -55,8 +55,8 @@ describe('what a screen needs', () => {
     it('offers the organisation in the menu to those who can use one of its lists', () => {
         const item = MENU.find((entry) => entry.to === '/organisation');
         expect(item).toBeDefined();
-        expect(offered(item!, member, 'application')).toBe(true);
-        expect(offered(item!, nobody, 'application')).toBe(false);
+        expect(offered(item!, member)).toBe(true);
+        expect(offered(item!, nobody)).toBe(false);
     });
 
     it('offers only the tabs a reader can use, in the order declared', () => {
@@ -70,5 +70,13 @@ describe('what a screen needs', () => {
             'history',
         ]);
         expect(tabsFor(tabs, (needs) => meets(nobody, needs))).toEqual(['details']);
+    });
+});
+
+describe('what everything holds', () => {
+    it('does not include the read of the deployment', () => {
+        expect(everything(PERMISSION.partiesRead)).toBe(true);
+        expect(everything(PERMISSION.deploymentRead)).toBe(false);
+        expect(holdsFrom(new Set(['installation::*']))(PERMISSION.deploymentRead)).toBe(true);
     });
 });

@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: BBF2EB3F-BC2E-416E-8F57-DEDA19600A95
+:END:
+#+title: Task: Review every card, breadcrumb and menu against the menu structure page
+#+description: List every difference between the menu, the area cards, the breadcrumbs and addresses of the web screens and the menu structure page, then fix each one in the code or the page.
+#+type: task
+#+level: s1
+#+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
+#+owner: marco
+#+branch: feature/review-every-card-breadcrumb-and-menu-against-the-menu-structure-page
+#+pr: 3142
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every menu entry, card, breadcrumb and address of the web app says what the menu structure page says, or the page says what the app does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A table in the task lists every menu entry, every card and the trail and address of every screen, against the page, with the difference or none
+- Each difference is fixed in the code or the page, and the table shows the result
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+- Dump the menu, the folder cards and every card in English from the code (=shell/areas.ts=, =shell/cards.ts=), list every route in =AppRoutes.tsx=, and read how each screen builds its trail.
+- Set each against the menu structure page: the order of the areas, the cards of each area, the words of a card and of its screen, the address of a screen, and the trail Home, the area, the screen.
+- Fix a difference in the code when the page is right, and in the page when the code is right and signed off. Leave a decision about words for the person who owns them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** The audit
+
+The menu, the cards and the trails, read from the code at =origin/main= of 2026-10-11 and set against the page.
+
+| # | Where | The page says | The code did | Result |
+|---+-------+---------------+--------------+--------|
+| 1 | Menu order | Market data comes before Requests | Requests came first | Fixed: the menu follows the page |
+| 2 | Home folder cards | One folder card for each area, in the order of the menu | Home used its own list, in an order that differed from the menu | Fixed: Home walks the menu. A test holds the two in step |
+| 3 | Development in the menu | Not an area on the page | A menu entry, a folder card and three screens | Page changed: Development is an area with its topic, tabs and addresses |
+| 4 | Market data area page | Trail is Home, Market data | Trail was Market data alone | Fixed |
+| 5 | FX price feeds list and page | Trail starts at Home | Trail started at Market data | Fixed |
+| 6 | Watch a curve evolve | Trail Home, the area as a link, the screen | The area was not a link, and the trail said "Watch a curve evolve" while the header said "Watch a curve or surface evolve" | Fixed: the trail and the card use the screen's own title |
+| 7 | Market data cards | Every card is defined once in =shell/cards.ts= | Two cards were written inside the area page | Fixed: both are in the registry, drawn by the shared area page, and a test holds each title equal to its screen |
+| 8 | Classifications card | A file card names its screen word for word | The card had no screen title, so no test held them | Fixed |
+| 9 | People list for a system administrator | One area per screen | Trail was Home, Accounts, with no area | Fixed: Home, Organisation, Accounts |
+| 10 | A tenant's person page | Trail Home, the area, the list, the subject | A line of links with no Home | Fixed: Home, Tenants, the tenant, the person |
+| 11 | A tenant's setup run, and Add tenant | Trail Home, the area, the screen | No trail | Fixed |
+| 12 | Operations cards | Names the screens "message queue" and "telemetry" | The cards say Message bus and Telemetry logs | Page changed to the card words |
+| 13 | Tenants, and the Services, Grid, Message bus and Telemetry logs cards | Drawn by a read | Drawn by the session mode | Not fixed here: the first task of the story |
+| 14 | Trades | An area, with no web screens yet | No menu entry | Agrees: the page says so |
+| 15 | Staff | "People (Staff for a member)" | The card and the screen say Staff for a tenant administrator and a member, and Accounts for a system administrator | Decided: the screen is Staff for everyone. The page and the system administrator's title follow. The address stays =/organisation/people= |
+| 16 | My profile, My access, Security, Where I work | Reached from the account menu, each in one place. The page names no trail | No trail on any of them | Decided: every screen has a breadcrumb. Each has Home then the page, and the page says so |
+
+Agrees with the page, no change: the Reference data, Organisation and Operations area cards and their order, the workflow cards on Parties and on the Reference data page, the Organisation trails, the Requests trails, the addresses of the Reference data, Organisation and Operations screens, and the redirects from the earlier addresses.
+
+** Open points
+
+- The address of Staff is still =/organisation/people=. Renaming it needs a redirect from the old one. Nobody asked for it.
+- The Development screens build their own Home, Development trail by hand, and the words match the shared trail. They were left as they are.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3142][#3142]] | [web] Bring the menu, cards and trails to the menu structure page |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The menu test says "in the same order" but sorts both lists | menu.test.ts | Accept | It now compares the order of the two lists directly. |
+| 2 | The tenant run page repeats the title expression | TenantRunPage.tsx | Accept | The header takes the constant. |
+| 3 | Hooks called inside JSX | fxFeeds.tsx, TenantAccountPage.tsx | Accept | The hooks are called at the top of each component. |
+| 4 | Does the Organisation link work in system administration | PeoplePage.tsx | Decline | Nothing narrows the Organisation entry by mode, and a system administrator holds the accounts read, so the area is drawn and the link opens it. |
+| 5 | The tenants label may differ between two keys | TenantAccountPage.tsx | Decline | Both keys say the same word in English, French and Portuguese, which I compared. |
+| 6 | Unused i18n keys | locales | Accept | Removed market.area, market.evolution.screen, marketdata.area.screens.evolution and accounts.title from all three languages. |
+| 7 | Card reads and menu reads are written twice | cards.ts, areas.ts | Accept | A test holds the reads of each area's cards equal to the reads its menu entry names. |
+
+* Result
+
+Every difference between the web menu, cards and trails and the menu structure page is listed in the task, and each is fixed in the code or the page, except the one the story's first task covers.
+
+- The menu and Home put Market data before Requests, as the page does, and a test holds the two in step.
+- Market data's cards are in the one card registry and its trails start at Home and link the area.
+- The tenant screens that had no trail, or a trail without Home, have one.
+- The page now names the Development area and the card words of Operations.
+- The screen is Staff for everyone, and the four pages of a person's own (My profile, My access, Security, Where I work) have a breadcrumb of Home then the page. Every routed screen except Home has a trail.
+
+Evidence: the whole web package passes (104 files, 1144 tests), the typecheck is clean and Prettier is clean.
+
+Not done here: the installation read (the story's first task) and a test that walks every screen (the story's last task).

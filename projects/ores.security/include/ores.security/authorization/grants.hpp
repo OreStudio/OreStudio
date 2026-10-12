@@ -33,10 +33,17 @@ namespace ores::security::authorization {
  * component wildcard such as =refdata::*=, which covers every code that starts
  * with =refdata::=. This is the one rule every permission check uses, so the
  * token check and the database check cannot disagree about the same grant.
+ *
+ * The wildcard =*= does not cover a code of the =installation= component. Those
+ * codes say a session acts on the deployment as a whole, across every tenant,
+ * and a tenant's administrator holds =*=. Only the code itself, or
+ * =installation::*=, grants one. The browser and the BFF state the same rule
+ * (=permissionCovers= in =@ores/contracts=).
  */
 inline bool grants(std::span<const std::string> granted, std::string_view required) {
+    const bool installation = required.starts_with("installation::");
     for (const auto& grant : granted) {
-        if (grant == "*" || grant == required)
+        if (grant == required || (grant == "*" && !installation))
             return true;
         if (grant.size() > 1 && grant.ends_with("::*") &&
             required.starts_with(std::string_view(grant).substr(0, grant.size() - 1)))

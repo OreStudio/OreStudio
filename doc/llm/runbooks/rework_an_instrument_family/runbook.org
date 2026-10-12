@@ -28,7 +28,7 @@ Apply these in every unit. They are the reason for most of the steps below.
 
 1. *Data-oriented approach.* Organise the tables by how the code reads and writes the data, not by product taxonomy. Key every row by its trade. A list is rows of a child table. State the variation as a header with one fact table per product.
 2. *Split data by usage, hot and cold.* Keep the fields read together on the main path in the header and the product fact table. Put rarely read data in its own table. A column that no mapper writes leaves the model. A column belongs on the header only if it holds for every code of the family.
-3. *Exact decimals for money.* Every rate, spread, notional, amount, price, strike, fee and recovery rate is a decimal in the domain type and =numeric(38, 12)= in the column. A double never enters the persisted domain. At the ORE boundary, keep the digits the document wrote.
+3. *Exact decimals for money.* Every rate, spread, notional, amount, price, strike, fee and premium is a decimal in the domain type and =numeric(38, 12)= in the column. A double never enters the persisted domain. At the ORE boundary, keep the digits the document wrote. A continuous quantity (volatility, correlation, weight, probability, recovery rate, tranche fraction) stays a binary float, in the domain type and in the column; the two must agree.
 
 * Steps
 
@@ -46,7 +46,7 @@ The analysis is one task. It writes =design.org= and an ER diagram beside the st
 - [ ] *Inventory every surface.* Models, SQL, domain C++, mappers, repositories, services, messaging, shell commands, history mapper, TypeScript protocol, the ORE mapper and the ORE binding structs, and the tests.
 - [ ] *Make the use table.* For each column of the current table, record which code writes it and which code reads it. This is the hot and cold split. Note the columns no mapper writes and the columns written and never read.
 - [ ] *Compare with the ORE schema.* For each product, list the elements the schema has and no column holds. Check that the export writes every required element. An export that omits a required element is not valid ORE.
-- [ ] *Find the money.* List every money column and its type. List the ORE binding members that carry a money value and are bare floats. Each one is a digits task.
+- [ ] *Find the money.* Classify every numeric column as money or continuous, as the exact-money check in the data-oriented design page does. List every money column and its type, and list the columns whose type and domain type disagree. List the ORE binding members that carry a money value and are bare floats. Each one is a digits task; a continuous member is not.
 - [ ] *Write the findings.* One row each, with the evidence that proves it. Check each number against the tree and put the command in the task's Measurements.
 - [ ] *Propose the model.* A header with the columns every code shares, one fact table per product keyed by the trade, shared children reused (legs, options, strikes, schedules), and a new child only where no shared shape fits. Record the rejected alternatives.
 - [ ] *Draw the diagram.* Write =design_er.puml= and render =design_er.png=. Read the picture.
@@ -60,7 +60,7 @@ The analysis is one task. It writes =design.org= and an ER diagram beside the st
 The order below is the order that worked for rates, with the digits moved first because they change the goldens. Adjust it to the family, and keep each unit small enough to check.
 
 - [ ] *Repair the routing.* The catalogue's =instrument= column names the table each code routes to. A code with no importer has no table, so leave its =instrument= empty. Generate the routing from the catalogue; do not hand-write it.
-- [ ] *Carry the digits.* Make the family's money members lexical leaves in the ORE binding through =scripts/reapply_ore_lexical_form.py=, never by hand. Read each one with =exact_decimal= and write it back with =set_exact=. Make every money column =numeric(38, 12)=. Add a mapper test that holds the digits of each member, and regenerate the goldens that change.
+- [ ] *Carry the digits.* Make the family's money members (not its continuous quantities) lexical leaves in the ORE binding through =scripts/reapply_ore_lexical_form.py=, never by hand. Read each one with =exact_decimal= and write it back with =set_exact=. Make every money column =numeric(38, 12)=. Add a mapper test that holds the digits of each member, and regenerate the goldens that change.
 - [ ] *Write the legs and children.* Reuse the shared leg, option, strike and schedule tables. Add a nullable column to a shared table before you add a table that repeats it.
 - [ ] *Author the header and the fact tables.* One model each, with the family's codes in the header's check, the trade as the key, and the header's delete cascade naming every fact table and child. Pin each row to the anchor's trade type and party. Delete the old shape and every hand-written file it needed.
 - [ ] *Close the round trip.* Write the reverse mapping of every product from the stored rows. Write every required ORE element. Test each product's fields through the round trip.

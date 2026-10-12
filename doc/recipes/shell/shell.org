@@ -980,7 +980,6 @@ tangled into the runnable script library
 
 * Rpa Instruments
 
-- [[id:20EC5312-E6EE-553A-B109-28A2015725A5][How do I run the rpa_instruments commands from the shell?]]
 
 * Scripted Instruments
 

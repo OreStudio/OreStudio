@@ -2,49 +2,64 @@
 :ID: C5829235-D255-4C13-9EC1-6658CA518B02
 :END:
 #+title: Task: Carry the credit digits
-#+description: The credit money members are bare floats in the ORE binding, so the mapper stores float artifacts: 0.025 becomes 0.02500000037252903. Make them lexical leaves through the reapply script and store recovery_rate as a decimal. (Staging unit 2.)
+#+description: The credit money members, the upfront fee and the option strike, are bare floats in the ORE binding, so the mapper reads them through a double. Make them lexical leaves through the reapply script. Classify every credit numeric column as money or continuous, and make the tranche columns agree with their domain type. (Staging unit 2.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/carry-the-credit-digits
+#+pr: 3139
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Every credit money value is stored and exported as the digits the document wrote.
+Every credit money value is stored and exported as the digits the document wrote, and every credit numeric column has the type its kind needs: money is an exact decimal, a continuous quantity is a binary float, and the column and the domain type agree.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
-- FixedRecoveryRate, UpfrontFee, Strike, AttachmentPoint, DetachmentPoint and ParticipationRate keep the document's digits, through the reapply script.
-- recovery_rate is numeric(38, 12), as the other money columns are.
-- A mapper test holds the digits of each member, and the goldens that change are numeric text only.
+- UpfrontFee and Strike keep the document's digits, through the reapply script.
+- A continuous quantity (FixedRecoveryRate, AttachmentPoint, DetachmentPoint, ParticipationRate) stays a binary float.
+- The tranche columns are double precision, so each column agrees with its domain type; recovery_rate stays double precision.
+- A mapper test holds the digits of the money member the mapper stores, and the goldens that change are numeric text only.
 - The ORE suite passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Classify.* Sort every credit numeric column and binding member into money
+   or continuous, with the exact-money check of the data-oriented design page.
+   Money is an exact decimal. A continuous quantity stays a binary float. The
+   column and the domain type must agree.
+2. *The binding.* Add a table of credit money members to the reapply script:
+   the two =UpfrontFee= members and the index option's =Strike=. The script
+   patches the struct, the getter, the element info and the serializer of each,
+   and it refuses an anchor that is missing or not unique.
+3. *The mapper.* The forward mapping already reads a lexical leaf through
+   =exact_decimal=. The reverse mapping writes the strike with =set_exact=,
+   which moves to the boundary header so both mappers share it.
+4. *The tranche columns.* The tranche points are continuous quantities. Their
+   columns become =double precision=, so they agree with their =double= domain
+   type.
+5. *Tests and goldens.* A mapper test holds the strike's digits, a binding test
+   holds the strike and the upfront fee, and the goldens that change are
+   regenerated.
 
 * Measurements
 
@@ -58,9 +73,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Credit money members made lexical leaves | 3 (two UpfrontFee, one Strike) | =grep -c moneyFloat projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp= is 6: the leaf, the two FRA members and these three | the PR head |
+| Golden files changed | 3 of 132, one numeric line each | =git diff --stat -- assets= | the PR head |
+| ORE core suite | 651 cases, 482,975 assertions, all pass | =ores.ore.core.tests= | the PR head |
+| Trading core suite | 152 cases, 1,080 assertions, all pass | =ores.trading.core.tests= after =compass db recreate= | the PR head |
+| Codegen tests | 1,374 passed | =pytest projects/ores.codegen/tests -q= | the PR head |
+| SQL hygiene | 2,363 files, 0 problems | =check_sql_hygiene.py= | the PR head |
+| Reapply script self-tests | both pass | =scripts/reapply_ore_lexical_form.py --self-test= and =--self-test-missing-anchor= | the PR head |
 
 * Notes
+
+- The first version of this unit made the recovery rate, the tranche points and
+  the participation rate lexical leaves and the recovery rate an exact decimal.
+  That was wrong. The data-oriented design page lists the recovery rate and the
+  tranche fraction as continuous quantities, which stay binary floats, and the
+  review criteria the data-model skill walks showed the contradiction. The
+  unit was corrected before it was raised: those members are not leaves, the
+  recovery rate keeps its type, and the tranche columns follow their domain
+  type. The participation rate is treated as continuous like a weight; the
+  page does not name it, so the operator can overrule that.
+- The design, the ER diagram, the memory and the runbook carried the same
+  mistake and are corrected in this unit.
 
 * Test Scenarios
 
@@ -77,12 +110,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3139][#3139]] | [ore,trading] Carry the credit money digits |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The first version treated the recovery rate and the tranche fraction as money | credit_instrument.org, domain.cpp | accept | They are continuous quantities and stay binary floats. The unit was corrected. |
+| 2 | The design, memory and runbook carried the same classification | design.org, the memory, the runbook | accept | Corrected, and the runbook gains a classify-each-column step. |
+| 3 | The tranche columns were =numeric= while the domain type was =double= | credit_instrument.org | accept | The columns are =double precision=. |
+| 4 | A double blank line before =set_exact= | ore_boundary_decimal.hpp | accept | Removed. |
+| 5 | The =required=True= branches of the member patch never run | reapply_ore_lexical_form.py | accept | Removed; the patch handles optional members and refuses another shape. |
+| 6 | The reverse patch is not idempotent | reapply_ore_lexical_form.py | decline | The un-patch runs only in the self-test, on a patched file. |
+| 7 | The binding test reads the external submodule | xml_lexical_form_export_tests.cpp | decline | The golden, mapper and corpus tests already read it, and the ORE suite needs it. |
+| 8 | The tranche column change needs a migration | credit_instrument.org | decline | The project recreates the database; no migration is written. |
 
 * Result
+
+
+The credit money members keep the document's digits. The upfront fee and the
+option strike are lexical leaves in the ORE binding, patched in by the reapply
+script, and the strike is read and written through them. The continuous
+quantities, the recovery rate, the tranche points and the participation rate,
+stay binary floats, as the data-oriented design rule says, and the tranche
+columns are =double precision= so each agrees with its domain type.
+
+Three golden files changed, one numeric line each. The ORE suite, the trading
+suite after a database recreate, the codegen tests and the SQL hygiene check
+pass.
+
+Acceptance met: the money members keep their digits through the script, the
+continuous quantities stay floats, the tranche columns agree with their domain
+type, a mapper test and a binding test hold the digits, and the ORE suite
+passes.

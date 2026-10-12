@@ -6348,7 +6348,7 @@ def _run_emacs_target(target: str, dry_run: bool = False,
 # considers exactly the files the publish project would.
 _SITE_EXCLUDED = (
     "/build/", "/vcpkg/", "/.packages/", "/.claude/worktrees/",
-    "/projects/ores.org-js/", "/.git/",
+    "/.git/",
 )
 
 _SITE_OUTPUT = Path("build") / "output" / "site" / "OreStudio"

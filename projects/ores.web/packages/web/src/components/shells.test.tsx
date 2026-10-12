@@ -366,11 +366,20 @@ describe('the application shell', () => {
         }
     });
 
-    it('draws Tenants only where the session acts on the deployment', () => {
-        expect(renderAppShell('Acme Operations', 'system-administration')).toContain(
+    it('draws Tenants only for a person who holds the deployment read, which everything does not grant', () => {
+        const deployment = ['installation::deployment:read'];
+        expect(
+            renderAppShell('Acme Operations', 'system-administration', undefined, deployment),
+        ).toContain('href="/tenants"');
+        expect(
+            renderAppShell('Acme Operations', 'system-administration', undefined, ['*']),
+        ).not.toContain('href="/tenants"');
+        expect(renderAppShell('Acme Operations', 'application', undefined, ['*'])).not.toContain(
             'href="/tenants"',
         );
-        expect(renderAppShell('Acme Operations', 'application')).not.toContain('href="/tenants"');
+        expect(renderAppShell('Acme Operations', 'system-administration')).not.toContain(
+            'href="/tenants"',
+        );
     });
 
     it('draws Reference data for everyone, Organisation by the read, and Parties as no entry of its own', () => {

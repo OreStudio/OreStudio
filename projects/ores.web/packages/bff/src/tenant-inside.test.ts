@@ -30,6 +30,7 @@ import {
     type SessionMode,
 } from '@ores/wire-protocol';
 import type { Config } from './config.js';
+import { MY_ROLES_SUBJECT, myRolesAnswer } from './deployment-roles.testing.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -229,6 +230,9 @@ function buildTestServer(
             body: unknown,
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
+            if (subject === MY_ROLES_SUBJECT) {
+                return schema.parse(myRolesAnswer(options.mode ?? 'system-administration'));
+            }
             calls.push(`outside ${subject}`);
             return schema.parse(reply(subject, body));
         },

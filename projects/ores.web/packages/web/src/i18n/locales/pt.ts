@@ -650,7 +650,6 @@ const pt: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Contas',
         description: 'Identidades que podem iniciar sessão ou atuar como serviço.',
         search: 'Pesquisar',
         searchPlaceholder: 'Nome de utilizador, nome ou email',
@@ -1819,9 +1818,7 @@ const pt: SourceCatalogue = {
     },
 
     market: {
-        area: 'Dados de mercado',
         evolution: {
-            screen: 'Acompanhar a evolução de uma curva',
             title: 'Acompanhar a evolução de uma curva ou superfície',
             description:
                 'Indique um objeto e um período. Leia os instantes por nós no período e o objeto como está agora.',
@@ -1877,7 +1874,15 @@ const pt: SourceCatalogue = {
                 derived: 'Derivado',
                 manual: 'Manual',
             },
-            gap: 'Ainda não se lê nenhuma lista de séries, por isso o objeto é indicado pela sua identidade.',
+            picker: {
+                label: 'Série',
+                placeholder: 'Escolha uma série, ou escreva a sua identidade abaixo',
+                loading: 'A ler as séries que pode ver...',
+                empty: 'A sua parte não vê nenhuma série. Os dados de mercado semeados pelo provisionamento podem não constar até a sua identidade ser projetada. Pode escrever uma identidade abaixo.',
+                truncated:
+                    'A lista contém as primeiras {count} séries que a sua parte pode ver. Trabalhe numa parte com menos séries para ver as restantes.',
+                noShape: 'nenhuma forma declarada',
+            },
         },
     },
 
@@ -3306,7 +3311,6 @@ const pt: SourceCatalogue = {
                 fxFeeds: 'Fluxos de preços FX',
                 fxFeedsBody:
                     'Componha os fluxos FX sintéticos: o par, o motor e a mistura de cada um.',
-                evolution: 'Acompanhar a evolução de uma curva',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },
@@ -3557,6 +3561,8 @@ const pt: SourceCatalogue = {
         rolesRead: 'ler os papéis e as suas permissões',
         rolesAssign: 'atribuir papéis às pessoas',
         sessionsRead: 'ler as sessões das pessoas',
+        deploymentRead:
+            'ver toda a implantação: os seus inquilinos, serviços, grelha, barramento de mensagens e registos',
         curveSnapshotsRead: 'ver as curvas de dados de mercado',
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
     },

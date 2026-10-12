@@ -23,7 +23,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageHeader } from '../ui/Primitives.js';
 import { AreaTrail, type AreaName } from './AreaTrail.js';
-import { areaOfCard, cardOf, type CardId } from './cards.js';
+import { cardOf, screenAreaOf, type CardId } from './cards.js';
 
 /**
  * The head of a screen that a file card leads to: the trail, the title and the
@@ -39,11 +39,11 @@ export function CardScreen({
 }): ReactNode {
     const { t } = useTranslation();
     const def = cardOf(card);
-    const area = areaOfCard(card);
+    const area = screenAreaOf(card);
     return (
         <div className="space-y-6">
             <div>
-                {area !== undefined && area !== 'tenants' && (
+                {area !== undefined && (
                     <AreaTrail area={area satisfies AreaName} screen={t(def.titleKey)} />
                 )}
                 <PageHeader title={t(def.titleKey)} description={t(def.bodyKey)} />

@@ -20,54 +20,29 @@
  */
 
 import type { ReactNode } from 'react';
-import { useHolds } from '../access/holds.js';
-import { PERMISSION } from '../access/permissions.js';
+import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
-import { Crumbs } from '../refdata/shared.js';
+import { AreaCards } from '../shell/AreaCards.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 import { PageHeader } from '../ui/Primitives.js';
-import { Tiles } from '../ui/Tiles.js';
-import { fxFeedPath } from './fxFeeds.js';
-
-/** The screens built, with their addresses and the read each needs. */
-const BUILT = [
-    {
-        screen: 'fxFeeds',
-        to: fxFeedPath(),
-        icon: 'trend',
-        read: PERMISSION.fxFeedsRead,
-    },
-    {
-        screen: 'evolution',
-        to: '/market-data/evolution',
-        icon: 'chart',
-        read: PERMISSION.curveSnapshotsRead,
-    },
-] as const;
 
 /**
  * Market data, the area: the prices and curves the platform receives or
- * generates. Each screen is a card, drawn for a person who holds its read.
+ * generates. Its cards come from the one registry that every area and Home draw
+ * from, and each is drawn for a person who holds the read of its screen.
  */
 export function MarketDataPage(): ReactNode {
     const { t } = useTranslation();
-    const holds = useHolds();
     return (
         <div className="space-y-6">
             <div>
-                <Crumbs parts={[{ label: t('marketdata.area.title') }]} />
+                <AreaTrail area="marketdata" />
                 <PageHeader
                     title={t('marketdata.area.title')}
                     description={t('marketdata.area.lead')}
                 />
             </div>
-            <Tiles
-                tiles={BUILT.filter(({ read }) => holds(read)).map(({ screen, to, icon }) => ({
-                    title: t(`marketdata.area.screens.${screen}`),
-                    body: t(`marketdata.area.screens.${screen}Body`),
-                    to,
-                    icon,
-                }))}
-            />
+            <AreaCards area="marketdata" />
         </div>
     );
 }

@@ -21,11 +21,11 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded. No build tasks yet.        |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Pull story 3, the test queue as notifications, into a sprint. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -47,7 +47,7 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 | [[id:A95170DE-F7B5-4E35-9C80-91F2EF5779E1][Browse the backlog and any doc by link]] | DONE | 2026-10-11 | 2026-10-11 | Add the backlog buckets to the Development area and let a link open any agile doc in the tab, as the Story and Task tabs already do for their docs. |
 | [[id:C91906B9-C267-4CF8-8B18-6ED2DAC7D755][Show the sprint charts]] | DONE | 2026-10-11 | 2026-10-11 | Port the velocity, burn-up and stacked charts of ores.org-js to the board. |
 | [[id:30EFEC78-5E6C-4A0C-BCAD-6C5B91C03DC5][Show the work trees on the board]] | DONE | 2026-10-11 | 2026-10-11 | Port the read-only fleet strip: every work tree of the repository and the work item it is on, and mark the story this work tree is on as current. |
-| [[id:4D6995D6-1443-4618-AE25-1469A1C3AAA7][Retire ores.dsh_kanban and ores.org-js]] | BACKLOG | | | Remove both projects and their publishing, exclude patterns and pages, and check that no site page links to the old agile view. |
+| [[id:4D6995D6-1443-4618-AE25-1469A1C3AAA7][Retire ores.dsh_kanban and ores.org-js]] | DONE | 2026-10-11 | 2026-10-11 | Remove both projects and their publishing, exclude patterns and pages, and check that no site page links to the old agile view. |
 
 ** Build order
 
@@ -76,6 +76,14 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 - Writing agile docs from the browser. Compass stays the only way they change.
 - The across work trees story view the contract specifies and defers.
 - A tester role and assignment, which are story 3.
+
+* Result
+
+The Development area of ores.web has the agile browser: a Board tab (sprint line, tiles, filters, columns, cards, story detail, the work tree strip and the current story mark), a Backlog tab with docs opened by link, and a Charts tab. The BFF reads the agile tree behind an interface and serves it behind the session check. =ores.dsh_kanban= and =ores.org-js= are removed with their publishing, and no site page links to the old agile view.
+
+Gaps in parity, accepted: the stacked timeline chart is not ported, because its HTML snapshots exist only for two sprints.
+
+Follow-ups, none filed yet: a click test for the board, the backlog and the charts, which needs a DOM test library; removing the =/api/qa/docs= route, which has no client; a read of the French and Portuguese text by a speaker; deleting the stale remote branches by hand; a decision on the capture about the timeline bucket writer, which named =ores.org-js=.
 
 * Promoted from capture
 

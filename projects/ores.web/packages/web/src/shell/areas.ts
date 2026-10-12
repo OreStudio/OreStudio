@@ -20,6 +20,7 @@
  */
 
 import type { SessionMode } from '@ores/wire-protocol/browser';
+import { DEPLOYMENT_READ } from '@ores/contracts';
 import { PATHS } from './paths.js';
 
 /** One entry of the shell's menu: an area, named for what a person does there. */
@@ -28,14 +29,6 @@ export interface MenuItem {
     readonly to: string;
     /** Drawn only for a person who holds this permission, or any of these. */
     readonly permission?: string | readonly string[];
-    /**
-     * Drawn only where the session acts on the deployment. The server reads
-     * these screens from the whole installation and guards them by the session
-     * mode alone, because it has no permission that only the deployment's
-     * operator holds. This stays until it has one, and then the permission
-     * replaces the scope.
-     */
-    readonly scope?: 'installation';
 }
 
 /**
@@ -58,7 +51,6 @@ export const MENU: readonly MenuItem[] = [
             'iam::accounts:lock',
         ],
     },
-    { nameKey: 'shell.menu.requests', to: '/requests' },
     {
         nameKey: 'shell.menu.marketdata',
         to: '/market-data',
@@ -67,29 +59,21 @@ export const MENU: readonly MenuItem[] = [
             'marketdata::curve_snapshots:read',
         ],
     },
+    { nameKey: 'shell.menu.requests', to: '/requests' },
     { nameKey: 'shell.menu.operations', to: PATHS.operations },
     { nameKey: 'shell.menu.development', to: '/development' },
-    { nameKey: 'shell.menu.tenants', to: '/tenants', scope: 'installation' },
+    { nameKey: 'shell.menu.tenants', to: '/tenants', permission: DEPLOYMENT_READ },
 ];
 
 export function modeKey(mode: SessionMode): string {
     return `shell.mode.${mode}`;
 }
 
-/** Whether the session acts on the deployment, which an installation-scope screen needs. */
-export function actsOnDeployment(mode: SessionMode): boolean {
-    return mode === 'system-administration';
-}
-
 /** Whether a screen is drawn for somebody who holds what `holds` answers for. */
 export function offered(
-    item: Pick<MenuItem, 'permission' | 'scope'>,
+    item: Pick<MenuItem, 'permission'>,
     holds: (code: string) => boolean,
-    mode: SessionMode,
 ): boolean {
-    if (item.scope === 'installation' && !actsOnDeployment(mode)) {
-        return false;
-    }
     if (item.permission === undefined) {
         return true;
     }

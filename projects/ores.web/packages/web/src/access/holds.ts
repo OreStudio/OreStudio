@@ -20,13 +20,16 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { permissionCovers } from '@ores/contracts';
 import { api } from '../api/client.js';
 import { meets, type Needs, type Permission } from './permissions.js';
 
-/** Whether a set of permission codes holds one, counting everything and an area's wildcard. */
+/**
+ * Whether a set of permission codes holds one, counting everything and a
+ * component's wildcard. Everything does not count for an installation code.
+ */
 export function holdsFrom(codes: ReadonlySet<string>): (code: string) => boolean {
-    return (code) =>
-        codes.has('*') || codes.has(`${code.split('::')[0] ?? ''}::*`) || codes.has(code);
+    return (code) => permissionCovers(codes, code);
 }
 
 /**

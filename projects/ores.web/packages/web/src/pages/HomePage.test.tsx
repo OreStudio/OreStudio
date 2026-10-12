@@ -452,7 +452,16 @@ describe("the system administrator's home", () => {
     });
 
     it('offers the same cards as the area pages on the Active modules tab, and no tenant creation', () => {
-        const html = home('system-administration', quiet, undefined, undefined, '/?tab=active');
+        const html = home(
+            'system-administration',
+            quiet,
+            undefined,
+            (client) =>
+                client.setQueryData(['my-access'], {
+                    roles: [{ permissionCodes: ['installation::deployment:read'] }],
+                }),
+            '/?tab=active',
+        );
 
         for (const href of ['/tenants', '/refdata', '/operations', '/security']) {
             expect(html).toContain(`href="${href}"`);

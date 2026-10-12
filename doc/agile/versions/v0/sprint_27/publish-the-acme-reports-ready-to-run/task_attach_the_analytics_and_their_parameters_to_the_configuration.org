@@ -26,11 +26,11 @@ Replace the sixteen analytic switches of the risk report configuration with the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | The data model analysis is written. It waits for the product owner to confirm the model. |
+| Now          | Nothing. |
 | Waiting on   | The product owner's answers to the three open points of the analysis. |
-| Next         | Remove the switches, rename and re-key the two entities, and regenerate. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance

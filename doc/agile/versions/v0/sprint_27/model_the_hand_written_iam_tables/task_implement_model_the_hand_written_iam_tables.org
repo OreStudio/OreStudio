@@ -8,7 +8,7 @@
 #+filetags: :model_the_hand_written_iam_tables:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-model-the-hand-written-iam-tables
-#+pr:
+#+pr: 3212
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3212][#3212]] | [iam] Generate account_role and role_permission from junction models |
 
 * Review
 

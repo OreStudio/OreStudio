@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
-#+branch: feature/complete-the-trade-list-filters
+#+branch: feature/read-each-trade-child-by-trade
 #+pr:
 #+blocked_on: The spike result on list_by for a key column.
 #+blocked_since:

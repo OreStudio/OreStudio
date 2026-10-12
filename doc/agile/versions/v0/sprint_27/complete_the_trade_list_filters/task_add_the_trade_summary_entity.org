@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
-#+branch: feature/complete-the-trade-list-filters
+#+branch: feature/add-the-trade-summary-entity
 #+pr:
 #+blocked_on: The spike result and the decision on option C.
 #+blocked_since:

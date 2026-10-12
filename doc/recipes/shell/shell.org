@@ -978,9 +978,6 @@ tangled into the runnable script library
 
 - [[id:AAD5792B-CBF7-5035-A89C-718E2D7777CA][How do I run the return_types commands from the shell?]]
 
-* Rpa Instruments
-
-
 * Scripted Instruments
 
 - [[id:AD0972FC-35E6-5CC4-960E-297D125C8A17][How do I run the scripted_instruments commands from the shell?]]

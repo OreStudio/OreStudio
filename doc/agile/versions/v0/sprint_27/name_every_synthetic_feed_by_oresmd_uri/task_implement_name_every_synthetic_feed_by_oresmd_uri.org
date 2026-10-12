@@ -26,11 +26,11 @@ A synthetic FX spot feed states the series it produces as an oresmd URI, the sam
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09E3EF10-022C-433F-80B0-96F3396AA9CC][Name every synthetic feed by its oresmd reference]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -86,3 +86,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A synthetic feed names the series it publishes. The FX spot feed holds its quote URI in place of the ORE key. A feed reports series_uris(), and two feeds conflict when their series overlap. The IR curve feed builds its pillar series from the currency, the pillar start and the index tenor, and the bootstrap config states the same index tenor. The market data URI page now says that a curve is a series.
+
+Checked on a recreated database after the merge with main: synthetic api (55 cases), core (42) and service (56); shell synthetic (170); marketdata core (196). All pass.
+
+Follow-up: the republish subject still uses the ORE key. The task Name the republish subject by the oresmd URI tracks it.

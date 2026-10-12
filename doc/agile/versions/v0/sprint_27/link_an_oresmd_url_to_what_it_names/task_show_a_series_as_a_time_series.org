@@ -26,11 +26,11 @@ A series with one value at each instant has a page, so its URL can link to it as
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -85,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The page =/market-data/series?uri== reads an oresmd URL, finds the series among the ones the party can see, and draws the latest observations as a line and a table of the newest 20 with their source. A series with an axis is sent to the Evolution page. A missing series, a fixing and a refused URL are said in words. The Evolution page links to this page when a series has no axis. Checked in headless Chrome: the AUD/USD spot series shows 26 of 26 observations.
+

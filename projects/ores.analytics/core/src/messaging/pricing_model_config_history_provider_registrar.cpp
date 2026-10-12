@@ -28,6 +28,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::messaging {
 
@@ -38,7 +40,10 @@ void register_pricing_model_config_history_provider(
         "analytics::pricing_model_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::pricing_model_config_service svc(scoped_ctx);
-            auto versions = svc.get_config_history(entity_id);
+            // The declared key is shared by the rows of other scopes, so the
+            // history is addressed by the row's own id.
+            auto versions =
+                svc.get_config_history(boost::lexical_cast<boost::uuids::uuid>(entity_id));
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_pricing_model_config_fields);
         });

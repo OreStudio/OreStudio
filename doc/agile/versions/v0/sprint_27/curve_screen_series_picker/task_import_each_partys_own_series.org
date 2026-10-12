@@ -8,7 +8,7 @@
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
 #+branch: feature/import-each-partys-own-series
-#+pr: 3154
+#+pr: 3149
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11

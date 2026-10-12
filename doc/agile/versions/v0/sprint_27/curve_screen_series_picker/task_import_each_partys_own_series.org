@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: B68DA277-8C6E-49CE-8A1D-63D58A67CE7D
+:END:
+#+title: Task: Import each party's own series
+#+description: The market data importer finds a series by its URI across the whole tenant, so a second party reuses the first party's series and fails on its axes. Look the series up by party and URI.
+#+type: task
+#+level: s1
+#+filetags: :curve_screen_series_picker:sprint_27:v0:
+#+owner: marco
+#+branch: feature/import-each-partys-own-series
+#+pr: 3149
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two parties can import the same market file, and each ends with its own series and its own declared shape.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A test with two parties under row-level security imports the same surface file for both, and fails before the fix.
+- After the fix each party holds its own series and axes, and neither sees the other's.
+- The importer for a context with no party behaves as before.
+
+* Plan
+
+Reproduce the failure with a test before changing anything: two parties under row-level security import the same
+surface file. Then pass the importer's party to the series lookup, which already takes one, and rerun. Check the
+importer's neighbours, and prove it on the running stack by rerunning the import that failed.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Two-party import tests before the fix | 2 of 2 fail with =series_axes_tbl_party_isolation_policy= | =ores.marketdata.core.tests "[import_service][party]"= | 793f6938e6 plus the new tests |
+| Two-party import tests after the fix | 2 of 2 pass, 16 assertions | the same command | 793f6938e6 plus the change |
+| Importer, corpus, export and read suites together | 53 cases, 738 assertions, pass in 5 of 5 runs | =[import_service],[series_snapshot_reader],[series_evolution_reader],[series_slice_reader],[series_identity_lister]= | 793f6938e6 plus the change |
+| Import of the demo file as Acme Corporation Plc, before | refused with the axes policy error | =marketdata import --file= in a shell logged in as the tenant administrator | 793f6938e6 |
+| The same import after the fix | 6 series, 438 observations | the same command | 793f6938e6 plus the change |
+| Series Plc lists through the BFF after the import | 19: 13 spot, 6 surfaces that can be shown | =POST /api/curves/series-list= | 793f6938e6 plus the change |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3149][#3149]] | [marketdata] Import each party's own series |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The no-party path is untested | import_service.cpp | Decline | The older import, snapshot, evolution and slice suites import through a context with no party, so that path runs in 53 cases and passes. A dedicated test would repeat them. A production request always carries a party from its token. |
+| 2 | An empty string means all parties | market_series_repository.hpp | Decline | An existing API shape, out of scope here. An optional would be safer and is worth its own change. |
+| 3 | The two-party helper checks the tenant only by id | tests | No change | The REQUIRE guards the empty case and the tenant is checked. |
+| 4 | The assertion on series_count rests on its meaning | tests | No change | The first test shows it counts created series: party B creates the same number as party A. |
+
+* Result
+
+The importer now looks a series up by its URI and the importing party. Two parties can import the same
+market file, and each ends with its own series and its own declared shape.
+
+*Cause.* The importer called =read_latest_by_uri= without a party. The series table is isolated by tenant
+alone, so the lookup found another party's series and reused it. The importer then wrote the axes under
+its own party, which closed the other party's axes row, and the party policy refused that. It was harmless
+while the importer wrote only tenant-isolated rows. The axes became party-isolated on 2026-10-08 and the
+import began declaring shapes on 2026-10-09, both in this story's earlier tasks, and my import tests ran with
+no party, so none of them could see it. The lookup already took an optional party, and the feed ingest loop
+passed it.
+
+*The fix.* One call passes the context's party to the lookup. A context with no party looks across the
+tenant, as before. The test ran red first, with the exact error from the shell, and green after.
+
+*A test-isolation finding.* The scoped test helper shares one tenant across tests, so a surface imported by
+one test is still there for the next. The second test failed red for that reason. Each test that writes a
+surface uses a pair of its own.
+
+*On the running stack.* The import that failed under Acme Corporation Plc now succeeds, and Plc lists the six
+surfaces and reads one's evolution.

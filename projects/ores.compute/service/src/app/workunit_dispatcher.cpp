@@ -132,8 +132,14 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
     }
 
     // The poller of the grid samples counts the tenants that have dispatched work.
-    ores::compute::repository::work_tenant_repository().note(
-        ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
+    // A failure here costs only a row in the samples, so it never stops the dispatch.
+    try {
+        ores::compute::repository::work_tenant_repository().note(
+            ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Could not note tenant " << tenant_uuid
+                                  << " for the grid samples: " << e.what();
+    }
 
     ores::compute::service::result_service result_svc(tenant_ctx);
 

@@ -81,3 +81,13 @@ TEST_CASE("list_is_empty_of_a_tenant_that_was_not_noted", tags) {
 
     CHECK(std::ranges::count(tenants, noted.id) == 0);
 }
+
+TEST_CASE("a_tenants_session_reads_none_of_the_list", tags) {
+    database_helper h;
+    noted_tenant noted{h};
+    work_tenant_repository repo;
+    repo.note(noted.system(), noted.id);
+
+    // The list belongs to the installation: a tenant's own session sees no row of it.
+    CHECK(repo.list(h.context()).empty());
+}

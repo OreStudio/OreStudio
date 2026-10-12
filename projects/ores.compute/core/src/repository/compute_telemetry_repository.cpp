@@ -178,7 +178,8 @@ std::chrono::system_clock::time_point from_epoch_seconds(long long seconds) {
 std::vector<std::optional<boost::uuids::uuid>>
 compute_telemetry_repository::parties_with_work(context ctx) {
     // Each table is read as the session sees it, so the policies decide which parties
-    // are listed. The empty party is always there, because work with no party is the
+    // are listed. A party whose work is all gone is no longer listed and gets no more rows,
+    // so its counts leave the sums from then on, as they would at zero. The empty party is always there, because work with no party is the
     // work a tenant had before the party scope and the work a service submits.
     static const std::string sql = R"(
         SELECT party_id::text FROM (

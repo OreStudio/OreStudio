@@ -8,7 +8,7 @@
 #+filetags: :dq:codegen:docs:bring-dq-artefact-tables-onto-the-canonical-model:sprint_27:v0:
 #+owner: marco
 #+branch: feature/write-the-dq-artefact-guide
-#+pr:
+#+pr: 3190
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3190][#3190]] | [doc] Write the DQ artefact guide |
 
 * Review
 

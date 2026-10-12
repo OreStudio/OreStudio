@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: feature/drop-stale-grid-gaps-and-add-tenant-pie
-#+pr:
+#+pr: 3207
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3207][#3207]] | [web] Add a Machines tab and a share pie to the grid screen |
 
 * Review
 

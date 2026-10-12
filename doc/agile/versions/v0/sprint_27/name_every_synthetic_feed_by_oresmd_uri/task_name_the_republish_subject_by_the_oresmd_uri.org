@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09E3EF10-022C-433F-80B0-96F3396AA9CC][Name every synthetic feed by its oresmd reference]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every valid oresmd quote reaches its consumers. Today plan_tick writes the ORE k
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09E3EF10-022C-433F-80B0-96F3396AA9CC][Name every synthetic feed by its oresmd reference]] |
-| Now          | Reading the republish path and the binding claim. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3182][#3182]] | Name the republish subject by the oresmd URI |
 
 * Review
 
@@ -102,3 +102,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The per consumer tick subject ends in the datum's canonical oresmd URI as one subject token, in place of the ORE key. One encoder (=subject_token=) makes the token, a strict decoder (=subject_token_text=) reads it back, and a round trip test holds them. The ingest loop plan and the shell =marketdata stream= command use it, and a party reads all its data under =market_tick_subject_all=. The web has no reader of this subject.
+
+Checked: marketdata api (45 cases), marketdata service (42), shell application (40), shell synthetic (170) and the marketdata drift gate pass. On the running system, =marketdata stream= for EUR/USD received ticks from =synthetic.bloomberg.eurusd= on the encoded subject.
+
+Not met: a quote that no ORE key can name, such as a hazard rate, still cannot flow, because the oresmd URI codec refuses it. The capture Let the oresmd URI name quotes that ORE cannot name holds that decision. The capture about the feed binding claim is discarded, because a binding has no ORE key now.

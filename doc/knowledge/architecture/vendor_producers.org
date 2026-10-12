@@ -30,7 +30,7 @@ It is the same for every source, generated or real, and it asks for the
 following.
 
 - =source_name()=, the producer's unique identity within a tenant.
-- =qualifier()=, the published market data key consumers look up.
+- =series_uris()=, the oresmd series the feed publishes into, which consumers look up. See [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]].
 - =role()=, the series role, empty for a feed that has no role.
 - =nats_subject()=, the subject the feed publishes on.
 - =kind()=, the factory kind string the producer registers under.
@@ -82,7 +82,7 @@ last part costs nothing, because the column defaults to =VENDOR=.
 The producer must also be buildable and ownable.
 [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] runs feeds
 behind =IFeed= and keys them by =source_name=, and it keeps at most one
-running feed per qualifier and role pair. A new kind registers a builder
+running feed for any series. A new kind registers a builder
 with the feed factory, which is
 [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]],
 so a caller can name the kind as a string. The edits a new kind still

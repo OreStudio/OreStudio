@@ -39,8 +39,30 @@ import type {
 } from '../api/books.js';
 import type { Book } from '@ores/wire-protocol/generated/refdata/domain/book';
 import type { Portfolio } from '@ores/wire-protocol/generated/refdata/domain/portfolio';
+import type { BookLineInput } from '@ores/wire-protocol/browser';
 
 export type { BookIntent, BookPickLists, BookTree, BookWriteOutcome, PortfolioRights };
+
+/** What the policy says about a book change, before anything is written. */
+export interface BookProposal {
+    /** The parts the policy names for the change; empty when the book is written directly. */
+    readonly partCodes: readonly string[];
+    /** The refusal the real write gave, or empty when it would stand. */
+    readonly refusal: string;
+    /** The columns the change touches. */
+    readonly columns: readonly string[];
+    /** The parts that decide the change alone. */
+    readonly linePartCodes: readonly string[];
+}
+
+/** What raising a request for a book change came to. */
+export interface BookRaised {
+    /** Set when the request was raised. */
+    readonly requestId: string | null;
+    readonly partCodes: readonly string[];
+    readonly refusalCode: string;
+    readonly refusalMessage: string;
+}
 
 export interface BooksServer {
     /** Every portfolio and every book of the tenant. */
@@ -69,6 +91,42 @@ export interface BooksServer {
         version: number | null,
         intent: BookIntent,
     ) => Promise<BookWriteOutcome<Book>>;
+    /**
+     * Asks the policy what a book change needs, and runs the real write without
+     * keeping it, so the person learns the parts and every refusal before they
+     * confirm.
+     */
+    readonly previewBook: (write: Book, version: number | null) => Promise<BookProposal>;
+    /** Raises one request that holds the book change, for the parts the policy named. */
+    readonly raiseBook: (
+        write: Book,
+        version: number | null,
+        reason: string,
+    ) => Promise<BookRaised>;
+}
+
+/** The book as the proposal operations read it. */
+export function bookLine(write: Book, version: number | null): BookLineInput {
+    return {
+        operation: 'put',
+        entityId: write.id,
+        baseVersion: version ?? 0,
+        partyId: write.party_id,
+        name: write.name,
+        description: write.description,
+        parentPortfolioId: write.parent_portfolio_id,
+        ownerUnitId: write.owner_unit_id,
+        functionalCurrency: write.functional_currency,
+        glAccountRef: write.gl_account_ref,
+        costCenter: write.cost_center,
+        bookStatus: write.book_status,
+        regulatoryBookType: write.regulatory_book_type,
+        bookPurposeType: write.book_purpose_type,
+        ledgerFeedType: write.ledger_feed_type,
+        isSweepable: write.is_sweepable,
+        ratesCentreCode: write.rates_centre_code,
+        sandboxId: write.sandbox_id,
+    };
 }
 
 /** The deployment's own server, as the book structure journey reaches it. */
@@ -81,6 +139,31 @@ export function useBooksServer(): BooksServer {
             amendReasons: api.amendReasons,
             writePortfolio: books.writePortfolio,
             writeBook: books.writeBook,
+            previewBook: async (write, version) => {
+                const preview = await api.previewBookChanges([bookLine(write, version)]);
+                const line = preview.lines[0];
+                return {
+                    partCodes: preview.partCodes,
+                    refusal: line?.refusal ?? '',
+                    columns: line?.columns ?? [],
+                    linePartCodes: line?.partCodes ?? [],
+                };
+            },
+            raiseBook: async (write, version, reason) => {
+                const raised = await api.raiseBookChanges({
+                    reason,
+                    lines: [bookLine(write, version)],
+                });
+                return {
+                    requestId: raised.requestId,
+                    partCodes: raised.partCodes,
+                    refusalCode: raised.refusalCode,
+                    refusalMessage:
+                        raised.refusalMessage !== ''
+                            ? raised.refusalMessage
+                            : (raised.lines.find((line) => line.refusal !== '')?.refusal ?? ''),
+                };
+            },
         }),
         [],
     );

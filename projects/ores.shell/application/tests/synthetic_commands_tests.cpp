@@ -67,7 +67,7 @@ boost::uuids::uuid id_of(const std::string& text) {
 synthetic::fx_spot_generation_config fx_config_row(const std::string& id,
                                                    const std::string& owner,
                                                    const std::string& source_name,
-                                                   const std::string& ore_key,
+                                                   const std::string& oresmd_uri,
                                                    bool enabled,
                                                    bool auto_start) {
     synthetic::fx_spot_generation_config row;
@@ -77,7 +77,7 @@ synthetic::fx_spot_generation_config fx_config_row(const std::string& id,
     row.base_currency_code = "EUR";
     row.quote_currency_code = "USD";
     row.source_name = source_name;
-    row.ore_key = ore_key;
+    row.oresmd_uri = oresmd_uri;
     row.price_source = "fixed";
     row.gmm_initial_price = 1.0812;
     row.ticks_per_hour = 60;
@@ -140,11 +140,11 @@ feed_listing two_class_listing() {
     listing.configs.push_back(container);
 
     listing.fx_spot.push_back(
-        fx_config_row(fx_config, config_one, "synthetic.eurusd", "FX/RATE/EUR/USD", true, true));
+        fx_config_row(fx_config, config_one, "synthetic.eurusd", "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD", true, true));
     listing.fx_spot.push_back(fx_config_row("bbbbbbbb-0000-4000-8000-000000000002",
                                             config_two,
                                             "synthetic.eurgbp",
-                                            "FX/RATE/EUR/GBP",
+                                            "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=GBP",
                                             true,
                                             false));
     for (int i = 0; i < 3; ++i)
@@ -298,7 +298,7 @@ TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", tags) {
         rfl::json::read<messaging::put_fx_spot_generation_config_request>(rows[0].body);
     REQUIRE(config);
     CHECK(config->change.write.source_name == "synthetic.eurusd");
-    CHECK(config->change.write.ore_key == "FX/RATE/EUR/USD");
+    CHECK(config->change.write.oresmd_uri == "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     CHECK(config->change.write.price_source == "fixed");
     CHECK(config->change.write.gmm_initial_price == 1.0812);
     CHECK(config->change.write.ticks_per_hour == 60);

@@ -1318,6 +1318,7 @@ const fr: SourceCatalogue = {
     },
 
     oresmd: {
+        open: "Ouvrir dans l'éditeur",
         title: 'URL oresmd',
         cancel: 'Annuler',
         copy: 'Copier',
@@ -2776,6 +2777,8 @@ const fr: SourceCatalogue = {
                 none: "Aucun droit n'est accordé à ce nœud.",
             },
             review: {
+                policyAtConfirm:
+                    'La politique est consultée à la confirmation : le nouveau portefeuille est écrit d’abord, puis le livre est écrit ou soumis comme demande aux fonctions qui en décident.',
                 title: 'Revue',
                 lead: "Rien n'est écrit avant votre confirmation.",
                 nothing: "Rien n'a encore changé.",
@@ -2799,8 +2802,10 @@ const fr: SourceCatalogue = {
             },
             outcome: {
                 title: 'Résultat',
-                lead: 'Le livre est écrit.',
+                lead: 'Le livre est écrit, ou une demande est soumise pour lui.',
                 written: '{name} est maintenant à la version {version}.',
+                raised: 'La modification de {name} attend {parts}. Rien ne change tant que chacun n’a pas approuvé.',
+                openRequest: 'Ouvrir la demande',
                 history: "Voir l'historique",
                 tree: "Retour à l'arbre",
                 done: 'Quitter la structure des livres',
@@ -3263,6 +3268,8 @@ const fr: SourceCatalogue = {
                 counterparties: 'Contreparties',
                 behaviour: 'Comportement du prix',
                 ticks: 'Cotations',
+                process: 'Processus',
+                template: 'Modèle de courbe',
             },
         },
         fields: {
@@ -3346,7 +3353,7 @@ const fr: SourceCatalogue = {
             base_currency_code: 'Devise de base',
             quote_currency_code: 'Devise de cotation',
             source_name: 'Nom de la source',
-            ore_key: 'Clé ORE',
+            oresmd_uri: 'URI oresmd',
             process_type: 'Moteur',
             ticks_per_hour: 'Ticks par heure',
             price_source: 'Prix initial depuis',
@@ -3358,6 +3365,16 @@ const fr: SourceCatalogue = {
             mean: 'Moyenne (μ)',
             stdev: 'Écart type (σ)',
             weight: 'Poids (w)',
+            currency_code: 'Devise',
+            index_family: "Nom de l'indice",
+            tenor: 'Durée',
+            role: 'Rôle',
+            vintage_series_uri: 'Série du millésime',
+            sequence_index: 'Ordre',
+            fixed_leg_payment_frequency_code: 'Fréquence de la jambe fixe',
+            start_tenor_code: 'Durée de départ',
+            end_tenor_code: 'Durée de fin',
+            instrument_code: 'Instrument',
             component_index: 'Indice',
         },
         choices: {
@@ -3365,6 +3382,35 @@ const fr: SourceCatalogue = {
                 geometric: 'Géométrique',
                 arithmetic: 'Arithmétique',
                 ornstein_uhlenbeck: 'Retour à la moyenne (Ornstein-Uhlenbeck)',
+            },
+            role: {
+                self_discounting: 'Auto-actualisante',
+                discount: 'Actualisation',
+                projection: 'Projection',
+            },
+            index_family: {
+                libor: 'LIBOR',
+                euribor: 'EURIBOR',
+                sofr: 'SOFR',
+                estr: 'ESTR',
+                sonia: 'SONIA',
+                tona: 'TONA',
+                saron: 'SARON',
+                aonia: 'AONIA',
+                corra: 'CORRA',
+                honia: 'HONIA',
+                sora: 'SORA',
+                swestr: 'SWESTR',
+                nowa: 'NOWA',
+                kofr: 'KOFR',
+                mibor: 'MIBOR',
+                zaronia: 'ZARONIA',
+                destr: 'DESTR',
+                polonia: 'POLONIA',
+                nzonia: 'NZONIA',
+                shibor: 'SHIBOR',
+                tiie: 'TIIE',
+                taibor: 'TAIBOR',
             },
             price_source: {
                 fixed: 'Un prix fixe',
@@ -3568,6 +3614,9 @@ const fr: SourceCatalogue = {
                 fxFeeds: 'Flux de prix FX',
                 fxFeedsBody:
                     'Composez les flux FX synthétiques : la paire, le moteur et le mélange de chacun.',
+                irFeeds: 'Flux de courbes de taux',
+                irFeedsBody:
+                    "Composez les flux synthétiques de courbes de taux : la devise et l'indice, le moteur de taux court avec ses paramètres, et le modèle de courbe.",
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
@@ -3593,6 +3642,194 @@ const fr: SourceCatalogue = {
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
         },
+        irFeeds: {
+            title: 'Flux de courbes de taux',
+            lead: "Les flux synthétiques de courbes de taux de votre partie. Un flux ne produit rien tant qu'il n'est pas activé et démarré.",
+            add: 'Nouvelle courbe de taux',
+            addTitle: 'Nouvelle courbe de taux',
+            curve: 'Courbe',
+            priceSource: 'Taux de départ issu de',
+            tenorNeeded: 'Un indice à terme exige une durée, comme 3M ou 6M.',
+            tenorOnlyFomc:
+                "Seule la variante datée des réunions pour SOFR prend une durée, et c'est FOMC.",
+            help: {
+                tenor: "La durée d'un indice à terme, comme 3M ou 6M. Laissez vide pour un indice au jour le jour. FOMC désigne la variante datée des réunions pour SOFR.",
+                role: {
+                    self_discounting: 'Une courbe qui sert aux deux usages.',
+                    discount: 'La courbe sur laquelle les flux sont actualisés.',
+                    projection:
+                        'La courbe sur laquelle un indice flottant projette ses taux à terme.',
+                },
+                ticks_per_hour:
+                    'Combien de courbes le flux produit en une heure. 3600 en fait une par seconde.',
+                price_source: {
+                    fixed: "La courbe part du taux donné dans l'onglet Processus.",
+                    vintage:
+                        "La courbe part du taux qu'un millésime de données de marché importé donne pour la devise et l'indice.",
+                },
+                enabled: "Un flux qui n'est pas activé ne peut pas démarrer.",
+                auto_start: 'Le flux démarre avec le service synthétique.',
+            },
+            engine: {
+                VASICEK: 'Vasicek',
+                COX_INGERSOLL_ROSS: 'Cox-Ingersoll-Ross',
+                HULL_WHITE: 'Hull-White',
+                TWO_FACTOR_GAUSSIAN: 'Two-Factor Gaussian',
+                BLACK_KARASINSKI: 'Black-Karasinski',
+            },
+            removeWarning:
+                "Le flux s'arrête s'il tourne. Ses paramètres et son modèle de courbe sont supprimés d'abord, puis le flux. L'historique de chacun reste.",
+        },
+        fxSimple: {
+            lead: 'Répondez à trois questions sur le prix en une heure. Le serveur transforme les réponses en composantes que le moteur lit. Passez en Avancé pour les voir.',
+            leadReverting:
+                'Répondez à deux questions. Le serveur transforme les réponses en nombres que le moteur lit. Passez en Avancé pour les voir.',
+            trend: 'Dans quel sens le prix dérive-t-il ?',
+            trendHint:
+                "La variation moyenne en une heure, en pourcentage du prix. Sous zéro, c'est une baisse.",
+            move: 'De combien le prix bouge-t-il en une heure ?',
+            moveHint:
+                'Un mouvement typique sur une heure, en pourcentage du prix, à la hausse ou à la baisse.',
+            jumps: 'À quelle fréquence saute-t-il ?',
+            jumpsHint: 'La part des mises à jour qui viennent d’un régime de sauts larges.',
+            halfLife: 'Combien de temps le prix met-il pour faire la moitié du chemin de retour ?',
+            halfLifeHint: 'Le prix est ramené vers {price}. Une durée courte est un rappel fort.',
+            perHour: '% par heure',
+            ofUpdates: '% des mises à jour',
+            minutes: 'minutes',
+            presets: {
+                trend: { falling: 'Baisse', level: 'Stable', rising: 'Hausse' },
+                move: { calm: 'Calme', normal: 'Normal', stressed: 'Tendu' },
+                jumps: { none: 'Aucun', rare: 'Rare', often: 'Fréquent' },
+                reversion: { quick: 'Rapide', medium: 'Moyen', slow: 'Lent' },
+            },
+            sentence: {
+                rising: 'Le prix monte d’environ {trend} % par heure en moyenne, et une heure typique le déplace d’environ {move} % dans un sens ou l’autre.',
+                falling:
+                    'Le prix baisse d’environ {trend} % par heure en moyenne, et une heure typique le déplace d’environ {move} % dans un sens ou l’autre.',
+                level: 'Le prix n’a pas de tendance, et une heure typique le déplace d’environ {move} % dans un sens ou l’autre.',
+            },
+            sentenceReverting:
+                'Le prix est ramené vers {price}. La moitié de la distance se referme en {minutes} minutes, et une heure typique le déplace d’environ {move} %.',
+            switched: {
+                jumps: 'Passage en Simple. La forme simple la plus proche a remplacé {from} composantes par {to} : une composante principale et un régime de sauts qui couvre {jump} % des mises à jour et qui est quatre fois plus large. Rien n’est enregistré avant Enregistrer. Annuler rétablit les anciennes composantes.',
+                none: 'Passage en Simple. La forme simple la plus proche a remplacé {from} composantes par une composante principale, sans saut. Rien n’est enregistré avant Enregistrer. Annuler rétablit les anciennes composantes.',
+                reverting:
+                    'Passage en Simple. Le moteur à retour à la moyenne lit une composante, donc {removed} autres ont été retirées. Rien n’est enregistré avant Enregistrer. Annuler les rétablit.',
+            },
+        },
+        irSimple: {
+            lead: 'Répondez à quatre questions. Le serveur transforme les réponses en nombres que le moteur lit. Passez en Avancé pour les voir.',
+            start: "Où sont les taux aujourd'hui ?",
+            startHint: 'Le taux court au départ, en pourcentage.',
+            longRun: 'Où les taux se stabilisent-ils à long terme ?',
+            longRunHint: 'Le niveau vers lequel les taux reviennent, en pourcentage.',
+            halfLife: 'À quelle vitesse les taux reviennent-ils à ce niveau ?',
+            halfLifeHint:
+                'Années pour faire la moitié du chemin. Une durée courte est un retour rapide.',
+            move: 'De combien les taux bougent-ils en un an ?',
+            moveHint: 'Une variation annuelle typique du taux court.',
+            years: 'ans',
+            bp: 'points de base',
+            presets: {
+                slow: 'Lent',
+                medium: 'Moyen',
+                fast: 'Rapide',
+                calm: 'Calme',
+                normal: 'Normal',
+                stressed: 'Tendu',
+            },
+            lean: {
+                up: 'Les taux partent de {start} % et se stabilisent à {longRun} %, donc la courbe monte.',
+                down: 'Les taux partent de {start} % et se stabilisent à {longRun} %, donc la courbe descend.',
+                flat: 'Les taux partent de {start} % et se stabilisent à {longRun} %, donc la courbe est plate.',
+            },
+            caution: {
+                touches_zero:
+                    'Les taux peuvent toucher zéro. Baissez la variation annuelle ou relevez le niveau à long terme.',
+            },
+            switched:
+                'Passage en Simple. Le second facteur et la corrélation étaient réglés à la main. La forme simple les fixe : le second facteur revient à 60 % de la vitesse du premier avec la moitié de sa volatilité, et la corrélation est nulle. Rien n’est enregistré avant Enregistrer. Annuler rétablit les anciennes valeurs.',
+            byHand: 'Ces valeurs n’ont pas de forme simple, donc seul le mode Avancé peut les montrer. {reason}',
+            readout: {
+                halfLife: 'Demi-vie : {value} ans',
+                rate: '= {value} %',
+                move: 'Bouge d’environ {value} points de base par an',
+            },
+            engineHint: {
+                VASICEK: 'Courbes lisses. Les taux peuvent passer sous zéro.',
+                COX_INGERSOLL_ROSS:
+                    'Les taux ne passent jamais sous zéro. Les variations sont plus faibles quand les taux sont bas.',
+                HULL_WHITE:
+                    "Courbes lisses qui collent à la courbe d'aujourd'hui. Les taux peuvent passer sous zéro.",
+                BLACK_KARASINSKI:
+                    'Les taux ne passent jamais sous zéro. Les variations suivent le taux.',
+                TWO_FACTOR_GAUSSIAN:
+                    'Formes de courbe plus riches, avec bosses et torsions. Le second facteur est réglé pour vous.',
+            },
+        },
+        irProcess: {
+            shape: 'Forme de la courbe',
+            paths: "Trajectoires d'échantillon du taux court",
+            shapeWaiting:
+                "Donnez une valeur à chaque paramètre et ajoutez une entrée de durée dans l'onglet Modèle de courbe pour voir la courbe.",
+            previewNote:
+                "Le serveur calcule ces valeurs à partir de l'écran, avec le moteur {engine}. Rien n'est enregistré.",
+            marks: {
+                added: 'Nouveau',
+                changed: 'Modifié',
+            },
+            lead: "Le moteur de taux court dont la courbe est tirée et les paramètres qu'il lit. Cliquez sur un paramètre pour changer sa valeur, puis enregistrez les valeurs avec le moteur.",
+            engine: 'Moteur',
+            parameter: 'Paramètre',
+            value: 'Valeur',
+            editTitle: 'Paramètre : {name}',
+            limits: {
+                none: 'Tout nombre.',
+                min: 'Au moins {min}.',
+                max: 'Au plus {max}.',
+                both: 'Entre {min} et {max}.',
+            },
+            none: "Le moteur {engine} n'a pas de paramètres.",
+            save: 'Enregistrer',
+            discard: 'Annuler',
+            unsaved: '{count} changements non enregistrés',
+            clean: 'Aucun changement non enregistré.',
+            engineChanged:
+                "Moteur : {from} → {to}. Les paramètres de {from} sont supprimés à l'enregistrement.",
+            problems: {
+                number: 'Saisissez un nombre.',
+                min: 'Sous le minimum, {min}.',
+                max: 'Au-dessus du maximum, {max}.',
+            },
+            saveTitle: 'Enregistrer le processus',
+            saveButton: 'Enregistrer',
+            saveEngine: 'Moteur : {from} → {to}.',
+            saveSummary: '{added} ajoutés, {changed} modifiés et {removed} supprimés.',
+            runningNote: 'Le flux tourne avec les anciens paramètres.',
+            restart: 'Redémarrer pour appliquer',
+            stoppedNote: 'Le flux est arrêté. Il applique au démarrage.',
+        },
+        irTicks: {
+            lead: "Les dernières courbes produites par le flux, la plus récente sur les précédentes. Le serveur web garde les 500 derniers ticks de chaque flux en cours depuis qu'il écoute, et une courbe est un tick par entrée de durée : un flux à nombreuses entrées montre moins de courbes.",
+            history: 'Historique',
+            historyHelp: 'Nombre de courbes récentes à superposer.',
+            legend: "Courbe la plus récente en gras ; les précédentes superposées, de plus en plus pâles avec l'âge.",
+            at: 'Heure',
+            short: 'Court terme ({tenor})',
+            long: 'Long terme ({tenor})',
+            slope: 'Pente (pb)',
+            curveChart: 'Les dernières courbes du flux',
+            waiting: 'Le flux tourne. Le graphique apparaît quand une courbe entière est arrivée.',
+            noTemplate:
+                "La courbe n'a pas d'entrée de durée : ses ticks ne se distinguent pas. Ajoutez-en dans l'onglet Modèle de courbe.",
+        },
+        irTemplate: {
+            lead: "Les entrées de durée auxquelles la courbe est évaluée : où chacune commence et finit, et l'instrument qui la valorise. Ajoutez-en au moins une avant de démarrer le flux.",
+            add: 'Ajouter une entrée de durée',
+            one: 'Entrée de durée',
+            remove: "Supprimer l'entrée de durée",
+        },
         runs: {
             status: 'État',
             running: 'En marche',
@@ -3606,8 +3843,8 @@ const fr: SourceCatalogue = {
             refused: '{feed} : {message}',
         },
         history: {
-            lead: "Le flux et chaque composante de son mélange, dans un seul fil, du plus récent au plus ancien. Rétablir réécrit les valeurs d'une version antérieure comme une nouvelle version.",
-            gap: "Une composante supprimée du mélange n'est pas dans ce fil : l'écran lit l'historique des composantes que le flux contient maintenant.",
+            lead: "Le flux et chaque ligne qu'il possède, dans un seul fil, du plus récent au plus ancien. Rétablir réécrit les valeurs d'une version plus ancienne comme une nouvelle version.",
+            gap: "Une ligne supprimée du flux n'est pas dans ce fil : l'écran lit l'historique des lignes que le flux détient maintenant.",
         },
         ticks: {
             lead: "Les derniers prix du flux, les plus récents à droite. Le serveur web garde les 500 derniers de chaque flux en marche depuis qu'il a commencé à écouter, donc un flux démarré avant ne montre que ce qui est venu depuis.",
@@ -3630,6 +3867,7 @@ const fr: SourceCatalogue = {
             title: '{pair} — trajectoire de prix synthétique',
         },
         process: {
+            belowZero: 'Peut passer sous zéro',
             about: {
                 geometric:
                     'Géométrique : chaque mise à jour tire un rendement logarithmique du mélange, donc le prix reste positif. μ est la dérive et σ la volatilité du rendement logarithmique par mise à jour.',
@@ -3822,6 +4060,7 @@ const fr: SourceCatalogue = {
             'voir tout le déploiement : ses locataires, ses services, sa grille, son bus de messages et ses journaux',
         curveSnapshotsRead: 'voir les courbes de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
+        irFeedsRead: 'voir les flux de courbes de taux synthétiques',
     },
 
     unavailable: {
@@ -3840,6 +4079,19 @@ const fr: SourceCatalogue = {
         askReason: 'J’ai besoin d’ouvrir {screen}.',
     },
 
+    toast: {
+        close: 'Fermer',
+    },
+    editingMode: {
+        bps: 'pb',
+        number: 'Saisissez un nombre.',
+        positive: 'Saisissez un nombre supérieur à zéro.',
+        label: 'Mode de saisie',
+        simple: 'Simple',
+        advanced: 'Avancé',
+        simpleHelp: 'Répondez à quelques questions simples. Le serveur règle le modèle.',
+        advancedHelp: 'Réglez les paramètres propres au modèle.',
+    },
     common: {
         locked: 'Verrouillé',
         unlocked: 'Déverrouillé',

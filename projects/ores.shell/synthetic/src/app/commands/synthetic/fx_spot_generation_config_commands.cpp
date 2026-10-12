@@ -142,7 +142,7 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key> "
+        "add <config_id> <base_currency_code> <quote_currency_code> <source_name> <oresmd_uri> "
         "<price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start> "
         "<vintage_source> <vintage_date> <folder_id> <reason> <commentary>");
 
@@ -151,9 +151,10 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key> "
-        "<price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start> "
-        "<vintage_source> <vintage_date> <folder_id> <reason> <commentary> [--version <n>]");
+        "set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> "
+        "<oresmd_uri> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> "
+        "<auto_start> <vintage_source> <vintage_date> <folder_id> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +162,7 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code> "
-        "<source_name> <ore_key> <price_source> <gmm_initial_price> <ticks_per_hour> "
+        "<source_name> <oresmd_uri> <price_source> <gmm_initial_price> <ticks_per_hour> "
         "<process_type> <enabled> <auto_start> <vintage_source> <vintage_date> <folder_id> "
         "<reason> <commentary>");
 
@@ -370,7 +371,7 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
                    parsed->positionals[next++],
                    "quote_currency_code");
         read_token(req.change.write.source_name, parsed->positionals[next++], "source_name");
-        read_token(req.change.write.ore_key, parsed->positionals[next++], "ore_key");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         read_token(req.change.write.price_source, parsed->positionals[next++], "price_source");
         read_token(
             req.change.write.gmm_initial_price, parsed->positionals[next++], "gmm_initial_price");
@@ -436,7 +437,7 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
                    parsed->positionals[next++],
                    "quote_currency_code");
         read_token(req.change.write.source_name, parsed->positionals[next++], "source_name");
-        read_token(req.change.write.ore_key, parsed->positionals[next++], "ore_key");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         read_token(req.change.write.price_source, parsed->positionals[next++], "price_source");
         read_token(
             req.change.write.gmm_initial_price, parsed->positionals[next++], "gmm_initial_price");
@@ -516,7 +517,7 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
                        parsed->positionals[next++],
                        "quote_currency_code");
             read_token(change.write.source_name, parsed->positionals[next++], "source_name");
-            read_token(change.write.ore_key, parsed->positionals[next++], "ore_key");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             read_token(change.write.price_source, parsed->positionals[next++], "price_source");
             read_token(
                 change.write.gmm_initial_price, parsed->positionals[next++], "gmm_initial_price");

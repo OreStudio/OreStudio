@@ -117,3 +117,4 @@ small, deliberately-curated set rather than a continuum.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — single-curve bootstrapping mechanics.
 - [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — the build-order dependency this family implies.
 - [[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][Curve Sets (Storage Grouping)]] — how a family is typically persisted.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how ORE Studio names a curve or a surface: as a series, by its series URI.

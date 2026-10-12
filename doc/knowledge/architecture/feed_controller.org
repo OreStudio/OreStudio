@@ -23,8 +23,14 @@ irrelevant to how it is owned.
 ** Why one owner
 
 The map of running feeds is keyed by =source_name=, so several producers
-run at once and publish on distinct subjects. At most one feed per pair of
-qualifier and role runs at a time. A conflict is rejected, never silently
+run at once and publish on distinct subjects. At most one feed runs at a time
+for any series. Two feeds whose series overlap conflict, because both would write points into one series.
+See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]].
+The role of a curve feed is not part of the comparison. A role says how a consumer
+uses a curve, and the oresmd grammar holds no role, so a discount feed and a
+projection feed of one currency and index tenor publish into the same series and
+cannot run together. This is a decision of the series model, stated in
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. A conflict is rejected, never silently
 and never by stopping the existing feed, so switching sources requires an
 explicit stop first. =running_source_name_for_conflict_key()= names the
 holder so the control plane can build an actionable message.
@@ -43,7 +49,7 @@ holder so the control plane can build an actionable message.
 ** What each start result means
 
 Both paths report a =start_result=. The four values are =started=,
-=already_running=, =qualifier_conflict= and =vintage_data_missing=.
+=already_running=, =oresmd_conflict= and =vintage_data_missing=.
 =start()= returns the first three today. The fourth value exists because
 the IR builder resolves its vintage at construction and throws a
 =vintage_data_missing_error= before the controller ever sees the feed, so
@@ -80,3 +86,4 @@ The feed binding.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface the controller stores.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], what reads the binding a start creates.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — the series URI that a feed owns and that two feeds must not share.

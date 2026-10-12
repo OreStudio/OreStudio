@@ -118,6 +118,23 @@ describe('the oresmd editor dialog', () => {
     });
 });
 
+describe('the editor without an Apply', () => {
+    it('offers Copy and Cancel and no Apply when the screen gives no onApply', () => {
+        const client = new QueryClient();
+        client.setQueryData(['oresmd-schema'], SCHEMA);
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <OresmdEditorDialog url="" onClose={() => undefined} />
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+        expect(html).toContain('>Copy<');
+        expect(html).toContain('>Cancel<');
+        expect(html).not.toContain('>Apply<');
+    });
+});
+
 describe('the composer', () => {
     it('draws the path and the other fields of the instrument in key order', () => {
         const html = composer(CAPFLOOR);

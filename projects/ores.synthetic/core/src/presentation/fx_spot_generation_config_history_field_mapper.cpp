@@ -44,7 +44,7 @@ render_fx_spot_generation_config_fields(const domain::fx_spot_generation_config&
     fields.push_back({.name = "Base Currency Code", .value = v.base_currency_code});
     fields.push_back({.name = "Quote Currency Code", .value = v.quote_currency_code});
     fields.push_back({.name = "Source Name", .value = v.source_name});
-    fields.push_back({.name = "Ore Key", .value = v.ore_key});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
     fields.push_back({.name = "Price Source", .value = v.price_source});
     fields.push_back({.name = "Gmm Initial Price", .value = std::to_string(v.gmm_initial_price)});
     fields.push_back({.name = "Ticks Per Hour", .value = std::to_string(v.ticks_per_hour)});

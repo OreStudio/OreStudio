@@ -1209,6 +1209,68 @@ export const api = {
         ).paths;
     },
 
+    /** Sample short-rate paths from the engine and parameters on a screen; nothing is saved. */
+    async simulateIr(input: {
+        readonly process_type: string;
+        readonly parameters: readonly {
+            readonly parameter_name: string;
+            readonly parameter_value: number;
+        }[];
+        readonly num_ticks: number;
+        readonly num_paths: number;
+        readonly seed: number;
+    }): Promise<readonly (readonly number[])[]> {
+        return z.object({ paths: z.array(z.array(z.number())) }).parse(
+            await request('/api/synthetic/simulate/ir', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        ).paths;
+    },
+
+    /** The rate at each row of a curve template, priced from the values on a screen; nothing is saved. */
+    async previewIrShape(input: {
+        readonly process_type: string;
+        readonly parameters: readonly {
+            readonly parameter_name: string;
+            readonly parameter_value: number;
+        }[];
+        readonly fixed_leg_payment_frequency_code: string;
+        readonly entries: readonly {
+            readonly sequence_index: number;
+            readonly start_tenor_code: string;
+            readonly end_tenor_code: string;
+            readonly instrument_code: string;
+        }[];
+    }): Promise<
+        readonly {
+            readonly sequence_index: number;
+            readonly start_tenor_code: string;
+            readonly end_tenor_code: string;
+            readonly rate: number;
+        }[]
+    > {
+        return z
+            .object({
+                points: z.array(
+                    z.object({
+                        sequence_index: z.number(),
+                        start_tenor_code: z.string(),
+                        end_tenor_code: z.string(),
+                        rate: z.number(),
+                    }),
+                ),
+            })
+            .parse(
+                await request('/api/synthetic/preview/ir-shape', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            ).points;
+    },
+
     /** The mixture an engine change leaves, as the synthetic service converts it. */
     async convertFxMixture(input: {
         readonly gmm_means: readonly number[];
@@ -1231,6 +1293,85 @@ export const api = {
             })
             .parse(
                 await request('/api/synthetic/convert/fx', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            );
+    },
+
+    /**
+     * An FX mixture read as the simple view, or the simple view written as a
+     * mixture, as the synthetic service converts it. Every figure is per hour.
+     */
+    async convertFxSimple(input: {
+        readonly process_type: string;
+        readonly to_simple: boolean;
+        readonly initial_price: number;
+        readonly ticks_per_hour: number;
+        readonly gmm_means?: readonly number[];
+        readonly gmm_stdevs?: readonly number[];
+        readonly gmm_weights?: readonly number[];
+        readonly trend_pct_per_hour?: number;
+        readonly volatility_pct_per_hour?: number;
+        readonly jump_share_pct?: number;
+        readonly half_life_minutes?: number;
+    }): Promise<{
+        readonly has_simple_form: boolean;
+        readonly message: string;
+        readonly trend_pct_per_hour: number;
+        readonly volatility_pct_per_hour: number;
+        readonly jump_share_pct: number;
+        readonly half_life_minutes: number;
+        readonly gmm_means: readonly number[];
+        readonly gmm_stdevs: readonly number[];
+        readonly gmm_weights: readonly number[];
+    }> {
+        return z
+            .object({
+                has_simple_form: z.boolean(),
+                message: z.string(),
+                trend_pct_per_hour: z.number(),
+                volatility_pct_per_hour: z.number(),
+                jump_share_pct: z.number(),
+                half_life_minutes: z.number(),
+                gmm_means: z.array(z.number()),
+                gmm_stdevs: z.array(z.number()),
+                gmm_weights: z.array(z.number()),
+            })
+            .parse(
+                await request('/api/synthetic/convert/fx-simple', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            );
+    },
+
+    /**
+     * An IR engine's parameters read as the simple view, or the simple view
+     * written as the engine's parameters, as the synthetic service converts
+     * them. Rates are decimals.
+     */
+    async convertIrParameters(input: {
+        readonly process_type: string;
+        readonly to_simple: boolean;
+        readonly values: Readonly<Record<string, number>>;
+    }): Promise<{
+        readonly has_simple_form: boolean;
+        readonly message: string;
+        readonly caution: string;
+        readonly values: Readonly<Record<string, number>>;
+    }> {
+        return z
+            .object({
+                has_simple_form: z.boolean(),
+                message: z.string(),
+                caution: z.string(),
+                values: z.record(z.string(), z.number()),
+            })
+            .parse(
+                await request('/api/synthetic/convert/ir', {
                     method: 'POST',
                     headers: JSON_HEADERS,
                     body: JSON.stringify(input),
@@ -1267,18 +1408,28 @@ export const api = {
     async feedTicks(
         id: string,
         limit: number,
+        resource: 'fx-feeds' | 'ir-curve-feeds' = 'fx-feeds',
     ): Promise<{
         readonly sourceName: string;
-        readonly ticks: readonly { readonly at: string; readonly value: number }[];
+        readonly ticks: readonly {
+            readonly at: string;
+            readonly value: number;
+            readonly uri: string;
+        }[];
     }> {
         return z
             .object({
                 sourceName: z.string(),
-                ticks: z.array(z.object({ at: z.string(), value: z.number() })),
+                ticks: z.array(
+                    z.object({ at: z.string(), value: z.number(), uri: z.string().default('') }),
+                ),
             })
             .parse(
                 await request(
-                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?limit=${String(limit)}`,
+                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?${new URLSearchParams({
+                        limit: String(limit),
+                        resource,
+                    }).toString()}`,
                     { method: 'GET' },
                 ),
             );

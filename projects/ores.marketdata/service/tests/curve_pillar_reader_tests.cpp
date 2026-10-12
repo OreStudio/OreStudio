@@ -108,7 +108,7 @@ ores::marketdata::core::pillar_quote_key pillar_key(const curve_republish_refdat
                                                     const std::string& start,
                                                     const std::string& end) {
     return ores::marketdata::core::make_pillar_quote_key(
-        "USD", start, resolve_tenor_date(ctx, start), resolve_tenor_date(ctx, end));
+        "USD", "1D", start, resolve_tenor_date(ctx, start), resolve_tenor_date(ctx, end));
 }
 
 struct fixture {
@@ -123,6 +123,7 @@ struct fixture {
         c.tenant_id = h.tenant_id();
         c.party_id = party_id;
         c.currency_code = "USD";
+        c.index_tenor = "1D";
         c.tenor_convention_code = "RATES_SPOT_FORWARD";
         return c;
     }

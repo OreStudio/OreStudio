@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-11
-#+environment:
+#+updated: 2026-10-12
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ An FX feed names the datum it simulates by its ORE key (fx_spot_generation_confi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
 
 * Acceptance
 
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3152][#3152]] | Name every synthetic feed by its oresmd reference |
 
 * Review
 
@@ -97,3 +97,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done by the story Name every synthetic feed by its oresmd reference, in PR 3152. The FX feed table holds oresmd_uri in place of ore_key. No migration was written: the data is test data and the database is recreated. The republish subject still uses the ORE key; the task Name the republish subject by the oresmd URI tracks it.

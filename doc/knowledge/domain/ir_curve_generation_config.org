@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :synthetic:config:ir:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-11
 
 * Summary
 
@@ -36,8 +36,10 @@ and its short-rate parameters are two separate sets of child rows.
   currency and index.
 
 The =FOMC= tenor is the meeting-dated variant of one currency and index pair.
-It gives that variant its own series identity, so it does not collide with
-the standard curve's empty-tenor row.
+Its pillars start on meeting dates, so each of them has its own start in the
+series it lands in. The config row keeps its own natural key, so it does not
+collide with the standard curve's empty-tenor row. What a feed owns is the
+series, not the row; see the collision rule below.
 
 ** The composite validation
 
@@ -80,16 +82,19 @@ short rate can legitimately be zero or negative and an FX spot price cannot.
 ** The collision rule
 
 =enabled= and =auto_start= carry the same meaning as they do on the FX spot
-config. Starting a curve feed is refused when another feed already runs for
-the same =currency_code=, =index_family= and =tenor= tuple and the same
-=role=. Two curves of one tuple with different roles may run side by side,
-which is the case a discount curve and a projection curve for the same
-currency and index occupy. Switching a running feed is a Stop followed by a
-Start.
+config. Starting a curve feed is refused when another feed already runs that
+publishes into one of the same series. A curve is a series, and the pillars of
+the feed are built from =currency_code= and the index tenor, so two configs of
+one currency and index tenor publish into the same series whatever their
+=index_family= or their =role=. The
+role says how a consumer uses the curve, and the oresmd grammar does not hold
+it; see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. Switching a running feed is a Stop followed by a Start.
 
 ** The fact the code shape does not show
 
 The curve is named by the config and not discovered from the key. The
+series it publishes into are built from =currency_code= and the index tenor in
+one place, and [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]] describes how they appear in the stored data. The
 =vintage_series_uri= column exists because the dataset that publishes the
 vintage names its own ORE keys, and a series identity is what the catalogue
 is keyed by, so the coupling belongs on the config rather than in a
@@ -108,3 +113,7 @@ the curve is historical and why it is still offered.
 - [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the foreign key behind =process_type=.
 - [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], which starts from this row.
 - [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], the first asset class, whose defaults differ.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how a curve is a series, and what the grammar leaves to the consumer.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — what a curve is.
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family of curves, one series for each index tenor.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — the rule that two feeds with overlapping series cannot run together.

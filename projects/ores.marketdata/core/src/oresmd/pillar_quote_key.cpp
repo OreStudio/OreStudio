@@ -26,6 +26,7 @@
 namespace ores::marketdata::core {
 
 pillar_quote_key make_pillar_quote_key(const std::string& ccy,
+                                       const std::string& index_tenor,
                                        const std::string& start_tenor_code,
                                        std::chrono::year_month_day start_date,
                                        std::chrono::year_month_day end_date) {
@@ -36,7 +37,7 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
     // each: a spot pillar is 0D to the days its end date lies after spot, and a
     // dated pillar is its start date to its end date.
     if (start_tenor_code == "SPOT") {
-        key.qualifier = ccy + "/0D/1D";
+        key.qualifier = ccy + "/0D/" + index_tenor;
         const auto days = std::chrono::sys_days{end_date} - std::chrono::sys_days{start_date};
         if (days.count() <= 0)
             throw std::invalid_argument(
@@ -46,7 +47,7 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
                             std::chrono::sys_days{start_date}));
         key.point = std::format("{}D", days.count());
     } else {
-        key.qualifier = ccy + "/" + std::format("{:%Y%m%d}", start_date) + "/1D";
+        key.qualifier = ccy + "/" + std::format("{:%Y%m%d}", start_date) + "/" + index_tenor;
         key.point = std::format("{:%Y%m%d}", end_date);
     }
     return key;

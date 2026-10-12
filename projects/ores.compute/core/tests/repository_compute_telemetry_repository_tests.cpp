@@ -38,6 +38,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <format>
+#include <optional>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -371,6 +372,118 @@ TEST_CASE("grid_series_holds_the_newest_sample_of_each_bucket_and_marks_the_gaps
     REQUIRE(series.results_done.size() == 4);
     CHECK(series.samples == std::vector<int>{3, 0, 1, 0});
     CHECK(series.results_done == std::vector<int>{3, 0, 7, 0});
+}
+
+namespace {
+
+/// A row of one party's job counters, with the host counts left at zero.
+grid_sample party_row(const grid_sample& model,
+                      const tenant_id& tenant,
+                      const std::optional<boost::uuids::uuid>& party,
+                      std::chrono::system_clock::time_point at,
+                      int unsent,
+                      int done) {
+    auto row = model;
+    row.id = random_uuid();
+    row.tenant_id = tenant;
+    row.party_id = party;
+    row.sampled_at = at;
+    row.total_hosts = 0;
+    row.online_hosts = 0;
+    row.idle_hosts = 0;
+    row.results_inactive = 0;
+    row.results_unsent = unsent;
+    row.results_in_progress = 0;
+    row.results_done = done;
+    row.total_workunits = 0;
+    row.total_batches = 0;
+    row.active_batches = 0;
+    row.outcomes_success = 0;
+    row.outcomes_client_error = 0;
+    row.outcomes_no_reply = 0;
+    return row;
+}
+
+} // namespace
+
+TEST_CASE("grid_series_sums_the_party_rows_of_an_instant_and_takes_the_fleet_from_the_system", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto model = generate_synthetic_grid_sample(gen);
+    const auto own = h.tenant_id();
+    const auto system = tenant_id::system();
+    const auto party_a = random_uuid();
+    const auto party_b = random_uuid();
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+    const auto at = t0 + seconds(10);
+
+    // One instant holds a row for each party and one for the work with no party. The
+    // fleet is on the system tenant's row, which a tenant's session also reads.
+    grid_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.range("ores_compute_grid_samples_tbl", own, t0, t0 + seconds(120));
+    cleanup.range("ores_compute_grid_samples_tbl", system, t0, t0 + seconds(120));
+    repo.write(h.context(), party_row(model, own, party_a, at, 2, 4));
+    repo.write(h.context(), party_row(model, own, party_b, at, 3, 6));
+    repo.write(h.context(), party_row(model, own, std::nullopt, at, 1, 1));
+    auto fleet = party_row(model, system, std::nullopt, at, 100, 100);
+    fleet.total_hosts = 9;
+    fleet.online_hosts = 7;
+    fleet.idle_hosts = 3;
+    repo.write(h.context().with_tenant(system, h.db_user()), fleet);
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(60), 60);
+
+    REQUIRE(series.bucket_count == 1);
+    CHECK(series.samples == std::vector<int>{1});
+    // The tenant's counters are the sum of its parties' rows and none of the system's.
+    CHECK(series.results_unsent == std::vector<int>{6});
+    CHECK(series.results_done == std::vector<int>{11});
+    // The capacity is the installation's.
+    CHECK(series.total_hosts == std::vector<int>{9});
+    CHECK(series.online_hosts == std::vector<int>{7});
+    CHECK(series.idle_hosts == std::vector<int>{3});
+}
+
+TEST_CASE("grid_series_of_a_party_session_sums_only_the_parties_it_acts_for", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto model = generate_synthetic_grid_sample(gen);
+    const auto own = h.tenant_id();
+    const auto party_a = random_uuid();
+    const auto party_b = random_uuid();
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+    const auto at = t0 + seconds(10);
+
+    grid_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.range("ores_compute_grid_samples_tbl", own, t0, t0 + seconds(120));
+    repo.write(h.context(), party_row(model, own, party_a, at, 2, 4));
+    repo.write(h.context(), party_row(model, own, party_b, at, 3, 6));
+    repo.write(h.context(), party_row(model, own, std::nullopt, at, 1, 1));
+
+    compute_telemetry_repository telemetry;
+    const auto as_a = h.context().with_party(own, party_a, {party_a}, h.db_user());
+    const auto series = telemetry.grid_series_in_range(as_a, t0, t0 + seconds(60), 60);
+
+    // Party A's row and the row with no party, and never party B's.
+    CHECK(series.results_unsent == std::vector<int>{3});
+    CHECK(series.results_done == std::vector<int>{5});
+}
+
+TEST_CASE("parties_with_work_always_lists_the_empty_party", tags) {
+    database_helper h;
+
+    compute_telemetry_repository telemetry;
+    const auto parties = telemetry.parties_with_work(h.context());
+
+    REQUIRE(!parties.empty());
+    CHECK(!parties.front().has_value());
 }
 
 TEST_CASE("grid_series_widens_the_range_to_whole_buckets", tags) {

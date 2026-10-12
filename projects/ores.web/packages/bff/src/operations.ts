@@ -477,7 +477,13 @@ export function registerOperationsRoutes(
      */
     server.get('/api/operations/grid/series', async (request) => {
         const session = requireSession(request);
-        await requireDeploymentRead(session, 'The grid series of a deployment');
+        // An operator reads the whole grid. A tenant's session, or a party's, reads the
+        // series of its own work: the compute service counts the rows the session may see,
+        // and the fleet counts are the installation's capacity with no machine named.
+        const operator = session.mode === 'system-administration';
+        if (operator) {
+            await requireDeploymentRead(session, 'The grid series of a deployment');
+        }
         const parsed = gridSeriesRequestSchema.safeParse(request.query ?? {});
         if (!parsed.success) {
             throw invalidRequest('The grid series read takes a range of 1h, 24h or 7d.');
@@ -489,11 +495,14 @@ export function registerOperationsRoutes(
             endTime: window.end,
             bucketSeconds: window.bucketSeconds,
         };
-        const [grid, nodes, hosts] = await Promise.all([
-            session.client.gridSeries(input),
-            session.client.nodeSeries(input),
-            session.client.listHosts(),
-        ]);
+        // The nodes and hosts are the installation's machines, so a tenant is not shown them.
+        const [grid, nodes, hosts] = operator
+            ? await Promise.all([
+                  session.client.gridSeries(input),
+                  session.client.nodeSeries(input),
+                  session.client.listHosts(),
+              ])
+            : [await session.client.gridSeries(input), undefined, []];
         const hostNames = new Map(
             hosts.map((host) => [host.id, host.display_name || host.external_id]),
         );
@@ -504,13 +513,16 @@ export function registerOperationsRoutes(
             bucket_seconds: grid.bucket_seconds,
             bucket_count: grid.bucket_count,
             grid,
-            nodes: {
-                ...nodes,
-                list: nodes.nodes.map((node) => ({
-                    ...node,
-                    host: hostNames.get(node.host_id) ?? null,
-                })),
-            },
+            nodes:
+                nodes === undefined
+                    ? { list: [] }
+                    : {
+                          ...nodes,
+                          list: nodes.nodes.map((node) => ({
+                              ...node,
+                              host: hostNames.get(node.host_id) ?? null,
+                          })),
+                      },
         });
     });
 

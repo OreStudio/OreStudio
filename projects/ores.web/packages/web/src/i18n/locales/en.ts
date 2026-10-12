@@ -1661,6 +1661,8 @@ export const en: SourceCatalogue = {
                 nodes: 'Nodes',
                 heatmap: 'Heatmap',
             },
+            tenantDescription:
+                'The load, throughput and outcomes of the work you may see, over time, and the capacity of the installation.',
             usage: {
                 title: { tenant: 'Usage by tenant', party: 'Usage by party' },
                 note: {

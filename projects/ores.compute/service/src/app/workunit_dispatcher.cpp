@@ -23,6 +23,7 @@
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.compute.core/repository/result_repository.hpp"
 #include "ores.compute.core/repository/work_ledger_repository.hpp"
+#include "ores.compute.core/repository/work_tenant_repository.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -128,6 +129,16 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
             << ": " << waiting << " job(s) already wait and the limit is "
             << tenant_queue_limit;
         return;
+    }
+
+    // The poller of the grid samples counts the tenants that have dispatched work.
+    // A failure here costs only a row in the samples, so it never stops the dispatch.
+    try {
+        ores::compute::repository::work_tenant_repository().note(
+            ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Could not note tenant " << tenant_uuid
+                                  << " for the grid samples: " << e.what();
     }
 
     ores::compute::service::result_service result_svc(tenant_ctx);

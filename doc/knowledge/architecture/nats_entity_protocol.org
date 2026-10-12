@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:nats:messaging:protocol:specification:
 #+created: 2026-09-21
-#+updated: 2026-10-03
+#+updated: 2026-10-12
 
 * Summary
 
@@ -358,7 +358,7 @@ column sortable when it is prepared to index it.
 
 *** The filter record
 
-=<resource>_filter= has three kinds of member. Every member is optional. A
+=<resource>_filter= has four kinds of member. Every member is optional. A
 member that is absent sets no condition, and the members that are set must all
 hold for a row to match.
 
@@ -366,6 +366,8 @@ hold for a row to match.
 <resource>_filter {
     <column>        : optional of <column type>          -- equals
     <column>_one_of : optional of list of <column type>  -- is one of
+    <column>_from   : optional of <column type>          -- is within, lower bound
+    <column>_to     : optional of <column type>          -- is within, upper bound
     search          : optional of string                 -- contains
 }
 #+end_src
@@ -374,7 +376,11 @@ hold for a row to match.
   row matches when its column equals the value. The filterable columns are the
   ones the model already reads by -- the column the entity declares in
   =:list_filter_column:=, and every relation column a scoped read is declared
-  for -- and every column that declares =:filterable: true=.
+  for -- and every column that declares =:filterable: true=. A column of an enum type
+  is filterable like any other. Its member has the enum's type, the wire carries
+  the enum's text, and a row matches when the text it is stored as equals that
+  text. The match is exact and case-sensitive, because an enum's text is a code,
+  unlike =search=, which ignores case. The one-of member of an enum column is a list of that type.
 - *Is one of.* The primary key column, every relation column and every
   filterable column have a member
   that carries a list of the column's type. A row matches when its column
@@ -396,6 +402,19 @@ hold for a row to match.
   condition. The text is at most 256 characters, because each searchable
   column is scanned whole; a longer text is =invalid= with the code
   =filter_too_large=.
+
+- *Is within.* A column of a date or timestamp type that declares
+  =:filterable: true= also has a =_from= and a =_to= member. A row matches when
+  its column is not before =_from= and not after =_to=: both bounds are
+  inclusive. A member that is absent sets no bound, so a caller can state one end
+  only. A =_to= given as a date on a timestamp column means the end of that day,
+  so that a person who asks for "up to the 5th" gets the whole of the 5th. The
+  day is a day in UTC, because the store keeps every timestamp in UTC, and a
+  screen that shows another zone converts the date before it sends it. On a
+  column of a date type a =_to= is the date itself, inclusive. A
+  =_from= later than the =_to= matches no row, as an empty one-of list does. A
+  row whose column is null never matches a range. Equals on a date or a
+  timestamp stays available, but no screen should use it to find a period.
 
 =search= is not a query language. It is one typed member with one fixed
 meaning, and a caller cannot combine terms, choose columns or choose an
@@ -434,6 +453,46 @@ Four things follow from it, and each is deliberate.
 - *It is declared, not inferred.* A resource offers it when the model says so.
   A model that does not declare it serves the page alone, and the field is
   absent from its request.
+
+*** A read model
+
+Some screens list rows that join several entities: a trade with its current
+state, its book and its identifiers. Each part is an entity of its own with its
+own key and its own timeline, and the filter record covers only the columns of
+one entity. A screen does not close that gap with a join in the client, because
+a join in the client breaks the total, the page and the order, and breaks every
+filter that combines columns of two parts. It also does not close it with a
+filter member that reaches into another entity. The gap is closed by an entity
+that is a *read model*.
+
+A read model is an entity the model declares as derived from other entities. It
+has these rules.
+
+- *It has =list= and =get= and no write.* It has no =put=, no =delete= and no
+  version history of its own. A change goes to the part it belongs to.
+- *Its filter record is the standard one.* It has an equals member for each
+  column the model declares filterable, whichever part the column comes from, a
+  one-of member for the key and the relation columns, the range members, and
+  one =search= member. A column of a part that has many rows for one row of the
+  read model, such as the identifiers of a trade, is searched as one text that
+  holds all of them, so a search matches any of them. The search is literal and
+  ignores case, as every search does.
+- *It answers one instant.* The parts version on their own timelines. When a
+  read states =as_of=, every part is resolved at that instant, so the state and
+  the booking in a row come from the same instant. When =as_of= is absent, every
+  part is the current row. A read model that cannot honour this does not offer
+  =as_of=. The model declares each part as required or optional. A required
+  part with no row at the instant means the entity did not exist then, so the
+  row is left out of the page and out of =total=: a trade booked after =as_of= is
+  not listed. An optional part with no row leaves its columns null, and a
+  collection part, such as the identifiers, is empty.
+- *It has its own key and its own permission.* The key is the key of its main
+  part. The permission is a read permission of its own, because a person who may
+  see a trade's state may not see everything the read model carries.
+- *It emits no change event.* A screen of a read model listens to the events of
+  its parts, and refreshes when one of them names a row that is on the page.
+
+The first read model is the trade summary, which the trade list reads.
 
 *** get
 
@@ -578,6 +637,47 @@ so a caller assembles the tree from the keys in the reply: it needs no second
 read and no node type of its own. A page of a subtree need not be connected, so
 a caller that renders a whole tree pages to the end of the subtree, which the
 unconditional total lets it drive.
+
+*** Declaring a scoped read
+
+A model declares =list_by_<relation>= on the foreign key it scopes by, in the
+=Foreign keys= section, with =:list_by: true=. The declaration goes on the
+foreign key and not on the column, because the generator reads the relation from
+the foreign key. It works for a column that is also part of the entity's primary
+key: the trade identifiers are keyed by the trade and are read by it.
+
+The =subtree= scope is available only where the relation is the entity's own
+parent, a column that refers to the same entity, as a portfolio's parent
+portfolio does. A foreign key to another entity serves =direct= only, and a
+=subtree= request on it is refused with =scope_not_supported=.
+
+A scoped read takes the entity's filter record, so a caller can narrow the rows
+of one trade further, and the filter members that name the relation column stay
+valid. A scoped read states =as_of= only when the model declares it with
+=:list_by_as_of: true=. A model declares it when a caller needs the children as
+they stood at an instant, as a record page that shows a past version of its
+parent does. A model that does not declare it serves the current rows only.
+
+*** Finding an entity
+
+A screen finds rows in one of these ways, in this order of preference. It never
+filters in the browser and never invents an operation.
+
+| The need | The mechanism | Example |
+|----------+---------------+---------|
+| Rows of one entity by a column of its own | An equals or a one-of member on a filterable column | Trades of a counterparty, or of several trade types |
+| Rows of one entity whose text contains what a person typed | The =search= member over the searchable columns | A trade type typed in the search box |
+| Rows of one entity within a period | The =_from= and =_to= members | Trades agreed between two dates |
+| Rows of one entity by an enum value | An equals or a one-of member of the enum's type | Trades with an inter-entity counterparty |
+| The children of one row | A scoped read, =list_by_<relation>= | The identifiers of a trade |
+| The rows below a node of a hierarchy | A scoped read with =scope= =subtree= on the entity's own parent column | The portfolios below a portfolio |
+| Rows by a column of another entity | A read model that carries the column | Trades by state, by book and by identifier |
+| The rows below a node of another entity's hierarchy | The screen reads the nodes first and sends their keys in a one-of member, at most 1000 | The trades of a portfolio and its subtree: the books below it, then =book_id_one_of= |
+
+The server refuses a one-of list of more than 1000 keys with
+=filter_too_large=, and the client limit is the same number. A screen that has
+more than 1000 keys says so to the person and applies no scope. It never sends a part of the keys, because a
+filter that silently drops some keys returns the wrong rows and the wrong total.
 
 ** Writes
 

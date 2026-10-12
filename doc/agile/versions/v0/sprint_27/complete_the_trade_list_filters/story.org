@@ -48,7 +48,7 @@ A person finds a trade by its identifier, state, book, date, counterparty, trade
 | [[id:95E127BE-AFC8-4CF6-8DB4-961135A76C19][Add the trade summary entity]] | BACKLOG | | | A read-only entity with list and get that carries the trade, its current state and booking, and the identifiers as one searchable text column. |
 | [[id:8380ADEE-85BD-4A96-A242-164EA07D29CB][Add range members to the filter record]] | BACKLOG | | | Date and timestamp columns that declare filterable get inclusive from and to members, in the spec, the generator and the TypeScript twin. |
 | [[id:9FE2CBEA-053D-4007-89D0-40936F96233D][Document the trade list filters]] | BACKLOG | | | State in the specification, the review journey and the backlog capture what the trade list now filters. |
-| [[id:94E49E8F-0B06-4D27-AFD7-6BE12FDD638E][Specify the search and filter standard]] | BACKLOG | | | Write the standard for finding entities into the entity protocol specification: the read-model entity, the enum filter member, the range members and the by-parent reads, so every entity follows one rule. |
+| [[id:94E49E8F-0B06-4D27-AFD7-6BE12FDD638E][Specify the search and filter standard]] | DONE | 2026-10-12 | 2026-10-12 | Write the standard for finding entities into the entity protocol specification: the read-model entity, the enum filter member, the range members and the by-parent reads, so every entity follows one rule. |
 
 * Analysis
 

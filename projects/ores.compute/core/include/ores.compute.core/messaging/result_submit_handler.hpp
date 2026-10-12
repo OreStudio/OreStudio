@@ -73,6 +73,54 @@ public:
         : nats_(nats)
         , ctx_(std::move(ctx)) {}
 
+    /**
+     * @brief Records that a wrapper node has begun a job.
+     *
+     * The dispatcher creates a result unsent and hands the assignment to the
+     * queue, and nothing else tells the service that a node took it, so a result
+     * would stay unsent until it was done and no job would ever count as in
+     * progress. The node sends this before it runs the job and waits for the
+     * reply, so the start is recorded before the node can submit. A result that
+     * is no longer unsent is already further on, and the start is left out
+     * rather than overwriting it.
+     */
+    void started(ores::nats::message msg) {
+        BOOST_LOG_SEV(result_submit_handler_lg(), debug) << "Handling " << msg.subject;
+        result_started_response resp;
+        if (auto req = decode<result_started_request>(msg)) {
+            try {
+                const auto tenant_ctx =
+                    ores::database::service::tenant_context::with_tenant(ctx_, req->tenant_id);
+                service::result_service result_svc(tenant_ctx);
+                auto existing =
+                    result_svc.get_result(boost::lexical_cast<boost::uuids::uuid>(req->result_id));
+                if (!existing) {
+                    resp.message = "Result not found: " + req->result_id;
+                } else if (existing->server_state != 2) {
+                    resp.success = true;
+                    resp.message = "The result is no longer unsent; the start was not recorded";
+                } else {
+                    auto r = *existing;
+                    // InProgress.
+                    r.server_state = 4;
+                    r.host_id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
+                    r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
+                    r.change_commentary = "Started by wrapper";
+                    stamp(r, tenant_ctx);
+                    result_svc.save_result(r);
+                    resp.success = true;
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(result_submit_handler_lg(), warn)
+                    << "result_started failed: " << e.what();
+                resp.message = e.what();
+            }
+        } else {
+            resp.message = "Failed to decode request";
+        }
+        reply(nats_, msg, resp);
+    }
+
     void submit(ores::nats::message msg) {
         BOOST_LOG_SEV(result_submit_handler_lg(), debug) << "Handling " << msg.subject;
         if (auto req = decode<submit_result_request>(msg)) {

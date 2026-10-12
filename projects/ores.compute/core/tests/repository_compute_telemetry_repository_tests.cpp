@@ -22,7 +22,9 @@
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include "ores.compute.core/repository/node_sample_repository.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/test_database_manager.hpp"
@@ -32,6 +34,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <format>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -60,6 +63,81 @@ std::vector<std::string> host_ids_of(const std::vector<ores::compute::domain::no
         ids.push_back(boost::uuids::to_string(row.host_id));
     return ids;
 }
+
+/// Deletes the sample rows a test wrote when the test ends.
+///
+/// The tests run against the development database, so a row they leave behind
+/// is a row the grid screen shows: a future-dated grid sample hid the real
+/// newest one, and a generated node sample showed as a machine that does not
+/// exist. A row is deleted as the tenant that wrote it, because the policy lets
+/// a session delete only its own tenant's rows.
+class sample_cleanup {
+public:
+    explicit sample_cleanup(ores::testing::database_helper& h)
+        : h_(h) {}
+    sample_cleanup(const sample_cleanup&) = delete;
+    sample_cleanup& operator=(const sample_cleanup&) = delete;
+
+    ~sample_cleanup() {
+        for (const auto& step : steps_) {
+            try {
+                ores::database::repository::execute_parameterized_command(
+                    h_.context().with_tenant(step.tenant, h_.db_user()),
+                    step.sql,
+                    step.params,
+                    logger(),
+                    "deleting a test sample");
+            } catch (const std::exception&) {
+                // A failed delete leaves a row behind and must not fail the test.
+            }
+        }
+    }
+
+    /// One grid sample row, by its id.
+    void grid(const ores::utility::uuid::tenant_id& tenant, const boost::uuids::uuid& id) {
+        steps_.push_back({tenant,
+                          "DELETE FROM ores_compute_grid_samples_tbl WHERE id = $1::uuid",
+                          {boost::uuids::to_string(id)}});
+    }
+
+    /// One node sample row, by its id.
+    void node(const ores::utility::uuid::tenant_id& tenant, const boost::uuids::uuid& id) {
+        steps_.push_back({tenant,
+                          "DELETE FROM ores_compute_node_samples_tbl WHERE id = $1::uuid",
+                          {boost::uuids::to_string(id)}});
+    }
+
+    /// Every row of a table that one tenant wrote in a time range.
+    void range(const std::string& table,
+               const ores::utility::uuid::tenant_id& tenant,
+               std::chrono::system_clock::time_point from,
+               std::chrono::system_clock::time_point to) {
+        namespace dt = ores::platform::time;
+        steps_.push_back(
+            {tenant,
+             std::format("DELETE FROM {} WHERE tenant_id = $1::uuid AND "
+                         "sampled_at >= $2::timestamptz AND sampled_at < $3::timestamptz",
+                         table),
+             {tenant.to_string(),
+              dt::datetime::to_db_string(from),
+              dt::datetime::to_db_string(to)}});
+    }
+
+private:
+    struct step {
+        ores::utility::uuid::tenant_id tenant;
+        std::string sql;
+        std::vector<std::string> params;
+    };
+
+    static ores::logging::logger_t& logger() {
+        static auto instance = ores::logging::make_logger("ores.compute.tests.sample_cleanup");
+        return instance;
+    }
+
+    ores::testing::database_helper& h_;
+    std::vector<step> steps_;
+};
 
 /// The generator leaves the 64-bit members of a node sample indeterminate, because
 /// the codegen gives a default to int and bool alone. A test that writes the row
@@ -120,6 +198,10 @@ TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third"
     third_row.sampled_at = std::chrono::system_clock::now();
 
     node_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.node(own, own_row.id);
+    cleanup.node(system, system_row.id);
+    cleanup.node(third, third_row.id);
     repo.write(h.context(), own_row);
     repo.write(h.context().with_tenant(system, h.db_user()), system_row);
     repo.write(h.context().with_tenant(third, h.db_user()), third_row);
@@ -175,6 +257,10 @@ TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant
     third_row.sampled_at = now + std::chrono::hours(24 * 365 * 2);
 
     grid_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.grid(own, own_row.id);
+    cleanup.grid(system, system_row.id);
+    cleanup.grid(third, third_row.id);
     repo.write(h.context(), own_row);
     repo.write(h.context().with_tenant(system, h.db_user()), system_row);
     repo.write(h.context().with_tenant(third, h.db_user()), third_row);
@@ -250,6 +336,9 @@ TEST_CASE("grid_series_holds_the_newest_sample_of_each_bucket_and_marks_the_gaps
     // more row lies past the end of the range.
     grid_sample_repository repo;
     const auto own = h.tenant_id();
+    sample_cleanup cleanup(h);
+    cleanup.range("ores_compute_grid_samples_tbl", own, t0, t0 + seconds(400));
+    cleanup.range("ores_compute_grid_samples_tbl", third, t0, t0 + seconds(400));
     repo.write(h.context(), sample_at(model, own, t0 + seconds(5), 1));
     repo.write(h.context(), sample_at(model, own, t0 + seconds(35), 3));
     repo.write(h.context(), sample_at(model, own, t0 + seconds(20), 2));
@@ -376,6 +465,9 @@ TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machin
     // and one in bucket 2. The alpha node has one sample in bucket 1. A third
     // tenant's node reports in bucket 0 and the policy hides it.
     node_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.range("ores_compute_node_samples_tbl", own, t0, t0 + seconds(400));
+    cleanup.range("ores_compute_node_samples_tbl", third, t0, t0 + seconds(400));
     repo.write(
         h.context(),
         node_sample_at(model, own, beta_node, "", t0 + seconds(10), 5, 1, 2, 100, 150, 10, 1));

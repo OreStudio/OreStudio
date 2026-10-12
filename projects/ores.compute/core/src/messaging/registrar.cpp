@@ -93,6 +93,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         submit_result_request::nats_subject,
         "ores.compute.service",
         [result_submit](ores::nats::message msg) { result_submit->submit(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        result_started_request::nats_subject,
+        "ores.compute.service",
+        [result_submit](ores::nats::message msg) { result_submit->started(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Telemetry

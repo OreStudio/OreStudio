@@ -27,6 +27,7 @@ import {
     fromParse,
     keyOf,
     rowOf,
+    withInstrument,
     withKind,
     withValue,
     type EditorState,
@@ -146,6 +147,40 @@ describe('composeRequestOf', () => {
             }),
         );
         expect(request).toMatchObject({ kind: 'fixing', quote: '', subject: 'EUR' });
+    });
+});
+
+describe('the path between instruments', () => {
+    it('keeps the path when the new row writes the same field as its path', () => {
+        const next = withInstrument(
+            SCHEMA,
+            state({ instrument: 'capfloor', subject: 'EUR' }),
+            'capfloor',
+        );
+        expect(next.subject).toBe('EUR');
+    });
+
+    it('clears the path when the new row writes another field as its path', () => {
+        const next = withInstrument(
+            SCHEMA,
+            state({ instrument: 'capfloor', subject: 'EUR' }),
+            'seasonality',
+        );
+        expect(next).toMatchObject({ instrument: 'seasonality', subject: '' });
+    });
+
+    it('clears the path when no instrument was chosen before, and keeps the values', () => {
+        const next = withInstrument(SCHEMA, state({ instrument: '', subject: 'EUR' }), 'capfloor');
+        expect(next.subject).toBe('');
+        expect(next.values).toEqual({ term: '5Y' });
+    });
+
+    it('clears the path with the instrument when the kind changes between the two lists', () => {
+        expect(withKind(state(), 'fixing')).toMatchObject({ instrument: '', subject: '' });
+        expect(withKind(state(), 'series')).toMatchObject({
+            instrument: 'capfloor',
+            subject: 'EUR',
+        });
     });
 });
 

@@ -101,6 +101,8 @@ export function rowOf(schema: OresmdSchema, state: EditorState): EditorRow | nul
         return {
             subject: family.subject,
             asset: family.asset,
+            // An index family's schema says only whether a field is optional. It
+            // has no role, kind or closed set, so a later change to it is noticed here.
             fields: family.fields.map((field) => ({
                 name: field.name,
                 role: 'identity',
@@ -153,11 +155,31 @@ export function composeRequestOf(
     };
 }
 
-/** The state with another kind. A fixing and a quote choose from different lists, so the instrument is cleared when the lists differ. */
+/**
+ * The state with another kind. A fixing and a quote choose from different
+ * lists, so the instrument is cleared when the lists differ, and the path goes
+ * with it because a path of one list is not a path of the other.
+ */
 export function withKind(state: EditorState, kind: Kind): EditorState {
     if (kind === state.kind) return state;
     const sameList = (kind === 'fixing') === (state.kind === 'fixing');
-    return { ...state, kind, instrument: sameList ? state.instrument : '' };
+    return sameList ? { ...state, kind } : { ...state, kind, instrument: '', subject: '' };
+}
+
+/**
+ * The state with another instrument or index family. The path is kept when the
+ * new row writes the same field as its path, as a swap and a forward rate both
+ * write a currency, and cleared when it does not, because text typed for one
+ * kind of path is not a path of another.
+ */
+export function withInstrument(
+    schema: OresmdSchema,
+    state: EditorState,
+    instrument: string,
+): EditorState {
+    const before = rowOf(schema, state)?.subject;
+    const after = rowOf(schema, { ...state, instrument })?.subject;
+    return { ...state, instrument, subject: before === after ? state.subject : '' };
 }
 
 /** The state with one field's text. Blank text is kept, because a blank is a field left out. */

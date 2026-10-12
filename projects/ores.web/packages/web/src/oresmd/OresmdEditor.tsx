@@ -20,7 +20,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { OresmdComposeRequest, OresmdSchema } from '@ores/contracts';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -33,11 +33,11 @@ import {
     fromParse,
     keyOf,
     rowOf,
+    withInstrument,
     withKind,
     withValue,
     type EditorField,
     type EditorState,
-    type Kind,
 } from './editor.js';
 import { oresmdQueries } from './queries.js';
 
@@ -126,6 +126,9 @@ function Suggestions({ id, field }: { readonly id: string; readonly field: strin
  * copied or applied. A closed set is a select. A catalogue the system keeps
  * suggests values that may be overtyped. The editor holds none of the grammar.
  *
+ * The editor reads `url` when it opens. To edit another URL, give the dialog a
+ * new `key`, or unmount it on close as a modal does.
+ *
  * `onApply` receives the URI the codec wrote, and Apply is offered only when
  * the codec wrote one for what is on screen.
  */
@@ -145,6 +148,8 @@ export function OresmdEditorDialog({
     const [state, setState] = useState<EditorState>(EMPTY);
     const [loaded, setLoaded] = useState(url === '');
     const [copied, setCopied] = useState(false);
+    const copiedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    useEffect(() => () => clearTimeout(copiedTimer.current), []);
 
     useEffect(() => {
         if (loaded) return;
@@ -168,12 +173,17 @@ export function OresmdEditorDialog({
     // edit, so Apply and Copy wait.
     const settled = key !== '' && askedKey === key && !composed.isFetching;
     const uri = settled && composed.data?.success === true ? composed.data.uri : '';
+    // A request that failed is not an answer from the codec. Its reason is shown
+    // too, because the reads are quiet and nothing else would say why Apply is off.
+    const failure =
+        key !== '' && askedKey === key && composed.isError ? composed.error.message : '';
 
     const copy = async (): Promise<void> => {
         try {
             await navigator.clipboard.writeText(uri);
             setCopied(true);
-            setTimeout(() => setCopied(false), COPIED_MS);
+            clearTimeout(copiedTimer.current);
+            copiedTimer.current = setTimeout(() => setCopied(false), COPIED_MS);
         } catch {
             setCopied(false);
         }
@@ -228,7 +238,7 @@ export function OresmdEditorDialog({
                                 ? t('oresmd.choose')
                                 : settled && composed.data?.success === false
                                   ? composed.data.message
-                                  : ''
+                                  : failure
                         }
                         working={key !== '' && !settled}
                     />
@@ -267,7 +277,7 @@ export function Composer({
                                 ? 'rounded-md border border-accent bg-accent/10 px-3 py-1 text-sm text-accent-bright'
                                 : 'rounded-md border border-line px-3 py-1 text-sm text-ink-muted hover:text-ink'
                         }
-                        onClick={() => onChange(withKind(state, kind as Kind))}
+                        onClick={() => onChange(withKind(state, kind))}
                     >
                         {t(`oresmd.kinds.${kind}`)}
                     </button>
@@ -280,7 +290,9 @@ export function Composer({
                     </span>
                     <Select
                         value={state.instrument}
-                        onChange={(event) => onChange({ ...state, instrument: event.target.value })}
+                        onChange={(event) =>
+                            onChange(withInstrument(schema, state, event.target.value))
+                        }
                     >
                         <option value="" />
                         {fixing
@@ -361,12 +373,15 @@ function FieldInput({
     readonly onChange: (text: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const list = `oresmd-${field.name}`;
+    const id = useId();
+    const list = `${id}-suggestions`;
     return (
-        <label className="grid items-center gap-2 text-sm md:grid-cols-[12rem_1fr_auto]">
-            <span className="font-mono text-ink">{label}</span>
+        <div className="grid items-center gap-2 text-sm md:grid-cols-[12rem_1fr_auto]">
+            <label htmlFor={id} className="font-mono text-ink">
+                {label}
+            </label>
             {field.codes.length > 0 ? (
-                <Select value={value} onChange={(event) => onChange(event.target.value)}>
+                <Select id={id} value={value} onChange={(event) => onChange(event.target.value)}>
                     <option value="" />
                     {field.codes.map((code) => (
                         <option key={code} value={code}>
@@ -377,6 +392,7 @@ function FieldInput({
             ) : (
                 <>
                     <Input
+                        id={id}
                         value={value}
                         list={suggested(field.name) ? list : undefined}
                         onChange={(event) => onChange(event.target.value)}
@@ -390,7 +406,7 @@ function FieldInput({
                 </Tag>
                 {field.role === 'coordinate' && <Tag small>{t('oresmd.coordinate')}</Tag>}
             </span>
-        </label>
+        </div>
     );
 }
 

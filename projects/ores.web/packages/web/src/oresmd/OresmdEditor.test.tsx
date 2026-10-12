@@ -134,6 +134,14 @@ describe('the composer', () => {
         expect(html).toContain('value="5Y"');
     });
 
+    it('names an input by its own label, and keeps the tags out of the name', () => {
+        const html = composer(CAPFLOOR);
+        const id = /<label for="([^"]+)" class="font-mono text-ink">term<\/label>/.exec(html)?.[1];
+        expect(id).toBeDefined();
+        expect(html).toContain(`id="${id}"`);
+        expect(html).not.toMatch(/<label[^>]*>[^<]*<[^>]*>[^<]*Required/);
+    });
+
     it('marks a field required or optional, and a coordinate', () => {
         const html = composer(CAPFLOOR);
         expect(html).toContain('>Required<');
@@ -158,8 +166,9 @@ describe('the composer', () => {
 
     it('offers the currencies the system keeps for a currency field, and nothing for another', () => {
         const fixing = composer({ ...EMPTY, kind: 'fixing', instrument: 'ibor' });
-        expect(fixing).toContain('list="oresmd-ccy"');
-        expect(fixing).toContain('<datalist id="oresmd-ccy">');
+        const list = /list="([^"]+)"/.exec(fixing)?.[1];
+        expect(list).toBeDefined();
+        expect(fixing).toContain(`<datalist id="${list}">`);
         const capfloor = composer(CAPFLOOR);
         expect(capfloor).not.toContain('<datalist');
         expect(capfloor).not.toContain(' list=');

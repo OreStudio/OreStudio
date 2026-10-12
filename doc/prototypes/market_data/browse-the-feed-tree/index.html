@@ -103,6 +103,8 @@ tr.sel td{background:#1d2633}
 
   Start and Stop work on the mock: the node's feeds change state, the
   roll-ups recompute, and the report says started, already running, skipped.
+  Moving between screens keeps the selection and the running set; choosing a
+  state reloads the page with fresh mock data, so both reset.
 -->
 
 <div class="proto-note" id="note"></div>
@@ -111,7 +113,8 @@ tr.sel td{background:#1d2633}
 
 <script>
 const params = new URLSearchParams(location.search);
-let screen = params.get('screen') || 'synthetic';
+const SCREENS = ['market', 'synthetic', 'overview', 'tree', 'feed', 'fxlist', 'irlist'];
+let screen = SCREENS.includes(params.get('screen')) ? params.get('screen') : 'synthetic';
 const state = params.get('state') || 'mixed';
 function set(key, value) {
   const p = new URLSearchParams(location.search);
@@ -379,7 +382,7 @@ function treeScreen() {
   const shown = n.type === 'feed' ? n.parent : n;
   return `${crumbTrail(toMarket, toSynthetic, '<b>Feed tree</b>')}
     <div class="top"><h1>Feed tree</h1></div>
-    <div class="toolbar"><input class="search" id="q" placeholder="Search feeds by name, source or folder" value="${query}">
+    <div class="toolbar"><input class="search" id="q" placeholder="Search feeds by name, source or folder" value="${esc(query).replace(/"/g, '&quot;')}">
       <label class="check"><input type="checkbox" id="ro" ${runningOnly ? 'checked' : ''}> Running only</label>
       ${query || runningOnly ? `<span class="tag warn">${ROOTS.flatMap(leaves).filter(matches).length.toLocaleString()} match</span>` : ''}
       <button class="btn" id="expand">Expand</button><button class="btn" id="collapse">Collapse</button></div>

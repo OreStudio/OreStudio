@@ -2,7 +2,7 @@
 :ID: 7566CF46-6627-49A8-AA3F-B8DE653153A4
 :END:
 #+title: Task: Prototype the feed tree
-#+description: A throwaway web prototype of the feed tree screen before the feed browser is built: System feeds by provider and My test feeds, start and stop at any node with running roll-ups, search and scale to thousands of feeds, and leaves that open the existing FX and IR feed pages. It builds on the ores.qt Market Simulator and its desktop prototype.
+#+description: A throwaway web prototype of the feed tree screen before the feed browser is built: System feeds by provider and Test feeds, start and stop at any node with running roll-ups, search and scale to thousands of feeds, and leaves that open the existing FX and IR feed pages. It builds on the ores.qt Market Simulator and its desktop prototype.
 #+type: task
 #+level: s1
 #+filetags: :web:synthetic:feeds:prototype:ux:organise-feeds-by-provider-and-scope:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The feed browser's layout is chosen from variants a person can open and compare, not imagined, before Build the feed browser starts.
+The synthetic feeds area is designed as screens a person can open and walk through, not imagined, before Build the feed browser starts.
 
 * Status
 
@@ -35,16 +35,18 @@ The feed browser's layout is chosen from variants a person can open and compare,
 
 * Acceptance
 
-- A prototype page under doc/prototypes/market_data with variants and states, linked from the market data prototype index and the run-a-synthetic-collection journey.
+- A prototype page under doc/prototypes/market_data with its screens and states, linked from the market data prototype index and the run-a-synthetic-collection journey.
 - It shows the Bloomberg and 2016 ORE Samples feeds as they are seeded, a test collection, and a state with thousands of feeds.
 - Every leaf names the existing FX or IR feed page it opens.
 
 * Plan
 
 Read the =ores.qt= Market Simulator window and its desktop prototype, then build
-a throwaway web page with three layouts of the tree, organised by provider and
-scope, with start and stop at any node and leaves that open the existing FX and
-IR feed pages: [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
+a throwaway web page organised by provider and scope, with start and stop at any
+node and feeds that open the existing FX and IR feed pages. A first version
+offered three layouts of one screen; after review it became one flow of five
+screens: Market data, Synthetic, Feed overview, Feed tree and a feed page:
+[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
 
 * Measurements
 
@@ -66,9 +68,10 @@ task and name that file in the Command column.
   with its count on every node; one folder-scoped request to start or stop a
   subtree; and the two-flag pair. It leaves the editing, the mixture and the
   live chart to the feed pages.
-- The variants are the tree and node panel of the Qt window (=a=), a single
-  tree table (=b=), and drill-down columns that load a page of children at a
-  time (=c=). Only =c= does not render a large folder whole.
+- The first version's layouts were a tree with a node panel, a single tree
+  table, and drill-down columns. The columns became the Feed overview, which
+  stops at the feed kind because it never draws a large folder whole; the tree
+  became the Feed tree; the tree table was dropped.
 
 * Test Scenarios
 
@@ -91,7 +94,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #3185: the task still describes variants, not the five-screen flow | task_prototype-the-feed-tree.org | Accepted | Goal, Plan, Acceptance and Notes describe the flow. |
+| 2 | PR #3185: Measurements has an empty row; Status cells are padded oddly | task_prototype-the-feed-tree.org | Declined | Both are as compass's task template and task done write them. |
+| 3 | PR #3185: "My test feeds" and "Test feeds" both used | story.org, tasks | Accepted | "Test feeds" everywhere: the scope covers a tenant's or a party's feeds. |
+| 4 | PR #3185: two menu paragraphs past the wrap; say no other area has a folder | menu_structure.org | Accepted | Summary re-wrapped; the other long line predates this change and carries link ids. The folder rule says Synthetic is the only one. |
+| 5 | PR #3185: check Not built yet does not claim the folder is built | menu_structure.org | No change | It says the folder is designed and not built. |
+| 6 | PR #3185: escape the search text; fall back on an unknown screen; say what a state switch resets | index.html | Accepted | All three. |
 
 * Result
 

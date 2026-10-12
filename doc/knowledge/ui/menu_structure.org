@@ -11,15 +11,16 @@
 
 * Summary
 
-There is one menu and one set of cards. They are the same for every person.
-An area is drawn for a person who holds the read that one of its screens needs.
-A card is drawn for a person who holds the read of its screen. Nothing in the
-menu or in an area is written for a kind of user, because permissions change
-over time and a role is only a bundle of them. Every screen belongs to one
-area, and that area is the middle of its breadcrumb: Home, the area, the
-screen, with a folder of the area between them when the screen is in one. An area is a topic that a person looks in, such as Reference data, and
-never one kind of record. A party and everything about a party is in Reference
-data. A person's own pages are in the account menu and not in the menu.
+There is one menu and one set of cards. They are the same for every person. An
+area is drawn for a person who holds the read that one of its screens needs. A
+card is drawn for a person who holds the read of its screen. Nothing in the menu
+or in an area is written for a kind of user, because permissions change over
+time and a role is only a bundle of them. Every screen belongs to one area, and
+that area is the middle of its breadcrumb: Home, the area, the screen, with a
+folder of the area between them when the screen is in one. An area is a topic
+that a person looks in, such as Reference data, and never one kind of record. A
+party and everything about a party is in Reference data. A person's own pages
+are in the account menu and not in the menu.
 
 * Detail
 
@@ -58,7 +59,8 @@ A card is like an entry in a file manager.
 - An area may hold a folder card of its own when a topic inside it has several
   screens that belong together: Synthetic, in Market data. Its page follows the
   rule of an area page, and its name is the topic, never one kind of record. A
-  folder holds screens, not other folders.
+  folder holds screens, not other folders. Synthetic is the only folder inside
+  an area today; another is added here first, with the topic it holds.
 - A /file card/ opens one screen. Its title is the title of the screen, word for
   word, in English, French and Portuguese. Its line is a short form of the
   screen's own lead. It has the glyph of the screen.

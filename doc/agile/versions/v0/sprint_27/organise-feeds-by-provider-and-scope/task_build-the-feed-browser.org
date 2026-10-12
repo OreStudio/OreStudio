@@ -2,7 +2,7 @@
 :ID: D9D2EE5D-31C3-4B77-AB9B-E836CB585FA0
 :END:
 #+title: Task: Build the feed browser
-#+description: One Market data feed browser: a lazily loaded tree of System feeds by provider and My test feeds with counts and run roll-ups, start and stop at any node, and the kind's list and feed page as its leaves.
+#+description: One Market data feed browser: a lazily loaded tree of System feeds by provider and Test feeds with counts and run roll-ups, start and stop at any node, and the kind's list and feed page as its leaves.
 #+type: task
 #+level: s1
 #+filetags: :web:bff:synthetic:organise-feeds-by-provider-and-scope:sprint_27:v0:

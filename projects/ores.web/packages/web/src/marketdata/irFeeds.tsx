@@ -433,7 +433,11 @@ const IR_FEED_KIND: FeedKind = {
         },
     ],
     extraDetails: (feed, t) => [
-        [t('refdata.fields.oresmd_uri'), <OresmdUrl uri={irSeriesUri(feed)} />],
+        [
+            t('refdata.fields.oresmd_uri'),
+            <OresmdUrl uri={irSeriesUri(feed)} />,
+            t('marketdata.feeds.targetUri'),
+        ],
     ],
     parts: [
         {

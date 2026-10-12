@@ -3639,6 +3639,10 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        feeds: {
+            targetUri:
+                'La série dans laquelle ce flux écrit. Chaque tick du flux est stocké comme une observation de la série que nomme cette URI.',
+        },
         area: {
             title: 'Données de marché',
             lead: 'Les prix et les courbes que la plateforme reçoit ou génère.',

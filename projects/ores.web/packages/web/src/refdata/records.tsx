@@ -28,7 +28,7 @@ import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { Button, Dialog, Field, Input, Notice, PageHeader, Select, cx } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { useTabs } from '../ui/Tabs.js';
 import { Flag, FlagOf, useFlags, type FlagSource } from '../images/flags.js';
@@ -694,7 +694,8 @@ export function RecordDetails({
 }: {
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow;
-    readonly extra?: readonly (readonly [string, ReactNode])[];
+    /** A third item is a hint: the words the label shows when the pointer rests on it. */
+    readonly extra?: readonly (readonly [string, ReactNode, string?])[];
     /**
      * Makes the details a card of an entity page: a title with the version of
      * the record beside it, and the Edit button of the card on the right. A
@@ -732,9 +733,17 @@ export function RecordDetails({
                         </dd>
                     </div>
                 ))}
-                {(extra ?? []).map(([label, value]) => (
+                {(extra ?? []).map(([label, value, hint]) => (
                     <div key={label}>
-                        <dt className="text-xs text-ink-faint">{label}</dt>
+                        <dt
+                            className={cx(
+                                'text-xs text-ink-faint',
+                                hint !== undefined && 'cursor-help underline decoration-dotted',
+                            )}
+                            title={hint}
+                        >
+                            {label}
+                        </dt>
                         <dd className="mt-0.5 text-sm">{value}</dd>
                     </div>
                 ))}

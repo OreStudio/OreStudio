@@ -31,7 +31,13 @@ import { CURRENCY_FIELDS, CurrenciesPage, CurrencyPage } from './currencies.js';
 import { CurrencyPairPage } from './currencyPairs.js';
 import { DeskGroupPage } from './deskGroups.js';
 import { FIRST_PAGE, pageKey } from './RecordList.js';
-import { revertChanges, valuesFromHistory, writeOf, type FieldSpec } from './records.js';
+import {
+    RecordDetails,
+    revertChanges,
+    valuesFromHistory,
+    writeOf,
+    type FieldSpec,
+} from './records.js';
 import { reasonsFor } from './shared.js';
 import { accessOf, resourceView } from './testSupport.js';
 import { parseTimestamp, relativeTime } from '../ui/Time.js';
@@ -390,5 +396,26 @@ describe('what a revert would change', () => {
 
     it('lists nothing when the older version holds the same values', () => {
         expect(revertChanges(label, specs, row, older('Acme Holdings'))).toEqual([]);
+    });
+});
+
+describe('the extra details of a record', () => {
+    const draw = (extra: readonly (readonly [string, string, string?])[]): string =>
+        renderToStaticMarkup(
+            <TranslationProvider>
+                <RecordDetails specs={[]} row={euro} extra={extra} />
+            </TranslationProvider>,
+        );
+
+    it('gives a label a tooltip and marks it when the detail has a hint', () => {
+        const html = draw([['Target', 'x', 'Where it writes']]);
+        expect(html).toContain('title="Where it writes"');
+        expect(html).toContain('cursor-help');
+    });
+
+    it('leaves a label with no hint plain', () => {
+        const html = draw([['Target', 'x']]);
+        expect(html).not.toContain('title=');
+        expect(html).not.toContain('cursor-help');
     });
 });

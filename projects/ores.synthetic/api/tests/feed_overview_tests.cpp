@@ -101,3 +101,14 @@ TEST_CASE("feed_overview counts nothing for a folder with no feeds", tags) {
 TEST_CASE("feed_overview has no children for a folder that is not there", tags) {
     CHECK(children_with_counts(hierarchy, counts, "nowhere").empty());
 }
+
+TEST_CASE("feed_overview orders the names without regard to case", tags) {
+    const std::vector<feed_folder> mixed{folder("1", "", "beta", "root"),
+                                         folder("2", "", "Alpha", "root"),
+                                         folder("3", "", "Gamma", "root")};
+    const auto roots = children_with_counts(mixed, {}, "");
+    REQUIRE(roots.size() == 3);
+    CHECK(roots[0].name == "Alpha");
+    CHECK(roots[1].name == "beta");
+    CHECK(roots[2].name == "Gamma");
+}

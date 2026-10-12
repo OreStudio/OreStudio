@@ -37,6 +37,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::synthetic::service {
@@ -48,12 +49,13 @@ inline auto& feed_overview_handler_lg() {
     return instance;
 }
 
-/// A text as a SQL string literal. The names are the service's own, and a quote is doubled.
+/// A text as an escape string literal: a quote and a backslash are doubled, so the
+/// text means the same whatever the server's setting of standard_conforming_strings.
 inline std::string sql_literal(const std::string& text) {
-    std::string out = "'";
+    std::string out = "E'";
     for (const char c : text) {
-        if (c == '\'')
-            out.push_back('\'');
+        if (c == '\'' || c == '\\')
+            out.push_back(c);
         out.push_back(c);
     }
     out.push_back('\'');
@@ -114,6 +116,8 @@ public:
         const auto req = decode<list_feed_folders_request>(msg);
         if (!req) {
             resp.message = "Failed to decode the folder request.";
+            BOOST_LOG_SEV(feed_overview_handler_lg(), warn)
+                << "list_feed_folders refused: the request did not decode";
             reply(nats_, msg, resp);
             return;
         }
@@ -166,35 +170,48 @@ private:
         return out;
     }
 
-    /// The feeds each folder holds itself, and how many of them run.
+    /// Which of a folder's counts a row of the grouped queries adds to.
+    enum class tally { fx, ir, running };
+
+    /**
+     * The feeds each folder holds itself, and how many of them run.
+     *
+     * The queries run in the request's context, so row-level security limits
+     * them to the folders and feeds the caller sees. The controller names every
+     * running feed by source name, and a source name is one running feed's, as
+     * the controller holds it, so a running name is matched to the rows of the
+     * caller that carry it.
+     */
     std::vector<ores::synthetic::feed::folder_feed_count>
     direct_counts(const ores::database::context& ctx) const {
-        std::vector<ores::synthetic::feed::folder_feed_count> out;
-        const auto add = [&](const rows_t& rows, bool fx, bool running) {
+        std::unordered_map<std::string, ores::synthetic::feed::folder_feed_count> by_folder;
+        const auto add = [&](const rows_t& rows, tally which) {
             for (const auto& r : rows) {
                 const auto id = text_of(r[0]);
                 const auto n = number_of(r[1]);
-                auto found = std::ranges::find(out, id, &ores::synthetic::feed::folder_feed_count::folder_id);
-                if (found == out.end()) {
-                    out.push_back({.folder_id = id});
-                    found = std::prev(out.end());
+                auto& count = by_folder[id];
+                count.folder_id = id;
+                switch (which) {
+                case tally::fx:
+                    count.fx_feeds += n;
+                    break;
+                case tally::ir:
+                    count.ir_feeds += n;
+                    break;
+                case tally::running:
+                    count.running_feeds += n;
+                    break;
                 }
-                if (running)
-                    found->running_feeds += n;
-                else if (fx)
-                    found->fx_feeds += n;
-                else
-                    found->ir_feeds += n;
             }
         };
         add(query(ctx, R"sql(
             select folder_id::text, count(*) from ores_synthetic_fx_spot_generation_configs_tbl
             where valid_to = ores_utility_infinity_timestamp_fn() and folder_id is not null
-            group by folder_id)sql"), true, false);
+            group by folder_id)sql"), tally::fx);
         add(query(ctx, R"sql(
             select folder_id::text, count(*) from ores_synthetic_ir_curve_generation_configs_tbl
             where valid_to = ores_utility_infinity_timestamp_fn() and folder_id is not null
-            group by folder_id)sql"), false, false);
+            group by folder_id)sql"), tally::ir);
 
         const auto running = ctrl_->list();
         if (!running.empty()) {
@@ -208,10 +225,14 @@ private:
                               " where valid_to = ores_utility_infinity_timestamp_fn()"
                               " and folder_id is not null and source_name in (" + names +
                               ") group by folder_id"),
-                    true,
-                    true);
+                    tally::running);
             }
         }
+
+        std::vector<ores::synthetic::feed::folder_feed_count> out;
+        out.reserve(by_folder.size());
+        for (auto& [id, count] : by_folder)
+            out.push_back(std::move(count));
         return out;
     }
 

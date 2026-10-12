@@ -127,7 +127,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // The children of a folder with the feeds under each and what runs, for the
-    // feed overview and the feed tree. Any kind's read permission opens it.
+    // feed overview and the feed tree. The read of any kind's feed configs opens it.
     subs.push_back(nats.queue_subscribe(
         std::string(ores::synthetic::messaging::list_feed_folders_request::nats_subject),
         queue,

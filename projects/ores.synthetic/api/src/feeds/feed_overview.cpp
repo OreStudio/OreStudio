@@ -19,11 +19,19 @@
  */
 #include "ores.synthetic.api/feeds/feed_overview.hpp"
 #include <algorithm>
+#include <cctype>
 #include <unordered_map>
 
 namespace ores::synthetic::feed {
 
 namespace {
+
+/// Names in the order a person reads them: letters without regard to case.
+bool name_before(const std::string& a, const std::string& b) {
+    return std::ranges::lexicographical_compare(a, b, [](unsigned char x, unsigned char y) {
+        return std::tolower(x) < std::tolower(y);
+    });
+}
 
 struct totals {
     int fx = 0;
@@ -79,7 +87,11 @@ children_with_counts(const std::vector<messaging::feed_folder>& folders,
         }
     }
     std::ranges::sort(children, [](const auto& a, const auto& b) {
-        return a.name != b.name ? a.name < b.name : a.id < b.id;
+        if (name_before(a.name, b.name))
+            return true;
+        if (name_before(b.name, a.name))
+            return false;
+        return a.id < b.id;
     });
     return children;
 }

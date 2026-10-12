@@ -47,7 +47,7 @@ struct folder_feed_count {
  * @p parent_id names the folder whose children are wanted; empty wants the
  * roots. A child's counts are its own and those of every folder below it, and
  * its has_children says whether any folder is below it. The children come back
- * in name order, then by id, so the order is the same on every call.
+ * in name order, without regard to case, then by id, so the order is the same on every call.
  */
 ORES_SYNTHETIC_API_EXPORT std::vector<messaging::feed_folder>
 children_with_counts(const std::vector<messaging::feed_folder>& folders,

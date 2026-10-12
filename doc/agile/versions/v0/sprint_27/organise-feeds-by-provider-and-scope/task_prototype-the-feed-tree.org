@@ -8,7 +8,7 @@
 #+filetags: :web:synthetic:feeds:prototype:ux:organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
 #+branch: feature/prototype-the-feed-tree
-#+pr:
+#+pr: 3185
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3185][#3185]] | [doc] Prototype the feed tree and put synthetic feeds in a folder |
 
 * Review
 

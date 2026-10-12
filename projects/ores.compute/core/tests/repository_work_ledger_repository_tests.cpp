@@ -234,6 +234,90 @@ TEST_CASE("concurrent_claims_never_take_the_same_entry", tags) {
     CHECK(std::ranges::adjacent_find(taken) == taken.end());
 }
 
+TEST_CASE("requeue_expired_returns_an_expired_claim_that_has_attempts_left", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    work_ledger_repository ledger;
+    REQUIRE(ledger.claim(cleanup.system(), random_uuid(), platform, seconds(0)).has_value());
+
+    CHECK(ledger.requeue_expired(cleanup.system()) >= 1);
+
+    CHECK(!ledger.holder(cleanup.system(), queued.result_id).has_value());
+    const auto again = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
+    REQUIRE(again.has_value());
+    CHECK(again->result_id == queued.result_id);
+    CHECK(again->attempts == 2);
+}
+
+TEST_CASE("requeue_expired_leaves_a_live_lease_alone", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto host = random_uuid();
+    work_ledger_repository ledger;
+    REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
+
+    ledger.requeue_expired(cleanup.system());
+
+    CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
+}
+
+TEST_CASE("an_expired_claim_with_no_attempts_left_is_exhausted_and_not_requeued", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    work_ledger_repository ledger;
+    const auto host = random_uuid();
+    // One attempt is allowed, and the claim uses it.
+    REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(0)).has_value());
+
+    ledger.requeue_expired(cleanup.system(), 1);
+
+    const auto exhausted = ledger.exhausted(cleanup.system(), 1, 10000);
+    const auto found = std::ranges::find(
+        exhausted, queued.result_id, &ores::compute::repository::expired_entry::result_id);
+    REQUIRE(found != exhausted.end());
+    CHECK(found->host_id == host);
+    CHECK(found->attempts == 1);
+    CHECK(ledger.remove_expired(cleanup.system(), queued.result_id));
+    CHECK(!ledger.remove_expired(cleanup.system(), queued.result_id));
+}
+
+TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto host = random_uuid();
+    work_ledger_repository ledger;
+    REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(0)).has_value());
+    ledger.extend_leases(cleanup.system(), host, seconds(300));
+
+    CHECK(!ledger.remove_expired(cleanup.system(), queued.result_id));
+    CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
+}
+
+TEST_CASE("waiting_counts_the_queued_entries_of_one_tenant", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    const auto tenant = random_uuid();
+    cleanup.add(entry_for(platform, tenant));
+    cleanup.add(entry_for(platform, tenant));
+    cleanup.add(entry_for(platform, random_uuid()));
+    work_ledger_repository ledger;
+    REQUIRE(ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300)).has_value());
+
+    // Two were queued for the tenant and one claim took one of the three, whichever it was.
+    const auto waiting = ledger.waiting(cleanup.system(), tenant);
+    CHECK(waiting >= 1);
+    CHECK(waiting <= 2);
+}
+
 TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", tags) {
     database_helper h;
     ledger_cleanup cleanup(h);

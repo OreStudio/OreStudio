@@ -160,7 +160,11 @@ private:
 
         service::result_service result_svc(tenant_ctx);
         auto result = result_svc.get_result(entry.result_id);
-        if (!result || result->server_state != 2) {
+        // Unsent, or in progress when an earlier claim of the entry lost its lease: the reaper
+        // returns the entry to the queue and leaves the result as that node marked it.
+        const bool runnable =
+            result && (result->server_state == 2 || (result->server_state == 4 && entry.attempts > 1));
+        if (!runnable) {
             // Retired, done or gone while it waited. Nothing can run it.
             BOOST_LOG_SEV(claim_handler_lg(), ores::logging::info)
                 << "Dropping ledger entry for result "

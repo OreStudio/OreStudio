@@ -162,6 +162,82 @@ std::size_t work_ledger_repository::extend_leases(context ctx,
     return static_cast<std::size_t>(std::stoll(*rows.front().front()));
 }
 
+std::size_t work_ledger_repository::requeue_expired(context ctx, int max_attempts) {
+    static const std::string sql = R"(
+        WITH returned AS (
+            UPDATE ores_compute_work_ledger_tbl
+            SET state = 'queued', host_id = NULL, claimed_at = NULL, lease_expires_at = NULL
+            WHERE state = 'claimed' AND lease_expires_at <= now() AND attempts < $1::int
+            RETURNING 1
+        )
+        SELECT count(*) FROM returned
+    )";
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {std::to_string(max_attempts)}, lg(), "returning expired leases to the queue");
+    if (rows.empty() || rows.front().empty() || !rows.front().front())
+        return 0;
+    return static_cast<std::size_t>(std::stoll(*rows.front().front()));
+}
+
+std::vector<expired_entry>
+work_ledger_repository::exhausted(context ctx, int max_attempts, int limit) {
+    static const std::string sql = R"(
+        SELECT result_id, work_tenant_id, host_id, attempts
+        FROM ores_compute_work_ledger_tbl
+        WHERE state = 'claimed' AND lease_expires_at <= now() AND attempts >= $1::int
+        ORDER BY lease_expires_at
+        LIMIT $2::int
+    )";
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {std::to_string(max_attempts), std::to_string(limit)},
+        lg(),
+        "reading the jobs that ran out of attempts");
+    std::vector<expired_entry> out;
+    for (const auto& row : rows) {
+        if (row.size() < 4)
+            continue;
+        out.push_back({.result_id = uuid_of(row[0]),
+                       .work_tenant_id = uuid_of(row[1]),
+                       .host_id = uuid_of(row[2]),
+                       .attempts = row[3] ? std::stoi(*row[3]) : 0});
+    }
+    return out;
+}
+
+bool work_ledger_repository::remove_expired(context ctx, const boost::uuids::uuid& result_id) {
+    static const std::string sql = R"(
+        WITH removed AS (
+            DELETE FROM ores_compute_work_ledger_tbl
+            WHERE result_id = $1::uuid AND state = 'claimed' AND lease_expires_at <= now()
+            RETURNING 1
+        )
+        SELECT count(*) FROM removed
+    )";
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {boost::uuids::to_string(result_id)}, lg(), "removing an expired job");
+    return !rows.empty() && !rows.front().empty() && rows.front().front() &&
+           std::stoll(*rows.front().front()) > 0;
+}
+
+std::int64_t work_ledger_repository::waiting(context ctx,
+                                             const boost::uuids::uuid& work_tenant_id) {
+    static const std::string sql = R"(
+        SELECT count(*) FROM ores_compute_work_ledger_tbl
+        WHERE work_tenant_id = $1::uuid AND state = 'queued'
+    )";
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(work_tenant_id)},
+        lg(),
+        "counting the jobs a tenant has waiting");
+    if (rows.empty() || rows.front().empty() || !rows.front().front())
+        return 0;
+    return std::stoll(*rows.front().front());
+}
+
 std::optional<boost::uuids::uuid> work_ledger_repository::holder(
     context ctx, const boost::uuids::uuid& result_id) {
     static const std::string sql = R"(

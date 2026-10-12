@@ -243,6 +243,85 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
     return series;
 }
 
+grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the grid usage by scope";
+
+    // Whether the session works for the system tenant decides the grouping. The
+    // policies decide the rows, so the query names no tenant or party.
+    static const std::string kind_sql = R"(
+        SELECT ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    )";
+    const auto kind_rows =
+        execute_parameterized_multi_column_query(ctx, kind_sql, {}, lg(), "reading the grid scope");
+    const bool by_tenant = !kind_rows.empty() && !kind_rows.front().empty() &&
+                           kind_rows.front().front() && *kind_rows.front().front() == "t";
+
+    // Each table is counted on its own and the parts are summed by group, so a
+    // group that has batches and no results still appears.
+    static const std::string sql = R"(
+        WITH scope AS (
+            SELECT ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn() AS by_tenant
+        ),
+        parts AS (
+            SELECT CASE WHEN s.by_tenant THEN t.tenant_id::text ELSE coalesce(t.party_id::text, '') END AS k,
+                count(*) AS batches, 0::bigint AS workunits, 0::bigint AS results,
+                0::bigint AS unsent, 0::bigint AS in_progress, 0::bigint AS done,
+                0::bigint AS ok, 0::bigint AS failed
+            FROM ores_compute_batches_tbl t CROSS JOIN scope s
+            WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
+            GROUP BY 1
+          UNION ALL
+            SELECT CASE WHEN s.by_tenant THEN t.tenant_id::text ELSE coalesce(t.party_id::text, '') END,
+                0, count(*), 0, 0, 0, 0, 0, 0
+            FROM ores_compute_workunits_tbl t CROSS JOIN scope s
+            WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
+            GROUP BY 1
+          UNION ALL
+            SELECT CASE WHEN s.by_tenant THEN t.tenant_id::text ELSE coalesce(t.party_id::text, '') END,
+                0, 0, count(*),
+                count(*) FILTER (WHERE t.server_state = 2),
+                count(*) FILTER (WHERE t.server_state = 4),
+                count(*) FILTER (WHERE t.server_state = 5),
+                count(*) FILTER (WHERE t.server_state = 5 AND t.outcome = 1
+                    AND t.received_at > now() - interval '24 hours'),
+                count(*) FILTER (WHERE t.server_state = 5 AND t.outcome IN (3, 4)
+                    AND t.received_at > now() - interval '24 hours')
+            FROM ores_compute_results_tbl t CROSS JOIN scope s
+            WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
+            GROUP BY 1
+        )
+        SELECT k, sum(batches)::bigint, sum(workunits)::bigint, sum(results)::bigint,
+            sum(unsent)::bigint, sum(in_progress)::bigint, sum(done)::bigint,
+            sum(ok)::bigint, sum(failed)::bigint
+        FROM parts
+        GROUP BY k
+        ORDER BY sum(results) DESC, k
+    )";
+
+    const auto rows =
+        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading the grid usage");
+
+    grid_usage usage;
+    usage.group_kind = by_tenant ? "tenant" : "party";
+    const auto number = [](const std::optional<std::string>& cell) -> std::int64_t {
+        return cell ? std::stoll(*cell) : 0;
+    };
+    for (const auto& row : rows) {
+        if (row.size() < 9)
+            continue;
+        usage.keys.push_back(row[0] ? *row[0] : std::string{});
+        usage.batches.push_back(number(row[1]));
+        usage.workunits.push_back(number(row[2]));
+        usage.results.push_back(number(row[3]));
+        usage.results_unsent.push_back(number(row[4]));
+        usage.results_in_progress.push_back(number(row[5]));
+        usage.results_done.push_back(number(row[6]));
+        usage.outcomes_success.push_back(number(row[7]));
+        usage.outcomes_failed.push_back(number(row[8]));
+    }
+    return usage;
+}
+
 node_series
 compute_telemetry_repository::node_series_in_range(context ctx,
                                                    std::chrono::system_clock::time_point start,

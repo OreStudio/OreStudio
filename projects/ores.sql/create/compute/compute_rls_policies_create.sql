@@ -214,3 +214,84 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Party isolation for the submitted work
+-- A batch records the party that submitted it, and its workunits and results
+-- copy that party. A session that acts for parties sees only their rows. A
+-- session that acts for no party (visible_party_ids is NULL) passes through, as
+-- do the services that set only a tenant. Rows from before the party scope
+-- carry no party and stay visible within the tenant.
+-- -----------------------------------------------------------------------------
+
+drop policy if exists batches_party_isolation_policy
+    on ores_compute_batches_tbl;
+
+create policy batches_party_isolation_policy
+on ores_compute_batches_tbl
+as restrictive
+for select using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id is null
+    or party_id = any(ores_iam_visible_party_ids_fn())
+);
+
+drop policy if exists workunits_party_isolation_policy
+    on ores_compute_workunits_tbl;
+
+create policy workunits_party_isolation_policy
+on ores_compute_workunits_tbl
+as restrictive
+for select using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id is null
+    or party_id = any(ores_iam_visible_party_ids_fn())
+);
+
+drop policy if exists results_party_isolation_policy
+    on ores_compute_results_tbl;
+
+create policy results_party_isolation_policy
+on ores_compute_results_tbl
+as restrictive
+for select using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id is null
+    or party_id = any(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Operating the grid (the system tenant reads every tenant's work)
+-- The grid is one shared installation resource and the system tenant runs it,
+-- so a system-tenant session reads the batches, workunits and results of every
+-- tenant to manage the grid. The policies are read-only: writes stay the
+-- current tenant's, through the policies above. The hosts need no such policy,
+-- because every host belongs to the system tenant.
+-- -----------------------------------------------------------------------------
+
+drop policy if exists batches_system_read_policy
+    on ores_compute_batches_tbl;
+
+create policy batches_system_read_policy
+on ores_compute_batches_tbl
+for select using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+drop policy if exists workunits_system_read_policy
+    on ores_compute_workunits_tbl;
+
+create policy workunits_system_read_policy
+on ores_compute_workunits_tbl
+for select using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+drop policy if exists results_system_read_policy
+    on ores_compute_results_tbl;
+
+create policy results_system_read_policy
+on ores_compute_results_tbl
+for select using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);

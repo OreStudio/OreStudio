@@ -201,6 +201,51 @@ public:
     }
 
     /**
+     * @brief Handle compute.v1.ops.get_grid_usage (request/reply).
+     *
+     * Returns the work of the grid counted by group. The session decides the
+     * scope: the system tenant reads every tenant and gets a group for each
+     * tenant, and any other session gets a group for each party it may read.
+     * The read needs the permission to view batches.
+     */
+    void get_grid_usage(ores::nats::message msg) {
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!ores::service::messaging::has_permission(ctx, "compute::batches:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        get_grid_usage_response resp;
+        try {
+            repository::compute_telemetry_repository repo;
+            auto usage = repo.grid_usage_by_scope(ctx);
+            resp.group_kind = std::move(usage.group_kind);
+            resp.keys = std::move(usage.keys);
+            resp.batches = std::move(usage.batches);
+            resp.workunits = std::move(usage.workunits);
+            resp.results = std::move(usage.results);
+            resp.results_unsent = std::move(usage.results_unsent);
+            resp.results_in_progress = std::move(usage.results_in_progress);
+            resp.results_done = std::move(usage.results_done);
+            resp.outcomes_success = std::move(usage.outcomes_success);
+            resp.outcomes_failed = std::move(usage.outcomes_failed);
+            resp.success = true;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "get_grid_usage failed: " << e.what();
+            resp = get_grid_usage_response{};
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+    }
+
+    /**
      * @brief Handle compute.v1.ops.get_node_series (request/reply).
      *
      * Returns the stored node samples of a time range as columns on a regular

@@ -43,6 +43,7 @@ create table if not exists "ores_compute_results_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid null,
     "workunit_id" uuid not null,
     "host_id" uuid null,
     "server_state" integer not null default 1,

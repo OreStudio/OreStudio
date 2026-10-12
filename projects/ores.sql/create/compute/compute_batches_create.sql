@@ -34,6 +34,7 @@ create table if not exists "ores_compute_batches_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "external_ref" text not null,
+    "party_id" uuid null,
     "status" text not null default 'open',
     "modified_by" text not null,
     "performed_by" text not null,

@@ -41,7 +41,12 @@ CREATE_DIR = REPO_ROOT / "projects" / "ores.sql" / "create"
 
 AUDIT = "under audit in 'Audit the policies that let the system tenant read every tenant'"
 
+GRID = "the system tenant operates the grid, one shared installation resource"
+
 EXCEPTIONS = {
+    "batches_system_read_policy": GRID,
+    "workunits_system_read_policy": GRID,
+    "results_system_read_policy": GRID,
     "job_definitions_tenant_isolation_policy": AUDIT,
     "job_definitions_party_isolation_policy": AUDIT,
     "job_instances_write_policy": AUDIT,

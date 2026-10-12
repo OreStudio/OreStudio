@@ -32,6 +32,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::compute::repository {
@@ -49,6 +50,9 @@ domain::batch batch_mapper::map(const batch_entity& v) {
 
     r.external_ref = v.external_ref;
 
+    r.party_id = v.party_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
+                     std::nullopt;
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -70,6 +74,8 @@ batch_entity batch_mapper::map(const domain::batch& v) {
 
     r.external_ref = v.external_ref;
 
+    r.party_id =
+        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -32,11 +32,13 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <optional>
 #include <rfl/json.hpp>
 
 namespace ores::compute::messaging {
@@ -91,12 +93,16 @@ void report_submit_handler::submit(ores::nats::message msg) {
 
         const auto batch_uuid = boost::uuids::random_generator()();
         const auto batch_id = boost::uuids::to_string(batch_uuid);
+        std::optional<boost::uuids::uuid> party;
+        if (!req.party_id.empty())
+            party = boost::lexical_cast<boost::uuids::uuid>(req.party_id);
 
         // ── Create batch ──────────────────────────────────────────────
         domain::batch batch;
         batch.id = batch_uuid;
         batch.external_ref = req.report_instance_id;
         batch.status = "open";
+        batch.party_id = party;
         stamp(batch, tenant_ctx);
 
         service::batch_service batch_svc(tenant_ctx);
@@ -132,6 +138,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
             domain::workunit wu;
             wu.id = wu_uuid;
             wu.batch_id = batch_uuid;
+            wu.party_id = party;
             wu.app_version_id = app_version_uuid;
             wu.input_uri = tarball_uri;
             wu.priority = 1;

@@ -17,8 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.compute.api/generators/batch_generator.hpp"
 #include "ores.compute.api/generators/grid_sample_generator.hpp"
 #include "ores.compute.api/generators/node_sample_generator.hpp"
+#include "ores.compute.core/repository/batch_repository.hpp"
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include "ores.compute.core/repository/node_sample_repository.hpp"
@@ -29,6 +31,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -104,6 +107,13 @@ public:
     void node(const ores::utility::uuid::tenant_id& tenant, const boost::uuids::uuid& id) {
         steps_.push_back({tenant,
                           "DELETE FROM ores_compute_node_samples_tbl WHERE id = $1::uuid",
+                          {boost::uuids::to_string(id)}});
+    }
+
+    /// One batch row with all its versions, by its id.
+    void batch(const ores::utility::uuid::tenant_id& tenant, const boost::uuids::uuid& id) {
+        steps_.push_back({tenant,
+                          "DELETE FROM ores_compute_batches_tbl WHERE id = $1::uuid",
                           {boost::uuids::to_string(id)}});
     }
 
@@ -538,4 +548,121 @@ TEST_CASE("node_series_refuses_a_bad_bucket_and_an_empty_range", tags) {
                     std::invalid_argument);
     CHECK_THROWS_AS(telemetry.node_series_in_range(h.context(), t0 + seconds(60), t0, 60),
                     std::invalid_argument);
+}
+
+namespace {
+
+/// The position of a group key in the usage, or -1 when the group is absent.
+long usage_index_of(const ores::compute::repository::grid_usage& usage, const std::string& key) {
+    const auto it = std::ranges::find(usage.keys, key);
+    return it == usage.keys.end() ? -1 : std::distance(usage.keys.begin(), it);
+}
+
+/// A batch of the tenant, submitted by the party, or by none when the party is nil.
+ores::compute::domain::batch usage_batch(ores::utility::generation::generation_context& gen,
+                                         const tenant_id& tenant,
+                                         const boost::uuids::uuid& party) {
+    auto batch = ores::compute::generators::generate_synthetic_batch(gen);
+    batch.tenant_id = tenant;
+    batch.id = random_uuid();
+    if (!party.is_nil())
+        batch.party_id = party;
+    else
+        batch.party_id.reset();
+    return batch;
+}
+
+}
+
+TEST_CASE("grid_usage_of_a_tenant_session_groups_its_batches_by_party", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto own = h.tenant_id();
+    const auto party_a = random_uuid();
+    const auto party_b = random_uuid();
+
+    ores::compute::repository::batch_repository repo;
+    sample_cleanup cleanup(h);
+    const auto a1 = usage_batch(gen, own, party_a);
+    const auto a2 = usage_batch(gen, own, party_a);
+    const auto b1 = usage_batch(gen, own, party_b);
+    const auto none = usage_batch(gen, own, boost::uuids::nil_uuid());
+    for (const auto* batch : {&a1, &a2, &b1, &none}) {
+        cleanup.batch(own, batch->id);
+        repo.write(h.context(), *batch);
+    }
+
+    compute_telemetry_repository telemetry;
+    const auto usage = telemetry.grid_usage_by_scope(h.context());
+
+    CHECK(usage.group_kind == "party");
+    const auto a = usage_index_of(usage, boost::uuids::to_string(party_a));
+    const auto b = usage_index_of(usage, boost::uuids::to_string(party_b));
+    REQUIRE(a >= 0);
+    REQUIRE(b >= 0);
+    CHECK(usage.batches[static_cast<std::size_t>(a)] == 2);
+    CHECK(usage.batches[static_cast<std::size_t>(b)] == 1);
+    CHECK(usage_index_of(usage, "") >= 0);
+    CHECK(usage_index_of(usage, own.to_string()) == -1);
+}
+
+TEST_CASE("grid_usage_of_a_session_that_acts_for_a_party_hides_the_other_parties", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto own = h.tenant_id();
+    const auto party_a = random_uuid();
+    const auto party_b = random_uuid();
+
+    ores::compute::repository::batch_repository repo;
+    sample_cleanup cleanup(h);
+    const auto a1 = usage_batch(gen, own, party_a);
+    const auto b1 = usage_batch(gen, own, party_b);
+    for (const auto* batch : {&a1, &b1}) {
+        cleanup.batch(own, batch->id);
+        repo.write(h.context(), *batch);
+    }
+
+    compute_telemetry_repository telemetry;
+    const auto as_a = h.context().with_party(own, party_a, {party_a}, h.db_user());
+    const auto usage = telemetry.grid_usage_by_scope(as_a);
+
+    CHECK(usage.group_kind == "party");
+    CHECK(usage_index_of(usage, boost::uuids::to_string(party_a)) >= 0);
+    CHECK(usage_index_of(usage, boost::uuids::to_string(party_b)) == -1);
+}
+
+TEST_CASE("grid_usage_of_the_system_tenant_groups_the_work_of_every_tenant_by_tenant", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto own = h.tenant_id();
+    const auto system = tenant_id::system();
+
+    auto provision_ctx = h.context();
+    const auto third_code =
+        test_database_manager::generate_test_tenant_code("ores.compute.usage");
+    const auto third =
+        tenant_id::from_string(test_database_manager::provision_test_tenant(
+                                   provision_ctx, third_code, "compute usage third tenant"))
+            .value();
+
+    ores::compute::repository::batch_repository repo;
+    sample_cleanup cleanup(h);
+    const auto mine = usage_batch(gen, own, random_uuid());
+    const auto theirs = usage_batch(gen, third, random_uuid());
+    cleanup.batch(own, mine.id);
+    cleanup.batch(third, theirs.id);
+    repo.write(h.context(), mine);
+    repo.write(h.context().with_tenant(third, h.db_user()), theirs);
+
+    compute_telemetry_repository telemetry;
+    const auto as_system = h.context().with_tenant(system, h.db_user());
+    const auto usage = telemetry.grid_usage_by_scope(as_system);
+
+    CHECK(usage.group_kind == "tenant");
+    CHECK(usage_index_of(usage, own.to_string()) >= 0);
+    CHECK(usage_index_of(usage, third.to_string()) >= 0);
+
+    const auto as_third_tenant = telemetry.grid_usage_by_scope(h.context());
+    CHECK(as_third_tenant.group_kind == "party");
+    CHECK(usage_index_of(as_third_tenant, third.to_string()) == -1);
 }

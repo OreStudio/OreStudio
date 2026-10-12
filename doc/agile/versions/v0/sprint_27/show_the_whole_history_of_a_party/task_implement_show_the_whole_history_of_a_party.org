@@ -30,11 +30,11 @@ Evidence: in the Acme tenant each of the four contact types is held by four part
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] |
-| Now          | Built; awaiting the C++ test run and sign-off. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the refdata tests, then review.    |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance

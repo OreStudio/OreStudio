@@ -26,11 +26,11 @@ A reader of a feed page knows what its oresmd URI is for.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -84,3 +84,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The oresmd URI label on the IR and FX feed screens has a dotted underline and a tooltip: it is the series the feed writes to, and each tick is stored as an observation of the series the URI names. A record detail can carry a hint for its label, so other screens can do the same. The list column of the same name is still plain text.
+

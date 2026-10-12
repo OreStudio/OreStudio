@@ -124,6 +124,13 @@ public:
                                     const std::vector<std::string>& args);
 
     /**
+     * @brief by-trade-id <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     */
+    static void process_by_trade_id(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
+
+    /**
      * @brief versions <trade_id> <id_type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,

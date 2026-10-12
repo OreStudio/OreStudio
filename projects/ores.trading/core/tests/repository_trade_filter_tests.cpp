@@ -22,12 +22,17 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.api/generators/trade_identifier_generator.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
@@ -72,6 +77,33 @@ struct fixture {
         t.trade_type = type;
         trade_repository().write(ctx, t);
         return t.id;
+    }
+
+    uuid write_scoped(const ores::trading::domain::counterparty_scope scope) {
+        auto gen = ores::testing::make_generation_context(h);
+        auto t = ores::trading::generators::generate_synthetic_trade(gen);
+        t.party_id = *ctx.party_id();
+        if (scope != ores::trading::domain::counterparty_scope::intra_entity)
+            t.counterparty_id = counterparty;
+        else
+            t.counterparty_id = std::nullopt;
+        t.counterparty_scope = scope;
+        trade_repository().write(ctx, t);
+        return t.id;
+    }
+
+    void write_identifier(const uuid& trade_id, const std::string& type, const std::string& value) {
+        auto gen = ores::testing::make_generation_context(h);
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(gen);
+        activity.party_id = *ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(ctx, activity);
+
+        auto id = ores::trading::generators::generate_synthetic_trade_identifier(gen);
+        id.trade_id = trade_id;
+        id.trade_activity_id = activity.id;
+        id.id_type = type;
+        id.id_value = value;
+        ores::trading::repository::trade_identifier_repository().write(ctx, id);
     }
 
     uuid write_intra_entity(const std::string& type) {
@@ -197,4 +229,37 @@ TEST_CASE("the trade type is sortable and nothing else is", tags) {
 
     CHECK_THROWS_AS(f.read(on(f.counterparty), {.field = "counterparty_id"}),
                     std::invalid_argument);
+}
+
+TEST_CASE("an enum member narrows the list by the enum's text", tags) {
+    using ores::trading::domain::counterparty_scope;
+    fixture f;
+    const auto external = f.write_scoped(counterparty_scope::external);
+    const auto inter = f.write_scoped(counterparty_scope::inter_entity);
+    f.write_scoped(counterparty_scope::intra_entity);
+
+    trades_filter filter;
+    filter.counterparty_scope = counterparty_scope::external;
+    CHECK(ids(f.read(filter)) == std::vector<uuid>{external});
+
+    filter.counterparty_scope.reset();
+    filter.counterparty_scope_one_of =
+        std::vector{counterparty_scope::external, counterparty_scope::inter_entity};
+    CHECK(ids(f.read(filter)) == sorted({external, inter}));
+}
+
+TEST_CASE("a child table reads the rows of one trade by its trade id", tags) {
+    fixture f;
+    const auto a = f.write("Swap", f.counterparty);
+    const auto b = f.write("Swap", f.counterparty);
+    f.write_identifier(a, "UTI", "ID-A-1");
+    f.write_identifier(a, "USI", "ID-A-2");
+    f.write_identifier(b, "UTI", "ID-B-1");
+
+    ores::trading::repository::trade_identifier_repository repo;
+    const auto of_a = repo.read_latest_by_trade_id(f.ctx, boost::uuids::to_string(a), 0, 100);
+    CHECK(of_a.size() == 2);
+    CHECK(repo.get_total_identifier_count_by_trade_id(f.ctx, boost::uuids::to_string(a)) == 2);
+    for (const auto& i : of_a)
+        CHECK(i.trade_id == a);
 }

@@ -61,9 +61,11 @@ export interface TradeLookup {
 export interface TradesFilter {
     counterparty_id: string | null | null;
     trade_type: string | null;
+    counterparty_scope: string | null;
     id_one_of: string[] | null;
     counterparty_id_one_of: string[] | null;
     trade_type_one_of: string[] | null;
+    counterparty_scope_one_of: string[] | null;
     search: string | null;
 }
 

@@ -67,7 +67,8 @@ struct write_pass {
  * @param entity_type The entity the policy names, such as @c book.
  * @param operation @c put or @c delete.
  * @param columns The columns the write changes. A write that creates a row
- *        changes every column.
+ *        changes every column. A name is a plain identifier from the model:
+ *        the list is built into an array literal without escaping.
  * @param request_id The approved request the write carries out, or empty.
  */
 inline gate_verdict gate_verdict_of(const ores::database::context& ctx,

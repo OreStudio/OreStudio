@@ -44,7 +44,13 @@ begin
         return 'free';
     end if;
 
-    if p_request_id is not null and p_request_id <> '' and exists (
+    -- The shape is tested in its own statement: SQL does not promise that the
+    -- left side of an and runs before the cast on the right.
+    if p_request_id is null or p_request_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+        return 'required';
+    end if;
+
+    if exists (
         select 1
         from ores_inbox_approval_requests_tbl r
         where r.id = p_request_id::uuid
@@ -56,8 +62,5 @@ begin
     end if;
 
     return 'required';
-exception
-    when invalid_text_representation then
-        return 'required';
 end;
 $$ language plpgsql stable;

@@ -97,7 +97,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A request of N lines reads about N times N lines; 1001 is a magic number | book_service.cpp | Accept in part | The limit is now a named constant. I did not cache the lines: the applier checks lines one at a time and marks them applied in the same pass, so a cache would need care for a gain no one has measured. |
+| 2 | A batch delete cannot match a versioned line | delete_many_books | Accept in part | A comment says so. The batch fails closed, and the applier removes one row at a time with its version. I added no test: no policy row gates a book delete, so the case needs a second fixture for a path nothing calls. |
+| 3 | The id call in the changed-column function is dead | book_service.cpp | Decline | The function is generated from the write fields, and the key is one of them. The filter that drops it is deliberate, and the template cannot skip one field. |
+| 4 | The column array literal is not escaped | approval_gate.hpp | Accept | The doc comment now says a name is a plain identifier from the model. |
+| 5 | rehearse() is public and disables the gate | book_service.hpp | Decline | The pass is in process and no message sets it. A friend hook or a tagged constructor adds a layer for a caller that is already inside the service. A check that fails when rehearse appears outside the preview is worth a later task. |
+| 6 | The exception block opens a subtransaction on every call | gate function | Accept | The function tests the shape of the id first, in its own statement, so the cast cannot run on a bad id. |
+| 7 | Confirm no production path calls the four refused methods | book_service.cpp | Accept | I searched the tree. Only tests called them, and those now use the repository. |
+| 8 | Say why the gate runs before the claim check | prepare_change | Accept | A comment says it. |
+| 9 | Does the applier run while the request is approved | approval gate | Accept | It does. The apply reads the request as approved under a row lock, and the apply cases pass. |
 
 * Result
 

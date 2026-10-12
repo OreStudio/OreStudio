@@ -388,6 +388,8 @@ book_service::delete_many_books(const messaging::delete_many_books_request& requ
     }
     if (request.removals.empty())
         return response;
+    // A batch carries no versions, so an approved line that claims one never
+    // matches here. The applier removes one row at a time, with its version.
     for (const auto& removal : request.removals) {
         if (const auto refused = gate_delete(read_one(repo_, ctx_, removal.key), std::nullopt)) {
             response.result = *refused;
@@ -475,6 +477,8 @@ book_service::prepare_change(const messaging::book_change& change,
     ores::utility::domain::result result;
     out = to_domain(change.write);
     const auto current = read_one(repo_, ctx_, key_from(out));
+    // The gate comes before the claim is checked, so an unapproved caller
+    // learns nothing about the row from a conflict.
     if (const auto refused = gate_put(current, out, change.precondition))
         return *refused;
     switch (change.precondition.kind) {
@@ -534,8 +538,9 @@ bool book_service::holds_line(const std::string& operation,
         return false;
     // One more than the most a request may hold, so a request over the limit
     // is seen as over it and never read as a shorter one.
+    constexpr std::uint32_t max_request_lines = 1000;
     const auto lines = repository::book_change_repository{}.read_latest_by_request_id(
-        ctx_, pass_.request_id, 0, 1001);
+        ctx_, pass_.request_id, 0, max_request_lines + 1);
     return std::ranges::any_of(lines, [&](const auto& l) {
         return !l.applied && l.operation == operation && l.entity_id == id &&
                l.base_version == base_version;

@@ -23,6 +23,7 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -36,6 +37,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
+#include <thread>
 
 namespace {
 
@@ -216,4 +218,28 @@ TEST_CASE("a_tick_from_a_source_with_no_enabled_binding_is_dropped_and_writes_no
     CHECK(*outcome == tick_drop::unbound_source);
 
     CHECK(f.series_for(quote_uri).empty());
+}
+
+TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", tags) {
+    fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = eur_usd_spot();
+    f.bind(bound_source, "SYNTHETIC");
+    f.connect();
+
+    // Started, the loop subscribes as the service does, so the tick travels the
+    // wire: a subscription on the wrong subject drops every tick unseen.
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.start();
+
+    const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(bound_source);
+    const auto payload =
+        ores::nats::default_wire_codec().encode(tick_from(bound_source, quote_uri));
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    while (f.series_for(quote_uri).empty() && std::chrono::steady_clock::now() < deadline) {
+        f.nats.publish(subject, payload);
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    }
+
+    REQUIRE(f.series_for(quote_uri).size() == 1);
 }

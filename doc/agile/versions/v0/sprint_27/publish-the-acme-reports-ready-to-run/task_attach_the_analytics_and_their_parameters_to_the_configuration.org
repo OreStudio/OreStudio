@@ -69,7 +69,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ACME definitions exported | 78 of 78, none failed | =ore export-run= for every ACME definition after =compass db recreate= and a bootstrap with the acme_demo profile | 0c981567ff |
+| Exports that validate | 78 of 78 | =xmllint --noout --schema external/ore/xsd/ore.xsd= on each exported ore.xml | 0c981567ff |
+| Exports that match the staged data | 78 of 78: 224 analytic parameter values, the Setup choices, the pricing market and an ISO asofDate each | scratchpad compare script over the exported ore.xml files | 0c981567ff |
+| pgTAP, risk configuration publish | 16 of 16 | =compass db sql -f projects/ores.sql/test/reporting_publish_risk_report_configs_test.sql= | 0c981567ff |
+| C++ suites | ores.reporting.core, ores.reporting.service, ores.ore.core, ores.ore.service all pass | =ctest --preset linux-clang-debug-make -R "ores\.(reporting|ore)\.(core|service)\.tests"= | 0c981567ff |
 
 * Notes
 
@@ -102,6 +106,18 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | asofDate is dropped unless the market data type is date | run_document_mapper.cpp | Accepted, with a larger fix | A live or end of day configuration holds no date, so its export had no asofDate. The generator now resolves the date at build time: today for live, the weekday before it for end of day. |
+| 2 | Missing inputPath, outputPath or logFile is not detected | run_document_mapper.cpp | Declined | A missing one maps to the defaults Input, Output and log.txt. All 416 samples state them, and the corpus test covers it. |
+| 3 | A test over every shipped sample would catch new parameters | xml_ore_run_document_mapper_roundtrip_tests.cpp | Declined | The corpus round trip already runs all 416 documents and asserts that no parameter is ignored. |
+| 4 | Parameter order is not kept | run_document_mapper.hpp | Declined | Intended. ORE reads by name and the tests compare names and values. |
+| 5 | Duplicate file and choice parameters use two code paths | run_document_mapper.cpp | Declined | Same result. A shared helper adds no value. |
+| 6 | The generated schema diagrams are stale | projects/ores.sql/modeling | Accepted | Regenerated the .puml and .svg files that changed. |
+| 7 | Stage B is not compiled or run | n/a | Accepted | Built, the suites and the export comparison are green, see Measurements. |
 
 * Result
+
+The analytics with their parameters, the run choices and the market bindings now belong to the shared, DQ enabled configuration. =report_run_setup= and =report_market_binding= are gone, and a definition has no run document of its own: the run document is built from the configuration it binds, and the data file names are not stored. ACME publishes 49 configurations with 76 analytics, 175 parameter values, the run choices and one pricing market binding each.
+
+Found on the way: the as-of date was missing from every live or end of day export, a bug that existed before this work. The generator now resolves it when it builds the run document. A text binding table with one slot too many caused an intermittent crash and is fixed.
+
+Acceptance is met. Left for later tasks: the ORE file types table, which names every file, and running the exported packages in ORE.

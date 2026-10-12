@@ -28,6 +28,7 @@ import {
     type CurveSeriesList,
     type CurveSnapshot,
 } from '@ores/contracts';
+import { z } from 'zod';
 import { request } from './transport.js';
 
 /** The two ends of a range, as wire timestamps. */
@@ -35,6 +36,9 @@ export interface CurveRange {
     readonly from: string;
     readonly to: string;
 }
+
+/** A write answers with nothing; the server's refusal arrives as a failure. */
+const emptyReply = z.object({});
 
 function post(path: string, body: unknown): Promise<unknown> {
     return request(path, {
@@ -65,6 +69,34 @@ export const curves = {
                 to_instant: range.to,
             }),
         );
+    },
+
+    /**
+     * Keys a manual point on one node. The coordinates are in the order the shape declares its
+     * axes, which is the order the reads return them in. The point owns the node until it is
+     * cleared.
+     */
+    async keyPoint(
+        identity: CurveIdentity,
+        coordinates: readonly string[],
+        value: string,
+        reasonCode: string,
+        commentary: string,
+    ): Promise<void> {
+        emptyReply.parse(
+            await post('/api/curves/manual-point', {
+                identity,
+                coordinates,
+                value,
+                change_reason_code: reasonCode,
+                change_commentary: commentary,
+            }),
+        );
+    },
+
+    /** Clears the manual point on one node, so the feed value shows again. */
+    async clearPoint(identity: CurveIdentity, coordinates: readonly string[]): Promise<void> {
+        emptyReply.parse(await post('/api/curves/manual-point/clear', { identity, coordinates }));
     },
 
     /** The object as it stands now, with where each value came from when asked. */

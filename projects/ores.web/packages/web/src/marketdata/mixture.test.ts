@@ -240,7 +240,12 @@ describe('what the screen marks', () => {
 });
 
 describe('draftFromMixture', () => {
-    const component = (id: string, mean: string, stdev: string, weight: string): DraftComponent => ({
+    const component = (
+        id: string,
+        mean: string,
+        stdev: string,
+        weight: string,
+    ): DraftComponent => ({
         id,
         version: 3,
         description: id === 'a' ? 'Calm' : 'Wide',

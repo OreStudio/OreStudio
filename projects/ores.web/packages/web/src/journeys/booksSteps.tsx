@@ -34,8 +34,11 @@
  * The steps are data, which is why this is a function and not a component.
  */
 
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Button, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
+import { LinkButton, Button, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
+import { ReviewChanges } from '../inbox/ReviewPanel.js';
+import { partLabel } from '../inbox/words.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { Picker, optionsOf } from './pickers.js';
 import {
@@ -647,17 +650,36 @@ function RightsStep({
 
 function ReviewStep({
     t,
+    server,
     state,
+    partyId,
+    ready,
     reasons,
     onMove,
 }: {
     readonly t: Translator['t'];
+    readonly server: BooksServer;
     readonly state: BookStructure;
+    readonly partyId: string;
+    /** Whether the book is complete enough to ask the policy about. */
+    readonly ready: boolean;
     readonly reasons: BookStepsInput['reasons'];
     readonly onMove: (index: number) => void;
 }): ReactNode {
     const chosen = reasons.find((reason) => reason.code === state.reasonCode);
     const problems = bookProblems(state);
+    const plan = writePlan(state, partyId);
+    // The policy decides whether the change is written or raised, so the person
+    // reads that before they confirm. A new portfolio is written first and so is
+    // not yet there to be previewed against; the preview waits for it.
+    const preview = useQuery({
+        queryKey: ['book-review', plan?.book, plan?.version],
+        queryFn: () =>
+            plan === undefined ? Promise.reject() : server.previewBook(plan.book, plan.version),
+        enabled: plan !== undefined && ready && plan.portfolio === undefined,
+        retry: false,
+        meta: { quiet: true },
+    });
     return (
         <div className="space-y-5">
             {state.refusal !== undefined && (
@@ -691,6 +713,21 @@ function ReviewStep({
                         ))}
                     </ul>
                 </Notice>
+            )}
+            {plan !== undefined && preview.data !== undefined && (
+                <ReviewChanges
+                    kindCode="refdata.book_change"
+                    lines={[
+                        {
+                            key: plan.book.id,
+                            label: plan.book.name,
+                            operation: 'put',
+                            columns: preview.data.columns,
+                            partCodes: preview.data.linePartCodes,
+                            refusal: preview.data.refusal,
+                        },
+                    ]}
+                />
             )}
             {state.changes.length === 0 ? (
                 <Notice tone="info">{t('journey.books.review.nothing')}</Notice>
@@ -769,17 +806,37 @@ function OutcomeStep({
     readonly onMove: (index: number) => void;
     readonly onFinished: () => void;
 }): ReactNode {
-    if (state.written === undefined) {
+    if (state.written === undefined && state.raised === undefined) {
         return <Notice tone="info">{t('journey.books.none')}</Notice>;
     }
     return (
         <div className="space-y-4">
-            <Notice tone="success">
-                {t('journey.books.outcome.written', {
-                    name: state.written.name,
-                    version: String(state.written.version),
-                })}
-            </Notice>
+            {state.raised !== undefined ? (
+                <Notice tone="info">
+                    <p>
+                        {t('journey.books.outcome.raised', {
+                            name: state.fields.name,
+                            parts: state.raised.partCodes
+                                .map((code) => partLabel(t, code))
+                                .join(', '),
+                        })}
+                    </p>
+                    <div className="mt-2">
+                        <LinkButton to={`/requests/${encodeURIComponent(state.raised.requestId)}`}>
+                            {t('journey.books.outcome.openRequest')}
+                        </LinkButton>
+                    </div>
+                </Notice>
+            ) : (
+                state.written !== undefined && (
+                    <Notice tone="success">
+                        {t('journey.books.outcome.written', {
+                            name: state.written.name,
+                            version: String(state.written.version),
+                        })}
+                    </Notice>
+                )
+            )}
             <div className="grid gap-3 md:grid-cols-3">
                 <button
                     type="button"
@@ -870,6 +927,37 @@ export function bookSteps(input: BookStepsInput): readonly JourneyStep<ReactNode
             state.portfolioWritten(plan.portfolio.id);
             input.onWritten();
         }
+        // The policy decides whether the book is written or a request is raised.
+        // A change it names no part for is written directly, so its own refusal,
+        // with the fields it names, reaches the person unchanged.
+        const proposal = await server.previewBook(plan.book, plan.version);
+        if (proposal.partCodes.length > 0) {
+            if (proposal.refusal !== '') {
+                fail('refdata.v1.ops.preview_book_changes', 'book', {
+                    success: false,
+                    code: 'line_refused',
+                    message: proposal.refusal,
+                    fields: [],
+                    row: undefined,
+                });
+            }
+            const why =
+                state.commentary.trim() !== ''
+                    ? state.commentary.trim()
+                    : (chosen?.description ?? state.reasonCode);
+            const raised = await server.raiseBook(plan.book, plan.version, why);
+            if (raised.requestId === null) {
+                fail('refdata.v1.ops.raise_book_changes', 'book', {
+                    success: false,
+                    code: raised.refusalCode,
+                    message: raised.refusalMessage,
+                    fields: [],
+                    row: undefined,
+                });
+            }
+            state.recordRaised({ requestId: raised.requestId, partCodes: raised.partCodes });
+            return;
+        }
         const book = await server.writeBook(plan.book, plan.version, plan.intent);
         if (!book.success || book.row === undefined) {
             fail('refdata.v1.books.put', 'book', book);
@@ -928,9 +1016,19 @@ export function bookSteps(input: BookStepsInput): readonly JourneyStep<ReactNode
             id: 'review',
             title: t('journey.books.review.title'),
             lead: t('journey.books.review.lead'),
-            body: <ReviewStep t={t} state={state} reasons={reasons} onMove={input.onMove} />,
+            body: (
+                <ReviewStep
+                    t={t}
+                    server={server}
+                    state={state}
+                    partyId={partyId}
+                    ready={ready}
+                    reasons={reasons}
+                    onMove={input.onMove}
+                />
+            ),
             next: { label: t('journey.books.review.confirm'), enabled: ready, run: confirm },
-            final: state.written !== undefined,
+            final: state.written !== undefined || state.raised !== undefined,
         },
         {
             id: 'outcome',

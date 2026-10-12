@@ -2783,8 +2783,10 @@ const pt: SourceCatalogue = {
             },
             outcome: {
                 title: 'Resultado',
-                lead: 'O livro está escrito.',
+                lead: 'O livro está escrito, ou um pedido é submetido para ele.',
                 written: '{name} está agora na versão {version}.',
+                raised: 'A alteração de {name} aguarda {parts}. Nada muda até que cada um aprove.',
+                openRequest: 'Abrir o pedido',
                 history: 'Ver o histórico',
                 tree: 'Voltar à árvore',
                 done: 'Sair da estrutura dos livros',

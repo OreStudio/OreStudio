@@ -20,6 +20,9 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
+import { TranslationProvider } from '../i18n/Provider.js';
 import { createTranslator } from '../i18n/translate.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { BOOK_STEP_IDS, bookStepIndex, bookSteps } from './booksSteps.js';
@@ -31,7 +34,7 @@ import {
     type BookDraft,
     type BookStructure,
 } from './booksState.js';
-import type { BookWriteOutcome, BooksServer } from './booksServer.js';
+import type { BookProposal, BookRaised, BookWriteOutcome, BooksServer } from './booksServer.js';
 import type { Book } from '@ores/wire-protocol/generated/refdata/domain/book';
 import type { Portfolio } from '@ores/wire-protocol/generated/refdata/domain/portfolio';
 
@@ -81,6 +84,19 @@ function refused<Row>(message: string): BookWriteOutcome<Row> {
     };
 }
 
+const ungated: BookProposal = { partCodes: [], refusal: '', columns: [], linePartCodes: [] };
+
+const gated: BookProposal = {
+    partCodes: ['finance', 'operations'],
+    refusal: '',
+    columns: ['cost_center'],
+    linePartCodes: ['finance', 'operations'],
+};
+
+function raisedAs(requestId: string): BookRaised {
+    return { requestId, partCodes: ['finance', 'operations'], refusalCode: '', refusalMessage: '' };
+}
+
 function fakeServer(log: string[], overrides: Partial<BooksServer> = {}): BooksServer {
     return {
         tree: vi.fn(async () => ({ portfolios: [], books: [] })),
@@ -96,6 +112,12 @@ function fakeServer(log: string[], overrides: Partial<BooksServer> = {}): BooksS
         writeBook: vi.fn(async (write: Book) => {
             log.push('book');
             return success({ ...write, version: write.version + 1 });
+        }),
+        // The policy names no part unless a case says it does, so a book is
+        // written directly, as it was before the policy gated it.
+        previewBook: vi.fn(async () => ungated),
+        raiseBook: vi.fn(async () => {
+            throw new Error('no request is raised here');
         }),
         ...overrides,
     };
@@ -120,6 +142,7 @@ function asStructure(draft: BookDraft): BookStructure {
         setReason: never,
         setCommentary: never,
         recordWritten: vi.fn(),
+        recordRaised: vi.fn(),
         recordRefusal: vi.fn(),
         clearRefusal: vi.fn(),
     };
@@ -246,5 +269,145 @@ describe('the book structure steps', () => {
             4,
             expect.objectContaining({ reason_code: 'common.non_material_update' }),
         );
+    });
+
+    it('raises a request instead of writing when the policy names a part', async () => {
+        const write = vi.fn();
+        const raise = vi.fn(async () => raisedAs('request-1'));
+        const state = asStructure(opened({ kind: 'set-field', field: 'costCenter', value: 'CC9' }));
+        const server = fakeServer([], {
+            previewBook: vi.fn(async () => gated),
+            raiseBook: raise,
+            writeBook: write,
+        });
+        const onWritten = vi.fn();
+
+        await reviewOf(stepsFor(state, server, onWritten)).next?.run?.();
+
+        expect(write).not.toHaveBeenCalled();
+        expect(raise).toHaveBeenCalledWith(
+            expect.objectContaining({ name: 'RATES-1', cost_center: 'CC9' }),
+            4,
+            expect.any(String),
+        );
+        expect(state.recordRaised).toHaveBeenCalledWith({
+            requestId: 'request-1',
+            partCodes: ['finance', 'operations'],
+        });
+        expect(state.recordWritten).not.toHaveBeenCalled();
+        expect(onWritten).not.toHaveBeenCalled();
+    });
+
+    it('gives the request the commentary the person wrote as its reason', async () => {
+        const raise = vi.fn(async () => raisedAs('request-1'));
+        const state = asStructure(
+            opened(
+                { kind: 'set-field', field: 'costCenter', value: 'CC9' },
+                { kind: 'set-commentary', commentary: 'Moved to the rates desk' },
+            ),
+        );
+        const server = fakeServer([], { previewBook: vi.fn(async () => gated), raiseBook: raise });
+
+        await reviewOf(stepsFor(state, server)).next?.run?.();
+
+        expect(raise).toHaveBeenCalledWith(expect.anything(), 4, 'Moved to the rates desk');
+    });
+
+    it('writes a portfolio first and then raises the request for the book that sits in it', async () => {
+        const log: string[] = [];
+        const draft = [
+            { kind: 'start-portfolio', parentPortfolioId: '' },
+            { kind: 'set-portfolio-field', field: 'name', value: 'Credit' },
+            { kind: 'set-portfolio-field', field: 'purposeType', value: 'Trading' },
+            { kind: 'set-portfolio-field', field: 'aggregationCcy', value: 'GBP' },
+            { kind: 'start-book' },
+            { kind: 'set-field', field: 'name', value: 'CREDIT-1' },
+            { kind: 'set-field', field: 'functionalCurrency', value: 'GBP' },
+            { kind: 'set-field', field: 'bookStatus', value: 'Active' },
+            { kind: 'set-field', field: 'regulatoryBookType', value: 'Trading' },
+            { kind: 'set-field', field: 'bookPurposeType', value: 'Hedging' },
+            { kind: 'set-field', field: 'ledgerFeedType', value: 'Daily' },
+        ].reduce(reduceBook, blankDraft());
+        const state = asStructure(draft);
+        const raise = vi.fn(async () => raisedAs('request-2'));
+        const server = fakeServer(log, {
+            previewBook: vi.fn(async () => gated),
+            raiseBook: raise,
+        });
+
+        await reviewOf(stepsFor(state, server)).next?.run?.();
+
+        expect(log).toEqual(['portfolio']);
+        expect(raise).toHaveBeenCalled();
+        expect(state.recordRaised).toHaveBeenCalledWith(
+            expect.objectContaining({ requestId: 'request-2' }),
+        );
+    });
+
+    it('stops at a change the real write would refuse, and raises nothing', async () => {
+        const raise = vi.fn();
+        const state = asStructure(
+            opened({ kind: 'set-field', field: 'bookStatus', value: 'Closed' }),
+        );
+        const server = fakeServer([], {
+            previewBook: vi.fn(async () => ({ ...gated, refusal: 'Closed is not allowed.' })),
+            raiseBook: raise,
+        });
+
+        await expect(reviewOf(stepsFor(state, server)).next?.run?.()).rejects.toThrow(
+            /Closed is not allowed/,
+        );
+        expect(raise).not.toHaveBeenCalled();
+        expect(state.recordRefusal).toHaveBeenCalledWith(
+            expect.objectContaining({
+                step: 'book',
+                code: 'line_refused',
+                subject: 'refdata.v1.ops.preview_book_changes',
+            }),
+        );
+    });
+
+    it('records a raise the server refused, with its reason', async () => {
+        const state = asStructure(opened({ kind: 'set-field', field: 'costCenter', value: 'CC9' }));
+        const server = fakeServer([], {
+            previewBook: vi.fn(async () => gated),
+            raiseBook: vi.fn(async () => ({
+                requestId: null,
+                partCodes: [],
+                refusalCode: 'needs_no_request',
+                refusalMessage: 'Write it directly.',
+            })),
+        });
+
+        await expect(reviewOf(stepsFor(state, server)).next?.run?.()).rejects.toThrow(
+            /Write it directly/,
+        );
+        expect(state.recordRaised).not.toHaveBeenCalled();
+    });
+
+    it('finishes the walk once a request is raised, as it does once a book is written', () => {
+        const waiting = { ...opened(), raised: { requestId: 'request-1', partCodes: ['finance'] } };
+        const steps = stepsFor(asStructure(waiting), fakeServer([]));
+
+        expect(reviewOf(steps).final).toBe(true);
+    });
+
+    it('says the request is waiting, for whom, and where to open it', () => {
+        const waiting = {
+            ...opened({ kind: 'set-field', field: 'costCenter', value: 'CC9' }),
+            raised: { requestId: 'request-1', partCodes: ['finance', 'operations'] },
+        };
+        const steps = stepsFor(asStructure(waiting), fakeServer([]));
+        const outcome = steps[bookStepIndex('outcome')];
+
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <MemoryRouter>{outcome?.body}</MemoryRouter>
+            </TranslationProvider>,
+        );
+
+        expect(html).toContain('is waiting for Finance, Operations');
+        expect(html).toContain('href="/requests/request-1"');
+        expect(html).not.toContain('is now at version');
     });
 });

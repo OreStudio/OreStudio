@@ -2757,8 +2757,10 @@ export const en: SourceCatalogue = {
             },
             outcome: {
                 title: 'Outcome',
-                lead: 'The book is written.',
+                lead: 'The book is written, or a request is raised for it.',
                 written: '{name} is now at version {version}.',
+                raised: 'The change to {name} is waiting for {parts}. Nothing changes until each of them approves.',
+                openRequest: 'Open the request',
                 history: 'See the history',
                 tree: 'Back to the tree',
                 done: 'Leave the book structure',

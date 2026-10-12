@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-book-structure-screen-onto-the-review-panel
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Make the book structure screen raise a request for a gated change instead of wri
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -43,6 +43,11 @@ Make the book structure screen raise a request for a gated change instead of wri
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Ask the policy at the confirm, not at the screen's load: the confirm previews the book, and the preview names the parts. No part means the book is written as before, with its own refusal. A part means the confirm raises one request that holds the book.
+- Show the same answer on the review step, so the person reads who will decide before they confirm. The review step draws the shared changes view and keeps the journey's own confirm.
+- Split the review panel into the changes and the actions. The journey owns its confirm and draws only the changes. A screen with no journey of its own uses the whole panel.
+- Record a raised request on the walk beside a written book. The outcome says the change is waiting for the named functions and links to the request page.
 
 * Measurements
 
@@ -59,6 +64,13 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- A new portfolio is written before the book, as it was. The portfolio is not gated yet, because only the book's model is marked gated, so the walk writes it and then raises the request for the book. If the book is refused after that, the refusal names the portfolio write that already happened.
+- A refusal from the preview, when the policy names a part, stops the confirm with the write's own words. A change with no part goes to the write, whose refusal still carries its code and fields.
+- The request's reason is the commentary the person wrote, or the description of the change reason they chose when they wrote none.
+- The review step previews only when the book is complete and no new portfolio is waiting to be written, because the preview reads the portfolio the book sits in.
+- The first screen onto the panel shows the pattern the other four follow: preview at the confirm, write or raise, and a waiting outcome that links to the request.
+- Not done: a run in a browser against the running services. The ORE import and the shell still meet the gate and are not moved.
 
 * Test Scenarios
 
@@ -84,3 +96,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The book structure screen raises a request for a gated change and writes the rest directly.
+
+- The confirm asks the policy by previewing the book. With no part it writes as before. With a part it raises one request that holds the book and records it on the walk.
+- The review step shows the change with the fields it touches and the functions that decide it, from the shared changes view.
+- The outcome says the change is waiting for the named functions and opens the request page.
+- The review panel is split into the changes and the actions, so a journey that owns its confirm draws only the changes.
+
+Evidence: the web suite passes (1286 cases) with eight new cases for the book steps: a raise instead of a write, the commentary as the reason, a new portfolio then a raise, a refused preview, a refused raise, a finished walk and the waiting outcome. The BFF (711), wire (14), contracts (59) and workspace suites pass and the typecheck is clean.
+
+Not done here: a run in a browser against the running services, and the other four screens.

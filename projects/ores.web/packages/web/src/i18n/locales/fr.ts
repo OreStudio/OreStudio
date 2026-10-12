@@ -2792,8 +2792,10 @@ const fr: SourceCatalogue = {
             },
             outcome: {
                 title: 'Résultat',
-                lead: 'Le livre est écrit.',
+                lead: 'Le livre est écrit, ou une demande est soumise pour lui.',
                 written: '{name} est maintenant à la version {version}.',
+                raised: 'La modification de {name} attend {parts}. Rien ne change tant que chacun n’a pas approuvé.',
+                openRequest: 'Ouvrir la demande',
                 history: "Voir l'historique",
                 tree: "Retour à l'arbre",
                 done: 'Quitter la structure des livres',

@@ -8,7 +8,7 @@
 #+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-a-series-as-a-time-series
-#+pr:
+#+pr: 3193
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3193][#3193]] | [web] Show a series as a time series |
 
 * Review
 

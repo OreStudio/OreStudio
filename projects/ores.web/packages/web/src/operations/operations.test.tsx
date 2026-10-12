@@ -1660,6 +1660,13 @@ describe('the node heatmap and the node page', () => {
         expect(html).toContain('href="/operations/grid?tab=nodes"');
     });
 
+    it('trails back through the grid and the machine the node runs on', () => {
+        const html = renderNodePage(NODE_A, seriesWithNodes());
+
+        expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations/grid?tab=nodes&amp;machine=rack-a"');
+    });
+
     it('says a node that reported nothing in the range reported nothing', () => {
         const html = renderNodePage(NODE_A, gridSeriesView());
 

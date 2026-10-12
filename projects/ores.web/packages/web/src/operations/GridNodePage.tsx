@@ -37,7 +37,8 @@ import type { GridNodeRow, GridSeriesView, SeriesRange } from '@ores/wire-protoc
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
-import { AreaTrail } from '../shell/AreaTrail.js';
+import { AreaTrail, type TrailStep } from '../shell/AreaTrail.js';
+import { gridMachinePath } from '../shell/paths.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 import { SeriesChart, type ChartSeries } from '../ui/SeriesChart.js';
 import { GRID_QUERY_KEY, asGiB, asMiB, formatAge, instanceTail } from './GridPage.js';
@@ -218,11 +219,17 @@ export function GridNodePage(): ReactNode {
 
     const node = grid.data?.nodes.find((candidate) => candidate.host_id === hostId);
     const label = node?.host ?? hostId.slice(0, 8);
+    const trail: readonly TrailStep[] = [
+        { label: t('operations.screens.grid'), to: '/operations/grid' },
+        ...(node !== undefined && node.machine !== ''
+            ? [{ label: node.machine, to: gridMachinePath(node.machine) }]
+            : []),
+    ];
 
     return (
         <div className="space-y-6">
             <div>
-                <AreaTrail area="operations" screen={label} />
+                <AreaTrail area="operations" steps={trail} screen={label} />
                 <PageHeader
                     title={label}
                     description={t('operations.grid.node.description')}

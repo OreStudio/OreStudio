@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 5979F433-BC7D-4D74-8082-3F767834EE54
+:END:
+#+title: Task: Declare the trade list's filter and search columns
+#+description: Initial task for: Filter and search trades through the model
+#+type: task
+#+level: s1
+#+filetags: :filter_and_search_trades_through_the_model:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-filter-and-search-trades-through-the-model
+#+pr: 3157
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5A10C2E-E4E6-49C4-A4D0-78A6F0E2CBE2][Filter and search trades through the model]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The trade model declares which columns a list can filter, search and sort by. The generated protocol, repository and wire types carry them, and a test shows the list narrowed by each.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E5A10C2E-E4E6-49C4-A4D0-78A6F0E2CBE2][Filter and search trades through the model]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The trade model declares the counterparty and the trade type filterable, the trade type searchable, and the sortable columns.
+- The generated filter record, repository and wire types carry the members.
+- A repository test narrows the trade list by counterparty, by trade type and by search, and reports the total.
+- The columns that cannot be declared yet, and why, are recorded.
+
+* Plan
+
+Declare the columns in the trade model, run the generator, and test the repository. Record the columns that cannot be declared yet in the backlog capture.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Trade filter tests | 6 cases, 15 assertions passed | =ores.trading.core.tests "[list_filter]"= | f7dd38e5a9 |
+| Trading core suite | 158 cases, 1095 assertions passed | =ores.trading.core.tests= | f7dd38e5a9 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3157][#3157]] | [trading] Filter and search trades through the model |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Search covers one column | trade_repository.cpp | no change needed | Intended by the story. The backlog capture lists the missing columns. |
+| 2 | No test for an empty counterparty member | repository_trade_filter_tests.cpp | accept | Added a case: the empty inner optional reads the intra-entity trades. |
+| 3 | No service test for the filter_too_large guards | trade_service.cpp | decline | The generator emits the guards from the same pattern as id_one_of. |
+| 4 | Gate not re-run after the rebase | PR body | no change needed | The two failing checks cover files this PR does not touch. |
+
+* Result
+
+The trade model declares the counterparty and the trade type filterable, and the trade type searchable and sortable. The generator emits the filter members, the repository conditions and the wire types. The repository test narrows the list by counterparty, by trade type and by search, and checks the total. The columns that remain are in the backlog capture =the-trade-list-needs-filterable-and-searchable-columns=.

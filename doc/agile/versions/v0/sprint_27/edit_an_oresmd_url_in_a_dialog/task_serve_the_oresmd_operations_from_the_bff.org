@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The browser reaches the codec through the BFF, with the same session rules as th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -86,3 +86,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The BFF serves three routes behind the session check: =GET /api/oresmd/schema=, =POST /api/oresmd/parse= and =POST /api/oresmd/compose=. Each forwards the structure to the server's subject and returns the answer. The BFF holds no grammar: it checks only the size of a request, a URI of at most 2048 characters and at most 64 fields, which are the server's own limits, and it leaves the kind, the instrument and the quote as text for the codec to judge. The server checks the permission, and a refusal of the call, such as a missing permission, is a 403 as for any other read.
+
+A URI the codec refuses is an answer and not a fault. Parse and compose return it with =success= false and the codec's words, with status 200, so the editor can show them beside the field. The schema is the codec's table and changes with a release, so the route lets a browser keep it for five minutes.
+
+The contracts package has the shapes, in =oresmd.ts=, and the BFF checks them against the generated twin with =satisfies=, so a change to the model that the contracts do not follow fails the typecheck. I broke one field on purpose and the typecheck failed, then I restored it. Nine route tests pass. They cover the session, the three forwards, a refusal as an answer, the bodies that are refused without asking the server, a missing permission and an unsuccessful schema read.
+
+Not done: I did not call a running server, because the C++ services are not rebuilt and started here. The routes meet the real operations when the services run with the merged tasks 1 and 2.

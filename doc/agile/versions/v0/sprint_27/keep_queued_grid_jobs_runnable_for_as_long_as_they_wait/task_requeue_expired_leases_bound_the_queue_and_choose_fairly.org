@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: BAF8A3FC-6541-49E0-A4AF-F3DF35F84501
 :END:
-#+title: Task: Requeue expired leases, bound the queue and choose fairly
-#+description: The reaper returns a result whose lease ended to the queue, and ends it as no reply after three attempts. A dispatch that would pass a tenant's limit is refused. The claim chooses across tenants.
+#+title: Task: Requeue expired leases and bound the queue
+#+description: The reaper walks the ledger for leases that have ended, enters the tenant and returns the result to the queue or ends it as no reply after three attempts. A dispatch that would pass a tenant's limit is refused.
 #+type: task
 #+level: s1
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
@@ -38,7 +38,6 @@ A bad job ends in a visible state, one tenant cannot fill the queue, and no tena
 - A decision is recorded on a result that never started. Today a late assignment ends as a client error, and the validator counts any done result toward the redundancy target, so the workunit completes with that failure as its canonical result. The decision is either that such a result does not count and returns to the queue for another attempt, or that it counts.
 - A result with attempts left returns to unsent when its lease ends, and one without ends as no reply with a message that names the lease.
 - A dispatch past the tenant's limit is refused and says how many jobs wait.
-- With two tenants queued, claims alternate between them.
 
 * Plan
 

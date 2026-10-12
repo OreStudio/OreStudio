@@ -20,6 +20,9 @@
 #ifndef ORES_COMPUTE_CORE_MESSAGING_SUBMIT_DECISION_HPP
 #define ORES_COMPUTE_CORE_MESSAGING_SUBMIT_DECISION_HPP
 
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+
 namespace ores::compute::messaging {
 
 /**
@@ -50,6 +53,20 @@ constexpr submit_action decide_submit(int server_state) {
     if (server_state == 5)
         return submit_action::ignore_final;
     return submit_action::accept;
+}
+
+/**
+ * @brief Whether a result's claim belongs to a host other than the one that submits.
+ *
+ * The work ledger names the host that holds the claim. A result whose lease ended
+ * goes to another host, and the first host may still finish and submit. Its
+ * outcome must not overwrite the result of the host that took over, so a submit
+ * from a host that is not the holder is ignored. A result with no holder was
+ * handed out by the push queue, or is not claimed, and any host may submit it.
+ */
+inline bool claimed_by_another(const std::optional<boost::uuids::uuid>& holder,
+                               const std::optional<boost::uuids::uuid>& submitter) {
+    return holder.has_value() && (!submitter.has_value() || *submitter != *holder);
 }
 
 } // namespace ores::compute::messaging

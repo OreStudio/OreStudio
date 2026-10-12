@@ -18,13 +18,16 @@
  *
  */
 #include "ores.compute.core/messaging/submit_decision.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <string>
 
 namespace {
 
 const std::string tags("[messaging]");
 
+using ores::compute::messaging::claimed_by_another;
 using ores::compute::messaging::decide_submit;
 using ores::compute::messaging::submit_action;
 
@@ -48,4 +51,26 @@ TEST_CASE("decide_submit_records_the_outcome_for_a_state_it_does_not_know", tags
     CHECK(decide_submit(0) == submit_action::accept);
     CHECK(decide_submit(3) == submit_action::accept);
     CHECK(decide_submit(99) == submit_action::accept);
+}
+
+TEST_CASE("claimed_by_another_is_false_for_a_result_with_no_holder", tags) {
+    // A result handed out by the push queue has no entry in the ledger.
+    const auto host = boost::uuids::random_generator()();
+
+    CHECK(!claimed_by_another(std::nullopt, host));
+    CHECK(!claimed_by_another(std::nullopt, std::nullopt));
+}
+
+TEST_CASE("claimed_by_another_is_false_for_the_holder_and_true_for_any_other_host", tags) {
+    const auto holder = boost::uuids::random_generator()();
+    const auto other = boost::uuids::random_generator()();
+
+    CHECK(!claimed_by_another(holder, holder));
+    CHECK(claimed_by_another(holder, other));
+}
+
+TEST_CASE("claimed_by_another_is_true_when_the_submitter_names_no_host", tags) {
+    const auto holder = boost::uuids::random_generator()();
+
+    CHECK(claimed_by_another(holder, std::nullopt));
 }

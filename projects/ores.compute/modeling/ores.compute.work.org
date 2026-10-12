@@ -366,6 +366,221 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+** claim_work_request
+:PROPERTIES:
+:subject: compute.v1.ops.claim_work
+:auth: none
+:response: claim_work_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A free node asks the service for its next job.
+ *
+ * The node sends it when it has no job to run. The service takes the next
+ * waiting job for the node's platform from the work ledger, marks it as taken
+ * under a lease, and replies with everything the node needs to run it. A node
+ * therefore never holds a job it is not running. Like the heartbeat and the
+ * submit, the channel is trusted at the transport layer, because a node holds
+ * no user JWT.
+ */
+#+end_src
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The node that asks, as its heartbeat names it.
+ */
+#+end_src
+
+*** platform
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The platform triplet of the node, such as x64-linux. The job named in the reply has a package for it.
+ */
+#+end_src
+
+** claim_work_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The job the node is to run, or the fact that none waits.
+ *
+ * A reply with success and no work says the queue holds nothing for the node's
+ * platform, and the node waits for its next poll. A reply with work carries the
+ * same fields as a pushed assignment, and the storage token in it is minted at
+ * the claim, so it lives from the moment the node takes the job and not from
+ * the moment the job was queued.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the claim was served, with or without work.
+ */
+#+end_src
+
+*** has_work
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the reply names a job.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the claim was not served, when it was not.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant that owns the result the node must fill in. The node hands it back on submit.
+ */
+#+end_src
+
+*** result_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The result row the node must fill in.
+ */
+#+end_src
+
+*** workunit_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workunit the result belongs to.
+ */
+#+end_src
+
+*** app_version_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Identifies the cached package.
+ */
+#+end_src
+
+*** package_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Engine bundle (.tar.gz) to download and cache.
+ */
+#+end_src
+
+*** package_sha256
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Expected SHA256 of the downloaded package bundle.
+ */
+#+end_src
+
+*** input_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Input bundle of the job.
+ */
+#+end_src
+
+*** config_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Optional configuration of the job.
+ */
+#+end_src
+
+*** output_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Pre-assigned upload location for the result.
+ */
+#+end_src
+
+*** storage_token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A capability for exactly the package, the input and the output of this job, minted at the claim.
+ */
+#+end_src
+
+*** attempt
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The number of the attempt this claim starts, 1 for the first.
+ */
+#+end_src
+
 ** result_started_request
 :PROPERTIES:
 :subject: compute.v1.ops.result_started

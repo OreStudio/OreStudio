@@ -21,17 +21,17 @@
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.api/net/compute_storage.hpp"
+#include "ores.compute.core/messaging/assignment_grants.hpp"
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.compute.core/repository/result_repository.hpp"
+#include "ores.compute.core/repository/work_ledger_repository.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.iam.client/client/storage_capability_minter.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.storage.api/net/storage_paths.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -41,27 +41,7 @@
 namespace ores::compute::service::app {
 
 using namespace ores::logging;
-using ores::security::jwt::storage_grant;
 using ores::service::messaging::stamp;
-
-namespace {
-
-/**
- * @brief The grant that admits one operation on the object a path names.
- *
- * The key is the whole prefix, so the capability admits exactly the object the
- * assignment names and nothing beside it.
- */
-std::optional<storage_grant> grant_for_path(const std::string& path, std::string op) {
-    std::string bucket;
-    std::string key;
-    if (!ores::storage::net::storage_paths::split_object_path(path, bucket, key))
-        return std::nullopt;
-    return storage_grant{
-        .bucket = std::move(bucket), .key_prefix = std::move(key), .op = std::move(op)};
-}
-
-}
 
 workunit_dispatcher::workunit_dispatcher(ores::nats::service::client& nats,
                                          ores::database::context ctx,
@@ -149,6 +129,21 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         stamp(r, tenant_ctx);
         result_svc.save_result(r);
 
+        // The queue of the grid is the work ledger, which the installation owns. The
+        // service writes it as the system tenant, and the entry holds only ids, so a
+        // node that claims it enters the tenant to reach the result.
+        std::vector<std::string> platforms;
+        platforms.reserve(avps.size());
+        for (const auto& candidate : avps)
+            platforms.push_back(candidate.platform_code);
+        ores::compute::repository::work_ledger_repository().enqueue(
+            ctx_,
+            {.result_id = result_id,
+             .work_tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_uuid),
+             .workunit_id = wu->id,
+             .platforms = std::move(platforms),
+             .priority = wu->priority});
+
         const auto result_id_str = boost::uuids::to_string(result_id);
         const auto output_path = ores::compute::net::compute_storage::output_path(result_id_str);
 
@@ -156,21 +151,15 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         // carries one for exactly the package, the input and the output. A
         // grant that cannot be built is a dispatch that cannot run, so it is
         // skipped and the next workunit event tops the workunit up.
-        std::vector<storage_grant> grants;
-        const struct {
-            const std::string& path;
-            const char* op;
-        } sources[] = {{avp.package_uri, "get"}, {wu->input_uri, "get"}, {output_path, "put"}};
-        for (const auto& source : sources) {
-            auto grant = grant_for_path(source.path, source.op);
-            if (!grant) {
-                BOOST_LOG_SEV(lg(), error) << "Cannot build a storage grant for " << source.path
-                                           << "; cannot dispatch workunit " << workunit_id;
-                return;
-            }
-            grants.push_back(std::move(*grant));
+        const auto grants = ores::compute::messaging::storage_grants_for(
+            avp.package_uri, wu->input_uri, output_path);
+        if (!grants) {
+            BOOST_LOG_SEV(lg(), error) << "Cannot build a storage grant for result "
+                                       << result_id_str << "; cannot dispatch workunit "
+                                       << workunit_id;
+            return;
         }
-        const auto storage_token = minter_(tenant_uuid, grants);
+        const auto storage_token = minter_(tenant_uuid, *grants);
         if (!storage_token) {
             BOOST_LOG_SEV(lg(), error) << "No storage capability for result " << result_id_str
                                        << "; cannot dispatch workunit " << workunit_id;

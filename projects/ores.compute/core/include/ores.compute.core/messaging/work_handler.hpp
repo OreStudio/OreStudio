@@ -23,6 +23,7 @@
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
+#include "ores.compute.core/repository/work_ledger_repository.hpp"
 #include "ores.compute.core/service/host_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
@@ -204,6 +205,12 @@ public:
         // the node samples already carry it.
         if (auto req = decode<heartbeat_message>(msg)) {
             try {
+                // A node that holds a job under a lease keeps it by this heartbeat. The ledger is
+                // the installation's, so the extension needs no tenant.
+                repository::work_ledger_repository().extend_leases(
+                    ctx_,
+                    boost::lexical_cast<boost::uuids::uuid>(req->host_id),
+                    std::chrono::seconds{300});
                 service::host_service svc(ctx_);
                 auto existing = svc.get_host(boost::lexical_cast<boost::uuids::uuid>(req->host_id));
                 if (!existing) {

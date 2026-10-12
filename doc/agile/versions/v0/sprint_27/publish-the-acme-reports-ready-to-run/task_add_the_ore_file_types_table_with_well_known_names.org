@@ -8,7 +8,7 @@
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
 #+branch: feature/add-the-ore-file-types-table-with-well-known-names
-#+pr:
+#+pr: 3210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3210][#3210]] | [reporting,sql] Add the ORE file types table |
 
 * Review
 

@@ -2917,7 +2917,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
                                 return fact_resp && fact_resp->result.outcome ==
                                                         ores::utility::domain::outcome::ok;
-                            } else {
+                            } else if constexpr (std::is_same_v<
+                                                     FactT,
+                                                     risk_participation_agreement_instrument>) {
                                 put_risk_participation_agreement_instrument_request fact_req;
                                 fact_req.change.write.trade_id = fact.trade_id;
                                 fact_req.change.write.trade_activity_id = fact.trade_activity_id;
@@ -2927,6 +2929,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
                                 return fact_resp && fact_resp->result.outcome ==
                                                         ores::utility::domain::outcome::ok;
+                            } else {
+                                static_assert(sizeof(FactT) == 0,
+                                              "a credit fact type has no import branch");
                             }
                         },
                         r.facts);

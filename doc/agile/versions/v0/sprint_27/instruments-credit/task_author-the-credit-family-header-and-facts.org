@@ -127,6 +127,11 @@ via its "Verifies task" field.
 | 2 | The index option has a column the design did not list | index_credit_default_swap_option_instrument | accept | It carries the wrapped swap's curve id, so the carrier needs one fact row. |
 | 3 | The header check allows maturity equal to start | credit_instrument model | accept | A risk participation agreement may start and end on one day. |
 | 4 | The shared option block is not written for the index option | credit_instrument_mapper.cpp | decline | Unit 6 writes the whole option block with the other dropped elements. |
+| 5 | The fact visitor ends in a catch-all else, so a new fact type would take the agreement's path | ore_import_execute_handler.cpp | accept | The agreement has its own branch and the last else is a static_assert. |
+| 6 | The NATS call boilerplate repeats in each branch | ore_import_execute_handler.cpp | decline | Every family branch of the handler repeats it; a helper is its own task. |
+| 7 | A failed fact write leaves a header with no fact row | ore_import_execute_handler.cpp | decline | A false return is an item error on that trade, and a total failure triggers the saga rollback, as for every family. |
+| 8 | Nothing links the strike and schedule rows to the index option | design.org | accept | The design now says the shared tables are keyed by the trade alone and only the option's mapper writes them. |
+| 9 | The trading API, trading service, shell application and codegen suites were not rerun | the PR | accept | Run: the three C++ suites pass; the codegen suite passes after merging main. |
 
 * Result
 

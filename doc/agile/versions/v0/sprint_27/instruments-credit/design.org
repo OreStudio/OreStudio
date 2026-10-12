@@ -252,7 +252,9 @@ carries that swap's credit curve id and the trade has no row in
 =index_credit_default_swap_instruments=. The carrier holds one fact row, and a
 second row would need a second carrier slot for no gain. The strike and the
 exercise dates are the shared =instrument_strikes= and schedule rows, as for a
-swaption. A column lands in a fact table only when a mapper writes it, so the
+swaption. Those tables are keyed by the trade alone, so nothing in the schema
+stops another product from owning such rows; only the index option's mapper
+writes them. A column lands in a fact table only when a mapper writes it, so the
 tables hold the columns above that the mapper reads today, and unit 6 adds the
 rest with their writers. Every money column is =numeric(38, 12)=. A continuous
 quantity (the recovery rate, the tranche points, the participation rate) is

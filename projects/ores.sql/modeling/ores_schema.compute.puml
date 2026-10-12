@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T23:20:31.653727Z
+' Generated: 2026-10-12T10:59:04.698805Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -145,6 +145,7 @@ package "compute" #EDE7F6 {
         --
         * version : integer
         * external_ref : text
+          party_id : uuid <<FK>>
         * status : text
         * modified_by : text
         * performed_by : text
@@ -320,6 +321,7 @@ package "compute" #EDE7F6 {
         * id : uuid <<PK>>
         --
         * version : integer
+          party_id : uuid <<FK>>
         * workunit_id : uuid <<FK>>
           host_id : uuid <<FK>>
         * server_state : integer
@@ -388,6 +390,7 @@ package "compute" #EDE7F6 {
         * id : uuid <<PK>>
         --
         * version : integer
+          party_id : uuid <<FK>>
         * batch_id : uuid <<FK>>
         * app_version_id : uuid <<FK>>
         * input_uri : text

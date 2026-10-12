@@ -24,7 +24,8 @@ import type { ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { type Gaussian } from './mixture.js';
-import { Answer, Presets, differs, Summary } from './SimpleControls.js';
+import { toast } from '../ui/Toasts.js';
+import { Answer, Presets, differs } from './SimpleControls.js';
 
 /** The questions of the simple view of an FX feed. Every figure is per hour. */
 export interface FxSimpleView {
@@ -140,7 +141,27 @@ export function FxSimplePanel({
 }): ReactNode {
     const { t } = useTranslation();
     const reverting = engine === 'ornstein_uhlenbeck';
-    const set = (patch: Partial<FxSimpleView>): void => onChange({ ...view, ...patch });
+    const sentence = (v: FxSimpleView): string => {
+        const move = String(Number(v.volatility_pct_per_hour.toPrecision(4)));
+        const trend = Number(v.trend_pct_per_hour.toPrecision(4));
+        return reverting
+            ? t('marketdata.fxSimple.sentenceReverting', {
+                  price: String(price),
+                  minutes: String(Number(v.half_life_minutes.toPrecision(4))),
+                  move,
+              })
+            : t(
+                  `marketdata.fxSimple.sentence.${
+                      trend > 0 ? 'rising' : trend < 0 ? 'falling' : 'level'
+                  }`,
+                  { trend: String(Math.abs(trend)), move },
+              );
+    };
+    const set = (patch: Partial<FxSimpleView>): void => {
+        const next = { ...view, ...patch };
+        onChange(next);
+        toast(sentence(next), 'info', 'fx-simple-summary');
+    };
     const options = (
         items: readonly { readonly key: string; readonly value: number }[],
         group: string,
@@ -245,20 +266,6 @@ export function FxSimplePanel({
                     </div>
                 )}
             </div>
-            <Summary>
-                {reverting
-                    ? t('marketdata.fxSimple.sentenceReverting', {
-                          price: String(price),
-                          minutes: String(halfLife),
-                          move: String(move),
-                      })
-                    : t(
-                          `marketdata.fxSimple.sentence.${
-                              trend > 0 ? 'rising' : trend < 0 ? 'falling' : 'level'
-                          }`,
-                          { trend: String(Math.abs(trend)), move: String(move) },
-                      )}
-            </Summary>
         </div>
     );
 }

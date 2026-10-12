@@ -54,6 +54,13 @@ describe('toasts', () => {
         expect(html().split('Same news.').length).toBe(2);
     });
 
+    it('lets a newer message of a group take the place of the older one', () => {
+        toast('Rises 1%.', 'info', 'summary');
+        toast('Rises 2%.', 'info', 'summary');
+        expect(html()).not.toContain('Rises 1%.');
+        expect(html()).toContain('Rises 2%.');
+    });
+
     it('lets information leave by itself and keeps a warning until it is closed', () => {
         vi.useFakeTimers();
         toast('News.');

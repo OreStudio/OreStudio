@@ -267,7 +267,7 @@ is the process tab above with the parts that follow from that.
 *** Notices and toasts
 
 News of an action does not take a place in the page. A conversion that changed the
-person's numbers, such as a change of engine or a switch to Simple, shows as a toast in
+person's numbers, such as a change of engine or a switch to Simple, shows as a toast. So does the sentence that says what the Simple answers make of the model (the curve slopes up, or the price has no trend), which a new answer replaces in
 the bottom right corner (=ui/Toasts.tsx=). It has a close button. Information leaves
 by itself after ten seconds, and a warning stays until the person closes it. A fact
 that stays true, such as an engine that can take a price below zero, is also marked

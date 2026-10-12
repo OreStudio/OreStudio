@@ -33,6 +33,8 @@ export interface Toast {
     readonly tone: 'info' | 'warn';
     /** Whether it stays until closed. Information leaves by itself; a warning stays. */
     readonly sticky: boolean;
+    /** A newer toast of the same group takes the place of the older one. */
+    readonly group: string;
 }
 
 const INFO_SECONDS = 10;
@@ -65,15 +67,22 @@ export function closeToast(id: number): void {
     changed();
 }
 
-/** Shows a message unless the same one is already showing. */
-export function toast(message: string, tone: Toast['tone'] = 'info'): void {
+/**
+ * Shows a message unless the same one is already showing. A message with a
+ * group replaces the one before it in that group, so a sentence that changes
+ * with every answer does not pile up.
+ */
+export function toast(message: string, tone: Toast['tone'] = 'info', group = ''): void {
     if (toasts.some((one) => one.message === message)) {
         return;
+    }
+    if (group !== '') {
+        toasts = toasts.filter((one) => one.group !== group);
     }
     const id = nextId;
     nextId += 1;
     const sticky = tone === 'warn';
-    toasts = [...toasts, { id, message, tone, sticky }].slice(-CAP);
+    toasts = [...toasts, { id, message, tone, sticky, group }].slice(-CAP);
     changed();
     if (!sticky) {
         setTimeout(() => closeToast(id), INFO_SECONDS * 1000);

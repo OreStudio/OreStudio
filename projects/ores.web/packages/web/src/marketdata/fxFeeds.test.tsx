@@ -294,7 +294,6 @@ describe('the FX feed screens', () => {
         });
         expect(html).toContain('Which way does the price drift?');
         expect(html).toContain('How far does the price move in an hour?');
-        expect(html).toContain('The price has no trend');
         expect(html).toContain('>Simple<');
         expect(html).toContain('>Advanced<');
         expect(html).not.toContain('>Share</th>');

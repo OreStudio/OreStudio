@@ -268,7 +268,6 @@ describe('the IR curve feed screens', () => {
         });
         expect(html).toContain('Where are rates today?');
         expect(html).toContain('How much do rates move in a year?');
-        expect(html).toContain('so the curve slopes up');
         expect(html).toContain('Rates may touch zero');
         expect(html).toContain('>Simple<');
         expect(html).toContain('>Advanced<');

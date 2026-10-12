@@ -24,7 +24,8 @@ import type { ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice } from '../ui/Primitives.js';
-import { Answer, Presets, differs, Summary } from './SimpleControls.js';
+import { toast } from '../ui/Toasts.js';
+import { Answer, Presets, differs } from './SimpleControls.js';
 import {
     HALF_LIFE_PRESETS,
     MOVE_PRESETS,
@@ -107,7 +108,18 @@ export function IrSimplePanel({
 }): ReactNode {
     const { t } = useTranslation();
     const lean = leanOf(view);
-    const set = (patch: Partial<SimpleView>): void => onChange({ ...view, ...patch });
+    const set = (patch: Partial<SimpleView>): void => {
+        const next = { ...view, ...patch };
+        onChange(next);
+        toast(
+            t(`marketdata.irSimple.lean.${leanOf(next)}`, {
+                start: percentText(next.start_rate),
+                longRun: percentText(next.long_run_rate),
+            }),
+            'info',
+            'ir-simple-summary',
+        );
+    };
 
     return (
         <div className="space-y-4 rounded-md border border-line p-4">
@@ -180,12 +192,6 @@ export function IrSimplePanel({
                     />
                 </div>
             </div>
-            <Summary>
-                {t(`marketdata.irSimple.lean.${lean}`, {
-                    start: percentText(view.start_rate),
-                    longRun: percentText(view.long_run_rate),
-                })}
-            </Summary>
             {caution !== '' && (
                 <Notice tone="warn">{t(`marketdata.irSimple.caution.${caution}`)}</Notice>
             )}

@@ -8,7 +8,7 @@
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
 #+owner: marco
 #+branch: feature/add-a-lease-and-attempts-to-results-and-serve-a-leased-claim
-#+pr:
+#+pr: 3198
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3198][#3198]] | [compute,sql] Add the work ledger and serve a leased claim |
 
 * Review
 

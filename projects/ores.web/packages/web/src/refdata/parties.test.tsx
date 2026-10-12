@@ -339,7 +339,9 @@ describe('a party page', () => {
             );
             expect(words).toContain('Part of this history could not be read, so it is not shown.');
             expect(words).not.toContain('junction');
-            expect(words).not.toContain('refused');
+            expect(words).toContain(
+                'party_identifier: The server refused this caller the identifier read.',
+            );
         });
 
         it('offers to write an older version of the party back, and not the newest', () => {

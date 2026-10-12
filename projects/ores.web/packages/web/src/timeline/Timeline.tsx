@@ -149,9 +149,10 @@ export function Timeline({
                     const before = rows[index - 1];
                     return (
                         <Fragment key={rowKey(row, index)}>
-                            {startsADay(first, before === undefined ? undefined : firstOf(before)) && (
-                                <DayDivider at={first.at} />
-                            )}
+                            {startsADay(
+                                first,
+                                before === undefined ? undefined : firstOf(before),
+                            ) && <DayDivider at={first.at} />}
                             {row.kind === 'batch' ? (
                                 <Batch
                                     events={row.events}
@@ -191,20 +192,32 @@ export function Timeline({
  * because a story that quietly omits a chapter reads as though the chapter
  * never happened.
  */
-function Gaps({ gaps }: { readonly gaps: readonly { readonly entity: string }[] }): ReactNode {
+function Gaps({
+    gaps,
+}: {
+    readonly gaps: readonly { readonly entity: string; readonly reason?: string }[];
+}): ReactNode {
     const { t } = useTranslation();
     if (gaps.length === 0) {
         return null;
     }
     /*
-     * The stream's own reason names tables, reads and refusals, which are not
-     * the reader's business. A gap the screen knows is said in the reader's
-     * words, once; any other is one plain line that part could not be read.
+     * A gap the screen knows is said in the reader's words, once. Any other
+     * is said with the record it leaves out and the stream's own reason, so a
+     * person can tell what is missing and why.
      */
-    const known = [...new Set(gaps.map((gap) => gap.entity.split('.').at(-1) ?? ''))].filter(
-        (name) => KNOWN_GAPS.has(name),
-    );
-    const unknown = gaps.some((gap) => !KNOWN_GAPS.has(gap.entity.split('.').at(-1) ?? ''));
+    const shortName = (gap: { readonly entity: string }): string =>
+        gap.entity.split('.').at(-1) ?? '';
+    const known = [...new Set(gaps.map(shortName))].filter((name) => KNOWN_GAPS.has(name));
+    const unknown = [
+        ...new Set(
+            gaps
+                .filter((gap) => !KNOWN_GAPS.has(shortName(gap)))
+                .map((gap) =>
+                    gap.reason === undefined ? shortName(gap) : `${shortName(gap)}: ${gap.reason}`,
+                ),
+        ),
+    ];
     return (
         <section className="rounded-md border border-line-subtle bg-surface-raised px-4 py-3">
             <h3 className="text-xs font-medium text-ink-muted">{t('timeline.gaps')}</h3>
@@ -212,7 +225,11 @@ function Gaps({ gaps }: { readonly gaps: readonly { readonly entity: string }[] 
                 {known.map((name) => (
                     <li key={name}>{t(`timeline.gapFor.${name}`)}</li>
                 ))}
-                {unknown && <li>{t('timeline.gapFor.unread')}</li>}
+                {unknown.map((line) => (
+                    <li key={line}>
+                        {t('timeline.gapFor.unread')} <span className="text-ink-muted">{line}</span>
+                    </li>
+                ))}
             </ul>
         </section>
     );
@@ -465,7 +482,11 @@ function Batch({
     const newest = firstOf({ kind: 'batch', events });
     const kind = newest.kind;
     return (
-        <li className={`${ROW} scroll-mt-4`} data-ms={parseTimestamp(newest.at).getTime()} data-batch>
+        <li
+            className={`${ROW} scroll-mt-4`}
+            data-ms={parseTimestamp(newest.at).getTime()}
+            data-batch
+        >
             <div className="flex items-start justify-end gap-1.5 pr-2.5 pt-[6px]">
                 <span className="pt-[3px] font-mono text-[0.72rem] text-ink-faint">
                     {timeOf(newest.at, language)}

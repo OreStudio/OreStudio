@@ -43,6 +43,11 @@ Usage, from the repository root:
     python3 tools/grid_soak/grid_soak.py --app-version <id of the engine version>
     python3 tools/grid_soak/grid_soak.py --capacity 90 --seed 7
 
+Each wave also switches to a party of the sender's tenant, drawn at random from the
+parties the tenant has other than its system party, so the work lands in every party and
+the screens that split by party have rows to show. The parties are read from the
+database when the run starts. --no-spread-parties keeps the party the login opens in.
+
 The app version changes when the database is recreated. Each wave is sent by a
 principal drawn by weight, so the work lands in several tenants and the grid's
 usage screen has groups to show. Name a principal as NAME or NAME:WEIGHT. The
@@ -117,12 +122,40 @@ def parse_principals(specs):
     return names, weights
 
 
-def wave_script(principal, password, reference, count, app_version, package):
+def tenant_code_of(principal):
+    """The tenant code of a principal written as user@tenant, or empty."""
+    return principal.partition("@")[2]
+
+
+def discover_parties(root, tenant_code):
+    """The ids of the parties of a tenant other than its system party, in id order."""
+    # The code is a word of letters, digits and underscores, so it is safe in a literal.
+    if not tenant_code or not all(c.isalnum() or c == "_" for c in tenant_code):
+        return []
+    sql = (
+        "select p.id from ores_refdata_parties_tbl p "
+        "join ores_iam_tenants_tbl t on t.id = p.tenant_id "
+        "and t.valid_to = ores_utility_infinity_timestamp_fn() "
+        f"where t.code = '{tenant_code}' and p.party_category <> 'System' "
+        "and p.valid_to = ores_utility_infinity_timestamp_fn() order by p.id"
+    )
+    done = subprocess.run(
+        [str(root / "compass.sh"), "sql", "--", "-t", "-A", "-c", sql],
+        capture_output=True, text=True, check=False,
+    )
+    if done.returncode != 0:
+        return []
+    return [line.strip() for line in done.stdout.splitlines() if len(line.strip()) == 36]
+
+
+def wave_script(principal, password, reference, count, app_version, package, party=None):
     """The ores.shell script of one wave."""
+    switch = [f"account_operations switch-party {party}"] if party else []
     return "\n".join(
         [
             "connect $ORES_NATS_URL",
             f"login {principal} {password}",
+            *switch,
             f'batches add {reference} open system.new_record "grid soak"',
             f"compute dispatch-batch {reference} {count} {app_version} {package}",
             "logout",
@@ -136,9 +169,12 @@ def send_wave(root, args, rng, reference, count):
     """Run one wave through compass shell. Returns True when the shell exited cleanly."""
     names, weights = args.principals
     principal = rng.choices(names, weights)[0]
-    print(f"[soak] {reference} sent by {principal}", flush=True)
+    pool = args.party_pools.get(tenant_code_of(principal), [])
+    party = rng.choice(pool) if pool else None
+    where = f" in party {party}" if party else ""
+    print(f"[soak] {reference} sent by {principal}{where}", flush=True)
     script = wave_script(
-        principal, args.password, reference, count, args.app_version, args.package
+        principal, args.password, reference, count, args.app_version, args.package, party
     )
     with tempfile.NamedTemporaryFile("w", suffix=".ores", delete=False) as handle:
         handle.write(script)
@@ -205,6 +241,8 @@ def build_parser():
     ap.add_argument("--principal", action="append", metavar="NAME[:WEIGHT]",
                     help="Who sends a wave; repeat it. Default: the Acme and Barclays tenant "
                          "administrators and the super administrator, weighted 6, 3 and 1")
+    ap.add_argument("--no-spread-parties", action="store_true",
+                    help="Keep the party the login opens in, and do not switch")
     ap.add_argument("--password", default=None)
     ap.add_argument("--dry-run", action="store_true", help="Draw the load and print it, send nothing")
     return ap
@@ -221,6 +259,16 @@ def main(argv):
         args.password = env_value(root, "ORES_SHELL_LOGIN_PASSWORD")
     if args.password is None:
         ap.error("no password: set ORES_SHELL_LOGIN_PASSWORD in .env or pass --password")
+
+    args.party_pools = {}
+    if not args.no_spread_parties:
+        for name in dict.fromkeys(args.principals[0]):
+            code = tenant_code_of(name)
+            if code and code not in args.party_pools:
+                found = discover_parties(root, code)
+                args.party_pools[code] = found
+                note = f"{len(found)} part{'y' if len(found) == 1 else 'ies'}" if found else "no parties found, using the login party"
+                print(f"[soak] {code}: {note}", flush=True)
 
     seed = args.seed if args.seed is not None else random.SystemRandom().randrange(1 << 32)
     rng = random.Random(seed)

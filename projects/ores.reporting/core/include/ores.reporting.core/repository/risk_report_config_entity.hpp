@@ -68,6 +68,11 @@ struct risk_report_config_entity {
     int initial_margin_enabled = 0;
     int pfe_enabled = 0;
     int portfolio_details_enabled = 0;
+    int saccr_enabled = 0;
+    int calibration_enabled = 0;
+    int credit_curves_enabled = 0;
+    int historical_var_enabled = 0;
+    int pnl_explain_enabled = 0;
     std::optional<double> xva_quantile;
     int xva_cva_enabled = 0;
     int xva_dva_enabled = 0;

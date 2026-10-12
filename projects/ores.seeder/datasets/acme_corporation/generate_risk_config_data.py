@@ -39,23 +39,23 @@ ANALYTICS = {
     "Data Quality Completeness": ["portfolio_details"],
     "System Health": ["portfolio_details"],
     "Audit Trail Summary": ["portfolio_details"],
-    "SA-CCR Exposure": ["pfe"],
-    "Leverage Ratio": ["pfe"],
+    "SA-CCR Exposure": ["npv", "saccr"],
+    "Leverage Ratio": ["npv", "saccr"],
     "FRTB SA Capital": ["sensitivity"],
     "Liquidity Coverage": ["cashflow"],
-    "Large Exposures": ["pfe"],
+    "Large Exposures": ["npv", "saccr"],
     "MIFID II Transaction Reporting": ["portfolio_details"],
     "CFTC Swap Data Reporting": ["portfolio_details"],
     "HKMA Trade Repository": ["portfolio_details"],
-    "Group Consolidated Exposure": ["pfe"],
-    "Board Risk Dashboard": ["npv", "pfe", "parametric_var"],
-    "Cross-Entity Counterparty Concentration": ["pfe"],
-    "Intercompany Exposure Matrix": ["pfe"],
-    "Model Calibration": ["simulation"],
+    "Group Consolidated Exposure": ["npv", "saccr"],
+    "Board Risk Dashboard": ["npv", "saccr", "parametric_var"],
+    "Cross-Entity Counterparty Concentration": ["npv", "saccr"],
+    "Intercompany Exposure Matrix": ["npv", "saccr"],
+    "Model Calibration": ["calibration"],
     "Yield Curves": ["curves"],
     "FX Spot Rates": ["curves"],
     "Volatility Surfaces": ["curves"],
-    "Credit Curves": ["curves"],
+    "Credit Curves": ["curves", "credit_curves"],
     "NPV": ["npv"],
     "Cashflows": ["cashflow"],
     "Delta and Gamma": ["sensitivity"],
@@ -63,8 +63,8 @@ ANALYTICS = {
     "Bucketed DV01": ["sensitivity"],
     "Exposure": ["simulation", "pfe"],
     "CVA/DVA/FVA": ["simulation", "xva"],
-    "Stressed VaR": ["simulation", "stress"],
-    "P&L Attribution": ["npv", "sensitivity"],
+    "Stressed VaR": ["historical_var"],
+    "P&L Attribution": ["npv", "pnl_explain"],
     "Intraday Risk Monitor": ["npv", "sensitivity", "parametric_var"],
     "Headline Position": ["npv", "sensitivity"],
 }
@@ -72,18 +72,20 @@ ANALYTICS = {
 # The name of each set of analytics, for the name of the configuration.
 PROFILES = {
     frozenset(["portfolio_details"]): "Portfolio details",
-    frozenset(["pfe"]): "Counterparty exposure",
+    frozenset(["npv", "saccr"]): "Standardised counterparty exposure",
     frozenset(["sensitivity"]): "Sensitivities",
     frozenset(["cashflow"]): "Cashflows",
     frozenset(["curves"]): "Curves",
+    frozenset(["curves", "credit_curves"]): "Credit curves",
     frozenset(["npv"]): "Valuation",
-    frozenset(["simulation"]): "Model calibration",
+    frozenset(["calibration"]): "Model calibration",
     frozenset(["simulation", "pfe"]): "Exposure simulation",
     frozenset(["simulation", "xva"]): "Valuation adjustments",
-    frozenset(["simulation", "stress"]): "Stressed VaR",
+    frozenset(["historical_var"]): "Stressed VaR",
+    frozenset(["npv", "pnl_explain"]): "Profit and loss explain",
     frozenset(["npv", "sensitivity"]): "Valuation and sensitivities",
     frozenset(["npv", "sensitivity", "parametric_var"]): "Intraday risk",
-    frozenset(["npv", "pfe", "parametric_var"]): "Board risk",
+    frozenset(["npv", "saccr", "parametric_var"]): "Board risk",
 }
 
 # D10: the reports on trading positions.
@@ -102,6 +104,11 @@ ROOT_PORTFOLIO = {
 
 # The switch columns of the configuration, by analytic.
 SWITCH_COLUMNS = {
+    "saccr": "saccr_enabled",
+    "calibration": "calibration_enabled",
+    "credit_curves": "credit_curves_enabled",
+    "historical_var": "historical_var_enabled",
+    "pnl_explain": "pnl_explain_enabled",
     "portfolio_details": "portfolio_details_enabled",
     "npv": "npv_enabled",
     "cashflow": "cashflow_enabled",
@@ -168,6 +175,12 @@ def base_currency(company, portfolios):
     return root[0]["aggregation_ccy"]
 
 
+def check_exposure_needs_simulation(name, analytics):
+    """The pfe analytic reads the cube a simulation writes."""
+    if "pfe" in analytics and "simulation" not in analytics:
+        raise SystemExit(f"{name} switches pfe on without a simulation")
+
+
 def settings(analytics):
     """The columns that follow from the analytics alone."""
     s = {column: 0 for column in SWITCH_COLUMNS.values()}
@@ -216,6 +229,7 @@ def risk_report_configs(definitions, portfolios):
         for name in sorted(used):
             first, reports = used[name]
             analytics = analytics_of(first)
+            check_exposure_needs_simulation(name, analytics)
             records.append({
                 "company_code": company,
                 "id": documents.new_uuid(f"risk_report_config:{company}:{name}"),
@@ -240,7 +254,8 @@ STAGING_ORDER = [
     "base_currency", "observation_model", "n_threads", "market_data_type", "market_data_date",
     "npv_enabled", "cashflow_enabled", "curves_enabled", "sensitivity_enabled",
     "simulation_enabled", "xva_enabled", "stress_enabled", "parametric_var_enabled",
-    "initial_margin_enabled", "pfe_enabled", "portfolio_details_enabled", "xva_quantile", "xva_cva_enabled",
+    "initial_margin_enabled", "pfe_enabled", "portfolio_details_enabled", "saccr_enabled", "calibration_enabled",
+    "credit_curves_enabled", "historical_var_enabled", "pnl_explain_enabled", "xva_quantile", "xva_cva_enabled",
     "xva_dva_enabled", "xva_fva_enabled", "xva_colva_enabled", "xva_dim_enabled",
     "xva_dim_quantile", "xva_dim_horizon_calendar_days", "xva_dim_regression_order",
     "var_quantiles", "var_method", "simm_version", "simm_calculation_currency",

@@ -325,6 +325,76 @@ check, still runs the engine, and an engine run needs at least one analytic.
 faker::number::integer(0, 1)
 #+end_src
 
+** saccr_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the standardised approach for counterparty credit risk (SA-CCR): exposure at default, replacement cost and potential future exposure per netting set.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** calibration_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables model calibration: it calibrates the simulation models to the market and writes the calibrated parameters and the fit.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** credit_curves_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the credit curves output: the survival probability and hazard rate curves bootstrapped from credit spreads.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** historical_var_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables value at risk by historical simulation over a stated historical window. A stressed value at risk is the same analytic over a stressed window.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** pnl_explain_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the profit and loss explain: the decomposition of the profit and loss of a period into risk factor components and an unexplained residual.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
 ** xva_quantile
 :PROPERTIES:
 :type:     numeric(5,4)
@@ -542,6 +612,11 @@ checks the template emits on its own.
 | "initial_margin_enabled" in (0, 1) |
 | "pfe_enabled" in (0, 1) |
 | "portfolio_details_enabled" in (0, 1) |
+| "saccr_enabled" in (0, 1) |
+| "calibration_enabled" in (0, 1) |
+| "credit_curves_enabled" in (0, 1) |
+| "historical_var_enabled" in (0, 1) |
+| "pnl_explain_enabled" in (0, 1) |
 | "xva_cva_enabled" in (0, 1) |
 | "xva_dva_enabled" in (0, 1) |
 | "xva_fva_enabled" in (0, 1) |
@@ -549,7 +624,8 @@ checks the template emits on its own.
 | "xva_dim_enabled" in (0, 1) |
 | "xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3 |
 | "var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo') |
-| "npv_enabled" + "cashflow_enabled" + "curves_enabled" + "sensitivity_enabled" + "simulation_enabled" + "xva_enabled" + "stress_enabled" + "parametric_var_enabled" + "initial_margin_enabled" + "pfe_enabled" + "portfolio_details_enabled" >= 1 |
+| "npv_enabled" + "cashflow_enabled" + "curves_enabled" + "sensitivity_enabled" + "simulation_enabled" + "xva_enabled" + "stress_enabled" + "parametric_var_enabled" + "initial_margin_enabled" + "pfe_enabled" + "portfolio_details_enabled" + "saccr_enabled" + "calibration_enabled" + "credit_curves_enabled" + "historical_var_enabled" + "pnl_explain_enabled" >= 1 |
+| "pfe_enabled" = 0 or "simulation_enabled" = 1 |
 
 * Artefact columns
 
@@ -666,6 +742,31 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 :END:
 
 ** portfolio_details_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** saccr_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** calibration_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** credit_curves_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** historical_var_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** pnl_explain_enabled
 :PROPERTIES:
 :type: integer
 :END:

@@ -167,6 +167,36 @@ struct risk_report_config final {
     int portfolio_details_enabled = 0;
 
     /**
+     * @brief Enables the standardised approach for counterparty credit risk (SA-CCR): exposure at
+     * default, replacement cost and potential future exposure per netting set.
+     */
+    int saccr_enabled = 0;
+
+    /**
+     * @brief Enables model calibration: it calibrates the simulation models to the market and
+     * writes the calibrated parameters and the fit.
+     */
+    int calibration_enabled = 0;
+
+    /**
+     * @brief Enables the credit curves output: the survival probability and hazard rate curves
+     * bootstrapped from credit spreads.
+     */
+    int credit_curves_enabled = 0;
+
+    /**
+     * @brief Enables value at risk by historical simulation over a stated historical window. A
+     * stressed value at risk is the same analytic over a stressed window.
+     */
+    int historical_var_enabled = 0;
+
+    /**
+     * @brief Enables the profit and loss explain: the decomposition of the profit and loss of a
+     * period into risk factor components and an unexplained residual.
+     */
+    int pnl_explain_enabled = 0;
+
+    /**
      * @brief XVA confidence quantile. NULL means "not set".
      */
     double xva_quantile = 0.95;

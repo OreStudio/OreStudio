@@ -30,13 +30,15 @@
  * - A scope that names a portfolio the party does not hold is refused
  * - A configuration that switches no analytic on is refused, because an engine run
  *   needs one
+ * - A configuration that switches exposure profiles on without a simulation is
+ *   refused, because the profiles are read from the cube a simulation writes
  *
  * Run with: pg_prove -d <database> test/reporting_publish_risk_report_configs_test.sql
  */
 
 begin;
 
-select plan(10);
+select plan(11);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -78,12 +80,13 @@ insert into ores_dq_risk_report_configs_artefact_tbl (
     base_currency, observation_model, n_threads, market_data_type,
     npv_enabled, cashflow_enabled, curves_enabled, sensitivity_enabled, simulation_enabled,
     xva_enabled, stress_enabled, parametric_var_enabled, initial_margin_enabled, pfe_enabled,
-    portfolio_details_enabled, xva_cva_enabled, xva_dva_enabled, xva_fva_enabled, xva_colva_enabled, xva_dim_enabled,
+    portfolio_details_enabled, saccr_enabled, calibration_enabled, credit_curves_enabled,
+    historical_var_enabled, pnl_explain_enabled, xva_cva_enabled, xva_dva_enabled, xva_fva_enabled, xva_colva_enabled, xva_dim_enabled,
     scope_portfolio)
 select d.id, ores_utility_system_tenant_id_fn(), c.config_id, 0, c.party_id,
     'Test valuation', 'A risk report configuration', c.configuration_id,
     'GBP', 'disable', 1, 'eod',
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     'RRC-FIXTURE-PORTFOLIO'
 from t_dataset d, t_ctx c;
 
@@ -176,6 +179,19 @@ select throws_ok(
     '23514',
     null,
     'a configuration that switches no analytic on is refused');
+
+select throws_ok(
+    $$insert into ores_reporting_risk_report_configs_tbl (
+        id, tenant_id, version, party_id, name, configuration_id, base_currency,
+        pfe_enabled, simulation_enabled,
+        modified_by, performed_by, change_reason_code, change_commentary)
+      select '00000000-0000-0000-0000-0000000e0007'::uuid, ores_utility_system_tenant_id_fn(), 0,
+          party_id, 'Test profiles', configuration_id, 'GBP',
+          1, 0, current_user, current_user, 'system.test', 'pgTAP fixture'
+      from t_live$$,
+    '23514',
+    null,
+    'exposure profiles without a simulation are refused');
 
 select * from finish();
 rollback;

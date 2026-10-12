@@ -67,6 +67,11 @@ generate_synthetic_risk_report_config(utility::generation::generation_context& c
     r.initial_margin_enabled = faker::number::integer(0, 1);
     r.pfe_enabled = faker::number::integer(0, 1);
     r.portfolio_details_enabled = faker::number::integer(0, 1);
+    r.saccr_enabled = faker::number::integer(0, 1);
+    r.calibration_enabled = faker::number::integer(0, 1);
+    r.credit_curves_enabled = faker::number::integer(0, 1);
+    r.historical_var_enabled = faker::number::integer(0, 1);
+    r.pnl_explain_enabled = faker::number::integer(0, 1);
     r.xva_quantile = faker::number::decimal(0.9, 0.99);
     r.xva_cva_enabled = faker::number::integer(0, 1);
     r.xva_dva_enabled = faker::number::integer(0, 1);

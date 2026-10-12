@@ -54,6 +54,11 @@ export interface RiskReportConfig {
     initial_margin_enabled: number;
     pfe_enabled: number;
     portfolio_details_enabled: number;
+    saccr_enabled: number;
+    calibration_enabled: number;
+    credit_curves_enabled: number;
+    historical_var_enabled: number;
+    pnl_explain_enabled: number;
     xva_quantile: number;
     xva_cva_enabled: number;
     xva_dva_enabled: number;

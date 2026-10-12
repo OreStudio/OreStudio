@@ -137,7 +137,7 @@
     "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Group Treasury Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_group",
@@ -207,7 +207,7 @@
     "version": 0,
     "report_name": "Large Exposures",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Group Treasury Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_group",
@@ -242,7 +242,7 @@
     "version": 0,
     "report_name": "Group Consolidated Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Group Treasury Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_group",
@@ -312,7 +312,7 @@
     "version": 0,
     "report_name": "Cross-Entity Counterparty Concentration",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Group Treasury Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_group",
@@ -347,7 +347,7 @@
     "version": 0,
     "report_name": "Intercompany Exposure Matrix",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Group Treasury Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -452,7 +452,7 @@
     "version": 0,
     "report_name": "SA-CCR Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -487,7 +487,7 @@
     "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -592,7 +592,7 @@
     "version": 0,
     "report_name": "Large Exposures",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -802,7 +802,7 @@
     "version": 0,
     "report_name": "Credit Curves",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Curves - Global Portfolio"
+    "configuration_name": "Credit curves - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1117,7 +1117,7 @@
     "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Profit and loss explain - Trading Book"
   },
   {
     "company_code": "acme_uk",
@@ -1292,7 +1292,7 @@
     "version": 0,
     "report_name": "SA-CCR Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1327,7 +1327,7 @@
     "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1432,7 +1432,7 @@
     "version": 0,
     "report_name": "Large Exposures",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1607,7 +1607,7 @@
     "version": 0,
     "report_name": "Credit Curves",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Curves - Global Portfolio"
+    "configuration_name": "Credit curves - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1887,7 +1887,7 @@
     "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Profit and loss explain - Trading Book"
   },
   {
     "company_code": "acme_us",
@@ -2062,7 +2062,7 @@
     "version": 0,
     "report_name": "SA-CCR Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2097,7 +2097,7 @@
     "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2202,7 +2202,7 @@
     "version": 0,
     "report_name": "Large Exposures",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Counterparty exposure - Global Portfolio"
+    "configuration_name": "Standardised counterparty exposure - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2377,7 +2377,7 @@
     "version": 0,
     "report_name": "Credit Curves",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Curves - Global Portfolio"
+    "configuration_name": "Credit curves - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2657,7 +2657,7 @@
     "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Profit and loss explain - Trading Book"
   },
   {
     "company_code": "acme_hk",

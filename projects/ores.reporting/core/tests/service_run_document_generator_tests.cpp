@@ -97,6 +97,29 @@ TEST_CASE("every analytic is active and numbered from one", tags) {
     CHECK(d.analytics[1].analytic.display_order == 2);
 }
 
+TEST_CASE("each analytic switch runs the analytic type of its name", tags) {
+    struct row {
+        int ores::reporting::domain::risk_report_config::*enabled;
+        const char* type;
+    };
+    const row rows[] = {
+        {&ores::reporting::domain::risk_report_config::saccr_enabled, "saccr"},
+        {&ores::reporting::domain::risk_report_config::calibration_enabled, "calibration"},
+        {&ores::reporting::domain::risk_report_config::credit_curves_enabled, "creditcurves"},
+        {&ores::reporting::domain::risk_report_config::historical_var_enabled,
+         "historicalSimulationVar"},
+        {&ores::reporting::domain::risk_report_config::pnl_explain_enabled, "pnlExplain"},
+    };
+    for (const auto& r : rows) {
+        auto in = inputs();
+        in.risk.curves_enabled = 0;
+        in.risk.*r.enabled = 1;
+        INFO(r.type);
+        const std::vector<std::string> expected{r.type};
+        CHECK(codes(generate_run_document(in)) == expected);
+    }
+}
+
 TEST_CASE("the value-at-risk switch runs the parametric value-at-risk analytic", tags) {
     auto in = inputs();
     in.risk.curves_enabled = 0;

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -56,11 +56,21 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
 
     market_data_provider_repository repo;
     repo.write(system_ctx, provider);
+    // The probe leaves the system catalogue however the reads below end.
+    struct probe_removal {
+        market_data_provider_repository& repo;
+        const ores::database::context& ctx;
+        const std::string& code;
+        ~probe_removal() {
+            try {
+                repo.remove(ctx, code);
+            } catch (...) {
+            }
+        }
+    } removal{repo, system_ctx, provider.code};
 
     const auto by_code = repo.read_latest(tenant_ctx, provider.code);
     const auto all = repo.read_latest(tenant_ctx);
-
-    repo.remove(system_ctx, provider.code);
 
     REQUIRE(by_code.size() == 1);
     CHECK(by_code.front().code == provider.code);

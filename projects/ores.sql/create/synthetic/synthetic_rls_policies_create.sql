@@ -296,7 +296,8 @@ with check (
 -- Market data providers (the installation's catalogue). The providers are
 -- published into the system tenant alone, and every tenant reads them, so the
 -- policy is the shared shape: a tenant reads its own rows and the system
--- tenant's, and writes only its own.
+-- tenant's, and writes only its own. The providers are published into the
+-- system tenant alone, and a role that may write a provider is the system's.
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_market_data_providers_tbl enable row level security;
 

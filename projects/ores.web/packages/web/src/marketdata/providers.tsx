@@ -19,7 +19,7 @@
  *
  */
 
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, useRecordSource } from '../refdata/RecordList.js';
 import { show, useRecords } from '../refdata/records.js';
@@ -45,14 +45,21 @@ function ProvidersList(): ReactNode {
     const source = useRecordSource('providers');
     const collections = useRecords('collections');
     const trail = useAreaParts('marketdata', t('marketdata.providers.title'));
-    const countOf = (code: string): string => {
-        if (collections.data === undefined) {
-            return '';
+    // How many collections stand for each provider, read once for the table.
+    const counts = useMemo(() => {
+        const out = new Map<string, number>();
+        for (const collection of collections.data ?? []) {
+            const code = show(collection['provider_code']);
+            out.set(code, (out.get(code) ?? 0) + 1);
         }
-        return String(
-            collections.data.filter((collection) => show(collection['provider_code']) === code)
-                .length,
-        );
+        return out;
+    }, [collections.data]);
+    // A failed read is a dash, so it is not mistaken for none.
+    const countOf = (code: string): string => {
+        if (collections.isError) {
+            return '—';
+        }
+        return collections.data === undefined ? '' : String(counts.get(code) ?? 0);
     };
     return (
         <RecordList

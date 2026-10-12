@@ -79,6 +79,13 @@ provider), so a tenant's service call returns the system rows the policy admits.
 No dataset publishes a system collection yet, so a tenant sees only the
 provider catalogue so far.
 
+Providers are published into the system tenant alone, and the roles that may write a
+provider belong to the system tenant. The provider table's policy admits the system
+tenant's rows to every tenant for reading, and a tenant writes only its own rows. A
+provider code is therefore unique in practice. A tenant that holds the write
+permission and writes a provider with a system code would make a lookup by code
+ambiguous, which the catalogue does not guard against.
+
 Only one enabled, bound system collection may run at a time: the conflict
 guard of the collection rejects a second. So one provider is chosen as the
 bound, authoritative source for a pair such as EUR/USD, and the other

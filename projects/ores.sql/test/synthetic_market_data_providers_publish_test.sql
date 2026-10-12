@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(3);
+select plan(4);
 
 create temporary table t_dataset on commit drop as
 select id from ores_dq_datasets_tbl
@@ -67,6 +67,15 @@ select is(
        and valid_to = ores_utility_infinity_timestamp_fn()),
     8,
     'the system tenant holds the eight providers the dataset stages'
+);
+
+-- The catalogue was published earlier in this same transaction. A
+-- replace_all closes those rows; a close stamped with the transaction's
+-- frozen start time would fall before their valid_from.
+select lives_ok(
+    format($$select * from ores_synthetic_publish_market_data_providers_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'replace_all', '{}'::jsonb)$$,
+        (select id from t_dataset)),
+    'a replace-all publish closes rows written earlier in the same transaction'
 );
 
 select * from finish();

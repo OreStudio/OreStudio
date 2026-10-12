@@ -94,7 +94,9 @@ dataset of artefact type =synthetic_feeds=, published by
 provisioning names. Each FX and IR feed row of the dataset may carry a
 =provider_code=. The published feed's source name then starts
 =synthetic.<provider code>.=, and the collection names the provider when
-every feed row names the same one.
+every feed row names the same one. The feed tables check only the =synthetic.=
+mark: the provider part of a source name holds because the one publish
+path builds it, not because a constraint ties it to the provider.
 
 =synthetic.feeds.bloomberg= is the provider dataset today
 (=projects/ores.sql/populate/synthetic/synthetic_feeds_bloomberg_populate.sql=),

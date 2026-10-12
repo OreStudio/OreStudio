@@ -139,13 +139,13 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn();
 
             update ores_synthetic_fx_spot_generation_configs_tbl
-            set valid_to = current_timestamp
+            set valid_to = clock_timestamp()
             where id in (select id from replaced_fx_configs);
 
             get diagnostics v_deleted_fx = row_count;
 
             update ores_synthetic_gmm_components_tbl
-            set valid_to = current_timestamp
+            set valid_to = clock_timestamp()
             where fx_spot_config_id in (select id from replaced_fx_configs)
               and valid_to = ores_utility_infinity_timestamp_fn();
         end if;
@@ -163,13 +163,13 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn();
 
             update ores_synthetic_ir_curve_generation_configs_tbl
-            set valid_to = current_timestamp
+            set valid_to = clock_timestamp()
             where id in (select id from replaced_ir_configs);
 
             get diagnostics v_deleted_ir = row_count;
 
             update ores_synthetic_ir_curve_template_entries_tbl
-            set valid_to = current_timestamp
+            set valid_to = clock_timestamp()
             where ir_curve_config_id in (select id from replaced_ir_configs)
               and valid_to = ores_utility_infinity_timestamp_fn();
         end if;
@@ -446,7 +446,7 @@ begin
                 -- existing component whose index is no longer part of this
                 -- dataset's mixture.
                 update ores_synthetic_gmm_components_tbl existing
-                set valid_to = current_timestamp
+                set valid_to = clock_timestamp()
                 where existing.tenant_id = p_target_tenant_id
                   and existing.fx_spot_config_id = v_fx_config_id
                   and existing.valid_to = ores_utility_infinity_timestamp_fn()
@@ -503,7 +503,7 @@ begin
                 -- component mixture for this fx_spot_config_id) must be voided
                 -- too, not just left orphaned.
                 update ores_synthetic_gmm_components_tbl existing
-                set valid_to = current_timestamp
+                set valid_to = clock_timestamp()
                 where existing.tenant_id = p_target_tenant_id
                   and existing.fx_spot_config_id = v_fx_config_id
                   and existing.valid_to = ores_utility_infinity_timestamp_fn()
@@ -685,7 +685,7 @@ begin
             -- artefact, and a mis-targeted artefact fails loudly in the
             -- mapping layer (missing required parameters).
             update ores_synthetic_config_process_parameter_values_tbl existing
-            set valid_to = current_timestamp
+            set valid_to = clock_timestamp()
             where existing.tenant_id = p_target_tenant_id
               and existing.config_id = v_ir_config_id
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
@@ -732,7 +732,7 @@ begin
             -- whose sequence_index is no longer part of this dataset's template,
             -- same rule as FX's GMM component sync above.
             update ores_synthetic_ir_curve_template_entries_tbl existing
-            set valid_to = current_timestamp
+            set valid_to = clock_timestamp()
             where existing.tenant_id = p_target_tenant_id
               and existing.ir_curve_config_id = v_ir_config_id
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
@@ -851,7 +851,7 @@ begin
 
     if p_mode = 'replace_all' then
         update ores_synthetic_market_data_providers_tbl
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = p_target_tenant_id
           and valid_to = ores_utility_infinity_timestamp_fn();
 

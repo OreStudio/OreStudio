@@ -118,6 +118,11 @@ via its "Verifies task" field.
 | 1 | Local review: misspell flags "existant" and "sucesso" | i18n/locales/fr.ts, pt.ts | Declined | Correct French and Portuguese; neither line is in this change. |
 | 2 | Local review: the provider DQ artefact uses a separate ores.dq model, a legacy pattern | ores.dq.synthetic_market_data_provider.org | Deferred | Moved by [[id:2FC7FD9E-9098-459F-A0A2-C1E63FD710FD][Move the duplicated DQ models onto their owners]]. |
 | 3 | Local review: system collections are readable in SQL only | synthetic repositories | Deferred | Recorded in the Result and the provider catalogue page; the subscription task takes it up. |
+| 4 | PR #3151: replace_all closes rows with current_timestamp, which falls before a same-transaction valid_from | synthetic_publish_from_dq_create.sql | Accepted | Every close in the file uses clock_timestamp(); a pgTAP case fails on the old function and passes on the fix. |
+| 5 | PR #3151: nothing in SQL ties a source name to the provider | fx/ir feed tables | Declined | The feed tables have no provider column; the one publish path builds the name. The provider catalogue page says it holds by construction. |
+| 6 | PR #3151: the provider validator passes everything during bootstrap | ores_synthetic_validate_market_data_provider_fn | Declined | The providers ship in system_core, which system provisioning publishes before any tenant bundle; the feeds test publishes the catalogue first. |
+| 7 | PR #3151: the system collection helper has no tenant filter | synthetic_rls_policies_create.sql | Accepted | A comment states why: the scope check puts every system-scoped row in the system tenant. |
+| 8 | PR #3151: the provider publish refusal uses raise exception, not ores_outcome_raise_fn | synthetic_publish_from_dq_create.sql | Declined | No outcome code fits a publish aimed at the wrong tenant; it is an operator error, like the neighbouring dataset-not-found raises. |
 
 * Result
 

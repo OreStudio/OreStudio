@@ -41,6 +41,9 @@ returns boolean
 language sql
 stable
 as $$
+    -- No tenant filter is needed: the collection's scope check puts every
+    -- system-scoped row in the system tenant, so a match is always the
+    -- system tenant's collection. Relax that check and this needs one.
     select exists (
         select 1 from ores_synthetic_market_data_generation_configs_tbl c
         where c.id = p_config_id

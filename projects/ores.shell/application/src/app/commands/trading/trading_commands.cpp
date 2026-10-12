@@ -38,7 +38,9 @@
 #include "ores.shell/app/commands/trading/composite_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_leg_commands.hpp"
 #include "ores.shell/app/commands/trading/credit_basket_constituent_commands.hpp"
+#include "ores.shell/app/commands/trading/credit_default_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/credit_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/credit_linked_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_accumulator_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_asian_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_barrier_option_instrument_commands.hpp"
@@ -60,6 +62,8 @@
 #include "ores.shell/app/commands/trading/fx_forward_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_vanilla_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_variance_swap_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/index_credit_default_swap_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/index_credit_default_swap_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/inflation_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/knock_out_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/lifecycle_event_commands.hpp"
@@ -72,6 +76,7 @@
 #include "ores.shell/app/commands/trading/price_type_commands.hpp"
 #include "ores.shell/app/commands/trading/rate_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/return_type_commands.hpp"
+#include "ores.shell/app/commands/trading/risk_participation_agreement_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/scripted_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/settlement_type_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_commands.hpp"
@@ -81,6 +86,7 @@
 #include "ores.shell/app/commands/trading/structure_template_role_commands.hpp"
 #include "ores.shell/app/commands/trading/swap_leg_commands.hpp"
 #include "ores.shell/app/commands/trading/swaption_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/synthetic_cdo_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_booking_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_id_type_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_identifier_commands.hpp"
@@ -113,7 +119,9 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     composite_instrument_commands::register_commands(root_menu, session);
     composite_leg_commands::register_commands(root_menu, session);
     credit_basket_constituent_commands::register_commands(root_menu, session);
+    credit_default_swap_instrument_commands::register_commands(root_menu, session);
     credit_instrument_commands::register_commands(root_menu, session);
+    credit_linked_swap_instrument_commands::register_commands(root_menu, session);
     equity_accumulator_instrument_commands::register_commands(root_menu, session);
     equity_asian_option_instrument_commands::register_commands(root_menu, session);
     equity_barrier_option_instrument_commands::register_commands(root_menu, session);
@@ -135,6 +143,8 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     fx_forward_instrument_commands::register_commands(root_menu, session);
     fx_vanilla_option_instrument_commands::register_commands(root_menu, session);
     fx_variance_swap_instrument_commands::register_commands(root_menu, session);
+    index_credit_default_swap_instrument_commands::register_commands(root_menu, session);
+    index_credit_default_swap_option_instrument_commands::register_commands(root_menu, session);
     inflation_swap_instrument_commands::register_commands(root_menu, session);
     knock_out_swap_instrument_commands::register_commands(root_menu, session);
     lifecycle_event_commands::register_commands(root_menu, session);
@@ -147,6 +157,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     price_type_commands::register_commands(root_menu, session);
     rate_instrument_commands::register_commands(root_menu, session);
     return_type_commands::register_commands(root_menu, session);
+    risk_participation_agreement_instrument_commands::register_commands(root_menu, session);
     scripted_instrument_commands::register_commands(root_menu, session);
     settlement_type_commands::register_commands(root_menu, session);
     structure_commands::register_commands(root_menu, session);
@@ -156,6 +167,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     structure_template_role_commands::register_commands(root_menu, session);
     swap_leg_commands::register_commands(root_menu, session);
     swaption_instrument_commands::register_commands(root_menu, session);
+    synthetic_cdo_instrument_commands::register_commands(root_menu, session);
     trade_booking_commands::register_commands(root_menu, session);
     trade_id_type_commands::register_commands(root_menu, session);
     trade_identifier_commands::register_commands(root_menu, session);

@@ -192,6 +192,18 @@
 -- Credit instruments
 \ir ./trading_credit_basket_constituents_notify_trigger_drop.sql
 \ir ./trading_credit_basket_constituents_drop.sql
+\ir ./trading_credit_default_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_credit_default_swap_instruments_drop.sql
+\ir ./trading_index_credit_default_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_index_credit_default_swap_instruments_drop.sql
+\ir ./trading_index_credit_default_swap_option_instruments_notify_trigger_drop.sql
+\ir ./trading_index_credit_default_swap_option_instruments_drop.sql
+\ir ./trading_synthetic_cdo_instruments_notify_trigger_drop.sql
+\ir ./trading_synthetic_cdo_instruments_drop.sql
+\ir ./trading_credit_linked_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_credit_linked_swap_instruments_drop.sql
+\ir ./trading_risk_participation_agreement_instruments_notify_trigger_drop.sql
+\ir ./trading_risk_participation_agreement_instruments_drop.sql
 \ir ./trading_credit_instruments_notify_trigger_drop.sql
 \ir ./trading_credit_instruments_drop.sql
 

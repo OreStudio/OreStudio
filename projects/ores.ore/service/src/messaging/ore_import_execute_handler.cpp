@@ -66,6 +66,12 @@
 #include "ores.trading.api/messaging/commodity_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/composite_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/credit_basket_constituent_protocol.hpp"
+#include "ores.trading.api/messaging/credit_default_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/credit_linked_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/index_credit_default_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/index_credit_default_swap_option_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/risk_participation_agreement_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/synthetic_cdo_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/credit_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
@@ -2838,33 +2844,98 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     return instr_error.empty();
                 } else if constexpr (std::is_same_v<T, credit_instrument_data>) {
                     const auto& instr = r.instrument;
+                    // The header is written first: the fact row carries the
+                    // product's own fields only, and the header owns the
+                    // identity, the reference entity, the dates and the
+                    // description.
                     put_credit_instrument_request req;
                     req.change.write.trade_id = instr.identity.trade_id;
                     req.change.write.trade_activity_id = instr.identity.trade_activity_id;
                     req.change.write.trade_type_code = instr.identity.trade_type_code;
                     req.change.write.reference_entity = instr.reference_entity;
-                    req.change.write.currency = instr.currency;
-                    req.change.write.notional = instr.notional;
-                    req.change.write.spread = instr.spread;
-                    req.change.write.recovery_rate = instr.recovery_rate;
-                    req.change.write.tenor = instr.tenor;
                     req.change.write.start_date = instr.start_date;
                     req.change.write.maturity_date = instr.maturity_date;
-                    req.change.write.day_count_fraction_code = instr.day_count_fraction_code;
-                    req.change.write.payment_frequency_code = instr.payment_frequency_code;
-                    req.change.write.index_name = instr.index_name;
-                    req.change.write.index_series = instr.index_series;
-                    req.change.write.seniority = instr.seniority;
-                    req.change.write.restructuring = instr.restructuring;
                     req.change.write.description = instr.description;
-                    req.change.write.option_type = instr.option_type;
-                    req.change.write.option_expiry_date = instr.option_expiry_date;
-                    req.change.write.option_strike = instr.option_strike;
-                    req.change.write.linked_asset_code = instr.linked_asset_code;
-                    req.change.write.tranche_attachment = instr.tranche_attachment;
-                    req.change.write.tranche_detachment = instr.tranche_detachment;
                     auto resp = nats_call(delegated_nats, req, instr_error);
                     if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
+                        return false;
+
+                    const bool fact_ok = std::visit(
+                        [&](const auto& fact) -> bool {
+                            using FactT = std::decay_t<decltype(fact)>;
+                            using namespace ores::trading::domain;
+                            if constexpr (std::is_same_v<FactT, credit_default_swap_instrument>) {
+                                put_credit_default_swap_instrument_request fact_req;
+                                fact_req.change.write.trade_id = fact.trade_id;
+                                fact_req.change.write.trade_activity_id = fact.trade_activity_id;
+                                fact_req.change.write.credit_curve_id = fact.credit_curve_id;
+                                fact_req.change.write.issuer_id = fact.issuer_id;
+                                fact_req.change.write.recovery_rate = fact.recovery_rate;
+                                auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
+                                return fact_resp && fact_resp->result.outcome ==
+                                                        ores::utility::domain::outcome::ok;
+                            } else if constexpr (std::is_same_v<
+                                                     FactT,
+                                                     index_credit_default_swap_instrument>) {
+                                put_index_credit_default_swap_instrument_request fact_req;
+                                fact_req.change.write.trade_id = fact.trade_id;
+                                fact_req.change.write.trade_activity_id = fact.trade_activity_id;
+                                fact_req.change.write.credit_curve_id = fact.credit_curve_id;
+                                auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
+                                return fact_resp && fact_resp->result.outcome ==
+                                                        ores::utility::domain::outcome::ok;
+                            } else if constexpr (std::is_same_v<
+                                                     FactT,
+                                                     index_credit_default_swap_option_instrument>) {
+                                put_index_credit_default_swap_option_instrument_request fact_req;
+                                fact_req.change.write.trade_id = fact.trade_id;
+                                fact_req.change.write.trade_activity_id = fact.trade_activity_id;
+                                fact_req.change.write.credit_curve_id = fact.credit_curve_id;
+                                auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
+                                return fact_resp && fact_resp->result.outcome ==
+                                                        ores::utility::domain::outcome::ok;
+                            } else if constexpr (std::is_same_v<FactT, synthetic_cdo_instrument>) {
+                                put_synthetic_cdo_instrument_request fact_req;
+                                fact_req.change.write.trade_id = fact.trade_id;
+                                fact_req.change.write.trade_activity_id = fact.trade_activity_id;
+                                fact_req.change.write.qualifier = fact.qualifier;
+                                fact_req.change.write.protection_start_date =
+                                    fact.protection_start_date;
+                                fact_req.change.write.attachment_point = fact.attachment_point;
+                                fact_req.change.write.detachment_point = fact.detachment_point;
+                                fact_req.change.write.recovery_rate = fact.recovery_rate;
+                                auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
+                                return fact_resp && fact_resp->result.outcome ==
+                                                        ores::utility::domain::outcome::ok;
+                            } else if constexpr (std::is_same_v<FactT,
+                                                                credit_linked_swap_instrument>) {
+                                put_credit_linked_swap_instrument_request fact_req;
+                                fact_req.change.write.trade_id = fact.trade_id;
+                                fact_req.change.write.trade_activity_id = fact.trade_activity_id;
+                                fact_req.change.write.credit_curve_id = fact.credit_curve_id;
+                                fact_req.change.write.recovery_rate = fact.recovery_rate;
+                                auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
+                                return fact_resp && fact_resp->result.outcome ==
+                                                        ores::utility::domain::outcome::ok;
+                            } else if constexpr (std::is_same_v<
+                                                     FactT,
+                                                     risk_participation_agreement_instrument>) {
+                                put_risk_participation_agreement_instrument_request fact_req;
+                                fact_req.change.write.trade_id = fact.trade_id;
+                                fact_req.change.write.trade_activity_id = fact.trade_activity_id;
+                                fact_req.change.write.credit_curve_id = fact.credit_curve_id;
+                                fact_req.change.write.issuer_id = fact.issuer_id;
+                                fact_req.change.write.recovery_rate = fact.recovery_rate;
+                                auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
+                                return fact_resp && fact_resp->result.outcome ==
+                                                        ores::utility::domain::outcome::ok;
+                            } else {
+                                static_assert(sizeof(FactT) == 0,
+                                              "a credit fact type has no import branch");
+                            }
+                        },
+                        r.facts);
+                    if (!fact_ok)
                         return false;
                     for (const auto& leg : r.legs) {
                         put_swap_leg_request leg_req;
@@ -2926,6 +2997,52 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         auto name_resp = nats_call(delegated_nats, name_req, instr_error);
                         if (!name_resp ||
                             name_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+                    for (const auto& strike : r.strikes) {
+                        put_instrument_strike_request strike_req;
+                        strike_req.change.write.trade_id = strike.trade_id;
+                        strike_req.change.write.trade_activity_id = strike.trade_activity_id;
+                        strike_req.change.write.price_value = strike.price_value;
+                        strike_req.change.write.price_currency = strike.price_currency;
+                        strike_req.change.write.yield_value = strike.yield_value;
+                        strike_req.change.write.yield_compounding = strike.yield_compounding;
+                        strike_req.change.write.bare_value = strike.bare_value;
+                        strike_req.change.write.bare_currency = strike.bare_currency;
+                        auto strike_resp = nats_call(delegated_nats, strike_req, instr_error);
+                        if (!strike_resp ||
+                            strike_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+                    for (const auto& schedule : r.schedules) {
+                        put_instrument_schedule_request schedule_req;
+                        auto& w = schedule_req.change.write;
+                        w.trade_id = schedule.trade_id;
+                        w.owner_role = schedule.owner_role;
+                        w.owner_number = schedule.owner_number;
+                        w.schedule_role = schedule.schedule_role;
+                        w.sequence_number = schedule.sequence_number;
+                        w.trade_activity_id = schedule.trade_activity_id;
+                        w.schedule_kind = schedule.schedule_kind;
+                        auto schedule_resp = nats_call(delegated_nats, schedule_req, instr_error);
+                        if (!schedule_resp ||
+                            schedule_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+                    for (const auto& date_row : r.schedule_dates) {
+                        put_instrument_schedule_date_request date_req;
+                        date_req.change.write.trade_id = date_row.trade_id;
+                        date_req.change.write.owner_role = date_row.owner_role;
+                        date_req.change.write.owner_number = date_row.owner_number;
+                        date_req.change.write.schedule_role = date_row.schedule_role;
+                        date_req.change.write.schedule_sequence_number =
+                            date_row.schedule_sequence_number;
+                        date_req.change.write.sequence_number = date_row.sequence_number;
+                        date_req.change.write.trade_activity_id = date_row.trade_activity_id;
+                        date_req.change.write.schedule_date = date_row.schedule_date;
+                        auto date_resp = nats_call(delegated_nats, date_req, instr_error);
+                        if (!date_resp ||
+                            date_resp->result.outcome != ores::utility::domain::outcome::ok)
                             return false;
                     }
                     return true;

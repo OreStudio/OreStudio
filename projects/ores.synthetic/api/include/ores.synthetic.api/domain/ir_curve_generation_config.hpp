@@ -81,9 +81,9 @@ struct ir_curve_generation_config final {
     std::string currency_code;
 
     /**
-     * @brief Floating-rate index family this curve represents (oresmd's index_family: libor/euribor
-     * for term IBOR-style indices, or one of the overnight/RFR-style families --
-     * sofr/estr/sonia/tona/ saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
+     * @brief Floating-rate index family this curve represents (libor/euribor for term IBOR-style
+     * indices, or one of the overnight/RFR-style families -- sofr/estr/sonia/tona/
+     * saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
      * zaronia/destr/polonia/nzonia/shibor/tiie/taibor/cdi/
      * czeonia/buboron/telboron/tlref/camara/ibr/hibor), stored as a fixed lower-case token rather
      * than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR") --

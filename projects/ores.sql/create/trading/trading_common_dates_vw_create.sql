@@ -28,6 +28,25 @@
  * declarations on the family models.
  */
 
+-- The dates credit_instrument maps:
+--   start_date <- credit_instrument.start_date
+--   maturity_date <- credit_instrument.maturity_date
+create or replace view ores_trading_credit_instruments_common_dates_vw
+with (security_invoker = true) as
+select
+    h.tenant_id,
+    h.trade_id,
+    j1.trade_date as trade_date,
+    h.start_date as start_date,
+    null::date as expiry_date,
+    h.maturity_date as maturity_date
+from ores_trading_credit_instruments_tbl h
+left join ores_trading_trade_bookings_tbl j1
+  on j1.tenant_id = h.tenant_id
+ and j1.trade_id = h.trade_id
+ and j1.valid_to = ores_utility_infinity_timestamp_fn()
+where h.valid_to = ores_utility_infinity_timestamp_fn();
+
 -- The dates rate_instrument maps:
 --   start_date <- rate_instrument.start_date
 --   maturity_date <- rate_instrument.maturity_date

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/author-the-credit-family-header-and-facts
+#+pr: 3205
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The credit family has a header and one fact table per product, generated from mo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -41,9 +41,26 @@ The credit family has a header and one fact table per product, generated from mo
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *The header.* =credit_instrument= loses its product columns and keeps the
+   trade key, the party, the type, the reference entity, the two common dates and
+   the description. It is cloned from the rates header: the delete cascade names
+   every table the family writes, and a pinned-key trigger holds the party and
+   type to the anchor trade. The check lists the six codes the importer writes.
+2. *Six fact tables.* One model per product, cloned from the rates facts: keyed
+   by the trade, tenant isolated, party scoped for writes, with generated
+   eventing tests. A column lands only when a mapper writes it today, so unit 6
+   adds the rest with their writers.
+3. *The routing.* The two codes with no importer leave the catalogue's routing.
+   The six facts join the catalogue's children and the header's digest.
+4. *Generate and wire.* Regenerate the trading component, then wire the six
+   entities by hand as the basket child was: the create and drop includes, the
+   permission seeds, the registrars, the history providers and the event
+   mappings.
+5. *The carrier.* A =credit_fact_variant= holds the product's fact row. The
+   carrier gains it, with the shared strikes and schedules, and the batch, the
+   export service, the import handler and the mapper read and write it.
+6. *Prove it.* Update the credit mapper tests, recreate the database, and run
+   the suites and every check.
 
 * Measurements
 
@@ -57,9 +74,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE core suite | all pass | =ctest --preset linux-clang-debug-make -R ores.ore.core.tests= | the PR head |
+| Trading core suite | all pass, with the generated eventing tests of the seven entities | =ctest --preset linux-clang-debug-make -R ores.trading.core.tests= | the PR head |
+| Shell trading suite | all pass | =ctest --preset linux-clang-debug-make -R ores.shell.trading.tests= | the PR head |
+| Build | exit 0 | =compass build ores.ore.core.tests ores.trading.core.tests ores.shell.trading.tests= | the PR head |
+| SQL hygiene | 2,499 files, 0 problems | =check_sql_hygiene.py= | the PR head |
+| cmake sources | up to date | =regenerate_cmake_component_files.py --all --check= | the PR head |
+| Handler permissions and populate references | 1,040 codes seeded; resolve | =check_handler_permissions.py= and =check_populate_references.py= | the PR head |
+| Documentation checks | all 39 components pass | =validate_docs.sh= | the PR head |
 
 * Notes
+
+- The ctest runs went straight to ctest, because the host build lock was held
+  by other worktrees. The user allowed it.
+- The index option's fact row holds the wrapped index swap's credit curve id,
+  and the trade has no row in the index swap's table. The design said two rows;
+  the carrier holds one fact row, so the design now says one.
+- The header's dates carry =:common_date:= and the common-date view lists the
+  credit header. Unit 7 keeps the probe that proves it.
+- The generated header eventing test seeds an anchor trade of the header's own
+  type, because the pinned-key trigger refuses a header that disagrees with its
+  anchor. The rates header passes by coincidence: both default to Swap.
+- An index option states one strike and its exercise dates in the shared strike
+  and schedule rows. The rest of its option block (long or short, style,
+  premium) waits for unit 6.
+- Fact columns without a writer are not in the tables. Unit 6 adds the flags,
+  the upfront fee and date, the participation rate and the protection fee with
+  the code that writes them.
 
 * Test Scenarios
 
@@ -76,12 +117,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3205][#3205]] | [ore,trading,sql,shell] Author the credit family header and its fact tables |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The fact tables hold fewer columns than the design lists | the six fact models | accept | The runbook drops a column no mapper writes. Unit 6 adds each with its writer. |
+| 2 | The index option has a column the design did not list | index_credit_default_swap_option_instrument | accept | It carries the wrapped swap's curve id, so the carrier needs one fact row. |
+| 3 | The header check allows maturity equal to start | credit_instrument model | accept | A risk participation agreement may start and end on one day. |
+| 4 | The shared option block is not written for the index option | credit_instrument_mapper.cpp | decline | Unit 6 writes the whole option block with the other dropped elements. |
+| 5 | The fact visitor ends in a catch-all else, so a new fact type would take the agreement's path | ore_import_execute_handler.cpp | accept | The agreement has its own branch and the last else is a static_assert. |
+| 6 | The NATS call boilerplate repeats in each branch | ore_import_execute_handler.cpp | decline | Every family branch of the handler repeats it; a helper is its own task. |
+| 7 | A failed fact write leaves a header with no fact row | ore_import_execute_handler.cpp | decline | A false return is an item error on that trade, and a total failure triggers the saga rollback, as for every family. |
+| 8 | Nothing links the strike and schedule rows to the index option | design.org | accept | The design now says the shared tables are keyed by the trade alone and only the option's mapper writes them. |
+| 9 | The trading API, trading service, shell application and codegen suites were not rerun | the PR | accept | Run: the three C++ suites pass; the codegen suite passes after merging main. |
 
 * Result
+
+The credit family has a header and one fact table per product, generated from
+models. =credit_instrument= is the slim header with the common dates and the
+delete cascade, and six fact tables hold the credit curve, the issuer, the
+recovery rate, the CDO tranche and the wrapped index curve. The catalogue routes
+the six importer codes and leaves the two codes with no importer out. The
+carrier, the batch, the export service, the import handler and the mapper read
+and write the header with its fact row, and the corpus documents come back
+through them.
+
+Acceptance met: the header lists the six codes; six fact tables are keyed by the
+trade and pinned by the generated delete cascade; and codegen drift is clean
+with the generated eventing tests passing. Unit 6 closes the round trip.

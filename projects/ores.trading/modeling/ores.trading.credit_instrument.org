@@ -4,34 +4,39 @@
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.credit_instrument
-#+description: Codegen entity model for the trading =credit_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =credit_instruments= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
+#+brief: The credit family header: one row per credit trade, keyed by trade_id, owning the family's facts, legs and basket.
 #+entity_singular: credit_instrument
 #+entity_plural: credit_instruments
 #+entity_title: Credit Instrument
-#+brief: Credit instrument.
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-12
 
-Represents the credit product types ORE states. =trade_type_code=
-discriminates the exact product, and the optional field blocks are null
-when the sub-type does not state them: the index block for CDSIndex
-products, the option block for CDS option products, the tranche block for
-CBO and SyntheticCDO products, and the linked-asset code for
-CreditLinkedSwap.
+One row per credit trade, the family's own header. It holds what every
+product in the family states the same way: the trade it belongs to, the trade
+type code, the party, the activity that wrote the version, the reference
+entity, the instrument's start and maturity dates and its description. It
+holds no product economics.
 
-The table is a flat instrument sub-type, so it binds
-=:profile: trading-instrument=. Two table features justify that binding:
-the table is tenant-scoped through =tenant_id= and the tenant isolation
-policy, its insert
-trigger stamps =party_id= from the session variable =app.current_party_id=
-rather than taking it from the client. The profile also fixes the identity
-and audit field groups, the batch read and the generator facet, and leaves
-the table with no UI surface -- the per-instrument forms were hand-crafted
-in the removed desktop client and consumed the generated messaging
-protocol.
+The header is the family's *coverage*: the =trade_type_code= check that the
+routed-instrument template generates from =ores.trading.trade_type_catalogue=
+lists exactly the six codes the importer writes, and the two codes with no
+importer, CreditDefaultSwapOption and CBO, stay out until a mapper writes them.
+It is also the family's *owner*: the delete cascade section below names every
+table the family writes, so the delete rule closes the legs, the basket and
+the facts with the header and the family does not outlive it.
+
+The products' own fields stay in their fact tables, keyed by the same trade
+and joined to this row by the trade id. A fact table carries no =party_id= and
+no =trade_type_code=: the header is the family's party boundary and its
+routing boundary.
+
+The dates are the family's *common dates*, the one set of names for the start
+and the maturity of every credit product. A risk participation agreement's
+protection start and end are those dates.
 
 * Flags
 :PROPERTIES:
@@ -40,8 +45,6 @@ protocol.
 :component:        trading
 :profile:          trading-instrument
 :END:
-
-* Natural keys
 
 * Columns
 
@@ -55,9 +58,8 @@ protocol.
 
 Trade type code (soft FK to ores_trading_trade_types_tbl).
 
-Routes the ORE credit products: CreditDefaultSwap, IndexCreditDefaultSwap,
-IndexCreditDefaultSwapOption, CreditLinkedSwap, SyntheticCDO and
-RiskParticipationAgreement.
+One of the family's codes; the coverage check the routed-instrument
+template generates from the trade-type catalogue lists all of them.
 
 #+begin_src cpp :name generator
 std::string("CreditDefaultSwap")
@@ -65,14 +67,14 @@ std::string("CreditDefaultSwap")
 
 ** party_id
 :PROPERTIES:
-:group:       identity
-:type:        uuid
-:cpp_type:    boost::uuids::uuid
-:nullable:    false
-:supplied_by: session_party
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
 :END:
 
-Party that owns this instrument.
+Party that owns this instrument. The family's party boundary: the fact and
+child rows carry no party of their own.
 
 Set from session variable app.current_party_id.
 
@@ -88,9 +90,10 @@ Set from session variable app.current_party_id.
 
 The trade this instrument belongs to, and the instrument's own key.
 
-The trade id identifies both the trade and its instrument, so the
-instrument carries no identity of its own: this column is the key, and the
-trade it names gives the instrument its scope.
+The trade id identifies both the trade and its instrument, so the header
+carries no identity of its own: this column is the key, and the trade it
+names gives the instrument its scope. Every fact and child row of the
+family names the same trade.
 
 ** trade_activity_id
 :PROPERTIES:
@@ -110,194 +113,45 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-Name or identifier of the reference entity.
+Name or identifier of the reference entity the risk is on.
+
+Every credit product states one: the issuer or the credit curve of a swap, the
+index, the qualifier of a CDO.
 
 #+begin_src cpp :name generator
 std::string("ACME Corp")
 #+end_src
 
-** currency
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:economic: true
-:END:
-
-ISO 4217 currency code (e.g. USD).
-
-Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
-
-#+begin_src cpp :name generator
-std::string("USD")
-#+end_src
-
-** notional
-:PROPERTIES:
-:type:          numeric(38, 12)
-:cpp_type:      ores::utility::decimal::decimal
-:nullable:      false
-:economic:      true
-:END:
-
-Notional amount of the credit instrument. Must be positive.
-
-#+begin_src cpp :name generator
-ores::utility::decimal::decimal::from_string("1000000").value()
-#+end_src
-
-** spread
-:PROPERTIES:
-:type:          numeric(38, 12)
-:cpp_type:      ores::utility::decimal::decimal
-:nullable:      false
-:default_value: ores::utility::decimal::decimal{}
-:economic:      true
-:END:
-
-Credit spread in basis points (e.g. 100.0 for 100 bps).
-
-#+begin_src cpp :name generator
- ores::utility::decimal::decimal::from_string("100.0").value()
-#+end_src
-
-** recovery_rate
-:PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:economic:      true
-:END:
-
-Recovery rate as a decimal (e.g. 0.4 for 40%).
-
-#+begin_src cpp :name generator
-0.4
-#+end_src
-
-** tenor
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:economic: true
-:END:
-
-Tenor of the instrument (e.g. "5Y", "3Y").
-
-#+begin_src cpp :name generator
-std::string("5Y")
-#+end_src
-
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::chrono::year_month_day
-:nullable: false
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:common_date: start_date
 :economic: true
 :END:
 
-Start date (ISO 8601 date string, e.g. 2026-01-15).
+The instrument's start date. A risk participation agreement's protection start
+is this column.
 
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2026}/1/15}
-#+end_src
+Null when the product states none.
+
+ISO 8601 date string (YYYY-MM-DD).
 
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::chrono::year_month_day
-:nullable: false
-:economic: true
-:END:
-
-Maturity date (ISO 8601 date string, e.g. 2031-01-15).
-
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2031}/1/15}
-#+end_src
-
-** day_count_fraction_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:economic: true
-:END:
-
-Day count convention code (e.g. Actual365Fixed, Thirty360).
-
-Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to ores.refdata, so the dependency is recorded rather than copied. CreditInstrument stores ORE dayCounter spellings (Actual365Fixed, Thirty360) while the reference table keys on ISDA short codes (A365F, 30/360), so PR 4 needs a conversion helper in the shape of payment_frequency_conversion.hpp. PR 4 tightens the soft reference into a real foreign key.
-
-#+begin_src cpp :name generator
-std::string("Actual365Fixed")
-#+end_src
-
-** payment_frequency_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:economic: true
-:END:
-
-Payment frequency code (e.g. Quarterly, SemiAnnual).
-
-Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
-
-#+begin_src cpp :name generator
-std::string("Quarterly")
-#+end_src
-
-** index_name
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:common_date: maturity_date
 :economic: true
+:generator_expr: std::chrono::year_month_day{std::chrono::sys_days{*r.start_date} + std::chrono::days{365}}
 :END:
 
-Optional index name for CDSIndex trades (e.g. "CDX.NA.IG").
+The instrument's maturity date. A risk participation agreement's protection end
+is this column.
 
-Empty for non-index products.
-
-** index_series
-:PROPERTIES:
-:type:          integer
-:cpp_type:      std::optional<int>
-:nullable:      true
-:default_value: std::nullopt
-:economic:      true
-:END:
-
-Optional index series number for CDSIndex trades.
-
-Null when the trade states no series.
-
-** seniority
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:economic: true
-:END:
-
-Optional seniority (e.g. "Senior", "Subordinated").
-
-Empty when not applicable.
-
-** restructuring
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:economic: true
-:END:
-
-Optional restructuring clause (e.g. "MM", "MR", "CR", "XR").
-
-Empty when not applicable.
+Null with =start_date=, and for the same reason.
 
 ** description
 :PROPERTIES:
@@ -308,72 +162,6 @@ Empty when not applicable.
 :END:
 
 Optional free-text description.
-
-** option_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:economic: true
-:END:
-
-Call or Put for CreditDefaultSwapOption; empty otherwise.
-
-Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
-
-** option_expiry_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::optional<std::chrono::year_month_day>
-:nullable: true
-:economic: true
-:END:
-
-Option expiry date (ISO 8601) for CDS options. Empty otherwise.
-
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2025}/1/15}
-#+end_src
-
-** option_strike
-:PROPERTIES:
-:type:          numeric(38, 12)
-:cpp_type:      std::optional<ores::utility::decimal::decimal>
-:nullable: true
-:economic:      true
-:END:
-
-Option strike spread in bps for CDS options. Null when not set.
-
-** linked_asset_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:economic: true
-:END:
-
-Reference asset code for CreditLinkedSwap. Empty otherwise.
-
-** tranche_attachment
-:PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
-:nullable: true
-:economic: true
-:END:
-
-CBO tranche attachment point as a fraction. Null when not set.
-
-** tranche_detachment
-:PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
-:nullable: true
-:economic: true
-:END:
-
-CBO tranche detachment point as a fraction. Null when not set.
 
 * Foreign keys
 
@@ -397,6 +185,7 @@ its trade, so a row cannot exist without one.
     {
         auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = *party_ctx.party_id();
+        anchor.trade_type = v.identity.trade_type_code;
         ores::trading::repository::trade_repository().write(party_ctx, anchor);
         v.identity.trade_id = anchor.id;
     }
@@ -430,10 +219,11 @@ is immutable.
 
 The rows a credit instrument owns. Each is keyed by the instrument's own trade
 id, so the delete rule closes them all with one statement per table and the
-family does not outlive its instrument.
+family does not outlive its header.
 
-The legs are the shared leg tables the rates family writes, told apart by the
-leg group; the basket is the credit family's own child.
+The legs, the strikes and the schedules are the shared shapes the bond pilot
+and the rates family built; the credit family writes to them rather than
+widening them.
 
 ** credit_basket_constituents
 :PROPERTIES:
@@ -459,6 +249,60 @@ leg group; the basket is the credit family's own child.
 :column: trade_id
 :END:
 
+** instrument_strikes
+:PROPERTIES:
+:table:  ores_trading_instrument_strikes_tbl
+:column: trade_id
+:END:
+
+** instrument_schedules
+:PROPERTIES:
+:table:  ores_trading_instrument_schedules_tbl
+:column: trade_id
+:END:
+
+** instrument_schedule_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_schedule_dates_tbl
+:column: trade_id
+:END:
+
+** credit_default_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_cds_instruments_tbl
+:column: trade_id
+:END:
+
+** index_credit_default_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_index_cds_instruments_tbl
+:column: trade_id
+:END:
+
+** index_credit_default_swap_option_instruments
+:PROPERTIES:
+:table:  ores_trading_index_cds_option_instruments_tbl
+:column: trade_id
+:END:
+
+** synthetic_cdo_instruments
+:PROPERTIES:
+:table:  ores_trading_synthetic_cdo_instruments_tbl
+:column: trade_id
+:END:
+
+** credit_linked_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_credit_linked_swap_instruments_tbl
+:column: trade_id
+:END:
+
+** risk_participation_agreement_instruments
+:PROPERTIES:
+:table:  ores_trading_risk_participation_instruments_tbl
+:column: trade_id
+:END:
+
 * SQL
 
 ** Flags
@@ -471,51 +315,65 @@ leg group; the basket is the credit family's own child.
 ** Checks
 
 | expression |
-|---|
-| "notional" > 0 |
-| "spread" >= 0 |
-| "recovery_rate" >= 0 AND "recovery_rate" <= 1 |
+|------------|
 | "reference_entity" <> '' |
-| "tenor" <> '' |
-| "option_type" is null or "option_type" in ('Call', 'Put') |
+| "maturity_date" is null or "start_date" is null or "maturity_date" >= "start_date" |
 
 ** Indexes
 
-| name | columns | unique | current_only | where_extra |
-|------+---------+--------+--------------+-------------|
-| party | tenant_id, party_id | false | true | |
-| trade_type | tenant_id, trade_type_code | false | true | |
+| name       | columns                    | unique | current_only | where_extra |
+|------------+----------------------------+--------+--------------+-------------|
+| party      | tenant_id, party_id        | false  | true         |             |
+| trade_type | tenant_id, trade_type_code | false  | true         |             |
 
-* Insert trigger
+** Pinned keys
 
-** Validations
+The header copies the anchor's party and trade type, so the insert trigger
+checks the copies against the anchor's current row and refuses a row that
+disagrees. The anchor is a versioned table, so a database foreign key cannot
+name it and the pin is a trigger check, as the =trade_id= key is. The fact and
+child tables carry neither column: they reach both through this row (design
+decision D3), so the header is the only row of the family that can disagree.
 
-| column | validation_function |
-|--------+----------------------|
-| payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
+The insert trigger stamps =party_id= from the session, and row-level
+security hides another party's anchor, so in practice the pin refuses a
+disagreeing =trade_type_code=; the party column is held to the anchor as
+well, so a path that bypasses the stamp cannot drift from it.
+
+The anchor's model states that its party and trade type are fixed for the
+trade's life and that a change is a cancel and rebook. The anchor's write
+path does not enforce it, so an amendment that changed the trade type would
+leave the header unchecked. That gap belongs to the trade model, not to this
+family, and it is open.
+
+| name   | columns                           | table                  | target_columns            | error_message                                                          |
+|--------+-----------------------------------+------------------------+---------------------------+------------------------------------------------------------------------|
+| anchor | trade_id, party_id, trade_type_code | ores_trading_trades_tbl | id, party_id, trade_type | Invalid trade_id: %. The party and trade type must be the trade's own. |
+
+The tenant isolation and the party isolation policies are hand-written in
+=trading_rls_policies_create.sql=, as =bond_instruments=' are: the header
+carries =party_id=, so it needs the restrictive party policy beside the
+tenant policy, and the generated =:rls_tenant_isolation:= form states the
+tenant policy alone.
 
 * C++
 
-The C++ domain class is decomposed into nested sub-structs (the C1202
-pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
-columns (version, tenant_id, the primary key) and the
-columns marked =:group: identity= above fold into an
-=instrument_identity identity;= member (see the
-ores.trading.instrument_identity field-group model), the implicit audit
-columns fold into an =ores::dq::domain::audit_record audit;= member (see
-the ores.dq.audit_record field-group model), and the remaining columns
-stay flat in between. The SQL schema, DB entity and column lists are
-unaffected -- only the domain class and the mapper's domain-side accesses
-nest. The entity templates consume these annotations; domain and
-repository profiles regenerate correctly.
+The C++ domain class nests the scaffolding columns and the columns marked
+=:group: identity= below into an =instrument_identity identity;= member
+(see the ores.trading.instrument_identity field-group model), the implicit
+audit columns fold into an =ores::dq::domain::audit_record audit;= member
+(see the ores.dq.audit_record field-group model), and the dates and the
+description stay flat in between. The SQL schema, DB entity and column
+lists are unaffected. The entity templates consume these annotations;
+domain and repository profiles regenerate correctly.
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:           api
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
-:has_batch_read:       true
-:generator_facet_name: generators
+:has_batch_read:        true
+:generator_facet_name:  generators
 :END:
 
 ** Repository
@@ -529,9 +387,9 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
+#include <chrono>
 #include <string>
-#include "ores.utility/decimal/decimal.hpp"
+#include <boost/uuid/uuid.hpp>
 #+end_src
 
 ** Conventions
@@ -543,13 +401,13 @@ repository profiles regenerate correctly.
 
 | column                   | header       |
 |--------------------------+--------------|
-| identity.trade_id   | ID           |
+| identity.trade_id        | ID           |
 | identity.trade_type_code | Type         |
 | reference_entity         | Reference    |
-| currency                 | Ccy          |
-| notional                 | Notional     |
-| spread                   | Spread       |
-| maturity_date            | Maturity     |
+| start_date               | Start Date   |
+| maturity_date            | Maturity Date |
+| description              | Description  |
+| identity.version         | Version      |
 | audit.recorded_at        | Recorded At  |
 
 ** Custom repository methods
@@ -557,3 +415,4 @@ repository profiles regenerate correctly.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]] — the routing this header's check is generated from.

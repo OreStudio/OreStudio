@@ -115,6 +115,7 @@ to_domain(const messaging::credit_basket_constituent_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_credit_basket_constituents_response

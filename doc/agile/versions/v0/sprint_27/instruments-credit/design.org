@@ -247,10 +247,16 @@ the header by the generated delete cascade.
 | =credit_linked_swap_instruments= | credit curve id, settles accrual, default payment time, recovery rate |
 | =risk_participation_agreement_instruments= | participation rate, protection fee, credit curve id, issuer id, settles accrual, recovery rate |
 
-The option on an index writes two rows: the index swap's own row, because the
-option wraps =IndexCreditDefaultSwapData=, and its option row. The strike and
-exercise dates are the shared =instrument_strikes= and =instrument_options=
-rows, as for a swaption. Every money column is =numeric(38, 12)=. A continuous
+The option on an index wraps =IndexCreditDefaultSwapData=, so its one fact row
+carries that swap's credit curve id and the trade has no row in
+=index_credit_default_swap_instruments=. The carrier holds one fact row, and a
+second row would need a second carrier slot for no gain. The strike and the
+exercise dates are the shared =instrument_strikes= and schedule rows, as for a
+swaption. Those tables are keyed by the trade alone, so nothing in the schema
+stops another product from owning such rows; only the index option's mapper
+writes them. A column lands in a fact table only when a mapper writes it, so the
+tables hold the columns above that the mapper reads today, and unit 6 adds the
+rest with their writers. Every money column is =numeric(38, 12)=. A continuous
 quantity (the recovery rate, the tranche points, the participation rate) is
 =double precision=.
 
@@ -335,9 +341,9 @@ The units are ordered so each ends in a check and none depends on a later one.
 | 2 | Carry the credit digits: lexical leaves for the credit money members, and the tranche columns agree with their domain type | a mapper test per money member; the goldens that change are numeric text |
 | 3 | Retire the unproduced =rpa_instruments= table | the tree builds and passes without its 47 files |
 | 4 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
-| 5 | Author the credit family header and its fact tables | codegen drift clean; the generated eventing tests pass |
+| 5 | Author the credit family header and its fact tables, with the header's common dates | codegen drift clean; the generated eventing tests pass; the corpus documents come back through the carrier |
 | 6 | Close the credit round trip: the agreement's required elements and underlying, the dropped elements | the mapper round trip per product |
-| 7 | Map the credit dates into the common-date view | a probe across a swap and a credit trade |
+| 7 | Prove the credit dates in the common-date view (unit 5 declared them) | a probe across a swap and a credit trade |
 | 8 | Prove the credit round trip over the corpus | eight documents, eight trades, equal family rows |
 
 Retiring the agreement table is its own unit because it touches 47 files and

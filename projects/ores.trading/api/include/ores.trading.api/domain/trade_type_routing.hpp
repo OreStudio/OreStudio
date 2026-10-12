@@ -125,8 +125,6 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::fx_asian_forward_instrument;
     if (trade_type == "CreditDefaultSwap")
         return instrument_table::credit_instrument;
-    if (trade_type == "CreditDefaultSwapOption")
-        return instrument_table::credit_instrument;
     if (trade_type == "IndexCreditDefaultSwap")
         return instrument_table::credit_instrument;
     if (trade_type == "IndexCreditDefaultSwapOption")
@@ -134,8 +132,6 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "SyntheticCDO")
         return instrument_table::credit_instrument;
     if (trade_type == "CreditLinkedSwap")
-        return instrument_table::credit_instrument;
-    if (trade_type == "CBO")
         return instrument_table::credit_instrument;
     if (trade_type == "Bond")
         return instrument_table::bond_instrument;

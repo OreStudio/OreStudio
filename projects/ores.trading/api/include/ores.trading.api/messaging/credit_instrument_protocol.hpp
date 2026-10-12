@@ -44,26 +44,9 @@ struct credit_instrument_write {
     std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
     std::string reference_entity;
-    std::string currency;
-    ores::utility::decimal::decimal notional;
-    ores::utility::decimal::decimal spread;
-    double recovery_rate;
-    std::string tenor;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    std::string day_count_fraction_code;
-    std::string payment_frequency_code;
-    std::string index_name;
-    std::optional<int> index_series;
-    std::string seniority;
-    std::string restructuring;
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
     std::string description;
-    std::string option_type;
-    std::optional<std::chrono::year_month_day> option_expiry_date;
-    std::optional<ores::utility::decimal::decimal> option_strike;
-    std::string linked_asset_code;
-    std::optional<double> tranche_attachment;
-    std::optional<double> tranche_detachment;
 };
 
 struct credit_instrument_change {

@@ -2,7 +2,7 @@
 :ID: E58A1EF3-89FF-4AD8-BB25-462A2F8F29D7
 :END:
 #+title: Task: Map the credit dates into the common-date view
-#+description: The blotter's common-date view lists the rates family only. Map the credit header's start and maturity dates, and give the family generated eventing tests. (Staging unit 7.)
+#+description: Unit 5 declared the credit header's dates and generated the family's eventing tests. This unit proves the view: a probe reads one date column across a rates trade and a credit trade. (Staging unit 7.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
@@ -35,9 +35,9 @@ The blotter reads one date column across the rates and credit families.
 
 * Acceptance
 
-- The credit header's dates carry :common_date: and the view is regenerated.
+- The credit header's dates carry :common_date: and the view lists them. Unit 5 did both.
 - A probe reads one date column across a rates and a credit trade.
-- The family's tables have generated eventing integration tests, and they pass.
+- The family's tables have generated eventing integration tests, and they pass. Unit 5 generated them.
 
 * Plan
 

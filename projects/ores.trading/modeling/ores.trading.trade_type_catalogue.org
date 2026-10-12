@@ -90,12 +90,12 @@ absent: it is a placeholder, not a product.
 | FxRainbowOption                     | FX Rainbow Option                            | fx           | true        | false         |                                    |
 | FxStrikeResettableOption            | FX Strike Resettable Option                  | fx           | true        | false         |                                    |
 | CreditDefaultSwap                   | Credit Default Swap                          | credit       | false       | false         | credit_instrument                  |
-| CreditDefaultSwapOption             | Credit Default Swap Option                   | credit       | false       | true          | credit_instrument                  |
+| CreditDefaultSwapOption             | Credit Default Swap Option                   | credit       | false       | true          |                                    |
 | IndexCreditDefaultSwap              | Index Credit Default Swap                    | credit       | false       | true          | credit_instrument                  |
 | IndexCreditDefaultSwapOption        | Index Credit Default Swap Option             | credit       | false       | false         | credit_instrument                  |
 | SyntheticCDO                        | Synthetic CDO                                | credit       | false       | false         | credit_instrument                  |
 | CreditLinkedSwap                    | Credit Linked Swap                           | credit       | false       | false         | credit_instrument                  |
-| CBO                                 | Collateralised Bond Obligation               | credit       | false       | false         | credit_instrument                  |
+| CBO                                 | Collateralised Bond Obligation               | credit       | false       | false         |                                    |
 | BondFutureOption                    | Bond Future Option                           | bond         | true        | false         |                                    |
 | Bond                                | Fixed Income Bond                            | bond         | false       | false         | bond_instrument                    |
 | ForwardBond                         | Forward Bond                                 | bond         | false       | false         | bond_instrument                    |
@@ -222,36 +222,42 @@ and the last three are shared shapes: the bond pilot built them and the rates
 family writes to them rather than widening them, so the array is the same
 shape whichever family states the rows.
 
-| child                             |
-|-----------------------------------|
-| balance_guaranteed_swap_instrument |
-| balance_guaranteed_swap_tranche   |
-| balance_guaranteed_swap_tranche_notional |
-| callable_swap_call_date           |
-| callable_swap_instrument          |
-| cap_floor_instrument              |
-| commodity_basket_constituent      |
-| composite_leg                     |
-| credit_basket_constituent         |
-| equity_position_option_underlying |
-| flexi_swap_instrument             |
-| flexi_swap_lower_notional         |
-| fra_instrument                    |
-| inflation_swap_instrument         |
-| instrument_option                 |
-| instrument_option_exercise_fee    |
-| instrument_option_exercise_price  |
-| instrument_option_payment_date    |
-| instrument_option_premium         |
-| instrument_schedule               |
-| instrument_schedule_date          |
-| instrument_strike                 |
-| knock_out_swap_instrument         |
-| swap_leg                          |
-| swap_leg_amount                   |
-| swap_leg_rate                     |
-| swaption_instrument               |
-| vanilla_swap_instrument           |
+| child                                       |
+|---------------------------------------------|
+| balance_guaranteed_swap_instrument          |
+| balance_guaranteed_swap_tranche             |
+| balance_guaranteed_swap_tranche_notional    |
+| callable_swap_call_date                     |
+| callable_swap_instrument                    |
+| cap_floor_instrument                        |
+| commodity_basket_constituent                |
+| composite_leg                               |
+| credit_basket_constituent                   |
+| credit_default_swap_instrument              |
+| credit_linked_swap_instrument               |
+| equity_position_option_underlying           |
+| flexi_swap_instrument                       |
+| flexi_swap_lower_notional                   |
+| fra_instrument                              |
+| index_credit_default_swap_instrument        |
+| index_credit_default_swap_option_instrument |
+| inflation_swap_instrument                   |
+| instrument_option                           |
+| instrument_option_exercise_fee              |
+| instrument_option_exercise_price            |
+| instrument_option_payment_date              |
+| instrument_option_premium                   |
+| instrument_schedule                         |
+| instrument_schedule_date                    |
+| instrument_strike                           |
+| knock_out_swap_instrument                   |
+| risk_participation_agreement_instrument     |
+| swap_leg                                    |
+| swap_leg_amount                             |
+| swap_leg_rate                               |
+| swaption_instrument                         |
+| synthetic_cdo_instrument                    |
+| vanilla_swap_instrument                     |
 
 * Digest
 
@@ -278,6 +284,12 @@ hold no row for the trade and read as empty.
 | commodity_instrument             | commodity_instrument               |
 | composite_instrument             | composite_instrument               |
 | credit_instrument                | credit_instrument                  |
+| credit_instrument                | credit_default_swap_instrument     |
+| credit_instrument                | credit_linked_swap_instrument      |
+| credit_instrument                | index_credit_default_swap_instrument |
+| credit_instrument                | index_credit_default_swap_option_instrument |
+| credit_instrument                | risk_participation_agreement_instrument |
+| credit_instrument                | synthetic_cdo_instrument           |
 | equity_accumulator_instrument    | equity_accumulator_instrument      |
 | equity_asian_option_instrument   | equity_asian_option_instrument     |
 | equity_barrier_option_instrument | equity_barrier_option_instrument   |

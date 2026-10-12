@@ -41,6 +41,12 @@
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
 #include "ores.trading.core/service/composite_instrument_service.hpp"
 #include "ores.trading.core/service/credit_instrument_service.hpp"
+#include "ores.trading.core/service/credit_default_swap_instrument_service.hpp"
+#include "ores.trading.core/service/index_credit_default_swap_instrument_service.hpp"
+#include "ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
+#include "ores.trading.core/service/synthetic_cdo_instrument_service.hpp"
+#include "ores.trading.core/service/credit_linked_swap_instrument_service.hpp"
+#include "ores.trading.core/service/risk_participation_agreement_instrument_service.hpp"
 #include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
@@ -261,6 +267,15 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::credit_basket_constituent_repository constituent_repo;
         auto constituents = constituent_repo.read_by_instruments_batch(ctx, credit_ids);
         take(constituents, batch.credit_basket_constituents);
+
+        // The shared strikes and schedules the credit family writes, read for
+        // the same trade ids.
+        auto strikes = repository::read_strikes_by_trade_ids(ctx, credit_ids);
+        take(strikes, batch.instrument_strikes);
+        auto schedules = repository::read_schedules_by_trade_ids(ctx, credit_ids);
+        take(schedules, batch.instrument_schedules);
+        auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, credit_ids);
+        take(schedule_dates, batch.instrument_schedule_dates);
     }
     if (!commodity_ids.empty()) {
         repository::commodity_basket_constituent_repository constituent_repo;
@@ -283,6 +298,36 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::credit_instrument_service svc(ctx);
         auto rows = svc.get_credit_instruments(credit_ids);
         take(rows, batch.credit_instruments);
+    }
+    if (!credit_ids.empty()) {
+        service::credit_default_swap_instrument_service svc(ctx);
+        auto rows = svc.get_cds_instruments(credit_ids);
+        take(rows, batch.credit_default_swap_instruments);
+    }
+    if (!credit_ids.empty()) {
+        service::index_credit_default_swap_instrument_service svc(ctx);
+        auto rows = svc.get_index_cds_instruments(credit_ids);
+        take(rows, batch.index_credit_default_swap_instruments);
+    }
+    if (!credit_ids.empty()) {
+        service::index_credit_default_swap_option_instrument_service svc(ctx);
+        auto rows = svc.get_index_cds_option_instruments(credit_ids);
+        take(rows, batch.index_credit_default_swap_option_instruments);
+    }
+    if (!credit_ids.empty()) {
+        service::synthetic_cdo_instrument_service svc(ctx);
+        auto rows = svc.get_synthetic_cdo_instruments(credit_ids);
+        take(rows, batch.synthetic_cdo_instruments);
+    }
+    if (!credit_ids.empty()) {
+        service::credit_linked_swap_instrument_service svc(ctx);
+        auto rows = svc.get_credit_linked_swap_instruments(credit_ids);
+        take(rows, batch.credit_linked_swap_instruments);
+    }
+    if (!credit_ids.empty()) {
+        service::risk_participation_agreement_instrument_service svc(ctx);
+        auto rows = svc.get_risk_participation_agreement_instruments(credit_ids);
+        take(rows, batch.risk_participation_agreement_instruments);
     }
     if (!commodity_ids.empty()) {
         service::commodity_instrument_service svc(ctx);

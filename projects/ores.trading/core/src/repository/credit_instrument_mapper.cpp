@@ -29,7 +29,6 @@
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/credit_instrument_entity.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -54,32 +53,15 @@ domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.reference_entity = v.reference_entity;
-    r.currency = v.currency;
-    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
-    r.spread = ores::utility::decimal::decimal::from_string(v.spread).value();
-    r.recovery_rate = v.recovery_rate;
-    r.tenor = v.tenor;
-    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
-    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
-    r.day_count_fraction_code = v.day_count_fraction_code;
-    r.payment_frequency_code = v.payment_frequency_code;
-    r.index_name = v.index_name.value_or("");
-    r.index_series = v.index_series;
-    r.seniority = v.seniority.value_or("");
-    r.restructuring = v.restructuring.value_or("");
-    r.description = v.description.value_or("");
-    r.option_type = v.option_type.value_or("");
-    r.option_expiry_date = v.option_expiry_date.has_value() ?
-                               std::optional(ores::platform::time::datetime::from_iso8601_date(
-                                   *v.option_expiry_date)) :
-                               std::nullopt;
-    r.option_strike =
-        v.option_strike.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.option_strike).value()) :
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
             std::nullopt;
-    r.linked_asset_code = v.linked_asset_code.value_or("");
-    r.tranche_attachment = v.tranche_attachment;
-    r.tranche_detachment = v.tranche_detachment;
+    r.maturity_date =
+        v.maturity_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.maturity_date)) :
+            std::nullopt;
+    r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -101,31 +83,15 @@ credit_instrument_entity credit_instrument_mapper::map(const domain::credit_inst
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.reference_entity = v.reference_entity;
-    r.currency = v.currency;
-    r.notional = v.notional.to_string();
-    r.spread = v.spread.to_string();
-    r.recovery_rate = v.recovery_rate;
-    r.tenor = v.tenor;
-    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
-    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
-    r.day_count_fraction_code = v.day_count_fraction_code;
-    r.payment_frequency_code = v.payment_frequency_code;
-    r.index_name = v.index_name.empty() ? std::nullopt : std::optional(v.index_name);
-    r.index_series = v.index_series;
-    r.seniority = v.seniority.empty() ? std::nullopt : std::optional(v.seniority);
-    r.restructuring = v.restructuring.empty() ? std::nullopt : std::optional(v.restructuring);
-    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
-    r.option_expiry_date =
-        v.option_expiry_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.option_expiry_date)) :
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
             std::nullopt;
-    r.option_strike =
-        v.option_strike.has_value() ? std::optional(v.option_strike->to_string()) : std::nullopt;
-    r.linked_asset_code =
-        v.linked_asset_code.empty() ? std::nullopt : std::optional(v.linked_asset_code);
-    r.tranche_attachment = v.tranche_attachment;
-    r.tranche_detachment = v.tranche_detachment;
+    r.maturity_date =
+        v.maturity_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.maturity_date)) :
+            std::nullopt;
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

@@ -44,38 +44,15 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
     fields.push_back({.name = "Trade Activity ID",
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Reference Entity", .value = v.reference_entity});
-    fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Notional", .value = v.notional.to_string()});
-    fields.push_back({.name = "Spread", .value = v.spread.to_string()});
-    fields.push_back({.name = "Recovery Rate", .value = std::to_string(v.recovery_rate)});
-    fields.push_back({.name = "Tenor", .value = v.tenor});
     fields.push_back({.name = "Start Date",
-                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+                      .value = v.start_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.start_date) :
+                                   std::string{}});
     fields.push_back({.name = "Maturity Date",
-                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
-    fields.push_back({.name = "Day Count Fraction Code", .value = v.day_count_fraction_code});
-    fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
-    fields.push_back({.name = "Index Name", .value = v.index_name});
-    fields.push_back({.name = "Index Series",
-                      .value = v.index_series ? std::to_string(*v.index_series) : std::string{}});
-    fields.push_back({.name = "Seniority", .value = v.seniority});
-    fields.push_back({.name = "Restructuring", .value = v.restructuring});
+                      .value = v.maturity_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                     *v.maturity_date) :
+                                                 std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
-    fields.push_back({.name = "Option Type", .value = v.option_type});
-    fields.push_back(
-        {.name = "Option Expiry Date",
-         .value = v.option_expiry_date ?
-                      ores::platform::time::datetime::to_iso8601_date(*v.option_expiry_date) :
-                      std::string{}});
-    fields.push_back({.name = "Option Strike",
-                      .value = v.option_strike ? v.option_strike->to_string() : std::string{}});
-    fields.push_back({.name = "Linked Asset Code", .value = v.linked_asset_code});
-    fields.push_back(
-        {.name = "Tranche Attachment",
-         .value = v.tranche_attachment ? std::to_string(*v.tranche_attachment) : std::string{}});
-    fields.push_back(
-        {.name = "Tranche Detachment",
-         .value = v.tranche_detachment ? std::to_string(*v.tranche_detachment) : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

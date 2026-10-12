@@ -141,24 +141,16 @@ void credit_instrument_commands::register_commands(cli::Menu& root_menu, nats_cl
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <trade_activity_id> <reference_entity> <currency> "
-        "<notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date> "
-        "<day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> "
-        "<seniority> <restructuring> <description> <option_type> <option_expiry_date> "
-        "<option_strike> <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> "
-        "<commentary>");
+        "add <trade_id> <trade_type_code> <trade_activity_id> <reference_entity> <start_date> "
+        "<maturity_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <trade_activity_id> <reference_entity> <currency> "
-        "<notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date> "
-        "<day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> "
-        "<seniority> <restructuring> <description> <option_type> <option_expiry_date> "
-        "<option_strike> <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> "
-        "<commentary> [--version <n>]");
+        "set <trade_id> <trade_type_code> <trade_activity_id> <reference_entity> <start_date> "
+        "<maturity_date> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -166,11 +158,7 @@ void credit_instrument_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <reference_entity> "
-        "<currency> <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date> "
-        "<day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> "
-        "<seniority> <restructuring> <description> <option_type> <option_expiry_date> "
-        "<option_strike> <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> "
-        "<commentary>");
+        "<start_date> <maturity_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -365,8 +353,8 @@ void credit_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 24 + 2) {
-            fail(out) << "Expected " << (24 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -377,34 +365,9 @@ void credit_instrument_commands::process_add(std::ostream& out,
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.reference_entity, parsed->positionals[next++], "reference_entity");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.notional, parsed->positionals[next++], "notional");
-        read_token(req.change.write.spread, parsed->positionals[next++], "spread");
-        read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
-        read_token(req.change.write.tenor, parsed->positionals[next++], "tenor");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.day_count_fraction_code,
-                   parsed->positionals[next++],
-                   "day_count_fraction_code");
-        read_token(req.change.write.payment_frequency_code,
-                   parsed->positionals[next++],
-                   "payment_frequency_code");
-        read_token(req.change.write.index_name, parsed->positionals[next++], "index_name");
-        read_token(req.change.write.index_series, parsed->positionals[next++], "index_series");
-        read_token(req.change.write.seniority, parsed->positionals[next++], "seniority");
-        read_token(req.change.write.restructuring, parsed->positionals[next++], "restructuring");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.option_type, parsed->positionals[next++], "option_type");
-        read_token(
-            req.change.write.option_expiry_date, parsed->positionals[next++], "option_expiry_date");
-        read_token(req.change.write.option_strike, parsed->positionals[next++], "option_strike");
-        read_token(
-            req.change.write.linked_asset_code, parsed->positionals[next++], "linked_asset_code");
-        read_token(
-            req.change.write.tranche_attachment, parsed->positionals[next++], "tranche_attachment");
-        read_token(
-            req.change.write.tranche_detachment, parsed->positionals[next++], "tranche_detachment");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -447,8 +410,8 @@ void credit_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 24 + 2) {
-            fail(out) << "Expected " << (24 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -459,34 +422,9 @@ void credit_instrument_commands::process_set(std::ostream& out,
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.reference_entity, parsed->positionals[next++], "reference_entity");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.notional, parsed->positionals[next++], "notional");
-        read_token(req.change.write.spread, parsed->positionals[next++], "spread");
-        read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
-        read_token(req.change.write.tenor, parsed->positionals[next++], "tenor");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.day_count_fraction_code,
-                   parsed->positionals[next++],
-                   "day_count_fraction_code");
-        read_token(req.change.write.payment_frequency_code,
-                   parsed->positionals[next++],
-                   "payment_frequency_code");
-        read_token(req.change.write.index_name, parsed->positionals[next++], "index_name");
-        read_token(req.change.write.index_series, parsed->positionals[next++], "index_series");
-        read_token(req.change.write.seniority, parsed->positionals[next++], "seniority");
-        read_token(req.change.write.restructuring, parsed->positionals[next++], "restructuring");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.option_type, parsed->positionals[next++], "option_type");
-        read_token(
-            req.change.write.option_expiry_date, parsed->positionals[next++], "option_expiry_date");
-        read_token(req.change.write.option_strike, parsed->positionals[next++], "option_strike");
-        read_token(
-            req.change.write.linked_asset_code, parsed->positionals[next++], "linked_asset_code");
-        read_token(
-            req.change.write.tranche_attachment, parsed->positionals[next++], "tranche_attachment");
-        read_token(
-            req.change.write.tranche_detachment, parsed->positionals[next++], "tranche_detachment");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -541,8 +479,8 @@ void credit_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 24 + 2) {
-            fail(out) << "Expected " << (change_count * 24 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -555,34 +493,9 @@ void credit_instrument_commands::process_put_many(std::ostream& out,
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(
                 change.write.reference_entity, parsed->positionals[next++], "reference_entity");
-            read_token(change.write.currency, parsed->positionals[next++], "currency");
-            read_token(change.write.notional, parsed->positionals[next++], "notional");
-            read_token(change.write.spread, parsed->positionals[next++], "spread");
-            read_token(change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
-            read_token(change.write.tenor, parsed->positionals[next++], "tenor");
             read_token(change.write.start_date, parsed->positionals[next++], "start_date");
             read_token(change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-            read_token(change.write.day_count_fraction_code,
-                       parsed->positionals[next++],
-                       "day_count_fraction_code");
-            read_token(change.write.payment_frequency_code,
-                       parsed->positionals[next++],
-                       "payment_frequency_code");
-            read_token(change.write.index_name, parsed->positionals[next++], "index_name");
-            read_token(change.write.index_series, parsed->positionals[next++], "index_series");
-            read_token(change.write.seniority, parsed->positionals[next++], "seniority");
-            read_token(change.write.restructuring, parsed->positionals[next++], "restructuring");
             read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(change.write.option_type, parsed->positionals[next++], "option_type");
-            read_token(
-                change.write.option_expiry_date, parsed->positionals[next++], "option_expiry_date");
-            read_token(change.write.option_strike, parsed->positionals[next++], "option_strike");
-            read_token(
-                change.write.linked_asset_code, parsed->positionals[next++], "linked_asset_code");
-            read_token(
-                change.write.tranche_attachment, parsed->positionals[next++], "tranche_attachment");
-            read_token(
-                change.write.tranche_detachment, parsed->positionals[next++], "tranche_detachment");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

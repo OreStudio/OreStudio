@@ -78,6 +78,7 @@ package "Product facts (one row per trade, keyed by trade_id)" {
   entity index_credit_default_swap_option_instruments #FCF3CF {
     * trade_id : uuid <<PK>>
     --
+    * credit_curve_id : text <<wrapped index swap>>
     knock_out : boolean
     index_term : text
     strike_type : text

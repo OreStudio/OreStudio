@@ -42,6 +42,7 @@
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
+#include "ores.trading.api/domain/credit_fact_variant.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
@@ -126,15 +127,21 @@ struct commodity_instrument_data {
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
 // swap or a synthetic CDO states a basket of names beside the instrument. The
-// carrier holds the instrument with those rows, so each travels with the trade
-// it belongs to. A credit product that states no leg or no basket leaves the
-// collection empty.
+// header is the family's routed instrument and the product's own fields are its
+// fact row. An index option states a strike and its exercise dates in the
+// shared strike and schedule tables. The carrier holds the header with those
+// rows, so each travels with the trade it belongs to. A credit product that
+// states none of them leaves the collection empty.
 struct credit_instrument_data {
     credit_instrument instrument;
+    credit_fact_variant facts;
     std::vector<swap_leg> legs;
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
     std::vector<credit_basket_constituent> constituents;
+    std::vector<instrument_strike> strikes;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
 };
 
 // An equity position states an entry collection beside the instrument that
@@ -267,6 +274,16 @@ inline void stamp_ids(credit_instrument_data& data,
     for (auto& constituent : data.constituents) {
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;
+    }
+    stamp_ids(data.facts, trade_id, activity_id);
+    for (auto& strike : data.strikes) {
+        stamp_ids(strike, trade_id, activity_id);
+    }
+    for (auto& schedule : data.schedules) {
+        stamp_ids(schedule, trade_id, activity_id);
+    }
+    for (auto& schedule_date : data.schedule_dates) {
+        stamp_ids(schedule_date, trade_id, activity_id);
     }
 }
 

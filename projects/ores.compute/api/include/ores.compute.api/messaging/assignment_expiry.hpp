@@ -106,8 +106,15 @@ inline std::optional<std::chrono::system_clock::time_point> token_expiry(std::st
     if (digits == 0)
         return std::nullopt;
     // A number in exponent form, such as 1.7e9, would read as its mantissa and make
-    // a live token look ended. The storage service decides such a token.
-    if (i < claims->size() && ((*claims)[i] == 'e' || (*claims)[i] == 'E'))
+    // a live token look ended. The storage service decides such a token. The
+    // fractional digits are skipped first, so 1.7e9 is seen as an exponent form.
+    std::size_t after = i;
+    if (after < claims->size() && (*claims)[after] == '.') {
+        ++after;
+        while (after < claims->size() && (*claims)[after] >= '0' && (*claims)[after] <= '9')
+            ++after;
+    }
+    if (after < claims->size() && ((*claims)[after] == 'e' || (*claims)[after] == 'E'))
         return std::nullopt;
     return std::chrono::system_clock::time_point{std::chrono::seconds{seconds}};
 }

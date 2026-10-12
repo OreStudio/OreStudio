@@ -2735,6 +2735,8 @@ export const en: SourceCatalogue = {
                 none: 'No right is granted at this node.',
             },
             review: {
+                policyAtConfirm:
+                    'The policy is asked when you confirm: the new portfolio is written first, then the book is either written or raised as a request for the functions that decide it.',
                 title: 'Review',
                 lead: 'Nothing is written until you confirm.',
                 nothing: 'Nothing has changed yet.',
@@ -2758,8 +2760,10 @@ export const en: SourceCatalogue = {
             },
             outcome: {
                 title: 'Outcome',
-                lead: 'The book is written.',
+                lead: 'The book is written, or a request is raised for it.',
                 written: '{name} is now at version {version}.',
+                raised: 'The change to {name} is waiting for {parts}. Nothing changes until each of them approves.',
+                openRequest: 'Open the request',
                 history: 'See the history',
                 tree: 'Back to the tree',
                 done: 'Leave the book structure',

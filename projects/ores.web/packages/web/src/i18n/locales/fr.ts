@@ -2770,6 +2770,8 @@ const fr: SourceCatalogue = {
                 none: "Aucun droit n'est accordé à ce nœud.",
             },
             review: {
+                policyAtConfirm:
+                    'La politique est consultée à la confirmation : le nouveau portefeuille est écrit d’abord, puis le livre est écrit ou soumis comme demande aux fonctions qui en décident.',
                 title: 'Revue',
                 lead: "Rien n'est écrit avant votre confirmation.",
                 nothing: "Rien n'a encore changé.",
@@ -2793,8 +2795,10 @@ const fr: SourceCatalogue = {
             },
             outcome: {
                 title: 'Résultat',
-                lead: 'Le livre est écrit.',
+                lead: 'Le livre est écrit, ou une demande est soumise pour lui.',
                 written: '{name} est maintenant à la version {version}.',
+                raised: 'La modification de {name} attend {parts}. Rien ne change tant que chacun n’a pas approuvé.',
+                openRequest: 'Ouvrir la demande',
                 history: "Voir l'historique",
                 tree: "Retour à l'arbre",
                 done: 'Quitter la structure des livres',

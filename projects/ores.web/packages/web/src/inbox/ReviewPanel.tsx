@@ -44,51 +44,39 @@ export interface ReviewLine {
 }
 
 /**
- * The step before a gated change: every change with its badge and its decider,
- * and the one button that either writes it or raises a request for it.
+ * The parts the changes need together, from the changes themselves.
  *
- * The policy decides which. When it names no part for any change, the changes
- * are written directly and the panel says so. When it names a part, nothing
- * changes until every part has approved, and the panel names who will decide.
- * A refused change stops the confirm, because the maker has something to
- * correct. The panel holds no state of its own beyond what it is given: the
- * screen that owns the journey previews, and calls back to write or to raise.
+ * The request needs the parts of its changes, so a screen cannot name deciders
+ * on a line and then offer to write directly.
  */
-export function ReviewPanel({
+function partsOf(lines: readonly ReviewLine[]): readonly string[] {
+    return [...new Set(lines.flatMap((line) => line.partCodes))].sort();
+}
+
+/**
+ * Every change with its badge, the fields it changes and the function that
+ * decides it, and the line that says what confirming will do.
+ *
+ * A journey that owns its own confirm draws this and nothing more. When the
+ * policy names no part for any change, the changes are written directly and the
+ * panel says so. When it names a part, nothing changes until every part has
+ * approved, and the panel names who will decide. A refused change stops the
+ * confirm, because the maker has something to correct.
+ */
+export function ReviewChanges({
     kindCode,
     lines,
-    reason,
-    onReason,
-    pending,
-    error,
-    onWrite,
-    onRaise,
 }: {
     readonly kindCode: string;
     readonly lines: readonly ReviewLine[];
-    readonly reason: string;
-    readonly onReason: (reason: string) => void;
-    readonly pending: boolean;
-    /** Why the last write or raise failed, if it did. */
-    readonly error?: string;
-    readonly onWrite: () => void;
-    readonly onRaise: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const descriptor = descriptorFor(kindCode);
     const refused = lines.some((line) => line.refusal !== '');
-    // The parts the request needs are the parts of its changes together, so the
-    // panel cannot name deciders on a line and then offer to write directly.
-    const partCodes = [...new Set(lines.flatMap((line) => line.partCodes))].sort();
-    const gated = partCodes.length > 0;
+    const partCodes = partsOf(lines);
 
     return (
-        <section className="space-y-4">
-            <header className="space-y-1">
-                <h2 className="text-sm font-semibold">{t('inbox.review.title')}</h2>
-                <p className="text-sm text-ink-muted">{t('inbox.review.lead')}</p>
-            </header>
-
+        <div className="space-y-4">
             <ol className="space-y-2">
                 {lines.map((line) => (
                     <li
@@ -127,28 +115,72 @@ export function ReviewPanel({
                     </li>
                 ))}
             </ol>
+            {refused ? (
+                <Notice tone="warn">{t('inbox.review.refused')}</Notice>
+            ) : partCodes.length > 0 ? (
+                <Notice tone="info">
+                    {t('inbox.review.goesTo', {
+                        parts: partCodes.map((code) => partLabel(t, code)).join(', '),
+                    })}
+                </Notice>
+            ) : (
+                <Notice tone="info">{t('inbox.review.needsNoRequest')}</Notice>
+            )}
+        </div>
+    );
+}
+
+/**
+ * The step before a gated change, with its own confirm: the changes, and the one
+ * button that either writes them or raises a request for them.
+ *
+ * The policy decides which. The panel holds no state of its own beyond what it
+ * is given: the screen that owns the journey previews, and calls back to write
+ * or to raise.
+ */
+export function ReviewPanel({
+    kindCode,
+    lines,
+    reason,
+    onReason,
+    pending,
+    error,
+    onWrite,
+    onRaise,
+}: {
+    readonly kindCode: string;
+    readonly lines: readonly ReviewLine[];
+    readonly reason: string;
+    readonly onReason: (reason: string) => void;
+    readonly pending: boolean;
+    /** Why the last write or raise failed, if it did. */
+    readonly error?: string;
+    readonly onWrite: () => void;
+    readonly onRaise: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const refused = lines.some((line) => line.refusal !== '');
+    const gated = partsOf(lines).length > 0;
+
+    return (
+        <section className="space-y-4">
+            <header className="space-y-1">
+                <h2 className="text-sm font-semibold">{t('inbox.review.title')}</h2>
+                <p className="text-sm text-ink-muted">{t('inbox.review.lead')}</p>
+            </header>
+
+            <ReviewChanges kindCode={kindCode} lines={lines} />
 
             {error !== undefined && error !== '' && <Notice tone="error">{error}</Notice>}
 
-            {refused ? (
-                <Notice tone="warn">{t('inbox.review.refused')}</Notice>
-            ) : gated ? (
-                <>
-                    <Notice tone="info">
-                        {t('inbox.review.goesTo', {
-                            parts: partCodes.map((code) => partLabel(t, code)).join(', '),
-                        })}
-                    </Notice>
-                    <Field label={t('inbox.review.reason')} hint={t('inbox.review.reasonHint')}>
-                        <Textarea
-                            rows={3}
-                            value={reason}
-                            onChange={(event) => onReason(event.target.value)}
-                        />
-                    </Field>
-                </>
-            ) : (
-                <Notice tone="info">{t('inbox.review.needsNoRequest')}</Notice>
+            {gated && !refused && (
+                <Field label={t('inbox.review.reason')} hint={t('inbox.review.reasonHint')}>
+                    <Textarea
+                        rows={3}
+                        value={reason}
+                        onChange={(event) => onReason(event.target.value)}
+                    />
+                </Field>
             )}
 
             <div className="flex flex-wrap gap-2">

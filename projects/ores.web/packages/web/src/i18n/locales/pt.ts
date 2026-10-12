@@ -2761,6 +2761,8 @@ const pt: SourceCatalogue = {
                 none: 'Nenhum direito é concedido neste nó.',
             },
             review: {
+                policyAtConfirm:
+                    'A política é consultada ao confirmar: a nova carteira é escrita primeiro, depois o livro é escrito ou submetido como pedido às funções que o decidem.',
                 title: 'Revisão',
                 lead: 'Nada é escrito antes de confirmar.',
                 nothing: 'Ainda nada mudou.',
@@ -2784,8 +2786,10 @@ const pt: SourceCatalogue = {
             },
             outcome: {
                 title: 'Resultado',
-                lead: 'O livro está escrito.',
+                lead: 'O livro está escrito, ou um pedido é submetido para ele.',
                 written: '{name} está agora na versão {version}.',
+                raised: 'A alteração de {name} aguarda {parts}. Nada muda até que cada um aprove.',
+                openRequest: 'Abrir o pedido',
                 history: 'Ver o histórico',
                 tree: 'Voltar à árvore',
                 done: 'Sair da estrutura dos livros',

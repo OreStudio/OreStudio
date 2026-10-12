@@ -115,6 +115,87 @@ struct raise_book_changes_response {
     std::vector<std::string> part_codes;
 };
 
+/**
+ * @brief One column of a proposed line beside the live book's value.
+ *
+ * The values are text whatever the column's type, because a screen draws them
+ * and does not compute with them. The before is empty when the line creates
+ * the book.
+ */
+struct book_field_delta {
+    std::string name;
+    std::string before;
+    std::string after;
+    bool changed = false;
+};
+
+/**
+ * @brief One line of a request as the decider reads it: the operation, the book
+ * it names, and each column beside the live value.
+ */
+struct book_change_delta {
+    int line_no = 0;
+    std::string operation;
+    boost::uuids::uuid entity_id;
+    int base_version = 0;
+    bool applied = false;
+    std::vector<book_field_delta> fields;
+};
+
+/**
+ * @brief Reads the lines a request holds, each beside the live book.
+ *
+ * Answered to the person who raised the request, to whoever may decide its
+ * kind, and to whoever may read the tenant's requests. Answered as not found
+ * otherwise, as opening the request is.
+ */
+struct get_book_changes_request {
+    using response_type = struct get_book_changes_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.get_book_changes";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+};
+
+struct get_book_changes_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The lines in line order.
+     */
+    std::vector<book_change_delta> changes;
+};
+
+/**
+ * @brief Runs the lines a request holds through the real write again and
+ * writes nothing.
+ *
+ * The live book may have moved since the request was raised, so the checks a
+ * decider reads are run now. Answered to the same callers as the lines are.
+ */
+struct recheck_book_changes_request {
+    using response_type = struct recheck_book_changes_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.recheck_book_changes";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+};
+
+struct recheck_book_changes_response {
+    ores::utility::domain::result result;
+    std::vector<book_line_outcome> lines;
+    std::vector<std::string> part_codes;
+};
+
 }
 
 #endif

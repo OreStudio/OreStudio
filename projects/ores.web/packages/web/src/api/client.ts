@@ -1263,6 +1263,7 @@ export const api = {
     async feedTicks(
         id: string,
         limit: number,
+        resource: 'fx-feeds' | 'ir-curve-feeds' = 'fx-feeds',
     ): Promise<{
         readonly sourceName: string;
         readonly ticks: readonly {
@@ -1280,7 +1281,7 @@ export const api = {
             })
             .parse(
                 await request(
-                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?limit=${String(limit)}`,
+                    `/api/synthetic/feeds/${encodeURIComponent(id)}/ticks?limit=${String(limit)}&resource=${resource}`,
                     { method: 'GET' },
                 ),
             );

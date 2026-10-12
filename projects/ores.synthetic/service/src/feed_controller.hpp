@@ -257,7 +257,7 @@ public:
     /**
      * @brief The source_name of the running feed that publishes one of @p
      * series, if any — for building the "already running as X — stop it
-     * first" message after a oresmd_conflict result.
+     * first" message after an oresmd_conflict result.
      *
      * Feeds that name no series never hold one (see feeds_conflict), so the
      * lookup cannot false-positive on one of them.

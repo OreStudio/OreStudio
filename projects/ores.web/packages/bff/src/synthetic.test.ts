@@ -683,10 +683,6 @@ describe('synthetic operations', () => {
                 result: ok,
                 fx_spot_generation_configs: [],
             },
-            'synthetic.v1.ir_curve_generation_configs.list': {
-                result: ok,
-                ir_curve_generation_configs: [],
-            },
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         expect(response.statusCode).toBe(404);
@@ -698,16 +694,12 @@ describe('synthetic operations', () => {
                 success: true,
                 running_source_names: ['live.usdsofr'],
             },
-            'synthetic.v1.fx_spot_generation_configs.list': {
-                result: ok,
-                fx_spot_generation_configs: [],
-            },
             'synthetic.v1.ir_curve_generation_configs.list': {
                 result: ok,
                 ir_curve_generation_configs: [{ id: ID, source_name: 'live.usdsofr' }],
             },
         };
-        const { server, sessionId, publish } = buildTestServer(replies);
+        const { server, sessionId, publish, calls } = buildTestServer(replies);
         await send(server, sessionId, 'GET', '/api/synthetic/running');
         const pillar = (end: string): string =>
             `oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=${end}`;
@@ -724,12 +716,53 @@ describe('synthetic operations', () => {
             oresmd_uri: pillar('1826D'),
         });
 
-        const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?resource=ir-curve-feeds`,
+        );
         expect(response.statusCode).toBe(200);
         expect(response.json().ticks).toEqual([
             { at: '2026-10-11 09:00:00Z', value: 0.04, uri: pillar('30D') },
             { at: '2026-10-11 09:00:00Z', value: 0.045, uri: pillar('1826D') },
         ]);
+        // The kind is named, so the feed is read through it alone: no FX read is made.
+        expect(calls.map((call) => call.subject)).not.toContain(
+            'synthetic.v1.fx_spot_generation_configs.list',
+        );
+    });
+
+    it('reads a curve feed for a person who may read curve feeds and not FX feeds', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: { outcome: 'permission_denied', message: 'No FX feeds for you.' },
+            },
+            'synthetic.v1.ir_curve_generation_configs.list': {
+                result: ok,
+                ir_curve_generation_configs: [{ id: ID, source_name: 'live.usdsofr' }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?resource=ir-curve-feeds`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sourceName).toBe('live.usdsofr');
+    });
+
+    it('refuses a ticks read of a resource that is not a feed', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?resource=folders`,
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
     });
 
     it('answers 409 with the server words when a feed start is refused', async () => {

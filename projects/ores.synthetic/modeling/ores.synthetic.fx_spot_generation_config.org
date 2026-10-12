@@ -301,7 +301,7 @@ std::nullopt
 | "quote_currency_code" <> ''                           |
 | "base_currency_code" <> "quote_currency_code"         |
 | "source_name" <> ''                                   |
-| "oresmd_uri" like 'oresmd://%'                         |
+| "oresmd_uri" like 'oresmd://fx/%?type=quote&instrument=fx_spot&quote=rate&ccy=%' |
 | "ticks_per_hour" > 0                                  |
 | "process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')   |
 | "price_source" in ('fixed', 'vintage')                |

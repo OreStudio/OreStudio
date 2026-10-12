@@ -25,7 +25,12 @@ irrelevant to how it is owned.
 The map of running feeds is keyed by =source_name=, so several producers
 run at once and publish on distinct subjects. At most one feed runs at a time
 for any series. Two feeds whose series overlap conflict, because both would write points into one series.
-See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]]. A conflict is rejected, never silently
+See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]].
+The role of a curve feed is not part of the comparison. A role says how a consumer
+uses a curve, and the oresmd grammar holds no role, so a discount feed and a
+projection feed of one currency and index tenor publish into the same series and
+cannot run together. This is a decision of the series model, stated in
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. A conflict is rejected, never silently
 and never by stopping the existing feed, so switching sources requires an
 explicit stop first. =running_source_name_for_conflict_key()= names the
 holder so the control plane can build an actionable message.

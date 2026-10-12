@@ -427,13 +427,18 @@ function resourceName(resource: SyntheticResource): string {
 }
 
 /** The FX feeds resource, which the tick read reads a feed through. */
-const FEED_RESOURCES = ['fx-feeds', 'ir-curve-feeds'].map((key): SyntheticResource => {
-    const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === key);
-    if (found === undefined) {
-        throw new Error(`The synthetic resources have no ${key}.`);
-    }
-    return found;
-});
+/** The resources whose rows are feeds, which the tick read reads a feed through. */
+const FEED_KEYS = ['fx-feeds', 'ir-curve-feeds'] as const;
+
+const FEED_RESOURCES = new Map(
+    FEED_KEYS.map((key): [string, SyntheticResource] => {
+        const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === key);
+        if (found === undefined) {
+            throw new Error(`The synthetic resources have no ${key}.`);
+        }
+        return [key, found];
+    }),
+);
 
 function resourceFor(request: FastifyRequest): SyntheticResource {
     const { resource } = request.params as { resource: string };
@@ -722,32 +727,26 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * The newest ticks of one feed's current run, of any asset class, oldest first. The feed is
+     * The newest ticks of one feed's current run, oldest first. The page says which
+     * kind of feed it reads, so the feed is read through that kind's resource alone. The feed is
      * read as the session first, so a feed the session cannot see has no ticks
      * to show. Reading starts no listening: what runs is learnt from the
      * running read, which every feed screen makes.
      */
     server.get('/api/synthetic/feeds/:id/ticks', async (request) => {
         const session = requireSession(request);
-        const { limit } = input(
-            z.object({ limit: z.coerce.number().int().min(1).max(TICK_CAPACITY).default(200) }),
+        const { limit, resource } = input(
+            z.object({
+                limit: z.coerce.number().int().min(1).max(TICK_CAPACITY).default(200),
+                resource: z.enum(FEED_KEYS).default('fx-feeds'),
+            }),
             request.query,
         );
-        const id = paramId(request);
-        let feed: Record<string, unknown> | undefined;
-        for (const resource of FEED_RESOURCES) {
-            try {
-                feed = await readByKey(session, resource, id);
-                break;
-            } catch (error) {
-                if (!(error instanceof HttpFailure) || error.status !== 404) {
-                    throw error;
-                }
-            }
+        const feeds = FEED_RESOURCES.get(resource);
+        if (feeds === undefined) {
+            throw notFound(`There is no feed resource ${resource}.`);
         }
-        if (feed === undefined) {
-            throw notFound(`There is no feed ${id}.`);
-        }
+        const feed = await readByKey(session, feeds, paramId(request));
         const sourceName = z.string().parse(feed['source_name']);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });

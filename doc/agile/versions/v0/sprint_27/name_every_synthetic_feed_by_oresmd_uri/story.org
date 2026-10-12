@@ -55,6 +55,7 @@ The oresmd URI already names every ORE datum: 45 instrument types in 11 asset cl
 | [[id:08451F14-BD34-465C-B7AA-9686C6D022A3][Scaffold story: Name every synthetic feed by its oresmd reference]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:2576F53F-5D5B-42E0-A8DB-E7E54373D1D9][Replace the ORE key and the qualifier of every synthetic feed with an oresmd reference]] | STARTED | 2026-10-11 | | Initial task for: Name every synthetic feed by its oresmd reference |
 | [[id:1503D1BB-A74E-483C-B35C-E42B28F68466][Draw the IR curve feeds on the shared feed screens]] | STARTED | 2026-10-11 | | An IR curve feed gets a list, a page, an add and edit dialog, a process tab with its parameters and previews, and a curve template tab, built on the feed kind that every asset class shares. |
+| [[id:19B36E18-2C0C-422E-98CA-3C65FDB0BD19][Name the republish subject by the oresmd URI]] | BACKLOG | | | The per consumer tick subject is built from the datum's ORE key, so a quote that has an oresmd URI and no ORE key is dropped at ingest. |
 
 * Decisions
 

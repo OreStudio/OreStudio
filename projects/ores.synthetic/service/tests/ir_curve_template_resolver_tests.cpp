@@ -313,3 +313,36 @@ TEST_CASE("resolve builds a quarterly fixed-leg schedule for the 8F->1Y split sw
     }
     CHECK(r.fixed_leg_schedule.back().ticks_ahead == r.ticks_ahead_end);
 }
+
+TEST_CASE("the index tenor of a curve is 1D for an overnight index and for the FOMC variant, "
+          "and the config's own period for a term index",
+          tags) {
+    ores::synthetic::domain::ir_curve_generation_config cfg;
+    cfg.currency_code = "USD";
+    cfg.index_family = "sofr";
+
+    cfg.tenor = "";
+    CHECK(ores::synthetic::feed::ir_curve_index_tenor(cfg) == "1D");
+
+    cfg.tenor = "FOMC";
+    CHECK(ores::synthetic::feed::ir_curve_index_tenor(cfg) == "1D");
+
+    cfg.currency_code = "EUR";
+    cfg.index_family = "euribor";
+    cfg.tenor = "6M";
+    CHECK(ores::synthetic::feed::ir_curve_index_tenor(cfg) == "6M");
+}
+
+TEST_CASE("only the FOMC variant resolves its tenors under the meeting-dated convention", tags) {
+    ores::synthetic::domain::ir_curve_generation_config cfg;
+    cfg.index_family = "sofr";
+
+    cfg.tenor = "";
+    CHECK(ores::synthetic::feed::ir_curve_tenor_convention_code(cfg) == "RATES_SPOT_FORWARD");
+
+    cfg.tenor = "FOMC";
+    CHECK(ores::synthetic::feed::ir_curve_tenor_convention_code(cfg) == "RATES_SPOT_FOMC");
+
+    cfg.tenor = "6M";
+    CHECK(ores::synthetic::feed::ir_curve_tenor_convention_code(cfg) == "RATES_SPOT_FORWARD");
+}

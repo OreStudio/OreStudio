@@ -102,7 +102,7 @@ export function IrTicksPanel({
     const limit = Math.min(TICKS_KEPT, Math.max(1, (count + 1) * pillars.length));
     const ticks = useQuery({
         queryKey: ['feed-ticks', feedId, limit],
-        queryFn: () => api.feedTicks(feedId, limit),
+        queryFn: () => api.feedTicks(feedId, limit, 'ir-curve-feeds'),
         refetchInterval: running === true ? TICKS_EVERY_MS : false,
         placeholderData: keepPreviousData,
         enabled: pillars.length > 0,

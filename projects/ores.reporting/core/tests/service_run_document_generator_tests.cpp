@@ -99,7 +99,7 @@ TEST_CASE("every analytic is active and numbered from one", tags) {
 
 TEST_CASE("each analytic switch runs the analytic type of its name", tags) {
     struct row {
-        int ores::reporting::domain::risk_report_config::*enabled;
+        int ores::reporting::domain::risk_report_config::* enabled;
         const char* type;
     };
     const row rows[] = {

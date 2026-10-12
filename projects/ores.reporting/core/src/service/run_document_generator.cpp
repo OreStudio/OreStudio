@@ -30,7 +30,7 @@ using domain::risk_report_config;
 namespace {
 
 struct switch_rule {
-    int risk_report_config::*enabled;
+    int risk_report_config::* enabled;
     const char* analytic_type;
 };
 
@@ -56,7 +56,7 @@ constexpr switch_rule switch_rules[] = {
 
 struct input_file {
     const char* type_code;
-    std::optional<std::string> report_run_setup::*member;
+    std::optional<std::string> report_run_setup::* member;
     const char* file;
 };
 

@@ -25,8 +25,8 @@
 #include "ores.reporting.core/repository/report_analytic_parameter_repository.hpp"
 #include "ores.reporting.core/repository/report_analytic_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
-#include "ores.reporting.core/repository/report_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.reporting.core/repository/report_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/service/run_document_generator.hpp"
@@ -234,9 +234,8 @@ run_document_service::get_or_generate(const boost::uuids::uuid& report_definitio
     if (auto stored = get(report_definition_id))
         return stored;
 
-    const auto risk =
-        risk_report_config_repository().find_by_definition_id(
-            ctx_, boost::uuids::to_string(report_definition_id));
+    const auto risk = risk_report_config_repository().find_by_definition_id(
+        ctx_, boost::uuids::to_string(report_definition_id));
     if (!risk)
         return std::nullopt;
 

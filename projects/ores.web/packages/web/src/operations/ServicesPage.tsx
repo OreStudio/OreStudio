@@ -59,6 +59,7 @@ import {
 } from './InstallationHealth.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
 
 /** The ranges the error and warning counts can be read over, as the logs screen offers them. */
@@ -178,11 +179,20 @@ export function ServicesPage(): ReactNode {
     const [range, setRange] = useState<LogsRange>(DEFAULT_HEALTH_RANGE);
     const roster = useQuery({ queryKey: SERVICES_QUERY_KEY, queryFn: api.services });
 
-    if (roster.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (roster.isError) {
-        return <Notice tone="error">{roster.error.message}</Notice>;
+    if (roster.isPending || roster.isError) {
+        return (
+            <ScreenFrame
+                trail={<AreaTrail area="operations" screen={t('operations.screens.services')} />}
+                title={t('operations.services.title')}
+                description={t('operations.services.description')}
+            >
+                {roster.isError ? (
+                    <Notice tone="error">{roster.error.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
 
     const rows = roster.data.filter((row) => row.service_name !== COMPUTE_RUNNER);

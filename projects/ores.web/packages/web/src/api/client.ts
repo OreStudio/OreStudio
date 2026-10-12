@@ -95,6 +95,8 @@ import {
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
     serviceRosterViewSchema,
+    gridSeriesViewSchema,
+    gridUsageViewSchema,
     gridViewSchema,
     busViewSchema,
     logsViewSchema,
@@ -122,7 +124,10 @@ import {
     type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
     type ServiceRosterRow,
+    type GridSeriesView,
+    type GridUsageView,
     type GridView,
+    type SeriesRange,
     type BusView,
     type LogsView,
     type SessionView,
@@ -159,6 +164,7 @@ export interface Credentials {
  * window on the deployment's clock.
  */
 export type BusRange = '15m' | '1h' | '6h';
+export type { SeriesRange };
 
 /**
  * The range presets the logs screen offers, which the BFF turns into a window
@@ -1848,6 +1854,34 @@ export const api = {
      */
     async grid(): Promise<GridView> {
         return gridViewSchema.parse(await request('/api/operations/grid', { method: 'GET' }));
+    },
+
+    /**
+     * The grid's samples over a range, as columns on one time axis.
+     *
+     * The range travels as a preset, as the bus and logs ranges do, because the
+     * window and the bucket width are the deployment's to compute. The reply
+     * holds the grid counters per bucket and one row of buckets per node, and a
+     * bucket with no sample says so through its samples column.
+     */
+    async gridSeries(range: SeriesRange): Promise<GridSeriesView> {
+        const query = new URLSearchParams({ range });
+        return gridSeriesViewSchema.parse(
+            await request(`/api/operations/grid/series?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Who uses the grid: the work counted by tenant for an operator, and by
+     * party for a tenant's administrator.
+     *
+     * The call names no scope. The server reads the session and decides which
+     * rows the caller may count and how to group them.
+     */
+    async gridUsage(): Promise<GridUsageView> {
+        return gridUsageViewSchema.parse(
+            await request('/api/operations/grid/usage', { method: 'GET' }),
+        );
     },
 
     /**

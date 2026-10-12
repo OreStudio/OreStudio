@@ -280,13 +280,14 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         return fx;
     };
 
-    auto fx_enabled = make_fx(main_container, "EUR", "USD", "feed_config.test.fx.eur_usd", true);
+    auto fx_enabled =
+        make_fx(main_container, "EUR", "USD", "synthetic.feed_config.test.fx.eur_usd", true);
     const auto fx_disabled =
-        make_fx(main_container, "GBP", "USD", "feed_config.test.fx.gbp_usd", false);
-    const auto fx_conflicting =
-        make_fx(conflict_container, "EUR", "USD", "feed_config.test.fx.eur_usd_conflict", true);
-    const auto fx_no_components =
-        make_fx(no_components_container, "CHF", "USD", "feed_config.test.fx.chf_usd", true);
+        make_fx(main_container, "GBP", "USD", "synthetic.feed_config.test.fx.gbp_usd", false);
+    const auto fx_conflicting = make_fx(
+        conflict_container, "EUR", "USD", "synthetic.feed_config.test.fx.eur_usd_conflict", true);
+    const auto fx_no_components = make_fx(
+        no_components_container, "CHF", "USD", "synthetic.feed_config.test.fx.chf_usd", true);
 
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_enabled);
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_disabled);
@@ -350,11 +351,12 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         return ir;
     };
 
-    auto ir_enabled = make_ir(main_container, "USD", "feed_config.test.ir.usd_sofr", true);
+    auto ir_enabled =
+        make_ir(main_container, "USD", "synthetic.feed_config.test.ir.usd_sofr", true);
     const auto ir_disabled =
-        make_ir(main_container, "EUR", "feed_config.test.ir.eur_sofr_disabled", false);
-    const auto ir_no_entries =
-        make_ir(no_entries_container, "EUR", "feed_config.test.ir.eur_sofr_no_entries", true);
+        make_ir(main_container, "EUR", "synthetic.feed_config.test.ir.eur_sofr_disabled", false);
+    const auto ir_no_entries = make_ir(
+        no_entries_container, "EUR", "synthetic.feed_config.test.ir.eur_sofr_no_entries", true);
 
     repo::ir_curve_generation_config_repository().write(party_ctx, ir_enabled);
     repo::ir_curve_generation_config_repository().write(party_ctx, ir_disabled);

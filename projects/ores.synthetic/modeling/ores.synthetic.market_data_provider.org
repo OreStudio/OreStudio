@@ -1,0 +1,239 @@
+:PROPERTIES:
+:ID: EF5CF958-03A0-45D1-AB2D-7DE9C35D8869
+:END:
+#+title: ores.synthetic.market_data_provider
+#+description: Reference data table of the simulated market data providers a synthetic feed can stand for: data vendors such as Bloomberg and Refinitiv, exchanges such as CME and LSE, brokers, and a generic provider for feeds that stand for none.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: market_data_provider
+#+entity_plural: market_data_providers
+#+entity_title: Market Data Provider
+#+brief: Simulated market data provider a synthetic collection stands for: a vendor, an exchange, a broker, or generic.
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+A catalogue of the providers whose market data the synthetic feeds simulate.
+A system-scope collection names the provider it stands for, so the installation
+can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it
+as that provider's data. The provider is optional: a collection that stands for
+no provider names none, or names =generic=.
+
+Every provider here is simulated. Screens show it with the synthetic mark, as
+"Bloomberg (synthetic)", and every source name a provider's feed publishes on
+starts =synthetic.<provider code>.=, so a simulated feed is never read as the
+real one. A real provider integration, when one comes, belongs in market data
+and not in this catalogue.
+
+Scoped to =ores.synthetic= (not =ores.refdata=) because only synthetic
+generation uses it today, following the =yield_curve_process_type=
+precedent. Managed by the system tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:profile:   simple-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Unique provider code: lower case letters, digits, underscores and hyphens,
+starting with a letter. It is the provider segment of a source name.
+
+Examples: 'generic', 'bloomberg', 'refinitiv', 'cme'.
+
+#+begin_src cpp :name generator
+std::string("provider")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+The provider's name as a person knows it, without the synthetic mark, which a
+screen adds.
+
+#+begin_src cpp :name generator
+std::string(faker::company::companyName())
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What sort of provider it is: =data_vendor=, =exchange=, =broker= or =generic=.
+
+#+begin_src cpp :name generator
+std::string("data_vendor")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the provider publishes, in a sentence.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_market_data_providers_tbl
+:END:
+
+** Checks
+
+| expression                                                          |
+|---------------------------------------------------------------------|
+| "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
+| "kind" in ('data_vendor', 'exchange', 'broker', 'generic')           |
+| "name" <> ''                                                        |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_synthetic_validate_market_data_provider_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: provider
+:entity_plural_short:   providers
+:entity_singular_words: market data provider
+:entity_plural_words:   market data providers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mdp
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| kind          | Kind          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.synthetic.api/domain/market_data_provider.hpp
+:domain_class:           synthetic::domain::market_data_provider
+:protocol_include:       ores.synthetic.api/messaging/market_data_provider_protocol.hpp
+:collection_name:        providers
+:key_field:              code
+:get_request_class:      synthetic::messaging::get_market_data_providers_request
+:get_response_class:     synthetic::messaging::get_market_data_providers_response
+:get_message_type:       get_market_data_providers_request
+:save_request_class:     synthetic::messaging::save_market_data_provider_request
+:save_response_class:    synthetic::messaging::save_market_data_provider_response
+:save_message_type:      save_market_data_provider_request
+:delete_request_class:   synthetic::messaging::delete_market_data_provider_request
+:delete_response_class:  synthetic::messaging::delete_market_data_provider_response
+:delete_message_type:    delete_market_data_provider_request
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder              |
+|---------------+---------------+-----------------+-----------+--------+-------------+---------------------------|
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter provider code       |
+| name          | Name          | nameEdit        | line_edit |        | true        | Enter name                |
+| kind          | Kind          | kindEdit        | line_edit |        | true        | data_vendor, exchange, broker or generic |
+| description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description       |
+| display_order | Display Order | displayOrderEdit | spin_box |        | true        |                           |
+
+*** Columns
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Kind         | kind          | Kind          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version      | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By    | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At    | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]] -- the collection that names its provider.
+- [[id:B6FDABE7-C146-4B63-9C87-B18DEA09D27A][Yield Curve Process Type]] -- the system catalogue this follows.

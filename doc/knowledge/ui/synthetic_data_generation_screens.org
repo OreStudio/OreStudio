@@ -71,7 +71,7 @@ The same two paths exist outside the window. The shell exposes them as
 and the folder token grammar is the same on both surfaces.
 
 A feed is identified by its =source_name=, which mirrors its namespace path,
-for example =synthetic.themes.realistic_2026.gbpusd=. The =source_name= is
+for example =synthetic.bloomberg.gbpusd=. The =source_name= is
 the identity and not the row id, so a rename is a re-identification.
 
 * The editors behind it

@@ -30,11 +30,13 @@ import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
 import { registerCounterpartyRoutes } from './counterparties.js';
+import { registerBookChangeRoutes } from './book-changes.js';
 import { registerBookRoutes } from './books.js';
 import { registerConventionRoutes } from './conventions.js';
 import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
+import { registerOresmdRoutes } from './oresmd.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
@@ -2652,8 +2654,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerClassificationRoutes(server, requireSession);
     registerCounterpartyRoutes(server, requireSession);
     registerBookRoutes(server, requireSession);
+    registerBookChangeRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
+    registerOresmdRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     const scenarioStore =

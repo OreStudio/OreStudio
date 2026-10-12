@@ -41,6 +41,15 @@ a batch was refused as an existing row. The end-to-end run found it.
 
 UUID primary key for the workunit.
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The party that submitted the batch the workunit belongs to, copied from the session when the batch is created. NULL for work that predates the party scope.
+
 ** batch_id
 :PROPERTIES:
 :type:     uuid

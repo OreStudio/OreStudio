@@ -364,6 +364,29 @@ export {
 } from './operations.js';
 export type { GridStatsReply, GridView } from './operations.js';
 
+// The grid's samples as time series: the two range reads, their columnar
+// replies, and the view the BFF serves the browser.
+export {
+    SERIES_RANGES,
+    gridSeriesReplySchema,
+    gridSeriesRequestSchema,
+    gridSeriesViewSchema,
+    gridUsageReplySchema,
+    gridUsageRequestSchema,
+    gridUsageViewSchema,
+    nodeSeriesReplySchema,
+    nodeSeriesRequestSchema,
+} from './operations.js';
+export type {
+    GridSeriesReply,
+    GridSeriesView,
+    GridUsageGroup,
+    GridUsageReply,
+    GridUsageView,
+    NodeSeriesReply,
+    SeriesRange,
+} from './operations.js';
+
 // The message bus the operations screen reads: the two sample queries, their
 // replies, and the view the BFF serves the browser.
 export {
@@ -565,6 +588,7 @@ export {
     inboxPageSchema,
     inboxRequestDecisionViewSchema,
     inboxRequestPageSchema,
+    inboxRequestPartViewSchema,
     inboxRequestQueueSchema,
     inboxRequestRoleViewSchema,
     inboxRequestStorySchema,
@@ -575,6 +599,7 @@ export {
     readMyNotifications,
     readMyRequests,
     readRequest,
+    readRequestParts,
     readRequestQueue,
     readRequestStory,
     readUnreadNotificationCount,
@@ -584,6 +609,7 @@ export type {
     InboxNotificationView,
     InboxPage,
     InboxRequestDecisionView,
+    InboxRequestPartView,
     InboxRequestQueue,
     InboxRequestedRole,
     InboxRequestRoleView,
@@ -593,6 +619,24 @@ export type {
     InboxStoryField,
     RequestViewer,
 } from './inbox.js';
+
+// What a request proposes and what running it again says, for any kind of
+// request, and the book changes a maker previews and raises.
+export {
+    previewBookChanges,
+    raiseBookChanges,
+    readRequestChanges,
+    readRequestChecks,
+} from './request-changes.js';
+export type {
+    BookLineInput,
+    BookPreview,
+    BookRaise,
+    RequestChange,
+    RequestCheck,
+    RequestChecks,
+    RequestFieldChange,
+} from './request-changes.js';
 
 // The timeline. One subject's story in one stream, whichever subject it is.
 export {

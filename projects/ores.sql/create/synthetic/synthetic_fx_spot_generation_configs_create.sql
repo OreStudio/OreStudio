@@ -68,6 +68,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     check ("quote_currency_code" <> ''),
     check ("base_currency_code" <> "quote_currency_code"),
     check ("source_name" <> ''),
+    check ("source_name" like 'synthetic.%'),
     check ("oresmd_uri" like 'oresmd://fx/%?type=quote&instrument=fx_spot&quote=rate&ccy=%'),
     check ("ticks_per_hour" > 0),
     check ("process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')),

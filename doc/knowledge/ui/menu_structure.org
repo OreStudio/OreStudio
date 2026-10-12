@@ -340,7 +340,11 @@ Work in this order. Each step ends in something to check.
 3. Add the screen to the area page as a card, drawn only for a person who holds
    the read.
 4. Give the screen a breadcrumb of Home, the area and the screen.
-5. Check it with a person who holds the read and a person who does not. The
+5. Run the walk, =shell/walk.test.tsx=. It opens every screen of the cards, every
+   area page and each page of a person themselves, and checks the address is under
+   its area and the trail is Home, the area, the screen. A route the walk does not
+   know fails it.
+6. Check it with a person who holds the read and a person who does not. The
    first sees the card. The second sees neither the card nor, when it was the
    only one, the area.
 

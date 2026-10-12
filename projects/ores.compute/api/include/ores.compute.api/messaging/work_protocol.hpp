@@ -160,8 +160,10 @@ struct work_assignment_event {
 /**
  * @brief A wrapper node's liveness signal.
  *
- * Fire-and-forget and unauthenticated: the handler touches the host row
- * with the service context, and registers the host on its first heartbeat.
+ * Fire-and-forget and unauthenticated: the handler registers the host on its
+ * first heartbeat with the service context. It also carries what the computer
+ * says about its hardware, which the handler writes to the host row only when
+ * it differs from the row, so a known host's heartbeat still writes nothing.
  */
 struct heartbeat_message {
     static constexpr std::string_view nats_subject = "compute.v1.ops.heartbeat";
@@ -176,6 +178,14 @@ struct heartbeat_message {
      * @brief The node that is alive.
      */
     std::string host_id;
+    /**
+     * @brief Logical processors of the computer, 0 when the node could not read it.
+     */
+    int cpu_count = 0;
+    /**
+     * @brief Physical memory of the computer in MiB, 0 when the node could not read it.
+     */
+    std::int64_t ram_mb = 0;
 };
 
 /**
@@ -192,6 +202,56 @@ struct reap_work_message {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+};
+
+/**
+ * @brief Tells the service that a wrapper node has begun a job.
+ *
+ * The node waits for the reply before it runs the job, so the service has
+ * recorded the result as in progress before the node can submit it. Without the
+ * wait a fast job could submit first, and the late start would overwrite the
+ * finished result. Like the submit, the channel is trusted at the transport
+ * layer, because a node holds no user JWT.
+ */
+struct result_started_request {
+    using response_type = struct result_started_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.result_started";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
+    /**
+     * @brief The tenant the assignment named; the result is scoped to it.
+     */
+    std::string tenant_id;
+    /**
+     * @brief The result the node has begun.
+     */
+    std::string result_id;
+    /**
+     * @brief The node that runs it.
+     */
+    std::string host_id;
+};
+
+/**
+ * @brief Whether the start was recorded.
+ *
+ * A start for a result that is not unsent is not an error: the result is already
+ * further on, and the reply says so in the message with success set.
+ */
+struct result_started_response {
+    /**
+     * @brief Whether the start was recorded or was already moot.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not recorded, when it was not.
+     */
+    std::string message;
 };
 
 /**

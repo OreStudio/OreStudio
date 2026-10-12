@@ -73,6 +73,10 @@ import {
     type YieldCurveProcessTypeWrite,
     type YieldCurveProcessTypesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_type_protocol';
+import {
+    subjects as providerSubjects,
+    type MarketDataProvidersFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/market_data_provider_protocol';
 import { subjects as marketdataOperationSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import {
@@ -179,6 +183,22 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             removeMany: collectionSubjects.delete_many_market_data_generation_configs_request,
         },
         readOnlyBecause: 'No journey writes a collection from the web.',
+    },
+    {
+        key: 'providers',
+        systemOwned: true,
+        entityType: 'ores.synthetic.market_data_provider',
+        keyField: 'code',
+        oneOf: 'code_one_of',
+        rows: 'providers',
+        filter: { code_one_of: null } satisfies MarketDataProvidersFilter,
+        subjects: {
+            list: providerSubjects.list_market_data_providers_request,
+            putMany: providerSubjects.put_many_market_data_providers_request,
+            remove: providerSubjects.delete_market_data_provider_request,
+            removeMany: providerSubjects.delete_many_market_data_providers_request,
+        },
+        readOnlyBecause: "The providers are the installation's catalogue, seeded with it.",
     },
     {
         key: 'fx-feeds',

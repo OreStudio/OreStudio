@@ -350,7 +350,7 @@ TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", tag
     auto moved = *books.get_book(live.id);
     moved.description = "Changed by someone else";
     moved.change_reason_code = "system.test";
-    books.save_book(moved);
+    write_live(w, moved);
 
     const auto id = boost::uuids::to_string(proposal.request->id);
     const auto result = svc.apply(id);
@@ -439,7 +439,7 @@ TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
     auto moved = *books.get_book(live.id);
     moved.description = "Changed by someone else";
     moved.change_reason_code = "system.test";
-    books.save_book(moved);
+    write_live(w, moved);
 
     CHECK(svc.recheck(id).refused());
 }
@@ -503,4 +503,74 @@ TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", tag
         "Reading the parties of another tenant's request");
 
     CHECK(rows.empty());
+}
+
+TEST_CASE("a_requests_deltas_list_each_column_beside_the_live_book", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto created = new_book_line(h, w);
+    const auto live = make_live(w, created);
+    auto edit = edit_line(live, created);
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
+    const auto proposal = svc.raise({edit}, "Change the status");
+    REQUIRE(proposal.request);
+
+    const auto deltas = svc.deltas(boost::uuids::to_string(proposal.request->id));
+
+    REQUIRE(deltas.size() == 1);
+    CHECK(deltas[0].operation == "put");
+    CHECK(deltas[0].base_version == live.version);
+    const auto status = std::ranges::find(deltas[0].fields, "book_status", &ores::refdata::service::field_delta::name);
+    REQUIRE(status != deltas[0].fields.end());
+    CHECK(status->changed);
+    CHECK(status->before == live.book_status);
+    CHECK(status->after == edit.book_status);
+    const auto description = std::ranges::find(deltas[0].fields, "description", &ores::refdata::service::field_delta::name);
+    REQUIRE(description != deltas[0].fields.end());
+    CHECK_FALSE(description->changed);
+}
+
+TEST_CASE("a_line_that_creates_a_book_has_no_before", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto line = new_book_line(h, w);
+    const auto proposal = svc.raise({line}, "Open the desk");
+    REQUIRE(proposal.request);
+
+    const auto deltas = svc.deltas(boost::uuids::to_string(proposal.request->id));
+
+    REQUIRE(deltas.size() == 1);
+    REQUIRE_FALSE(deltas[0].fields.empty());
+    for (const auto& f : deltas[0].fields) {
+        CHECK(f.before.empty());
+        CHECK(f.changed);
+    }
+}
+
+TEST_CASE("a_line_that_has_applied_still_shows_what_it_changed", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto created = new_book_line(h, w);
+    const auto live = make_live(w, created);
+    auto edit = edit_line(live, created);
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
+    const auto proposal = svc.raise({edit}, "Change the status");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    REQUIRE(svc.apply(id).applied);
+
+    const auto deltas = svc.deltas(id);
+
+    REQUIRE(deltas.size() == 1);
+    CHECK(deltas[0].applied);
+    const auto status = std::ranges::find(
+        deltas[0].fields, "book_status", &ores::refdata::service::field_delta::name);
+    REQUIRE(status != deltas[0].fields.end());
+    CHECK(status->changed);
+    CHECK(status->before == live.book_status);
+    CHECK(status->after == edit.book_status);
 }

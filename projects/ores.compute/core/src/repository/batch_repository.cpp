@@ -219,12 +219,20 @@ batch_repository::read_latest_by_external_ref(context ctx, const std::string& ex
                        where("tenant_id"_c == tid && "external_ref"_c == external_ref &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<batch_entity, domain::batch>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
+    auto found = execute_read_query<batch_entity, domain::batch>(
         ctx,
         query,
         [](const auto& entities) { return batch_mapper::map(entities); },
         lg(),
         "Reading latest compute batch by external_ref.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) {
+            return row.party_id.has_value() && *row.party_id != *party;
+        });
+    return found;
 }
 
 std::vector<domain::batch>

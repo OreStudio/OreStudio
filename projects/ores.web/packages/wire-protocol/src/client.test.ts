@@ -25,6 +25,7 @@ import { z } from 'zod';
 import { NotAuthenticatedError, OperationFailedError, SessionExpiredError } from './errors.js';
 import { WireCodec } from './codec.js';
 import type { MessageEnvelope, Reply, RequestHeaders, Transport } from './transport.js';
+import { wireTimestamp } from './primitives.js';
 
 interface RecordedCall {
     readonly subject: string;
@@ -493,6 +494,102 @@ describe('OresClient authenticated calls', () => {
         await client.login({ principal: 'probe', password: 'secret' });
 
         await expect(client.gridStats()).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
+    it('reads the grid series as columns, and states what it asked for', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.ops.get_grid_series': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        start_time: '2026-10-04 13:00:00Z',
+                        bucket_seconds: 60,
+                        bucket_count: 3,
+                        samples: [2, 0, 1],
+                        results_done: [10, 0, 16],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const series = await client.gridSeries({
+            startTime: wireTimestamp('2026-10-04 13:00:00Z'),
+            endTime: wireTimestamp('2026-10-04 13:03:00Z'),
+            bucketSeconds: 60,
+        });
+
+        expect(transport.calls[1]?.subject).toBe('compute.v1.ops.get_grid_series');
+        expect(transport.decodeCall(1)).toEqual({
+            start_time: '2026-10-04 13:00:00Z',
+            end_time: '2026-10-04 13:03:00Z',
+            bucket_seconds: 60,
+        });
+        expect(series.samples).toEqual([2, 0, 1]);
+        expect(series.results_done).toEqual([10, 0, 16]);
+        // A column the reply left out is an empty column, never a made-up run of zeros.
+        expect(series.online_hosts).toEqual([]);
+    });
+
+    it('reads the node series as columns, with the nodes listed once', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.ops.get_node_series': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        start_time: '2026-10-04 13:00:00Z',
+                        bucket_seconds: 60,
+                        bucket_count: 2,
+                        nodes: [{ host_id: 'a', machine: 'alpha' }, { host_id: 'b' }],
+                        samples: [1, 0, 0, 3],
+                        tasks_since_last: [2, 0, 0, 4],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const series = await client.nodeSeries({
+            startTime: wireTimestamp('2026-10-04 13:00:00Z'),
+            endTime: wireTimestamp('2026-10-04 13:02:00Z'),
+            bucketSeconds: 60,
+        });
+
+        expect(transport.calls[1]?.subject).toBe('compute.v1.ops.get_node_series');
+        expect(series.nodes).toEqual([
+            { host_id: 'a', machine: 'alpha' },
+            { host_id: 'b', machine: '' },
+        ]);
+        // Row-major: node 0 holds cells 0 and 1, node 1 holds cells 2 and 3.
+        expect(series.samples).toEqual([1, 0, 0, 3]);
+    });
+
+    it('refuses a series the server did not produce, rather than reading it as an empty range', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.ops.get_grid_series': [
+                { body: { success: false, message: 'The range needs 9000 buckets.' } },
+            ],
+            'compute.v1.ops.get_node_series': [
+                { body: { success: false, message: 'The range needs 9000 buckets.' } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+        const input = {
+            startTime: wireTimestamp('2026-10-04 13:00:00Z'),
+            endTime: wireTimestamp('2026-10-14 13:00:00Z'),
+            bucketSeconds: 60,
+        };
+
+        await expect(client.gridSeries(input)).rejects.toBeInstanceOf(OperationFailedError);
+        await expect(client.nodeSeries(input)).rejects.toBeInstanceOf(OperationFailedError);
     });
 
     it('reads the host registry page, and names the nodes by their external id', async () => {

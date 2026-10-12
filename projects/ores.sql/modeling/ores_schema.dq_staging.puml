@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T10:09:54.355611Z
+' Generated: 2026-10-11T23:20:31.653727Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 87
+Tables: 88
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1500,6 +1500,7 @@ package "dq_staging" #F3E5F5 {
         * price_source : text
           vintage_source : text
           vintage_date : text
+          provider_code : text
     }
 
     note right of ores_dq_synthetic_fx_spot_configs_artefact_tbl
@@ -1549,6 +1550,7 @@ package "dq_staging" #F3E5F5 {
           vintage_source : text
           vintage_date : text
           vintage_series_uri : text
+          provider_code : text
     }
 
     note right of ores_dq_synthetic_ir_curve_configs_artefact_tbl
@@ -1573,6 +1575,22 @@ package "dq_staging" #F3E5F5 {
     Synthetic IR Curve Template Entry artefacts - per-currency Curve Template
     rows backing an ir_curve_configs artefact row, keyed by currency+index
     within the same dataset - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_market_data_providers_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * kind : text
+        * description : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_synthetic_market_data_providers_artefact_tbl
+    Market Data Provider artefacts: one row per simulated market data provider (Bloomberg, Refinitiv, the exchanges, a broker, and the generic provider), staged for the system_core bundle and published into ores_synthetic_market_data_providers_tbl in the system tenant. Every provider is simulated; see the synthetic catalogue's own model for the synthetic mark. - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {

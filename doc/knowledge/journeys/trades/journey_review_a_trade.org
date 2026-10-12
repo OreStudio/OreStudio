@@ -68,7 +68,8 @@ The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =t
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Find | Search the trades by identifier, counterparty, book, state or date | =trading.v1.trades.list= filters only by trade id | missing |
+| Find | Search the trades by trade type, and filter by counterparty and trade type | =trading.v1.trades.list=: the filter record has =counterparty_id=, =trade_type=, their one-of members and =search= | exists |
+| Find | Search by identifier, and filter by state and book | =trading.v1.trades.list= has no member for them | missing |
 | Read | Read the trade and its instrument | =trading.v1.trades.get=, =trading.v1.<instrument>s.get= | exists |
 | Read | Read the booking and the state of a trade | =trading.v1.trade_bookings.list=, =trading.v1.trade_states.list= with =trade_id_one_of= | exists |
 | Read | Read the identifiers, party roles, portfolios, additional fields and the instrument's legs of a trade | =trade_identifiers.list=, =trade_party_roles.list=, =trade_portfolios.list=, =trade_additional_fields.list=, =bond_legs.list= and the other child tables: no by-trade filter | missing |
@@ -85,8 +86,8 @@ is written with a plain =s=. A table whose plural is irregular, such as
 
 * What is missing
 
-- The trade list filters only by trade id (=trades_filter= has one field). A person
-  cannot search by identifier, counterparty, book, state or date. Each filter is a
+- The trade list filters by counterparty and trade type, and searches the trade type. A
+  person cannot yet search by identifier, or filter by state, book or date. Each filter is a
   server change. Until it exists, a screen cannot list trades usefully.
 - The identifier, party role, portfolio, additional field and instrument child lists
   (checked on =bond_leg=) have no by-trade filter. They list the whole table. A trade

@@ -25,6 +25,8 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.core/log/engine_run_verdict.hpp"
+#include "ores.platform/net/network_info.hpp"
+#include "ores.platform/system/system_info.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
@@ -58,7 +60,6 @@
 #include <rfl/json.hpp>
 #include <sstream>
 #include <thread>
-#include <unistd.h>
 
 namespace ores::compute::wrapper::app {
 
@@ -73,17 +74,6 @@ constexpr std::string_view service_version = ORES_VERSION;
  */
 std::string to_iso8601(std::chrono::system_clock::time_point tp) {
     return std::format("{:%Y-%m-%dT%H:%M:%SZ}", tp);
-}
-
-/**
- * @brief The name of the computer the wrapper runs on, empty if it cannot be read.
- */
-std::string machine_name() {
-    char name[256] = {};
-    if (gethostname(name, sizeof(name) - 1) != 0) {
-        return {};
-    }
-    return name;
 }
 
 /**
@@ -103,7 +93,7 @@ public:
                         std::uint32_t interval_seconds)
         : nats_(nats)
         , host_id_(host_id)
-        , machine_(machine_name())
+        , machine_(ores::platform::net::get_hostname())
         , tenant_id_(tenant_id)
         , interval_(interval_seconds) {}
 
@@ -318,8 +308,13 @@ private:
 
     void send_heartbeat() {
         try {
+            // Read once: none of it changes while the node runs, and the service
+            // writes it to the host row only when it differs from what is there.
+            static const auto system = ores::platform::system::get_system_info();
             compute::messaging::heartbeat_message msg;
             msg.host_id = host_id_;
+            msg.cpu_count = system.cpu_count;
+            msg.ram_mb = system.ram_mb;
             nats_.publish(compute::messaging::heartbeat_message::nats_subject,
                           ores::nats::default_wire_codec().encode(msg));
             if (reporter_)
@@ -336,6 +331,36 @@ private:
     std::atomic<bool> stop_{false};
     std::thread thread_;
 };
+
+/**
+ * @brief Tells the service that this node has begun a job, and waits for it to record it.
+ *
+ * The dispatcher creates a result unsent, and nothing else says a node took it,
+ * so without this no job is ever in progress. The wait matters: the node cannot
+ * submit the result before the start is recorded, so a fast job cannot be
+ * overwritten by its own late start. A start that cannot be recorded is logged
+ * and the job runs anyway, because the result still arrives through the submit.
+ */
+void announce_start(ores::nats::service::client& nats,
+                    const std::string& result_id,
+                    const std::string& tenant_id,
+                    const std::string& host_id,
+                    auto& lg) {
+    try {
+        const auto& codec = ores::nats::default_wire_codec();
+        const compute::messaging::result_started_request req{
+            .tenant_id = tenant_id, .result_id = result_id, .host_id = host_id};
+        const auto reply = nats.request_sync(
+            compute::messaging::result_started_request::nats_subject, codec.encode(req));
+        const auto resp = codec.decode<compute::messaging::result_started_response>(reply.data);
+        if (!resp || !resp->success) {
+            BOOST_LOG_SEV(lg, warn) << "result_started refused: "
+                                    << (resp ? resp->message : "failed to deserialize response");
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, warn) << "result_started failed: " << e.what();
+    }
+}
 
 /**
  * @brief Submit a finished job back to the compute service.
@@ -545,6 +570,7 @@ void process_assignment(ores::nats::service::client& nats,
 
     heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
     hb.start();
+    announce_start(nats, evt.result_id, evt.tenant_id, cfg.host_id, lg);
 
     // Outcome codes match the domain: 1=Success, 3=ClientError.
     // Start with ClientError; success path will set it to 1.
@@ -556,8 +582,9 @@ void process_assignment(ores::nats::service::client& nats,
     std::int64_t duration_ms = 0;
 
     try {
-        const fs::path package_root =
-            cfg.package_dir.empty() ? fs::path(cfg.work_dir) / "packages" : fs::path(cfg.package_dir);
+        const fs::path package_root = cfg.package_dir.empty() ?
+                                          fs::path(cfg.work_dir) / "packages" :
+                                          fs::path(cfg.package_dir);
         const fs::path pkg_cache_dir = package_root / evt.app_version_id;
         ensure_package(pkg_cache_dir, evt, cfg.http_base_url, lg);
 

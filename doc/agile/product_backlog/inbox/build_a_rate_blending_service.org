@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3E4BE9A0-C14F-400D-8AA7-A1B0D2AB183F
+:END:
+#+title: Build a rate blending service. Several simulated providers (…
+#+description: Build a rate blending service. Several simulated providers (Bloomberg, Refinitiv, ICE, the exchanges) publish their own spot for a pair such as EUR/USD. A desk prices off one rate, so a rate blending service should read the providers' spots, blend them by a configured rule (a weighted mid, the best bid and offer, a median of the fresh quotes, with staleness and outlier rejection), and publish the blended EUR/USD as its owner. Until it exists, the conflict guard on synthetic collections lets one bound system collection run, so one provider is bound, chosen arbitrarily, as the authoritative source and the others run sandboxed. Follows the story Organise feeds by provider and scope (0A32284A-5F8C-4A99-9539-34923631DED3).
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

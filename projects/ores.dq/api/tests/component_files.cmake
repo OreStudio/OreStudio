@@ -38,5 +38,4 @@ set(files
     "domain_subject_area_tests.cpp"
     "domain_treatment_dimension_tests.cpp"
     "main.cpp"
-    "messaging_party_provisioning_plan_tests.cpp"
 )

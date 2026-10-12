@@ -21,6 +21,7 @@
 #define ORES_REFDATA_SERVICE_MESSAGING_BOOK_PROPOSAL_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -149,6 +150,94 @@ public:
         }
     }
 
+    /**
+     * @brief Serves refdata.v1.ops.get_book_changes.
+     *
+     * Answers the lines of a request beside the live books to whoever may open
+     * the request, and as not found to anyone else.
+     */
+    void get_changes(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = ores::service::messaging::decode<get_book_changes_request>(msg);
+        if (!req) {
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            if (!may_open(*ctx, req->request_id)) {
+                ores::service::messaging::reply(
+                    nats_,
+                    msg,
+                    get_book_changes_response{.result = result_of(outcome::missing, "not_found", ""),
+                                              .changes = {}});
+                return;
+            }
+            ores::service::messaging::reply(
+                nats_,
+                msg,
+                get_book_changes_response{
+                    .result = result_of(outcome::ok, "", ""),
+                    .changes = to_deltas(service::book_proposal_service(*ctx).deltas(req->request_id))});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), ores::logging::error)
+                << "Error reading the book changes of " << req->request_id << ": " << e.what();
+            ores::service::messaging::reply(
+                nats_,
+                msg,
+                get_book_changes_response{
+                    .result = result_of(outcome::failed, "read_failed", "The changes could not be read."),
+                    .changes = {}});
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.ops.recheck_book_changes.
+     */
+    void recheck(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = ores::service::messaging::decode<recheck_book_changes_request>(msg);
+        if (!req) {
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            if (!may_open(*ctx, req->request_id)) {
+                ores::service::messaging::reply(
+                    nats_,
+                    msg,
+                    recheck_book_changes_response{.result = result_of(outcome::missing, "not_found", ""),
+                                                  .lines = {},
+                                                  .part_codes = {}});
+                return;
+            }
+            const auto checked = service::book_proposal_service(*ctx).recheck(req->request_id);
+            ores::service::messaging::reply(
+                nats_,
+                msg,
+                recheck_book_changes_response{.result = result_of(outcome::ok, "", ""),
+                                              .lines = to_outcomes(checked),
+                                              .part_codes = checked.part_codes});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), ores::logging::error)
+                << "Error rechecking the book changes of " << req->request_id << ": " << e.what();
+            ores::service::messaging::reply(
+                nats_,
+                msg,
+                recheck_book_changes_response{
+                    .result = result_of(outcome::failed, "recheck_failed", "The changes could not be checked."),
+                    .lines = {},
+                    .part_codes = {}});
+        }
+    }
+
 private:
     /**
      * @brief Why a proposal raised nothing, as a code a screen can switch on.
@@ -187,6 +276,26 @@ private:
             }
         }
         return true;
+    }
+
+    /**
+     * @brief Whether the caller may open the book change request an identifier
+     * names.
+     *
+     * The person who raised it, whoever may decide its kind, and whoever may
+     * read the tenant's requests. A request of another kind, or one that does
+     * not exist, is not one this operation opens.
+     */
+    bool may_open(const ores::database::context& ctx, const std::string& request_id) {
+        ores::inbox::service::approval_lifecycle lifecycle(ctx);
+        const auto found = lifecycle.request(request_id);
+        if (!found || found->kind_code != "refdata.book_change")
+            return false;
+        const auto me = lifecycle.actor_account_id();
+        const auto kind = lifecycle.kind(found->kind_code);
+        return (me && found->requested_by == *me) ||
+               (kind && ores::service::messaging::has_permission(ctx, kind->decide_permission_code)) ||
+               ores::service::messaging::has_permission(ctx, "inbox::approval_requests:read");
     }
 
     std::optional<ores::database::context> context_for(const ores::nats::message& msg) {

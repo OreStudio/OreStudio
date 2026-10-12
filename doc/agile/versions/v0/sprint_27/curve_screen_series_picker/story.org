@@ -23,9 +23,9 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | All three tasks are done. The picker is tested with rendered markup and real lists, and nobody has looked at it in a browser. |
+| Now           | All four tasks are done. The picker was confirmed in a browser. The importer fix is in review. |
 | Waiting on    | Nothing.                               |
-| Next          | Look at the picker in a browser, then close the story. |
+| Next          | Merge the importer fix, then close the story. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -43,6 +43,7 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 | [[id:341A268D-EBD6-426B-8B26-97EDB0EC48C9][Route the series list through the BFF]] | DONE | 2026-10-11 | 2026-10-11 | Give the BFF a session-guarded route for the series identity list, with tests. |
 | [[id:4D270BB2-621E-4B60-BEA8-0A6AFDDD4CB6][Pick the curve on the evolution screen]] | DONE | 2026-10-11 | 2026-10-11 | Offer the series list as a picker on the evolution screen, filling the identity from the chosen row. |
 | [[id:777A5AFE-0D38-4E9B-BA97-8B1715BF1BF0][Scaffold story: Pick a curve from the series a party can see]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: the story, its sprint row and its three tasks. |
+| [[id:B68DA277-8C6E-49CE-8A1D-63D58A67CE7D][Import each party's own series]] | DONE | 2026-10-11 | 2026-10-11 | The market data importer finds a series by its URI across the whole tenant, so a second party reuses the first party's series and fails on its axes. Look the series up by party and URI. |
 
 * Decisions
 

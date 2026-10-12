@@ -151,9 +151,9 @@ conventions doc for the codegen-side rule.
 
 The definitions are system-tenant reference data: the populate script
 seeds them once under the system tenant, and the publish function
-(=ores_synthetic_publish_theme_from_dq_fn=) resolves them by name when
+(=ores_synthetic_publish_feeds_from_dq_fn=) resolves them by name when
 inserting tenant rows. The default tenant-scoped check
-(=NEW.tenant_id=) would therefore reject every theme insert;
+(=NEW.tenant_id=) would therefore reject every published feed;
 =:use_system_tenant:= resolves against
 =ores_utility_system_tenant_id_fn()= instead, matching the
 =process_type= validation trigger on the same table. =config_id= above

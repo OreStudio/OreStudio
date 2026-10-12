@@ -123,7 +123,7 @@ jobs:
             | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.4.2
+        uses: lukka/get-cmake@v4.4.4
 
       - name: Run CTest site build
         run: |

@@ -131,6 +131,13 @@ public:
     static void process_get_approval_history(std::ostream& out,
                                              ores::nats::service::nats_client& session,
                                              const std::vector<std::string>& args);
+
+    /**
+     * @brief get-approval-parts <request_id>
+     */
+    static void process_get_approval_parts(std::ostream& out,
+                                           ores::nats::service::nats_client& session,
+                                           const std::vector<std::string>& args);
 };
 
 }

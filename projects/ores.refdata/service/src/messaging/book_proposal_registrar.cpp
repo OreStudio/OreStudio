@@ -60,6 +60,14 @@ std::vector<ores::nats::service::subscription> book_proposal_registrar::register
         raise_book_changes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->raise(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        get_book_changes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_changes(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        recheck_book_changes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->recheck(std::move(msg));
+        }));
     return subs;
 }
 

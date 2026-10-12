@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:feeds:scope:synthetic:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-11
 
 * Summary
 
@@ -20,13 +20,16 @@ is declared in =ores.synthetic.api/domain/scope.hpp= with three values,
 
 ** The three levels
 
-The scope is tied to the nullability of two columns by a check constraint on
+The scope is tied to the tenant and party columns by a check constraint on
 =market_data_generation_config=. The constraint and its reasoning are
 written in the config's modelling file,
 =ores.synthetic.market_data_generation_config.org=.
 
-- =system= has both =tenant_id= and =party_id= null, and is shared across
-  every tenant.
+- =system= belongs to the system tenant and its system party, the party the
+  super administrator works in, and is shared across every tenant: row-level
+  security lets every tenant read a system collection and its feeds, and only
+  the system tenant writes them. It names its simulated provider, optionally;
+  see [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][The market data provider catalogue]].
 - =tenant= has =tenant_id= set and =party_id= null, and is shared across
   every party under one tenant.
 - =party= has both set, and is owned by, and visible only to, a single

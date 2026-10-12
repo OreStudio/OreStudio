@@ -26,6 +26,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
 import { PageTrail } from '../shell/AreaTrail.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Button, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { displayName } from '../access/names.js';
 
@@ -96,11 +97,20 @@ export function WhereIWorkPage({
         onError: (error: Error) => setFailure(error.message),
     });
 
-    if (parties.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (parties.isError) {
-        return <Notice tone="error">{parties.error.message}</Notice>;
+    if (parties.isPending || parties.isError) {
+        return (
+            <ScreenFrame
+                trail={<PageTrail screen={t('membership.where.title')} />}
+                title={t('membership.where.title')}
+                description={t('membership.where.lead', { tenant: tenantName })}
+            >
+                {parties.isError ? (
+                    <Notice tone="error">{parties.error.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
 
     const mine = parties.data.parties;

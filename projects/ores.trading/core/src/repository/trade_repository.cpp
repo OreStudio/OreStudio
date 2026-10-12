@@ -70,7 +70,9 @@ std::string trade_repository::sql() {
 }
 
 bool trade_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "trade_type",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -100,12 +102,32 @@ filter_condition(const std::optional<messaging::trades_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->counterparty_id)
+        r.push_back(*filter->counterparty_id ?
+                        equals("counterparty_id", filter_value(**filter->counterparty_id)) :
+                        is_null("counterparty_id"));
+    if (filter->trade_type)
+        r.push_back(equals("trade_type", filter_value(*filter->trade_type)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
+    if (filter->counterparty_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->counterparty_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("counterparty_id", std::move(values)));
+    }
+    if (filter->trade_type_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->trade_type_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("trade_type", std::move(values)));
+    }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"trade_type"}, *filter->search));
     return all_of(std::move(r));
 }
 

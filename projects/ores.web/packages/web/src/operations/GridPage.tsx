@@ -36,9 +36,10 @@
  */
 
 import { useState, type ReactNode } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
-import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
+import type { GridNodeRow, GridView, SeriesRange } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
@@ -52,9 +53,14 @@ import {
     newestVersionOf,
     type ScreenGap,
 } from './OperationsParts.js';
+import { GridLoadTab, GridNodeLoad } from './GridSeries.js';
+import { GridUsageTab } from './GridUsage.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { gridMachinePath, gridNodePath } from '../shell/paths.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
+import { useTabs } from '../ui/Tabs.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
@@ -65,26 +71,15 @@ const JOURNEYS: readonly JourneyId[] = [
     'C3D59907-9D6A-448C-9A61-9E750755BBFB',
 ];
 
+/** The tabs of the grid screen, in the order they are drawn. */
+export const GRID_TABS = ['overview', 'usage', 'nodes', 'heatmap'] as const;
+
 /** Where the grid read's answer is cached, so a test can seed it. */
 export const GRID_QUERY_KEY = ['operations-grid'] as const;
 
 /** The instant a read answered, as the wall clock a person reads, in UTC. */
 export function readTime(at: number): string {
     return `${new Date(at).toISOString().slice(11, 19)} UTC`;
-}
-
-/**
- * The instant a stored sample was taken, as a wall clock a person reads, in UTC.
- *
- * Nothing when no sample is stored, or the time is unreadable: a summary
- * without its age cannot be trusted, so an unreadable time is an absent one
- * rather than a made-up one.
- */
-export function sampleTime(at: string | null): string | undefined {
-    if (at === null || !isWireTimestamp(at)) {
-        return undefined;
-    }
-    return `${fromWireTimestamp(at).toISOString().slice(11, 19)} UTC`;
 }
 
 /** A byte count in GiB, as the node table states what a node fetched. */
@@ -126,78 +121,6 @@ export function formatAge(seconds: number, t: Translator['t']): string {
     });
 }
 
-/** The grid's counters, and the sample time they were computed at. */
-function SummaryPanel({ view }: { readonly view: GridView }): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <section className="card space-y-4 p-6">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">{t('operations.grid.summary.title')}</h2>
-                <span className="text-xs text-ink-faint">
-                    {t('operations.grid.summary.sampled', {
-                        at: sampleTime(view.sampled_at) ?? '',
-                    })}
-                </span>
-            </header>
-            <div className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
-                <div className="space-y-1">
-                    <span className="block text-xs text-ink-faint">
-                        {t('operations.grid.summary.hosts')}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono">{view.total_hosts}</span>
-                        <Tag tone="neutral">
-                            {t('operations.grid.summary.online', { count: view.online_hosts })}
-                        </Tag>
-                        <Tag tone="neutral">
-                            {t('operations.grid.summary.idle', { count: view.idle_hosts })}
-                        </Tag>
-                    </span>
-                </div>
-                <div className="space-y-1">
-                    <span className="block text-xs text-ink-faint">
-                        {t('operations.grid.summary.work')}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono">
-                            {t('operations.grid.summary.workunits', {
-                                workunits: view.total_workunits,
-                                batches: view.total_batches,
-                            })}
-                        </span>
-                        <Tag tone="accent">
-                            {t('operations.grid.summary.active', { count: view.active_batches })}
-                        </Tag>
-                    </span>
-                </div>
-                <div className="space-y-1">
-                    <span className="block text-xs text-ink-faint">
-                        {t('operations.grid.summary.outcomes')}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2">
-                        <Tag tone="neutral">
-                            {t('operations.grid.summary.success', {
-                                count: view.outcomes_success,
-                            })}
-                        </Tag>
-                        <Tag tone="warn">
-                            {t('operations.grid.summary.clientError', {
-                                count: view.outcomes_client_error,
-                            })}
-                        </Tag>
-                        <Tag tone="warn">
-                            {t('operations.grid.summary.noReply', {
-                                count: view.outcomes_no_reply,
-                            })}
-                        </Tag>
-                    </span>
-                </div>
-            </div>
-            <p className="text-xs text-ink-faint">{t('operations.grid.summary.oneTenant')}</p>
-        </section>
-    );
-}
-
 /**
  * The last eight characters of an instance id, as the row states them.
  *
@@ -211,18 +134,24 @@ export function instanceTail(instanceId: string): string {
     return instanceId.slice(-8);
 }
 
-/** One node's name: the hostname, or the id beside a plain statement it is one. */
+/** One node's name: the hostname, or the id beside a plain statement it is one. It opens the node's page. */
 function NodeName({ node }: { readonly node: GridNodeRow }): ReactNode {
     const { t } = useTranslation();
     if (node.host === null) {
         return (
             <span className="flex flex-wrap items-center gap-2">
-                <span className="font-mono">{node.host_id}</span>
+                <Link to={gridNodePath(node.host_id)} className="font-mono underline">
+                    {node.host_id}
+                </Link>
                 <Tag tone="muted">{t('operations.grid.nodes.noHost')}</Tag>
             </span>
         );
     }
-    return <span className="font-mono">{node.host}</span>;
+    return (
+        <Link to={gridNodePath(node.host_id)} className="font-mono underline">
+            {node.host}
+        </Link>
+    );
 }
 
 /** The runner's instance, shown by the tail with the full id in the title. */
@@ -265,6 +194,76 @@ export function machinesOf(nodes: readonly GridNodeRow[]): readonly Machine[] {
         }));
 }
 
+/** What a computer says about itself, read from its nodes. */
+export interface MachineFacts {
+    readonly cpuCount: number;
+    readonly ramMb: number;
+}
+
+/**
+ * The facts of a computer from the samples of its nodes.
+ *
+ * Every node on a computer has its own host row, and each holds the same
+ * processors and memory once the node has reported them, so the largest figure
+ * is the one a node actually gave.
+ */
+export function machineFacts(nodes: readonly GridNodeRow[]): MachineFacts {
+    return {
+        cpuCount: Math.max(0, ...nodes.map((node) => node.cpu_count)),
+        ramMb: Math.max(0, ...nodes.map((node) => node.ram_mb)),
+    };
+}
+
+/** A memory size in MiB as gibibytes, or a dash when the computer gave none. */
+export function formatRam(ramMb: number): string {
+    return ramMb <= 0 ? '—' : `${(ramMb / 1024).toFixed(1)} GiB`;
+}
+
+/** A computer's own page: its hardware, its nodes and what they have done. */
+function MachineInfo({
+    machine,
+    nodes,
+}: {
+    readonly machine: string;
+    readonly nodes: readonly GridNodeRow[];
+}): ReactNode {
+    const { t } = useTranslation();
+    const facts = machineFacts(nodes);
+    const running = nodes.filter((node) => node.state === 'running').length;
+    const field = (label: string, value: ReactNode): ReactNode => (
+        <div className="space-y-1">
+            <dt className="text-xs text-ink-faint">{label}</dt>
+            <dd className="font-mono text-sm">{value}</dd>
+        </div>
+    );
+    return (
+        <section className="card space-y-4 p-6">
+            <h2 className="text-lg font-medium">
+                {machine === '' ? t('operations.grid.machines.unnamed') : machine}
+            </h2>
+            <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+                {field(
+                    t('operations.grid.machine.cpus'),
+                    facts.cpuCount > 0 ? facts.cpuCount : '—',
+                )}
+                {field(t('operations.grid.machine.memory'), formatRam(facts.ramMb))}
+                {field(
+                    t('operations.grid.machine.nodes'),
+                    t('operations.grid.machines.nodes', { running, total: nodes.length }),
+                )}
+                {field(
+                    t('operations.grid.machine.done'),
+                    nodes.reduce((sum, node) => sum + node.tasks_completed, 0),
+                )}
+                {field(
+                    t('operations.grid.machine.failed'),
+                    nodes.reduce((sum, node) => sum + node.tasks_failed, 0),
+                )}
+            </dl>
+        </section>
+    );
+}
+
 /** One row per computer, so a computer that has gone down shows at a glance. */
 function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
@@ -288,6 +287,12 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                             {t('operations.grid.machines.columns.status')}
                         </th>
                         <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.cpus')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.memory')}
+                        </th>
+                        <th className="py-1 font-normal">
                             {t('operations.grid.machines.columns.nodes')}
                         </th>
                         <th className="py-1 font-normal">
@@ -302,9 +307,11 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                     {machines.map((machine) => (
                         <tr key={machine.name}>
                             <td className="py-2 font-mono">
-                                {machine.name === ''
-                                    ? t('operations.grid.machines.unnamed')
-                                    : machine.name}
+                                <Link to={gridMachinePath(machine.name)} className="underline">
+                                    {machine.name === ''
+                                        ? t('operations.grid.machines.unnamed')
+                                        : machine.name}
+                                </Link>
                             </td>
                             <td className="py-2">
                                 {machine.running > 0 ? (
@@ -312,6 +319,12 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                                 ) : (
                                     <Tag tone="warn">{t('operations.grid.machines.down')}</Tag>
                                 )}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {machineFacts(machine.nodes).cpuCount || '—'}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {formatRam(machineFacts(machine.nodes).ramMb)}
                             </td>
                             <td className="py-2 font-mono">
                                 {t('operations.grid.machines.nodes', {
@@ -336,8 +349,13 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
     );
 }
 
-function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
+function NodesPanel({ nodes: every }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
+    const [search] = useSearchParams();
+    // A machine in the address narrows the list to its nodes. An empty name is the
+    // nodes that report no machine, and no parameter is every node.
+    const machine = search.get('machine');
+    const nodes = machine === null ? every : every.filter((node) => node.machine === machine);
     const [offset, setOffset] = useState(0);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const running = nodes.filter((node) => node.state === 'running');
@@ -375,11 +393,27 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                     )}
                 </div>
             </header>
+            {machine !== null && (
+                <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <Tag tone="accent">
+                        {t('operations.grid.nodes.filter', {
+                            machine:
+                                machine === '' ? t('operations.grid.machines.unnamed') : machine,
+                        })}
+                    </Tag>
+                    <Link to="/operations/grid?tab=nodes" className="underline">
+                        {t('operations.grid.nodes.clearFilter')}
+                    </Link>
+                </div>
+            )}
             <table className="w-full text-sm">
                 <thead className="text-left text-xs text-ink-faint">
                     <tr>
                         <th className="py-1 font-normal">
                             {t('operations.grid.nodes.columns.node')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.nodes.columns.machine')}
                         </th>
                         <th className="py-1 font-normal">
                             {t('operations.grid.nodes.columns.status')}
@@ -423,6 +457,13 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                             <tr key={node.host_id}>
                                 <td className="py-2">
                                     <NodeName node={node} />
+                                </td>
+                                <td className="py-2 font-mono">
+                                    {node.machine === '' ? (
+                                        <span className="text-ink-faint">—</span>
+                                    ) : (
+                                        node.machine
+                                    )}
                                 </td>
                                 <td className="py-2">
                                     <InstanceStateTag state={node.state} />
@@ -500,25 +541,51 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
     );
 }
 
+/** The Nodes tab: the node list, and above it the computer it is narrowed to. */
+function NodesTab({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
+    const [search] = useSearchParams();
+    const machine = search.get('machine');
+    return (
+        <>
+            {machine !== null && (
+                <MachineInfo
+                    machine={machine}
+                    nodes={nodes.filter((node) => node.machine === machine)}
+                />
+            )}
+            <NodesPanel nodes={nodes} />
+        </>
+    );
+}
+
 export function GridPage(): ReactNode {
     const { t } = useTranslation();
     const grid = useQuery({ queryKey: GRID_QUERY_KEY, queryFn: api.grid });
+    const [range, setRange] = useState<SeriesRange>('1h');
+    const { tab, bar } = useTabs({
+        label: t('operations.grid.tabs.label'),
+        tabs: GRID_TABS,
+        titleOf: (candidate) => t(`operations.grid.tabs.${candidate}`),
+    });
 
-    if (grid.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (grid.isError) {
-        return <Notice tone="error">{grid.error.message}</Notice>;
+    if (grid.isPending || grid.isError) {
+        return (
+            <ScreenFrame
+                trail={<AreaTrail area="operations" screen={t('operations.screens.grid')} />}
+                title={t('operations.grid.title')}
+                description={t('operations.grid.description')}
+            >
+                {grid.isError ? (
+                    <Notice tone="error">{grid.error.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
 
     const view = grid.data;
-    const hasSample = sampleTime(view.sampled_at) !== undefined;
     const gaps: readonly ScreenGap[] = [
-        {
-            title: t('operations.grid.gap.history.title'),
-            body: t('operations.grid.gap.history.body'),
-            journey: t('operations.journeys.grid'),
-        },
         {
             title: t('operations.grid.gap.noHost.title'),
             body: t('operations.grid.gap.noHost.body'),
@@ -553,17 +620,22 @@ export function GridPage(): ReactNode {
                 />
             </div>
 
-            {hasSample ? (
-                <SummaryPanel view={view} />
-            ) : (
-                <section className="card space-y-2 p-6">
-                    <h2 className="text-lg font-medium">{t('operations.grid.summary.title')}</h2>
-                    <Notice tone="warn">{t('operations.grid.summary.noSample')}</Notice>
-                </section>
+            {bar}
+
+            {tab === 'overview' && (
+                <>
+                    <GridLoadTab range={range} onRange={setRange} />
+                    <MachinesPanel nodes={view.nodes} />
+                </>
             )}
 
-            <MachinesPanel nodes={view.nodes} />
-            <NodesPanel nodes={view.nodes} />
+            {tab === 'usage' && <GridUsageTab />}
+
+            {tab === 'nodes' && (
+                <NodesTab nodes={view.nodes} />
+            )}
+
+            {tab === 'heatmap' && <GridNodeLoad range={range} onRange={setRange} />}
 
             <GapPanel gaps={gaps} />
             <RelatedJourneys ids={JOURNEYS} />

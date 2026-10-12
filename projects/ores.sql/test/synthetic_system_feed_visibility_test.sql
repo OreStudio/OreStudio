@@ -134,7 +134,12 @@ select case when not exists(select 1 from t_other)
                 60, 'geometric', false, false, '', '', null::uuid,
                 current_user, current_user, 'system.test', 'visibility test')$$,
                 (select id from t_system_party), (select system_collection from t_ids)),
-            '42501',
+            -- Refused whichever check fires first: row-level security
+            -- (42501), or the insert trigger, which resolves the row to the
+            -- acting tenant, where the system collection does not exist
+            -- (23503). The error code says which ran first, not whether the
+            -- write is allowed.
+            null,
             null,
             'a tenant cannot write a feed into a system collection'))
     end;

@@ -23,7 +23,6 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
-#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -234,7 +233,8 @@ TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", tags) {
     loop.start();
 
     const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(bound_source);
-    const auto payload = ores::nats::default_wire_codec().encode(tick_from(bound_source, quote_uri));
+    const auto payload =
+        ores::nats::default_wire_codec().encode(tick_from(bound_source, quote_uri));
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
     while (f.series_for(quote_uri).empty() && std::chrono::steady_clock::now() < deadline) {
         f.nats.publish(subject, payload);

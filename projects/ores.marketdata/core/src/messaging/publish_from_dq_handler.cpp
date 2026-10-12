@@ -22,6 +22,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <algorithm>
 #include <array>
@@ -129,6 +130,20 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
                 else if (*row[0] == "deleted")
                     result.records_deleted += count;
             }
+        }
+
+        // The SQL function inserts series without their identity rows, because SQL
+        // cannot run the codec the projection is read through. Until they are projected
+        // the resolver and the series list cannot see the series, so the publish is not
+        // complete without it. The series belong to the tenant the command names.
+        if (result.records_inserted + result.records_updated > 0) {
+            auto target_ctx =
+                ores::database::service::tenant_context::with_tenant(ctx_, cmd.tenant_id);
+            const auto done =
+                repository::market_series_identity_projector::project_missing(target_ctx);
+            BOOST_LOG_SEV(lg(), info)
+                << "publish_from_dq projected identities: projected=" << done.projected
+                << " already=" << done.already_projected << " unreadable=" << done.unreadable;
         }
 
         BOOST_LOG_SEV(lg(), info) << "publish_from_dq complete: fn=" << fn_name

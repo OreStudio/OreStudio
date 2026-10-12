@@ -46,12 +46,13 @@ std::string convert_to_table(const std::vector<credit_default_swap_instrument>& 
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Credit Curve" << "Issuer" << "Recovery Rate" << "Modified By"
-          << "Version" << fort::endr;
+    table << fort::header << "ID" << "Credit Curve" << "Issuer" << "Recovery Rate"
+          << "Reference Obligation" << "Upfront Fee" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& cd : v) {
         table << cd.trade_id << opt_str(cd.credit_curve_id) << opt_str(cd.issuer_id)
-              << opt_str(cd.recovery_rate) << cd.modified_by << cd.version << fort::endr;
+              << opt_str(cd.recovery_rate) << opt_str(cd.reference_obligation)
+              << opt_str(cd.upfront_fee) << cd.modified_by << cd.version << fort::endr;
     }
     return table.to_string();
 }

@@ -46,12 +46,12 @@ std::string convert_to_table(const std::vector<credit_linked_swap_instrument>& v
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Credit Curve" << "Recovery Rate" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "ID" << "Credit Curve" << "Recovery Rate" << "Default Payment"
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& cl : v) {
-        table << cl.trade_id << cl.credit_curve_id << opt_str(cl.recovery_rate) << cl.modified_by
-              << cl.version << fort::endr;
+        table << cl.trade_id << cl.credit_curve_id << opt_str(cl.recovery_rate)
+              << opt_str(cl.default_payment_time) << cl.modified_by << cl.version << fort::endr;
     }
     return table.to_string();
 }

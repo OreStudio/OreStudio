@@ -267,6 +267,36 @@ widening them.
 :column: trade_id
 :END:
 
+** instrument_options
+:PROPERTIES:
+:table:  ores_trading_instrument_options_tbl
+:column: trade_id
+:END:
+
+** instrument_option_premiums
+:PROPERTIES:
+:table:  ores_trading_instrument_option_premiums_tbl
+:column: trade_id
+:END:
+
+** instrument_option_exercise_fees
+:PROPERTIES:
+:table:  ores_trading_instrument_option_exercise_fees_tbl
+:column: trade_id
+:END:
+
+** instrument_option_payment_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_option_payment_dates_tbl
+:column: trade_id
+:END:
+
+** instrument_option_exercise_prices
+:PROPERTIES:
+:table:  ores_trading_instrument_option_exercise_prices_tbl
+:column: trade_id
+:END:
+
 ** credit_default_swap_instruments
 :PROPERTIES:
 :table:  ores_trading_cds_instruments_tbl

@@ -114,64 +114,109 @@ std::optional<double> to_double(const xsd::optional<float>& v) {
     return static_cast<double>(*v);
 }
 
+bool flag_is_true(bool_ v) {
+    switch (v) {
+    case bool_::Y:
+    case bool_::YES:
+    case bool_::TRUE_:
+    case bool_::True:
+    case bool_::true_:
+    case bool_::_1:
+        return true;
+    default:
+        return false;
+    }
+}
+
+std::optional<bool> to_flag(const xsd::optional<bool_>& v) {
+    if (!v)
+        return std::nullopt;
+    return flag_is_true(*v);
+}
+
+void set_flag(xsd::optional<bool_>& field, const std::optional<bool>& v) {
+    if (v)
+        field = *v ? bool_::Y : bool_::N;
+}
+
+template <typename Text>
+std::optional<std::string> to_text(const xsd::optional<Text>& v) {
+    if (!v)
+        return std::nullopt;
+    return std::string(*v);
+}
+
+template <typename Text>
+void set_text(xsd::optional<Text>& field, const std::optional<std::string>& v) {
+    if (!v)
+        return;
+    Text value;
+    static_cast<std::string&>(value) = *v;
+    field = std::move(value);
+}
+
+std::optional<std::chrono::year_month_day> to_date(const xsd::optional<date>& v) {
+    if (!v)
+        return std::nullopt;
+    return to_optional_date(std::string(*v));
+}
+
+void set_date(xsd::optional<date>& field,
+              const std::optional<std::chrono::year_month_day>& v) {
+    if (!v)
+        return;
+    date value;
+    static_cast<std::string&>(value) = to_ore_date(*v);
+    field = std::move(value);
+}
+
+std::optional<ores::utility::decimal::decimal> to_money(const xsd::optional<moneyFloat>& v) {
+    if (!v)
+        return std::nullopt;
+    return exact_decimal(*v);
+}
+
+void set_money(xsd::optional<moneyFloat>& field,
+               const std::optional<ores::utility::decimal::decimal>& v) {
+    if (!v)
+        return;
+    moneyFloat value;
+    set_exact(value, *v);
+    field = std::move(value);
+}
+
+// The CDO states its upfront fee as text that is empty or a number.
+std::optional<ores::utility::decimal::decimal> to_money(const xsd::optional<emptyFloat>& v) {
+    if (!v || std::string(*v).empty())
+        return std::nullopt;
+    auto parsed = ores::utility::decimal::decimal::from_string(std::string(*v));
+    if (!parsed)
+        return std::nullopt;
+    return *parsed;
+}
+
+void set_money(xsd::optional<emptyFloat>& field,
+               const std::optional<ores::utility::decimal::decimal>& v) {
+    if (v)
+        field = emptyFloat(v->to_string());
+}
+
+std::optional<int> to_days(const xsd::optional<uint64_t>& v) {
+    if (!v)
+        return std::nullopt;
+    return static_cast<int>(*v);
+}
+
+void set_days(xsd::optional<uint64_t>& field, const std::optional<int>& v) {
+    if (v)
+        field = static_cast<uint64_t>(*v);
+}
+
 template <typename Fact>
 const Fact& fact_of(const credit_instrument_data& data) {
     static const Fact empty{};
     const auto* f = std::get_if<Fact>(&data.facts);
     return f ? *f : empty;
-}
-
-// The index option states its strike as one shared strike row and its exercise
-// dates as shared schedule rows under the option owner.
-void append_option(credit_instrument_data& result,
-                   const indexCreditDefaultSwapOptionData& d) {
-    if (d.Strike) {
-        instrument_strike row;
-        row.bare_value = exact_decimal(*d.Strike);
-        stamp_audit(row);
-        result.strikes.push_back(std::move(row));
-    }
-    const auto& group = d.OptionData.exerciseDatesGroup;
-    if (!group || !group->ExerciseDates || group->ExerciseDates->ExerciseDate.empty())
-        return;
-
-    instrument_schedule schedule;
-    schedule.owner_role = "option";
-    schedule.owner_number = 1;
-    schedule.schedule_role = "exercise_dates";
-    schedule.sequence_number = 1;
-    schedule.schedule_kind = "dates";
-    stamp_audit(schedule);
-    result.schedules.push_back(std::move(schedule));
-
-    int date_number = 0;
-    for (const auto& date : group->ExerciseDates->ExerciseDate) {
-        instrument_schedule_date row;
-        row.owner_role = "option";
-        row.owner_number = 1;
-        row.schedule_role = "exercise_dates";
-        row.schedule_sequence_number = 1;
-        row.sequence_number = ++date_number;
-        row.schedule_date = to_domain_date(std::string(date));
-        stamp_audit(row);
-        result.schedule_dates.push_back(std::move(row));
-    }
-}
-
-std::vector<std::chrono::year_month_day>
-exercise_dates_of(const std::vector<instrument_schedule_date>& rows) {
-    std::vector<const instrument_schedule_date*> picked;
-    for (const auto& row : rows) {
-        if (row.owner_role == "option" && row.schedule_role == "exercise_dates")
-            picked.push_back(&row);
-    }
-    std::stable_sort(picked.begin(), picked.end(), [](const auto* a, const auto* b) {
-        return a->sequence_number < b->sequence_number;
-    });
-    std::vector<std::chrono::year_month_day> out;
-    for (const auto* row : picked)
-        out.push_back(row->schedule_date);
-    return out;
 }
 
 } // namespace
@@ -291,6 +336,52 @@ basketData credit_instrument_mapper::reverse_basket(
 // Forward: the carrier
 // ---------------------------------------------------------------------------
 
+namespace {
+
+// The swap-like products state the same accrual and payment elements.
+template <typename Fact, typename Data>
+void read_accrual(Fact& fact, const Data& d) {
+    fact.settles_accrual = to_flag(d.SettlesAccrual);
+    fact.rebates_accrual = to_flag(d.RebatesAccrual);
+    fact.pays_at_default_time = to_flag(d.PaysAtDefaultTime);
+    fact.protection_payment_time = to_text(d.ProtectionPaymentTime);
+}
+
+template <typename Fact, typename Data>
+void write_accrual(const Fact& fact, Data& d) {
+    set_flag(d.SettlesAccrual, fact.settles_accrual);
+    set_flag(d.RebatesAccrual, fact.rebates_accrual);
+    set_flag(d.PaysAtDefaultTime, fact.pays_at_default_time);
+    set_text(d.ProtectionPaymentTime, fact.protection_payment_time);
+}
+
+index_credit_default_swap_instrument read_index_swap(const indexCreditDefaultSwapData& d) {
+    auto fact = make_fact<index_credit_default_swap_instrument>();
+    fact.credit_curve_id = std::string(d.CreditCurveId);
+    fact.issuer_id = to_text(d.IssuerId);
+    read_accrual(fact, d);
+    fact.protection_start_date = to_date(d.ProtectionStart);
+    fact.upfront_date = to_date(d.UpfrontDate);
+    fact.upfront_fee = to_money(d.UpfrontFee);
+    fact.trade_date = to_date(d.TradeDate);
+    fact.cash_settlement_days = to_days(d.CashSettlementDays);
+    return fact;
+}
+
+void write_index_swap(const index_credit_default_swap_instrument& fact,
+                      indexCreditDefaultSwapData& d) {
+    static_cast<std::string&>(d.CreditCurveId) = fact.credit_curve_id;
+    set_text(d.IssuerId, fact.issuer_id);
+    write_accrual(fact, d);
+    set_date(d.ProtectionStart, fact.protection_start_date);
+    set_date(d.UpfrontDate, fact.upfront_date);
+    set_money(d.UpfrontFee, fact.upfront_fee);
+    set_date(d.TradeDate, fact.trade_date);
+    set_days(d.CashSettlementDays, fact.cash_settlement_days);
+}
+
+} // namespace
+
 credit_instrument_data credit_instrument_mapper::forward_cds(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CreditDefaultSwap: " << std::string(t.id);
     credit_instrument_data result;
@@ -300,9 +391,15 @@ credit_instrument_data credit_instrument_mapper::forward_cds(const trade& t) {
         const auto& d = *t.CreditDefaultSwapData;
         if (d.creditCurveIdType.CreditCurveId)
             fact.credit_curve_id = std::string(*d.creditCurveIdType.CreditCurveId);
-        if (d.IssuerId)
-            fact.issuer_id = std::string(*d.IssuerId);
+        fact.issuer_id = to_text(d.IssuerId);
+        fact.reference_obligation = to_text(d.ReferenceObligation);
+        read_accrual(fact, d);
+        fact.protection_start_date = to_date(d.ProtectionStart);
+        fact.upfront_date = to_date(d.UpfrontDate);
+        fact.upfront_fee = to_money(d.UpfrontFee);
         fact.recovery_rate = to_double(d.FixedRecoveryRate);
+        fact.trade_date = to_date(d.TradeDate);
+        fact.cash_settlement_days = to_days(d.CashSettlementDays);
         result.instrument.reference_entity =
             fact.issuer_id ? *fact.issuer_id : fact.credit_curve_id.value_or("");
         map_leg_dates(d.LegData, result.instrument);
@@ -319,7 +416,7 @@ credit_instrument_data credit_instrument_mapper::forward_index_cds(const trade& 
     auto fact = make_fact<index_credit_default_swap_instrument>();
     if (t.IndexCreditDefaultSwapData) {
         const auto& d = *t.IndexCreditDefaultSwapData;
-        fact.credit_curve_id = std::string(d.CreditCurveId);
+        fact = read_index_swap(d);
         result.instrument.reference_entity = fact.credit_curve_id;
         map_leg_dates(d.LegData, result.instrument);
         append_leg(result, d.LegData, "premium");
@@ -339,13 +436,35 @@ credit_instrument_data credit_instrument_mapper::forward_index_cds_option(const 
     if (t.IndexCreditDefaultSwapOptionData) {
         const auto& od = *t.IndexCreditDefaultSwapOptionData;
         const auto& d = od.IndexCreditDefaultSwapData;
-        fact.credit_curve_id = std::string(d.CreditCurveId);
-        result.instrument.reference_entity = fact.credit_curve_id;
+        fact.knock_out = to_flag(od.KnockOut);
+        fact.index_term = to_text(od.IndexTerm);
+        if (od.StrikeType)
+            fact.strike_type = to_string(*od.StrikeType);
+        fact.trade_date = to_date(od.TradeDate);
+        fact.front_end_protection_start_date = to_date(od.FrontEndProtectionStartDate);
+
+        result.wrapped_index_swap = read_index_swap(d);
+        result.instrument.reference_entity = result.wrapped_index_swap->credit_curve_id;
         map_leg_dates(d.LegData, result.instrument);
         append_leg(result, d.LegData, "premium");
         if (d.BasketData)
             append_basket(result, *d.BasketData);
-        append_option(result, od);
+
+        // The strike is the option's one shared strike row.
+        if (od.Strike) {
+            instrument_strike row;
+            row.bare_value = exact_decimal(*od.Strike);
+            stamp_audit(row);
+            result.strikes.push_back(std::move(row));
+        }
+        auto rows = swap_instrument_mapper::map_option_block(od.OptionData);
+        result.options = std::move(rows.options);
+        result.option_premiums = std::move(rows.premiums);
+        result.option_exercise_fees = std::move(rows.exercise_fees);
+        result.option_payment_dates = std::move(rows.payment_dates);
+        result.option_exercise_prices = std::move(rows.exercise_prices);
+        result.schedules = std::move(rows.schedules);
+        result.schedule_dates = std::move(rows.schedule_dates);
     }
     result.facts = std::move(fact);
     return result;
@@ -359,7 +478,9 @@ credit_instrument_data credit_instrument_mapper::forward_credit_linked_swap(cons
     if (t.CreditLinkedSwapData) {
         const auto& d = *t.CreditLinkedSwapData;
         fact.credit_curve_id = std::string(d.CreditCurveId);
+        fact.settles_accrual = to_flag(d.SettlesAccrual);
         fact.recovery_rate = to_double(d.FixedRecoveryRate);
+        fact.default_payment_time = to_text(d.DefaultPaymentTime);
         result.instrument.reference_entity = fact.credit_curve_id;
         // The header's dates are those of the first contingent payment leg.
         if (d.ContingentPayments && !d.ContingentPayments->LegData.empty())
@@ -388,6 +509,9 @@ credit_instrument_data credit_instrument_mapper::forward_synthetic_cdo(const tra
         const auto& d = *t.CdoData;
         fact.qualifier = std::string(d.Qualifier);
         fact.protection_start_date = to_domain_date(std::string(d.ProtectionStart));
+        fact.upfront_date = to_date(d.UpfrontDate);
+        fact.upfront_fee = to_money(d.UpfrontFee);
+        read_accrual(fact, d);
         fact.attachment_point = static_cast<double>(d.AttachmentPoint);
         fact.detachment_point = static_cast<double>(d.DetachmentPoint);
         fact.recovery_rate = to_double(d.FixedRecoveryRate);
@@ -438,13 +562,16 @@ trade credit_instrument_mapper::reverse_cds(const credit_instrument_data& data) 
         static_cast<std::string&>(cid) = *fact.credit_curve_id;
         d.creditCurveIdType.CreditCurveId = std::move(cid);
     }
-    if (fact.issuer_id) {
-        creditDefaultSwapData_IssuerId_t iid;
-        static_cast<std::string&>(iid) = *fact.issuer_id;
-        d.IssuerId = std::move(iid);
-    }
+    set_text(d.IssuerId, fact.issuer_id);
+    set_text(d.ReferenceObligation, fact.reference_obligation);
+    write_accrual(fact, d);
+    set_date(d.ProtectionStart, fact.protection_start_date);
+    set_date(d.UpfrontDate, fact.upfront_date);
+    set_money(d.UpfrontFee, fact.upfront_fee);
     if (fact.recovery_rate)
         d.FixedRecoveryRate = static_cast<float>(*fact.recovery_rate);
+    set_date(d.TradeDate, fact.trade_date);
+    set_days(d.CashSettlementDays, fact.cash_settlement_days);
     const auto legs = reverse_group(data, "premium");
     if (!legs.empty())
         d.LegData = legs.front();
@@ -454,11 +581,10 @@ trade credit_instrument_mapper::reverse_cds(const credit_instrument_data& data) 
 
 trade credit_instrument_mapper::reverse_index_cds(const credit_instrument_data& data) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping IndexCreditDefaultSwap";
-    const auto& fact = fact_of<index_credit_default_swap_instrument>(data);
     trade t;
     t.TradeType = oreTradeType::IndexCreditDefaultSwap;
     indexCreditDefaultSwapData d;
-    static_cast<std::string&>(d.CreditCurveId) = fact.credit_curve_id;
+    write_index_swap(fact_of<index_credit_default_swap_instrument>(data), d);
     const auto legs = reverse_group(data, "premium");
     if (!legs.empty())
         d.LegData = legs.front();
@@ -474,29 +600,33 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
     trade t;
     t.TradeType = oreTradeType::IndexCreditDefaultSwapOption;
     indexCreditDefaultSwapOptionData d;
-    static_cast<std::string&>(d.IndexCreditDefaultSwapData.CreditCurveId) = fact.credit_curve_id;
+    set_flag(d.KnockOut, fact.knock_out);
+    set_text(d.IndexTerm, fact.index_term);
+    if (fact.strike_type)
+        d.StrikeType = *fact.strike_type == "Spread" ? cdsOptionstrikeType::Spread
+                                                     : cdsOptionstrikeType::Price;
+    set_date(d.TradeDate, fact.trade_date);
+    set_date(d.FrontEndProtectionStartDate, fact.front_end_protection_start_date);
+
+    if (data.wrapped_index_swap)
+        write_index_swap(*data.wrapped_index_swap, d.IndexCreditDefaultSwapData);
     const auto legs = reverse_group(data, "premium");
     if (!legs.empty())
         d.IndexCreditDefaultSwapData.LegData = legs.front();
     if (!data.constituents.empty())
         d.IndexCreditDefaultSwapData.BasketData = reverse_basket(data.constituents);
-    if (!data.strikes.empty() && data.strikes.front().bare_value) {
-        moneyFloat strike;
-        set_exact(strike, *data.strikes.front().bare_value);
-        d.Strike = std::move(strike);
-    }
-    const auto dates = exercise_dates_of(data.schedule_dates);
-    if (!dates.empty()) {
-        _ExerciseDates_t exd;
-        for (const auto& day : dates) {
-            date ed;
-            static_cast<std::string&>(ed) = to_ore_date(day);
-            exd.ExerciseDate.push_back(ed);
-        }
-        exerciseDatesGroup_group_t eg;
-        eg.ExerciseDates = std::move(exd);
-        d.OptionData.exerciseDatesGroup = std::move(eg);
-    }
+    if (!data.strikes.empty() && data.strikes.front().bare_value)
+        set_money(d.Strike, data.strikes.front().bare_value);
+
+    swap_instrument_mapper::option_rows rows;
+    rows.options = data.options;
+    rows.premiums = data.option_premiums;
+    rows.exercise_fees = data.option_exercise_fees;
+    rows.payment_dates = data.option_payment_dates;
+    rows.exercise_prices = data.option_exercise_prices;
+    rows.schedules = data.schedules;
+    rows.schedule_dates = data.schedule_dates;
+    d.OptionData = swap_instrument_mapper::rebuild_option_block(rows);
     t.IndexCreditDefaultSwapOptionData = std::move(d);
     return t;
 }
@@ -508,8 +638,10 @@ trade credit_instrument_mapper::reverse_credit_linked_swap(const credit_instrume
     t.TradeType = oreTradeType::CreditLinkedSwap;
     creditLinkedSwapData d;
     static_cast<std::string&>(d.CreditCurveId) = fact.credit_curve_id;
+    set_flag(d.SettlesAccrual, fact.settles_accrual);
     if (fact.recovery_rate)
         d.FixedRecoveryRate = static_cast<float>(*fact.recovery_rate);
+    set_text(d.DefaultPaymentTime, fact.default_payment_time);
     const auto fill_group = [&](auto& slot, const std::string& group) {
         auto legs = reverse_group(data, group);
         if (legs.empty())
@@ -536,6 +668,9 @@ trade credit_instrument_mapper::reverse_synthetic_cdo(const credit_instrument_da
     static_cast<std::string&>(d.Qualifier) = fact.qualifier;
     if (fact.protection_start_date.ok())
         static_cast<std::string&>(d.ProtectionStart) = to_ore_date(fact.protection_start_date);
+    set_date(d.UpfrontDate, fact.upfront_date);
+    set_money(d.UpfrontFee, fact.upfront_fee);
+    write_accrual(fact, d);
     d.AttachmentPoint = static_cast<float>(fact.attachment_point);
     d.DetachmentPoint = static_cast<float>(fact.detachment_point);
     if (fact.recovery_rate)

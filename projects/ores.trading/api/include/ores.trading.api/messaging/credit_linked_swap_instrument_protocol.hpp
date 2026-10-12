@@ -44,6 +44,8 @@ struct credit_linked_swap_instrument_write {
     boost::uuids::uuid trade_activity_id;
     std::string credit_curve_id;
     std::optional<double> recovery_rate;
+    std::optional<bool> settles_accrual;
+    std::optional<std::string> default_payment_time;
 };
 
 struct credit_linked_swap_instrument_change {

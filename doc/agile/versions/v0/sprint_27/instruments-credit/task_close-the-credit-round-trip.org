@@ -2,50 +2,64 @@
 :ID: 8B6C30D1-9BFE-484A-AACD-7541CBE77715
 :END:
 #+title: Task: Close the credit round trip
-#+description: The agreement's export omits its required ParticipationRate, ProtectionFee and Underlying, so it is not valid ORE, and every credit product drops elements of the schema. Write them on import and export. (Staging unit 6.)
+#+description: Every credit product drops elements of the schema. Store the accrual and payment flags, the upfront date and fee, the cash settlement days, the index option's own elements and its option block, and export them. The agreement follows in unit 7. (Staging unit 6.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/close-the-credit-round-trip
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Each credit product's ORE elements come back from the tables, and the agreement exports as valid ORE.
+Each swap-like credit product's ORE elements come back from the tables.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
-- The agreement stores its participation rate, protection fee and underlying legs, and exports all three.
-- The dropped elements of each product are stored in its fact table and exported.
-- A mapper test per product holds its fields through the round trip.
-- The design's open question is settled and recorded: how an agreement's underlying option is told apart from a trade's own option on the shared option table.
+- The dropped elements of the credit default swap, the index swap, the index option, the synthetic CDO and the credit linked swap are stored in the product's fact table and exported.
+- The index option stores its own elements in its fact row, the wrapped index swap's elements in the index swap's table, and its option block in the shared option tables.
+- A mapper test per product holds its elements through the round trip.
 - The ORE suite passes.
+- The risk participation agreement is out of scope: unit 7 takes it, because its protection fee is a list of legs and its underlying can hold a treasury lock on a bond.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Widen the fact tables.* Add a column only with its writer: the accrual and
+   payment flags, the payment time, the protection start, the upfront date and
+   fee, the trade date and the cash settlement days of the swap-like products,
+   the option's knock-out flag, index term, strike type and front-end start, and
+   the credit linked swap's default payment time. A flag is a boolean and the
+   upfront fee is an exact decimal.
+2. *Two rows for the index option.* The option wraps an index swap, so the trade
+   has its option row and a row of the index swap's table. The carrier holds the
+   option row as its fact and the wrapped swap's row beside it. This undoes the
+   one-row shortcut of unit 5, which could not hold the wrapped swap's columns
+   without copying them.
+3. *The shared option block.* The swaption's option mapping becomes public as
+   =map_option_block= and =rebuild_option_block=, and the credit carrier holds
+   the option rows. The header's delete cascade, the export service and the
+   import handler carry them.
+4. *Prove it.* A test per product reads its elements back, and the suites run
+   against a recreated database.
 
 * Measurements
 
@@ -59,9 +73,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE core suite | all pass | =ctest --preset linux-clang-debug-make -R ores.ore.core.tests= | the PR head |
+| Trading core suite | all pass, with the generated eventing tests | =ctest --preset linux-clang-debug-make -R ores.trading.core.tests= | the PR head |
+| Shell trading suite | all pass | =ctest --preset linux-clang-debug-make -R ores.shell.trading.tests= | the PR head |
+| Build | exit 0 | =compass build ores.ore.core.tests ores.trading.core.tests ores.shell.trading.tests ores.ore.service.exe= | the PR head |
 
 * Notes
+
+- The ORE binding showed what the analysis missed. The agreement's
+  =ProtectionFee= is a list of legs, not an amount, and its =Underlying= holds
+  legs, an optional option block, a naked-option flag and an optional treasury
+  lock whose data is a whole bond. The design had a money column for the fee.
+  The agreement became unit 7, and the design now says so.
+- The synthetic CDO states its upfront fee as text that is empty or a number.
+  The mapper stores a number as an exact decimal and an empty text as null.
+- The ORE flag type has thirteen spellings (Y, YES, true, 1 and so on). The
+  tables hold a boolean, so the export writes Y or N. A document that wrote
+  =false= comes back as =N=. Both are valid ORE.
+- The index option's exercise rules beyond a list of dates (an exercise
+  schedule) go to the shared schedule tables through the swaption's mapping.
 
 * Test Scenarios
 
@@ -84,6 +114,20 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The agreement is split from this unit | the staging | accept | Its protection fee and underlying need legs, an option and a bond; they are unit 7. |
+| 2 | A flag spelled false comes back as N | credit_instrument_mapper.cpp | accept | The ORE flag type has thirteen spellings and the table holds a boolean, so the export is canonical. |
+| 3 | The index option writes two fact rows | the carrier | accept | The wrapped swap's columns would otherwise be copied into the option's table. |
 
 * Result
+
+Each swap-like credit product stores the elements the mapper used to drop. The
+credit default swap, the index swap and the synthetic CDO hold their accrual and
+payment flags, payment time, upfront date and fee, and the swaps their protection
+start, trade date and cash settlement days. The credit linked swap holds its
+settles-accrual flag and default payment time. The index option holds its
+knock-out flag, index term, strike type, trade date and front-end start in its
+own row, the wrapped swap's elements in the index swap's table, and its option
+block in the shared option tables. All of them come back through the export.
+
+Acceptance met for the five swap-like products. The risk participation
+agreement is unit 7.

@@ -107,6 +107,8 @@ to_domain(const messaging::credit_linked_swap_instrument_write& write) {
     v.trade_activity_id = write.trade_activity_id;
     v.credit_curve_id = write.credit_curve_id;
     v.recovery_rate = write.recovery_rate;
+    v.settles_accrual = write.settles_accrual;
+    v.default_payment_time = write.default_payment_time;
     return v;
 }
 

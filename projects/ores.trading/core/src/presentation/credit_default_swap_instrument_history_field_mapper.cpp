@@ -46,6 +46,38 @@ render_credit_default_swap_instrument_fields(const domain::credit_default_swap_i
     fields.push_back({.name = "Issuer ID", .value = v.issuer_id.value_or(std::string{})});
     fields.push_back({.name = "Recovery Rate",
                       .value = v.recovery_rate ? std::to_string(*v.recovery_rate) : std::string{}});
+    fields.push_back(
+        {.name = "Reference Obligation", .value = v.reference_obligation.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Settles Accrual",
+         .value = v.settles_accrual ? (*v.settles_accrual ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Rebates Accrual",
+         .value = v.rebates_accrual ? (*v.rebates_accrual ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Pays At Default Time",
+                      .value = v.pays_at_default_time ?
+                                   (*v.pays_at_default_time ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Protection Payment Time",
+                      .value = v.protection_payment_time.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Protection Start Date",
+         .value = v.protection_start_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.protection_start_date) :
+                      std::string{}});
+    fields.push_back({.name = "Upfront Date",
+                      .value = v.upfront_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                    *v.upfront_date) :
+                                                std::string{}});
+    fields.push_back({.name = "Upfront Fee",
+                      .value = v.upfront_fee ? v.upfront_fee->to_string() : std::string{}});
+    fields.push_back({.name = "Trade Date",
+                      .value = v.trade_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.trade_date) :
+                                   std::string{}});
+    fields.push_back({.name = "Cash Settlement Days",
+                      .value = v.cash_settlement_days ? std::to_string(*v.cash_settlement_days) :
+                                                        std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

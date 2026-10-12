@@ -42,7 +42,11 @@ struct index_credit_default_swap_option_instrument_key {
 struct index_credit_default_swap_option_instrument_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
-    std::string credit_curve_id;
+    std::optional<bool> knock_out;
+    std::optional<std::string> index_term;
+    std::optional<std::string> strike_type;
+    std::optional<std::chrono::year_month_day> trade_date;
+    std::optional<std::chrono::year_month_day> front_end_protection_start_date;
 };
 
 struct index_credit_default_swap_option_instrument_change {

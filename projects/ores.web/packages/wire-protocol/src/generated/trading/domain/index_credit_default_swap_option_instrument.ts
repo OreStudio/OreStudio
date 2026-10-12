@@ -35,7 +35,11 @@ export interface IndexCreditDefaultSwapOptionInstrument {
     tenant_id: string;
     trade_id: string;
     trade_activity_id: string;
-    credit_curve_id: string;
+    knock_out: boolean | null;
+    index_term: string | null;
+    strike_type: string | null;
+    trade_date: string | null;
+    front_end_protection_start_date: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

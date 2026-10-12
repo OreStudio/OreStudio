@@ -2,7 +2,7 @@
 :ID: E58A1EF3-89FF-4AD8-BB25-462A2F8F29D7
 :END:
 #+title: Task: Map the credit dates into the common-date view
-#+description: Unit 5 declared the credit header's dates and generated the family's eventing tests. This unit proves the view: a probe reads one date column across a rates trade and a credit trade. (Staging unit 7.)
+#+description: Unit 5 declared the credit header's dates and generated the family's eventing tests. This unit proves the view: a probe reads one date column across a rates trade and a credit trade. (Staging unit 8.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:

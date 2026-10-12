@@ -144,7 +144,12 @@ TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
     CHECK(!r.reference_entity.empty());
     const auto& fact =
         fact_of<ores::trading::domain::index_credit_default_swap_option_instrument>(data);
-    CHECK(fact.credit_curve_id == r.reference_entity);
+    REQUIRE(data.wrapped_index_swap);
+    CHECK(data.wrapped_index_swap->credit_curve_id == r.reference_entity);
+    CHECK(fact.knock_out == std::optional<bool>(false));
+    CHECK(fact.index_term == std::optional<std::string>("5Y"));
+    CHECK(fact.strike_type == std::optional<std::string>("Price"));
+    REQUIRE(data.options.size() == 1);
     REQUIRE(data.strikes.size() == 1);
     CHECK(data.strikes.front().bare_value.has_value());
     CHECK(!data.schedule_dates.empty());
@@ -309,4 +314,71 @@ TEST_CASE("credit_mapper_groups_the_legs_of_a_credit_linked_swap", tags) {
         CHECK((*leg.leg_group == "independent" || *leg.leg_group == "contingent" ||
                *leg.leg_group == "default" || *leg.leg_group == "recovery"));
     }
+}
+
+TEST_CASE("credit_mapper_holds_the_dropped_elements_of_a_cds", tags) {
+    const auto data = load_and_map("Credit_Default_Swap.xml");
+    const auto& fact = fact_of<ores::trading::domain::credit_default_swap_instrument>(data);
+
+    CHECK(fact.protection_payment_time == std::optional<std::string>("atDefault"));
+    REQUIRE(fact.upfront_fee);
+    CHECK(*fact.upfront_fee == dec("0.0"));
+    CHECK(fact.upfront_date.has_value());
+    CHECK(fact.protection_start_date.has_value());
+
+    const auto rt = credit_instrument_mapper::reverse_cds(data);
+    REQUIRE(rt.CreditDefaultSwapData);
+    REQUIRE(rt.CreditDefaultSwapData->UpfrontFee);
+    CHECK(dec(rt.CreditDefaultSwapData->UpfrontFee->lexical()) == dec("0.0"));
+    REQUIRE(rt.CreditDefaultSwapData->ProtectionPaymentTime);
+    CHECK(std::string(*rt.CreditDefaultSwapData->ProtectionPaymentTime) == "atDefault");
+    CHECK(static_cast<bool>(rt.CreditDefaultSwapData->UpfrontDate));
+}
+
+TEST_CASE("credit_mapper_holds_the_dropped_elements_of_an_index_cds", tags) {
+    const auto data = load_and_map("Credit_Index_Credit_Default_Swap.xml");
+    const auto& fact = fact_of<ores::trading::domain::index_credit_default_swap_instrument>(data);
+
+    const auto rt = credit_instrument_mapper::reverse_index_cds(data);
+    REQUIRE(rt.IndexCreditDefaultSwapData);
+    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapData->ProtectionStart) ==
+          fact.protection_start_date.has_value());
+    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapData->UpfrontFee) == fact.upfront_fee.has_value());
+    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapData->SettlesAccrual) ==
+          fact.settles_accrual.has_value());
+}
+
+TEST_CASE("credit_mapper_holds_the_option_block_of_an_index_option", tags) {
+    const auto data = load_and_map("Credit_Index_CDS_Option.xml");
+
+    const auto rt = credit_instrument_mapper::reverse_index_cds_option(data);
+    REQUIRE(rt.IndexCreditDefaultSwapOptionData);
+    const auto& od = rt.IndexCreditDefaultSwapOptionData->OptionData;
+    CHECK(std::string(od.LongShort) == data.options.front().long_short);
+    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapOptionData->KnockOut));
+    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapOptionData->IndexTerm));
+    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapOptionData->StrikeType));
+}
+
+TEST_CASE("credit_mapper_holds_the_dropped_elements_of_a_synthetic_cdo", tags) {
+    const auto data = load_and_map("Credit_Synthetic_CDO_refdata.xml");
+    const auto& fact = fact_of<ores::trading::domain::synthetic_cdo_instrument>(data);
+
+    const auto rt = credit_instrument_mapper::reverse_synthetic_cdo(data);
+    REQUIRE(rt.CdoData);
+    CHECK(static_cast<bool>(rt.CdoData->SettlesAccrual) == fact.settles_accrual.has_value());
+    CHECK(static_cast<bool>(rt.CdoData->UpfrontDate) == fact.upfront_date.has_value());
+    CHECK(static_cast<bool>(rt.CdoData->UpfrontFee) == fact.upfront_fee.has_value());
+}
+
+TEST_CASE("credit_mapper_holds_the_dropped_elements_of_a_credit_linked_swap", tags) {
+    const auto data = load_and_map("Credit_CreditLinkedSwap.xml");
+    const auto& fact = fact_of<ores::trading::domain::credit_linked_swap_instrument>(data);
+    CHECK(fact.default_payment_time == std::optional<std::string>("atDefault"));
+
+    const auto rt = credit_instrument_mapper::reverse_credit_linked_swap(data);
+    REQUIRE(rt.CreditLinkedSwapData);
+    REQUIRE(rt.CreditLinkedSwapData->DefaultPaymentTime);
+    CHECK(std::string(*rt.CreditLinkedSwapData->DefaultPaymentTime) == "atDefault");
+    CHECK(static_cast<bool>(rt.CreditLinkedSwapData->SettlesAccrual) == fact.settles_accrual.has_value());
 }

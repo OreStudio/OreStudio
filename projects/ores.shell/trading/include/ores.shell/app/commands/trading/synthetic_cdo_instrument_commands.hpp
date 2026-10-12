@@ -88,7 +88,9 @@ public:
 
     /**
      * @brief add <trade_id> <trade_activity_id> <qualifier> <protection_start_date>
-     * <attachment_point> <detachment_point> <recovery_rate> <reason> <commentary>
+     * <attachment_point> <detachment_point> <recovery_rate> <settles_accrual> <rebates_accrual>
+     * <pays_at_default_time> <protection_payment_time> <upfront_date> <upfront_fee> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +98,9 @@ public:
 
     /**
      * @brief set <trade_id> <trade_activity_id> <qualifier> <protection_start_date>
-     * <attachment_point> <detachment_point> <recovery_rate> <reason> <commentary> [--version <n>]
+     * <attachment_point> <detachment_point> <recovery_rate> <settles_accrual> <rebates_accrual>
+     * <pays_at_default_time> <protection_payment_time> <upfront_date> <upfront_fee> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,8 +108,9 @@ public:
 
     /**
      * @brief put-many --count <n> <trade_id> <trade_activity_id> <qualifier>
-     * <protection_start_date> <attachment_point> <detachment_point> <recovery_rate> <reason>
-     * <commentary>
+     * <protection_start_date> <attachment_point> <detachment_point> <recovery_rate>
+     * <settles_accrual> <rebates_accrual> <pays_at_default_time> <protection_payment_time>
+     * <upfront_date> <upfront_fee> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

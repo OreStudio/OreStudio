@@ -40,6 +40,8 @@ create table if not exists "ores_trading_credit_linked_swap_instruments_tbl" (
     "trade_activity_id" uuid not null,
     "credit_curve_id" text not null,
     "recovery_rate" double precision null,
+    "settles_accrual" boolean null,
+    "default_payment_time" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

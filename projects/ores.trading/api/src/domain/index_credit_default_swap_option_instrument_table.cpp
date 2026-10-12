@@ -25,18 +25,33 @@
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<index_credit_default_swap_option_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Credit Curve" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "ID" << "Index Term" << "Strike Type" << "Modified By" << "Version"
+          << fort::endr;
 
     for ([[maybe_unused]] const auto& io : v) {
-        table << io.trade_id << io.credit_curve_id << io.modified_by << io.version << fort::endr;
+        table << io.trade_id << opt_str(io.index_term) << opt_str(io.strike_type) << io.modified_by
+              << io.version << fort::endr;
     }
     return table.to_string();
 }

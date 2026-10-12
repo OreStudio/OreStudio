@@ -47,6 +47,16 @@ struct index_credit_default_swap_instrument_entity {
     int version = 0;
     std::string trade_activity_id;
     std::string credit_curve_id;
+    std::optional<std::string> issuer_id;
+    std::optional<bool> settles_accrual;
+    std::optional<bool> rebates_accrual;
+    std::optional<bool> pays_at_default_time;
+    std::optional<std::string> protection_payment_time;
+    std::optional<std::string> protection_start_date;
+    std::optional<std::string> upfront_date;
+    std::optional<std::string> upfront_fee;
+    std::optional<std::string> trade_date;
+    std::optional<int> cash_settlement_days;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

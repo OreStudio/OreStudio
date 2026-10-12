@@ -142,23 +142,24 @@ void index_credit_default_swap_option_instrument_commands::register_commands(cli
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_activity_id> <credit_curve_id> <reason> <commentary>");
+        "add <trade_id> <trade_activity_id> <knock_out> <index_term> <strike_type> <trade_date> "
+        "<front_end_protection_start_date> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_activity_id> <credit_curve_id> <reason> <commentary> [--version "
-        "<n>]");
+        "set <trade_id> <trade_activity_id> <knock_out> <index_term> <strike_type> <trade_date> "
+        "<front_end_protection_start_date> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <trade_activity_id> <credit_curve_id> <reason> "
-        "<commentary>");
+        "put-many --count <n> <trade_id> <trade_activity_id> <knock_out> <index_term> "
+        "<strike_type> <trade_date> <front_end_protection_start_date> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -352,16 +353,21 @@ void index_credit_default_swap_option_instrument_commands::process_add(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
-            req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
+        read_token(req.change.write.knock_out, parsed->positionals[next++], "knock_out");
+        read_token(req.change.write.index_term, parsed->positionals[next++], "index_term");
+        read_token(req.change.write.strike_type, parsed->positionals[next++], "strike_type");
+        read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
+        read_token(req.change.write.front_end_protection_start_date,
+                   parsed->positionals[next++],
+                   "front_end_protection_start_date");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -404,16 +410,21 @@ void index_credit_default_swap_option_instrument_commands::process_set(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
-            req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
+        read_token(req.change.write.knock_out, parsed->positionals[next++], "knock_out");
+        read_token(req.change.write.index_term, parsed->positionals[next++], "index_term");
+        read_token(req.change.write.strike_type, parsed->positionals[next++], "strike_type");
+        read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
+        read_token(req.change.write.front_end_protection_start_date,
+                   parsed->positionals[next++],
+                   "front_end_protection_start_date");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -468,8 +479,8 @@ void index_credit_default_swap_option_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 3 + 2) {
-            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -478,8 +489,13 @@ void index_credit_default_swap_option_instrument_commands::process_put_many(
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(
-                change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
+            read_token(change.write.knock_out, parsed->positionals[next++], "knock_out");
+            read_token(change.write.index_term, parsed->positionals[next++], "index_term");
+            read_token(change.write.strike_type, parsed->positionals[next++], "strike_type");
+            read_token(change.write.trade_date, parsed->positionals[next++], "trade_date");
+            read_token(change.write.front_end_protection_start_date,
+                       parsed->positionals[next++],
+                       "front_end_protection_start_date");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

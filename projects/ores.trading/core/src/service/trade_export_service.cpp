@@ -276,6 +276,16 @@ void populate_instruments_for_trades(const Ctx& ctx,
         take(schedules, batch.instrument_schedules);
         auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, credit_ids);
         take(schedule_dates, batch.instrument_schedule_dates);
+        auto options = repository::read_options_by_trade_ids(ctx, credit_ids);
+        take(options, batch.instrument_options);
+        auto premiums = repository::read_option_premiums_by_trade_ids(ctx, credit_ids);
+        take(premiums, batch.instrument_option_premiums);
+        auto fees = repository::read_option_exercise_fees_by_trade_ids(ctx, credit_ids);
+        take(fees, batch.instrument_option_exercise_fees);
+        auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, credit_ids);
+        take(payment_dates, batch.instrument_option_payment_dates);
+        auto exercise_prices = repository::read_option_exercise_prices_by_trade_ids(ctx, credit_ids);
+        take(exercise_prices, batch.instrument_option_exercise_prices);
     }
     if (!commodity_ids.empty()) {
         repository::commodity_basket_constituent_repository constituent_repo;

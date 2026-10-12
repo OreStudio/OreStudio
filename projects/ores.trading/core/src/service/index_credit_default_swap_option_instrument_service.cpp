@@ -106,7 +106,11 @@ to_domain(const messaging::index_credit_default_swap_option_instrument_write& wr
     domain::index_credit_default_swap_option_instrument v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
-    v.credit_curve_id = write.credit_curve_id;
+    v.knock_out = write.knock_out;
+    v.index_term = write.index_term;
+    v.strike_type = write.strike_type;
+    v.trade_date = write.trade_date;
+    v.front_end_protection_start_date = write.front_end_protection_start_date;
     return v;
 }
 

@@ -51,6 +51,12 @@ struct synthetic_cdo_instrument_entity {
     double attachment_point = 0.0;
     double detachment_point = 0.0;
     std::optional<double> recovery_rate;
+    std::optional<bool> settles_accrual;
+    std::optional<bool> rebates_accrual;
+    std::optional<bool> pays_at_default_time;
+    std::optional<std::string> protection_payment_time;
+    std::optional<std::string> upfront_date;
+    std::optional<std::string> upfront_fee;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -108,6 +108,12 @@ domain::synthetic_cdo_instrument to_domain(const messaging::synthetic_cdo_instru
     v.attachment_point = write.attachment_point;
     v.detachment_point = write.detachment_point;
     v.recovery_rate = write.recovery_rate;
+    v.settles_accrual = write.settles_accrual;
+    v.rebates_accrual = write.rebates_accrual;
+    v.pays_at_default_time = write.pays_at_default_time;
+    v.protection_payment_time = write.protection_payment_time;
+    v.upfront_date = write.upfront_date;
+    v.upfront_fee = write.upfront_fee;
     return v;
 }
 

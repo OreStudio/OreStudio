@@ -50,6 +50,8 @@ credit_linked_swap_instrument_mapper::map(const credit_linked_swap_instrument_en
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.credit_curve_id = v.credit_curve_id;
     r.recovery_rate = v.recovery_rate;
+    r.settles_accrual = v.settles_accrual;
+    r.default_payment_time = v.default_payment_time;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -71,6 +73,8 @@ credit_linked_swap_instrument_mapper::map(const domain::credit_linked_swap_instr
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.credit_curve_id = v.credit_curve_id;
     r.recovery_rate = v.recovery_rate;
+    r.settles_accrual = v.settles_accrual;
+    r.default_payment_time = v.default_payment_time;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

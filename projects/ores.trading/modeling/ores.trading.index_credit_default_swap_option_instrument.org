@@ -15,10 +15,9 @@
 #+created: 2026-10-12
 #+updated: 2026-10-12
 
-Represents an IndexCreditDefaultSwapOption trade. The option wraps an index swap, whose credit curve is
-this table's one column, so the trade has this row and no row in
-=index_credit_default_swap_instruments=. The strike and the exercise dates are the shared
-=instrument_strikes= and schedule rows.
+Represents an IndexCreditDefaultSwapOption trade. The option wraps an index swap, so the trade also
+has a row in =index_credit_default_swap_instruments= for the wrapped swap's own fields. The strike,
+the option block and the exercise dates are the shared =instrument_strikes=, option and schedule rows.
 
 This row is the family's fact table, not its identity. The header,
 =ores.trading.credit_instrument=, holds the trade type code, the party, the
@@ -61,19 +60,55 @@ trade it names gives the instrument its scope.
 
 The activity that wrote this version.
 
-** credit_curve_id
+** knock_out
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
 :economic: true
 :END:
 
-The credit curve of the wrapped index swap, from the required =CreditCurveId= element.
+Whether the option knocks out, from =KnockOut=. Null when the document states none.
 
-#+begin_src cpp :name generator
-std::string("RED:2I65BYEG6")
-#+end_src
+** index_term
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The index term, from =IndexTerm= (e.g. 5Y). Null when the document states none.
+
+** strike_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How the strike is quoted, from =StrikeType=: Spread or Price. Null when the document states none.
+
+** trade_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The trade date the data block states, from =TradeDate=. Null when the document states none.
+
+** front_end_protection_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The front-end protection start date, from =FrontEndProtectionStartDate=. Null when the document states none.
 
 * Foreign keys
 
@@ -139,7 +174,7 @@ is immutable.
 
 | expression |
 |------------|
-| "credit_curve_id" <> '' |
+| "strike_type" is null or "strike_type" in ('Spread', 'Price') |
 
 * C++
 
@@ -170,6 +205,8 @@ annotations; domain and repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src
@@ -184,7 +221,8 @@ annotations; domain and repository profiles regenerate correctly.
 | column | header |
 |--------+--------|
 | trade_id | ID |
-| credit_curve_id | Credit Curve |
+| index_term | Index Term |
+| strike_type | Strike Type |
 | modified_by | Modified By |
 | version | Version |
 

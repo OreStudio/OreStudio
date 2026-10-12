@@ -41,6 +41,7 @@ export function Answer({
     value,
     positive,
     signed = false,
+    bps = false,
     disabled,
     changed,
     onCommit,
@@ -53,6 +54,8 @@ export function Answer({
     readonly positive: boolean;
     /** Whether a negative number is allowed. */
     readonly signed?: boolean;
+    /** Whether a small percent is also said in basis points, in brackets. */
+    readonly bps?: boolean;
     readonly disabled: boolean;
     /** Whether the value differs from the saved one. */
     readonly changed: boolean;
@@ -95,7 +98,12 @@ export function Answer({
                         }
                     }}
                 />
-                <span className="text-sm text-ink-muted">{unit}</span>
+                <span className="text-sm text-ink-muted">
+                    {unit}
+                    {bps && !wrong && parsed !== 0 && Math.abs(parsed) < 1
+                        ? ` (${String(Number((parsed * 100).toPrecision(4)))} ${t('editingMode.bps')})`
+                        : ''}
+                </span>
             </div>
         </Field>
     );

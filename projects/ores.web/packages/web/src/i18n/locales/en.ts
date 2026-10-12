@@ -3780,6 +3780,7 @@ export const en: SourceCatalogue = {
     },
 
     editingMode: {
+        bps: 'bps',
         number: 'Enter a number.',
         positive: 'Enter a number above zero.',
         label: 'How to edit',

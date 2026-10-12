@@ -170,7 +170,7 @@ export function FxSimplePanel({
                             value={halfLife}
                             positive
                             disabled={!mayWrite}
-                            changed={differs(halfLife, saved?.half_life_minutes)}
+                            changed={differs(view.half_life_minutes, saved?.half_life_minutes)}
                             onCommit={(minutes) => set({ half_life_minutes: minutes })}
                         />
                         <Presets
@@ -189,8 +189,9 @@ export function FxSimplePanel({
                             value={trend}
                             positive={false}
                             signed
+                            bps
                             disabled={!mayWrite}
-                            changed={differs(trend, saved?.trend_pct_per_hour)}
+                            changed={differs(view.trend_pct_per_hour, saved?.trend_pct_per_hour)}
                             onCommit={(value) => set({ trend_pct_per_hour: value })}
                         />
                         <Presets
@@ -208,8 +209,12 @@ export function FxSimplePanel({
                         unit={t('marketdata.fxSimple.perHour')}
                         value={move}
                         positive={false}
+                        bps
                         disabled={!mayWrite}
-                        changed={differs(move, saved?.volatility_pct_per_hour)}
+                        changed={differs(
+                            view.volatility_pct_per_hour,
+                            saved?.volatility_pct_per_hour,
+                        )}
                         onCommit={(value) => set({ volatility_pct_per_hour: value })}
                     />
                     <Presets
@@ -228,7 +233,7 @@ export function FxSimplePanel({
                             value={jump}
                             positive={false}
                             disabled={!mayWrite}
-                            changed={differs(jump, saved?.jump_share_pct)}
+                            changed={differs(view.jump_share_pct, saved?.jump_share_pct)}
                             onCommit={(value) => set({ jump_share_pct: value })}
                         />
                         <Presets

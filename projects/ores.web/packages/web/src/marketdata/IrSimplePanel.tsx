@@ -117,6 +117,7 @@ export function IrSimplePanel({
                     label={t('marketdata.irSimple.start')}
                     hint={t('marketdata.irSimple.startHint')}
                     unit="%"
+                    bps
                     value={Number(percentText(view.start_rate))}
                     positive={engine === 'BLACK_KARASINSKI'}
                     disabled={!mayWrite}
@@ -127,6 +128,7 @@ export function IrSimplePanel({
                     label={t('marketdata.irSimple.longRun')}
                     hint={t('marketdata.irSimple.longRunHint')}
                     unit="%"
+                    bps
                     value={Number(percentText(view.long_run_rate))}
                     positive={engine === 'BLACK_KARASINSKI' || engine === 'COX_INGERSOLL_ROSS'}
                     disabled={!mayWrite}

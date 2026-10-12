@@ -3842,6 +3842,7 @@ const fr: SourceCatalogue = {
     },
 
     editingMode: {
+        bps: 'pb',
         number: 'Saisissez un nombre.',
         positive: 'Saisissez un nombre supérieur à zéro.',
         label: 'Mode de saisie',

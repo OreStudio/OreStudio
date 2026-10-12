@@ -3814,6 +3814,7 @@ const pt: SourceCatalogue = {
     },
 
     editingMode: {
+        bps: 'pb',
         number: 'Introduza um número.',
         positive: 'Introduza um número acima de zero.',
         label: 'Modo de edição',

@@ -1308,6 +1308,7 @@ const pt: SourceCatalogue = {
     },
 
     oresmd: {
+        open: 'Abrir no editor',
         title: 'URL oresmd',
         cancel: 'Cancelar',
         copy: 'Copiar',

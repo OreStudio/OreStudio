@@ -130,7 +130,8 @@ function Suggestions({ id, field }: { readonly id: string; readonly field: strin
  * new `key`, or unmount it on close as a modal does.
  *
  * `onApply` receives the URI the codec wrote, and Apply is offered only when
- * the codec wrote one for what is on screen.
+ * the codec wrote one for what is on screen. A screen that keeps no URL to
+ * change gives no `onApply`, and the editor offers Copy and no Apply.
  */
 export function OresmdEditorDialog({
     url,
@@ -139,7 +140,8 @@ export function OresmdEditorDialog({
 }: {
     /** The URI to edit. Empty starts a new one. */
     readonly url: string;
-    readonly onApply: (uri: string) => void;
+    /** Without it the editor shows and copies a URL and offers no Apply. */
+    readonly onApply?: (uri: string) => void;
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -203,14 +205,16 @@ export function OresmdEditorDialog({
                     <Button type="button" disabled={uri === ''} onClick={() => void copy()}>
                         {copied ? t('oresmd.copied') : t('oresmd.copy')}
                     </Button>
-                    <Button
-                        type="button"
-                        variant="primary"
-                        disabled={uri === ''}
-                        onClick={() => onApply(uri)}
-                    >
-                        {t('oresmd.apply')}
-                    </Button>
+                    {onApply !== undefined && (
+                        <Button
+                            type="button"
+                            variant="primary"
+                            disabled={uri === ''}
+                            onClick={() => onApply(uri)}
+                        >
+                            {t('oresmd.apply')}
+                        </Button>
+                    )}
                 </>
             }
         >

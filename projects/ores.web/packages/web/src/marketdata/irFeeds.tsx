@@ -22,6 +22,7 @@
 import type { ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { OresmdUrl } from '../oresmd/OresmdUrl.js';
 import {
     PartsPanel,
     show,
@@ -431,7 +432,9 @@ const IR_FEED_KIND: FeedKind = {
             sort: 'ticks_per_hour',
         },
     ],
-    extraDetails: (feed, t) => [[t('refdata.fields.oresmd_uri'), irSeriesUri(feed)]],
+    extraDetails: (feed, t) => [
+        [t('refdata.fields.oresmd_uri'), <OresmdUrl uri={irSeriesUri(feed)} />],
+    ],
     parts: [
         {
             resource: PARAMETER_VALUES,

@@ -187,6 +187,7 @@ describe('the IR curve feed screens', () => {
         expect(html).toContain(
             'oresmd://ir/EUR?type=series&amp;instrument=ir_swap&amp;quote=rate&amp;fwd_start=0D&amp;tenor=6M',
         );
+        expect(html).toContain('>Open in the editor<');
         expect(html).toContain('>Process<');
         expect(html).toContain('>Curve template<');
         expect(html).toContain('>History<');

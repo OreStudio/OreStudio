@@ -199,9 +199,9 @@ does, and reads the wrapper samples.
    screen cannot show a trend, and a batch's progress over time is not
    visible. The poller keeps writing samples that no read returns. The
    candidate is a read over grid samples in a time range.
-5. *A node with no host row.* The join fixes the common case, and a node the
-   host registry does not know shows a bare id. The screen must say that no
-   host names the node, rather than printing the id as if it were a name.
+5. *A node with no host row.* Closed. The join fixes the common case, and the
+   node table tags a node that no host names with "no host names it" instead
+   of printing the id as if it were a name.
 6. *The read checks a permission.* Closed by
    [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]]:
    =compute.v1.ops.get_grid_stats= is gated on

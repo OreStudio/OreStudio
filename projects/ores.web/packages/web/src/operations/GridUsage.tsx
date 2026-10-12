@@ -34,6 +34,7 @@ import type { GridUsageGroup, GridUsageView } from '@ores/wire-protocol/browser'
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice } from '../ui/Primitives.js';
+import { SharePie } from '../ui/SharePie.js';
 import { QUEUE_CAUTION_MINUTES, QUEUE_WAIT_LIMIT_MINUTES, formatWait } from './GridSeries.js';
 
 /** Where the usage answer is cached, so a test can seed it. */
@@ -75,7 +76,9 @@ export function QueueAgeNotice({ usage }: { readonly usage: GridUsageView }): Re
     const { t } = useTranslation();
     const oldest = Math.max(
         0,
-        ...usage.groups.filter((group) => !group.unavailable).map((group) => group.oldest_unsent_seconds),
+        ...usage.groups
+            .filter((group) => !group.unavailable)
+            .map((group) => group.oldest_unsent_seconds),
     );
     const minutes = oldest / 60;
     if (minutes < QUEUE_CAUTION_MINUTES) {
@@ -172,9 +175,22 @@ export function UsagePanel({ usage }: { readonly usage: GridUsageView }): ReactN
                 <h2 className="text-lg font-medium">
                     {t(`operations.grid.usage.title.${usage.group_kind}`)}
                 </h2>
-                <p className="text-xs text-ink-faint">{t(`operations.grid.usage.note.${usage.group_kind}`)}</p>
+                <p className="text-xs text-ink-faint">
+                    {t(`operations.grid.usage.note.${usage.group_kind}`)}
+                </p>
             </header>
             <QueueAgeNotice usage={usage} />
+            <SharePie
+                label={t(`operations.grid.usage.pie.${usage.group_kind}`)}
+                otherLabel={t('operations.grid.usage.pie.other')}
+                items={usage.groups
+                    .filter((group) => !group.unavailable)
+                    .map((group) => ({
+                        key: group.key === '' ? 'none' : group.key,
+                        label: groupLabel(group, t('operations.grid.usage.unassigned')).text,
+                        value: group.results,
+                    }))}
+            />
             {usage.groups.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('operations.grid.usage.empty')}</p>
             ) : (

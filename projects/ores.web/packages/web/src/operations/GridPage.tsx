@@ -72,7 +72,7 @@ const JOURNEYS: readonly JourneyId[] = [
 ];
 
 /** The tabs of the grid screen, in the order they are drawn. */
-export const GRID_TABS = ['overview', 'usage', 'nodes', 'heatmap'] as const;
+export const GRID_TABS = ['overview', 'usage', 'machines', 'nodes', 'heatmap'] as const;
 
 /** Where the grid read's answer is cached, so a test can seed it. */
 export const GRID_QUERY_KEY = ['operations-grid'] as const;
@@ -587,11 +587,6 @@ export function GridPage(): ReactNode {
     const view = grid.data;
     const gaps: readonly ScreenGap[] = [
         {
-            title: t('operations.grid.gap.noHost.title'),
-            body: t('operations.grid.gap.noHost.body'),
-            journey: t('operations.journeys.grid'),
-        },
-        {
             title: t('operations.grid.gap.oneTenant.title'),
             body: t('operations.grid.gap.oneTenant.body'),
             journey: t('operations.journeys.grid'),
@@ -622,14 +617,11 @@ export function GridPage(): ReactNode {
 
             {bar}
 
-            {tab === 'overview' && (
-                <>
-                    <GridLoadTab range={range} onRange={setRange} />
-                    <MachinesPanel nodes={view.nodes} />
-                </>
-            )}
+            {tab === 'overview' && <GridLoadTab range={range} onRange={setRange} />}
 
             {tab === 'usage' && <GridUsageTab />}
+
+            {tab === 'machines' && <MachinesPanel nodes={view.nodes} />}
 
             {tab === 'nodes' && <NodesTab nodes={view.nodes} />}
 

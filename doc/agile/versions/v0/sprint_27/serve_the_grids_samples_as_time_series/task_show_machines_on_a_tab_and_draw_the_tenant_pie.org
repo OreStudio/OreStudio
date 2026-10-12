@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 22BBF2AD-F2DE-44C0-A0A8-1C3FA66AB0B6
+:END:
+#+title: Task: Show machines on a tab and draw the tenant pie
+#+description: The machines table moves to its own tab, the Usage tab draws a pie of each group's share, and the no-host gap note is removed.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/drop-stale-grid-gaps-and-add-tenant-pie
+#+pr: 3207
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The grid Overview holds the charts alone, and a person sees each tenant's share of the grid as a pie.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The Machines tab holds the machines table and the Overview does not.
+- The Usage tab draws a pie of the share of the results for each tenant or party.
+- The gap panel states only gaps that are still true.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3207][#3207]] | [web] Add a Machines tab and a share pie to the grid screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The grid screen has a Machines tab, and the Overview holds the charts alone. The Usage tab draws a pie of the share of the results for each tenant, or each party for a tenant administrator, with the smallest groups folded into Others. The gap note about a node with no host row is gone, because the node table tags such a node. The note that the charts count one tenant stays, because the stats function still filters by one tenant and every grid sample is stored under the system tenant. The web suite passes (124 files, 1417 tests).
+

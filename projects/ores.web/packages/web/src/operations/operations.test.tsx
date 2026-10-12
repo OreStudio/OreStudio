@@ -916,7 +916,7 @@ describe('the compute grid screen', () => {
     it('lists the computers and marks one down when none of its nodes runs', () => {
         const html = withProviders(
             <GridPage />,
-            '/',
+            '/?tab=machines',
             [],
             gridView({
                 nodes: [
@@ -1031,7 +1031,8 @@ describe('the compute grid screen', () => {
 
         // The history gap is closed: the screen now draws the trend.
         expect(html).not.toContain('No history');
-        expect(html).toContain('A node with no host row');
+        // A node with no host is stated in the node table, so it is no longer a gap.
+        expect(html).not.toContain('A node with no host row');
         expect(html).toContain('counters are one tenant');
         // Each gap names the journey that records it, as its lead promises.
         expect(html).toContain('Recorded by Watch the compute grid');
@@ -1479,8 +1480,8 @@ describe('the grid over time', () => {
                 gridSeriesView(),
             );
 
-        // Each machine on the overview links to the node list narrowed to it.
-        expect(seeded('/')).toContain('href="/operations/grid?tab=nodes&amp;machine=rack-a"');
+        // Each machine on the machines tab links to the node list narrowed to it.
+        expect(seeded('/?tab=machines')).toContain('href="/operations/grid?tab=nodes&amp;machine=rack-a"');
 
         // The list shows that machine's nodes, says it is narrowed, and offers all of them.
         const narrowed = seeded('/?tab=nodes&machine=rack-a');
@@ -1516,10 +1517,10 @@ describe('the grid over time', () => {
         expect(page).toContain('Processors');
         expect(page).toContain('16.0 GiB');
 
-        // The overview carries the same figures in the machines table.
-        const overview = seeded('/');
-        expect(overview).toContain('CPUs');
-        expect(overview).toContain('16.0 GiB');
+        // The machines tab carries the same figures in the machines table.
+        const machines = seeded('/?tab=machines');
+        expect(machines).toContain('CPUs');
+        expect(machines).toContain('16.0 GiB');
     });
 
     it('reads a computer’s facts from the nodes that gave them, and states none it was not given', () => {
@@ -1536,7 +1537,7 @@ describe('the grid over time', () => {
         expect(formatRam(7168)).toBe('7.0 GiB');
     });
 
-    it('keeps the grid screen on three tabs, so each page stays short', () => {
+    it('keeps the grid screen on five tabs, so each page stays short', () => {
         const seeded = (path: string): string =>
             withProviders(
                 <GridPage />,
@@ -1551,12 +1552,12 @@ describe('the grid over time', () => {
 
         const overview = seeded('/');
         expect(overview).toContain('role="tablist"');
-        for (const title of ['Overview', 'Nodes', 'Heatmap']) {
+        for (const title of ['Overview', 'Usage', 'Machines', 'Nodes', 'Heatmap']) {
             expect(overview).toContain(`>${title}<`);
         }
-        // The overview holds the charts and the machines, and no separate summary.
+        // The overview holds the charts alone: the machines have their own tab.
         expect(overview).toContain('Over time');
-        expect(overview).toContain('Machines');
+        expect(overview).not.toContain('machines up');
         expect(overview).not.toContain('Grid summary');
         expect(overview).not.toContain('Node load');
 
@@ -1564,7 +1565,12 @@ describe('the grid over time', () => {
         const nodes = seeded('/?tab=nodes');
         expect(nodes).toContain('grid-01.example.com');
         expect(nodes).not.toContain('Over time');
-        expect(nodes).not.toContain('Machines');
+        expect(nodes).not.toContain('machines up');
+
+        // The machines tab is the machines table alone.
+        const machines = seeded('/?tab=machines');
+        expect(machines).toContain('machines up');
+        expect(machines).not.toContain('Over time');
 
         // The heatmap tab is the heatmap alone.
         const heatmap = seeded('/?tab=heatmap');
@@ -1765,6 +1771,52 @@ function renderUsage(groups: ReturnType<typeof usageGroup>[]): string {
 }
 
 describe('the grid usage tab', () => {
+    it('draws a pie of the share of each group, with the largest first', () => {
+        const html = renderUsage([
+            usageGroup({ name: 'Globex', results: 10 }),
+            usageGroup({ key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'Acme', results: 30 }),
+            usageGroup({ key: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', name: 'Idle', results: 0 }),
+        ]);
+
+        expect(html).toContain('<svg');
+        expect(html).toContain('Share of the results by tenant');
+        expect(html.indexOf('Acme')).toBeLessThan(html.indexOf('Globex'));
+        expect(html).toContain('75%');
+        expect(html).toContain('25%');
+    });
+
+    it('folds the smallest of many groups into Others and labels a party pie', () => {
+        const groups = Array.from({ length: 8 }, (_, i) =>
+            usageGroup({
+                key: `aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa0${i}`,
+                name: `Group ${i}`,
+                results: 80 - i * 10,
+            }),
+        );
+        const tenants = renderUsage(groups);
+        const parties = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({ group_kind: 'party', groups }),
+        );
+
+        expect(tenants).toContain('Others');
+        expect(tenants).not.toContain('Group 7</span><span');
+        expect(parties).toContain('Share of the results by party');
+    });
+
+    it('draws no pie when no group has run anything', () => {
+        const html = renderUsage([usageGroup({ results: 0 })]);
+
+        expect(html).not.toContain('Share of the results by tenant');
+    });
+
     it('shows how long the oldest waiting job of a group has waited', () => {
         const html = renderUsage([usageGroup({ oldest_unsent_seconds: 600 })]);
 

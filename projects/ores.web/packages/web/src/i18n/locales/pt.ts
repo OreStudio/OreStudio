@@ -1668,6 +1668,7 @@ const pt: SourceCatalogue = {
                 label: 'Vistas da grelha',
                 overview: 'Resumo',
                 usage: 'Utilização',
+                machines: 'Máquinas',
                 nodes: 'Nós',
                 heatmap: 'Mapa de calor',
             },
@@ -1678,6 +1679,11 @@ const pt: SourceCatalogue = {
                     party: 'A quota de uma parte é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
                 },
                 unavailable: 'Não foi possível ler',
+                pie: {
+                    tenant: 'Quota dos resultados por inquilino',
+                    party: 'Quota dos resultados por parte',
+                    other: 'Outros',
+                },
                 age: {
                     caution: 'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
                     over: 'A tarefa em espera mais antiga espera há {time}, acima dos {limit} que uma tarefa pode esperar.',
@@ -1846,10 +1852,6 @@ const pt: SourceCatalogue = {
                     'Aguarda os percursos de cálculo, que possuem os ecrãs dos anfitriões e das unidades de trabalho.',
             },
             gap: {
-                noHost: {
-                    title: 'Um nó sem linha de anfitrião',
-                    body: 'A junção resolve o caso comum, e um nó que o registo de anfitriões não conhece mostra um identificador despido. O ecrã deve dizer que nenhum anfitrião nomeia o nó, em vez de imprimir o identificador como se fosse um nome.',
-                },
                 oneTenant: {
                     title: 'Os contadores dos gráficos são de um só inquilino',
                     body: 'A tabela de nós é a da instalação, mas as contagens por trás dos gráficos não são. São calculadas por ores_compute_grid_stats_fn(p_tenant_id), que filtra cada contagem (resultados, unidades de trabalho e lotes) pelo inquilino recebido, e o amostrador passa-lhe o seu próprio inquilino de sessão. Até a instalação registar o seu próprio uso, os gráficos contam o trabalho de um só inquilino.',

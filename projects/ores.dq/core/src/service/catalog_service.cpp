@@ -102,6 +102,7 @@ domain::catalog to_domain(const messaging::catalog_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_catalogs_response

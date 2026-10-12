@@ -112,6 +112,7 @@ domain::business_unit to_domain(const messaging::business_unit_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_business_units_response

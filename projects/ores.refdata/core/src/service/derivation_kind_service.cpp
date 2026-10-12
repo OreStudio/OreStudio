@@ -103,6 +103,7 @@ domain::derivation_kind to_domain(const messaging::derivation_kind_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_derivation_kinds_response derivation_kind_service::list_derivation_kinds(

@@ -110,6 +110,7 @@ domain::ir_curve_template_entry to_domain(const messaging::ir_curve_template_ent
     return v;
 }
 
+
 }
 
 messaging::list_ir_curve_template_entries_response

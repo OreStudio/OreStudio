@@ -102,6 +102,7 @@ domain::curve_segment_type to_domain(const messaging::curve_segment_type_write& 
     return v;
 }
 
+
 }
 
 messaging::list_curve_segment_types_response curve_segment_type_service::list_curve_segment_types(

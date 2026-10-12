@@ -111,6 +111,7 @@ domain::todays_market_entry to_domain(const messaging::todays_market_entry_write
     return v;
 }
 
+
 }
 
 messaging::list_todays_market_entries_response

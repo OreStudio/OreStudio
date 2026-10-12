@@ -113,6 +113,7 @@ to_domain(const messaging::flexi_swap_lower_notional_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_flexi_swap_lower_notionals_response

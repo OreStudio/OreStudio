@@ -121,6 +121,7 @@ domain::bond_issue to_domain(const messaging::bond_issue_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_issues_response

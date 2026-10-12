@@ -118,6 +118,7 @@ domain::equity_option_instrument to_domain(const messaging::equity_option_instru
     return v;
 }
 
+
 }
 
 messaging::list_equity_option_instruments_response

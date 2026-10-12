@@ -112,6 +112,7 @@ domain::country to_domain(const messaging::country_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_countries_response

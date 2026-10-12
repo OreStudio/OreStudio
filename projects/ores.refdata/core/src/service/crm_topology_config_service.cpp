@@ -108,6 +108,7 @@ domain::crm_topology_config to_domain(const messaging::crm_topology_config_write
     return v;
 }
 
+
 }
 
 messaging::list_crm_topology_configs_response

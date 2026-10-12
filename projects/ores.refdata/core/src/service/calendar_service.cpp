@@ -107,6 +107,7 @@ domain::calendar to_domain(const messaging::calendar_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_calendars_response

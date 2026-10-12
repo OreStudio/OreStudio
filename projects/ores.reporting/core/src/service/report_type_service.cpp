@@ -104,6 +104,7 @@ domain::report_type to_domain(const messaging::report_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_report_types_response

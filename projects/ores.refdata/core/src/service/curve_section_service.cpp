@@ -102,6 +102,7 @@ domain::curve_section to_domain(const messaging::curve_section_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_curve_sections_response

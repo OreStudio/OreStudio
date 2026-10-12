@@ -110,6 +110,7 @@ domain::trade_additional_field to_domain(const messaging::trade_additional_field
     return v;
 }
 
+
 }
 
 messaging::list_trade_additional_fields_response

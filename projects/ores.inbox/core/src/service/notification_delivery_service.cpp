@@ -111,6 +111,7 @@ domain::notification_delivery to_domain(const messaging::notification_delivery_w
     return v;
 }
 
+
 }
 
 messaging::list_notification_deliveries_response

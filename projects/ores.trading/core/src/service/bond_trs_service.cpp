@@ -112,6 +112,7 @@ domain::bond_trs to_domain(const messaging::bond_trs_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_trs_response

@@ -121,6 +121,7 @@ to_domain(const messaging::fx_barrier_option_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fx_barrier_option_instruments_response

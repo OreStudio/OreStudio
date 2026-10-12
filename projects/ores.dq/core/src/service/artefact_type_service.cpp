@@ -106,6 +106,7 @@ domain::artefact_type to_domain(const messaging::artefact_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_artefact_types_response

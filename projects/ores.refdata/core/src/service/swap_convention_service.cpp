@@ -108,6 +108,7 @@ domain::swap_convention to_domain(const messaging::swap_convention_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_swap_conventions_response swap_convention_service::list_swap_conventions(

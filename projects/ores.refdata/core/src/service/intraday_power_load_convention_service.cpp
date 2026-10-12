@@ -106,6 +106,7 @@ to_domain(const messaging::intraday_power_load_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_intraday_power_load_conventions_response

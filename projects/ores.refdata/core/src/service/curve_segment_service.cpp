@@ -135,6 +135,7 @@ domain::curve_segment to_domain(const messaging::curve_segment_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_curve_segments_response

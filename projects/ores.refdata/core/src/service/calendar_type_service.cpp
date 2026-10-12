@@ -103,6 +103,7 @@ domain::calendar_type to_domain(const messaging::calendar_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_calendar_types_response

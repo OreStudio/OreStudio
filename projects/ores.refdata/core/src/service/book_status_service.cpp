@@ -103,6 +103,7 @@ domain::book_status to_domain(const messaging::book_status_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_book_statuses_response

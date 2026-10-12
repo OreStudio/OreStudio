@@ -104,6 +104,7 @@ domain::tenant_type to_domain(const messaging::tenant_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenant_types_response

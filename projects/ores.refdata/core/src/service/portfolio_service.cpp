@@ -114,6 +114,7 @@ domain::portfolio to_domain(const messaging::portfolio_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_portfolios_response

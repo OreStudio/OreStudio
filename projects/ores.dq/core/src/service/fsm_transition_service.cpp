@@ -109,6 +109,7 @@ domain::fsm_transition to_domain(const messaging::fsm_transition_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fsm_transitions_response fsm_transition_service::list_fsm_transitions(

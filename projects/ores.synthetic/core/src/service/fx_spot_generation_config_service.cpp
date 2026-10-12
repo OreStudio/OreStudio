@@ -120,6 +120,7 @@ to_domain(const messaging::fx_spot_generation_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_fx_spot_generation_configs_response

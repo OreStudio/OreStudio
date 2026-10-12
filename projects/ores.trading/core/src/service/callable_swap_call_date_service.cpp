@@ -109,6 +109,7 @@ domain::callable_swap_call_date to_domain(const messaging::callable_swap_call_da
     return v;
 }
 
+
 }
 
 messaging::list_callable_swap_call_dates_response

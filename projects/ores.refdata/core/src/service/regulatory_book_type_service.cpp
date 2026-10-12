@@ -104,6 +104,7 @@ domain::regulatory_book_type to_domain(const messaging::regulatory_book_type_wri
     return v;
 }
 
+
 }
 
 messaging::list_regulatory_book_types_response

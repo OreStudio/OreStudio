@@ -101,6 +101,7 @@ domain::booking_nature_type to_domain(const messaging::booking_nature_type_write
     return v;
 }
 
+
 }
 
 messaging::list_booking_nature_types_response

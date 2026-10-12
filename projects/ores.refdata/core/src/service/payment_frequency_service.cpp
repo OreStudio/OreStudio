@@ -105,6 +105,7 @@ domain::payment_frequency to_domain(const messaging::payment_frequency_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_payment_frequencies_response payment_frequency_service::list_payment_frequencies(

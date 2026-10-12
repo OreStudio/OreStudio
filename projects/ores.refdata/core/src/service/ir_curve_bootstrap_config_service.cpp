@@ -114,6 +114,7 @@ to_domain(const messaging::ir_curve_bootstrap_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_ir_curve_bootstrap_configs_response

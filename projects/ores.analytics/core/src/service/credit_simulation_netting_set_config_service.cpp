@@ -111,6 +111,7 @@ to_domain(const messaging::credit_simulation_netting_set_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_credit_simulation_netting_set_configs_response

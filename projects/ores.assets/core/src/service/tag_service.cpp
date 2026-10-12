@@ -106,6 +106,7 @@ domain::tag to_domain(const messaging::tag_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tags_response tag_service::list_tags(const messaging::list_tags_request& request) {

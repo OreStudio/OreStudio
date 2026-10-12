@@ -127,6 +127,7 @@ domain::commodity_curve_config to_domain(const messaging::commodity_curve_config
     return v;
 }
 
+
 }
 
 messaging::list_commodity_curve_configs_response

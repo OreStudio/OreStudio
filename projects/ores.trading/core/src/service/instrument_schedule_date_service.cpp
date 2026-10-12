@@ -122,6 +122,7 @@ domain::instrument_schedule_date to_domain(const messaging::instrument_schedule_
     return v;
 }
 
+
 }
 
 messaging::list_instrument_schedule_dates_response

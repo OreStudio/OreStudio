@@ -111,6 +111,7 @@ domain::trade to_domain(const messaging::trade_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_trades_response

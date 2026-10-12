@@ -101,6 +101,7 @@ domain::payoff_type to_domain(const messaging::payoff_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_payoff_types_response

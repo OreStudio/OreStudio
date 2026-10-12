@@ -121,6 +121,7 @@ to_domain(const messaging::equity_asian_option_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_equity_asian_option_instruments_response

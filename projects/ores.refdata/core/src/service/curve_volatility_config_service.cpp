@@ -135,6 +135,7 @@ domain::curve_volatility_config to_domain(const messaging::curve_volatility_conf
     return v;
 }
 
+
 }
 
 messaging::list_curve_volatility_configs_response

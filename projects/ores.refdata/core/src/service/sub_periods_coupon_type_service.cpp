@@ -104,6 +104,7 @@ domain::sub_periods_coupon_type to_domain(const messaging::sub_periods_coupon_ty
     return v;
 }
 
+
 }
 
 messaging::list_sub_periods_coupon_types_response

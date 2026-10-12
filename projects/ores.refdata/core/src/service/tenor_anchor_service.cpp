@@ -102,6 +102,7 @@ domain::tenor_anchor to_domain(const messaging::tenor_anchor_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenor_anchors_response

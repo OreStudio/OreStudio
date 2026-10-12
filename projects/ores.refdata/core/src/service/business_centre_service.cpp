@@ -105,6 +105,7 @@ domain::business_centre to_domain(const messaging::business_centre_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_business_centres_response business_centre_service::list_business_centres(

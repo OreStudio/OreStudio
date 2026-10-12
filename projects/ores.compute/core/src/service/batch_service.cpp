@@ -106,6 +106,7 @@ domain::batch to_domain(const messaging::batch_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_batches_response

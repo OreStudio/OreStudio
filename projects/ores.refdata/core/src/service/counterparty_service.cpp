@@ -112,6 +112,7 @@ domain::counterparty to_domain(const messaging::counterparty_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_counterparties_response

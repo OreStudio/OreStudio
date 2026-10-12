@@ -116,6 +116,7 @@ domain::workflow_instance to_domain(const messaging::workflow_instance_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_workflow_instances_response workflow_instance_service::list_workflow_instances(

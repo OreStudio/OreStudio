@@ -106,6 +106,7 @@ domain::tenor_schedule to_domain(const messaging::tenor_schedule_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenor_schedules_response tenor_schedule_service::list_tenor_schedules(

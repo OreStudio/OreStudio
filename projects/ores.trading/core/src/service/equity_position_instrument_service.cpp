@@ -113,6 +113,7 @@ to_domain(const messaging::equity_position_instrument_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_equity_position_instruments_response

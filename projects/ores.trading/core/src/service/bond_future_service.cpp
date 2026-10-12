@@ -110,6 +110,7 @@ domain::bond_future to_domain(const messaging::bond_future_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_futures_response

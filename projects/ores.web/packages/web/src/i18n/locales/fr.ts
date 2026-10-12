@@ -1679,7 +1679,15 @@ const fr: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Utilisation par locataire', party: 'Utilisation par partie' },
-                note: 'La part d’un groupe est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                note: {
+                    tenant: 'Chaque locataire est lu à l’intérieur du locataire, car le travail d’un locataire n’est pas visible depuis un autre. La part d’un locataire est la fraction de ses résultats parmi les résultats qui ont pu être lus. Réussis et échoués comptent les dernières 24 heures.',
+                    party: 'La part d’une partie est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                },
+                unavailable: 'N’a pas pu être lu',
+                age: {
+                    caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
+                    over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
+                },
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',
                 unassigned: 'Aucune partie',
                 columns: {
@@ -1690,6 +1698,7 @@ const fr: SourceCatalogue = {
                     results: 'Résultats',
                     inProgress: 'En cours',
                     unsent: 'En attente',
+                    oldest: 'Plus ancienne attente',
                     done: 'Terminés',
                     succeeded: 'Réussis',
                     failed: 'Échoués',
@@ -1763,7 +1772,6 @@ const fr: SourceCatalogue = {
                 load: {
                     title: 'Charge',
                     caption: 'Travail en cours par état de résultat',
-                    inactive: 'Inactif',
                     unsent: 'Non envoyé',
                     inProgress: 'En cours',
                 },

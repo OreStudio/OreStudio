@@ -100,6 +100,7 @@ domain::analytic_type to_domain(const messaging::analytic_type_write& write) {
     v.name = write.name;
     v.description = write.description;
     v.parameter_entity = write.parameter_entity;
+    v.requires_analytic_type_code = write.requires_analytic_type_code;
     v.display_order = write.display_order;
     return v;
 }

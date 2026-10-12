@@ -22,7 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import type { ListedSeries } from '@ores/contracts';
+import { DEFAULT_OBSERVATIONS, type ListedSeries } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { LineChart, SERIES_COLOURS } from '../marketdata/LineChart.js';
 import { evolutionRoute, seriesOfUrl, seriesVerdict } from '../oresmd/identity.js';
@@ -33,7 +33,7 @@ import { seriesLabel } from './evolutionView.js';
 import { instantLabel, latestFirst, pointsOf } from './seriesView.js';
 
 /** How many observations the page reads, and how many rows of them it lists. */
-const READ = 500;
+const READ = DEFAULT_OBSERVATIONS;
 const LISTED = 20;
 
 /**
@@ -152,7 +152,10 @@ function Observations({ series }: { readonly series: ListedSeries }): ReactNode 
                     </thead>
                     <tbody>
                         {latestFirst(observations, LISTED).map((row) => (
-                            <tr key={row.at} className="border-b border-line-subtle">
+                            <tr
+                                key={`${row.at}|${row.source}`}
+                                className="border-b border-line-subtle"
+                            >
                                 <td className="py-1.5 font-mono text-xs">{row.at}</td>
                                 <td className="py-1.5 text-right font-mono text-xs">{row.value}</td>
                                 <td className="py-1.5 pl-6 text-ink-muted">{row.source}</td>

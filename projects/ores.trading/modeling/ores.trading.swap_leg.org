@@ -217,6 +217,21 @@ Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.r
 std::string("USD")
 #+end_src
 
+** leg_group
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The group of a credit trade's legs this leg belongs to. Null for a rates leg.
+
+A credit linked swap states four groups of payment legs, and a risk
+participation agreement states the legs of its underlying beside its own. The
+group tells them apart: =premium=, =independent=, =contingent=, =default=,
+=recovery= or =underlying=. The legs are keyed by the trade, so one table holds
+every family's legs and the group is the one column the credit family adds.
+
 * Foreign keys
 
 ** trade_id
@@ -285,6 +300,7 @@ is immutable.
 |---|
 | "leg_number" >= 1 |
 | "currency" <> '' |
+| "leg_group" is null or "leg_group" in ('premium', 'independent', 'contingent', 'default', 'recovery', 'underlying') |
 
 ** Indexes
 

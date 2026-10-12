@@ -61,17 +61,18 @@ boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
 // An npv analytic with one parameter, both of which the seeded vocabulary holds.
 ores::reporting::messaging::run_document npv_run() {
     ores::reporting::messaging::run_document doc;
-    doc.setup.asof_date = "2016-02-05";
-    doc.setup.curve_config_file = "curveconfig.xml";
+    doc.settings.market_data_type = "date";
+    doc.settings.market_data_date = "2016-02-05";
+    doc.settings.base_currency = "EUR";
     ores::reporting::messaging::run_analytic npv;
     npv.analytic.analytic_type_code = "npv";
     npv.analytic.display_order = 1;
     npv.analytic.active = "Y";
     npv.parameters.push_back({"baseCurrency", "EUR", 1});
     doc.analytics.push_back(npv);
-    ores::reporting::domain::report_market_binding pricing;
+    ores::reporting::domain::configuration_market_binding pricing;
     pricing.role = "pricing";
-    pricing.configuration_name = "default";
+    pricing.market_configuration_name = "default";
     pricing.position = 1;
     doc.market_bindings.push_back(pricing);
     return doc;
@@ -90,17 +91,20 @@ TEST_CASE("a run document reads back as it was saved", tags) {
 
     const auto back = runs.get(definition);
     REQUIRE(back.has_value());
-    CHECK(back->setup.curve_config_file == std::optional<std::string>("curveconfig.xml"));
+    CHECK(back->settings.market_data_type == "date");
+    CHECK(back->settings.market_data_date == "2016-02-05");
+    CHECK(back->settings.base_currency == std::optional<std::string>("EUR"));
+    CHECK(back->files.empty());
     REQUIRE(back->analytics.size() == 1);
     CHECK(back->analytics[0].analytic.analytic_type_code == "npv");
     REQUIRE(back->analytics[0].parameters.size() == 1);
     CHECK(back->analytics[0].parameters[0].name == "baseCurrency");
     CHECK(back->analytics[0].parameters[0].value == "EUR");
     REQUIRE(back->market_bindings.size() == 1);
-    CHECK(back->market_bindings[0].configuration_name == "default");
+    CHECK(back->market_bindings[0].market_configuration_name == "default");
 }
 
-TEST_CASE("a definition holds one run document", tags) {
+TEST_CASE("a definition binds one risk report configuration", tags) {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);

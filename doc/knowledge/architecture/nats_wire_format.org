@@ -176,9 +176,8 @@ publisher used to encode must be the one the subscriber uses to
 decode, since NATS carries no content-type metadata to disambiguate.
 When migrating one side of such a pair, always migrate the other side
 in the same change -- see the =entity_change_event= publishers across
-service =application.cpp= files, the =work_assignment_event= pair
-between =ores.compute.core= (producer) and =ores.compute.wrapper=
-(consumer), or the =step_completed_event=/=start_workflow_message=
+service =application.cpp= files, the =claim_work= pair between
+=ores.compute.wrapper= (requester) and =ores.compute.core= (handler), or the =step_completed_event=/=start_workflow_message=
 pair between =ores.service::messaging::workflow_helpers= (producer)
 and =ores.workflow.core::workflow_engine= (consumer) as examples.
 

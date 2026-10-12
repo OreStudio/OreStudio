@@ -81,6 +81,7 @@ import {
     heatmapRow,
     changeOf,
     hasAnySample,
+    loadSeries,
     throughputSeries,
     QueueOutlookNotice,
     formatWait,
@@ -1733,7 +1734,9 @@ function usageGroup(overrides: Partial<GridUsageView['groups'][number]> = {}) {
         results_done: 20,
         outcomes_success: 18,
         outcomes_failed: 2,
+        oldest_unsent_seconds: 0,
         share: 0.75,
+        unavailable: false,
         ...overrides,
     };
 }
@@ -1747,7 +1750,58 @@ function usageView(overrides: Partial<GridUsageView> = {}): GridUsageView {
     };
 }
 
+function renderUsage(groups: ReturnType<typeof usageGroup>[]): string {
+    return withProviders(
+        <GridPage />,
+        '/?tab=usage',
+        [],
+        gridView(),
+        busView(),
+        logsView(),
+        [],
+        undefined,
+        usageView({ groups }),
+    );
+}
+
 describe('the grid usage tab', () => {
+    it('shows how long the oldest waiting job of a group has waited', () => {
+        const html = renderUsage([usageGroup({ oldest_unsent_seconds: 600 })]);
+
+        expect(html).toContain('Oldest wait');
+        expect(html).toContain('10 min');
+        expect(html).not.toContain('loses its place');
+    });
+
+    it('warns when the oldest waiting job nears the limit a job can wait', () => {
+        const html = renderUsage([
+            usageGroup({ oldest_unsent_seconds: 600 }),
+            usageGroup({ key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', oldest_unsent_seconds: 2400 }),
+        ]);
+
+        expect(html).toContain('has waited 40 min');
+        expect(html).toContain('loses its place');
+    });
+
+    it('warns that a job has waited past the limit', () => {
+        const html = renderUsage([usageGroup({ oldest_unsent_seconds: 4500 })]);
+
+        expect(html).toContain('past the 60 min a job can wait');
+    });
+
+    it('does not count a group that could not be read toward the wait', () => {
+        const html = renderUsage([
+            usageGroup({ oldest_unsent_seconds: 0 }),
+            usageGroup({
+                key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                oldest_unsent_seconds: 9999,
+                unavailable: true,
+            }),
+        ]);
+
+        expect(html).not.toContain('has waited');
+    });
+
     it('lists a row for each tenant with its share of the grid', () => {
         const html = withProviders(
             <GridPage />,
@@ -1800,6 +1854,35 @@ describe('the grid usage tab', () => {
         expect(html).toContain('Usage by party');
         expect(html).toContain('Desk A');
         expect(html).toContain('No party');
+    });
+
+    it('says a tenant could not be read rather than showing zeros', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({
+                groups: [
+                    usageGroup(),
+                    usageGroup({
+                        key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                        name: 'Globex',
+                        results: 0,
+                        share: 0,
+                        unavailable: true,
+                    }),
+                ],
+            }),
+        );
+
+        expect(html).toContain('Globex');
+        expect(html).toContain('Could not be read');
+        expect(html).toContain('Each tenant is read inside the tenant');
     });
 
     it('shows the id of a group nobody could name', () => {
@@ -1933,5 +2016,20 @@ describe('the queue outlook', () => {
         expect(formatWait(45)).toBe('45 min');
         expect(formatWait(100)).toBe('1.7 h');
         expect(formatWait(720)).toBe('12 h');
+    });
+});
+
+describe('the load series', () => {
+    it('draws the waiting and the running results and leaves out the retired ones', () => {
+        const view = gridSeriesView({
+            results_inactive: [26000, 26000, 26000, 26000],
+            results_unsent: [4, 2, 0, 1],
+            results_in_progress: [2, 2, 0, 1],
+        });
+
+        const series = loadSeries(view, t);
+
+        expect(series.map((one) => one.key)).toEqual(['unsent', 'progress']);
+        expect(series.flatMap((one) => [...one.values]).every((count) => count < 26000)).toBe(true);
     });
 });

@@ -23,63 +23,11 @@
  * To modify, update the template and regenerate.
  */
 /**
- * @brief Asks the grid for one unit of work to run.
+ * @brief The job a node runs, as the wrapper builds it from a claim.
  *
- * Session gated: the handler checks compute::batches:write before it
- * assigns anything.
- */
-export interface PullWorkRequest {
-    /**
-     * @brief The node that will run the work.
-     */
-    host_id: string;
-}
-
-/**
- * @brief The assignment, or the reason there is none.
- *
- * A successful reply names the result, its workunit and the app version
- * whose package the node needs.
- */
-export interface PullWorkResponse {
-    /**
-     * @brief Whether work was assigned.
-     */
-    success: boolean;
-    /**
-     * @brief The result row the node must fill in.
-     */
-    result_id: string;
-    /**
-     * @brief The workunit the result belongs to.
-     */
-    workunit_id: string;
-    /**
-     * @brief The app version whose cached package the node runs.
-     */
-    app_version_id: string;
-    /**
-     * @brief Where the node fetches the job input.
-     */
-    input_uri: string;
-    /**
-     * @brief Where the node fetches the job config.
-     */
-    config_uri: string;
-    /**
-     * @brief Why no work was assigned, when none was.
-     */
-    message: string;
-}
-
-/**
- * @brief The payload published to the COMPUTE JetStream stream on dispatch.
- *
- * A producer addresses it at the subject below extended with the tenant and
- * the platform code, and carries everything the wrapper needs to execute the
- * job, so no additional round trip to the server is required. A wrapper
- * subscribes only to its own triplet, so it never sees an assignment it
- * could not run.
+ * It carries everything the wrapper needs to execute the job. It is not
+ * published: the claim reply holds the same fields, and the wrapper copies
+ * them into this payload to hand them to the code that runs the job.
  */
 export interface WorkAssignmentEvent {
     /**
@@ -163,44 +111,107 @@ export interface HeartbeatMessage {
 export interface ReapWorkMessage {}
 
 /**
- * @brief Tells the service that a wrapper node has begun a job.
+ * @brief A free node asks the service for its next job.
  *
- * The node waits for the reply before it runs the job, so the service has
- * recorded the result as in progress before the node can submit it. Without the
- * wait a fast job could submit first, and the late start would overwrite the
- * finished result. Like the submit, the channel is trusted at the transport
- * layer, because a node holds no user JWT.
+ * The node sends it when it has no job to run. The service takes the next
+ * waiting job for the node's platform from the work ledger, marks it as taken
+ * under a lease, and replies with everything the node needs to run it. A node
+ * therefore never holds a job it is not running. Like the heartbeat and the
+ * submit, the channel is trusted at the transport layer, because a node holds
+ * no user JWT.
  */
-export interface ResultStartedRequest {
+export interface ClaimWorkRequest {
     /**
-     * @brief The tenant the assignment named; the result is scoped to it.
-     */
-    tenant_id: string;
-    /**
-     * @brief The result the node has begun.
-     */
-    result_id: string;
-    /**
-     * @brief The node that runs it.
+     * @brief The node that asks, as its heartbeat names it.
      */
     host_id: string;
+    /**
+     * @brief The platform triplet of the node, such as x64-linux. The job named in the reply has a package for it.
+     */
+    platform: string;
 }
 
 /**
- * @brief Whether the start was recorded.
+ * @brief The job the node is to run, or the fact that none waits.
  *
- * A start for a result that is not unsent is not an error: the result is already
- * further on, and the reply says so in the message with success set.
+ * A reply with success and no work says the queue holds nothing for the node's
+ * platform, and the node waits for its next poll. A reply with work carries the
+ * same fields as a pushed assignment, and the storage token in it is minted at
+ * the claim, so it lives from the moment the node takes the job and not from
+ * the moment the job was queued.
  */
-export interface ResultStartedResponse {
+export interface ClaimWorkResponse {
     /**
-     * @brief Whether the start was recorded or was already moot.
+     * @brief Whether the claim was served, with or without work.
      */
     success: boolean;
     /**
-     * @brief Why it was not recorded, when it was not.
+     * @brief Whether the reply names a job.
+     */
+    has_work: boolean;
+    /**
+     * @brief Why the claim was not served, when it was not.
      */
     message: string;
+    /**
+     * @brief The tenant that owns the result the node must fill in. The node hands it back on submit.
+     */
+    tenant_id: string;
+    /**
+     * @brief The result row the node must fill in.
+     */
+    result_id: string;
+    /**
+     * @brief The workunit the result belongs to.
+     */
+    workunit_id: string;
+    /**
+     * @brief Identifies the cached package.
+     */
+    app_version_id: string;
+    /**
+     * @brief Engine bundle (.tar.gz) to download and cache.
+     */
+    package_uri: string;
+    /**
+     * @brief Expected SHA256 of the downloaded package bundle.
+     */
+    package_sha256: string;
+    /**
+     * @brief Input bundle of the job.
+     */
+    input_uri: string;
+    /**
+     * @brief Optional configuration of the job.
+     */
+    config_uri: string;
+    /**
+     * @brief Pre-assigned upload location for the result.
+     */
+    output_uri: string;
+    /**
+     * @brief A capability for exactly the package, the input and the output of this job, minted at the claim.
+     */
+    storage_token: string;
+    /**
+     * @brief The number of the attempt this claim starts, 1 for the first.
+     */
+    attempt: number;
+}
+
+/**
+ * @brief Tells idle nodes that work has been queued.
+ *
+ * A plain NATS notice with no persistence. It holds no job and no credential, so
+ * it cannot go stale or be redelivered, and it is lost if no node listens. A node
+ * that hears it asks for work at once. A node also asks every few seconds with
+ * random jitter, so a lost notice costs seconds and nothing else.
+ */
+export interface WorkAvailableEvent {
+    /**
+     * @brief The number of results the sender queued, for a log line. A node does not act on it.
+     */
+    queued: number;
 }
 
 /**
@@ -257,11 +268,10 @@ export interface SubmitResultResponse {
 }
 
 export const subjects = {
-    pull_work_request: 'compute.v1.ops.pull_work',
-    work_assignment_event: 'compute.v1.ops.work_assignment',
     heartbeat_message: 'compute.v1.ops.heartbeat',
     reap_work_message: 'compute.v1.ops.reap_work',
-    result_started_request: 'compute.v1.ops.result_started',
+    claim_work_request: 'compute.v1.ops.claim_work',
+    work_available_event: 'compute.v1.ops.work_available',
     submit_result_request: 'compute.v1.ops.submit_result',
 } as const;
 /**
@@ -270,10 +280,9 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    pull_work_request: true,
-    work_assignment_event: false,
     heartbeat_message: false,
     reap_work_message: false,
-    result_started_request: false,
+    claim_work_request: false,
+    work_available_event: false,
     submit_result_request: false,
 } as const;

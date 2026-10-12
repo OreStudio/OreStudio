@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 7D4D8598-555D-4E86-8006-3BC79E926382
+:END:
+#+title: How the compute grid queues and claims work
+#+description: The design of the compute queue: the database holds the queue, a node claims a job on request under a lease, and the token is minted at the claim. States the problem, the options compared, the protocol, the lease and retry rules, and what stays on JetStream.
+#+type: knowledge
+#+level: cross
+#+filetags: :compute:grid:queue:architecture:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+* Summary
+
+The compute grid keeps its queue in the database, in a ledger that the installation owns. A node that is free asks the server for a job. The server takes the next waiting entry from the ledger under a lease, enters the tenant that owns the job to mark its result as taken, mints the storage token for that job at that moment, and replies with the assignment. A lease that runs out puts the job back in the queue, and a job that runs out of attempts ends as a failure that a person can see. A plain NATS notice wakes idle nodes. JetStream carries events and records, and it carries no work.
+
+This replaces the first design, in which the server published each job to a JetStream stream and pushed it to a node. That design failed on 2026-10-12. This page states the problem, compares the options, and gives the protocol that replaces it.
+
+* Detail
+
+** What went wrong with the push design
+
+Three facts about the first design combined into a failure.
+
+1. The dispatcher published one assignment for each result and put a storage token in it. The token lives for one hour, from the moment of publishing.
+2. The wrapper subscribes to a push durable. The server pushes the wrapper every message that has no acknowledgement, up to a window of 1000 for the whole durable. The client library buffers them in the wrapper.
+3. The client acknowledges a message after the handler returns, and a wrapper runs one job at a time. The ack wait is 30 seconds. A wrapper with 40 buffered messages needs longer than that to reach the last one, so the server pushes them again.
+
+A job that waited more than an hour failed on its first storage request. The failures kept the window full, and the duplicates filled the buffers again. With 1000 messages outstanding the server delivered nothing else, so new jobs waited behind jobs that could not succeed. The grid finished 1.7 jobs a minute when it could finish 27. A purge of the stream did not help, because the wrappers held the messages in their buffers. The story [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] holds the measurements.
+
+The cause is not one setting. A push consumer hands work to a worker before the worker is free. A message broker holds a message and has no knowledge of the job that the message names. A queue of jobs that run for seconds or minutes, and that wait for hours, needs a different shape.
+
+** What the first principles require
+
+A queue of long jobs needs four things.
+
+- *Pull.* A job moves to a worker only when the worker is free. A worker never holds a job it is not running.
+- *A lease.* A claim is bounded in time. A heartbeat extends it. A lease that runs out gives the job to another worker.
+- *Bounded retry.* A job has a count of attempts. A job that uses them all ends in a state that a person sees, and it never returns to the queue.
+- *A credential for the claim.* A token is minted when the job is handed out, for exactly that job. A queued job holds no credential.
+
+** What other systems do
+
+This table comes from the author's knowledge of these systems. It is not checked against their documentation.
+
+| System | How a worker gets a job | What stops a bad job from blocking |
+|--------+-------------------------+------------------------------------|
+| RabbitMQ | One unacknowledged message at a time (prefetch 1, "fair dispatch"). | A dead-letter exchange and a delivery limit. |
+| SQS | The worker polls. A received message is invisible for a time, and a long job extends the time. | A redrive policy sends it to a dead-letter queue after a number of receives. |
+| Celery | The worker pre-fetches tasks. The advice for long tasks is prefetch 1 and late acknowledgement. | A task with a long countdown on the Redis broker is delivered again and again after the visibility timeout. |
+| NATS JetStream | The documentation favours a pull consumer for a work queue. The worker fetches when free, extends with an in-progress ack, and ends a message with a term ack. | A limit on deliveries with a back-off, and an advisory on maximum deliveries that is turned into a record. |
+| BOINC, HTCondor, Slurm | The worker asks a central scheduler for work. The scheduler picks the job at that moment and gives it a deadline. | Attempt counts and deadlines in the scheduler's database. |
+| Postgres queues (River, Oban, pgmq) | The worker claims a row with =select ... for update skip locked= and sets a lease. | A reaper returns expired leases, and attempts have a maximum. |
+
+The compute grid already uses the BOINC vocabulary of batch, workunit, result and host, and its work is a row of results in a database. The last two rows of the table are the model.
+
+** The options
+
+| Option | What it is | Why it was or was not chosen |
+|--------+------------+------------------------------|
+| A. Tune the push consumer | A smaller window, a longer ack wait, a delivery limit, skip an expired token. | Not chosen. It leaves a worker holding jobs early, the credential in the queue, and no queue age. |
+| B. A JetStream pull consumer | Manual ack, fetch one, extend the lease, end a message that cannot succeed. | Not chosen alone. It fixes the mechanics. It leaves the credential in the message and the queue hidden in a stream. |
+| C. The database is the queue | A node claims a job on request under a lease. | Chosen. |
+
+B is not combined with C for the same work. If every job is in the database and also in a stream, the two disagree, and the disagreement is what hurt. A message exists for a result that was retired, and the node keeps trying it. The lease, the delivery limit and the dead-letter state are in C already, as columns and a state. A stream is also first in, first out. Priority, fairness between tenants, a bound for each tenant and the age of the oldest job are queries over jobs, and they are easy in a database.
+
+** The design
+
+*** The work ledger
+
+A job belongs to a tenant, and no policy lets the system tenant read another tenant's work. A queue that serves every tenant therefore cannot be a query over the results of all tenants. The queue is a ledger that the installation owns, with one entry for each result that waits or runs.
+
+An entry holds the id of the result, the tenant that owns it, the platforms that can run it, the priority of its workunit, when it was queued, and, once taken, the host, the lease and the number of attempts. It holds no business data of the tenant, and nothing in it is private to the tenant that owns the job. Only a session of the system tenant reads or writes the ledger. The service is that session. A tenant's session and an operator who has entered a tenant read none of it. The policy is written =tenant_id = current and tenant_id = system=, which admits no tenant's rows to anyone else and is not a widening.
+
+The result row stays the tenant's record of the job and carries its state. The ledger carries the scheduling facts that the service needs to choose a job and to find a lease that has run out. The service writes the ledger in the system tenant and writes the result by entering the tenant, as it already does for a submit.
+
+*** The claim
+
+An idle node sends a claim request on =compute.v1.ops.claim_work=. The request names the host and the platform. The server does these steps.
+
+1. Take the next entry for that platform in one statement, and skip entries that another claim holds, with =for update skip locked=. The statement sets the entry to claimed, sets the host, adds one to the attempts, and sets the lease to the lease length from now.
+2. Choose across tenants. The statement orders the candidates so that the tenant with the fewest claimed entries goes first, then by priority and then by age.
+3. Enter the tenant that owns the entry and mark its result InProgress with the host. A result that is no longer waiting, because a person retired it or it is done, ends the claim: the entry is deleted and the server takes the next one.
+
+After that the server asks IAM for a storage token for the keys of that job and replies with the assignment: the package, the input, the config, the output location and the token. The token lives from the claim. If IAM refuses, the server gives the entry back to the queue. A reply of "no work" tells the node to wait.
+
+*** The lease
+
+The lease is five minutes at first. The heartbeat that a node already sends while it runs a job extends the lease of every entry that the host holds, and it needs no tenant, because the ledger is the installation's. The reaper finds the claimed entries whose lease has ended. For each, it enters the tenant. A result still in progress with attempts left goes back to Unsent and its entry back to the queue. A result with no attempts left ends as Done with outcome 4, NoReply, with a message that names the lease, and its entry is deleted. An entry whose result is done or retired is deleted. The number of attempts is three at first.
+
+*** The outcome
+
+A submit changes a result only when the result is InProgress and the host is the host that holds the claim in the ledger. A result that has no entry in the ledger was handed out by the push queue, and its submit is accepted as before until that queue is removed. A submit for a result that is retired, already done, or claimed by another host changes nothing, and the reply says it succeeded, so the node never reports an error for work that no longer matters. This is the Idempotent Receiver pattern. It also stops a late node from overwriting the result of the node that took over after its lease ended.
+
+*** The wake-up
+
+The server publishes a notice on =compute.v1.ops.work_available= when it adds Unsent results. The notice is plain NATS. It holds no state and it is lost if no node listens. A node also asks for work every few seconds, with random jitter, so a lost notice costs seconds. A node that gets "no work" waits for the notice or for its next poll.
+
+*** The bound
+
+The server counts the entries of a tenant in the queue when a batch is dispatched. A batch that would pass the tenant's limit is refused, and the service log says how many jobs wait. The dispatch runs after the workunit is committed, so the refusal does not reach the reply to the shell. The limit is 3600 jobs for each tenant. A tenant therefore cannot fill the queue. The limit starts at the work that the grid finishes in the longest wait that a person accepts.
+
+*** What a person sees
+
+A tenant reads the depth of its queue and the age of its oldest waiting job from its own results. The operator reads them for each tenant by entering it, as for the usage, because the ledger is for the service alone. The Usage tab of the grid screen shows the wait of the oldest waiting job for each tenant or party, and warns when it nears or passes the hour that a job can wait. The warning on the Load tab that says the queue is over capacity stays an estimate from the rate of the grid, because the usage read enters every tenant and is not polled.
+
+** What stays on JetStream
+
+JetStream carries facts that must not be lost: the commands of the workflow engine, the events that a batch is complete, and a record of each result that ended with no attempts left. It carries no job and no credential. The assignments stream and its durable consumer are removed when the claim is in use.
+
+** What does not change
+
+The state of a result is the state of the job. The batch, workunit and result entities, the package and input storage, the validator that sets the canonical result, and the assimilator that closes the batch stay as they are. The shell, the wrapper's engine run and the output upload stay as they are.
+
+** Security
+
+The claim and the submit are trusted at the transport, as the heartbeat is today. The claim reads the ledger as the service and enters one tenant to write one result, which is the way the service already enters a tenant for a submit and a dispatch. It reads no tenant's rows across tenants, and no policy is widened. The wrapper connects with a TLS client certificate, and one certificate serves the whole wrapper role. A claim therefore says "a wrapper" and not "this wrapper". A certificate for each node, checked at the claim, is a later step. The token that the claim returns covers one job and lives from the claim, so a stolen assignment grants access to one job's keys for one hour at most.
+
+** Rollout
+
+1. Make the submit idempotent and make the node skip an assignment whose token has ended. These changes are right in every design and go first.
+2. Add the work ledger with its lease and attempt count, queue the results that the dispatcher creates, and serve the claim from it.
+3. Change the wrapper to claim work, with the notice and the poll.
+4. Add the reaper over the ledger, and the bound for each tenant.
+5. Show the depth and the age on the grid screen.
+6. Remove the assignments stream, its durable consumer and the dispatcher's publish.
+
+All six steps are done. The old =pull_work= and =result_started= operations are removed too.
+
+* Patterns used
+
+- [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] — the queue holds the peak, in the database.
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — the node claims a job and gets the assignment in the reply.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — a repeated or late submit changes nothing.
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — an expired lease returns the job a bounded number of times.
+- [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]] — the lease is the limit on how long a node may hold a job in silence.
+- [[id:6E7979E9-8065-49D1-97AF-27375013A795][Fair Share]] — the claim chooses across tenants.
+- [[id:1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637][Claim Check]] — the assignment carries the keys of the job and a token for them.
+
+* See also
+
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the lifecycle as it runs today.
+- [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable consumers]] — the stream that this design retires.
+- [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] — the story with the measurements.

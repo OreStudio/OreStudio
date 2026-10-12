@@ -20,7 +20,6 @@
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -390,19 +389,20 @@ std::expected<stream_watch, std::string> marketdata_commands::stream_subjects(
         return std::unexpected(datum.error());
 
     if (!datum->is_series()) {
-        auto key = marketdata::datum::ore_key_codec::write(*datum);
-        // The codec's own message says why no ORE key names this datum.
-        if (!key)
-            return std::unexpected(key.error());
-        return stream_watch{{marketdata::domain::market_tick_subject(tenant_id, party_id, *key)},
+        // The URI the codec writes is the datum's one spelling, and the subject
+        // is made from it, as the ingest loop makes it.
+        const auto canonical = marketdata::datum::oresmd_uri_codec::write(*datum);
+        if (!canonical)
+            return std::unexpected(canonical.error());
+        return stream_watch{{marketdata::domain::market_tick_subject(tenant_id, party_id, *canonical)},
                             std::nullopt};
     }
 
-    // A series has no ORE key of its own -- the producer only ever names points
-    // -- and a type's coordinates interleave with its identity fields, so no
-    // NATS wildcard covers exactly one series' points. Watch the party's whole
-    // tick subtree and keep the ticks whose series matches.
-    return stream_watch{{marketdata::domain::market_tick_subject(tenant_id, party_id, ">")},
+    // A series is not a datum a producer publishes: it only ever names points,
+    // each on a subject of its own, so no NATS wildcard covers exactly one
+    // series' points. Watch the party's whole tick subtree and keep the ticks
+    // whose series matches.
+    return stream_watch{{marketdata::domain::market_tick_subject_all(tenant_id, party_id)},
                         *datum};
 }
 

@@ -1670,7 +1670,15 @@ const pt: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Utilização por inquilino', party: 'Utilização por parte' },
-                note: 'A quota de um grupo é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
+                note: {
+                    tenant: 'Cada inquilino é lido dentro do inquilino, porque o trabalho de um inquilino não é visível a partir de outro. A quota de um inquilino é a fração dos seus resultados entre os resultados que puderam ser lidos. Com êxito e falhados contam as últimas 24 horas.',
+                    party: 'A quota de uma parte é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
+                },
+                unavailable: 'Não foi possível ler',
+                age: {
+                    caution: 'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
+                    over: 'A tarefa em espera mais antiga espera há {time}, acima dos {limit} que uma tarefa pode esperar.',
+                },
                 empty: 'Ainda não correu trabalho na grelha.',
                 unassigned: 'Sem parte',
                 columns: {
@@ -1681,6 +1689,7 @@ const pt: SourceCatalogue = {
                     results: 'Resultados',
                     inProgress: 'A correr',
                     unsent: 'À espera',
+                    oldest: 'Espera mais antiga',
                     done: 'Concluídos',
                     succeeded: 'Com êxito',
                     failed: 'Falhados',
@@ -1754,7 +1763,6 @@ const pt: SourceCatalogue = {
                 load: {
                     title: 'Carga',
                     caption: 'Trabalho em curso por estado do resultado',
-                    inactive: 'Inativo',
                     unsent: 'Por enviar',
                     inProgress: 'Em curso',
                 },

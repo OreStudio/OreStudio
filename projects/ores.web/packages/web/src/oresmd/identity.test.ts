@@ -20,8 +20,9 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { OresmdParseResult } from '@ores/contracts';
-import { evolutionRoute, seriesOfUrl, seriesRoute } from './identity.js';
+import type { CurveSeriesList, ListedSeries, OresmdParseResult } from '@ores/contracts';
+import type { IdentityForm } from '../market/evolutionView.js';
+import { evolutionRoute, seriesOfUrl, seriesRoute, seriesVerdict } from './identity.js';
 import { SCHEMA } from './testSchema.js';
 
 const parts = (over: Partial<OresmdParseResult> = {}): OresmdParseResult => ({
@@ -108,6 +109,70 @@ describe('evolutionRoute', () => {
         expect(evolutionRoute('oresmd://ir/EUR?type=series&x=1')).toBe(
             '/market-data/evolution?uri=oresmd%3A%2F%2Fir%2FEUR%3Ftype%3Dseries%26x%3D1',
         );
+    });
+});
+
+describe('seriesVerdict', () => {
+    const form: IdentityForm = {
+        asset: 'ir',
+        scope: 'EUR',
+        instrumentType: 'capfloor',
+        quoteType: 'rate',
+        fields: 'cap_floor=Cap',
+        partyId: '',
+    };
+    const listed = (fields: readonly [string, string][], axes: string[]): ListedSeries => ({
+        series_id: 'series-1',
+        axes,
+        identity: {
+            asset: 'ir',
+            scope: 'EUR',
+            instrument_type: 'capfloor',
+            quote_type: 'rate',
+            fields: fields.map(([name, text]) => ({ name, text })),
+        },
+    });
+    const listOf = (...series: ListedSeries[]): CurveSeriesList => ({ truncated: false, series });
+
+    it('shows a series the party has when it declares an axis', () => {
+        const held = listed([['cap_floor', 'Cap']], ['term']);
+        expect(seriesVerdict(listOf(held), form)).toEqual({ kind: 'shown', listed: held });
+    });
+
+    it('has no shape for a series the party has when it declares no axis', () => {
+        const held = listed([['cap_floor', 'Cap']], []);
+        expect(seriesVerdict(listOf(held), form)).toEqual({ kind: 'no-shape', listed: held });
+    });
+
+    it('is not listed when the party has no series with that identity', () => {
+        expect(seriesVerdict(listOf(), form)).toEqual({ kind: 'not-listed' });
+        const other = listed([['cap_floor', 'Floor']], ['term']);
+        expect(seriesVerdict(listOf(other), form)).toEqual({ kind: 'not-listed' });
+    });
+
+    it('needs the same identity fields on both sides, an extra one on either side is another series', () => {
+        const extra = listed(
+            [
+                ['cap_floor', 'Cap'],
+                ['ccy', 'USD'],
+            ],
+            ['term'],
+        );
+        expect(seriesVerdict(listOf(extra), form).kind).toBe('not-listed');
+        const missing = listed([], ['term']);
+        expect(seriesVerdict(listOf(missing), form).kind).toBe('not-listed');
+    });
+
+    it('ignores the order of the fields and blank lines in the form', () => {
+        const held = listed(
+            [
+                ['cap_floor', 'Cap'],
+                ['ccy', 'USD'],
+            ],
+            ['term'],
+        );
+        const written: IdentityForm = { ...form, fields: '\nccy=USD\n  cap_floor=Cap  \n' };
+        expect(seriesVerdict(listOf(held), written).kind).toBe('shown');
     });
 });
 

@@ -42,6 +42,12 @@ describe('pointsOf', () => {
         expect(points).toEqual([]);
     });
 
+    it('reads an instant with no zone as UTC, so the viewer zone does not shift it', () => {
+        const [zoned] = pointsOf([obs('2026-01-01 10:00:00Z', '1')]);
+        const [bare] = pointsOf([obs('2026-01-01 10:00:00', '1')]);
+        expect(bare!.at).toBe(zoned!.at);
+    });
+
     it('leaves out an instant that is not a date', () => {
         expect(pointsOf([obs('yesterday', '1')])).toEqual([]);
     });

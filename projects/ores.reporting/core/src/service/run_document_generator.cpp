@@ -19,108 +19,76 @@
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
 #include <algorithm>
+#include <chrono>
+#include <cstdio>
+#include <format>
 #include <optional>
 #include <stdexcept>
 
 namespace ores::reporting::service {
 
-using domain::report_run_setup;
-using domain::risk_report_config;
-
 namespace {
-
-struct switch_rule {
-    int risk_report_config::* enabled;
-    const char* analytic_type;
-};
-
-// In the order ORE runs the analytics.
-constexpr switch_rule switch_rules[] = {
-    {&risk_report_config::portfolio_details_enabled, "portfolioDetails"},
-    {&risk_report_config::npv_enabled, "npv"},
-    {&risk_report_config::cashflow_enabled, "cashflow"},
-    {&risk_report_config::curves_enabled, "curves"},
-    {&risk_report_config::credit_curves_enabled, "creditcurves"},
-    {&risk_report_config::calibration_enabled, "calibration"},
-    {&risk_report_config::sensitivity_enabled, "sensitivity"},
-    {&risk_report_config::stress_enabled, "stress"},
-    {&risk_report_config::simulation_enabled, "simulation"},
-    {&risk_report_config::xva_enabled, "xva"},
-    {&risk_report_config::pfe_enabled, "pfe"},
-    {&risk_report_config::saccr_enabled, "saccr"},
-    {&risk_report_config::historical_var_enabled, "historicalSimulationVar"},
-    {&risk_report_config::pnl_explain_enabled, "pnlExplain"},
-    {&risk_report_config::initial_margin_enabled, "initialMargin"},
-    {&risk_report_config::parametric_var_enabled, "parametricVar"},
-};
 
 struct input_file {
     const char* type_code;
-    std::optional<std::string> report_run_setup::* member;
+    const char* parameter;
     const char* file;
 };
 
 constexpr input_file input_files[] = {
-    {"conventions", &report_run_setup::conventions_file, "conventions.xml"},
-    {"curve_configuration", &report_run_setup::curve_config_file, "curveconfig.xml"},
-    {"todays_market", &report_run_setup::market_config_file, "todaysmarket.xml"},
-    {"pricing_engines", &report_run_setup::pricing_engines_file, "pricingengine.xml"},
+    {"conventions", "conventionsFile", "conventions.xml"},
+    {"curve_configuration", "curveConfigFile", "curveconfig.xml"},
+    {"todays_market", "marketConfigFile", "todaysmarket.xml"},
+    {"pricing_engines", "pricingEnginesFile", "pricingengine.xml"},
 };
 
+// The weekday before a date. Holiday calendars are not consulted.
+std::string previous_weekday(const std::string& iso_date) {
+    int y = 0;
+    unsigned m = 0, d = 0;
+    char tail = 0;
+    if (std::sscanf(iso_date.c_str(), "%d-%u-%u%c", &y, &m, &d, &tail) != 3)
+        throw std::invalid_argument(
+            std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
+    const std::chrono::year_month_day ymd{std::chrono::year{y}, std::chrono::month{m},
+                                          std::chrono::day{d}};
+    if (!ymd.ok())
+        throw std::invalid_argument(
+            std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
+    std::chrono::sys_days day{ymd};
+    do {
+        day -= std::chrono::days{1};
+    } while (std::chrono::weekday{day} == std::chrono::Saturday ||
+             std::chrono::weekday{day} == std::chrono::Sunday);
+    return std::format("{:%F}", day);
 }
 
-std::vector<std::string> enabled_analytic_types(const risk_report_config& risk) {
-    std::vector<std::string> r;
-    for (const auto& rule : switch_rules)
-        if (risk.*rule.enabled != 0)
-            r.emplace_back(rule.analytic_type);
-    return r;
+// The date a run values the portfolio at.
+std::string as_of(const domain::risk_report_config& risk, const std::string& run_date) {
+    if (risk.market_data_type == "date")
+        return risk.market_data_date;
+    return risk.market_data_type == "eod" ? previous_weekday(run_date) : run_date;
+}
+
 }
 
 messaging::run_document generate_run_document(const run_document_inputs& in) {
-    const auto types = enabled_analytic_types(in.risk);
-    if (types.empty())
+    if (std::ranges::none_of(in.analytics, [](const auto& a) { return a.analytic.active == "Y"; }))
         throw std::invalid_argument(
             "The risk report configuration switches no analytic on. An ORE run needs at "
             "least one.");
 
     messaging::run_document r;
-
-    auto& setup = r.setup;
-    setup.report_definition_id = in.report_definition_id;
-    setup.party_id = in.party_id;
-    if (!in.asof_date.empty())
-        setup.asof_date = in.asof_date;
-    setup.input_path = "Input";
-    setup.output_path = "Output";
-    setup.base_currency = in.risk.base_currency;
-    setup.observation_model = in.risk.observation_model;
-    setup.n_threads = in.risk.n_threads;
+    r.settings = in.risk;
+    r.settings.market_data_date = as_of(in.risk, in.run_date);
+    r.settings.market_data_type = "date";
     for (const auto& f : input_files) {
         const auto bound = std::ranges::find(in.bound_types, f.type_code) != in.bound_types.end();
         if (bound)
-            setup.*f.member = f.file;
+            r.files.push_back({f.parameter, f.file});
     }
-
-    int order = 0;
-    for (const auto& type : types) {
-        messaging::run_analytic a;
-        a.analytic.party_id = in.party_id;
-        a.analytic.report_definition_id = in.report_definition_id;
-        a.analytic.analytic_type_code = type;
-        a.analytic.display_order = ++order;
-        a.analytic.active = "Y";
-        r.analytics.push_back(std::move(a));
-    }
-
-    domain::report_market_binding market;
-    market.party_id = in.party_id;
-    market.report_definition_id = in.report_definition_id;
-    market.role = "pricing";
-    market.configuration_name = in.market_configuration;
-    market.position = 1;
-    r.market_bindings.push_back(std::move(market));
-
+    r.analytics = in.analytics;
+    r.market_bindings = in.market_bindings;
     return r;
 }
 

@@ -193,6 +193,13 @@ describe('the series observations route', () => {
         expect(limits).toEqual([50, 1000]);
     });
 
+    it('falls back to the number of observations read when the server sends no total', async () => {
+        const { total: _total, ...withoutTotal } = REPLY;
+        const { server, sessionId } = buildTestServer({ [SUBJECT]: withoutTotal });
+        const response = await send(server, sessionId, 'GET', `/api/series/${SERIES}/observations`);
+        expect(response.json().total).toBe(3);
+    });
+
     it('answers an empty list for a series with no observation', async () => {
         const empty = { result: OK, market_observations: [], total: 0 };
         const { server, sessionId } = buildTestServer({ [SUBJECT]: empty });

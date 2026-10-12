@@ -98,7 +98,8 @@ public:
      * IndexCreditDefaultSwapOption, CreditLinkedSwap, SyntheticCDO, and
      * RiskParticipationAgreement. Returns empty for all other types.
      */
-    static std::optional<trading::domain::credit_instrument> map_credit_instrument(const trade& v);
+    static std::optional<trading::domain::credit_instrument_data>
+    map_credit_instrument(const trade& v);
 
     /**
      * @brief Dispatches a bond-family trade to bond_instrument_mapper.

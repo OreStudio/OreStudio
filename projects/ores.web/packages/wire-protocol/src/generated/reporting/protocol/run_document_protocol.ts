@@ -22,9 +22,9 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { ReportAnalytic } from '../domain/report_analytic.js';
-import type { ReportMarketBinding } from '../domain/report_market_binding.js';
-import type { ReportRunSetup } from '../domain/report_run_setup.js';
+import type { ConfigurationAnalytic } from '../domain/configuration_analytic.js';
+import type { ConfigurationMarketBinding } from '../domain/configuration_market_binding.js';
+import type { RiskReportConfig } from '../domain/risk_report_config.js';
 
 /**
  * @brief One parameter of an analytic, by the name the run document uses.
@@ -48,19 +48,37 @@ export interface RunParameter {
  * order the document wrote them.
  */
 export interface RunAnalytic {
-    analytic: ReportAnalytic;
+    analytic: ConfigurationAnalytic;
     parameters: RunParameter[];
 }
 
 /**
- * @brief One ORE run document as reporting stores it against a report
- * definition: the setup, the analytics with their parameters, and the market
- * bindings.
+ * @brief The name a run document gives to one file it reads.
+ *
+ * The files are data and documents that live outside the configuration: the
+ * configuration documents, the portfolio, the market data and the fixings. A
+ * configuration does not store the names. They come from the table of well known
+ * file names when a run is built, and from the Setup of an ORE sample when one
+ * is imported, where the import uses them to find the files.
+ */
+export interface RunFile {
+    parameter: string;
+    name: string;
+}
+
+/**
+ * @brief One ORE run document, built from the configuration a report definition
+ * binds: the choices of the run, the analytics with their parameters, the market
+ * bindings and the names of the files the run reads.
+ *
+ * The choices, the analytics and the market bindings belong to the shared
+ * configuration. Only the file names are not stored.
  */
 export interface RunDocument {
-    setup: ReportRunSetup;
+    settings: RiskReportConfig;
+    files: RunFile[];
     analytics: RunAnalytic[];
-    market_bindings: ReportMarketBinding[];
+    market_bindings: ConfigurationMarketBinding[];
 }
 
 /**

@@ -21,6 +21,15 @@
 
 import type { Observation } from '@ores/contracts';
 
+/**
+ * The instant as ISO text. The wire writes UTC with a Z, and a text with no zone is
+ * read as UTC too, so the viewer's own zone never shifts a point.
+ */
+function instantText(text: string): string {
+    const iso = text.trim().replace(' ', 'T');
+    return /(Z|[+-]\d\d:?\d\d)$/.test(iso) ? iso : `${iso}Z`;
+}
+
 /** One observation as a point of a chart: its instant in milliseconds and its value. */
 export interface Point {
     readonly at: number;
@@ -36,7 +45,7 @@ export interface Point {
 export function pointsOf(observations: readonly Observation[]): readonly Point[] {
     const points: Point[] = [];
     for (const observation of observations) {
-        const at = Date.parse(observation.at.replace(' ', 'T'));
+        const at = Date.parse(instantText(observation.at));
         const value = Number(observation.value);
         if (Number.isFinite(at) && observation.value.trim() !== '' && Number.isFinite(value)) {
             points.push({ at, value });

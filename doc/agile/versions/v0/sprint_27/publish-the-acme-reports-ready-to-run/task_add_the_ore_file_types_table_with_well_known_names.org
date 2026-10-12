@@ -103,6 +103,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | About 60 shell scripts outside the change | projects/ores.shell/scripts/library | Accepted, explained | Tangle drift left by PR 3186. The tangle check fails on main without them. The PR body says so. |
+| 2 | ore_parameter has no non-empty check | ores.reporting.file_type.org | Accepted | Check added to the model and generated. |
+| 3 | No uniqueness on analytic plus parameter | ores.reporting.file_type.org | Accepted | Unique index on live rows, with the empty string for the Setup block. |
+| 4 | Pattern regex refuses a slash and a space | ores.reporting.file_type.org | Declined | Intended. A package keeps its files in one folder. The seed check shows every sample conforms. |
+| 5 | Schema allows a sample count of 0; run the full gate | reporting_file_types_test.sql | Partly accepted | A user row may have a count of 0. The full gate is run before merge. |
 
 * Result

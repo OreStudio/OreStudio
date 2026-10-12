@@ -3624,6 +3624,10 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        feeds: {
+            targetUri:
+                'A série em que este feed escreve. Cada tick do feed é guardado como uma observação da série que este URI nomeia.',
+        },
         area: {
             title: 'Dados de mercado',
             lead: 'Os preços e as curvas que a plataforma recebe ou gera.',

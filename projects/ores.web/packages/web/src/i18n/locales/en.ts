@@ -3597,6 +3597,10 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        feeds: {
+            targetUri:
+                'The series this feed writes to. Each tick the feed makes is stored as an observation of the series that this URI names.',
+        },
         area: {
             title: 'Market data',
             lead: 'The prices and curves the platform receives or generates.',

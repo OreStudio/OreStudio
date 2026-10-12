@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-the-pending-change-for-the-counterparty
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A counterparty change can be held as typed rows until its request is approved.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -43,6 +43,11 @@ A counterparty change can be held as typed rows until its request is approved.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Mark the counterparty, its identifier and its party link with a flag that derives their pending models, and generate each stack, as the book's was.
+- Keep the gate off. A new flag, =:pending_change: true=, derives the pending change and nothing else. The flag =:gated: true= does that and also turns the gate on in the entity's service, so the counterparty takes it in the gate task, after the preview, the raise and the apply exist.
+- Teach the derivation two shapes the book did not have: an entity with a hierarchy of its own, whose tree flags do not belong on a pending line, and a junction, which has two halves and no columns section.
+- Wire each stack in by hand where the book's was: the registrars, the shell commands, the table includes and drops, the tenant policy and the read permission.
 
 * Measurements
 
@@ -59,6 +64,13 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The party link is a junction with a composite key and no id. Its pending model is an entity that holds the two halves as plain columns, with the operation and the version the maker read. A link is made or removed whole, so a line for it is a put or a delete of the pair.
+- The pending tables of the counterparty and its identifier follow the live tables' tenant isolation. The party link's pending table is isolated by tenant only. The live link is also isolated by party. A party sees every pending link of its tenant until the raise and apply tasks say how a request reads. I note it for those tasks.
+- The pending counterparty keeps the parent counterparty as a plain id column. The tree itself is the live row's.
+- A source model may name a generator helper its own generator file defines (=uuid_gen=). The derived line uses the shared generator instead.
+- The main branch moved the =.env= format to version 30 while this task ran. I regenerated =.env= with the documented command, which reused the credentials and backed up the old file.
+- Nothing else changes in the counterparty today: its services, handlers and screens are as they were, and a regeneration of the three source models gives the same files.
 
 * Test Scenarios
 
@@ -84,3 +96,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A counterparty change, an identifier change and a party link change can each be held as typed rows until a request is approved.
+
+- =:pending_change: true= on the counterparty, its identifier and the party link derives =counterparty_change=, =counterparty_identifier_change= and =party_counterparty_change= and generates each stack: domain, table, repository, service, protocol, events, history, shell commands, SQL and wire types.
+- The derivation strips a hierarchy's flags, replaces a source generator helper, and derives an entity from a junction.
+- The three stacks are registered with the refdata service and the shell, their tables are created and dropped with the schema, and each has a tenant policy and a read permission.
+- The gate is not on. The writes of the counterparty are direct, as before.
+
+Evidence: =ores.refdata.core.tests= passes (382 cases) with the new eventing cases for the three stacks, =ores.shell.refdata.tests= passes (2427 cases), and the eight new cases in =test_pending_change.py= pass. The catalogue drift sweep, handler permission, cmake source, populate reference and derived-model checks pass.
+
+Not done here: the preview, the raise and the apply, which are the next task, and the gate.

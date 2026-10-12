@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: A38ABDD0-7946-5E9C-82F3-E7DB467AF8D5
+:END:
+#+title: ores.refdata.party_counterparty_change
+#+description: GENERATED from ores.refdata.party_counterparty by derive_pending_models.py. One proposed write to the party_counterparty, held until its request is decided.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:pending:
+#+brief: One proposed write to a party_counterparty, held for its request.
+#+entity_singular: party_counterparty_change
+#+entity_plural: party_counterparty_changes
+#+entity_title: Party Counterparty Change
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+Do not edit. Change ores.refdata.party_counterparty and run
+derive_pending_models.py.
+
+* Flags
+:PROPERTIES:
+:schema:               public
+:product:              ores
+:component:             refdata
+:profile:   uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID identifying this line.
+
+One proposed write inside a request.
+
+** request_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The approval request this line belongs to.
+
+References the approval requests table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** line_no
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:natural_key: true
+:END:
+
+The place of this line in its request, from one.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** operation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+What the line proposes: put or delete.
+
+#+begin_src cpp :name generator
+std::string("put")
+#+end_src
+
+** base_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+The version of the live row the maker read, or zero for a new row.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** applied
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether the apply has written this line. A line is applied once.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+ID of the party.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+ID of the counterparty visible to this party.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_party_counterparty_changes_tbl
+:END:
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the line belongs to.
+
+The seed asks as a service account. A person's account written into the shared
+test tenant would end the tenant's bootstrap, and every later test that writes as
+the unit test would be refused its modified_by.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto asker = ores::iam::generators::generate_synthetic_account(ctx);
+        asker.account_type = "service";
+        asker.change_reason_code = "system.test";
+        ores::iam::repository::account_repository asker_repo;
+        asker_repo.write(party_ctx, asker);
+
+        auto request = ores::inbox::generators::generate_synthetic_approval_request(ctx);
+        request.change_reason_code = "system.test";
+        request.requested_by = asker.id;
+
+        const auto system_ctx =
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+        const auto kinds = ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(kinds.empty());
+        request.kind_code = kinds.front().code;
+        const auto states =
+            ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(states.empty());
+        request.state_code = states.front().code;
+
+        ores::inbox::repository::approval_request_repository request_repo;
+        request_repo.write(party_ctx, request);
+        v.request_id = request.id;
+    }
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: party_counterparty_change
+:entity_plural_short:   party_counterparty_changes
+:entity_singular_words: party counterparty change
+:entity_plural_words:   party counterparty changes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+

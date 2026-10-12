@@ -773,3 +773,51 @@ as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- Counterparty changes (the lines of a request that proposes a change to a counterparty)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_counterparty_changes_tbl enable row level security;
+
+drop policy if exists counterparty_changes_tenant_isolation_policy
+    on ores_refdata_counterparty_changes_tbl;
+
+create policy counterparty_changes_tenant_isolation_policy on ores_refdata_counterparty_changes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Counterparty identifier changes (the lines of a request that proposes a change to a counterparty identifier)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_counterparty_identifier_changes_tbl enable row level security;
+
+drop policy if exists counterparty_identifier_changes_tenant_isolation_policy
+    on ores_refdata_counterparty_identifier_changes_tbl;
+
+create policy counterparty_identifier_changes_tenant_isolation_policy on ores_refdata_counterparty_identifier_changes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Party counterparty changes (the lines of a request that proposes a change to a party counterparty link)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_counterparty_changes_tbl enable row level security;
+
+drop policy if exists party_counterparty_changes_tenant_isolation_policy
+    on ores_refdata_party_counterparty_changes_tbl;
+
+create policy party_counterparty_changes_tenant_isolation_policy on ores_refdata_party_counterparty_changes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

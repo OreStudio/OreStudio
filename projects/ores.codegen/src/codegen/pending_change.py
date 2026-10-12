@@ -1,7 +1,9 @@
 """Derive the pending-change entity model of every gated entity model.
 
 An entity model marks itself gated with ``:gated: true`` in its ``* Flags``
-drawer. The pending change of such an entity is a table with the entity's own
+drawer. A model that holds its changes before it enforces the gate marks itself
+``:pending_change: true`` instead: it gets the pending change and its screens, and
+its writes stay direct until ``:gated: true`` turns the gate on. The pending change of such an entity is a table with the entity's own
 columns, the same foreign keys and the same lookup validation, plus the request
 it belongs to, a line number, the operation and the version the maker read. A
 line holds no part: the request holds the parts, chosen by the policy from the
@@ -189,7 +191,7 @@ def is_gated(text):
     _, sections = split_sections(text)
     for s in sections:
         if section_name(s) == "Flags":
-            return re.search(r"(?m)^:gated:\s*true\s*$", s) is not None
+            return re.search(r"(?m)^:(gated|pending_change):\s*true\s*$", s) is not None
     return False
 
 
@@ -204,6 +206,9 @@ def derive_column(chunk):
     """The entity's column as a pending column: no key, no uniqueness."""
     name = chunk.splitlines()[0][3:].strip()
     chunk = re.sub(r"(?m)^:natural_key:.*\n", "", chunk)
+    # A source model may name a generator helper that its own generator file defines
+    # (uuid_gen), which the pending line's generator file does not have.
+    chunk = re.sub(r"(?m)^uuid_gen\(\)$", "ctx.generate_uuid()", chunk)
     if name == "id":
         chunk = re.sub(r"(?m)^:primary_key:.*\n", "", chunk)
         assert chunk.startswith("** id\n"), "id column heading changed"
@@ -211,7 +216,96 @@ def derive_column(chunk):
     return chunk
 
 
+def is_junction(text):
+    front, _ = split_sections(text)
+    return keyword(front, "type") == "ores.codegen.junction"
+
+
+def singular_of(front):
+    """The singular name of the model, whichever kind of model it is."""
+    return keyword(front, "entity_singular") or keyword(front, "name_singular")
+
+
+def derive_junction(source, text):
+    """The pending-change entity model of a gated junction.
+
+    A junction row is its two halves and nothing else, and a link is made or
+    removed whole. The pending line holds the two halves as plain columns, with
+    the operation and the version the maker read, so the same entity templates
+    apply to it as to the pending line of an entity.
+    """
+    front, sections = split_sections(text)
+    component = keyword(front, "component")
+    singular = keyword(front, "name_singular")
+    title = keyword(front, "name_title")
+    new_singular = f"{singular}_change"
+    new_plural = f"{singular}_changes"
+    by_name = {section_name(s): s for s in sections}
+    for needed in ("Left", "Right"):
+        if needed not in by_name:
+            raise SystemExit(f"{source}: gated junction has no '* {needed}' section")
+
+    def half(section):
+        props = dict(re.findall(r"(?m)^:(\w+):[ \t]+(.*)$", section))
+        body = section.split(":END:", 1)[1].strip("\n")
+        description = body.split("\n\n")[0].strip()
+        return props["column"], props["type"], props["cpp_type"], description
+
+    out = []
+    out.append(
+        ":PROPERTIES:\n"
+        f":ID: {str(uuid.uuid5(NAMESPACE, source.name)).upper()}\n"
+        ":END:\n"
+        f"#+title: ores.{component}.{new_singular}\n"
+        f"#+description: GENERATED from ores.{component}.{singular} by "
+        "derive_pending_models.py. One proposed write to the "
+        f"{singular}, held until its request is decided.\n"
+        "#+type: ores.codegen.entity\n"
+        f"#+component: {component}\n"
+        f"#+filetags: :model:entity:{component}:pending:\n"
+        f"#+brief: One proposed write to a {singular}, held for its request.\n"
+        f"#+entity_singular: {new_singular}\n"
+        f"#+entity_plural: {new_plural}\n"
+        f"#+entity_title: {title} Change\n"
+        "#+created: 2026-10-12\n"
+        "#+updated: 2026-10-12\n\n"
+        f"Do not edit. Change ores.{component}.{singular} and run\n"
+        "derive_pending_models.py.\n\n"
+    )
+    out.append(
+        "* Flags\n:PROPERTIES:\n:schema:               public\n:product:              ores\n"
+        f":component:             {component}\n:profile:   uuid-identified-lookup\n"
+        ":client_read_only: true\n:END:\n\n"
+    )
+    out.append("* Columns\n\n")
+    out.append(LINE_COLUMNS)
+    for name, kind, cpp, description in (half(by_name["Left"]), half(by_name["Right"])):
+        out.append(
+            f"** {name}\n:PROPERTIES:\n:type:        {kind}\n:cpp_type:    {cpp}\n:END:\n\n"
+            f"{description}\n\n#+begin_src cpp :name generator\nctx.generate_uuid()\n#+end_src\n\n"
+        )
+    sql = "* SQL\n\n** Flags\n:PROPERTIES:\n"
+    sql += f":tablename: ores_{component}_{new_plural}_tbl\n:END:\n\n"
+    out.append(sql)
+    out.append(FOREIGN_KEYS_HEAD)
+    out.append("* C++\n\n** Flags\n:PROPERTIES:\n:subcomponent:    api\n:END:\n\n")
+    out.append(
+        "** Repository\n:PROPERTIES:\n"
+        f":entity_singular_short: {new_singular}\n"
+        f":entity_plural_short:   {new_plural}\n"
+        f":entity_singular_words: {singular.replace('_', ' ')} change\n"
+        f":entity_plural_words:   {singular.replace('_', ' ')} changes\n:END:\n\n"
+    )
+    out.append(
+        "** Domain includes\n\n#+begin_src cpp :name includes\n"
+        "#include <string>\n#include <boost/uuid/uuid.hpp>\n#+end_src\n\n"
+    )
+    return "".join(out)
+
+
 def derive(source, text):
+    if is_junction(text):
+        return derive_junction(source, text)
     front, sections = split_sections(text)
     component = keyword(front, "component")
     singular = keyword(front, "entity_singular")
@@ -247,7 +341,10 @@ def derive(source, text):
         if needed not in by_name:
             raise SystemExit(f"{source}: gated model has no '* {needed}' section")
     flags = by_name["Flags"]
-    flags = re.sub(r"(?m)^:gated:.*\n", "", flags)
+    flags = re.sub(r"(?m)^:(gated|pending_change):.*\n", "", flags)
+    # A hierarchy is the live row's shape. A pending line only holds the parent's
+    # id as a column, so the tree flags do not reach it.
+    flags = re.sub(r"(?m)^:(parent_id_column|hierarchy_name_field|generate_touch_function):.*\n", "", flags)
     flags, replaced = re.subn(
         r"(?m)^:profile:.*$", ":profile:   uuid-identified-lookup\n:client_read_only: true", flags
     )
@@ -297,7 +394,7 @@ def derive(source, text):
 def pending_path(source, text):
     front, _ = split_sections(text)
     component = keyword(front, "component")
-    singular = keyword(front, "entity_singular")
+    singular = singular_of(front)
     return source.parent / f"ores.{component}.{singular}_change.org"
 
 

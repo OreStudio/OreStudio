@@ -763,7 +763,10 @@ void market_observation_repository::write_manual_point(
 Withdraws an operator's over-key of one coordinate, so the fed value applies
 again. The current manual annex row is closed, never deleted: the annex's
 history keeps it, which is what makes "the history keeps the value it
-replaced" true.
+replaced" true. The over-key's own observation row is closed with it, so that
+the value the feed last wrote shows when no later feed write has come: left in
+place, the keyed value would stay the newest row of the coordinate and read as
+a quoted one.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 void clear_manual_point(context ctx,
@@ -797,6 +800,16 @@ void market_observation_repository::clear_manual_point(
     // Closing, not deleting: the delete rule keeps the row in the annex's
     // history, so a reader still sees what the over-key replaced.
     lineage_repo.remove(txn_ctx, boost::uuids::to_string(current->id));
+
+    // The over-key's observation row goes with its annex. The delete rule keeps
+    // it in the observation history, as it does the annex.
+    std::vector<std::string> keyed_ids;
+    for (const auto& obs : read_latest_for_series(txn_ctx, series_id)) {
+        if (obs.source == "manual.operator" && obs.oresmd_uri == oresmd_uri &&
+            obs.observation_datetime == observation_datetime)
+            keyed_ids.push_back(boost::uuids::to_string(obs.id));
+    }
+    remove(txn_ctx, keyed_ids);
     uow.commit();
 }
 #+end_src

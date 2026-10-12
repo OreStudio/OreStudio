@@ -40,6 +40,7 @@
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_evolution_handler.hpp"
+#include "ores.marketdata.core/messaging/manual_point_handler.hpp"
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -149,6 +150,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             series_identity_handler h(nats, ctx, verifier);
                                             h.list(std::move(msg));
+                                        }));
+
+    // A person's manual point on one node of a composite object: keyed so that it
+    // owns the node, and cleared so that the feed value shows again.
+    subs.push_back(nats.queue_subscribe(std::string(key_manual_point_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            manual_point_handler h(nats, ctx, verifier);
+                                            h.key(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(std::string(clear_manual_point_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            manual_point_handler h(nats, ctx, verifier);
+                                            h.clear(std::move(msg));
                                         }));
 
     // The oresmd schema: what a URI may hold, for a client that edits one.

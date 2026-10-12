@@ -807,6 +807,16 @@ void market_observation_repository::clear_manual_point(
     // Closing, not deleting: the delete rule keeps the row in the annex's
     // history, so a reader still sees what the over-key replaced.
     lineage_repo.remove(txn_ctx, boost::uuids::to_string(current->id));
+
+    // The over-key's observation row goes with its annex. The delete rule keeps
+    // it in the observation history, as it does the annex.
+    std::vector<std::string> keyed_ids;
+    for (const auto& obs : read_latest_for_series(txn_ctx, series_id)) {
+        if (obs.source == "manual.operator" && obs.oresmd_uri == oresmd_uri &&
+            obs.observation_datetime == observation_datetime)
+            keyed_ids.push_back(boost::uuids::to_string(obs.id));
+    }
+    remove(txn_ctx, keyed_ids);
     uow.commit();
 }
 

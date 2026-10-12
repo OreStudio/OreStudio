@@ -2442,6 +2442,150 @@ running this again finds nothing to do.
  */
 #+end_src
 
+** key_manual_point_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.key_manual_point
+:response: key_manual_point_response
+:END:
+
+Keys a manual point on one node of a composite object. The object is named by its
+typed identity, as the reads name it. The node is named by its coordinates, one
+for each declared axis, in the order the shape declares them. The point owns its
+coordinate until it is cleared.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Keys a manual point on a node of a named object.
+ *
+ * The coordinates are checked against the shape the object declares, so a node
+ * the shape does not hold is refused. The point is stamped at the instant the
+ * server receives the request, and the caller is its author.
+ */
+#+end_src
+
+*** identity
+:PROPERTIES:
+:cpp_type: resolve_series_identity_request
+:END:
+
+The object, as the typed identity the reads take.
+
+#+begin_src cpp :name comment
+/** The object, as the typed identity the reads take. */
+#+end_src
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The node, one coordinate for each declared axis, in the order the shape declares
+them.
+
+#+begin_src cpp :name comment
+/** The node: one coordinate per declared axis, in the shape's order. */
+#+end_src
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The value to key, as a number written in text.
+
+#+begin_src cpp :name comment
+/** The value to key, as a number written in text. */
+#+end_src
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The change reason code that says why the point is keyed.
+
+#+begin_src cpp :name comment
+/** The change reason code that says why the point is keyed. */
+#+end_src
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The free-text reason for the correction.
+
+#+begin_src cpp :name comment
+/** The free-text reason for the correction. */
+#+end_src
+
+** key_manual_point_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** clear_manual_point_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.clear_manual_point
+:response: clear_manual_point_response
+:END:
+
+Clears the manual point on one node of a composite object, so the feed value shows
+again. The object and the node are named as for keying.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Clears the manual point on a node of a named object.
+ *
+ * Every manual point the node holds is released, whatever instant it was keyed
+ * at. The history keeps the value it replaced.
+ */
+#+end_src
+
+*** identity
+:PROPERTIES:
+:cpp_type: resolve_series_identity_request
+:END:
+
+The object, as the typed identity the reads take.
+
+#+begin_src cpp :name comment
+/** The object, as the typed identity the reads take. */
+#+end_src
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The node, one coordinate for each declared axis, in the order the shape declares
+them.
+
+#+begin_src cpp :name comment
+/** The node: one coordinate per declared axis, in the shape's order. */
+#+end_src
+
+** clear_manual_point_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
 ** export_market_data_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.export_market_data

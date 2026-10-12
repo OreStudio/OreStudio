@@ -134,6 +134,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/app_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/app_version_platform_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/app_version_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/assignment_expiry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/batch_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/host_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/platform_protocol.hpp"

@@ -22,6 +22,7 @@
 
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/export.hpp"
+#include "ores.compute.core/messaging/submit_decision.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
@@ -139,6 +140,30 @@ public:
                           submit_result_response{.success = false,
                                                  .message = "Result not found: " + req->result_id});
                     return;
+                }
+
+                switch (decide_submit(existing->server_state)) {
+                case submit_action::ignore_inactive:
+                    BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                        << "Ignoring the outcome of retired result " << req->result_id;
+                    reply(nats_,
+                          msg,
+                          submit_result_response{
+                              .success = true,
+                              .message = "The result is inactive; the outcome was ignored."});
+                    return;
+                case submit_action::ignore_final:
+                    BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                        << "Ignoring a second outcome for result " << req->result_id;
+                    reply(nats_,
+                          msg,
+                          submit_result_response{
+                              .success = true,
+                              .message = "The result already has its outcome; this one was "
+                                         "ignored."});
+                    return;
+                case submit_action::accept:
+                    break;
                 }
 
                 auto r = *existing;

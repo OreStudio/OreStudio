@@ -18,6 +18,7 @@
  *
  */
 #include "ores.compute.wrapper/app/application.hpp"
+#include "ores.compute.api/messaging/assignment_expiry.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
@@ -567,6 +568,28 @@ void process_assignment(ores::nats::service::client& nats,
     BOOST_LOG_SEV(lg, debug) << "Processing assignment: result=" << evt.result_id
                              << " workunit=" << evt.workunit_id
                              << " app_version=" << evt.app_version_id;
+
+    // An assignment can wait in the queue for any time, and its storage token lives
+    // for a fixed time from when it was minted. Starting a job whose token has run
+    // out only costs a download that the storage service refuses, so report it once
+    // and take the next assignment.
+    if (compute::messaging::assignment_expired(evt.storage_token,
+                                               std::chrono::system_clock::now())) {
+        BOOST_LOG_SEV(lg, warn) << "Assignment expired before this node took it, not starting: "
+                                << "result=" << evt.result_id;
+        if (reporter)
+            reporter->record_task_failed();
+        submit_result(nats,
+                      evt.result_id,
+                      evt.tenant_id,
+                      cfg.host_id,
+                      evt.output_uri,
+                      3,
+                      "The assignment waited in the queue longer than its storage token lives, "
+                      "so the node did not start it.",
+                      lg);
+        return;
+    }
 
     heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
     hb.start();

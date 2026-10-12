@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: F299EB5C-78E6-4CC3-916B-1D820D670315
+:END:
+#+title: Task: Show the queue depth and the oldest wait
+#+description: One query gives the depth of the queue and the age of the oldest waiting job. The grid screen shows both, for the grid to the operator and for the tenant to a tenant administrator, and the over-capacity warning uses the same figures.
+#+type: task
+#+level: s1
+#+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
+#+owner: marco
+#+branch: feature/show-the-queue-depth-and-the-oldest-wait
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person sees how many jobs wait and for how long, and the warning rests on the age and not on an estimate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The grid screen shows the depth and the oldest wait.
+- The over-capacity warning uses the oldest wait.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

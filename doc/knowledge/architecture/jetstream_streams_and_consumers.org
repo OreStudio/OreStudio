@@ -51,6 +51,7 @@ outlive both the publisher and the subscriber.
 - *Compute assignments.* A wrapper takes work from a shared stream, so a
   wrapper that is down does not lose an assignment meant for it and a fleet of
   wrappers shares the queue.
+  This use is being retired. A queue of jobs that wait for hours does not suit a push consumer, and the replacement keeps the queue in the database. See [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]].
 
 Nothing else uses JetStream. An entity operation has its answer in the reply
 and needs no history, so it stays on plain request/reply.

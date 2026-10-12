@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: BAF8A3FC-6541-49E0-A4AF-F3DF35F84501
+:END:
+#+title: Task: Requeue expired leases, bound the queue and choose fairly
+#+description: The reaper returns a result whose lease ended to the queue, and ends it as no reply after three attempts. A dispatch that would pass a tenant's limit is refused. The claim chooses across tenants.
+#+type: task
+#+level: s1
+#+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
+#+owner: marco
+#+branch: feature/requeue-expired-leases-bound-the-queue-and-choose-fairly
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A bad job ends in a visible state, one tenant cannot fill the queue, and no tenant starves another.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A decision is recorded on a result that never started. Today a late assignment ends as a client error, and the validator counts any done result toward the redundancy target, so the workunit completes with that failure as its canonical result. The decision is either that such a result does not count and returns to the queue for another attempt, or that it counts.
+- A result with attempts left returns to unsent when its lease ends, and one without ends as no reply with a message that names the lease.
+- A dispatch past the tenant's limit is refused and says how many jobs wait.
+- With two tenants queued, claims alternate between them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

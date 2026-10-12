@@ -11,6 +11,13 @@
 
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+This page describes the lifecycle as it runs today, with the server publishing
+a JetStream assignment for each job. That design fails when a job waits in the
+queue for longer than the storage token lives, and it is being replaced by a
+claim that a free node makes against the database. See
+[[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]]
+for the failure, the options and the design that replaces it.
+
 * Summary
 
 A compute job is a risk run of the ORE engine on a worker node of the

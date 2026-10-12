@@ -54,7 +54,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { ReasonFields, useReason } from '../refdata/shared.js';
 import { seriesOfUrl, seriesRoute, seriesVerdict } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
-import { seriesTitle } from '../oresmd/title.js';
+import { titleOrRaw } from '../oresmd/title.js';
 import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Button, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -67,7 +67,6 @@ import {
     neverQuoted,
     nowRowsOf,
     rangeOf,
-    seriesLabel,
     type IdentityForm,
 } from './evolutionView.js';
 
@@ -603,9 +602,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
                 verdict.kind === 'not-listed'
                     ? t('market.evolution.errors.notListed')
                     : t('market.evolution.errors.noShape', {
-                          series:
-                              seriesTitle(schema.data, verdict.listed.identity) ??
-                              seriesLabel(verdict.listed),
+                          series: titleOrRaw(schema.data, verdict.listed.identity),
                       }),
             );
             return;

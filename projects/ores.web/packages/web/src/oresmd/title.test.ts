@@ -21,7 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { OresmdSchema } from '@ores/contracts';
-import { seriesTitle } from './title.js';
+import { rawLabel, seriesTitle, titleOrRaw } from './title.js';
 
 const row = (code: string, title: string) => ({
     code,
@@ -80,11 +80,30 @@ describe('seriesTitle', () => {
         expect(title).toBe('AUD cap/floor rate · index_tenor=6M, cap_floor=Cap');
     });
 
-    it('leaves the words of a field the series lacks empty', () => {
-        expect(seriesTitle(SCHEMA, identity('fx_spot', 'rate'))).toBe('AUD/ spot rate');
+    it('has no title when a field it names has no value, because the title would have a gap', () => {
+        expect(seriesTitle(SCHEMA, identity('fx_spot', 'rate'))).toBeUndefined();
+        expect(seriesTitle(SCHEMA, identity('fx_spot', 'rate', [['ccy', '']]))).toBeUndefined();
     });
 
     it('has no title for a type the schema does not know', () => {
         expect(seriesTitle(SCHEMA, identity('mystery', 'rate'))).toBeUndefined();
+    });
+});
+
+describe('rawLabel and titleOrRaw', () => {
+    it('names a series by its words and the fields that tell it apart', () => {
+        expect(
+            rawLabel({ ...identity('fx_option', 'rate_lnvol', [['ccy', 'USD']]), asset: 'fx' }),
+        ).toBe('fx / AUD / fx_option / rate_lnvol · ccy=USD');
+        expect(rawLabel(identity('fx_option', 'rate_lnvol'))).toBe('AUD / fx_option / rate_lnvol');
+    });
+
+    it('falls back to the raw label before the schema is known and when no title fits', () => {
+        const spot = identity('fx_spot', 'rate');
+        expect(titleOrRaw(undefined, spot)).toBe('AUD / fx_spot / rate');
+        expect(titleOrRaw(SCHEMA, spot)).toBe('AUD / fx_spot / rate');
+        expect(titleOrRaw(SCHEMA, identity('fx_spot', 'rate', [['ccy', 'USD']]))).toBe(
+            'AUD/USD spot rate',
+        );
     });
 });

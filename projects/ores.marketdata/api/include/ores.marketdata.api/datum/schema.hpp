@@ -628,6 +628,14 @@ constexpr bool every_subject_always_names_the_series() {
     return true;
 }
 
+constexpr bool every_title_names_the_subject() {
+    for (const auto title : titles) {
+        if (title.find("{subject}") == std::string_view::npos)
+            return false;
+    }
+    return true;
+}
+
 }
 
 static_assert(detail::rows_follow_the_enum(), "schema rows must follow instrument_type's order");
@@ -636,6 +644,8 @@ static_assert(detail::every_row_has_an_identity(),
               "every schema row needs a field that always names the series");
 static_assert(detail::every_subject_always_names_the_series(),
               "a row's subject must be one of its identity fields that is never none");
+static_assert(detail::every_title_names_the_subject(),
+              "every instrument type needs a title that names the subject");
 
 }
 

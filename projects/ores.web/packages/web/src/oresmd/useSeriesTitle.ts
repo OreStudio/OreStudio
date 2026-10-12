@@ -21,23 +21,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { oresmdQueries } from './queries.js';
-import { seriesTitle, type TitledIdentity } from './title.js';
+import { titleOrRaw, type TitledIdentity } from './title.js';
 
 /**
- * A function that names a series in words. Until the schema has arrived, or for a
- * type it does not know, it returns the raw identity, so a label is never empty.
+ * A function that names a series in words. Until the schema has arrived, or when
+ * no title fits, it returns the raw identity, so a label is never empty.
  */
 export function useSeriesTitle(): (identity: TitledIdentity) => string {
     const schema = useQuery(oresmdQueries.schema());
-    return (identity) =>
-        (schema.data === undefined ? undefined : seriesTitle(schema.data, identity)) ??
-        rawLabel(identity);
-}
-
-function rawLabel(identity: TitledIdentity): string {
-    const words = [identity.asset, identity.scope, identity.instrument_type, identity.quote_type]
-        .filter((word) => word !== undefined)
-        .join(' / ');
-    if (identity.fields.length === 0) return words;
-    return `${words} · ${identity.fields.map((field) => `${field.name}=${field.text}`).join(', ')}`;
+    return (identity) => titleOrRaw(schema.data, identity);
 }

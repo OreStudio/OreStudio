@@ -42,23 +42,44 @@ const BRACES = /\{(\w+)\}/g;
  * type. This fills the braces from the identity, puts the quote words after
  * them, and lists the identity fields the title does not name behind a dot, so
  * two series that differ only in such a field still read differently. It holds
- * no instrument name of its own. A type the schema does not know has no title,
- * and the caller falls back to the raw identity.
+ * no instrument name of its own. A type the schema does not know, or a series that
+ * lacks a field its title names, has no title, because a title with a gap reads as
+ * broken. The caller then falls back to the raw identity.
  */
 export function seriesTitle(schema: OresmdSchema, identity: TitledIdentity): string | undefined {
     const instrument = schema.instruments.find((row) => row.code === identity.instrument_type);
     if (instrument === undefined) return undefined;
     const named = new Set<string>();
+    let gap = false;
     const filled = instrument.title.replace(BRACES, (_, name: string) => {
         named.add(name);
-        if (name === 'subject') return identity.scope;
-        return identity.fields.find((field) => field.name === name)?.text ?? '';
+        const text =
+            name === 'subject'
+                ? identity.scope
+                : identity.fields.find((field) => field.name === name)?.text;
+        gap = gap || text === undefined || text === '';
+        return text ?? '';
     });
+    if (gap) return undefined;
     const quote = schema.quote_titles[schema.quotes.indexOf(identity.quote_type)] ?? '';
     const head = `${filled} ${quote}`.replace(/\s+/g, ' ').trim();
     const rest = identity.fields.filter((field) => !named.has(field.name));
     if (rest.length === 0) return head;
     return `${head} · ${rest.map((field) => `${field.name}=${field.text}`).join(', ')}`;
+}
+
+/** A series by its identity words, for when no title fits: the words, then the fields that tell it apart. */
+export function rawLabel(identity: TitledIdentity): string {
+    const words = [identity.asset, identity.scope, identity.instrument_type, identity.quote_type]
+        .filter((word) => word !== undefined)
+        .join(' / ');
+    if (identity.fields.length === 0) return words;
+    return `${words} · ${identity.fields.map((field) => `${field.name}=${field.text}`).join(', ')}`;
+}
+
+/** The title of a series, or its raw identity until the schema is known or when no title fits. */
+export function titleOrRaw(schema: OresmdSchema | undefined, identity: TitledIdentity): string {
+    return (schema === undefined ? undefined : seriesTitle(schema, identity)) ?? rawLabel(identity);
 }
 
 /** The title of the series a parsed URL names, or nothing for a fixing or a type the schema lacks. */

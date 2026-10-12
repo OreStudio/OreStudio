@@ -32,7 +32,6 @@ import {
     nodeLabel,
     nowRowsOf,
     rangeOf,
-    seriesLabel,
     startOfDay,
 } from './evolutionView.js';
 
@@ -98,13 +97,6 @@ const LISTED: ListedSeries = {
 };
 
 describe('the series picker helpers', () => {
-    it('names a series by its four words and the fields that tell it apart', () => {
-        expect(seriesLabel(LISTED)).toBe('fx / EUR / fx_option / rate_lnvol · ccy=USD');
-        expect(seriesLabel({ ...LISTED, identity: { ...LISTED.identity, fields: [] } })).toBe(
-            'fx / EUR / fx_option / rate_lnvol',
-        );
-    });
-
     it('shows only a series that declares a shape', () => {
         expect(canBeShown(LISTED)).toBe(true);
         expect(canBeShown({ ...LISTED, axes: [] })).toBe(false);

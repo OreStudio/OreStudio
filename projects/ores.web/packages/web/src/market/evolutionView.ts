@@ -228,16 +228,6 @@ export function formatAge(ageSeconds: number): string {
     return `${Math.floor(whole / 86400)}d`;
 }
 
-/** What a series is called in the picker: its four words, then the fields that tell it apart. */
-export function seriesLabel(listed: ListedSeries): string {
-    const { asset, scope, instrument_type, quote_type, fields } = listed.identity;
-    const words = [asset, scope, instrument_type, quote_type].join(' / ');
-    if (fields.length === 0) {
-        return words;
-    }
-    return `${words} · ${fields.map((field) => `${field.name}=${field.text}`).join(', ')}`;
-}
-
 /** Whether the evolution can draw the series: only a series with a declared shape has a grid. */
 export function canBeShown(listed: ListedSeries): boolean {
     return listed.axes.length > 0;

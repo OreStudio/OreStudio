@@ -23,8 +23,11 @@
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -335,6 +338,32 @@ market_series_identity_projector::project(ores::database::context ctx,
     }
     market_series_identity_repository{}.write(ctx, rows);
     return unknown;
+}
+
+market_series_identity_projector::backfill_result
+market_series_identity_projector::project_missing(ores::database::context ctx,
+                                                  const std::optional<boost::uuids::uuid>& party) {
+    auto series = market_series_repository{}.read_latest(ctx);
+    if (party)
+        std::erase_if(series, [&](const domain::market_series& s) { return s.party_id != *party; });
+
+    // The projection keeps one row per series, so what is already there is what a
+    // writer has seen. Only the rest are projected.
+    std::set<std::string> projected;
+    for (const auto& row : market_series_identity_repository{}.read_latest(ctx))
+        projected.insert(boost::uuids::to_string(row.series_id));
+
+    std::vector<domain::market_series> missing;
+    for (const auto& s : series) {
+        if (!projected.contains(boost::uuids::to_string(s.id)))
+            missing.push_back(s);
+    }
+
+    backfill_result result;
+    result.projected = missing.size();
+    result.already_projected = series.size() - missing.size();
+    result.unreadable = project(ctx, missing);
+    return result;
 }
 
 market_series_identity_projector::reprojection_result

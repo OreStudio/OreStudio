@@ -41,6 +41,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
 #include <set>
@@ -510,34 +511,21 @@ public:
 
         backfill_series_identity_response resp;
         try {
-            auto series = repository::market_series_repository{}.read_latest(req_ctx);
+            std::optional<boost::uuids::uuid> party;
             if (!req->party_id.empty())
-                std::erase_if(series, [&](const ores::marketdata::domain::market_series& s) {
-                    return boost::uuids::to_string(s.party_id) != req->party_id;
-                });
+                party = boost::uuids::string_generator{}(req->party_id);
 
-            // The projection keeps one row per series, so what is already
-            // there is what a writer has seen. Only the rest are projected.
-            std::set<std::string> projected;
-            for (const auto& row :
-                 repository::market_series_identity_repository{}.read_latest(req_ctx))
-                projected.insert(boost::uuids::to_string(row.series_id));
+            const auto done =
+                repository::market_series_identity_projector::project_missing(req_ctx, party);
+            const auto total = done.projected + done.already_projected;
 
-            std::vector<ores::marketdata::domain::market_series> missing;
-            for (const auto& s : series) {
-                if (!projected.contains(boost::uuids::to_string(s.id)))
-                    missing.push_back(s);
-            }
-            const auto unreadable =
-                repository::market_series_identity_projector::project(req_ctx, missing);
-
-            resp.projected_count = static_cast<int>(missing.size());
-            resp.already_projected_count = static_cast<int>(series.size() - missing.size());
-            resp.unreadable_count = static_cast<int>(unreadable);
+            resp.projected_count = static_cast<int>(done.projected);
+            resp.already_projected_count = static_cast<int>(done.already_projected);
+            resp.unreadable_count = static_cast<int>(done.unreadable);
             resp.success = true;
-            resp.message = "Projected " + std::to_string(missing.size()) + " of " +
-                           std::to_string(series.size()) + " series, " +
-                           std::to_string(unreadable) + " with an unreadable URI.";
+            resp.message = "Projected " + std::to_string(done.projected) + " of " +
+                           std::to_string(total) + " series, " + std::to_string(done.unreadable) +
+                           " with an unreadable URI.";
             BOOST_LOG_SEV(market_series_handler_lg(), info) << msg.subject << ": " << resp.message;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_series_handler_lg(), error)

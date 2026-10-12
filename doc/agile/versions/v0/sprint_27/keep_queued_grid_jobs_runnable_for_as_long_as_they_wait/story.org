@@ -21,11 +21,11 @@ A job that waits in the grid queue for any length of time still runs when a node
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Findings and options written.          |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The first task settles the decision.   |
+| Next          | Nothing. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ A job that waits in the grid queue for any length of time still runs when a node
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6FD6CBD3-468F-46F8-BC9C-9560CB8402F7][Scaffold story: Keep queued grid jobs runnable for as long as they wait]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:EC9CFACA-5DCD-41F1-9822-3097C11F587F][Implement Keep queued grid jobs runnable for as long as they wait]] | BACKLOG | | | Initial task for: Keep queued grid jobs runnable for as long as they wait |
+| [[id:EC9CFACA-5DCD-41F1-9822-3097C11F587F][Implement Keep queued grid jobs runnable for as long as they wait]] | DONE | 2026-10-12 | 2026-10-12 | Initial task for: Keep queued grid jobs runnable for as long as they wait |
 | [[id:CF6AFD45-1BAB-4461-9EA8-D1CA6CA1B5C4][Make a late or repeated assignment harmless]] | DONE | 2026-10-12 | 2026-10-12 | A node skips an assignment whose storage token has ended, and a submit for a result that is retired or done changes nothing. Both hold in any queue design and go before the claim. |
 | [[id:0FB3FEAF-420C-40F3-B888-78039D2CF028][Add the work ledger and serve a leased claim]] | DONE | 2026-10-12 | 2026-10-12 | A result gets a lease time and an attempt count. The server serves compute.v1.ops.claim_work: it picks the next unsent result, marks it taken, mints the storage token for that job, and replies with the assignment. The heartbeat extends the lease. |
 | [[id:9F534561-CFB9-4E3D-947B-34C94CE34939][Make the wrapper claim work]] | DONE | 2026-10-12 | 2026-10-12 | A free wrapper claims one job at a time, wakes on a plain NATS notice, and polls with jitter as a fallback. It runs the job, extends its lease through the heartbeat, and submits. |
@@ -182,3 +182,9 @@ The page [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues 
 
 - Charging for the wait. The cost task in the story "Serve the grid's samples as time series" covers the cost of running a job.
 - Choosing which tenant's job runs first. The first task states a fair rule, and a weighted scheduler is a later story.
+
+* Result
+
+The grid queue is now a table that the installation owns. A free node asks for a job, and the service gives it the next entry under a lease of five minutes, with a storage token minted at that moment. The heartbeat extends the lease. A lease that ends returns the job to the queue, and a job that ends three leases ends as no reply with a message. A plain NATS notice wakes idle nodes, and nodes poll with jitter. A tenant cannot queue more than 3600 jobs, and the claim chooses across tenants. The Usage tab shows how long the oldest job has waited and warns from the age. JetStream carries no work. Six PRs delivered it: #3184, #3198, #3199, #3201, #3202 and #3203.
+
+Open follow-ups, all in the inbox or the notes: remove the stale-host reaper and its scheduled job, generate a table that holds an installation-owned current state, name the waiting group in the age warning, make the tenant limit an option, and redeploy the remote nodes (Newton and the laptop) with the new wrapper image. Until then, those nodes run the old wrapper, which takes no work and fails no job, because nothing publishes to the stream it reads.

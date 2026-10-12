@@ -51,6 +51,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:046E315D-EA73-4902-9863-B09BD883C235][Operate the grid across tenants and by party]] | DONE | 2026-10-12 | 2026-10-12 | Super admin sees the whole grid across tenants with a breakdown by tenant. A tenant admin sees the same screens for one tenant, broken down by party. |
 | [[id:DC09FAC1-7AFD-4B06-88B0-7702969D5535][Attribute job cost and show the grid to a tenant]] | BACKLOG | | | Give each host a cost rate and each result a cost, apportion idle cost, and open the grid screens to a tenant's administrator with a breakdown by party. Carries on from Operate the grid across tenants and by party. |
 | [[id:60802A8C-2F41-4D74-8485-D383E5F36EA9][Read each tenant's grid work inside the tenant]] | DONE | 2026-10-12 | 2026-10-12 | The operator's breakdown by tenant is built by entering each tenant and reading its usage there, as the tenancy documentation requires, and the three system-tenant read policies and the grid-wide summary that the first usage change added are removed. |
+| [[id:22BBF2AD-F2DE-44C0-A0A8-1C3FA66AB0B6][Show machines on a tab and draw the tenant pie]] | DONE | 2026-10-12 | 2026-10-12 | The machines table moves to its own tab, the Usage tab draws a pie of each group's share, and the no-host gap note is removed. |
 
 * Findings
 

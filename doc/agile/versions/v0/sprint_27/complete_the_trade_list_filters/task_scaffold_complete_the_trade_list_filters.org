@@ -8,7 +8,7 @@
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
 #+branch: feature/complete-the-trade-list-filters
-#+pr:
+#+pr: 3183
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3183][#3183]] | [agile] Scaffold story: Complete the trade list's filters |
 |    |       |
 
 * Review

@@ -8,7 +8,7 @@
 #+filetags: :model_the_hand_written_iam_tables:sprint_27:v0:
 #+owner: marco
 #+branch: feature/model-the-hand-written-iam-tables
-#+pr:
+#+pr: 3206
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3206][#3206]] | [agile] Scaffold the story to model the hand-written IAM tables |
 
 * Review
 

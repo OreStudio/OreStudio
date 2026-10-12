@@ -1785,6 +1785,32 @@ describe('the grid usage tab', () => {
         expect(html).toContain('25%');
     });
 
+    it('folds the smallest of many groups into Others and labels a party pie', () => {
+        const groups = Array.from({ length: 8 }, (_, i) =>
+            usageGroup({
+                key: `aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa0${i}`,
+                name: `Group ${i}`,
+                results: 80 - i * 10,
+            }),
+        );
+        const tenants = renderUsage(groups);
+        const parties = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({ group_kind: 'party', groups }),
+        );
+
+        expect(tenants).toContain('Others');
+        expect(tenants).not.toContain('Group 7</span><span');
+        expect(parties).toContain('Share of the results by party');
+    });
+
     it('draws no pie when no group has run anything', () => {
         const html = renderUsage([usageGroup({ results: 0 })]);
 

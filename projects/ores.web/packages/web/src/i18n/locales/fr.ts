@@ -1689,7 +1689,7 @@ const fr: SourceCatalogue = {
                 },
                 unavailable: 'N’a pas pu être lu',
                 pie: {
-                    tenant: 'Part des résultats par tenant',
+                    tenant: 'Part des résultats par locataire',
                     party: 'Part des résultats par partie',
                     other: 'Autres',
                 },

@@ -49,6 +49,25 @@ describe('pieSlices', () => {
     });
 });
 
+describe('pieSlices palette', () => {
+    it('folds a sixth part into Others so no named slice shares the Others colour', () => {
+        const items = Array.from({ length: 6 }, (_, i) => item(`p${i}`, 10 - i));
+        const slices = pieSlices(items, 'Others');
+        const swatches = slices.map((slice) => slice.swatch);
+
+        expect(slices.at(-1)?.key).toBe('other');
+        expect(new Set(swatches).size).toBe(swatches.length);
+    });
+
+    it('uses no status colour for a slice', () => {
+        const items = Array.from({ length: 6 }, (_, i) => item(`p${i}`, 10 - i));
+
+        for (const slice of pieSlices(items, 'Others')) {
+            expect(slice.swatch).not.toMatch(/text-(up|down|warn)/);
+        }
+    });
+});
+
 describe('slicePath and percent', () => {
     it('marks a slice over half as a large arc', () => {
         expect(slicePath(0, 0.75)).toContain(' 0 1 1 ');

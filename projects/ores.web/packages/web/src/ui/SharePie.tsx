@@ -19,7 +19,6 @@
  */
 
 import type { ReactNode } from 'react';
-import type { ChartTone } from './SeriesChart.js';
 
 /**
  * A pie of how a whole divides between named parts.
@@ -38,22 +37,27 @@ export interface PieItem {
 export interface PieSlice extends PieItem {
     /** This slice's share of the whole, from 0 to 1. */
     readonly fraction: number;
-    readonly tone: ChartTone;
+    /** The Tailwind colour class of the slice and its legend swatch. */
+    readonly swatch: string;
 }
 
-const SLICE_TONES: readonly ChartTone[] = ['accent', 'up', 'warn', 'down', 'neutral'];
+/**
+ * The colours of the named slices. They are categories and carry no status, so the palette
+ * leaves out the up, down and warn colours that the rest of the screen uses for good and bad.
+ */
+const SWATCHES: readonly string[] = [
+    'text-accent',
+    'text-roadmap',
+    'text-flow',
+    'text-accent-bright',
+    'text-ink-muted',
+];
+
+/** The colour of the folded slice, which no named slice uses. */
+const OTHER_SWATCH = 'text-ink-faint';
 
 /** The most slices drawn, counting the folded "other" slice. */
-export const MAX_SLICES = SLICE_TONES.length + 1;
-
-const TONE_CLASS: Readonly<Record<ChartTone, string>> = {
-    accent: 'text-accent',
-    warn: 'text-warn',
-    muted: 'text-ink-faint',
-    up: 'text-up',
-    down: 'text-down',
-    neutral: 'text-ink-muted',
-};
+export const MAX_SLICES = SWATCHES.length + 1;
 
 /** The slices of the parts: positive parts only, largest first, the tail folded into one. */
 export function pieSlices(items: readonly PieItem[], otherLabel: string): readonly PieSlice[] {
@@ -62,12 +66,12 @@ export function pieSlices(items: readonly PieItem[], otherLabel: string): readon
     if (total <= 0) {
         return [];
     }
-    const shown = parts.length > MAX_SLICES ? parts.slice(0, MAX_SLICES - 1) : parts;
+    const shown = parts.length > SWATCHES.length ? parts.slice(0, SWATCHES.length) : parts;
     const rest = parts.slice(shown.length);
     const slices: PieSlice[] = shown.map((part, index) => ({
         ...part,
         fraction: part.value / total,
-        tone: SLICE_TONES[index] ?? 'muted',
+        swatch: SWATCHES[index] ?? OTHER_SWATCH,
     }));
     if (rest.length > 0) {
         const value = rest.reduce((sum, part) => sum + part.value, 0);
@@ -76,7 +80,7 @@ export function pieSlices(items: readonly PieItem[], otherLabel: string): readon
             label: otherLabel,
             value,
             fraction: value / total,
-            tone: 'muted',
+            swatch: OTHER_SWATCH,
         });
     }
     return slices;
@@ -129,7 +133,7 @@ export function SharePie({
                         cy={CENTRE}
                         r={RADIUS}
                         fill="currentColor"
-                        className={TONE_CLASS[slices[0]?.tone ?? 'muted']}
+                        className={slices[0]?.swatch ?? OTHER_SWATCH}
                     />
                 ) : (
                     slices.map((slice) => {
@@ -140,9 +144,8 @@ export function SharePie({
                                 key={slice.key}
                                 d={path}
                                 fill="currentColor"
-                                stroke="var(--surface, #000)"
                                 strokeWidth="1"
-                                className={TONE_CLASS[slice.tone]}
+                                className={`stroke-surface-raised ${slice.swatch}`}
                             />
                         );
                     })
@@ -153,7 +156,7 @@ export function SharePie({
                     <li key={slice.key} className="flex items-center gap-2">
                         <span
                             aria-hidden="true"
-                            className={`inline-block h-3 w-3 rounded-sm bg-current ${TONE_CLASS[slice.tone]}`}
+                            className={`inline-block h-3 w-3 rounded-sm bg-current ${slice.swatch}`}
                         />
                         <span>{slice.label}</span>
                         <span className="font-mono text-ink-muted">{percent(slice.fraction)}</span>

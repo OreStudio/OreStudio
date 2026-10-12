@@ -1680,7 +1680,7 @@ const pt: SourceCatalogue = {
                 },
                 unavailable: 'Não foi possível ler',
                 pie: {
-                    tenant: 'Quota dos resultados por tenant',
+                    tenant: 'Quota dos resultados por inquilino',
                     party: 'Quota dos resultados por parte',
                     other: 'Outros',
                 },

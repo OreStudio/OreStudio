@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/approval_kinds/approval_kind.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-approval_kinds add __none__ __none__ __none__ __none__ false false - 0 0 system.new_record generated_script
+approval_kinds add __none__ __none__ __none__ __none__ false false - - - 0 0 system.new_record generated_script

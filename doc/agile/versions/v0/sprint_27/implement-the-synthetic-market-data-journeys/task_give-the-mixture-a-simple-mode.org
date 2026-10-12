@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-11
-#+environment:
+#+updated: 2026-10-12
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The Qt FX rate editor offers a simple mode next to the raw component table: slid
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Built on the feed screen branch: =FxSimplePanel= and =convert_fx_simple=. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
 
 * Acceptance
 
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3152][#3152]] | Name every synthetic feed by its oresmd reference |
 
 * Review
 
@@ -88,3 +88,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The FX price behaviour tab offers Simple and Advanced. Simple asks how far the price drifts, how far it moves and how often it jumps in an hour, or, for the mean-reverting engine, how long it takes to come half way back. The service converts both ways (convert_fx_simple). The switch and its saved choice are shared with the IR Process tab. A mixture that only approximates the simple form is converted when the person switches to Simple, and a toast says what changed. PR 3152.

@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
-#+updated: 2026-10-09
-#+environment:
+#+updated: 2026-10-12
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A quant composes an IR curve feed and sees the curve shape and sample paths befo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
 
 * Acceptance
 
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3152][#3152]] | Name every synthetic feed by its oresmd reference |
 
 * Review
 
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Covered by the task Draw the IR curve feeds on the shared feed screens, in PR 3152.

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-12
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A quant composes an IR curve feed in ores.web in the words of the Qt IR curve ed
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09E3EF10-022C-433F-80B0-96F3396AA9CC][Name every synthetic feed by its oresmd reference]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
 
 * Acceptance
 
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3152][#3152]] | Name every synthetic feed by its oresmd reference |
 
 * Review
 
@@ -86,3 +86,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The IR curve feeds use the feed screens that every asset class shares (FeedKind, FeedsPage, FeedPage): a dialog in the words of the Qt editor, a Process tab, a Curve template tab, a Ticks tab that draws the curves as the Qt market simulator does, and a History tab. The Process tab offers Simple and Advanced, the same switch as the FX price behaviour tab. The feed screen standard states all of it. The author looked at the Process and Ticks tabs in a browser.

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: F7CCB2D7-AD2E-4D3D-B478-DCF34B85AFD3
 :END:
-#+title: Task: Draw an oresmd URL as a link with an icon button
-#+description: Change OresmdUrl so the URL is a link to what it names and a small icon button opens the dialog. A series or quote URL links to the Evolution page, a fixing is plain text, and the button draws the code icon for the read-only view and the edit icon where the screen stores the URL. The icon reference gains the code icon in the web icon table, with what it is used for.
+#+title: Task: Draw an oresmd URL as a link with a button
+#+description: Change OresmdUrl so the URL is a link to what it names when the party has the series, and a button beside it, Inspect or Edit, opens the dialog. A series with an axis links to the Evolution page and one without to the series page. A fixing, a series the party does not have and a URL the codec refuses are plain text.
 #+type: task
 #+level: s1
 #+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
@@ -35,9 +35,9 @@ An oresmd URL behaves as every other reference in the app, and the dialog is one
 
 * Acceptance
 
-- A series or quote URL is a link whose address is the Evolution page with the URL, and a fixing is plain text.
-- The icon button has an accessible name and a title, draws the code icon for the read-only view and the edit icon with onApply, and opens the dialog.
-- The code icon is in the web icon table and the icon reference says what it is used for.
+- A series or quote URL is a link whose address is the page of its series with the URL: the Evolution page for a series with an axis and the series page for one without. It is a link only where the party has the series, and a fixing is plain text.
+- The button is the text Inspect for the read-only view and Edit with onApply, and opens the dialog.
+- The icon table is unchanged: an icon was tried and not signed off.
 - The IR curve feed and the FX feed screens show the link and the button on their Details tab.
 
 * Plan

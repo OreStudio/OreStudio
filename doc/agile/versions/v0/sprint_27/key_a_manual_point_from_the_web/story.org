@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: D56E081D-D745-46FD-B665-29C29630B46D
+:END:
+#+title: Story: Adjust a curve point by hand from the web
+#+description: The repository can key and clear a manual point and no wire operation reaches it. Add the two operations, route them through the BFF, and put the controls on the evolution screen so an operator can correct a node and see the correction marked as theirs.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An operator who holds the write permission can set a node of a curve or surface by hand from the evolution screen, with a reason, and clear it again. The screen marks the node as manual, and a later feed write does not undo it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The story and its three tasks are scaffolded. |
+| Waiting on    | Nothing.                               |
+| Next          | Key and clear a manual point over the wire. |
+| Last touched  | 2026-10-12                               |
+
+* Acceptance
+
+- A server operation keys a manual point on a node of a named object, checks the coordinates against the declared shape, and stores the value with the actor, the reason and the commentary.
+- A second operation clears the manual point on a node, and the feed value shows again.
+- Both operations check =marketdata::market_observations:write=, and a caller who lacks it is refused.
+- The BFF routes both for a session, and a refusal reaches the browser as the server's reason.
+- The evolution screen offers set and clear on a node for a person who may write, shows a manual node as manual with who set it, and shows the correction at once.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8147EF5E-1F23-47FF-B2A7-84B2C0E90A9A][Key and clear a manual point over the wire]] | BACKLOG | | | Add two marketdata operations that key and clear a manual point on a node of a named object, checked against the declared shape, with the write permission. |
+| [[id:8E974BC2-9B19-4C95-A07B-AAE9CB339D9F][Route the manual point through the BFF]] | BACKLOG | | | Give the BFF session-guarded routes that key and clear a manual point, with tests. |
+| [[id:52FB26D7-D8E5-49CE-A1D0-3570AC16FD49][Adjust a node by hand on the evolution screen]] | BACKLOG | | | Offer set and clear on a node of the Now table for a person who may write, mark manual nodes as manual, and show the correction at once. |
+| [[id:6DA906AA-8526-4ACD-8D92-8CBD94C2EDCC][Scaffold story: Adjust a curve point by hand from the web]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: the story, its sprint row and its three tasks, and the paperwork closing the identity projection story. |
+
+* Decisions
+
+* Out of scope
+
+- The spread overlay, a parallel shift or a twist over a segment. It needs its own operation and its own journey step.
+- The history of a manual point beyond what the annex already records.
+- Approval of a manual correction. That belongs with the publication and approval chain.

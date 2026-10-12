@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 6DA906AA-8526-4ACD-8D92-8CBD94C2EDCC
+:END:
+#+title: Task: Scaffold story: Adjust a curve point by hand from the web
+#+description: Story scaffolding rides this task: the story, its sprint row and its three tasks, and the paperwork closing the identity projection story.
+#+type: task
+#+level: s1
+#+filetags: :key_a_manual_point_from_the_web:sprint_27:v0:
+#+owner: marco
+#+branch: feature/key-a-manual-point-from-the-web
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story, its sprint row and its tasks exist, and the identity projection story is closed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The story, its sprint row and its tasks exist, and the doc checks pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story, its sprint row and its three tasks are scaffolded: the key and clear operations over the wire, their BFF
+routes, and the controls on the evolution screen. The order is the dependency order, because the route needs the
+operation and the screen needs the route.
+
+The same branch closes the paperwork the last stories left. The identity projection story is DONE with its decisions
+recorded, and a backlog item captures the test-helper finding: the helpers isolate tenants per test run, not per test,
+so a test must use keys of its own. That convention is written down nowhere.
+
+The journey this implements is Adjust a curve or surface by hand. Its gaps for a source kind, a precedence rule, a
+strike vocabulary and a reason on the point are closed by earlier work in this sprint. The key and clear operations, and
+the screen, are what is left, and the spread overlay is out of scope.

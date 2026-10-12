@@ -21,7 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { OresmdParseResult } from '@ores/contracts';
-import { evolutionRoute, seriesOfUrl } from './identity.js';
+import { evolutionRoute, seriesOfUrl, seriesRoute } from './identity.js';
 import { SCHEMA } from './testSchema.js';
 
 const parts = (over: Partial<OresmdParseResult> = {}): OresmdParseResult => ({
@@ -107,6 +107,14 @@ describe('evolutionRoute', () => {
     it('puts the URL in the address, encoded', () => {
         expect(evolutionRoute('oresmd://ir/EUR?type=series&x=1')).toBe(
             '/market-data/evolution?uri=oresmd%3A%2F%2Fir%2FEUR%3Ftype%3Dseries%26x%3D1',
+        );
+    });
+});
+
+describe('seriesRoute', () => {
+    it('carries the whole URL, escaped, as the uri of the series page', () => {
+        expect(seriesRoute('oresmd://fx/EUR?type=quote&ccy=USD')).toBe(
+            '/market-data/series?uri=oresmd%3A%2F%2Ffx%2FEUR%3Ftype%3Dquote%26ccy%3DUSD',
         );
     });
 });

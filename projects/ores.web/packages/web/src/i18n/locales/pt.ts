@@ -2057,6 +2057,20 @@ const pt: SourceCatalogue = {
     },
 
     market: {
+        series: {
+            title: 'Série',
+            description: 'Os valores de uma série ao longo do tempo.',
+            noUri: 'Abra uma série a partir de um URL oresmd.',
+            hasShape: '{series} tem um eixo, por isso a sua página é a página Evolução.',
+            openEvolution: 'Abrir a página Evolução',
+            chart: 'Valores ao longo do tempo',
+            empty: 'Esta série ainda não tem observações.',
+            showing: 'As últimas {shown} de {total} observações.',
+            at: 'Instante',
+            value: 'Valor',
+            source: 'Fonte',
+            openSeries: 'Abrir a página da série',
+        },
         evolution: {
             title: 'Acompanhar a evolução de uma curva ou superfície',
             description:

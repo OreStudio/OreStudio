@@ -226,6 +226,8 @@ describe('the routes of the application', () => {
         '/where-i-work',
         '/tenants/new',
         '/development',
+        // Opened from an oresmd URL, so no card leads to it.
+        '/market-data/series',
     ]);
 
     /** Routes that are a record's page, a redirect or outside the signed-in shell. */

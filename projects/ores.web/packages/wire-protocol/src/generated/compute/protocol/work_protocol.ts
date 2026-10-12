@@ -23,63 +23,11 @@
  * To modify, update the template and regenerate.
  */
 /**
- * @brief Asks the grid for one unit of work to run.
+ * @brief The job a node runs, as the wrapper builds it from a claim.
  *
- * Session gated: the handler checks compute::batches:write before it
- * assigns anything.
- */
-export interface PullWorkRequest {
-    /**
-     * @brief The node that will run the work.
-     */
-    host_id: string;
-}
-
-/**
- * @brief The assignment, or the reason there is none.
- *
- * A successful reply names the result, its workunit and the app version
- * whose package the node needs.
- */
-export interface PullWorkResponse {
-    /**
-     * @brief Whether work was assigned.
-     */
-    success: boolean;
-    /**
-     * @brief The result row the node must fill in.
-     */
-    result_id: string;
-    /**
-     * @brief The workunit the result belongs to.
-     */
-    workunit_id: string;
-    /**
-     * @brief The app version whose cached package the node runs.
-     */
-    app_version_id: string;
-    /**
-     * @brief Where the node fetches the job input.
-     */
-    input_uri: string;
-    /**
-     * @brief Where the node fetches the job config.
-     */
-    config_uri: string;
-    /**
-     * @brief Why no work was assigned, when none was.
-     */
-    message: string;
-}
-
-/**
- * @brief The payload published to the COMPUTE JetStream stream on dispatch.
- *
- * A producer addresses it at the subject below extended with the tenant and
- * the platform code, and carries everything the wrapper needs to execute the
- * job, so no additional round trip to the server is required. A wrapper
- * subscribes only to its own triplet, so it never sees an assignment it
- * could not run.
+ * It carries everything the wrapper needs to execute the job. It is not
+ * published: the claim reply holds the same fields, and the wrapper copies
+ * them into this payload to hand them to the code that runs the job.
  */
 export interface WorkAssignmentEvent {
     /**
@@ -267,47 +215,6 @@ export interface WorkAvailableEvent {
 }
 
 /**
- * @brief Tells the service that a wrapper node has begun a job.
- *
- * The node waits for the reply before it runs the job, so the service has
- * recorded the result as in progress before the node can submit it. Without the
- * wait a fast job could submit first, and the late start would overwrite the
- * finished result. Like the submit, the channel is trusted at the transport
- * layer, because a node holds no user JWT.
- */
-export interface ResultStartedRequest {
-    /**
-     * @brief The tenant the assignment named; the result is scoped to it.
-     */
-    tenant_id: string;
-    /**
-     * @brief The result the node has begun.
-     */
-    result_id: string;
-    /**
-     * @brief The node that runs it.
-     */
-    host_id: string;
-}
-
-/**
- * @brief Whether the start was recorded.
- *
- * A start for a result that is not unsent is not an error: the result is already
- * further on, and the reply says so in the message with success set.
- */
-export interface ResultStartedResponse {
-    /**
-     * @brief Whether the start was recorded or was already moot.
-     */
-    success: boolean;
-    /**
-     * @brief Why it was not recorded, when it was not.
-     */
-    message: string;
-}
-
-/**
  * @brief Hands a finished job back from a wrapper node.
  *
  * This is the wrapper-to-service machine channel, kept distinct from the
@@ -361,13 +268,10 @@ export interface SubmitResultResponse {
 }
 
 export const subjects = {
-    pull_work_request: 'compute.v1.ops.pull_work',
-    work_assignment_event: 'compute.v1.ops.work_assignment',
     heartbeat_message: 'compute.v1.ops.heartbeat',
     reap_work_message: 'compute.v1.ops.reap_work',
     claim_work_request: 'compute.v1.ops.claim_work',
     work_available_event: 'compute.v1.ops.work_available',
-    result_started_request: 'compute.v1.ops.result_started',
     submit_result_request: 'compute.v1.ops.submit_result',
 } as const;
 /**
@@ -376,12 +280,9 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    pull_work_request: true,
-    work_assignment_event: false,
     heartbeat_message: false,
     reap_work_message: false,
     claim_work_request: false,
     work_available_event: false,
-    result_started_request: false,
     submit_result_request: false,
 } as const;

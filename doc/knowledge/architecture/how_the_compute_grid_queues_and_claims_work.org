@@ -124,6 +124,8 @@ The claim and the submit are trusted at the transport, as the heartbeat is today
 5. Show the depth and the age on the grid screen.
 6. Remove the assignments stream, its durable consumer and the dispatcher's publish.
 
+All six steps are done. The old =pull_work= and =result_started= operations are removed too.
+
 * Patterns used
 
 - [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] — the queue holds the peak, in the database.

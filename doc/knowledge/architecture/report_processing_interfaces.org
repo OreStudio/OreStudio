@@ -34,7 +34,7 @@ dispatched instead of the phase it replaces, never alongside it.
 | =ore.v1.ops.prepare_ore_package= | the workflow engine | ores.ore | the two storage keys |
 | =reporting.v1.ops.resolve_prepared_input= *(substitute)* | the workflow engine | reporting | instance, tenant, and the prepared input key |
 | =compute.v1.ops.submit_compute= | the workflow engine | ores.compute | instance, tenant, correlation, and the tarball URIs |
-| =compute.v1.ops.work_assignment.{tenant}.{platform}= | ores.compute | a worker node, by queue group | result, workunit, package and its digest, input, output |
+| =compute.v1.ops.claim_work= | a worker node | ores.compute | the host and its platform; the reply holds the result, workunit, package and its digest, input, output and a storage token |
 | =compute.v1.ops.submit_result= | the worker node | ores.compute | result, host, output location, outcome |
 | =reporting.v1.ops.collect_compute_results= | the workflow engine | reporting | instance, tenant, batch (a stub: it ingests nothing yet) |
 | =reporting.v1.ops.ignore_compute_results= *(substitute)* | the workflow engine | reporting | instance, tenant, batch |

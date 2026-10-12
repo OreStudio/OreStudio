@@ -72,13 +72,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_result_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
-    // Work (pull/heartbeat/reap)
+    // Work (heartbeat/reap)
     // ----------------------------------------------------------------
-    auto wh = std::make_shared<work_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        pull_work_request::nats_subject, "ores.compute.service", [wh](ores::nats::message msg) {
-            wh->pull(std::move(msg));
-        }));
+    auto wh = std::make_shared<work_handler>(ctx);
     // Fire-and-forget subjects: use plain subscribe (not queue_subscribe)
     subs.push_back(nats.subscribe(heartbeat_message::nats_subject, [wh](ores::nats::message msg) {
         wh->heartbeat(std::move(msg));
@@ -94,10 +90,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         submit_result_request::nats_subject,
         "ores.compute.service",
         [result_submit](ores::nats::message msg) { result_submit->submit(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        result_started_request::nats_subject,
-        "ores.compute.service",
-        [result_submit](ores::nats::message msg) { result_submit->started(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Telemetry

@@ -35,8 +35,8 @@ namespace ores::compute::messaging {
  * @brief Workflow step handler for submit_compute.
  *
  * Receives a submit_compute_request dispatched by the workflow engine,
- * creates a compute batch and one workunit per tarball URI, publishes
- * work_assignment_event messages, and completes the workflow step.
+ * creates a compute batch and one workunit per tarball URI, which the
+ * dispatcher queues in the work ledger, and completes the workflow step.
  *
  * Records a row in ores_compute_workflow_batch_links_tbl;
  * batch_workflow_bridge publishes step_completed_event once the batch

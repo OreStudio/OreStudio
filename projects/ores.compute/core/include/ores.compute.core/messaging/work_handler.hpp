@@ -109,87 +109,8 @@ using namespace ores::logging;
 
 class ORES_COMPUTE_CORE_EXPORT work_handler {
 public:
-    work_handler(ores::nats::service::client& nats,
-                 ores::database::context ctx,
-                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
-
-    void pull(ores::nats::message msg) {
-        BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "compute::batches:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        if (auto req = decode<pull_work_request>(msg)) {
-            try {
-                service::result_service result_svc(ctx);
-                // Unsent.
-                auto unsent = result_svc.list_by_state(2);
-                if (unsent.empty()) {
-                    reply(nats_,
-                          msg,
-                          pull_work_response{.success = false, .message = "No work available"});
-                    BOOST_LOG_SEV(work_handler_lg(), debug) << "No unsent results available";
-                    return;
-                }
-
-                boost::uuids::uuid host_uuid;
-                try {
-                    host_uuid = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
-                } catch (...) {
-                    reply(nats_,
-                          msg,
-                          pull_work_response{.success = false,
-                                             .message = "Invalid host_id: " + req->host_id});
-                    return;
-                }
-
-                auto r = unsent.front();
-                r.host_id = host_uuid;
-                // InProgress.
-                r.server_state = 4;
-                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                r.change_commentary = "Assigned to host on work.pull";
-                stamp(r, ctx);
-                result_svc.save_result(r);
-
-                service::workunit_service wu_svc(ctx);
-                const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
-                const auto wu_opt = wu_svc.get_workunit(r.workunit_id);
-                if (!wu_opt) {
-                    reply(nats_,
-                          msg,
-                          pull_work_response{.success = false,
-                                             .message = "Workunit not found: " + wu_id_str});
-                    return;
-                }
-
-                reply(nats_,
-                      msg,
-                      pull_work_response{.success = true,
-                                         .result_id = boost::uuids::to_string(r.id),
-                                         .workunit_id = wu_id_str,
-                                         .app_version_id =
-                                             boost::uuids::to_string(wu_opt->app_version_id),
-                                         .input_uri = wu_opt->input_uri,
-                                         .config_uri = wu_opt->config_uri});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(work_handler_lg(), error) << "Pull error: " << e.what();
-                reply(nats_, msg, pull_work_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(work_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-        BOOST_LOG_SEV(work_handler_lg(), debug) << "Completed " << msg.subject;
-    }
+    explicit work_handler(ores::database::context ctx)
+        : ctx_(std::move(ctx)) {}
 
     void heartbeat(ores::nats::message msg) {
         BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
@@ -306,9 +227,7 @@ public:
     }
 
 private:
-    ores::nats::service::client& nats_;
     ores::database::context ctx_;
-    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
 } // namespace ores::compute::messaging

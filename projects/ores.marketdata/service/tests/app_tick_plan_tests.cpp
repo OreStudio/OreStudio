@@ -71,6 +71,18 @@ TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", tags) {
     CHECK(plan.error() == tick_drop::unnameable_datum);
 }
 
+TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", tags) {
+    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
+                                                          "22222222-2222-2222-2222-222222222222")};
+
+    const auto plan = plan_tick(
+        make_tick("oresmd://fx/EUR?instrument=fx_spot&type=quote&quote=rate&ccy=USD", "1.0845"),
+        bindings);
+
+    REQUIRE_FALSE(plan.has_value());
+    CHECK(plan.error() == tick_drop::unnameable_datum);
+}
+
 TEST_CASE("a_tick_whose_value_is_not_a_number_is_dropped", tags) {
     const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
                                                           "22222222-2222-2222-2222-222222222222")};

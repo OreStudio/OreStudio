@@ -43,7 +43,7 @@ Every valid oresmd quote reaches its consumers. Today plan_tick writes the ORE k
 * Plan
 
 The subject takes its last token from the datum's canonical oresmd URI, written
-by the codec, so every spelling of a datum has one subject. One encoder in
+by the codec. The codec reads only a datum's one spelling, so a datum has one subject. One encoder in
 =tick_subjects.hpp= makes the token (=subject_token=) and a second reads it back
 (=subject_token_text=). The ingest loop's plan, the shell stream command and the
 tests use it. The party's whole tree is =market_tick_subject_all=.

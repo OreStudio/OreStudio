@@ -33,8 +33,8 @@ std::expected<tick_plan, tick_drop> plan_tick(const messaging::market_tick& tick
     auto tick_datum = datum::oresmd_uri_codec::read(tick.oresmd_uri);
     if (!tick_datum)
         return std::unexpected(tick_drop::unnameable_datum);
-    // The URI the codec writes is the datum's one spelling, so every
-    // spelling of a datum republishes on one subject. A datum needs no ORE key.
+    // The codec reads only a datum's one spelling, so the URI it writes is the
+    // tick's own and the subject is the datum's alone. A datum needs no ORE key.
     const auto uri = datum::oresmd_uri_codec::write(*tick_datum);
     if (!uri)
         return std::unexpected(tick_drop::unnameable_datum);

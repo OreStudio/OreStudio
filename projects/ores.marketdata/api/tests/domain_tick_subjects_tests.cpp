@@ -68,6 +68,9 @@ TEST_CASE("a_subject_token_refuses_text_it_could_not_have_made", tags) {
     CHECK_FALSE(subject_token_text("%2").has_value());
     CHECK_FALSE(subject_token_text("%ZZ").has_value());
     CHECK_FALSE(subject_token_text("%2e").has_value());
+    // The encoder leaves a plain byte as it is, so an escaped one has another maker.
+    CHECK_FALSE(subject_token_text("%41").has_value());
+    CHECK_FALSE(subject_token_text("a%5Fb").has_value());
 }
 
 TEST_CASE("different_data_never_share_a_token", tags) {

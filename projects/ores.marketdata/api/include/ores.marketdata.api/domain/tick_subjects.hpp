@@ -60,14 +60,17 @@ inline std::string synthetic_tick_subject_for(std::string_view source_name) {
  * case hexadecimal digits, so the token holds nothing but those characters and
  * @c % and @c A-F, and @c subject_token_text() gives the text back.
  */
+inline bool is_plain(unsigned char c) {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+           c == '-' || c == '_';
+}
+
 inline std::string subject_token(std::string_view text) {
     constexpr std::string_view hex = "0123456789ABCDEF";
     std::string token;
     token.reserve(text.size());
     for (const unsigned char c : text) {
-        const bool plain = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-                           (c >= '0' && c <= '9') || c == '-' || c == '_';
-        if (plain) {
+        if (is_plain(c)) {
             token.push_back(static_cast<char>(c));
         } else {
             token.push_back('%');
@@ -92,9 +95,7 @@ inline std::optional<std::string> subject_token_text(std::string_view token) {
     for (std::size_t i = 0; i < token.size(); ++i) {
         const char c = token[i];
         if (c != '%') {
-            const bool plain = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-                               (c >= '0' && c <= '9') || c == '-' || c == '_';
-            if (!plain)
+            if (!is_plain(static_cast<unsigned char>(c)))
                 return std::nullopt;
             text.push_back(c);
             continue;
@@ -105,7 +106,11 @@ inline std::optional<std::string> subject_token_text(std::string_view token) {
         const int low = digit(token[i + 2]);
         if (high < 0 || low < 0)
             return std::nullopt;
-        text.push_back(static_cast<char>((high << 4) | low));
+        const auto byte = static_cast<char>((high << 4) | low);
+        // The encoder never escapes a plain byte, so a token that does has another maker.
+        if (is_plain(static_cast<unsigned char>(byte)))
+            return std::nullopt;
+        text.push_back(byte);
         i += 2;
     }
     return text;

@@ -48,6 +48,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:F4472843-743E-42F1-8E14-948D27A498D9][Draw load, fleet, throughput and outcomes]] | BACKLOG | | | The first panels of the Watch the grid journey on one shared time axis. |
 | [[id:C84D4CE6-CE41-4F7B-A71E-BAA8CA2F84FE][Draw the node heatmap and the state ribbon]] | BACKLOG | | | One row per node, one column per interval, grouped by machine. |
 | [[id:8737DBA8-5049-4F1F-934A-C7C49029EA91][Add the engine run time and peak memory to the node sample]] | BACKLOG | | | The wrapper reads ORE's runtimes.csv and its memory lines and reports them in the node sample. |
+| [[id:046E315D-EA73-4902-9863-B09BD883C235][Operate the grid across tenants and by party]] | BACKLOG | | | Super admin sees the whole grid across tenants with a breakdown by tenant. A tenant admin sees the same screens for one tenant, broken down by party. |
 
 * Findings
 

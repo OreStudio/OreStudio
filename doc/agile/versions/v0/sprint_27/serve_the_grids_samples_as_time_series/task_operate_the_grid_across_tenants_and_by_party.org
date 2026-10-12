@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 046E315D-EA73-4902-9863-B09BD883C235
+:END:
+#+title: Task: Operate the grid across tenants and by party
+#+description: Super admin sees the whole grid across tenants with a breakdown by tenant. A tenant admin sees the same screens for one tenant, broken down by party.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/read-the-grid-samples-over-a-range
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the grid screens one shape for two scopes: the whole grid by tenant for the super admin, and one tenant by party for a tenant admin.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A super admin sees every host, node, batch, workunit and result of every tenant, with a breakdown that shows each tenant's share of the grid.
+- A tenant admin sees the same screens limited to the tenant, with a breakdown by party, and sees no other tenant's rows or counters.
+- Batches, workunits and results carry a party id, set when the batch is created.
+- The guard script lists each widened compute policy with its reason.
+
+* Plan
+
+** Analysis from first principles
+
+*** Who uses the grid, and what each role needs
+
+The grid is one shared installation resource. Tenants own the work that runs on it. Parties submit that work inside a tenant. Three roles look at it from three distances.
+
+| Role | Owns | Questions they ask | Needs to see |
+|------+------+--------------------+--------------|
+| Grid operator (super admin, system tenant) | The hosts, the nodes, the capacity | Is the grid healthy? Is a machine down? Is the queue growing? Who uses the grid? Does one tenant starve the others? Do I need more capacity? | Every host, node, batch, workunit and result of every tenant. Load, fleet, throughput and outcomes over a range. Each tenant's share. |
+| Tenant admin | One tenant's work | Is my work running? Which of my parties submits it? Which party fails most, or uses most? Why is a batch slow? | The same screens limited to the tenant. Jobs, batches, workunits and results per party. The fleet as capacity, with no other tenant's rows. |
+| Party user (submits work) | The party's own batches | Did my batch finish? Which workunit failed, and why? | Only the parties the session may see. This role needs the Jobs screen and no breakdown. |
+
+The tenant admin and the operator ask the same questions of different scopes. The screens stay the same. The scope picks the filter and the grouping key.
+
+| Session | Filter | Group by |
+|---------+--------+----------|
+| System tenant | None, the whole grid | Tenant |
+| Tenant admin | The tenant | Party |
+| Party user | The visible parties | None, a list of jobs |
+
+The server derives the scope from the session. The request never carries it, so a client cannot ask for a wider scope.
+
+*** What is shared and what is owned
+
+Three ownership classes apply, from the tenancy docs.
+
+- *Installation data.* Grid samples and node samples. The policy already shows the system tenant's rows to every session. No change.
+- *Operated resources.* Hosts. This task must check which tenant owns the host rows. If the system tenant owns all of them, hosts need no widening.
+- *Tenant work.* Batches, workunits, results. The policies are strictly per tenant. The operator cannot see them today. This is the gap.
+
+*** Four findings
+
+1. *The operator needs a read widening, not only an aggregate.* The operator manages the grid. A count cannot answer "which batch is stuck" or "which node ran it". The compute job tables get a read-only system-tenant policy. Writes stay with the current tenant. Each policy goes on the guard's exception list, with the reason that the system tenant operates the grid. Row-level security cannot hide columns. So the handler returns metadata only (ids, state, timings, tenant, party, host). It never returns a workunit input or a result payload across tenants.
+2. *Party does not exist on the job tables.* Batches, workunits and results hold =tenant_id= only. The submit path already knows the party. =report_submit_handler.cpp= reads =req.party_id= and builds its context with =for_requested_party=. The batch takes the party there. Workunits and results copy it, so a policy compares one column and needs no join. Existing rows get no party. The screen shows them as "Unassigned".
+3. *Party policies already have a shape.* Other tables use a restrictive select policy: =party_id = any(ores_iam_visible_party_ids_fn())=, plus the system tenant. The scheduler tables also admit =party_id is null=. The compute tables follow that shape. A party user then sees only the visible parties, and the operator sees all.
+4. *The grid samples would leak across tenants once their counters widen.* A sample row holds one set of counters, and its policy shows it to every session. Today the counters are the system tenant's jobs. If =ores_compute_grid_stats_fn= counts the whole grid for the poller, every tenant admin reads every tenant's load. The fleet columns (hosts, nodes) are installation capacity and fine to share. The job columns (queued, in progress, completed, failed) are tenant work. Recommendation: the poller writes one installation row for the fleet and one row per active tenant for the job columns. The tenant admin's charts read the fleet row and the tenant's own row. The operator's charts sum the tenant rows. The series shape stays, and the tenant breakdown over time falls out of the same table.
+
+*** The screens
+
+One set of tabs serves every role. Each tab asks the server for the scope the session allows.
+
+- *Overview.* The charts and the machines. Operator: whole grid. Tenant admin: fleet plus own job counters.
+- *Usage.* New. The breakdown. Operator: one row per tenant, with batches, workunits and results by state and the share of the grid. Tenant admin: one row per party, with the same columns.
+- *Jobs.* New. Batches with their workunits and results. A filter by tenant (operator) or by party (tenant admin). A party user sees only the visible parties.
+- *Nodes and Heatmap.* Installation view. A tenant admin sees the fleet and no job detail from other tenants. The node page lists the jobs the node ran, within the scope.
+
+** Steps
+
+1. Check which tenant owns the host rows, and in which tenant the wrappers' jobs run.
+2. Add =party_id= to batches, workunits and results. Change the entity models and regenerate. Write the SQL migration. Stamp the party in the submit path. Copy it to workunits and results.
+3. Add the restrictive party policies. Add the system-tenant read policies. List them in the guard. Add a policy test for each role: operator, tenant admin, party user.
+4. Make the stats function and the poller scope-aware. Write the per-tenant sample rows. Make the grid and node series reads filter by scope.
+5. Add the usage and jobs reads to the compute service, with permissions. Generate the protocol from the operation model.
+6. Add the BFF routes. Add the Usage and Jobs tabs. Make the Overview and Nodes tabs follow the scope.
+7. Document the exception in "Data read across tenants" and update the story.
+
+** Open decisions
+
+- Per-tenant sample rows (recommended above) or a single installation row.
+- Backfill existing rows from the submitting user's party, or leave them "Unassigned".
+- Whether the party user gets the Jobs tab in this task or later.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

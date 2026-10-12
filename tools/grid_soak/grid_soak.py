@@ -29,7 +29,9 @@ quiet stretch, and every node taking its share.
 
 Each wave is one ores.shell session that adds a batch and dispatches its jobs
 to the app version. The run stops on Ctrl-C or SIGTERM, after the wave in
-flight, and prints what it sent.
+flight, and prints what it sent. The defaults are modest, because a burst runs on
+the same machine as the local wrappers and the database. Raise --burst-jobs only
+on a machine with room.
 
 Usage, from the repository root:
 
@@ -136,8 +138,8 @@ def sleep_unless_stopped(seconds):
 def main(argv):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--seed", type=int, default=None, help="Seed the random draws, for a repeatable run")
-    ap.add_argument("--quiet-jobs", type=int, nargs=2, default=(5, 40), metavar=("MIN", "MAX"))
-    ap.add_argument("--burst-jobs", type=int, nargs=2, default=(400, 3000), metavar=("MIN", "MAX"))
+    ap.add_argument("--quiet-jobs", type=int, nargs=2, default=(5, 30), metavar=("MIN", "MAX"))
+    ap.add_argument("--burst-jobs", type=int, nargs=2, default=(100, 600), metavar=("MIN", "MAX"))
     ap.add_argument("--quiet-gap", type=float, nargs=2, default=(20, 60), metavar=("MIN", "MAX"),
                     help="Seconds between waves in a quiet phase")
     ap.add_argument("--burst-gap", type=float, nargs=2, default=(5, 20), metavar=("MIN", "MAX"),
@@ -146,7 +148,7 @@ def main(argv):
     ap.add_argument("--burst-waves", type=int, nargs=2, default=(2, 5), metavar=("MIN", "MAX"))
     ap.add_argument("--burst-share", type=float, default=0.5,
                     help="Chance that the phase after one is a burst")
-    ap.add_argument("--spike-chance", type=float, default=0.08,
+    ap.add_argument("--spike-chance", type=float, default=0.05,
                     help="Chance that a burst wave is a spike, several times larger")
     ap.add_argument("--app-version", default=DEFAULT_APP_VERSION)
     ap.add_argument("--package", default=DEFAULT_PACKAGE)
@@ -186,7 +188,7 @@ def main(argv):
                 break
             count = rng.randint(*phase.jobs)
             if phase.name == "burst" and rng.random() < args.spike_chance:
-                count *= rng.randint(2, 4)
+                count *= rng.randint(2, 3)
                 label = "spike"
             else:
                 label = phase.name

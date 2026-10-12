@@ -28,10 +28,10 @@ A report definition is ready to run only when every configuration document its r
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Phase A under way: staging and publish exist for the three documents, bindings publish, and ACME pricing engines publish. Today's market and curve content are not written. |
-| Waiting on   | Nothing.                               |
-| Next         | Prove the pricing engines publish through a provision, then craft today's market and curve configuration for each entity, the conventions binding, and the risk configurations. |
-| Last touched | 2026-10-11                               |
+| Now          | The four documents the risk type requires, the conventions and the shared run settings publish for every ACME party, every definition binds five configurations, and all 78 definitions export a run configuration that validates against the ORE schemas. |
+| Waiting on   | The extra documents the analysis names (simulation, sensitivity, stress test, historical return, Basel traffic light), which the product owner postponed. The complete provision also waits for the attach photos fix of another environment. |
+| Next         | Decide the extra documents, add a readiness query that lists the reports whose analytics read a document nothing stores, and rebase the branch. |
+| Last touched | 2026-10-12                               |
 
 * Acceptance
 
@@ -70,21 +70,25 @@ Two parts, in this order, as the product owner decided on 2026-10-11.
 6. Prove it on a clean provision: every definition has all its bindings, and a
    readiness query lists nothing missing.
 
-*Part C. The run document, generated at export.*
+*Part C. The run settings, shared, and the run document built at export.*
 
-The product owner decided on 2026-10-12 to generate the run document when a run
-needs it. Publishing stores no run document.
+The product owner decided on 2026-10-12 that the run settings are shared configurations in DQ,
+generated from the domain entity, and that the run document is built at export.
 
-7. Add a generator that builds the run document from the definition's risk
-   configuration, its bindings, the as-of date and the party. A stored run
-   document, when one exists, overrides the generated one.
-8. Make =export_run= call the generator when the definition holds no stored run
-   document.
-9. List the switches no analytic type represents. The parametric value-at-risk
-   switch is the first. A readiness check reports them, because the run omits
-   them.
-10. Export the UK "Yield Curves" definition and validate each file against its
-    schema.
+7. Make the risk report configuration a shared, party-owned entity. A definition binds it by name in
+   the =risk_report_config= slot, as it binds its pricing engines. The configuration type is seeded,
+   and the risk report type requires it. The DQ staging table is generated from the domain entity
+   with one extra column that names the scope portfolio. The separate DQ model for the staging entity
+   is deleted.
+8. Publish the run settings through one function on the shared document publish, and write their
+   portfolio scope from the staged name. Craft the settings of each party from the analysis of what
+   each report needs: the analytics, the currency and the scope. Declare the dependencies, so that
+   the portfolios come first and the definitions last.
+9. Bind the conventions and the run settings in the bindings of each definition.
+10. Build the run document at export from the settings and the bindings. A stored run document
+    overrides the built one.
+11. Recreate the database, provision, export the UK "Yield Curves" definition and validate each file
+    against its schema.
 
 * Measurements
 
@@ -100,6 +104,13 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Pricing engines documents after a clean provision | One header, its products and its parameters, and one reporting configuration, for each of the four parties | =compass sql= counts of the analytics tables and of the reporting configurations, by party, after =compass db recreate -y -k= and =bootstrap setup --profile acme_demo= | the commit that adds the publish |
 | Definitions bound to their pricing engines | Every definition of every party: group 10, UK 24, US 22, HK 22 | the same query on the report configurations table | the same commit |
+| Risk report configurations after a clean provision | Group 4 for 10 definitions, UK 13 for 24, US 13 for 22, HK 13 for 22 | =compass db sql= count of =ores_reporting_risk_report_configs_tbl= and of the definitions, by party, after =compass db recreate -y --kill= and =bootstrap setup --profile acme_demo= | f3d473f7c6 |
+| Bindings per definition after the same provision | 5 for every definition: conventions, pricing engines, today's market, curve configuration and run settings (390 bindings) | the same query on the report configurations table | f3d473f7c6 |
+| Portfolio scope rows after the same provision | One for each run settings set: 4, 13, 13 and 13 | the same query on the portfolio scope table | f3d473f7c6 |
+| Run configurations exported | 78 of 78 definitions export. 50 distinct files validate against =input.xsd=, none fails | =ore export-run= over every definition, then =xmllint --schema input.xsd --path external/ore/xsd= over each distinct file | f3d473f7c6 |
+| Definitions whose run document switches no analytic on | 15 of 78, the data and market data reports | the =Analytic= elements of the exported =ore.xml= files | f3d473f7c6 |
+| pgTAP | The new risk report configuration publish test passes with 9 tests. The official reports, bindings, pricing engines, configuration documents and document guard tests pass | =compass db sql -f= over each file in =projects/ores.sql/test= | f3d473f7c6 |
+| C++ suites | =ores.reporting.core.tests=, =ores.dq.core.tests= and =ores.ore.core.tests= pass | =ctest -R= over the three names | bc9a609553 |
 
 * Notes
 
@@ -217,3 +228,15 @@ via its "Verifies task" field.
 | 7 | The seeder JSON should regenerate with no diff | generate_configuration_data.py | Answered | Regenerating the three generators leaves the tree unchanged. |
 
 * Result
+
+Interim. Not closed.
+
+A risk report configuration is now a named, shared, party-owned entity that a definition binds, and its DQ
+staging table is generated from the domain entity. The separate DQ model is gone. Each ACME party publishes
+its run settings, the conventions and its documents as datasets with declared dependencies, and every
+definition binds all five. A clean provision leaves all 78 definitions ready to export, and the export builds
+the run document from the settings and the bindings.
+
+Still open: the extra documents some analytics read (simulation, sensitivity, stress test, historical
+return, Basel traffic light), a readiness query, and the complete provision, which waits for the attach
+photos fix.

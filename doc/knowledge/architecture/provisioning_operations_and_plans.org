@@ -101,6 +101,14 @@ dataset declares its dependency on them. A binding to a document that does not e
 is counted as skipped. A binding to the conventions creates the conventions configuration it names,
 because the conventions have no document of their own.
 
+The run settings of a risk report are one more document of this kind, a header with no children. Reports
+that run the same analytics over the same scope in the same currency share one set of run settings, so a
+party holds far fewer sets than definitions. The dataset that stages them names the portfolio each set
+reads, and the publish resolves that name to the portfolio the party holds. A name that matches no
+portfolio refuses the publish, because a set that reads no books fails every run that binds it. The run
+document that ORE reads is not stored: the export builds it from the run settings and the bindings of
+the definition.
+
 * See also
 
 - [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.

@@ -8,7 +8,7 @@
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
 #+branch: feature/specify-the-search-and-filter-standard
-#+pr:
+#+pr: 3208
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3208][#3208]] | [agile] Specify the search and filter standard |
 
 * Review
 

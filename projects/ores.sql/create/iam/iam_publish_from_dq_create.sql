@@ -169,6 +169,7 @@ begin
         -- doesn't exist in this tenant's RBAC set is silently skipped
         -- rather than blocking account creation.
         if r.role is not null then
+            -- A version of 0 states no earlier version to match: the trigger numbers the row.
             insert into ores_iam_account_roles_tbl (
                 tenant_id, account_id, role_id, version, modified_by, performed_by,
                 change_reason_code, change_commentary, valid_from, valid_to

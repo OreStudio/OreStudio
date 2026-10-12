@@ -893,6 +893,7 @@ begin
         raise exception 'Role not found: %', p_role_name;
     end if;
 
+    -- A version of 0 states no earlier version to match: the trigger numbers the row.
     insert into ores_iam_account_roles_tbl (
         account_id, tenant_id, role_id, version,
         modified_by, performed_by,
@@ -902,8 +903,7 @@ begin
         v_account_id, p_tenant_id, v_role_id, 0,
         current_user, current_user,
         'system.new_record', 'System seed data',
-        current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict do nothing;
+        current_timestamp, ores_utility_infinity_timestamp_fn());
 end;
 $$ language plpgsql;
 
@@ -939,6 +939,7 @@ begin
     end if;
 
     -- Insert assignment if it doesn't exist
+    -- A version of 0 states no earlier version to match: the trigger numbers the row.
     insert into ores_iam_role_permissions_tbl (
         role_id, tenant_id, permission_id, version,
         modified_by, performed_by,
@@ -948,8 +949,7 @@ begin
         v_role_id, p_tenant_id, v_permission_id, 0,
         p_assigned_by, p_assigned_by,
         'system.new_record', 'System seed data',
-        current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict do nothing;
+        current_timestamp, ores_utility_infinity_timestamp_fn());
 end;
 $$ language plpgsql;
 

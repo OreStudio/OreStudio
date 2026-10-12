@@ -161,6 +161,7 @@ begin
     -- Copy role_permissions. Need to map old role/permission IDs to new IDs
     -- by name/code. The copy states the same tail the roles copy does, so a
     -- provisioned tenant's bundle rows say where they came from.
+    -- A version of 0 states no earlier version to match: the trigger numbers the row.
     insert into ores_iam_role_permissions_tbl (
         tenant_id, role_id, permission_id, version,
         modified_by, performed_by,

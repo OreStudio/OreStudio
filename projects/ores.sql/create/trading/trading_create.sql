@@ -299,6 +299,8 @@
 -- Credit instruments (depends on reference data above)
 \ir ./trading_credit_instruments_create.sql
 \ir ./trading_credit_instruments_notify_trigger_create.sql
+\ir ./trading_credit_basket_constituents_create.sql
+\ir ./trading_credit_basket_constituents_notify_trigger_create.sql
 
 -- Per-type equity instruments
 \ir ./trading_equity_option_instruments_create.sql

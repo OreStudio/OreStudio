@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
@@ -199,7 +200,10 @@ void populate_instruments_for_trades(const Ctx& ctx,
     // Phase 2: the children, one read per table over the whole page. A child
     // carries the trade id its instrument does, so the reads need no pairing.
     {
-        const auto& all_swap = rate_ids;
+        // The legs are shared tables keyed by the trade, so a credit trade's
+        // legs are read with the rates family's.
+        std::vector<std::string> all_swap = rate_ids;
+        all_swap.insert(all_swap.end(), credit_ids.begin(), credit_ids.end());
         if (!all_swap.empty()) {
             repository::swap_leg_repository leg_repo;
             auto legs = leg_repo.read_by_instruments_batch(ctx, all_swap);
@@ -252,6 +256,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
         take(exercise_prices, batch.instrument_option_exercise_prices);
         auto strikes = repository::read_strikes_by_trade_ids(ctx, rate_ids);
         take(strikes, batch.instrument_strikes);
+    }
+    if (!credit_ids.empty()) {
+        repository::credit_basket_constituent_repository constituent_repo;
+        auto constituents = constituent_repo.read_by_instruments_batch(ctx, credit_ids);
+        take(constituents, batch.credit_basket_constituents);
     }
     if (!commodity_ids.empty()) {
         repository::commodity_basket_constituent_repository constituent_repo;

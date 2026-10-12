@@ -19,15 +19,20 @@
  */
 #include "ores.ore.core/domain/credit_instrument_mapper.hpp"
 #include "ores.ore.core/domain/ore_boundary_decimal.hpp"
+#include "ores.ore.core/domain/ore_code_tables.hpp"
+#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <algorithm>
 #include <chrono>
 #include <optional>
 
 namespace ores::ore::domain {
 
 using namespace ores::logging;
+using ores::trading::domain::credit_basket_constituent;
 using ores::trading::domain::credit_instrument;
+using ores::trading::domain::credit_instrument_data;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -147,7 +152,7 @@ legData credit_instrument_mapper::reverse_cds_leg(const credit_instrument& instr
 // Forward: CreditDefaultSwap
 // ---------------------------------------------------------------------------
 
-trading::domain::credit_instrument credit_instrument_mapper::forward_cds(const trade& t) {
+trading::domain::credit_instrument credit_instrument_mapper::instrument_cds(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CreditDefaultSwap: " << std::string(t.id);
     trading::domain::credit_instrument result = make_base("CreditDefaultSwap");
     if (!t.CreditDefaultSwapData)
@@ -167,7 +172,7 @@ trading::domain::credit_instrument credit_instrument_mapper::forward_cds(const t
 // Forward: IndexCreditDefaultSwap
 // ---------------------------------------------------------------------------
 
-trading::domain::credit_instrument credit_instrument_mapper::forward_index_cds(const trade& t) {
+trading::domain::credit_instrument credit_instrument_mapper::instrument_index_cds(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping IndexCreditDefaultSwap: " << std::string(t.id);
     trading::domain::credit_instrument result = make_base("IndexCreditDefaultSwap");
     if (!t.IndexCreditDefaultSwapData)
@@ -184,7 +189,7 @@ trading::domain::credit_instrument credit_instrument_mapper::forward_index_cds(c
 // ---------------------------------------------------------------------------
 
 trading::domain::credit_instrument
-credit_instrument_mapper::forward_index_cds_option(const trade& t) {
+credit_instrument_mapper::instrument_index_cds_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping IndexCreditDefaultSwapOption: "
                                << std::string(t.id);
     trading::domain::credit_instrument result = make_base("IndexCreditDefaultSwapOption");
@@ -205,7 +210,7 @@ credit_instrument_mapper::forward_index_cds_option(const trade& t) {
 // ---------------------------------------------------------------------------
 
 trading::domain::credit_instrument
-credit_instrument_mapper::forward_credit_linked_swap(const trade& t) {
+credit_instrument_mapper::instrument_credit_linked_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CreditLinkedSwap: " << std::string(t.id);
     trading::domain::credit_instrument result = make_base("CreditLinkedSwap");
     if (!t.CreditLinkedSwapData)
@@ -225,7 +230,7 @@ credit_instrument_mapper::forward_credit_linked_swap(const trade& t) {
 // Forward: SyntheticCDO
 // ---------------------------------------------------------------------------
 
-trading::domain::credit_instrument credit_instrument_mapper::forward_synthetic_cdo(const trade& t) {
+trading::domain::credit_instrument credit_instrument_mapper::instrument_synthetic_cdo(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping SyntheticCDO: " << std::string(t.id);
     trading::domain::credit_instrument result = make_base("SyntheticCDO");
     if (!t.CdoData)
@@ -245,7 +250,7 @@ trading::domain::credit_instrument credit_instrument_mapper::forward_synthetic_c
 // Forward: RiskParticipationAgreement
 // ---------------------------------------------------------------------------
 
-trading::domain::credit_instrument credit_instrument_mapper::forward_rpa(const trade& t) {
+trading::domain::credit_instrument credit_instrument_mapper::instrument_rpa(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping RiskParticipationAgreement: "
                                << std::string(t.id);
     trading::domain::credit_instrument result = make_base("RiskParticipationAgreement");
@@ -266,7 +271,7 @@ trading::domain::credit_instrument credit_instrument_mapper::forward_rpa(const t
 // Reverse: CreditDefaultSwap
 // ---------------------------------------------------------------------------
 
-trade credit_instrument_mapper::reverse_cds(const credit_instrument& instr) {
+trade credit_instrument_mapper::trade_cds(const credit_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CreditDefaultSwap";
     trade t;
     t.TradeType = oreTradeType::CreditDefaultSwap;
@@ -287,7 +292,7 @@ trade credit_instrument_mapper::reverse_cds(const credit_instrument& instr) {
 // Reverse: IndexCreditDefaultSwap
 // ---------------------------------------------------------------------------
 
-trade credit_instrument_mapper::reverse_index_cds(const credit_instrument& instr) {
+trade credit_instrument_mapper::trade_index_cds(const credit_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping IndexCreditDefaultSwap";
     trade t;
     t.TradeType = oreTradeType::IndexCreditDefaultSwap;
@@ -302,7 +307,7 @@ trade credit_instrument_mapper::reverse_index_cds(const credit_instrument& instr
 // Reverse: IndexCreditDefaultSwapOption
 // ---------------------------------------------------------------------------
 
-trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument& instr) {
+trade credit_instrument_mapper::trade_index_cds_option(const credit_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping IndexCreditDefaultSwapOption";
     trade t;
     t.TradeType = oreTradeType::IndexCreditDefaultSwapOption;
@@ -331,7 +336,7 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
 // Reverse: CreditLinkedSwap
 // ---------------------------------------------------------------------------
 
-trade credit_instrument_mapper::reverse_credit_linked_swap(const credit_instrument& instr) {
+trade credit_instrument_mapper::trade_credit_linked_swap(const credit_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CreditLinkedSwap";
     trade t;
     t.TradeType = oreTradeType::CreditLinkedSwap;
@@ -352,7 +357,7 @@ trade credit_instrument_mapper::reverse_credit_linked_swap(const credit_instrume
 // Reverse: SyntheticCDO
 // ---------------------------------------------------------------------------
 
-trade credit_instrument_mapper::reverse_synthetic_cdo(const credit_instrument& instr) {
+trade credit_instrument_mapper::trade_synthetic_cdo(const credit_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping SyntheticCDO";
     trade t;
     t.TradeType = oreTradeType::SyntheticCDO;
@@ -375,7 +380,7 @@ trade credit_instrument_mapper::reverse_synthetic_cdo(const credit_instrument& i
 // Reverse: RiskParticipationAgreement
 // ---------------------------------------------------------------------------
 
-trade credit_instrument_mapper::reverse_rpa(const credit_instrument& instr) {
+trade credit_instrument_mapper::trade_rpa(const credit_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping RiskParticipationAgreement";
     trade t;
     t.TradeType = oreTradeType::RiskParticipationAgreement;
@@ -389,6 +394,260 @@ trade credit_instrument_mapper::reverse_rpa(const credit_instrument& instr) {
         d.FixedRecoveryRate = static_cast<float>(instr.recovery_rate);
     t.RiskParticipationAgreementData = std::move(d);
     return t;
+}
+
+// ---------------------------------------------------------------------------
+// The carrier: the legs and the basket beside the instrument
+// ---------------------------------------------------------------------------
+
+void credit_instrument_mapper::append_leg(credit_instrument_data& result,
+                                          const legData& ld,
+                                          const std::string& group) {
+    const int leg_number = static_cast<int>(result.legs.size()) + 1;
+    auto leg = swap_instrument_mapper::map_leg(ld, leg_number);
+    leg.leg_group = group;
+    result.legs.push_back(std::move(leg));
+    for (auto& amount : swap_instrument_mapper::map_leg_amounts(ld, leg_number))
+        result.leg_amounts.push_back(std::move(amount));
+    for (auto& rate : swap_instrument_mapper::map_leg_rates(ld, leg_number))
+        result.leg_rates.push_back(std::move(rate));
+}
+
+void credit_instrument_mapper::append_basket(credit_instrument_data& result,
+                                             const basketData& basket) {
+    int sequence = 0;
+    for (const auto& name : basket.Name) {
+        credit_basket_constituent row;
+        row.sequence_number = ++sequence;
+        row.issuer_id = std::string(name.IssuerId);
+        if (name.Qualifier)
+            row.qualifier = std::string(*name.Qualifier);
+        if (name.creditCurveIdType.CreditCurveId)
+            row.credit_curve_id = std::string(*name.creditCurveIdType.CreditCurveId);
+        if (name.Notional)
+            row.notional = exact_decimal(*name.Notional);
+        if (name.Weight)
+            row.weight = static_cast<double>(*name.Weight);
+        if (name.Currency)
+            row.currency = to_string(*name.Currency);
+        row.modified_by = "ores";
+        row.performed_by = "ores";
+        row.change_reason_code = "system.external_data_import";
+        row.change_commentary = "Imported from ORE XML";
+        result.constituents.push_back(std::move(row));
+    }
+}
+
+std::vector<legData> credit_instrument_mapper::reverse_group(const credit_instrument_data& data,
+                                                             const std::string& group) {
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
+    if (data.instrument.start_date.ok())
+        start_date = data.instrument.start_date;
+    if (data.instrument.maturity_date.ok())
+        maturity_date = data.instrument.maturity_date;
+
+    std::vector<ores::trading::domain::swap_leg> legs;
+    for (const auto& leg : data.legs) {
+        if (leg.leg_group && *leg.leg_group == group)
+            legs.push_back(leg);
+    }
+    std::stable_sort(legs.begin(), legs.end(), [](const auto& a, const auto& b) {
+        return a.identity.leg_number < b.identity.leg_number;
+    });
+
+    std::vector<legData> out;
+    for (const auto& leg : legs) {
+        std::vector<ores::trading::domain::swap_leg_amount> amounts;
+        for (const auto& amount : data.leg_amounts) {
+            if (amount.leg_number == leg.identity.leg_number)
+                amounts.push_back(amount);
+        }
+        std::vector<ores::trading::domain::swap_leg_rate> rates;
+        for (const auto& rate : data.leg_rates) {
+            if (rate.leg_number == leg.identity.leg_number)
+                rates.push_back(rate);
+        }
+        out.push_back(
+            swap_instrument_mapper::reverse_leg(start_date, maturity_date, leg, amounts, rates));
+    }
+    return out;
+}
+
+basketData credit_instrument_mapper::reverse_basket(
+    const std::vector<ores::trading::domain::credit_basket_constituent>& names) {
+    auto ordered = names;
+    std::stable_sort(ordered.begin(), ordered.end(), [](const auto& a, const auto& b) {
+        return a.sequence_number < b.sequence_number;
+    });
+
+    basketData basket;
+    for (const auto& row : ordered) {
+        nameData n;
+        static_cast<std::string&>(n.IssuerId) = row.issuer_id;
+        if (row.qualifier) {
+            nameData_Qualifier_t q;
+            static_cast<std::string&>(q) = *row.qualifier;
+            n.Qualifier = std::move(q);
+        }
+        if (row.credit_curve_id) {
+            _CreditCurveId_t cid;
+            static_cast<std::string&>(cid) = *row.credit_curve_id;
+            n.creditCurveIdType.CreditCurveId = std::move(cid);
+        }
+        if (row.notional) {
+            moneyFloat notional;
+            set_exact(notional, *row.notional);
+            n.Notional = std::move(notional);
+        }
+        if (row.weight)
+            n.Weight = static_cast<float>(*row.weight);
+        if (row.currency)
+            n.Currency = parse_currency_code(*row.currency);
+        basket.Name.push_back(std::move(n));
+    }
+    return basket;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: the carrier
+// ---------------------------------------------------------------------------
+
+credit_instrument_data credit_instrument_mapper::forward_cds(const trade& t) {
+    credit_instrument_data result;
+    result.instrument = instrument_cds(t);
+    if (t.CreditDefaultSwapData)
+        append_leg(result, t.CreditDefaultSwapData->LegData, "premium");
+    return result;
+}
+
+credit_instrument_data credit_instrument_mapper::forward_index_cds(const trade& t) {
+    credit_instrument_data result;
+    result.instrument = instrument_index_cds(t);
+    if (t.IndexCreditDefaultSwapData) {
+        const auto& d = *t.IndexCreditDefaultSwapData;
+        append_leg(result, d.LegData, "premium");
+        if (d.BasketData)
+            append_basket(result, *d.BasketData);
+    }
+    return result;
+}
+
+credit_instrument_data credit_instrument_mapper::forward_index_cds_option(const trade& t) {
+    credit_instrument_data result;
+    result.instrument = instrument_index_cds_option(t);
+    if (t.IndexCreditDefaultSwapOptionData) {
+        const auto& d = t.IndexCreditDefaultSwapOptionData->IndexCreditDefaultSwapData;
+        append_leg(result, d.LegData, "premium");
+        if (d.BasketData)
+            append_basket(result, *d.BasketData);
+    }
+    return result;
+}
+
+credit_instrument_data credit_instrument_mapper::forward_credit_linked_swap(const trade& t) {
+    credit_instrument_data result;
+    result.instrument = instrument_credit_linked_swap(t);
+    if (!t.CreditLinkedSwapData)
+        return result;
+    const auto& d = *t.CreditLinkedSwapData;
+    const auto append_group = [&](const auto& payments, const std::string& group) {
+        if (!payments)
+            return;
+        for (const auto& ld : payments->LegData)
+            append_leg(result, ld, group);
+    };
+    append_group(d.IndependentPayments, "independent");
+    append_group(d.ContingentPayments, "contingent");
+    append_group(d.DefaultPayments, "default");
+    append_group(d.RecoveryPayments, "recovery");
+    return result;
+}
+
+credit_instrument_data credit_instrument_mapper::forward_synthetic_cdo(const trade& t) {
+    credit_instrument_data result;
+    result.instrument = instrument_synthetic_cdo(t);
+    if (t.CdoData) {
+        const auto& d = *t.CdoData;
+        append_leg(result, d.LegData, "premium");
+        if (d.BasketData)
+            append_basket(result, *d.BasketData);
+    }
+    return result;
+}
+
+credit_instrument_data credit_instrument_mapper::forward_rpa(const trade& t) {
+    credit_instrument_data result;
+    result.instrument = instrument_rpa(t);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: the carrier
+// ---------------------------------------------------------------------------
+
+trade credit_instrument_mapper::reverse_cds(const credit_instrument_data& data) {
+    auto t = trade_cds(data.instrument);
+    const auto legs = reverse_group(data, "premium");
+    if (!legs.empty())
+        t.CreditDefaultSwapData->LegData = legs.front();
+    return t;
+}
+
+trade credit_instrument_mapper::reverse_index_cds(const credit_instrument_data& data) {
+    auto t = trade_index_cds(data.instrument);
+    auto& d = *t.IndexCreditDefaultSwapData;
+    const auto legs = reverse_group(data, "premium");
+    if (!legs.empty())
+        d.LegData = legs.front();
+    if (!data.constituents.empty())
+        d.BasketData = reverse_basket(data.constituents);
+    return t;
+}
+
+trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument_data& data) {
+    auto t = trade_index_cds_option(data.instrument);
+    auto& d = t.IndexCreditDefaultSwapOptionData->IndexCreditDefaultSwapData;
+    const auto legs = reverse_group(data, "premium");
+    if (!legs.empty())
+        d.LegData = legs.front();
+    if (!data.constituents.empty())
+        d.BasketData = reverse_basket(data.constituents);
+    return t;
+}
+
+trade credit_instrument_mapper::reverse_credit_linked_swap(const credit_instrument_data& data) {
+    auto t = trade_credit_linked_swap(data.instrument);
+    auto& d = *t.CreditLinkedSwapData;
+    const auto fill_group = [&](auto& slot, const std::string& group) {
+        auto legs = reverse_group(data, group);
+        if (legs.empty())
+            return;
+        std::remove_cvref_t<decltype(*slot)> payments;
+        for (auto& leg : legs)
+            payments.LegData.push_back(std::move(leg));
+        slot = std::move(payments);
+    };
+    fill_group(d.IndependentPayments, "independent");
+    fill_group(d.ContingentPayments, "contingent");
+    fill_group(d.DefaultPayments, "default");
+    fill_group(d.RecoveryPayments, "recovery");
+    return t;
+}
+
+trade credit_instrument_mapper::reverse_synthetic_cdo(const credit_instrument_data& data) {
+    auto t = trade_synthetic_cdo(data.instrument);
+    auto& d = *t.CdoData;
+    const auto legs = reverse_group(data, "premium");
+    if (!legs.empty())
+        d.LegData = legs.front();
+    if (!data.constituents.empty())
+        d.BasketData = reverse_basket(data.constituents);
+    return t;
+}
+
+trade credit_instrument_mapper::reverse_rpa(const credit_instrument_data& data) {
+    return trade_rpa(data.instrument);
 }
 
 }

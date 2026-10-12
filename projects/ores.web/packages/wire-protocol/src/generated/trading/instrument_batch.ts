@@ -52,6 +52,7 @@ import type { CallableSwapInstrument } from './domain/callable_swap_instrument.j
 import type { CapFloorInstrument } from './domain/cap_floor_instrument.js';
 import type { CommodityBasketConstituent } from './domain/commodity_basket_constituent.js';
 import type { CompositeLeg } from './domain/composite_leg.js';
+import type { CreditBasketConstituent } from './domain/credit_basket_constituent.js';
 import type { EquityPositionOptionUnderlying } from './domain/equity_position_option_underlying.js';
 import type { FlexiSwapInstrument } from './domain/flexi_swap_instrument.js';
 import type { FlexiSwapLowerNotional } from './domain/flexi_swap_lower_notional.js';
@@ -111,6 +112,7 @@ export interface InstrumentBatch {
     cap_floor_instruments: CapFloorInstrument[];
     commodity_basket_constituents: CommodityBasketConstituent[];
     composite_legs: CompositeLeg[];
+    credit_basket_constituents: CreditBasketConstituent[];
     equity_position_option_underlyings: EquityPositionOptionUnderlying[];
     flexi_swap_instruments: FlexiSwapInstrument[];
     flexi_swap_lower_notionals: FlexiSwapLowerNotional[];

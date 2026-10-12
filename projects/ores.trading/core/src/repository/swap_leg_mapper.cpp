@@ -58,6 +58,7 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.payment_frequency_code = v.payment_frequency_code;
     r.floating_index_code = v.floating_index_code.value_or("");
     r.currency = v.currency;
+    r.leg_group = v.leg_group;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -86,6 +87,7 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.floating_index_code =
         v.floating_index_code.empty() ? std::nullopt : std::optional(v.floating_index_code);
     r.currency = v.currency;
+    r.leg_group = v.leg_group;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

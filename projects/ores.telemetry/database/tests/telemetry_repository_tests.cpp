@@ -323,18 +323,20 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
         "Expecting the silent service");
 
     const auto now = std::chrono::system_clock::now();
-    const auto report = [&](const std::string& instance, std::chrono::minutes age) {
+    const auto report = [&](const std::string& instance,
+                            const std::string& host,
+                            std::chrono::minutes age) {
         service_sample sample;
         sample.sampled_at = now - age;
         sample.service_name = reporting;
         sample.instance_id = instance;
-        sample.host_id = "roster-test-host";
+        sample.host_id = host;
         sample.version = "1.0.0-test";
         repo.insert_service_sample(h.context(), sample);
     };
-    report("leftover", std::chrono::minutes(180));
-    report("quiet", std::chrono::minutes(10));
-    report("fresh", std::chrono::minutes(1));
+    report("leftover", "roster-test-host", std::chrono::minutes(180));
+    report("quiet", "roster-test-host", std::chrono::minutes(10));
+    report("fresh", "roster-test-other-host", std::chrono::minutes(1));
 
     const auto roster = repo.list_service_roster(h.context(), now);
     std::vector<service_roster_slot> reporting_slots;

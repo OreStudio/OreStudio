@@ -1735,6 +1735,7 @@ function usageGroup(overrides: Partial<GridUsageView['groups'][number]> = {}) {
         outcomes_success: 18,
         outcomes_failed: 2,
         share: 0.75,
+        unavailable: false,
         ...overrides,
     };
 }
@@ -1801,6 +1802,35 @@ describe('the grid usage tab', () => {
         expect(html).toContain('Usage by party');
         expect(html).toContain('Desk A');
         expect(html).toContain('No party');
+    });
+
+    it('says a tenant could not be read rather than showing zeros', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/?tab=usage',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            [],
+            undefined,
+            usageView({
+                groups: [
+                    usageGroup(),
+                    usageGroup({
+                        key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                        name: 'Globex',
+                        results: 0,
+                        share: 0,
+                        unavailable: true,
+                    }),
+                ],
+            }),
+        );
+
+        expect(html).toContain('Globex');
+        expect(html).toContain('Could not be read');
+        expect(html).toContain('Each tenant is read inside the tenant');
     });
 
     it('shows the id of a group nobody could name', () => {

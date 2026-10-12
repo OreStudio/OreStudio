@@ -38,9 +38,6 @@ import { Notice } from '../ui/Primitives.js';
 /** Where the usage answer is cached, so a test can seed it. */
 export const GRID_USAGE_QUERY_KEY = ['operations-grid-usage'] as const;
 
-/** How often the usage is read again, in milliseconds. */
-const USAGE_REFRESH_MS = 30_000;
-
 /** A fraction as a whole percentage, or a dash where the group ran nothing. */
 export function formatShare(share: number): string {
     if (share <= 0) {
@@ -95,6 +92,16 @@ function UsageTable({ usage }: { readonly usage: GridUsageView }): ReactNode {
             <tbody className="divide-y divide-line-subtle">
                 {usage.groups.map((group) => {
                     const label = groupLabel(group, unassigned);
+                    if (group.unavailable) {
+                        return (
+                            <tr key={group.key === '' ? 'none' : group.key}>
+                                <td className="py-2">{label.text}</td>
+                                <td colSpan={columns.length} className="py-2 text-warn">
+                                    {t('operations.grid.usage.unavailable')}
+                                </td>
+                            </tr>
+                        );
+                    }
                     return (
                         <tr key={group.key === '' ? 'none' : group.key}>
                             <td className={label.isId ? 'py-2 font-mono text-xs' : 'py-2'}>
@@ -130,7 +137,7 @@ export function UsagePanel({ usage }: { readonly usage: GridUsageView }): ReactN
                 <h2 className="text-lg font-medium">
                     {t(`operations.grid.usage.title.${usage.group_kind}`)}
                 </h2>
-                <p className="text-xs text-ink-faint">{t('operations.grid.usage.note')}</p>
+                <p className="text-xs text-ink-faint">{t(`operations.grid.usage.note.${usage.group_kind}`)}</p>
             </header>
             {usage.groups.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('operations.grid.usage.empty')}</p>
@@ -144,10 +151,11 @@ export function UsagePanel({ usage }: { readonly usage: GridUsageView }): ReactN
 /** The Usage tab: who uses the grid, read for the session's scope. */
 export function GridUsageTab(): ReactNode {
     const { t } = useTranslation();
+    // The usage is read when the tab opens and when the person asks. An operator's
+    // read enters every tenant and each entry is recorded, so it is not polled.
     const usage = useQuery({
         queryKey: GRID_USAGE_QUERY_KEY,
         queryFn: api.gridUsage,
-        refetchInterval: USAGE_REFRESH_MS,
     });
 
     if (usage.isError) {

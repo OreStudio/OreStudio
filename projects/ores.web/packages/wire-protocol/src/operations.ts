@@ -1936,6 +1936,8 @@ export const gridUsageGroupSchema = z.object({
     outcomes_failed: z.int().nonnegative(),
     /** This group's results as a fraction of every result in the view, 0 when there are none. */
     share: z.number().min(0).max(1),
+    /** True when the group could not be read, so its counts are not zero but unknown. */
+    unavailable: z.boolean().default(false),
 });
 
 export type GridUsageGroup = z.infer<typeof gridUsageGroupSchema>;

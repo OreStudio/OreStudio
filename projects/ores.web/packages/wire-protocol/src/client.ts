@@ -20,6 +20,7 @@
  */
 
 import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
+import { readGridUsage } from './grid-usage.js';
 import {
     subjects as serviceSampleSubjects,
     type ServiceHeartbeatMessage,
@@ -96,8 +97,6 @@ import {
     gridStatsRequestSchema,
     gridSeriesReplySchema,
     gridSeriesRequestSchema,
-    gridUsageReplySchema,
-    gridUsageRequestSchema,
     nodeSeriesReplySchema,
     nodeSeriesRequestSchema,
     listHostsReplySchema,
@@ -1157,16 +1156,7 @@ export class OresClient {
      * empty usage would read as a grid nobody uses.
      */
     async gridUsage(): Promise<GridUsageReply> {
-        const reply = await this.#authenticatedCall(
-            SUBJECTS.gridUsage,
-            gridUsageRequestSchema.parse({}),
-            gridUsageReplySchema,
-            { timeoutMs: this.#timeouts.fastMs },
-        );
-        if (!reply.success) {
-            throw new OperationFailedError(SUBJECTS.gridUsage, reply.message);
-        }
-        return reply;
+        return readGridUsage(this);
     }
 
     /**

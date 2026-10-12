@@ -1677,7 +1677,11 @@ const fr: SourceCatalogue = {
             },
             usage: {
                 title: { tenant: 'Utilisation par locataire', party: 'Utilisation par partie' },
-                note: 'La part d’un groupe est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                note: {
+                    tenant: 'Chaque locataire est lu à l’intérieur du locataire, car le travail d’un locataire n’est pas visible depuis un autre. La part d’un locataire est la fraction de ses résultats parmi les résultats qui ont pu être lus. Réussis et échoués comptent les dernières 24 heures.',
+                    party: 'La part d’une partie est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
+                },
+                unavailable: 'N’a pas pu être lu',
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',
                 unassigned: 'Aucune partie',
                 columns: {

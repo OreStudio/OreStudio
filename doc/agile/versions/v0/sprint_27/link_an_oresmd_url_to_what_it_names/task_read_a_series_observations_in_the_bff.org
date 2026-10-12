@@ -26,11 +26,11 @@ The web can read the values of a series over time, whatever its shape.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -85,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The BFF has =GET /api/series/:id/observations=. It calls the existing =list_by_series_id= operation, clamps the limit to 1000 (default 500), and returns the observations oldest first with the total the series holds. It sits behind the session check like the other routes. A server refusal reaches the browser as a refusal, not as an empty list.
+

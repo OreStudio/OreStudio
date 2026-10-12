@@ -454,8 +454,8 @@ authorization_service::page_permissions(const std::vector<account_access_entry>&
                            entry.permission_codes.end(),
                            [&](const std::string& held) {
                                // The wildcard does not cover an installation code.
-                               return (held == "*" && component != "installation") || held == code ||
-                                      held == component + "::*";
+                               return (held == "*" && component != "installation") ||
+                                      held == code || held == component + "::*";
                            });
     };
 

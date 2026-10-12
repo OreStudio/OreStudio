@@ -27,8 +27,8 @@
 #include "ores.platform/environment/environment.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
@@ -108,8 +108,7 @@ TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked
 
     notification_center center(acting(h));
     const auto page = center.mine(asker.id, false, 0, 200);
-    CHECK(std::ranges::any_of(page.notifications,
-                              [&](const auto& n) { return n.link_id == id; }));
+    CHECK(std::ranges::any_of(page.notifications, [&](const auto& n) { return n.link_id == id; }));
 }
 
 TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep", tags) {
@@ -154,8 +153,7 @@ TEST_CASE("the_inbox_service_user_runs_the_reminder_sweep", tags) {
     // The reminder reads across tenants and raises a notice only for a request
     // close to its deadline. An error from the database is thrown and not
     // swallowed, so a missing right fails the call.
-    CHECK_NOTHROW(
-        approval_lifecycle(as_inbox_service(h)).remind_expiring(std::chrono::hours(48)));
+    CHECK_NOTHROW(approval_lifecycle(as_inbox_service(h)).remind_expiring(std::chrono::hours(48)));
 }
 
 TEST_CASE("the_inbox_service_user_reads_who_holds_a_permission", tags) {

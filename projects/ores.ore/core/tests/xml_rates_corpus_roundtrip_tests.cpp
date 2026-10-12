@@ -47,7 +47,7 @@
 #include "ores.trading.api/domain/swap_leg_rate_json_io.hpp"
 #include "ores.trading.api/domain/swaption_instrument_json_io.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -108,8 +108,8 @@ std::string family_rows(const trade_import_item& item) {
       << "flexi_swap_lower_notionals " << b.flexi_swap_lower_notionals << '\n'
       << "balance_guaranteed_swap_instruments " << b.balance_guaranteed_swap_instruments << '\n'
       << "balance_guaranteed_swap_tranches " << b.balance_guaranteed_swap_tranches << '\n'
-      << "balance_guaranteed_swap_tranche_notionals "
-      << b.balance_guaranteed_swap_tranche_notionals << '\n'
+      << "balance_guaranteed_swap_tranche_notionals " << b.balance_guaranteed_swap_tranche_notionals
+      << '\n'
       << "callable_swap_instruments " << b.callable_swap_instruments << '\n'
       << "callable_swap_call_dates " << b.callable_swap_call_dates << '\n'
       << "knock_out_swap_instruments " << b.knock_out_swap_instruments << '\n'
@@ -184,7 +184,8 @@ const std::set<std::string>& known_row_differences() {
 } // namespace
 
 TEST_CASE("every rates trade in the corpus comes back as the same family rows", tags) {
-    const auto dir = ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
+    const auto dir =
+        ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
     REQUIRE(fs::exists(dir));
 
     const auto scratch = fs::temp_directory_path() / "ores_ore_rates_corpus_roundtrip";
@@ -226,7 +227,8 @@ TEST_CASE("every rates trade in the corpus comes back as the same family rows", 
             const auto after = family_rows(again.front());
             if (before != after) {
                 if (differing.insert(name).second)
-                    detail += "\n  " + name + " (" + item.ore_id + "): " + first_difference(before, after);
+                    detail += "\n  " + name + " (" + item.ore_id +
+                              "): " + first_difference(before, after);
             }
         }
     }
@@ -238,5 +240,7 @@ TEST_CASE("every rates trade in the corpus comes back as the same family rows", 
     CHECK(documents == 47);
     CHECK(trades == 70);
     if (differing != known_row_differences())
-        FAIL_CHECK("the rates documents whose family rows change on the round trip are not the known ones:" + detail);
+        FAIL_CHECK("the rates documents whose family rows change on the round trip are not the "
+                   "known ones:" +
+                   detail);
 }

@@ -88,3 +88,4 @@ one value or a tenor-indexed series of values.
 - [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] — the policy for values outside the term structure's own range entirely.
 - [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — how far a term structure's own range extends, by curve type.
 - [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — several term structures related by a discounting dependency, not one larger term structure.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how ORE Studio names a curve or a surface: as a series, by its series URI.

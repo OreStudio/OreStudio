@@ -22,6 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     densityOf,
+    draftFromMixture,
     draftOf,
     gaussiansOf,
     newComponent,
@@ -235,5 +236,46 @@ describe('what the screen marks', () => {
     it('names the saved components the draft deleted', () => {
         const before = [saved('a', 0, 0.8), saved('b', 1, 0.2)];
         expect(removedFrom(before, [before[1] as DraftComponent]).map((c) => c.id)).toEqual(['a']);
+    });
+});
+
+describe('draftFromMixture', () => {
+    const component = (id: string, mean: string, stdev: string, weight: string): DraftComponent => ({
+        id,
+        version: 3,
+        description: id === 'a' ? 'Calm' : 'Wide',
+        mean,
+        stdev,
+        weight,
+    });
+    const current = [component('b', '0', '0.006', '0.1'), component('a', '0', '0.001', '0.9')];
+    const mixture = { means: [0.0001, 0], stdevs: [0.002, 0.012], weights: [0.8, 0.2] };
+
+    it('keeps the identity of the primary and of the jump regime', () => {
+        const next = draftFromMixture(current, mixture, false, () => 'new');
+        expect(next.map((one) => one.id)).toEqual(['a', 'b']);
+        expect(next.map((one) => one.version)).toEqual([3, 3]);
+        expect(next[0]?.description).toBe('Calm');
+        expect(next[0]?.stdev).toBe('0.002');
+        expect(next[1]?.weight).toBe('0.2');
+    });
+
+    it('gives a new component the next id and a name', () => {
+        const next = draftFromMixture([current[1] as DraftComponent], mixture, false, () => 'new');
+        expect(next.map((one) => one.id)).toEqual(['a', 'new']);
+        expect(next[1]?.version).toBeNull();
+        expect(next[1]?.description).toBe('Jump regime (approx.)');
+    });
+
+    it('keeps the first component of a mean-reverting mixture', () => {
+        const next = draftFromMixture(
+            current,
+            { means: [0], stdevs: [0.001], weights: [0.05] },
+            true,
+            () => 'new',
+        );
+        expect(next).toHaveLength(1);
+        expect(next[0]?.id).toBe('b');
+        expect(next[0]?.weight).toBe('0.05');
     });
 });

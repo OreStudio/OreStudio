@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-10-11
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A quant composes one interest-rate curve feed: its currency, index and role, the short-rate process and the parameter values it is seeded with, the tenor ladder the curve is bootstrapped from, and the previews that say whether the choice is sane.
@@ -102,6 +102,19 @@ separate resources, so a failure between them leaves a config whose process or
 ladder is partly updated; see /What is missing/.
 
 * Screens and wireframes
+
+In ores.web the journey is the IR curve feed screens under *Market data*, drawn by
+the same list and page as the FX price feeds, as the
+[[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] sets. The list is the dashboard with the run controls. The page has the tabs
+/Details/, /Process/, /Curve template/ and /History/: the identity and the price
+source are on /Details/ and in the add and edit dialogs, the engine, the
+parameters and the two previews are on /Process/, and the ladder is on /Curve
+template/. The words are the Qt editor's: /New IR curve/, /Index name/, /Role/
+with /Self-discounting/, /Discount/ and /Projection/, /Fixed leg frequency/,
+/Start tenor/, /End tenor/ and /Instrument/. The page also shows the oresmd
+series the curve's pillars land in, as
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
+describes a curve.
 
 One screen. The curve's identity sits at the top, the process and its
 parameters, the two previews and the ladder sit in the middle, and the

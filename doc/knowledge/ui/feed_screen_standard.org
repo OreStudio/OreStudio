@@ -43,8 +43,8 @@ of feeds.
 
 A /feed screen/ is a screen whose subject is the feeds of one kind: it lists
 them, starts and stops them, opens one, and edits its process. The FX price
-feed screens under *Market data* are feed screens. The IR curve feed screen
-will be one.
+feed screens and the IR curve feed screens under *Market data* are feed
+screens.
 
 These are not feed screens:
 
@@ -72,15 +72,27 @@ is /Price behaviour/.
 
 ** What a feed kind declares
 
-A kind of feed declares, once:
+A kind of feed declares, once, in a =FeedKind= (=marketdata/feedKind.ts=):
 
-- its record resource and the resource of its parts, with the field that
-  names the parent;
-- its engines, and for each engine what each number of a part means;
-- the server operations its screens call: the sample paths, the engine
-  conversion, and any shape preview;
-- the subject its ticks are published on;
-- the permission that gates the kind.
+- its record resource, its entity type, the address of its screens and the
+  block of words it speaks in;
+- its fields, the fields its edit dialog offers, what a new feed starts with, the
+  fields that follow from the others, and the rules across fields;
+- how the feed is named in a title, such as a pair or a curve, and the line
+  under the name;
+- its columns after the status, and the facts its Details tab adds;
+- the rows a feed owns, with the resource of each, so the screens read them,
+  delete them with the feed and draw their history;
+- its own tabs, between Details and History, each a function of the feed, whether
+  it runs, whether the person may write it, and the rows it owns;
+- the tab a new feed opens on.
+
+The list, the page, the add, edit and delete dialogs, the run controls and the
+History tab are then drawn by =FeedsPage= and =FeedPage=
+(=marketdata/FeedScreens.tsx=), the same for every kind. A kind also states the
+engines it offers, what each number of a part means, the server operations its
+tabs call, the subject its ticks are published on and the permission that
+gates it.
 
 ** The list is the dashboard
 
@@ -227,6 +239,85 @@ meaning of the saved process, so the screen converts the draft with it:
   *Reseed*. The screen waits 300 ms after typing before it asks.
 - Neither preview saves anything.
 
+** The process tab of a curve feed
+
+A curve feed's process is the engine and a fixed set of parameters, so the tab
+is the process tab above with the parts that follow from that.
+
+- The toolbar is the same: the unsaved count or "No unsaved changes.", the engine,
+  *Discard* and *Save*. There is no *Add*, and a row has no *↑*, *↓* or *Delete*,
+  because the engine states which parameters it reads.
+- The table lists the engine's parameters, read only: the parameter with its
+  symbol and the value. Each row's tooltip is the parameter's description.
+- A click on a row opens the parameter in a dialog with the description and the
+  value. What the parameter accepts, such as "At least 0." or "Between 0 and 1.",
+  is the tooltip of the field, and the dialog refuses a value outside it before
+  *Done*. *Done* puts the value back into the table and writes nothing.
+- A parameter with no saved value is tagged /New/ and shows the engine's default. A
+  value that differs from the saved one is tinted and tagged /Changed/. A value the
+  engine refuses is shown in red, and *Save* waits.
+- A change of engine replaces the parameters, and a notice says that the old
+  engine's parameters are removed when the process is saved.
+- The previews below the table price the curve at the template's tenor entries and
+  draw sample short-rate paths, both from the values on the screen.
+- Under each number the table says what it means in plain words: the half-life of
+  κ, the rate behind θ and the initial rate, and the yearly move behind σ. The
+  server works these out, so the screen does no model arithmetic.
+
+*** Notices and toasts
+
+News of an action does not take a place in the page. A conversion that changed the
+person's numbers, such as a change of engine or a switch to Simple, shows as a toast. So does the sentence that says what the Simple answers make of the model (the curve slopes up, or the price has no trend), which a new answer replaces in
+the bottom right corner (=ui/Toasts.tsx=). It has a close button. Information leaves
+by itself after ten seconds, and a warning stays until the person closes it. A fact
+that stays true, such as an engine that can take a price below zero, is also marked
+where it applies: a /Can go below zero/ tag beside the engine, with the full
+explanation as its tooltip. A closed toast is not lost, because the tag remains.
+
+*** Simple and Advanced
+
+A process tab offers two ways to edit the same numbers. *Advanced* is the table
+above, the engine's own parameters. *Simple* is for a person who does not know the
+model, and it asks plain questions in place of the table.
+
+- The choice is a switch on the toolbar. It is one choice for the whole web
+  application, kept in the browser. A new person starts in Simple, and a person who
+  picks Advanced stays in Advanced on every screen that offers both (=EditingMode.tsx=).
+- A curve feed asks four questions: where rates are today, where they settle in the
+  long run, how fast they come back (a half-life in years, with the words Slow,
+  Medium and Fast), and how far they move in a year (basis points, with the words
+  Calm, Normal and Stressed). A sentence under the answers says what they make of the
+  curve: it slopes up, down or is flat. A line under the toolbar says in plain words
+  what the engine does.
+- The server converts both ways (=synthetic.v1.ops.convert_ir_parameters=,
+  [[id:4A7963B8-B814-42B8-A93D-65226BC1B929][convert_fx_mixture]] is the FX
+  counterpart). Each engine reads σ in its own unit, and Black-Karasinski reads θ as a
+  logarithm, so the screen never converts. An answer goes through the server and into
+  the same draft the table edits. Save, Discard and the previews work the same from
+  either mode.
+- Switching from Simple to Advanced loses nothing. A feed whose parameters have no
+  simple form, such as a reversion speed of zero or a Two-Factor Gaussian feed with a
+  second factor set by hand, shows the table in either mode, with a note that says why.
+- A warning appears when the parameters allow a risk, such as a
+  Cox-Ingersoll-Ross rate that can touch zero.
+- A field whose value differs from the saved one is tinted, as a changed cell of the
+  table is.
+- The FX price behaviour tab offers the same switch (=FxSimplePanel.tsx=). Its
+  questions are per hour, so they do not depend on the feed's rate: which way the
+  price drifts, how far it moves, and how often it jumps; the mean-reverting engine
+  asks how long the price takes to come half way back, and how far it moves. The
+  server converts both ways (=synthetic.v1.ops.convert_fx_simple=). The simple form of
+  a mixture is one primary component and, if the feed jumps, one jump regime that has
+  no drift and is four times as wide.
+- Switching to Simple never leaves a dead end. Values that the simple form states
+  exactly stay as they are. Values that it only approximates, such as three
+  hand-set components, or a second factor and a correlation set by hand, are
+  converted to the closest simple form, and a notice says what changed: how many
+  components became how many, the jump share, or the factors that were set. The
+  change is only in the draft. *Save* writes it, and *Discard* brings the old values
+  back. Values with no simple view at all, such as a reversion speed of zero, show the
+  table with a note that says why.
+
 ** The Ticks tab
 
 #+begin_src text
@@ -251,6 +342,31 @@ meaning of the saved process, so the screen converts the draft with it:
 - The tab says what it can and cannot show. The web server keeps the last 500
   ticks of each running feed from when it began to listen, and forgets a run
   when the feed stops, so the lead says so.
+
+** The Ticks tab of a curve feed
+
+A tick of a curve feed is one pillar of a curve. The feed publishes a curve as
+one tick for each tenor entry of the template, in template order, all with the
+time of the batch, so the ticks that share a time are one curve. The web server
+keeps the oresmd URI of each tick, and the screen groups by time (=irTicks.ts=). A
+batch with a pillar missing, which the server heard in part, is not a curve and
+is not drawn.
+
+- The strip shows the history, the time of the newest curve, its short end and long
+  end, and the slope between them in basis points, green or red.
+- One chart, the one the Qt market simulator draws: the tenors of the curve along
+  the bottom, short end to long end, each named under its point, and the rate up the
+  side, with a margin of a tenth of the range. The newest curve is bold and green.
+  The curves before it are overlaid, thinner, grey-blue and fading with age: the
+  oldest is the faintest, and none fades below 40 of 255. Every point has a dot.
+  The legend under the chart says so: "Newest curve bold; older snapshots
+  overlaid, fading with age."
+- The history is a number from 1 to 20, five by default, as in the Qt window. It
+  is the number of recent curves to overlay.
+- *Export CSV* hands the curves shown to the browser, one row for each curve and one
+  column for each pillar.
+- A column beside the plot shows the process that made the curves: the engine, the
+  rate and each parameter with its saved value.
 
 ** History
 
@@ -287,38 +403,44 @@ calibration. The screen draws what the server answers.
 |------+-------+-----------------|
 | The list | =RecordList=, with =syntheticStore= | Paging, search, sort and columns |
 | Runs | =marketdata/feedRuns.tsx= | The running read, the status tag, start and stop of many |
-| The process tab | =marketdata/MixturePanel.tsx= | The list, the marks, the engine, the previews |
+| The feed kind | =marketdata/feedKind.ts= | What a kind states: fields, columns, parts, tabs |
+| The list and the page | =marketdata/FeedScreens.tsx= | =FeedsPage= and =FeedPage=, for every kind |
+| The process tab, FX | =marketdata/MixturePanel.tsx= | The list, the marks, the engine, the previews |
+| The process tab, IR | =marketdata/IrProcessPanel.tsx= | The toolbar, the parameter table, the parameter dialog, the curve shape and the paths |
+| The curve template | =PartsPanel= in =refdata/records.tsx= | The tenor entries, as the parts standard sets them |
 | The part dialog | =marketdata/ComponentDialog.tsx= | One part with its help |
-| The save dialog | =marketdata/SaveMixtureDialog.tsx= | The reason, the order of writes, the restart |
+| The save dialog | =marketdata/SavePartsDialog.tsx= | The reason, the order of writes, the restart, in the words of the kind |
 | The process rules | =marketdata/mixture.ts=, =marketdata/processHelp.ts= | Draft, save plan, changes, shares, profiles |
 | Charts | =marketdata/LineChart.tsx= | Lines, the price chart, measured width |
-| Ticks | =marketdata/TicksPanel.tsx=, =marketdata/ticks.ts=, =bff/src/feed-ticks.ts= | The strip, the chart, the EMA, the CSV, the BFF buffer |
-| History | =marketdata/FeedHistory.tsx= with =Timeline= | One stream of the feed and its parts |
+| Ticks, FX | =marketdata/TicksPanel.tsx=, =marketdata/ticks.ts=, =bff/src/feed-ticks.ts= | The strip, the chart, the EMA, the CSV, the BFF buffer |
+| Ticks, IR | =marketdata/IrTicksPanel.tsx=, =marketdata/irTicks.ts= | The curves, the slope, the tenor over time, the CSV |
+| History | =marketdata/FeedHistory.tsx= with =Timeline= | One stream of the feed and every kind of part it owns |
 | Conversion | =ores.synthetic.api/feeds/fx_mixture_conversion.hpp= | The engine change, on the server |
 
-Most of these parts are written for the FX mixture. The second feed kind turns
-them into parts that take the kind's declaration, as the record parts take a
-store.
+The list, the page, the save dialog and the history take the kind's declaration,
+as the record parts take a store. The process tab, the part dialog and the ticks
+panel are still written for the FX mixture; the IR curve kind has a process tab
+of its own, and a kind with a mixture-like process would share the FX one.
 
 ** How today's feed screens conform
 
 | Screen | Conformance |
 |--------+-------------|
 | FX price feeds | Conforms. It is the screen this standard was taken from |
-| IR curve feeds | Not built yet: [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] |
+| IR curve feeds | Conforms: the list, the page with Details, Process, Curve template, Ticks and History, the previews and the unsaved marks. The Ticks tab draws curves, see below. The task [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] states the aim |
 
 ** Building a feed screen for a new asset class
 
-1. Declare the kind: its resources, its engines, its server operations, its
-   tick subject and its permission.
-2. Give the server the conversion between the kind's engines, and its
-   previews, as operations. Test them there.
-3. Build the list from =RecordList= with the status column and the choice of
-   feeds.
-4. Build the feed page with the four tabs, taking the parts above.
-5. Write the engine's words: the note, the column help, the row help and the
-   field hints, in every language.
-6. Check the screen against each section of this page, and add its row to the
+1. Give the server the kind's resources, with the filter that reads the rows of
+   one parent, and the conversion between the kind's engines and its previews as
+   operations. Test them there.
+2. Write the kind: a =FeedKind= with its fields, columns, parts and tabs, and
+   two pages that hand it to =FeedsPage= and =FeedPage=. Add the routes and the
+   card on the Market data area, and the permission.
+3. Write the kind's own tabs. Take the parts above where they fit.
+4. Write the words of the kind in every language: the titles, the field hints,
+   the engine names and the tab notes.
+5. Check the screen against each section of this page, and add its row to the
    conformance table.
 
 ** Gaps
@@ -343,3 +465,6 @@ store.
 - [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] — the journey the FX screens serve
 - [[id:FC948AE9-B042-48C6-BF6E-6D0A026830D3][Author an FX price feed prototype]] — the prototype and its Gemini review
 - [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]] — the task that built the screen
+- [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] — the journey the IR curve screens serve
+- [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] — the task that states the IR screen's aim
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — the series a feed publishes into, shown on its Details tab

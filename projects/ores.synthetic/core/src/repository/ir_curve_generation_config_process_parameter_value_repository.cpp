@@ -105,11 +105,19 @@ std::optional<sqlgen::dynamic::Condition> filter_condition(
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->config_id)
+        r.push_back(equals("config_id", filter_value(*filter->config_id)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->config_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->config_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("config_id", std::move(values)));
     }
     return all_of(std::move(r));
 }

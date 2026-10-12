@@ -37,17 +37,25 @@ import { RevertDialog, show, type FieldSpec } from '../refdata/records.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Notice } from '../ui/Primitives.js';
 
-export const FEED_ENTITY = 'ores.synthetic.fx_spot_generation_config';
-export const COMPONENT_ENTITY = 'ores.synthetic.gmm_component';
-
-/** A component's fields, for its revert; the mixture table edits the rest. */
-const COMPONENT_FIELDS: readonly FieldSpec[] = [
-    { field: 'component_index', history: 'Component Index', kind: { kind: 'int', min: 0 } },
-    { field: 'description', history: 'Description', kind: { kind: 'text' }, blank: true },
-    { field: 'mean', history: 'Mean', kind: { kind: 'decimal' } },
-    { field: 'stdev', history: 'Stdev', kind: { kind: 'decimal' } },
-    { field: 'weight', history: 'Weight', kind: { kind: 'decimal' } },
-];
+/**
+ * One kind of child row a feed owns, such as the components of an FX feed's
+ * mixture or the template entries of an IR curve feed. The history of a feed
+ * is the feed's own and each of its children's, read as one stream.
+ */
+export interface FeedPart {
+    /** The entity type the history is read by. */
+    readonly entity: string;
+    /** The synthetic resource a revert writes to. */
+    readonly resource: string;
+    /** The fields a revert offers and restores. */
+    readonly specs: readonly FieldSpec[];
+    /** The fields a revert carries over from the row as it stands. */
+    readonly keep: readonly string[];
+    /** The rows the feed holds now. */
+    readonly rows: readonly RecordRow[];
+    /** Whether the person may write this kind of row, so Revert is offered. */
+    readonly mayWrite: boolean;
+}
 
 function keyOf(entityType: string, entityId: string, version: number): string {
     return `${entityType}\u0000${entityId}\u0000${String(version)}`;
@@ -55,13 +63,14 @@ function keyOf(entityType: string, entityId: string, version: number): string {
 
 /**
  * The feed's story as one stream: the feed's versions and the versions of
- * each component of its mixture, newest first, read as one history is read on
- * a person's page. Reads the history of the feed and of each component it
- * holds now.
+ * each child row it holds now, newest first, read as one history is read on
+ * a person's page. Reads the history of the feed and of each child.
  */
 export function useFeedStory(
     feed: RecordRow,
-    components: readonly RecordRow[],
+    feedEntity: string,
+    parts: readonly FeedPart[],
+    subject: string,
 ): {
     readonly stream: Stream | undefined;
     readonly versions: ReadonlyMap<string, HistoryVersion>;
@@ -69,11 +78,10 @@ export function useFeedStory(
 } {
     const feedId = show(feed['id']);
     const reads = [
-        { entityType: FEED_ENTITY, entityId: feedId },
-        ...components.map((row) => ({
-            entityType: COMPONENT_ENTITY,
-            entityId: show(row['id']),
-        })),
+        { entityType: feedEntity, entityId: feedId },
+        ...parts.flatMap((part) =>
+            part.rows.map((row) => ({ entityType: part.entity, entityId: show(row['id']) })),
+        ),
     ];
     const results = useQueries({
         queries: reads.map((read) => ({
@@ -94,45 +102,50 @@ export function useFeedStory(
     return {
         stream: pending
             ? undefined
-            : { subject: 'fx_feed', id: feedId, events: orderTimeline(events), gaps: [] },
+            : { subject, id: feedId, events: orderTimeline(events), gaps: [] },
         versions,
         error,
     };
 }
 
 /**
- * The History tab of a feed: one timeline for the feed and its mixture. A
+ * The History tab of a feed: one timeline for the feed and its child rows. A
  * version older than its record's newest offers Revert to a person who may
  * write it, which writes its values back as a new version.
  */
 export function FeedHistory({
     feed,
-    components,
+    feedEntity,
+    subject,
+    parts,
     feedSpecs,
     feedResource,
-    componentResource,
     complete,
     keep,
     mayWrite,
 }: {
     readonly feed: RecordRow;
-    readonly components: readonly RecordRow[];
+    readonly feedEntity: string;
+    /** What the timeline calls the stream, such as `fx_feed`. */
+    readonly subject: string;
+    readonly parts: readonly FeedPart[];
     readonly feedSpecs: readonly FieldSpec[];
     readonly feedResource: string;
-    readonly componentResource: string;
     readonly complete: (write: Readonly<Record<string, unknown>>) => Record<string, unknown>;
     readonly keep: readonly string[];
-    readonly mayWrite: { readonly feed: boolean; readonly components: boolean };
+    readonly mayWrite: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const holds = useHolds();
     const actorPicture = useActorPictures();
-    const story = useFeedStory(feed, components);
+    const story = useFeedStory(feed, feedEntity, parts, subject);
     const [reverting, setReverting] = useState<TimelineEvent | null>(null);
+    const partOf = (event: TimelineEvent): FeedPart | undefined =>
+        parts.find((part) => part.entity === event.entityType);
     const rowOf = (event: TimelineEvent): RecordRow | undefined =>
-        event.entityType === FEED_ENTITY
+        event.entityType === feedEntity
             ? feed
-            : components.find((row) => show(row['id']) === event.entityId);
+            : partOf(event)?.rows.find((row) => show(row['id']) === event.entityId);
     const newest = (event: TimelineEvent): number =>
         Math.max(
             ...(story.stream?.events ?? [])
@@ -148,6 +161,7 @@ export function FeedHistory({
                   keyOf(reverting.entityType, reverting.entityId, reverting.version),
               );
     const revertedRow = reverting === null ? undefined : rowOf(reverting);
+    const revertedPart = reverting === null ? undefined : partOf(reverting);
 
     return (
         <div className="space-y-3">
@@ -162,7 +176,9 @@ export function FeedHistory({
                     actorPicture={actorPicture}
                     renderActions={(event) => {
                         const may =
-                            event.entityType === FEED_ENTITY ? mayWrite.feed : mayWrite.components;
+                            event.entityType === feedEntity
+                                ? mayWrite
+                                : (partOf(event)?.mayWrite ?? false);
                         if (!may || event.version >= newest(event)) {
                             return undefined;
                         }
@@ -180,7 +196,7 @@ export function FeedHistory({
             {reverting !== null &&
                 revertedVersion !== undefined &&
                 revertedRow !== undefined &&
-                (reverting.entityType === FEED_ENTITY ? (
+                (reverting.entityType === feedEntity ? (
                     <RevertDialog
                         resource={feedResource}
                         specs={feedSpecs}
@@ -191,14 +207,16 @@ export function FeedHistory({
                         onClose={() => setReverting(null)}
                     />
                 ) : (
-                    <RevertDialog
-                        resource={componentResource}
-                        specs={COMPONENT_FIELDS}
-                        row={revertedRow}
-                        version={revertedVersion}
-                        keep={['id', 'fx_spot_config_id']}
-                        onClose={() => setReverting(null)}
-                    />
+                    revertedPart !== undefined && (
+                        <RevertDialog
+                            resource={revertedPart.resource}
+                            specs={revertedPart.specs}
+                            row={revertedRow}
+                            version={revertedVersion}
+                            keep={revertedPart.keep}
+                            onClose={() => setReverting(null)}
+                        />
+                    )
                 ))}
         </div>
     );

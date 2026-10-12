@@ -140,6 +140,14 @@ export const CARDS = {
         permission: 'synthetic::fx_spot_generation_configs:read',
         screenTitleKey: 'marketdata.fxFeeds.title',
     },
+    irFeeds: {
+        titleKey: 'marketdata.area.screens.irFeeds',
+        bodyKey: 'marketdata.area.screens.irFeedsBody',
+        to: '/market-data/ir-feeds',
+        icon: 'trend',
+        permission: 'synthetic::ir_curve_generation_configs:read',
+        screenTitleKey: 'marketdata.irFeeds.title',
+    },
     curveEvolution: {
         titleKey: 'market.evolution.title',
         bodyKey: 'marketdata.area.screens.evolutionBody',
@@ -270,7 +278,7 @@ export const AREA_CARDS = {
         'conventions',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
-    marketdata: ['fxFeeds', 'curveEvolution'],
+    marketdata: ['fxFeeds', 'irFeeds', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;

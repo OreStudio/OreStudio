@@ -88,7 +88,8 @@ public:
     ir_curve_feed(ores::nats::service::client& nats,
                   std::string source_name,
                   std::string nats_subject,
-                  std::string qualifier,
+                  std::string currency_code,
+                  std::string index_tenor,
                   std::string role,
                   std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
                   double ticks_per_hour,
@@ -109,35 +110,32 @@ public:
         return nats_subject_;
     }
     /**
-     * @brief The published market-data key (series_type/metric implied, ir_curve_qualifier(cfg))
-     * -- the value controllers check for cross-config collisions (together with role()), since
-     * it is what every consumer actually looks up by, unlike source_name (unique per config, not
-     * per market-data identity).
+     * @brief The oresmd series the curve's pillars land in: one for the pillars that start at
+     * spot and one for each later start date. Each is a term structure whose `tenor` is the
+     * index tenor. Controllers refuse to run two feeds whose lists share a series, since both
+     * would write points into it, whatever their roles.
      */
-    const std::string& qualifier() const override {
-        return qualifier_;
+    const std::vector<std::string>& series_uris() const override {
+        return series_uris_;
     }
 
     /**
-     * @brief Whether this curve discounts, projects, or both (oresmd's curve_role) --
-     * controllers only treat two feeds as conflicting when both qualifier() AND role() match, so
-     * a discount curve and a projection curve for the same (currency_code, index_family, tenor)
-     * can run side by side.
+     * @brief The use this curve is built for (discount, projection or both). The oresmd grammar
+     * holds no role, so it is the config's own data and plays no part in which series the feed
+     * owns.
      */
     const std::string& role() const override {
         return role_;
-    }
-
-    std::string conflict_key() const override {
-        return ores::marketdata::domain::feed_conflict_key(qualifier_, role_);
     }
 
 private:
     ores::nats::service::client& nats_;
     std::string source_name_;
     std::string nats_subject_;
-    std::string qualifier_;
+    std::string currency_code_;
     std::string role_;
+    std::vector<std::string> series_uris_;
+    std::vector<std::string> datum_uris_;
     std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process_;
     tick_clock clock_;
     std::vector<ir_curve_resolved_entry> entries_;

@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: b7ac341e-5867-4951-980b-213db6e350a6
+:END:
+#+title: ores.synthetic.convert_ir_parameters
+#+description: Codegen operation model for converting an IR feed's parameters between the simple and the advanced view.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: convert_ir_parameters
+#+namespace: ores::synthetic::messaging
+#+brief: IR parameter conversion between the simple and the advanced view.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+The values an IR feed's engine parameters take in the simple view, and back.
+
+The simple view asks four questions anyone can answer: where the rate starts,
+where it settles in the long run, how long it takes to come half way back,
+and how far it moves in a year. The advanced view is the engine's own
+parameters: κ, θ, σ and the initial rate, or the seven of the Two-Factor
+Gaussian engine. Each engine reads σ in its own unit, and Black-Karasinski
+reads θ as a logarithm, so a screen asks here for the numbers the engine
+should read. The conversion is the service's, beside the engines it describes.
+Nothing is stored.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** convert_ir_parameters_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.convert_ir_parameters
+:response: convert_ir_parameters_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request the parameters of one view in the terms of the other.
+ *
+ * Stateless: the caller names the values as they stand on its screen, so an
+ * unsaved set converts as readily as a saved one. The simple names are
+ * start_rate, long_run_rate, half_life_years and yearly_move_bp.
+ */
+#+end_src
+
+*** process_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The engine the parameters are for, as its code: VASICEK, HULL_WHITE and so on. */
+#+end_src
+
+*** to_simple
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True to read the engine's parameters as the simple view; false for the other way. */
+#+end_src
+
+*** parameter_names
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The names of the values given; names and values have equal size. */
+#+end_src
+
+*** parameter_values
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The values given, rates as decimals. */
+#+end_src
+
+** convert_ir_parameters_response
+#+begin_src cpp :name comment
+/**
+ * @brief The converted values, and why there are none when there are none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** has_simple_form
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief False when the parameters given have no simple view; message then says why. */
+#+end_src
+
+*** caution
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief A risk the parameters carry, as a code; empty when there is none. */
+#+end_src
+
+*** parameter_names
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The names of the converted values. */
+#+end_src
+
+*** parameter_values
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The converted values. */
+#+end_src

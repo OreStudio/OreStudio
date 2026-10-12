@@ -52,7 +52,8 @@ ir_curve_feed::ir_curve_feed(
     ores::nats::service::client& nats,
     std::string source_name,
     std::string nats_subject,
-    std::string qualifier,
+    std::string currency_code,
+    std::string index_tenor,
     std::string role,
     std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
     double ticks_per_hour,
@@ -60,7 +61,7 @@ ir_curve_feed::ir_curve_feed(
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
-    , qualifier_(std::move(qualifier))
+    , currency_code_(std::move(currency_code))
     , role_(std::move(role))
     , process_(std::move(process))
     , clock_(ticks_per_hour)
@@ -72,6 +73,17 @@ ir_curve_feed::ir_curve_feed(
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
+
+    // Each pillar is a quote of one series. The keys are built once, here, so a pillar the
+    // codec refuses fails when the feed is built and not on the first tick.
+    for (const auto& e : entries_) {
+        const auto key = ores::marketdata::core::make_pillar_quote_key(
+            currency_code_, index_tenor, e.start_tenor_code, e.start_date, e.end_date);
+        datum_uris_.push_back(ores::marketdata::core::pillar_datum_uri(key));
+        auto series = ores::marketdata::core::pillar_series_uri(key);
+        if (std::ranges::find(series_uris_, series) == series_uris_.end())
+            series_uris_.push_back(std::move(series));
+    }
 }
 
 void ir_curve_feed::start() {
@@ -80,15 +92,14 @@ void ir_curve_feed::start() {
             process_->next();
             const auto now = std::chrono::system_clock::now();
 
-            for (const auto& e : entries_) {
-                // Each tick names one pillar: the datum the resolver builds from
-                // the entry's own dates, so the series it lands in carries the
-                // instrument's identity rather than the pipeline's vocabulary.
-                const auto ccy = qualifier_.substr(0, qualifier_.find('/'));
-                const auto key = ores::marketdata::core::make_pillar_quote_key(
-                    ccy, e.start_tenor_code, e.start_date, e.end_date);
+            for (std::size_t i = 0; i < entries_.size(); ++i) {
+                const auto& e = entries_[i];
+                // Each tick names one pillar: the datum built at construction from the
+                // entry's own dates and the index tenor, so the series it lands in
+                // carries the instrument's identity rather than the pipeline's
+                // vocabulary.
                 ores::marketdata::messaging::market_tick tick;
-                tick.oresmd_uri = ores::marketdata::core::pillar_datum_uri(key);
+                tick.oresmd_uri = datum_uris_[i];
                 tick.value = std::format("{}", price_ir_curve_entry(*process_, e));
                 tick.observation_time = now;
                 tick.source = source_name_;
@@ -236,7 +247,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     return std::make_shared<ir_curve_feed>(nats,
                                            cfg.source_name,
                                            producer_subject(cfg.source_name, binding_mode),
-                                           ir_curve_qualifier(cfg),
+                                           cfg.currency_code,
+                                           ir_curve_index_tenor(cfg),
                                            cfg.role,
                                            std::move(process),
                                            static_cast<double>(cfg.ticks_per_hour),

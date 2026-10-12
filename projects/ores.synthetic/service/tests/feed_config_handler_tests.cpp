@@ -263,7 +263,7 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         fx.base_currency_code = base;
         fx.quote_currency_code = quote;
         fx.source_name = source_name;
-        fx.ore_key = "FX/RATE/" + base + "/" + quote;
+        fx.oresmd_uri = "oresmd://fx/" + base + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + quote;
         fx.price_source = "fixed";
         fx.gmm_initial_price = 1.08;
         fx.ticks_per_hour = 12;
@@ -635,7 +635,7 @@ TEST_CASE("feed_config_start_rejects_missing_children", tags) {
     CHECK(f.ctrl->running_count() == 0);
 }
 
-TEST_CASE("feed_config_start_reports_qualifier_conflict", tags) {
+TEST_CASE("feed_config_start_reports_oresmd_conflict", tags) {
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_configs(f.db, test_party);

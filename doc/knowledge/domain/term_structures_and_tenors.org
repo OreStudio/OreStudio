@@ -108,3 +108,4 @@ Families]]. For the equivalent tenor concept on the volatility side, see
 - [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — how several curves compose into a family for one currency.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the vol-surface tenor convention (from today, not spot).
 - [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — the code model: entities, resolver, bootstrap chain.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how ORE Studio names a curve or a surface: as a series, by its series URI.

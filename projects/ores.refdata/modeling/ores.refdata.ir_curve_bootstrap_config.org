@@ -119,6 +119,25 @@ currency the key is written in.
 std::string("USD")
 #+end_src
 
+** index_tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The tenor of the floating-rate index this curve stands for, as a period such as =1D= for an
+overnight index or =6M= for a term index. It is the second segment a pillar cannot supply:
+a pillar carries tenor codes and a role, and a series of the curve is named by the currency,
+the pillar's start and the index tenor (the =tenor= identity field of the =ir_swap= series in
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]). A reader
+resolving a pillar to its series is told the tenor here, so a EURIBOR 3M curve and a EURIBOR
+6M curve of one currency read two series and not one.
+
+#+begin_src cpp :name generator
+std::string("1D")
+#+end_src
+
 ** output_series_id
 :PROPERTIES:
 :type:     uuid
@@ -264,6 +283,7 @@ std::string("1Y")
 | expression                                                                |
 |-----------------------------------------------------------------------------|
 | "curve_family_role" in ('FUNDING', 'PROJECTION')                          |
+| "index_tenor" <> ''                                                        |
 | "day_count_convention" <> ''                                               |
 | "split_tenor_code" <> ''                                                   |
 | "discount_curve_config_id" <> "id"                                        |

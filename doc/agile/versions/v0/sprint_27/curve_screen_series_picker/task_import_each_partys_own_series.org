@@ -81,7 +81,6 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/3154][#3154]] | [agile] Close the series picker story |
 | [[https://github.com/OreStudio/OreStudio/pull/3149][#3149]] | [marketdata] Import each party's own series |
 
 * Review

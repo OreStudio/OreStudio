@@ -26,11 +26,11 @@ The feed browser's layout is chosen from variants a person can open and compare,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -94,3 +94,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: the prototype as one flow under a Synthetic folder card of Market
+data. The first version's three layouts were reviewed: the columns became the
+Feed overview, which stops at the feed kind; the tree became the Feed tree,
+whose feeds open their existing pages with a breadcrumb back through the tree;
+the tree table was dropped. The menu structure page is amended for a folder
+inside an area, a folder page that holds cards only, the Synthetic addresses,
+and the feed page's trail through the tree. Build the feed browser builds it.

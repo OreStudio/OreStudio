@@ -87,9 +87,10 @@ stopping a bound feed stops every party bound to it; the report then says what
 started, what was already running and what was skipped, and every roll-up
 recomputes.
 
-** What it asks of the menu structure
+** What it changed in the menu structure
 
-[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] allows it in part, and three points need a decision there:
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] allowed it in part. Three points were decided and the page
+amended:
 
 - *A folder card inside an area.* The page holds the folder and file cards, but
   every folder today is an area. A Synthetic folder makes the trail Home, Market

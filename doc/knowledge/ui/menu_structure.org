@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:navigation:
 #+created: 2026-10-10
-#+updated: 2026-10-10
+#+updated: 2026-10-12
 
 * Summary
 
@@ -17,7 +17,7 @@ A card is drawn for a person who holds the read of its screen. Nothing in the
 menu or in an area is written for a kind of user, because permissions change
 over time and a role is only a bundle of them. Every screen belongs to one
 area, and that area is the middle of its breadcrumb: Home, the area, the
-screen. An area is a topic that a person looks in, such as Reference data, and
+screen, with a folder of the area between them when the screen is in one. An area is a topic that a person looks in, such as Reference data, and
 never one kind of record. A party and everything about a party is in Reference
 data. A person's own pages are in the account menu and not in the menu.
 
@@ -55,6 +55,10 @@ A card is like an entry in a file manager.
 
 - A /folder card/ opens a page of cards. The areas are folders. A folder card
   has the name of its area and a line about what is in it.
+- An area may hold a folder card of its own when a topic inside it has several
+  screens that belong together: Synthetic, in Market data. Its page follows the
+  rule of an area page, and its name is the topic, never one kind of record. A
+  folder holds screens, not other folders.
 - A /file card/ opens one screen. Its title is the title of the screen, word for
   word, in English, French and Portuguese. Its line is a short form of the
   screen's own lead. It has the glyph of the screen.
@@ -95,8 +99,9 @@ card, as a currency is.
 
 *** The area page
 
-An area page is the cards of its area and nothing else: no headings and no
-groups. The cards are dense, with the glyph beside the name and one line, so the
+An area page, and the page of a folder card inside an area, is the cards of its
+folder and nothing else: no headings, no groups and no dashboard. A summary of
+the folder's topic is a screen with its own file card. The cards are dense, with the glyph beside the name and one line, so the
 page fits on a screen. The screens come first, then the workflow cards.
 
 ** The rule
@@ -111,8 +116,9 @@ page fits on a screen. The screens come first, then the workflow cards.
   that changes. The screen names the read it needs, and the read decides.
 - A new screen is added to the area it belongs to. It then appears for every
   person who holds its read, with no change to the menu.
-- The breadcrumb of a screen is Home, then its area, then the screen. A record
-  page adds the list and the subject, as the entity specification says.
+- The breadcrumb of a screen is Home, then its area, then the screen. A screen
+  in a folder of the area has the folder between the area and the screen. A
+  record page adds the list and the subject, as the entity specification says.
 - A screen has one area. A card on Home or in another area leads to it, and the
   screen still shows the trail of its own area.
 
@@ -170,7 +176,7 @@ The test for a screen is one question: which topic would a person look in?
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
 | Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
-| Market data | The prices and curves the platform receives or generates: the FX price feeds and the curve evolution | Any one of those screens |
+| Market data | The prices and curves the platform receives or generates: the Synthetic folder (Feed overview, Feed tree, FX price feeds, IR curve feeds) and the curve evolution | Any one of those screens |
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
@@ -191,8 +197,27 @@ for a person who holds the read of the deployment (see [[*The deployment read][T
 Market data is its own area. It holds data that changes by the minute: the feeds
 that generate prices and the curves built from them. Reference data is a list
 that changes by the month, and a person who looks for a curve does not look in
-it. It has two screens, FX price feeds and Watch a curve evolve, each drawn for a
-person who holds its read.
+it. It holds Watch a curve evolve and the Synthetic folder.
+
+The Synthetic folder holds the feeds the platform generates rather than
+receives, and the screens that run them:
+
+| Card | What it opens |
+|------+---------------|
+| Feed overview | The dashboard: the feeds by scope, provider and feed kind, with the counts, the running roll-up, and start and stop of a provider or a kind. It never lists a feed. |
+| Feed tree | Every feed by scope, provider and kind, start and stop at any folder, and each feed, which opens the feed's page. |
+| FX price feeds | The list of the FX spot feeds and each feed's page. |
+| IR curve feeds | The list of the IR curve feeds and each feed's page. |
+
+A feed's page is the record page of FX price feeds or IR curve feeds, but its
+breadcrumb runs through the feed tree, not through its list: Home, Market data,
+Synthetic, Feed tree, the folders down to the feed's kind, then the feed. Each
+folder on it opens the feed tree with that folder chosen. The trail is the same
+whichever screen opened the feed, so the page keeps one trail. The lists keep
+their own trail, Home, Market data, Synthetic, then the list.
+
+Each card is drawn for a person who holds the read of its screen, and the folder
+when they hold the read of one of them.
 
 *** Reference data
 
@@ -260,6 +285,7 @@ the first step of every trail.
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
 | FX price feeds, Watch a curve evolve | Market data | A feed generates the prices that market data holds, and a curve is one of them |
+| Feed overview, Feed tree, FX price feeds, IR curve feeds | Market data, the Synthetic folder | They are the feeds the platform generates and the screens that run them |
 | Trades, Book a trade, Import a portfolio from ORE, Export a portfolio to ORE | Trades | A trade is held by the tenant and is not a shared list |
 | Structures and packages, Group trades | Trades | A structure is the tree of a deal made of trades |
 | Tenants | Tenants | The roster of the installation |
@@ -294,6 +320,16 @@ the same thing. A screen has one address.
 | Structures and packages | =/trades/structures= |
 | A structure's or package's page | =/trades/structures/:id= |
 | Group trades | =/trades/structures/new= |
+| Synthetic | =/market-data/synthetic= |
+| Feed overview | =/market-data/synthetic/overview= |
+| Feed tree | =/market-data/synthetic/tree= |
+| FX price feeds | =/market-data/synthetic/fx-feeds= |
+| An FX price feed's page | =/market-data/synthetic/fx-feeds/:id= |
+| IR curve feeds | =/market-data/synthetic/ir-feeds= |
+| An IR curve feed's page | =/market-data/synthetic/ir-feeds/:id= |
+
+The feed addresses =/market-data/fx-feeds= and =/market-data/ir-feeds=, with
+their pages, redirect to the Synthetic ones when the folder is built.
 
 The earlier addresses (=/parties=, =/people=, =/hierarchy=, =/staff=, =/roles=,
 =/rescue=, =/audit=, =/classifications=, =/reporting-lines=) redirect to the new
@@ -318,7 +354,11 @@ Operations. They are drawn, and the server serves them, for a person who holds
 
 ** How today's menu differs
 
-The menu, the cards, the addresses and the breadcrumbs follow this page.
+The menu, the cards, the addresses and the breadcrumbs follow this page, except
+for the Synthetic folder of Market data. Today FX price feeds and IR curve feeds
+are cards of the Market data page, at =/market-data/fx-feeds= and
+=/market-data/ir-feeds=, and a feed's page has the trail of its list. The Feed
+overview and the Feed tree are not built.
 
 ** Not built yet
 
@@ -328,7 +368,12 @@ declares the columns a person searches by. The area is in the menu order above,
 and it is drawn when its first screen exists and a person holds its read.
 
 Market data has no screen for curve surfaces or for feeds of other kinds yet.
-They are added to the Market data area when they have screens.
+They are added to the Market data area when they have screens; a feed of a new
+kind joins the Synthetic folder.
+
+The Synthetic folder, the Feed overview and the Feed tree are designed in the
+[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] and built by the feed browser task of
+[[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]].
 
 ** Changing the menu
 
@@ -339,7 +384,8 @@ Work in this order. Each step ends in something to check.
    fits, add the topic here first. Never add an area for one kind of record.
 3. Add the screen to the area page as a card, drawn only for a person who holds
    the read.
-4. Give the screen a breadcrumb of Home, the area and the screen.
+4. Give the screen a breadcrumb of Home, the area and the screen, with the
+   folder between when the screen is in a folder of the area.
 5. Run the walk, =shell/walk.test.tsx=. It opens every screen of the cards, every
    area page and each page of a person themselves, and checks the address is under
    its area and the trail is Home, the area, the screen. A route the walk does not

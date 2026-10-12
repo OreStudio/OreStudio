@@ -51,6 +51,7 @@ struct swap_leg_write {
     std::string payment_frequency_code;
     std::string floating_index_code;
     std::string currency;
+    std::optional<std::string> leg_group;
 };
 
 struct swap_leg_change {

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 3BA119DA-7FF6-4FD3-A5D5-F3C2B7BC0FA3
+:END:
+#+title: Task: Serve the oresmd operations from the BFF
+#+description: Add BFF routes for the schema, parse and compose operations, behind the session check, with the contracts that the browser parses.
+#+type: task
+#+level: s1
+#+filetags: :edit_an_oresmd_url_in_a_dialog:sprint_27:v0:
+#+owner: marco
+#+branch: feature/serve-the-oresmd-operations-from-the-bff
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The browser reaches the codec through the BFF, with the same session rules as the other market data reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A route serves the schema, one parses and one composes, each behind requireSession.
+- The BFF holds no grammar of its own and refuses a body that is not a URL or a set of fields.
+- Route tests parse every answer with the contracts schema.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

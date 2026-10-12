@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 441F3512-3189-4A45-9191-2F235C5D7E50
+:END:
+#+title: Story: Link an oresmd URL to what it names
+#+description: A click on an oresmd URL opens the object it names, as a link does everywhere else, and a small icon button beside it opens the URL in the editor. The editor has a read-only view laid out like the non-edit mode of the record screens, with labels and values and no inputs.
+#+type: story
+#+level: s2
+#+filetags: :web:marketdata:oresmd:ux:sprint_27:v0:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An oresmd URL behaves like every other reference in the app. The link goes to the thing it names, a series to its page. A small icon button opens the URL in the dialog, which shows it as labelled values in the layout of the record screens when the screen cannot change it, and as the editor when it can.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Scaffolded and broken into tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Open a series on the Evolution page from an oresmd URL. |
+| Last touched  | 2026-10-12                               |
+
+* Acceptance
+
+- A series URL and a quote URL are a link to the series page, so they open in a new tab and copy as a link, and a fixing URL, which has no page of its own, is plain text.
+- An icon button beside the URL opens the dialog: the code icon for the read-only view and the edit icon where the screen stores the URL.
+- The read-only view of the dialog shows the kind, the instrument, the quote, the path and the fields as labels and values in the layout of the record screens, with the codec's URL under them and Copy, and no inputs.
+- The IR curve feed and the FX feed screens use the link and the button.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E92A8525-45D0-4154-A815-27296B14A05F][Scaffold story: Link an oresmd URL to what it names]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:26300A39-44B3-48A9-8080-9F9AE32427CF][Open a series on the Evolution page from an oresmd URL]] | BACKLOG | | | Let the Evolution page take an oresmd URL in its address, read it through the server's parse, and open the series it names. A series URL names its own series, and a quote URL names the series its datum belongs to, from the identity fields of its row. A fixing names no series. |
+| [[id:146E5F47-A43A-4A92-8C03-046B6F588F0B][Show an oresmd URL read-only in the dialog]] | BACKLOG | | | Give the dialog a read-only view for a screen that cannot change the URL. It is laid out like the non-edit mode of the record screens: label and value pairs in a grid, with the kind, the instrument, the quote, the path and each field, and the codec's URL under them with Copy. It has no inputs. A screen that stores the URL gets the editor. |
+| [[id:F7CCB2D7-AD2E-4D3D-B478-DCF34B85AFD3][Draw an oresmd URL as a link with an icon button]] | BACKLOG | | | Change OresmdUrl so the URL is a link to what it names and a small icon button opens the dialog. A series or quote URL links to the Evolution page, a fixing is plain text, and the button draws the code icon for the read-only view and the edit icon where the screen stores the URL. The icon reference gains the code icon in the web icon table, with what it is used for. |
+
+** Build order
+
+| Step | Task | Needs |
+|------+------+-------|
+| 1 | Open a series on the Evolution page from an oresmd URL | nothing |
+| 2 | Show an oresmd URL read-only in the dialog | nothing |
+| 3 | Draw an oresmd URL as a link with an icon button | 1 and 2 |
+
+* Decisions
+
+- A click on an oresmd URL goes to the object it names. This is the least astonishing result: a link goes to a thing, a real address opens in a new tab and copies as a link, and the other references of the app work this way. Editing is a different intention, so it is a separate small button. Marco agreed on 2026-10-12.
+- The button is an icon, as the record screens draw their actions. The icon reference has the =code= icon, for code and a script, and the file is in the set but not in the web icon table. The read-only view uses it, because the view shows the structure of the URL. A screen that stores the URL uses the =edit= icon.
+- The read-only view of the dialog is laid out as the non-edit mode of the record screens: label and value pairs in a grid, and no inputs, so a URL is read the same way everywhere. Marco asked for this on 2026-10-12.
+- The object of a series URL is its series. The object of a quote URL is the series of its datum, because a quote is one point of a series and the series has the page. The identity the page needs is the asset, the path as the scope, the instrument, the quote type and the identity fields of the row, which the series list already builds from the same URL. A fixing names no series, so it has no link.
+- The link carries the URL in the address, as =uri=, and the Evolution page reads it through the server's parse. The link holds no part of the grammar.
+
+* Out of scope
+
+- A page for a quote or a fixing of its own.
+- Writing a URL back from the feed screens. A feed's URL follows from its currencies and its curve.
+- Changing the editor's grammar or the server's operations.

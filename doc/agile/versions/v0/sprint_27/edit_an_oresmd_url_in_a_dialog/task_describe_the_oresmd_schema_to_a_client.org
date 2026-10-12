@@ -8,7 +8,7 @@
 #+filetags: :edit_an_oresmd_url_in_a_dialog:sprint_27:v0:
 #+owner: marco
 #+branch: feature/describe-the-oresmd-schema-to-a-client
-#+pr:
+#+pr: 3156
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3156][#3156]] | [marketdata] Describe the oresmd schema to a client |
 
 * Review
 

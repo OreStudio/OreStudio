@@ -78,6 +78,67 @@ export interface RequestChecks {
     readonly partCodes: readonly string[];
 }
 
+/*
+ * What the BFF answers the browser with, parsed by the schemas below. The
+ * interfaces above are the shapes the functions return, and these are the same
+ * shapes as the browser reads them.
+ */
+
+const requestFieldChangeViewSchema = z.object({
+    name: z.string(),
+    before: z.string().default(''),
+    after: z.string().default(''),
+    changed: z.boolean().default(false),
+});
+
+export const requestChangesViewSchema = z.object({
+    requestId: z.string(),
+    kindCode: z.string().default(''),
+    changes: z
+        .array(
+            z.object({
+                lineNo: z.int().nonnegative(),
+                operation: z.string(),
+                subjectId: z.string().default(''),
+                baseVersion: z.int().nonnegative().default(0),
+                applied: z.boolean().default(false),
+                fields: z.array(requestFieldChangeViewSchema).default([]),
+            }),
+        )
+        .default([]),
+});
+
+const requestCheckViewSchema = z.object({
+    lineNo: z.int().nonnegative(),
+    operation: z.string(),
+    subjectId: z.string().default(''),
+    refusal: z.string().default(''),
+});
+
+export const requestChecksViewSchema = z.object({
+    requestId: z.string(),
+    lines: z.array(requestCheckViewSchema).default([]),
+    partCodes: z.array(z.string()).default([]),
+});
+
+export const bookPreviewViewSchema = z.object({
+    lines: z
+        .array(
+            requestCheckViewSchema.extend({
+                columns: z.array(z.string()).default([]),
+                partCodes: z.array(z.string()).default([]),
+            }),
+        )
+        .default([]),
+    partCodes: z.array(z.string()).default([]),
+});
+
+export const bookRaiseViewSchema = bookPreviewViewSchema.extend({
+    requestId: z.string().nullable().default(null),
+    refusalCode: z.string().default(''),
+    refusalMessage: z.string().default(''),
+});
+
 const BOOK_CHANGE_KIND = 'refdata.book_change';
 const ROLE_GRANT_KIND = 'iam.role_grant';
 
@@ -87,6 +148,7 @@ const lineOutcomeSchema = z.object({
     entity_id: z.string().default(''),
     columns: z.array(z.string()).default([]),
     refusal: z.string().default(''),
+    part_codes: z.array(z.string()).default([]),
 });
 
 const changesReplySchema = z.object({
@@ -232,7 +294,11 @@ export interface BookLineInput {
 
 /** The answer to a preview of book changes. */
 export interface BookPreview {
-    readonly lines: readonly (RequestCheck & { readonly columns: readonly string[] })[];
+    readonly lines: readonly (RequestCheck & {
+        readonly columns: readonly string[];
+        /** The parts the policy names for this line alone. */
+        readonly partCodes: readonly string[];
+    })[];
     readonly partCodes: readonly string[];
 }
 
@@ -296,6 +362,7 @@ function toPreview(reply: z.infer<typeof recheckReplySchema>): BookPreview {
             subjectId: line.entity_id,
             refusal: line.refusal,
             columns: line.columns,
+            partCodes: line.part_codes,
         })),
         partCodes: reply.part_codes,
     };

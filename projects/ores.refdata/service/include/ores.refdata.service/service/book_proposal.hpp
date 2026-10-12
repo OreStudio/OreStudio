@@ -44,6 +44,10 @@ struct line_outcome {
     boost::uuids::uuid entity_id;
     std::vector<std::string> columns;
     std::string refusal;
+    /**
+     * @brief The parts the policy names for this line alone.
+     */
+    std::vector<std::string> part_codes;
 };
 
 /**

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/draw-every-request-with-one-set-of-screens
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Replace the role-only request pages with a review panel, a request page, a queue
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -45,6 +45,12 @@ Replace the role-only request pages with a review panel, a request page, a queue
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Describe a kind once. A descriptor in =kinds.tsx= gives the kind's name, the line that stands for a request, the words on the approve button, the words for its fields and the page of its subject. A kind with something of its own to show adds a section.
+- Draw the shared pieces from the BFF data of the previous task: the parts, the delta and the checks. The request page, the queue, my requests and the story read the kind's name from the descriptor.
+- Add the review panel as a component that takes the changes a screen proposes, shows each with its changed fields and its deciders, and either saves or raises. It holds no journey state, so each gated-write screen calls it.
+- Name the deciders of each line in the preview, so the panel can show them beside the change.
+- Give each part's answer its own event in the story.
 
 * Measurements
 
@@ -61,6 +67,14 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The role request is drawn by the same page. Its roles and what they would grant are its own section, taken out of the old page and kept as a descriptor extra. The delta is off for it, because its section already draws the roles.
+- The decider answers for one part at a time. A request with several parts that are ready offers a choice, and the server checks that the decider holds that part's permission. The page does not guess at the permission.
+- The book descriptor names no page for a book, because no page of books exists to link to. The field is there for the screens that move onto the panel.
+- The review panel is built and tested but no screen calls it yet. The five screen tasks do.
+- The story gives each part's answer its own event. It does not yet draw the proposed lines as events. A later task can add them.
+- The French and Portuguese words for the new screens are mine and have not been read by a speaker of either language.
+- I did not draw any of this in a browser against a running stack.
 
 * Test Scenarios
 
@@ -86,3 +100,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every kind of request is drawn by the same screens, and a kind adds a descriptor and nothing else on the web.
+
+- =kinds.tsx= holds the descriptors for the role request and the book change, and a plain one for a kind it does not know.
+- =RequestPage= replaces the role-only page: the parts and who answered, the delta beside the book as the maker read it, the checks as they stand, and an answer for one part that refuses the person who asked.
+- =ReviewPanel= shows each proposed change with its fields and its deciders, and either saves or raises a request.
+- The queue, my requests and the story take their kind names from the descriptor, and the story gives each part's answer its own event.
+- The preview names the deciders of each line.
+
+Evidence: the web (1279), BFF (711), wire (14) and contracts (59) suites pass and the typecheck is clean. The new web cases cover the request page for a book change (parts, delta, checks, the part to answer for, the person who asked, a failed apply, an unknown kind), the descriptors and the review panel in its three states. The refdata core tests pass (376 cases). The catalogue drift sweep, handler permission, cmake source, derived-model and pattern use checks pass.
+
+Not done here: a run in a browser against the running services, and the screens that call the review panel.

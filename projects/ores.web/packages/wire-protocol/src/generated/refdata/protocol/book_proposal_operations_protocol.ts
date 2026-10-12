@@ -37,6 +37,11 @@ export interface BookLineOutcome {
     entity_id: string;
     columns: string[];
     refusal: string;
+    /**
+     * @brief The parts the policy names for this line alone, which decide it. The
+     * request needs the union over its lines.
+     */
+    part_codes: string[];
 }
 
 /**

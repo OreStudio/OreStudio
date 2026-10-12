@@ -131,6 +131,7 @@ TEST_CASE("a_change_to_one_column_names_only_the_part_of_that_column", tags) {
     REQUIRE(preview.lines.size() == 1);
     CHECK(preview.lines[0].refusal.empty());
     CHECK(preview.lines[0].columns == std::vector<std::string>{"book_status"});
+    CHECK(preview.lines[0].part_codes == std::vector<std::string>{"operations"});
     CHECK(preview.part_codes == std::vector<std::string>{"operations"});
 }
 

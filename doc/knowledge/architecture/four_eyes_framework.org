@@ -259,6 +259,17 @@ The shared screens are the ones the prototypes drew:
 | Queue | What I may decide, oldest first, filtered by kind | =RequestsPage= |
 | Story | Every event of one request | =RequestStoryPage= |
 
+The shared screens are built. The descriptor registry is =kinds.tsx= under =web/src/inbox=,
+and a kind adds one entry there. The request page, the queue, my requests and the story read
+the kind's name and summary from it. The request page draws the parts
+(=PartsPanel=), the delta (=ChangeDelta=) and the checks (=ChecksPanel=), and the review panel
+(=ReviewPanel=) is what a screen that gates a write hands its proposed changes to. The
+BFF serves the data in one shape for every kind: =GET /api/requests/:id/changes= and
+=/checks=, and =POST /api/book-changes/preview= and =/api/book-changes= for the book.
+The role request is drawn by the same screens, with its roles and what they would grant as
+its own section. The gated-write screens that call the review panel come with their own
+tasks.
+
 A screen that gates a write does not draw any of these. It asks the preview, hands
 the proposed writes to the review panel, and navigates to the request page after a
 raise. The decision screen, the waiting state and the declined state in the five

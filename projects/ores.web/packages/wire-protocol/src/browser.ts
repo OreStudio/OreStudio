@@ -274,6 +274,23 @@ export type { Session, SessionPage } from './domain.js';
 export { authEventSchema, sessionStatisticsSchema } from './domain.js';
 export type { AuthEvent, SessionStatisticsRow } from './domain.js';
 
+// What a request proposes and what running it again says, as the BFF answers.
+export {
+    bookPreviewViewSchema,
+    bookRaiseViewSchema,
+    requestChangesViewSchema,
+    requestChecksViewSchema,
+} from './request-changes.js';
+export type {
+    BookLineInput,
+    BookPreview,
+    BookRaise,
+    RequestChange,
+    RequestCheck,
+    RequestChecks,
+    RequestFieldChange,
+} from './request-changes.js';
+
 // The inbox: the requests screen, the requests queue and the notification
 // bell. The BFF drives the transports, so the browser receives only the
 // answers these schemas describe, the operations that name them, and the

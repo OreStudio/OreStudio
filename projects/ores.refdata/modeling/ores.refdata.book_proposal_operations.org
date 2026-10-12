@@ -72,6 +72,18 @@ the rules of the four-eyes framework.
 :cpp_type: std::string
 :END:
 
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parts the policy names for this line alone, which decide it. The
+ * request needs the union over its lines.
+ */
+#+end_src
+
 ** preview_book_changes_request
 :PROPERTIES:
 :subject:  refdata.v1.ops.preview_book_changes

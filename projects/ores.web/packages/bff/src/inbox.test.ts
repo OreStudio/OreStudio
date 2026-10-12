@@ -314,6 +314,58 @@ describe('the story of one request', () => {
         expect(told[0].entityId).toBe(NOTICE);
     });
 
+    it('gives each part that answered its own event, naming the part', async () => {
+        const response = await storyOf({
+            'inbox.v1.ops.get_approval_history': history,
+            'iam.v1.ops.get_request_roles': { result: OK, roles: [] },
+            'inbox.v1.approval_decisions.list': {
+                result: OK,
+                decisions: [
+                    {
+                        request_id: REQUEST,
+                        decision_code: 'approve',
+                        part_code: 'controller',
+                        decided_by: PRIYA,
+                        decided_at: '2026-10-05 09:00:00Z',
+                        comment: 'Fine',
+                    },
+                    {
+                        request_id: REQUEST,
+                        decision_code: 'approve',
+                        part_code: 'finance',
+                        decided_by: DANIEL,
+                        decided_at: '2026-10-05 10:00:00Z',
+                        comment: 'Also fine',
+                    },
+                ],
+                total: 2,
+            },
+            'inbox.v1.ops.list_my_notifications': { result: OK, notifications: [], total: 0 },
+            'iam.v1.accounts.list': {
+                result: OK,
+                accounts: [
+                    { id: PRIYA, username: 'priya' },
+                    { id: DANIEL, username: 'daniel' },
+                ],
+                total: 2,
+            },
+        });
+
+        const decided = response
+            .json()
+            .events.filter((event: { kind: string }) => event.kind === 'decided');
+        expect(decided).toHaveLength(2);
+        expect(decided.map((event: { actor: string }) => event.actor).sort()).toEqual([
+            'daniel',
+            'priya',
+        ]);
+        const parts = decided.map(
+            (event: { fields: { name: string; value: string }[] }) =>
+                event.fields.find((field) => field.name === 'Part')?.value,
+        );
+        expect(parts.sort()).toEqual(['controller', 'finance']);
+    });
+
     it('leaves the answer out of a story whose reader may not read it', async () => {
         const response = await storyOf({
             'inbox.v1.ops.get_approval_history': history,
@@ -1237,6 +1289,7 @@ describe('the book changes a maker proposes', () => {
                         entity_id: BOOK,
                         columns: ['cost_center'],
                         refusal: '',
+                        part_codes: ['finance'],
                     },
                 ],
                 part_codes: ['finance'],
@@ -1260,6 +1313,7 @@ describe('the book changes a maker proposes', () => {
                     subjectId: BOOK,
                     refusal: '',
                     columns: ['cost_center'],
+                    partCodes: ['finance'],
                 },
             ],
             partCodes: ['finance'],

@@ -259,10 +259,12 @@ export const en: SourceCatalogue = {
             approved: 'Approved',
             refused: 'Refused',
             withdrawn: 'Withdrawn',
+            apply_failed: 'Could not apply',
             expired: 'Expired',
         },
         kind: {
             'iam.role_grant': 'Role request',
+            'refdata.book_change': 'Book change',
         },
         bell: {
             label: 'Notifications, {count} unread',
@@ -328,6 +330,82 @@ export const en: SourceCatalogue = {
                 granted: 'Granted',
             },
         },
+        operation: {
+            put: 'Change',
+            delete: 'Remove',
+            grant: 'Grant',
+            new: 'New',
+        },
+        part: {
+            controller: 'Controller',
+            finance: 'Finance',
+            market_risk: 'Market risk',
+            operations: 'Operations',
+        },
+        partState: {
+            approved: 'Approved',
+            refused: 'Refused',
+            waiting: 'Waiting',
+            later: 'Later',
+        },
+        field: {
+            'refdata.book_change': {
+                party_id: 'Party',
+                name: 'Name',
+                description: 'Description',
+                parent_portfolio_id: 'Parent portfolio',
+                owner_unit_id: 'Owner unit',
+                functional_currency: 'Functional currency',
+                gl_account_ref: 'GL account',
+                cost_center: 'Cost center',
+                book_status: 'Status',
+                regulatory_book_type: 'Regulatory type',
+                book_purpose_type: 'Purpose',
+                ledger_feed_type: 'Ledger feed',
+                is_sweepable: 'Sweepable',
+                rates_centre_code: 'Rates centre',
+                sandbox_id: 'Sandbox',
+            },
+            'iam.role_grant': {
+                role: 'Role',
+                description: 'Description',
+            },
+        },
+        delta: {
+            none: 'This request holds no changes to show.',
+            line: 'Line {line}',
+            version: 'read at version {version}',
+            applied: 'Applied',
+            removes: 'Removes it.',
+            field: 'Field',
+            before: 'Now',
+            after: 'Would be',
+            nothingChanged: 'This line changes nothing.',
+            unchanged: { one: '{count} field unchanged', other: '{count} fields unchanged' },
+        },
+        parts: {
+            title: 'Who must answer',
+        },
+        checks: {
+            title: 'Checks now',
+            allStand: 'Every line would still stand.',
+            refused: 'Would be refused',
+        },
+        review: {
+            title: 'Review the changes',
+            lead: 'Each change is shown with the function that decides it.',
+            changes: 'Changes:',
+            decidedBy: 'Decided by:',
+            nobody: 'nobody, it is written directly',
+            refused: 'A change is refused. Correct it before you go on.',
+            goesTo: 'This goes to {parts}. Nothing changes until each of them approves.',
+            reason: 'Why you ask',
+            reasonHint: 'The people who decide read this.',
+            needsNoRequest:
+                'No function needs to approve these changes, so they are written directly.',
+            raise: 'Raise the request',
+            write: 'Save',
+        },
         request: {
             title: 'Asks for {role}',
             id: 'Request {id}',
@@ -346,6 +424,13 @@ export const en: SourceCatalogue = {
             decided: 'Decided',
             notFound:
                 'This request is not here. It may have been taken away, or it may not be yours to see.',
+            approve: 'Approve',
+            answeringFor: 'Answering for',
+            applyFailed:
+                'This request was approved, and the changes could not be made. Raise a new request from the current record.',
+            changes: 'What it would change',
+            checksRefused: 'A line would now be refused. Check it before you approve.',
+            noTurn: 'No part is waiting for an answer from you yet. An earlier part answers first.',
         },
     },
 
@@ -1595,7 +1680,8 @@ export const en: SourceCatalogue = {
                 legend: 'A grey cell holds no sample, and is not a measurement of zero. A clear cell had a sample and nothing to show. A darker cell is more.',
             },
             node: {
-                description: 'One compute node: its machine and runner, and how its work moved over the range.',
+                description:
+                    'One compute node: its machine and runner, and how its work moved over the range.',
                 back: 'Back to the nodes',
                 machine: 'Machine',
                 host: 'Host',
@@ -1611,8 +1697,16 @@ export const en: SourceCatalogue = {
                 charts: 'Charts',
                 notFound: 'No node has this id.',
                 silent: 'This node reported no sample in this range.',
-                tasks: { title: 'Tasks done', caption: 'Tasks finished in each interval', done: 'Done' },
-                failures: { title: 'Failures', caption: 'Tasks that failed in each interval', failed: 'Failed' },
+                tasks: {
+                    title: 'Tasks done',
+                    caption: 'Tasks finished in each interval',
+                    done: 'Done',
+                },
+                failures: {
+                    title: 'Failures',
+                    caption: 'Tasks that failed in each interval',
+                    failed: 'Failed',
+                },
                 time: {
                     title: 'Task time',
                     caption: 'Mean and longest task in each interval',
@@ -1632,7 +1726,8 @@ export const en: SourceCatalogue = {
                 rangeLabel: 'Range',
                 ranges: { hour: 'Last hour', day: 'Last day', week: 'Last week' },
                 empty: 'There are no samples in this range. The sampler may not have run yet, or the grid was stopped.',
-                gapNote: 'A shaded band is a stretch with no sample. It is not a measurement of zero.',
+                gapNote:
+                    'A shaded band is a stretch with no sample. It is not a measurement of zero.',
                 load: {
                     title: 'Load',
                     caption: 'Work in flight by result state',

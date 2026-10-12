@@ -14,7 +14,7 @@
 #+created: 2026-09-17
 #+updated: 2026-09-17
 
-The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row.
+The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row.
 
 * Flags
 :PROPERTIES:
@@ -96,11 +96,11 @@ ctx.generate_uuid()
 ** base_currency
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
-:nullable: false
+:cpp_type: std::optional<std::string>
+:nullable: true
 :END:
 
-Reporting base currency (ISO 4217 code) that all results are converted to.
+Reporting base currency (ISO 4217 code) that all results are converted to. Empty when the run does not state one.
 
 #+begin_src cpp :name generator
 std::string(faker::finance::currencyCode())
@@ -109,26 +109,22 @@ std::string(faker::finance::currencyCode())
 ** observation_model
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
-:nullable: false
-:default:  disable
-:default_value: "disable"
+:cpp_type: std::optional<std::string>
+:nullable: true
 :END:
 
-How the engine handles absent market data: =disable=, =none=, =move= or
-=defer=.
+How the engine handles absent market data, as ORE spells it: Disable, None, Move
+or Defer.
 
 #+begin_src cpp :name generator
-std::string("disable")
+std::string("Disable")
 #+end_src
 
 ** n_threads
 :PROPERTIES:
 :type:     integer
-:cpp_type: int
-:nullable: false
-:default:  1
-:default_value: 1
+:cpp_type: std::optional<int>
+:nullable: true
 :END:
 
 Number of worker threads the risk engine may use.
@@ -167,417 +163,230 @@ CHECK requires while =market_data_type= stays =eod=.
 std::string("")
 #+end_src
 
-** npv_enabled
+** accrual_date
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  1
-:default_value: 1
-:END:
-
-Enables the NPV analytic.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** cashflow_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  1
-:default_value: 1
-:END:
-
-Enables the cashflow analytic.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** curves_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables curve analytic output.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** sensitivity_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables sensitivity analytic output.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** simulation_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables Monte Carlo simulation output.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** xva_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables XVA analytics. Gates the =xva_*= settings below.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** stress_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables stress test analytics.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** parametric_var_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables parametric VaR. Gates the =var_*= settings below.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** initial_margin_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables initial margin (SIMM) calculation. Gates the =simm_*= settings.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** pfe_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables potential future exposure output.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** portfolio_details_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the portfolio details output: the market objects and risk factors the
-portfolio needs. A report that prices nothing, such as a data completeness
-check, still runs the engine, and an engine run needs at least one analytic.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** saccr_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the standardised approach for counterparty credit risk (SA-CCR): exposure at default, replacement cost and potential future exposure per netting set.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** calibration_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables model calibration: it calibrates the simulation models to the market and writes the calibrated parameters and the fit.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** credit_curves_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the credit curves output: the survival probability and hazard rate curves bootstrapped from credit spreads.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** historical_var_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables value at risk by historical simulation over a stated historical window. A stressed value at risk is the same analytic over a stressed window.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** pnl_explain_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the profit and loss explain: the decomposition of the profit and loss of a period into risk factor components and an unexplained residual.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** xva_quantile
-:PROPERTIES:
-:type:     numeric(5,4)
-:cpp_type: double
+:type:     text
+:cpp_type: std::optional<std::string>
 :nullable: true
-:default_value: 0.95
 :END:
 
-XVA confidence quantile. NULL means "not set".
+The accrual date, a date or the literal ASOF. Empty when the run does not state it.
 
-#+begin_src cpp :name generator
-faker::number::decimal(0.9, 0.99)
-#+end_src
-
-** xva_cva_enabled
+** fixing_cutoff
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  1
-:END:
-
-Enables the CVA adjustment within XVA.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** xva_dva_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the DVA adjustment within XVA.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** xva_fva_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the FVA adjustment within XVA.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** xva_colva_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the ColVA adjustment within XVA.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** xva_dim_enabled
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Enables the DIM (dynamic initial margin) calculation within XVA.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 1)
-#+end_src
-
-** xva_dim_quantile
-:PROPERTIES:
-:type:     numeric(5,4)
-:cpp_type: double
+:type:     text
+:cpp_type: std::optional<std::string>
 :nullable: true
-:default_value: 0.99
 :END:
 
-DIM confidence quantile. NULL means "not set".
+The date before which fixings are not read. Empty when the run does not state it.
 
-#+begin_src cpp :name generator
-faker::number::decimal(0.9, 0.99)
-#+end_src
-
-** xva_dim_horizon_calendar_days
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: true
-:default_value: 14
-:END:
-
-DIM horizon in calendar days. NULL means "not set".
-
-#+begin_src cpp :name generator
-faker::number::integer(1, 30)
-#+end_src
-
-** xva_dim_regression_order
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: true
-:default_value: 0
-:END:
-
-Regression order for the DIM backtest, 1 to 3. NULL means "not set".
-
-#+begin_src cpp :name generator
-faker::number::integer(1, 3)
-#+end_src
-
-** var_quantiles
-:PROPERTIES:
-:type:     numeric(5,4)[]
-:cpp_type: std::vector<double>
-:nullable: true
-:sql_only: true
-:END:
-
-Confidence quantiles for the parametric VaR grid. NULL means "not set".
-
-The column stays in the schema but reaches no C++ layer. sqlgen cannot bind a
-Postgres array, so no entity member can carry it, and a member the mapper
-cannot persist is worse than no member at all. The field is currently unwired:
-nothing reads or writes it, in this model or in the hand-written code this
-model replaces. Remove =:sql_only:= and regenerate once sqlgen, or a
-replacement, can bind =numeric[]=.
-
-** var_method
+** input_path
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
-:default_value: "delta"
+:nullable: false
+:default:  Input
+:default_value: "Input"
 :END:
 
-Parametric VaR method: =delta=, =delta_gamma_normal= or =monte_carlo=.
-NULL means "not set".
+The folder the run reads its input from, relative to the run.
 
 #+begin_src cpp :name generator
-std::string("delta")
+std::string("Input")
 #+end_src
 
-** simm_version
+** input_path_market
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The folder the run reads market data from, when it differs. Empty when the run does not state it.
+
+** input_path_portfolio
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The folder the run reads the portfolio from, when it differs. Empty when the run does not state it.
+
+** output_path
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
+:default:  Output
+:default_value: "Output"
 :END:
 
-SIMM methodology version. NULL means "not set".
+The folder the run writes its results to, relative to the run.
 
 #+begin_src cpp :name generator
-std::string("2.6")
+std::string("Output")
 #+end_src
 
-** simm_calculation_currency
+** log_file
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:nullable: false
+:default:  log.txt
+:default_value: "log.txt"
+:END:
+
+The name of the log file.
+
+#+begin_src cpp :name generator
+std::string("log.txt")
+#+end_src
+
+** date_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-Currency the SIMM amount is expressed in. NULL means "not set".
+The calendar of the run's dates. Empty when the run does not state it.
 
-#+begin_src cpp :name generator
-std::string(faker::finance::currencyCode())
-#+end_src
+** date_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention of the run's dates. Empty when the run does not state it.
+
+** continue_on_error
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run goes on after an error, as ORE spells it: true or false. Empty when the run does not state it.
+
+** build_failed_trades
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run builds the trades that failed, as ORE spells it: true or false. Empty when the run does not state it.
+
+** imply_todays_fixings
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether today's fixings are implied, as ORE spells it: Y or N. Empty when the run does not state it.
+
+** include_todays_cash_flows
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether today's cash flows are included, as ORE spells it: Y or N. Empty when the run does not state it.
+
+** include_reference_date_events
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether events on the reference date are included, as ORE spells it: Y or N. Empty when the run does not state it.
+
+** lazy_market_building
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the market is built on demand, as ORE spells it: true or false. Empty when the run does not state it.
+
+** enrich_index_fixings
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether index fixings are enriched, as ORE spells it: true or false. Empty when the run does not state it.
+
+** use_analytics
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run uses the analytics framework, as ORE spells it: true or false. Empty when the run does not state it.
+
+** csv_comment_report_header
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether report headers are written as comments, as ORE spells it: Y or N. Empty when the run does not state it.
+
+** default_mapping_to_identity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether a missing mapping maps to itself, as ORE spells it: true or false. Empty when the run does not state it.
+
+** portfolio_recurse_into_sub_directories
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the portfolio is read from sub directories, as ORE spells it: true or false. Empty when the run does not state it.
+
+** log_mask
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The log mask, a bit set of the message kinds to write. Empty when the run does not state it.
+
+** ignore_fixing_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The number of days of fixing lag to ignore. Empty when the run does not state it.
+
+** additional_results
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run writes additional results, as ORE spells it: Y or N. Empty when the run does not state it.
 
 * SQL
 
@@ -596,36 +405,11 @@ checks the template emits on its own.
 
 | expression |
 |------------|
-| "base_currency" <> '' |
-| "observation_model" in ('disable', 'none', 'move', 'defer') |
-| "n_threads" >= 1 |
+| "base_currency" is null or "base_currency" <> '' |
+| "n_threads" is null or "n_threads" >= 1 |
+| "log_mask" is null or "log_mask" >= 0 |
 | "market_data_type" in ('live', 'eod', 'date') |
 | (market_data_type = 'date') = (market_data_date is not null) |
-| "npv_enabled" in (0, 1) |
-| "cashflow_enabled" in (0, 1) |
-| "curves_enabled" in (0, 1) |
-| "sensitivity_enabled" in (0, 1) |
-| "simulation_enabled" in (0, 1) |
-| "xva_enabled" in (0, 1) |
-| "stress_enabled" in (0, 1) |
-| "parametric_var_enabled" in (0, 1) |
-| "initial_margin_enabled" in (0, 1) |
-| "pfe_enabled" in (0, 1) |
-| "portfolio_details_enabled" in (0, 1) |
-| "saccr_enabled" in (0, 1) |
-| "calibration_enabled" in (0, 1) |
-| "credit_curves_enabled" in (0, 1) |
-| "historical_var_enabled" in (0, 1) |
-| "pnl_explain_enabled" in (0, 1) |
-| "xva_cva_enabled" in (0, 1) |
-| "xva_dva_enabled" in (0, 1) |
-| "xva_fva_enabled" in (0, 1) |
-| "xva_colva_enabled" in (0, 1) |
-| "xva_dim_enabled" in (0, 1) |
-| "xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3 |
-| "var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo') |
-| "npv_enabled" + "cashflow_enabled" + "curves_enabled" + "sensitivity_enabled" + "simulation_enabled" + "xva_enabled" + "stress_enabled" + "parametric_var_enabled" + "initial_margin_enabled" + "pfe_enabled" + "portfolio_details_enabled" + "saccr_enabled" + "calibration_enabled" + "credit_curves_enabled" + "historical_var_enabled" + "pnl_explain_enabled" >= 1 |
-| "pfe_enabled" = 0 or "simulation_enabled" = 1 |
 
 * Artefact columns
 
@@ -668,16 +452,19 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 ** base_currency
 :PROPERTIES:
 :type: text
+:nullable: true
 :END:
 
 ** observation_model
 :PROPERTIES:
 :type: text
+:nullable: true
 :END:
 
 ** n_threads
 :PROPERTIES:
 :type: integer
+:nullable: true
 :END:
 
 ** market_data_type
@@ -691,154 +478,136 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 :nullable: true
 :END:
 
-** npv_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** cashflow_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** curves_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** sensitivity_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** simulation_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** xva_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** stress_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** parametric_var_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** initial_margin_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** pfe_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** portfolio_details_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** saccr_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** calibration_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** credit_curves_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** historical_var_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** pnl_explain_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** xva_quantile
-:PROPERTIES:
-:type: numeric(5,4)
-:nullable: true
-:END:
-
-** xva_cva_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** xva_dva_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** xva_fva_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** xva_colva_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** xva_dim_enabled
-:PROPERTIES:
-:type: integer
-:END:
-
-** xva_dim_quantile
-:PROPERTIES:
-:type: numeric(5,4)
-:nullable: true
-:END:
-
-** xva_dim_horizon_calendar_days
-:PROPERTIES:
-:type: integer
-:nullable: true
-:END:
-
-** xva_dim_regression_order
-:PROPERTIES:
-:type: integer
-:nullable: true
-:END:
-
-** var_quantiles
-:PROPERTIES:
-:type: numeric(5,4)[]
-:nullable: true
-:END:
-
-** var_method
+** accrual_date
 :PROPERTIES:
 :type: text
 :nullable: true
 :END:
 
-** simm_version
+** fixing_cutoff
 :PROPERTIES:
 :type: text
 :nullable: true
 :END:
 
-** simm_calculation_currency
+** input_path
+:PROPERTIES:
+:type: text
+:END:
+
+** input_path_market
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** input_path_portfolio
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** output_path
+:PROPERTIES:
+:type: text
+:END:
+
+** log_file
+:PROPERTIES:
+:type: text
+:END:
+
+** date_calendar
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** date_convention
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** continue_on_error
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** build_failed_trades
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** imply_todays_fixings
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** include_todays_cash_flows
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** include_reference_date_events
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** lazy_market_building
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** enrich_index_fixings
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** use_analytics
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** csv_comment_report_header
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** default_mapping_to_identity
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** portfolio_recurse_into_sub_directories
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** log_mask
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** ignore_fixing_lag
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** additional_results
 :PROPERTIES:
 :type: text
 :nullable: true
@@ -914,11 +683,6 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 | base_currency                   | Base Currency      |
 | observation_model               | Observation Model  |
 | market_data_type                | Market Data        |
-| npv_enabled                     | NPV                |
-| cashflow_enabled                | Cashflow           |
-| xva_enabled                     | XVA                |
-| parametric_var_enabled          | Parametric VaR     |
-| initial_margin_enabled          | Initial Margin     |
 | modified_by                     | Modified By        |
 | version                         | Version            |
 

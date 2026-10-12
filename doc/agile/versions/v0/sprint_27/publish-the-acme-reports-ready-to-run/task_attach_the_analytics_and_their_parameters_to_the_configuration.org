@@ -7,30 +7,30 @@
 #+level: s1
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/attach-the-analytics-and-their-parameters-to-the-configuration
+#+pr: 3186
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Replace the sixteen analytic switches of the risk report configuration with the analytics of the configuration as rows, and give each analytic its parameters, so that a configuration says which analytics a run executes and how. A report definition owns neither, because it binds a shared configuration. Publish the rows through DQ datasets that are generated from the domain entities, and populate each party's datasets with the analytics and parameters decided for its reports.
+Replace the sixteen analytic switches of the risk report configuration with the analytics of the configuration as rows, and give each analytic its parameters, so that a configuration says which analytics a run executes and how. A report definition owns neither, because it binds a shared configuration. Publish the rows through DQ datasets that are generated from the domain entities, and populate each party's datasets with the analytics and parameters decided for its reports. The same change moves the rest of the run document, the Setup choices and the Markets block, onto the configuration: everything in the run document that is not a data file is a choice of the shared configuration, and the data files are named from the file types table.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The merge of the PR that publishes the shared risk report configurations. |
-| Next         | Do the data model analysis in the Plan, then confirm the model with the product owner. |
+| Now          | Nothing. |
+| Waiting on   | The product owner's answers to the three open points of the analysis. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -40,6 +40,10 @@ Replace the sixteen analytic switches of the risk report configuration with the 
 - The DQ staging tables for the analytic rows and the parameter rows are generated from the entities. A staged row names its configuration, its analytic type and its parameter definition by name and not by id, because ids differ between databases.
 - Each ACME party publishes the analytics and the parameters decided for the reports that bind each configuration, and a test shows that the exported analytics equal the decided ones.
 - A configuration with no analytic is refused at publish or by a trigger, because a database check cannot count child rows.
+- Every Setup parameter that is not a data file is a column of =risk_report_config=, which is DQ enabled, so the staging table is generated with it. The values come from the shipped samples: the log mask, the paths, =implyTodaysFixings=, =continueOnError=, =buildFailedTrades=, =lazyMarketBuilding=, =includeTodaysCashFlows=, the calendar and the convention. The flags are text columns that hold the value in the spelling ORE uses for that parameter, so a sample imports and exports without any change.
+- The Markets block is held on the configuration: =report_market_binding= is renamed =configuration_market_binding= and re-keyed to the configuration, with DQ staging, and ACME publishes the roles it needs.
+- =report_run_setup= and its file name columns are removed, because the file names come from the file types table. =ore import-run= maps a sample Setup onto the configuration and stores no file names.
+- The exported Setup of every ACME definition contains each non-file parameter that the samples set in at least half of their run documents, and a test shows that the exported Setup carries the stored choices.
 
 * Plan
 
@@ -49,6 +53,9 @@ Replace the sixteen analytic switches of the risk report configuration with the 
 4. Remove the old entities and the switches, generate the new ones, and generate the DQ staging from them. The staged rows name the configuration, the analytic type and the parameter definition.
 5. Decide the analytics and parameters of each report from the ORE samples, record them in the report design, and publish them in each party's datasets.
 6. Build the run document from the rows, and test that the exported analytics equal the decided ones for all 78 definitions.
+7. Add the non-file Setup parameters as columns of =risk_report_config=, regenerate, and publish the decided values with the configurations.
+8. Rename =report_market_binding= to =configuration_market_binding=, re-key it to the configuration, and add its DQ staging and its ACME rows.
+9. Remove =report_run_setup=. Change =ore import-run= to map the Setup onto the configuration, and the generator to build the Setup from the columns.
 
 * Measurements
 
@@ -62,9 +69,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ACME definitions exported | 78 of 78, none failed | =ore export-run= for every ACME definition after =compass db recreate= and a bootstrap with the acme_demo profile | 0c981567ff |
+| Exports that validate | 78 of 78 | =xmllint --noout --schema external/ore/xsd/ore.xsd= on each exported ore.xml | 0c981567ff |
+| Exports that match the staged data | 78 of 78: 224 analytic parameter values, the Setup choices, the pricing market and an ISO asofDate each | scratchpad compare script over the exported ore.xml files | 0c981567ff |
+| pgTAP, risk configuration publish | 16 of 16 | =compass db sql -f projects/ores.sql/test/reporting_publish_risk_report_configs_test.sql= | 0c981567ff |
+| C++ suites | ores.reporting.core, ores.reporting.service, ores.ore.core, ores.ore.service all pass | =ctest --preset linux-clang-debug-make -R "ores\.(reporting|ore)\.(core|service)\.tests"= | 0c981567ff |
 
 * Notes
+
+The analysis is [[id:4D47DE4D-A52F-46E5-BA75-C2141BEB72D3][The analytics of a configuration and their parameters]]. It recommends keeping two entities, renamed =configuration_analytic= and =configuration_analytic_parameter= and re-keyed to the configuration, in place of the earlier idea of reusing =configuration_parameter=.
 
 Names. These entities are attached to a configuration and not to a report, so none of them carries a =report_= prefix.
 
@@ -87,12 +100,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3186][#3186]] | [reporting,dq,sql] Attach the analytics and their parameters to the configuration |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | asofDate is dropped unless the market data type is date | run_document_mapper.cpp | Accepted, with a larger fix | A live or end of day configuration holds no date, so its export had no asofDate. The generator now resolves the date at build time: today for live, the weekday before it for end of day. |
+| 2 | Missing inputPath, outputPath or logFile is not detected | run_document_mapper.cpp | Declined | A missing one maps to the defaults Input, Output and log.txt. All 416 samples state them, and the corpus test covers it. |
+| 3 | A test over every shipped sample would catch new parameters | xml_ore_run_document_mapper_roundtrip_tests.cpp | Declined | The corpus round trip already runs all 416 documents and asserts that no parameter is ignored. |
+| 4 | Parameter order is not kept | run_document_mapper.hpp | Declined | Intended. ORE reads by name and the tests compare names and values. |
+| 5 | Duplicate file and choice parameters use two code paths | run_document_mapper.cpp | Declined | Same result. A shared helper adds no value. |
+| 6 | The generated schema diagrams are stale | projects/ores.sql/modeling | Accepted | Regenerated the .puml and .svg files that changed. |
+| 7 | Stage B is not compiled or run | n/a | Accepted | Built, the suites and the export comparison are green, see Measurements. |
 
 * Result
+
+The analytics with their parameters, the run choices and the market bindings now belong to the shared, DQ enabled configuration. =report_run_setup= and =report_market_binding= are gone, and a definition has no run document of its own: the run document is built from the configuration it binds, and the data file names are not stored. ACME publishes 49 configurations with 76 analytics, 175 parameter values, the run choices and one pricing market binding each.
+
+Found on the way: the as-of date was missing from every live or end of day export, a bug that existed before this work. The generator now resolves it when it builds the run document. A text binding table with one slot too many caused an intermittent crash and is fixed.
+
+Acceptance is met. Left for later tasks: the ORE file types table, which names every file, and running the exported packages in ORE.

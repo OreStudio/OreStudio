@@ -50,6 +50,7 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
     fields.push_back({.name = "Floating Index Code", .value = v.floating_index_code});
     fields.push_back({.name = "Currency", .value = v.currency});
+    fields.push_back({.name = "Leg Group", .value = v.leg_group.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

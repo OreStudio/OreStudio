@@ -49,8 +49,8 @@ A tick arrives on the producer subject. The loop looks the tick's =source=
 up in that cache, plans the tick against every binding the source has, and
 for each binding writes the observation under the binding's tenant and
 party and republishes the tick on
-=marketdata.v1.ops.market_tick.<tenant_id>.<party_id>.<ore_key>=, where the key is the
-datum's canonical ORE key.
+=marketdata.v1.ops.market_tick.<tenant_id>.<party_id>.<token>=, where the token is the
+datum's canonical oresmd URI as one subject token.
 
 A tick whose source has no enabled binding is dropped with the
 =unbound_source= reason, and the loop logs the drop once per source rather

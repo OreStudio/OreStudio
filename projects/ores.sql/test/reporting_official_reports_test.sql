@@ -110,6 +110,17 @@ from ores_refdata_parties_tbl
 where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
   and valid_to = ores_utility_infinity_timestamp_fn();
 
+insert into ores_reporting_configuration_analytics_tbl (
+    tenant_id, id, version, party_id, configuration_id, analytic_type_code, display_order,
+    active, modified_by, performed_by, change_reason_code, change_commentary
+)
+select ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-0000000cf305'::uuid, 0,
+    id, '00000000-0000-0000-0000-0000000cf303'::uuid, 'npv', 1, 'Y',
+    current_user, current_user, 'system.test', 'Official reports pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
 insert into ores_reporting_report_configurations_tbl (
     tenant_id, id, version, party_id, report_definition_id, configuration_type_code,
     configuration_id, modified_by, performed_by, change_reason_code, change_commentary

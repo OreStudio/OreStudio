@@ -48,6 +48,7 @@ struct analytic_type_entity {
     std::string name;
     std::string description;
     std::optional<std::string> parameter_entity;
+    std::optional<std::string> requires_analytic_type_code;
     int display_order = 0;
     std::string modified_by;
     std::string performed_by;

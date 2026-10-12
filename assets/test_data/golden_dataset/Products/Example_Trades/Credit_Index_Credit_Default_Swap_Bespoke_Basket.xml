@@ -45,19 +45,19 @@
         <Name>
           <IssuerId>CPTY_1</IssuerId>
           <CreditCurveId>RED:027A8A|SNRFOR|USD|MR14</CreditCurveId>
-          <Notional>100000</Notional>
+          <Notional>100000.0</Notional>
           <Currency>USD</Currency>
         </Name>
         <Name>
           <IssuerId>CPTY_2</IssuerId>
           <CreditCurveId>RED:027D97|SNRFOR|USD|MR14</CreditCurveId>
-          <Notional>100000</Notional>
+          <Notional>100000.0</Notional>
           <Currency>USD</Currency>
         </Name>
         <Name>
           <IssuerId>CPTY_3</IssuerId>
           <CreditCurveId>RED:028EFB|SNRFOR|USD|MR14</CreditCurveId>
-          <Notional>100000</Notional>
+          <Notional>100000.0</Notional>
           <Currency>USD</Currency>
         </Name>
       </BasketData>

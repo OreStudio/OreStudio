@@ -41,5 +41,6 @@ export interface SwapLeg {
     payment_frequency_code: string;
     floating_index_code: string;
     currency: string;
+    leg_group: string | null;
     audit: AuditRecord;
 }

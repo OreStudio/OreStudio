@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
-#include "ores.iam.client/client/storage_capability_minter.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include <string>
@@ -34,7 +33,8 @@ namespace ores::compute::service::app {
  *
  * The shell dispatch-batch flow saves workunits directly through the entity
  * CRUD path; the backend side of that contract lives here: create one result
- * row per redundancy target and publish each as a JetStream work assignment.
+ * row per redundancy target, queue each in the work ledger and ring the
+ * doorbell so idle nodes ask for work.
  *
  * This class lives in the hand-written service app layer, not in the
  * generated workunit handler, which is regenerated from the entity model on
@@ -56,8 +56,7 @@ private:
 
 public:
     workunit_dispatcher(ores::nats::service::client& nats,
-                        ores::database::context ctx,
-                        ores::nats::service::nats_client& service_nats);
+                        ores::database::context ctx);
 
     /**
      * @brief Dispatches every workunit named in the event.
@@ -74,7 +73,6 @@ private:
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
-    ores::iam::client::storage_capability_minter minter_;
 };
 
 }

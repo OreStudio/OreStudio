@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-analytic_types add <code> <name> <description> <parameter_entity> <display_order> <reason> <commentary>
+analytic_types add <code> <name> <description> <parameter_entity> <requires_analytic_type_code> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.analytic_types.put=.
 
 #+name: analytic_types-add
 #+begin_src ores-shell :tangle analytic_types-add.ores :exports none
-analytic_types add __none__ __none__ __none__ - 0 system.new_record generated_script
+analytic_types add __none__ __none__ __none__ - - 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-analytic_types set <code> <name> <description> <parameter_entity> <display_order> <reason> <commentary> [--version <n>]
+analytic_types set <code> <name> <description> <parameter_entity> <requires_analytic_type_code> <display_order> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =reporting.v1.analytic_types.put=.
 
 #+name: analytic_types-set
 #+begin_src ores-shell :tangle analytic_types-set.ores :exports none
-analytic_types set __none__ __none__ __none__ - 0 system.new_record generated_script
+analytic_types set __none__ __none__ __none__ - - 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-analytic_types put-many --count <n> <code> <name> <description> <parameter_entity> <display_order> <reason> <commentary>
+analytic_types put-many --count <n> <code> <name> <description> <parameter_entity> <requires_analytic_type_code> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.analytic_types.put_many=.
 
 #+name: analytic_types-put-many
 #+begin_src ores-shell :tangle analytic_types-put-many.ores :exports none
-analytic_types put-many --count 1 __none__ __none__ __none__ - 0 system.new_record generated_script
+analytic_types put-many --count 1 __none__ __none__ __none__ - - 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

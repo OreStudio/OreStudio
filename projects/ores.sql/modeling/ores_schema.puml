@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T10:59:04.698805Z
+' Generated: 2026-10-12T19:54:28.835119Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-545 tables in 21 groups.
+547 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -267,6 +267,9 @@ entity "dq_staging" as dq_staging {
   ores_dq_commodity_forward_conventions_artefact_tbl
   ores_dq_commodity_future_conventions_artefact_tbl
   ores_dq_commodity_volatility_configs_artefact_tbl
+  ores_dq_configuration_analytic_parameters_artefact_tbl
+  ores_dq_configuration_analytics_artefact_tbl
+  ores_dq_configuration_market_bindings_artefact_tbl
   ores_dq_counterparty_aliases_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_bundles_artefact_tbl
@@ -366,7 +369,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-128 tables — ores_schema.dq_staging.puml
+131 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -577,19 +580,18 @@ end note
 entity "reporting" as reporting {
   ores_reporting_analytic_types_tbl
   ores_reporting_concurrency_policies_tbl
+  ores_reporting_configuration_analytic_parameters_tbl
+  ores_reporting_configuration_analytics_tbl
+  ores_reporting_configuration_market_bindings_tbl
   ores_reporting_configuration_parameters_tbl
   ores_reporting_configuration_types_tbl
   ores_reporting_configurations_tbl
   ores_reporting_parameter_definitions_tbl
   ores_reporting_parameter_value_domains_tbl
-  ores_reporting_report_analytic_parameters_tbl
-  ores_reporting_report_analytics_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
   ores_reporting_report_input_bundles_tbl
   ores_reporting_report_instances_tbl
-  ores_reporting_report_market_bindings_tbl
-  ores_reporting_report_run_setups_tbl
   ores_reporting_report_type_configuration_types_tbl
   ores_reporting_report_types_tbl
   ores_reporting_risk_report_config_books_tbl
@@ -598,7 +600,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-20 tables — ores_schema.reporting.puml
+19 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {

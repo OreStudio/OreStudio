@@ -44,6 +44,7 @@ struct analytic_type_write {
     std::string name;
     std::string description;
     std::optional<std::string> parameter_entity;
+    std::optional<std::string> requires_analytic_type_code;
     int display_order;
 };
 

@@ -39,8 +39,9 @@ namespace ores::reporting::domain {
  * The ORE-level run settings that risk report definitions of a party share: base currency,
  * observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition
  * binds the configuration through report_configurations, in the slot of configuration type
- * risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate
- * temporal junction tables keyed by this row.
+ * risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters,
+ * are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope
+ * live in separate temporal junction tables keyed by this row.
  */
 struct risk_report_config final {
     /**
@@ -83,19 +84,21 @@ struct risk_report_config final {
     boost::uuids::uuid configuration_id;
 
     /**
-     * @brief Reporting base currency (ISO 4217 code) that all results are converted to.
+     * @brief Reporting base currency (ISO 4217 code) that all results are converted to. Empty when
+     * the run does not state one.
      */
-    std::string base_currency;
+    std::optional<std::string> base_currency;
 
     /**
-     * @brief How the engine handles absent market data: disable, none, move or defer.
+     * @brief How the engine handles absent market data, as ORE spells it: Disable, None, Move or
+     * Defer.
      */
-    std::string observation_model = "disable";
+    std::optional<std::string> observation_model;
 
     /**
      * @brief Number of worker threads the risk engine may use.
      */
-    int n_threads = 1;
+    std::optional<int> n_threads;
 
     /**
      * @brief Market data convention: live, eod or date.
@@ -110,151 +113,134 @@ struct risk_report_config final {
     std::string market_data_date;
 
     /**
-     * @brief Enables the NPV analytic.
+     * @brief The accrual date, a date or the literal ASOF. Empty when the run does not state it.
      */
-    int npv_enabled = 1;
+    std::optional<std::string> accrual_date;
 
     /**
-     * @brief Enables the cashflow analytic.
+     * @brief The date before which fixings are not read. Empty when the run does not state it.
      */
-    int cashflow_enabled = 1;
+    std::optional<std::string> fixing_cutoff;
 
     /**
-     * @brief Enables curve analytic output.
+     * @brief The folder the run reads its input from, relative to the run.
      */
-    int curves_enabled = 0;
+    std::string input_path = "Input";
 
     /**
-     * @brief Enables sensitivity analytic output.
+     * @brief The folder the run reads market data from, when it differs. Empty when the run does
+     * not state it.
      */
-    int sensitivity_enabled = 0;
+    std::optional<std::string> input_path_market;
 
     /**
-     * @brief Enables Monte Carlo simulation output.
+     * @brief The folder the run reads the portfolio from, when it differs. Empty when the run does
+     * not state it.
      */
-    int simulation_enabled = 0;
+    std::optional<std::string> input_path_portfolio;
 
     /**
-     * @brief Enables XVA analytics. Gates the xva_* settings below.
+     * @brief The folder the run writes its results to, relative to the run.
      */
-    int xva_enabled = 0;
+    std::string output_path = "Output";
 
     /**
-     * @brief Enables stress test analytics.
+     * @brief The name of the log file.
      */
-    int stress_enabled = 0;
+    std::string log_file = "log.txt";
 
     /**
-     * @brief Enables parametric VaR. Gates the var_* settings below.
+     * @brief The calendar of the run's dates. Empty when the run does not state it.
      */
-    int parametric_var_enabled = 0;
+    std::optional<std::string> date_calendar;
 
     /**
-     * @brief Enables initial margin (SIMM) calculation. Gates the simm_* settings.
+     * @brief The convention of the run's dates. Empty when the run does not state it.
      */
-    int initial_margin_enabled = 0;
+    std::optional<std::string> date_convention;
 
     /**
-     * @brief Enables potential future exposure output.
+     * @brief Whether the run goes on after an error, as ORE spells it: true or false. Empty when
+     * the run does not state it.
      */
-    int pfe_enabled = 0;
+    std::optional<std::string> continue_on_error;
 
     /**
-     * @brief Enables the portfolio details output: the market objects and risk factors the
-     * portfolio needs. A report that prices nothing, such as a data completeness check, still runs
-     * the engine, and an engine run needs at least one analytic.
+     * @brief Whether the run builds the trades that failed, as ORE spells it: true or false. Empty
+     * when the run does not state it.
      */
-    int portfolio_details_enabled = 0;
+    std::optional<std::string> build_failed_trades;
 
     /**
-     * @brief Enables the standardised approach for counterparty credit risk (SA-CCR): exposure at
-     * default, replacement cost and potential future exposure per netting set.
+     * @brief Whether today's fixings are implied, as ORE spells it: Y or N. Empty when the run does
+     * not state it.
      */
-    int saccr_enabled = 0;
+    std::optional<std::string> imply_todays_fixings;
 
     /**
-     * @brief Enables model calibration: it calibrates the simulation models to the market and
-     * writes the calibrated parameters and the fit.
+     * @brief Whether today's cash flows are included, as ORE spells it: Y or N. Empty when the run
+     * does not state it.
      */
-    int calibration_enabled = 0;
+    std::optional<std::string> include_todays_cash_flows;
 
     /**
-     * @brief Enables the credit curves output: the survival probability and hazard rate curves
-     * bootstrapped from credit spreads.
+     * @brief Whether events on the reference date are included, as ORE spells it: Y or N. Empty
+     * when the run does not state it.
      */
-    int credit_curves_enabled = 0;
+    std::optional<std::string> include_reference_date_events;
 
     /**
-     * @brief Enables value at risk by historical simulation over a stated historical window. A
-     * stressed value at risk is the same analytic over a stressed window.
+     * @brief Whether the market is built on demand, as ORE spells it: true or false. Empty when the
+     * run does not state it.
      */
-    int historical_var_enabled = 0;
+    std::optional<std::string> lazy_market_building;
 
     /**
-     * @brief Enables the profit and loss explain: the decomposition of the profit and loss of a
-     * period into risk factor components and an unexplained residual.
+     * @brief Whether index fixings are enriched, as ORE spells it: true or false. Empty when the
+     * run does not state it.
      */
-    int pnl_explain_enabled = 0;
+    std::optional<std::string> enrich_index_fixings;
 
     /**
-     * @brief XVA confidence quantile. NULL means "not set".
+     * @brief Whether the run uses the analytics framework, as ORE spells it: true or false. Empty
+     * when the run does not state it.
      */
-    double xva_quantile = 0.95;
+    std::optional<std::string> use_analytics;
 
     /**
-     * @brief Enables the CVA adjustment within XVA.
+     * @brief Whether report headers are written as comments, as ORE spells it: Y or N. Empty when
+     * the run does not state it.
      */
-    int xva_cva_enabled = 0;
+    std::optional<std::string> csv_comment_report_header;
 
     /**
-     * @brief Enables the DVA adjustment within XVA.
+     * @brief Whether a missing mapping maps to itself, as ORE spells it: true or false. Empty when
+     * the run does not state it.
      */
-    int xva_dva_enabled = 0;
+    std::optional<std::string> default_mapping_to_identity;
 
     /**
-     * @brief Enables the FVA adjustment within XVA.
+     * @brief Whether the portfolio is read from sub directories, as ORE spells it: true or false.
+     * Empty when the run does not state it.
      */
-    int xva_fva_enabled = 0;
+    std::optional<std::string> portfolio_recurse_into_sub_directories;
 
     /**
-     * @brief Enables the ColVA adjustment within XVA.
+     * @brief The log mask, a bit set of the message kinds to write. Empty when the run does not
+     * state it.
      */
-    int xva_colva_enabled = 0;
+    std::optional<int> log_mask;
 
     /**
-     * @brief Enables the DIM (dynamic initial margin) calculation within XVA.
+     * @brief The number of days of fixing lag to ignore. Empty when the run does not state it.
      */
-    int xva_dim_enabled = 0;
+    std::optional<int> ignore_fixing_lag;
 
     /**
-     * @brief DIM confidence quantile. NULL means "not set".
+     * @brief Whether the run writes additional results, as ORE spells it: Y or N. Empty when the
+     * run does not state it.
      */
-    double xva_dim_quantile = 0.99;
-
-    /**
-     * @brief DIM horizon in calendar days. NULL means "not set".
-     */
-    int xva_dim_horizon_calendar_days = 14;
-
-    /**
-     * @brief Regression order for the DIM backtest, 1 to 3. NULL means "not set".
-     */
-    int xva_dim_regression_order = 0;
-
-    /**
-     * @brief Parametric VaR method: delta, delta_gamma_normal or monte_carlo. NULL means "not set".
-     */
-    std::string var_method = "delta";
-
-    /**
-     * @brief SIMM methodology version. NULL means "not set".
-     */
-    std::string simm_version;
-
-    /**
-     * @brief Currency the SIMM amount is expressed in. NULL means "not set".
-     */
-    std::string simm_calculation_currency;
+    std::optional<std::string> additional_results;
 
     /**
      * @brief Username of the person who last modified this risk report config.

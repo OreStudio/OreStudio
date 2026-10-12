@@ -44,7 +44,6 @@ namespace rp = ores::reporting::messaging;
 using ores::nats::service::nats_client;
 using ores::ore::messaging::run_configuration_import_execute_result;
 using ores::ore::messaging::saved_document;
-using ores::reporting::domain::report_run_setup;
 
 namespace {
 
@@ -52,20 +51,28 @@ constexpr std::string_view run_document_file = "ore.xml";
 
 /**
  * @brief A configuration document a run can name: the configuration type it
- * fills and the run setup column that names its file.
+ * fills and the Setup parameter that names its file.
  */
 struct document_kind {
     std::string_view code;
-    std::optional<std::string> report_run_setup::* file;
+    std::string_view parameter;
 };
+
+std::optional<std::string>
+file_of(const rp::run_document& document, std::string_view parameter) {
+    for (const auto& f : document.files)
+        if (f.parameter == parameter)
+            return f.name;
+    return std::nullopt;
+}
 
 // In the order an import stores them: a curve segment names its conventions,
 // so the conventions go first.
 constexpr document_kind document_kinds[] = {
-    {"conventions", &report_run_setup::conventions_file},
-    {"curve_configuration", &report_run_setup::curve_config_file},
-    {"todays_market", &report_run_setup::market_config_file},
-    {"pricing_engines", &report_run_setup::pricing_engines_file},
+    {"conventions", "conventionsFile"},
+    {"curve_configuration", "curveConfigFile"},
+    {"todays_market", "marketConfigFile"},
+    {"pricing_engines", "pricingEnginesFile"},
 };
 
 // The run settings are no input file: the run document is built from them.
@@ -175,7 +182,9 @@ run_configuration_import_execute_result import_run(nats_client& owners,
     const auto run =
         parse_file<ores::ore::domain::ore>(std::string(run_document_file), run_file->second);
     rp::run_document document;
-    document.setup = ores::ore::domain::run_document_mapper::map_setup(run);
+    auto setup = ores::ore::domain::run_document_mapper::map_setup(run);
+    document.settings = std::move(setup.settings);
+    document.files = std::move(setup.files);
     document.analytics = ores::ore::domain::run_document_mapper::map_analytics(run);
     document.market_bindings = ores::ore::domain::run_document_mapper::map_market_bindings(run);
 
@@ -183,7 +192,7 @@ run_configuration_import_execute_result import_run(nats_client& owners,
     // parse, is found before its first write.
     parsed_documents parsed;
     for (const auto& kind : document_kinds) {
-        const auto& file = document.setup.*kind.file;
+        const auto file = file_of(document, kind.parameter);
         if (!file)
             continue;
         const auto content = files.find(*file);
@@ -204,7 +213,7 @@ run_configuration_import_execute_result import_run(nats_client& owners,
         r.run_document_saved = true;
         r.stored.push_back(std::string(run_document_file));
         for (const auto& kind : document_kinds) {
-            const auto& file = document.setup.*kind.file;
+            const auto file = file_of(document, kind.parameter);
             if (!file)
                 continue;
             const auto configuration_name = name + "/" + *file;
@@ -266,7 +275,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
         call(owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
 
     ore document;
-    document.Setup = run_document_mapper::reverse_setup(run.document.setup);
+    document.Setup = run_document_mapper::reverse_setup({run.document.settings, run.document.files});
     document.Analytics = run_document_mapper::reverse_analytics(run.document.analytics);
     if (!run.document.market_bindings.empty())
         document.Markets =
@@ -282,7 +291,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, which the export cannot write.",
                 b.configuration_type_code));
-        const auto& file = run.document.setup.*kind->file;
+        const auto file = file_of(run.document, kind->parameter);
         if (!file)
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, but its run document names no "

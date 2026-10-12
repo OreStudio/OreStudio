@@ -42,6 +42,8 @@ render_analytic_type_fields(const domain::analytic_type& v) {
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back(
         {.name = "Parameter Entity", .value = v.parameter_entity.value_or(std::string{})});
+    fields.push_back({.name = "Requires Analytic Type Code",
+                      .value = v.requires_analytic_type_code.value_or(std::string{})});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

@@ -18,8 +18,8 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.reporting.api/domain/report_analytic.hpp"
-#include "ores.reporting.api/domain/report_run_setup.hpp"
+#include "ores.reporting.api/domain/configuration_analytic.hpp"
+#include "ores.reporting.api/domain/configuration.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <map>
@@ -32,10 +32,10 @@ namespace {
 const std::string tags("[ore][party]");
 
 struct mapped_document {
-    ores::reporting::domain::report_run_setup setup;
-    std::vector<ores::reporting::domain::report_analytic> analytics;
-    std::optional<ores::reporting::domain::report_analytic> extra;
-    std::optional<ores::reporting::domain::report_analytic> absent;
+    ores::reporting::domain::configuration header;
+    std::vector<ores::reporting::domain::configuration_analytic> analytics;
+    std::optional<ores::reporting::domain::configuration_analytic> extra;
+    std::optional<ores::reporting::domain::configuration_analytic> absent;
     std::string name;
     std::map<std::string, int> unmodelled;
 };
@@ -45,14 +45,14 @@ struct mapped_document {
 TEST_CASE("assigning a party stamps every row of a mapped document", tags) {
     mapped_document d;
     d.analytics.resize(3);
-    d.extra = ores::reporting::domain::report_analytic{};
+    d.extra = ores::reporting::domain::configuration_analytic{};
     d.name = "unchanged";
     d.unmodelled["Element"] = 2;
 
     const auto party = boost::uuids::random_generator()();
     ores::database::domain::assign_party(d, party);
 
-    CHECK(d.setup.party_id == party);
+    CHECK(d.header.party_id == party);
     for (const auto& a : d.analytics)
         CHECK(a.party_id == party);
     REQUIRE(d.extra);

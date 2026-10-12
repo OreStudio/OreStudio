@@ -36,10 +36,12 @@ namespace ores::reporting::service {
  * @brief Stores a report definition's run document and binds the
  * configurations it names.
  *
- * The run document is the setup, the analytics with their parameters, and the
- * market bindings. Each configuration document the run names lives with the
- * component that owns it; reporting holds only the configuration row that
- * names it and the binding that puts it in the definition's slot.
+ * The run document is the choices of the run, the analytics with their
+ * parameters, and the market bindings. All three belong to the risk report
+ * configuration that the definition binds, so a stored document creates and binds
+ * one, and a definition has no run document of its own. Each configuration
+ * document the run names lives with the component that owns it; reporting holds only the
+ * configuration row that names it and the binding that puts it in the definition's slot.
  */
 class ORES_REPORTING_CORE_EXPORT run_document_service {
 public:
@@ -50,26 +52,19 @@ public:
     /**
      * @brief Stores a run document against a report definition.
      *
-     * Throws when the definition already holds a run document, or when an
+     * Throws when the definition already binds a risk report configuration, or when an
      * analytic sets a parameter no definition describes; nothing is written
      * then.
      */
     void save(const boost::uuids::uuid& report_definition_id, messaging::run_document v);
 
     /**
-     * @brief The definition's run document, if it holds one.
+     * @brief The run document the definition's risk configuration and bindings
+     * describe.
+     *
+     * Empty when the definition binds no risk configuration.
      */
     std::optional<messaging::run_document> get(const boost::uuids::uuid& report_definition_id);
-
-    /**
-     * @brief The definition's stored run document, or else the one its risk
-     * configuration and bindings describe.
-     *
-     * Empty when the definition holds neither a run document nor a risk
-     * configuration.
-     */
-    std::optional<messaging::run_document>
-    get_or_generate(const boost::uuids::uuid& report_definition_id);
 
     /**
      * @brief Creates a configuration of a type and binds it to the definition
@@ -96,6 +91,10 @@ public:
     bindings(const boost::uuids::uuid& report_definition_id);
 
 private:
+    std::vector<domain::report_configuration>
+    bindings_of_type(const boost::uuids::uuid& report_definition_id,
+                     const std::string& configuration_type_code);
+
     context ctx_;
 };
 

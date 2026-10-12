@@ -101,6 +101,12 @@ function personWatches(account: Account): readonly WatchedEntity[] {
     ];
 }
 
+/** The links in a person's story, named by what they point at rather than by their ids. */
+const LINK_RECORDS: Readonly<Record<string, { readonly label: string; readonly field: string }>> = {
+    'ores.iam.account_role': { label: 'access.person.recordRole', field: 'Role' },
+    'ores.iam.account_party': { label: 'access.person.recordParty', field: 'Party' },
+};
+
 /** The reads that make up a person's page, named by the start of their keys. */
 function personQueries(account: Account): readonly (readonly string[])[] {
     return [
@@ -246,6 +252,16 @@ function Person({
                             actorPicture={actorPicture}
                             isService={isService}
                             marked={newEntries}
+                            recordName={(event) => {
+                                const link = LINK_RECORDS[event.entityType];
+                                if (link === undefined) return undefined;
+                                const named = event.fields.find(
+                                    (field) => field.name === link.field,
+                                )?.value;
+                                return [t(link.label), named]
+                                    .filter((part) => part !== undefined && part !== '')
+                                    .join(' ');
+                            }}
                             /*
                              * Two entries can be acted on. A grant is taken
                              * away, which closes it and is the write the roles

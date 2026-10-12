@@ -169,6 +169,8 @@ const pt: SourceCatalogue = {
             notYourself: 'Não pode retirar um papel a si próprio.',
             whatTheyAllow: 'O que estes papéis permitem',
             giveTitle: 'Dar um papel a {name}',
+            recordRole: 'Papel',
+            recordParty: 'Parte',
             alreadyHeld: 'já atribuído',
             chooseReason: 'Escolha um motivo',
             note: 'Nota (opcional)',

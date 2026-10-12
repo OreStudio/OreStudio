@@ -169,6 +169,8 @@ export const en: SourceCatalogue = {
             notYourself: 'You cannot take a role away from yourself.',
             whatTheyAllow: 'What these roles let them do',
             giveTitle: 'Give {name} a role',
+            recordRole: 'Role',
+            recordParty: 'Party',
             alreadyHeld: 'already held',
             chooseReason: 'Choose a reason',
             note: 'Note (optional)',

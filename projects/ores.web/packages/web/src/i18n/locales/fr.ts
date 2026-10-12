@@ -165,6 +165,8 @@ const fr: SourceCatalogue = {
             notYourself: 'Vous ne pouvez pas vous retirer un rôle.',
             whatTheyAllow: 'Ce que ces rôles permettent',
             giveTitle: 'Accorder un rôle à {name}',
+            recordRole: 'Rôle',
+            recordParty: 'Partie',
             alreadyHeld: 'déjà détenu',
             chooseReason: 'Choisissez une raison',
             note: 'Note (facultative)',

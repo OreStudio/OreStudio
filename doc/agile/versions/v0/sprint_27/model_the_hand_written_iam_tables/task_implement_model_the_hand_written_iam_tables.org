@@ -86,3 +86,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=account_role= is generated from =ores.iam.account_role_junction.org=. Its table, entity, mapper, repository, domain type, shell commands and wire types come from the model, and it has a history.
+
+- The table gains =version=, =modified_by= and =performed_by= in place of =assigned_by= and =assigned_at=. A grant's author is =modified_by= and its time is =recorded_at=. The wire names =assigned_by= and =assigned_at= are unchanged.
+- The four SQL callers (the seed function, publish from DQ, the system provisioner and the Member trigger) state the new columns.
+- The permission joins stay hand-written, in =account_permission_repository=, because they read a function and not the table.
+- The person timeline reads the history and shows a role taken away as a Closed entry. Its gap note remains only for a read that failed.
+- The IAM tests (296 cases), the shell tests and the 45 pgTAP files pass.

@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=role_permission= is generated from =ores.iam.role_permission_junction.org=, with a history read by role.
+
+- The table gains =version=, =modified_by= and =performed_by= in place of =assigned_by= and =assigned_at=. The seed function and the tenant provisioner state the new columns.
+- The permission-code reads on the old repository had no caller and are removed.
+- The IAM tests, the shell tests and the pgTAP files pass.

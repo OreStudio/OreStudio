@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :dq:codegen:docs:bring-dq-artefact-tables-onto-the-canonical-model:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-dq-artefact-guide
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A developer adding a DQ artefact reads one page and follows one way, and can tel
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -40,9 +40,10 @@ A developer adding a DQ artefact reads one page and follows one way, and can tel
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Trace the pipeline in the code (the archetype, the dataset and bundle upserts,
+the publication workflow, each service's publish handler and SQL function), then
+write one page that states the one way, with a checklist and the legacy
+patterns, and point the entity skill at it.
 
 * Measurements
 
@@ -84,3 +85,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+
+Shipped [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]], ordered by the Data storage structure note. It states:
+
+- the one way: the owning model's artefact flag, with =* Artefact columns= only
+  when the staging shape differs, and no DQ model or stack for the artefact;
+- the pipeline from the generated table through the hand-written includes and
+  drop script, the seeded dataset, the artefact type, the bundle, the
+  dependencies, the subject and handler, to the publish function and its test;
+- the publish function's contract: signature, modes, idempotence, the clock for
+  closing rows, the system-tenant refusal and the entity-writes baseline;
+- a checklist, and the four legacy patterns with the task that retires each.
+
+Two facts the code shows and no page said before: the publication orders
+datasets by declared dependencies only, not by bundle display order; and the
+drop scripts and =dq_create.sql= includes are written by hand for every
+artefact. The =compass-codegen-add-entity= skill now says to stage an entity
+from its own model and links the page.

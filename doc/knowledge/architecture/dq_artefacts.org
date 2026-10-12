@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: F19A6B98-1CAD-4206-913B-A4EAAED2DEAF
+:END:
+#+title: DQ artefacts
+#+description: The one way to stage an entity's data for DQ and publish it into its owning service: the owning model's artefact flag, the dataset, artefact type, bundle and dependencies, the publish subject and function, and the legacy patterns not to copy.
+#+type: knowledge
+#+level: cross
+#+filetags: :dq:codegen:architecture:staging:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+* Summary
+
+A DQ artefact is a staging table, =ores_dq_<plural>_artefact_tbl=, that holds
+an entity's rows by dataset until a publication writes them into the service
+that owns the entity. There is one way to make one: the entity's own model, in
+the component that owns the data, opts in with
+=:ores.sql.schema.domain_entity_artefact_create.enabled: true=, and codegen
+generates the table from that model. The model adds an =* Artefact columns=
+section only when the staging shape differs from the entity. A staging table is
+not an entity of DQ: it gets no DQ model, no DQ C++ code, no shell commands and
+no TypeScript. The rest of the pipeline is a dataset, an artefact type, a bundle
+member, any dataset dependencies, and the owning service's publish subject and
+SQL function. Older tables were made other ways; they are listed at the end,
+with the task that retires each.
+
+* Detail
+
+** Words
+
+| Word | Meaning |
+|------+---------|
+| /Artefact table/ | The staging table of one entity in the =dq= schema, keyed by =dataset_id=, written by seed scripts in the system tenant |
+| /Owning model/ | The model of the entity the artefact stages, in the component that owns the published rows, such as =ores.refdata.book= |
+| /Dataset/ | One named, versioned set of artefact rows, registered in =ores_dq_datasets_tbl= with its artefact type |
+| /Artefact type/ | The row in =ores_dq_artefact_types_tbl= that names the artefact table, the target table and the publish subject |
+| /Bundle/ | A named list of datasets published together, such as =base= or =system_core= |
+| /Publication/ | A workflow that publishes a bundle's datasets in dependency order, one step per dataset |
+
+** The one way
+
+The artefact belongs to the model of the data it stages. A book's artefact table
+comes from =ores.refdata.book=, a currency's from =ores.refdata.currency=, an
+image's from =ores.assets.image=: one model states the entity and its staging
+shape, and the two cannot drift.
+
+1. *Opt in on the owning model.* Add
+   =:ores.sql.schema.domain_entity_artefact_create.enabled: true= to the model's
+   properties. The archetype is
+   [[id:5B8F3C2A-6E1D-4A9F-8C3B-1D7A9E2F4B6C][ores.sql.schema.domain_entity_artefact_create]];
+   it is off by default because most entities have no import.
+2. *Declare the staging shape when it differs.* By default the artefact table
+   projects the entity's columns. Add an =* Artefact columns= section, one
+   =** <column>= per staging column in order, when the import needs something the
+   store does not: a natural key where the store holds a uuid, a field the
+   publisher supplies left out, or a denormalised row that publishes into
+   several tables. The first column is the staging key unless =:key:= names
+   another.
+3. *Regenerate the SQL schema* for the model. The table lands in
+   =projects/ores.sql/create/dq/dq_<plural>_artefact_create.sql=.
+4. *Include it by hand.* Add the =\ir= line to =dq_create.sql=, and write the
+   drop script =projects/ores.sql/drop/dq/dq_<plural>_artefact_drop.sql= with its
+   line in =dq_drop.sql=, as every artefact does today.
+5. *Seed the rows.* A populate script in the owning component's populate folder
+   registers the dataset with =ores_dq_datasets_upsert_fn=, naming its
+   catalogue and its artefact type, and inserts the artefact rows for that
+   dataset id. It is idempotent: it leaves a dataset that already has rows, or
+   replaces them.
+6. *Name the artefact type.* Add a row to
+   =projects/ores.sql/populate/dq/dq_artefact_types_populate.sql=: the code, the
+   artefact table, the target table and the publish subject,
+   =<component>.v1.ops.publish_<plural>_from_dq=. A new kind of data gets a new
+   artefact type; data of an existing kind reuses its type.
+7. *Put the dataset in a bundle* with =ores_dq_dataset_bundle_members_upsert_fn=.
+   =system_core= holds the installation's own data and is published into the
+   system tenant once; every other bundle is published into each tenant a
+   profile names.
+8. *Declare what it depends on* with =ores_dq_dataset_dependencies_upsert_fn=.
+   The publication orders datasets by their dependencies and nothing else: the
+   display order of a bundle member does not decide it. A dataset whose rows
+   validate against another dataset's rows, such as a feed naming its provider,
+   declares that dataset.
+9. *Publish in the owning service.* The service subscribes to the subject in its
+   registrar and lets its =publish_from_dq_handler= call
+   =ores_<component>_publish_<plural>_from_dq_fn=. Follow the component's
+   existing handler: synthetic checks each function against an allow-list, and
+   refdata lists its subjects in the registrar.
+10. *Write the publish function* in
+    =projects/ores.sql/create/<component>/<component>_publish_from_dq_create.sql=.
+11. *Test the publish* in pgTAP.
+
+** The publish function
+
+Every publish function has the same signature and contract:
+
+#+begin_src sql
+create or replace function ores_<component>_publish_<plural>_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint)
+#+end_src
+
+- It is =security definer=, with =set search_path = public, pg_temp=, because
+  it reads the DQ artefact table and writes the owning service's table.
+- It accepts the modes =upsert=, =insert_only= and =replace_all=, and refuses any
+  other. It returns one row per action it took: =inserted=, =updated=,
+  =skipped= or =deleted=, each with its count.
+- It is idempotent. A repeat publish of the same dataset changes nothing it
+  already wrote.
+- It closes a row with =clock_timestamp()=, as the tables' triggers and delete
+  rules do, never with =current_timestamp=: a row written earlier in the same
+  transaction would otherwise get a =valid_to= before its =valid_from=.
+- Installation data refuses any target but the system tenant.
+- It reads =p_params= only for what the bundle publication passes, such as the
+  party a party-scoped publish writes for.
+- It writes the owning tables directly, so it is listed in the entity-writes
+  baseline, =projects/ores.codegen/scripts/entity_table_writes_baseline.json=,
+  beside the other publish functions.
+
+** Checklist
+
+- [ ] The owning model carries the artefact flag, and an =* Artefact columns=
+      section only when the staging shape differs.
+- [ ] No =ores.dq= model, DQ C++ code, shell command or TypeScript was added for
+      the artefact.
+- [ ] The generated create script is included in =dq_create.sql=, with its drop
+      script in =dq_drop.sql=.
+- [ ] The dataset is registered with its catalogue and artefact type, and its
+      rows are seeded idempotently.
+- [ ] The artefact type names the artefact table, the target table and the
+      subject.
+- [ ] The dataset is in the right bundle: =system_core= for installation data,
+      a tenant bundle otherwise.
+- [ ] Every dataset it validates against is declared as a dependency.
+- [ ] The owning service subscribes to the subject, and its handler reaches the
+      function.
+- [ ] The publish function follows the contract above and is in the
+      entity-writes baseline.
+- [ ] A pgTAP test publishes the dataset, publishes it again in =insert_only=
+      and =replace_all= in the same transaction, and checks the rows.
+
+** Legacy patterns
+
+These patterns exist in the tree and are not to be copied. Each group has a task
+in [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]].
+
+| Pattern | Tables | Why it is legacy | Retired by |
+|---------+--------+------------------+------------|
+| A separate =ores.dq= model that duplicates a domain model in another component | =csas=, =netting_agreements=, =netting_sets=, =report_definitions=, =risk_report_configs=, =synthetic_market_data_providers= | The columns are stated twice, and codegen generates a DQ C++, shell and TypeScript stack for a staging table | [[id:2FC7FD9E-9098-459F-A0A2-C1E63FD710FD][Move the duplicated DQ models onto their owners]] |
+| Hand-written SQL with no model | =crm_topology_bundles=, =ip2country=, =lei_bic=, =market_data_observations=, =synthetic_gmm_components=, =synthetic_ir_curve_configs=, =synthetic_ir_curve_template_entries= | Nothing generates or checks the table against its entity | [[id:64EE4260-1748-40E1-A1AA-4DD687CED92F][Model the hand-written artefact tables]] |
+| The older lookup template, =sql_schema_artefact_create=, from =ores.codegen.lookup_entity= models | =account_types=, =asset_classes=, =asset_measures=, =benchmark_rates=, =business_centres=, =business_processes=, =cashflow_types=, =entity_classifications=, =local_jurisdictions=, =party_relationships=, =party_roles=, =person_roles=, =regulatory_corporate_sectors=, =reporting_regimes=, =supervisory_bodies= | A second template for the same table shape; the lookup entity type is itself being retired | [[id:A31257E3-7495-46CD-B36D-10AA6D55CB09][Move the lookup artefact tables onto domain models]] |
+| An =ores.dq= model whose owner is unsettled | =badge_definitions=, =badge_severities=, =code_domains=, =coding_schemes=, =counterparty_aliases=, =netting_set_aliases=, =lei_entities=, =lei_relationships=, =synthetic_fx_spot_configs= | Where DQ owns the data, as with the badges and coding schemes, the =ores.dq= model is the owning model and is not legacy; the others need a decision | [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]] |
+
+Junction artefact tables come from their own template,
+=sql_schema_junction_artefact_create=, and are out of scope of this page.
+
+The eight =publish_from_dq_handler= files, one per service, repeat one pattern
+by hand and validate the subject in different ways. A new artefact follows its
+component's handler; making them one is not yet a task.
+
+** The fact the code shape does not show
+
+The artefact table lives in the =dq= schema, but it is the owning component's
+data in transit. That is why the owning model generates it, why the owning
+service publishes it, and why DQ holds no code for it: DQ owns the datasets,
+bundles, artefact types and publications, not the rows they carry.
+
+* See also
+
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note this page belongs to
+- [[id:5B8F3C2A-6E1D-4A9F-8C3B-1D7A9E2F4B6C][ores.sql.schema.domain_entity_artefact_create]] — the archetype that generates an artefact table from its owning model
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — the component that owns datasets, bundles and publications
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data Quality]] — the DQ dimensions and the provenance every dataset carries
+- [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — how a profile publishes bundles into a tenant
+- [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] — the story that retires the legacy patterns

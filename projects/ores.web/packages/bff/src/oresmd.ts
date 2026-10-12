@@ -51,12 +51,16 @@ import type { LiveSession } from './sessions.js';
  * from a browser.
  *
  * A URI the codec refuses is an answer and not a fault. Parse and compose return
- * it with \`success\` false and the codec's words, so the editor can show them where
+ * it with `success` false and the codec's words, so the editor can show them where
  * the person is typing. A refusal of the call itself, such as a missing
  * permission, is an error as for any other read.
  */
 
-/** How long a browser may keep the schema. It is the codec's own table and changes with a release. */
+/**
+ * How long a browser may keep the schema. It is the codec's own table and changes
+ * with a release. It is reference data, so a copy kept after a permission is
+ * revoked shows nothing the person could not have read minutes before.
+ */
 const SCHEMA_MAX_AGE_SECONDS = 300;
 
 const schemaReply = oresmdSchemaSchema.extend({

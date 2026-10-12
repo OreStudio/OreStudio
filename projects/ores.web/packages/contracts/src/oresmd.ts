@@ -74,7 +74,7 @@ export const oresmdParseRequestSchema = z.strictObject({
 
 /**
  * The parts of a URI the codec accepts, or the codec's words for refusing it. A
- * refusal is an answer, so the status is still 200 and \`success\` is false.
+ * refusal is an answer, so the status is still 200 and `success` is false.
  */
 export const oresmdParseResultSchema = z.object({
     success: z.boolean(),
@@ -94,7 +94,7 @@ export type OresmdParseResult = z.infer<typeof oresmdParseResultSchema>;
  * are text here and not a list the browser holds.
  */
 export const oresmdComposeRequestSchema = z.strictObject({
-    kind: z.string().max(32),
+    kind: z.string().max(ORESMD_MAX_TEXT),
     instrument: z.string().max(ORESMD_MAX_TEXT),
     quote: z.string().max(ORESMD_MAX_TEXT).default(''),
     subject: z.string().max(ORESMD_MAX_TEXT).default(''),

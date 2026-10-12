@@ -69,6 +69,7 @@ domain::risk_report_config risk_report_config_mapper::map(const risk_report_conf
     r.parametric_var_enabled = v.parametric_var_enabled;
     r.initial_margin_enabled = v.initial_margin_enabled;
     r.pfe_enabled = v.pfe_enabled;
+    r.portfolio_details_enabled = v.portfolio_details_enabled;
     r.xva_quantile = v.xva_quantile.value_or(0);
     r.xva_cva_enabled = v.xva_cva_enabled;
     r.xva_dva_enabled = v.xva_dva_enabled;
@@ -121,6 +122,7 @@ risk_report_config_entity risk_report_config_mapper::map(const domain::risk_repo
     r.parametric_var_enabled = v.parametric_var_enabled;
     r.initial_margin_enabled = v.initial_margin_enabled;
     r.pfe_enabled = v.pfe_enabled;
+    r.portfolio_details_enabled = v.portfolio_details_enabled;
     r.xva_quantile = v.xva_quantile == 0 ? std::nullopt : std::optional(v.xva_quantile);
     r.xva_cva_enabled = v.xva_cva_enabled;
     r.xva_dva_enabled = v.xva_dva_enabled;

@@ -20,6 +20,7 @@
 #include "ores.reporting.core/service/run_document_generator.hpp"
 #include <algorithm>
 #include <optional>
+#include <stdexcept>
 
 namespace ores::reporting::service {
 
@@ -35,6 +36,7 @@ struct switch_rule {
 
 // In the order ORE runs the analytics.
 constexpr switch_rule switch_rules[] = {
+    {&risk_report_config::portfolio_details_enabled, "portfolioDetails"},
     {&risk_report_config::npv_enabled, "npv"},
     {&risk_report_config::cashflow_enabled, "cashflow"},
     {&risk_report_config::curves_enabled, "curves"},
@@ -71,6 +73,12 @@ std::vector<std::string> enabled_analytic_types(const risk_report_config& risk) 
 }
 
 messaging::run_document generate_run_document(const run_document_inputs& in) {
+    const auto types = enabled_analytic_types(in.risk);
+    if (types.empty())
+        throw std::invalid_argument(
+            "The risk report configuration switches no analytic on. An ORE run needs at "
+            "least one.");
+
     messaging::run_document r;
 
     auto& setup = r.setup;
@@ -90,7 +98,7 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
     }
 
     int order = 0;
-    for (const auto& type : enabled_analytic_types(in.risk)) {
+    for (const auto& type : types) {
         messaging::run_analytic a;
         a.analytic.party_id = in.party_id;
         a.analytic.report_definition_id = in.report_definition_id;

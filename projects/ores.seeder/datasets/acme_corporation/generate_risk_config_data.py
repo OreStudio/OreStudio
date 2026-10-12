@@ -29,27 +29,31 @@ import generate_configuration_data as documents
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# The analytics each report turns on. A report that inspects data rather than
-# prices it turns none on.
+# The analytics each report turns on. An ORE run needs at least one, so a report that
+# inspects data rather than prices it asks for the portfolio details: the market
+# objects and risk factors the portfolio needs. FX Spot Rates asks for the curves
+# analytic, which writes the calibration of the market the rates belong to. The
+# platform has one report workflow and it runs the engine, so these seven reports
+# run it too.
 ANALYTICS = {
-    "Data Quality Completeness": [],
-    "System Health": [],
-    "Audit Trail Summary": [],
+    "Data Quality Completeness": ["portfolio_details"],
+    "System Health": ["portfolio_details"],
+    "Audit Trail Summary": ["portfolio_details"],
     "SA-CCR Exposure": ["pfe"],
     "Leverage Ratio": ["pfe"],
     "FRTB SA Capital": ["sensitivity"],
     "Liquidity Coverage": ["cashflow"],
     "Large Exposures": ["pfe"],
-    "MIFID II Transaction Reporting": [],
-    "CFTC Swap Data Reporting": [],
-    "HKMA Trade Repository": [],
+    "MIFID II Transaction Reporting": ["portfolio_details"],
+    "CFTC Swap Data Reporting": ["portfolio_details"],
+    "HKMA Trade Repository": ["portfolio_details"],
     "Group Consolidated Exposure": ["pfe"],
     "Board Risk Dashboard": ["npv", "pfe", "parametric_var"],
     "Cross-Entity Counterparty Concentration": ["pfe"],
     "Intercompany Exposure Matrix": ["pfe"],
     "Model Calibration": ["simulation"],
     "Yield Curves": ["curves"],
-    "FX Spot Rates": [],
+    "FX Spot Rates": ["curves"],
     "Volatility Surfaces": ["curves"],
     "Credit Curves": ["curves"],
     "NPV": ["npv"],
@@ -67,7 +71,7 @@ ANALYTICS = {
 
 # The name of each set of analytics, for the name of the configuration.
 PROFILES = {
-    frozenset(): "Data checks",
+    frozenset(["portfolio_details"]): "Portfolio details",
     frozenset(["pfe"]): "Counterparty exposure",
     frozenset(["sensitivity"]): "Sensitivities",
     frozenset(["cashflow"]): "Cashflows",
@@ -98,6 +102,7 @@ ROOT_PORTFOLIO = {
 
 # The switch columns of the configuration, by analytic.
 SWITCH_COLUMNS = {
+    "portfolio_details": "portfolio_details_enabled",
     "npv": "npv_enabled",
     "cashflow": "cashflow_enabled",
     "curves": "curves_enabled",
@@ -133,6 +138,8 @@ def write(name, records):
 def analytics_of(report_name):
     if report_name not in ANALYTICS:
         raise SystemExit(f"No analytics are decided for the report {report_name}")
+    if not ANALYTICS[report_name]:
+        raise SystemExit(f"The report {report_name} switches no analytic on, and an ORE run needs one")
     return frozenset(ANALYTICS[report_name])
 
 
@@ -233,7 +240,7 @@ STAGING_ORDER = [
     "base_currency", "observation_model", "n_threads", "market_data_type", "market_data_date",
     "npv_enabled", "cashflow_enabled", "curves_enabled", "sensitivity_enabled",
     "simulation_enabled", "xva_enabled", "stress_enabled", "parametric_var_enabled",
-    "initial_margin_enabled", "pfe_enabled", "xva_quantile", "xva_cva_enabled",
+    "initial_margin_enabled", "pfe_enabled", "portfolio_details_enabled", "xva_quantile", "xva_cva_enabled",
     "xva_dva_enabled", "xva_fva_enabled", "xva_colva_enabled", "xva_dim_enabled",
     "xva_dim_quantile", "xva_dim_horizon_calendar_days", "xva_dim_regression_order",
     "var_quantiles", "var_method", "simm_version", "simm_calculation_currency",

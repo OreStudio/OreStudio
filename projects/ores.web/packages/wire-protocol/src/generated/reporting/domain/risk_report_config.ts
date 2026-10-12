@@ -53,6 +53,7 @@ export interface RiskReportConfig {
     parametric_var_enabled: number;
     initial_margin_enabled: number;
     pfe_enabled: number;
+    portfolio_details_enabled: number;
     xva_quantile: number;
     xva_cva_enabled: number;
     xva_dva_enabled: number;

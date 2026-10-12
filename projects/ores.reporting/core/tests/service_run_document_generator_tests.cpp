@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,7 @@ run_document_inputs inputs() {
     in.risk.base_currency = "GBP";
     in.risk.npv_enabled = 0;
     in.risk.cashflow_enabled = 0;
+    in.risk.curves_enabled = 1;
     in.bound_types = {"conventions", "curve_configuration", "todays_market", "pricing_engines"};
     return in;
 }
@@ -51,12 +53,23 @@ std::vector<std::string> codes(const ores::reporting::messaging::run_document& d
 
 }
 
-TEST_CASE("a risk configuration with no switch set runs no analytic", tags) {
-    CHECK(generate_run_document(inputs()).analytics.empty());
+TEST_CASE("a risk configuration with no switch set is refused", tags) {
+    auto in = inputs();
+    in.risk.curves_enabled = 0;
+    CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
+}
+
+TEST_CASE("the portfolio details switch runs the portfolio details analytic", tags) {
+    auto in = inputs();
+    in.risk.curves_enabled = 0;
+    in.risk.portfolio_details_enabled = 1;
+    const std::vector<std::string> expected{"portfolioDetails"};
+    CHECK(codes(generate_run_document(in)) == expected);
 }
 
 TEST_CASE("each switch set adds its analytic, in run order", tags) {
     auto in = inputs();
+    in.risk.curves_enabled = 0;
     in.risk.xva_enabled = 1;
     in.risk.npv_enabled = 1;
     in.risk.sensitivity_enabled = 1;
@@ -66,6 +79,7 @@ TEST_CASE("each switch set adds its analytic, in run order", tags) {
 
 TEST_CASE("the initial margin switch runs the initial margin analytic", tags) {
     auto in = inputs();
+    in.risk.curves_enabled = 0;
     in.risk.initial_margin_enabled = 1;
     const std::vector<std::string> expected{"initialMargin"};
     CHECK(codes(generate_run_document(in)) == expected);
@@ -73,6 +87,7 @@ TEST_CASE("the initial margin switch runs the initial margin analytic", tags) {
 
 TEST_CASE("every analytic is active and numbered from one", tags) {
     auto in = inputs();
+    in.risk.curves_enabled = 0;
     in.risk.npv_enabled = 1;
     in.risk.cashflow_enabled = 1;
     const auto d = generate_run_document(in);
@@ -84,6 +99,7 @@ TEST_CASE("every analytic is active and numbered from one", tags) {
 
 TEST_CASE("the value-at-risk switch runs the parametric value-at-risk analytic", tags) {
     auto in = inputs();
+    in.risk.curves_enabled = 0;
     in.risk.parametric_var_enabled = 1;
     const std::vector<std::string> expected{"parametricVar"};
     CHECK(codes(generate_run_document(in)) == expected);

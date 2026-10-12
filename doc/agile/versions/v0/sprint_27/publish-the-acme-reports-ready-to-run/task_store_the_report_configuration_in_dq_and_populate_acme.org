@@ -108,8 +108,8 @@ task and name that file in the Command column.
 | Bindings per definition after the same provision | 5 for every definition: conventions, pricing engines, today's market, curve configuration and run settings (390 bindings) | the same query on the report configurations table | f3d473f7c6 |
 | Portfolio scope rows after the same provision | One for each run settings set: 4, 13, 13 and 13 | the same query on the portfolio scope table | f3d473f7c6 |
 | Run configurations exported | 78 of 78 definitions export. 50 distinct files validate against =input.xsd=, none fails | =ore export-run= over every definition, then =xmllint --schema input.xsd --path external/ore/xsd= over each distinct file | f3d473f7c6 |
-| Definitions whose run document switches no analytic on | 15 of 78, the data and market data reports | the =Analytic= elements of the exported =ore.xml= files | f3d473f7c6 |
-| pgTAP | The new risk report configuration publish test passes with 9 tests. The official reports, bindings, pricing engines, configuration documents and document guard tests pass | =compass db sql -f= over each file in =projects/ores.sql/test= | f3d473f7c6 |
+| Definitions whose run document switches no analytic on | 0 of 78. The 15 that had none now ask for portfolio details (12) or curves (3). Every run document has at least one analytic | the =Analytic= elements of the exported =ore.xml= files | the commit that adds portfolio details |
+| pgTAP | The new risk report configuration publish test passes with 10 tests. The official reports, bindings, pricing engines, configuration documents and document guard tests pass | =compass db sql -f= over each file in =projects/ores.sql/test= | f3d473f7c6 |
 | C++ suites | =ores.reporting.core.tests=, =ores.dq.core.tests= and =ores.ore.core.tests= pass | =ctest -R= over the three names | bc9a609553 |
 
 * Notes

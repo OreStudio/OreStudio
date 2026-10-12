@@ -160,6 +160,13 @@ struct risk_report_config final {
     int pfe_enabled = 0;
 
     /**
+     * @brief Enables the portfolio details output: the market objects and risk factors the
+     * portfolio needs. A report that prices nothing, such as a data completeness check, still runs
+     * the engine, and an engine run needs at least one analytic.
+     */
+    int portfolio_details_enabled = 0;
+
+    /**
      * @brief XVA confidence quantile. NULL means "not set".
      */
     double xva_quantile = 0.95;

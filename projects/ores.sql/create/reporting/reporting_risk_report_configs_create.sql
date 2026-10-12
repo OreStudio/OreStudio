@@ -50,6 +50,7 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     "parametric_var_enabled" integer not null default 0,
     "initial_margin_enabled" integer not null default 0,
     "pfe_enabled" integer not null default 0,
+    "portfolio_details_enabled" integer not null default 0,
     "xva_quantile" numeric(5,4) null,
     "xva_cva_enabled" integer not null default 1,
     "xva_dva_enabled" integer not null default 0,
@@ -92,13 +93,15 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     check ("parametric_var_enabled" in (0, 1)),
     check ("initial_margin_enabled" in (0, 1)),
     check ("pfe_enabled" in (0, 1)),
+    check ("portfolio_details_enabled" in (0, 1)),
     check ("xva_cva_enabled" in (0, 1)),
     check ("xva_dva_enabled" in (0, 1)),
     check ("xva_fva_enabled" in (0, 1)),
     check ("xva_colva_enabled" in (0, 1)),
     check ("xva_dim_enabled" in (0, 1)),
     check ("xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3),
-    check ("var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo'))
+    check ("var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo')),
+    check ("npv_enabled" + "cashflow_enabled" + "curves_enabled" + "sensitivity_enabled" + "simulation_enabled" + "xva_enabled" + "stress_enabled" + "parametric_var_enabled" + "initial_margin_enabled" + "pfe_enabled" + "portfolio_details_enabled" >= 1)
 );
 
 -- Composite natural key: unique combination for active records

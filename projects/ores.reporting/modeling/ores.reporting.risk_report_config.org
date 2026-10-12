@@ -309,6 +309,22 @@ Enables potential future exposure output.
 faker::number::integer(0, 1)
 #+end_src
 
+** portfolio_details_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the portfolio details output: the market objects and risk factors the
+portfolio needs. A report that prices nothing, such as a data completeness
+check, still runs the engine, and an engine run needs at least one analytic.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
 ** xva_quantile
 :PROPERTIES:
 :type:     numeric(5,4)
@@ -525,6 +541,7 @@ checks the template emits on its own.
 | "parametric_var_enabled" in (0, 1) |
 | "initial_margin_enabled" in (0, 1) |
 | "pfe_enabled" in (0, 1) |
+| "portfolio_details_enabled" in (0, 1) |
 | "xva_cva_enabled" in (0, 1) |
 | "xva_dva_enabled" in (0, 1) |
 | "xva_fva_enabled" in (0, 1) |
@@ -532,6 +549,7 @@ checks the template emits on its own.
 | "xva_dim_enabled" in (0, 1) |
 | "xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3 |
 | "var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo') |
+| "npv_enabled" + "cashflow_enabled" + "curves_enabled" + "sensitivity_enabled" + "simulation_enabled" + "xva_enabled" + "stress_enabled" + "parametric_var_enabled" + "initial_margin_enabled" + "pfe_enabled" + "portfolio_details_enabled" >= 1 |
 
 * Artefact columns
 
@@ -643,6 +661,11 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 :END:
 
 ** pfe_enabled
+:PROPERTIES:
+:type: integer
+:END:
+
+** portfolio_details_enabled
 :PROPERTIES:
 :type: integer
 :END:

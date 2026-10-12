@@ -32,7 +32,7 @@
     "version": 0,
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Group Treasury Portfolio"
+    "configuration_name": "Portfolio details - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_group",
@@ -67,7 +67,7 @@
     "version": 0,
     "report_name": "System Health",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Group Treasury Portfolio"
+    "configuration_name": "Portfolio details - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_group",
@@ -102,7 +102,7 @@
     "version": 0,
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Group Treasury Portfolio"
+    "configuration_name": "Portfolio details - Group Treasury Portfolio"
   },
   {
     "company_code": "acme_group",
@@ -382,7 +382,7 @@
     "version": 0,
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -417,7 +417,7 @@
     "version": 0,
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -627,7 +627,7 @@
     "version": 0,
     "report_name": "MIFID II Transaction Reporting",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -732,7 +732,7 @@
     "version": 0,
     "report_name": "FX Spot Rates",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Curves - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1222,7 +1222,7 @@
     "version": 0,
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1257,7 +1257,7 @@
     "version": 0,
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1467,7 +1467,7 @@
     "version": 0,
     "report_name": "CFTC Swap Data Reporting",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1572,7 +1572,7 @@
     "version": 0,
     "report_name": "FX Spot Rates",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Curves - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1992,7 +1992,7 @@
     "version": 0,
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2027,7 +2027,7 @@
     "version": 0,
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2237,7 +2237,7 @@
     "version": 0,
     "report_name": "HKMA Trade Repository",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Portfolio details - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2342,7 +2342,7 @@
     "version": 0,
     "report_name": "FX Spot Rates",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Data checks - Global Portfolio"
+    "configuration_name": "Curves - Global Portfolio"
   },
   {
     "company_code": "acme_hk",

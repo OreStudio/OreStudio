@@ -51,6 +51,7 @@ create table if not exists "ores_dq_risk_report_configs_artefact_tbl" (
     "parametric_var_enabled" integer not null,
     "initial_margin_enabled" integer not null,
     "pfe_enabled" integer not null,
+    "portfolio_details_enabled" integer not null,
     "xva_quantile" numeric(5,4) null,
     "xva_cva_enabled" integer not null,
     "xva_dva_enabled" integer not null,

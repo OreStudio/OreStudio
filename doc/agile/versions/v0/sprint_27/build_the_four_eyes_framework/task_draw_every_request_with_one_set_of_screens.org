@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/draw-every-request-with-one-set-of-screens
-#+pr:
+#+pr: 3171
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3171][#3171]] | [web] Draw every request with one set of screens |
 
 * Review
 

@@ -379,7 +379,8 @@ hold for a row to match.
   for -- and every column that declares =:filterable: true=. A column of an enum type
   is filterable like any other. Its member has the enum's type, the wire carries
   the enum's text, and a row matches when the text it is stored as equals that
-  text. The one-of member of an enum column is a list of that type.
+  text. The match is exact and case-sensitive, because an enum's text is a code,
+  unlike =search=, which ignores case. The one-of member of an enum column is a list of that type.
 - *Is one of.* The primary key column, every relation column and every
   filterable column have a member
   that carries a list of the column's type. A row matches when its column
@@ -407,7 +408,10 @@ hold for a row to match.
   its column is not before =_from= and not after =_to=: both bounds are
   inclusive. A member that is absent sets no bound, so a caller can state one end
   only. A =_to= given as a date on a timestamp column means the end of that day,
-  so that a person who asks for "up to the 5th" gets the whole of the 5th. A
+  so that a person who asks for "up to the 5th" gets the whole of the 5th. The
+  day is a day in UTC, because the store keeps every timestamp in UTC, and a
+  screen that shows another zone converts the date before it sends it. On a
+  column of a date type a =_to= is the date itself, inclusive. A
   =_from= later than the =_to= matches no row, as an empty one-of list does. A
   row whose column is null never matches a range. Equals on a date or a
   timestamp stays available, but no screen should use it to find a period.
@@ -477,7 +481,11 @@ has these rules.
   read states =as_of=, every part is resolved at that instant, so the state and
   the booking in a row come from the same instant. When =as_of= is absent, every
   part is the current row. A read model that cannot honour this does not offer
-  =as_of=.
+  =as_of=. The model declares each part as required or optional. A required
+  part with no row at the instant means the entity did not exist then, so the
+  row is left out of the page and out of =total=: a trade booked after =as_of= is
+  not listed. An optional part with no row leaves its columns null, and a
+  collection part, such as the identifiers, is empty.
 - *It has its own key and its own permission.* The key is the key of its main
   part. The permission is a read permission of its own, because a person who may
   see a trade's state may not see everything the read model carries.
@@ -638,6 +646,11 @@ foreign key and not on the column, because the generator reads the relation from
 the foreign key. It works for a column that is also part of the entity's primary
 key: the trade identifiers are keyed by the trade and are read by it.
 
+The =subtree= scope is available only where the relation is the entity's own
+parent, a column that refers to the same entity, as a portfolio's parent
+portfolio does. A foreign key to another entity serves =direct= only, and a
+=subtree= request on it is refused with =scope_not_supported=.
+
 A scoped read takes the entity's filter record, so a caller can narrow the rows
 of one trade further, and the filter members that name the relation column stay
 valid. A scoped read states =as_of= only when the model declares it with
@@ -661,8 +674,9 @@ filters in the browser and never invents an operation.
 | Rows by a column of another entity | A read model that carries the column | Trades by state, by book and by identifier |
 | The rows below a node of another entity's hierarchy | The screen reads the nodes first and sends their keys in a one-of member, at most 1000 | The trades of a portfolio and its subtree: the books below it, then =book_id_one_of= |
 
-A screen that sends more than 1000 keys in a one-of member says so to the
-person and applies no scope. It never sends a part of the keys, because a
+The server refuses a one-of list of more than 1000 keys with
+=filter_too_large=, and the client limit is the same number. A screen that has
+more than 1000 keys says so to the person and applies no scope. It never sends a part of the keys, because a
 filter that silently drops some keys returns the wrong rows and the wrong total.
 
 ** Writes

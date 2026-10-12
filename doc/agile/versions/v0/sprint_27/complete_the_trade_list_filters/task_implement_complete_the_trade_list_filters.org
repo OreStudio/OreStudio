@@ -8,7 +8,7 @@
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-complete-the-trade-list-filters
-#+pr:
+#+pr: 3200
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3200][#3200]] | [trading] Spike the enum filter and the by-trade read |
 
 * Review
 

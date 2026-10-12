@@ -180,6 +180,27 @@ It is addressed at =trading.v1.trade_identifiers.delete_many=.
 trade_identifiers delete-many 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
 #+end_src
 
+** =by-trade-id=
+:PROPERTIES:
+:ID: 4878C9FB-7EAA-5806-9EA8-A5C2A504AF46
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers by-trade-id <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.list_by_trade_id=.
+
+#+name: trade_identifiers-by-trade-id
+#+begin_src ores-shell :tangle trade_identifiers-by-trade-id.ores :exports none
+trade_identifiers by-trade-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
 ** =versions=
 :PROPERTIES:
 :ID: D610ABDA-B0E7-5CF1-A33A-F6433A2303C0

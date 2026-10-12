@@ -35,18 +35,20 @@ A person finds a trade by its identifier, state, book, date, counterparty, trade
 - A read-only trade summary entity lists trades with their current state and booking, and filters by state, book and counterparty.
 - The trade summary searches every identifier of a trade, ignoring case and literally.
 - The filter record has inclusive from and to members for date and timestamp columns, and the trade summary filters by trade date.
-- The entity protocol specification, the review journey and the backlog capture state what exists.
+- The entity protocol specification states the standard for finding entities: the read-model entity, the enum filter member, the range members and the by-parent read. It does so before the code tasks build on it, and every rule has an example from the trade list.
+- The review journey and the backlog capture state what exists.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:85D77556-ABC0-4B24-B787-68A8F5540A72][Scaffold story: Complete the trade list's filters]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:3BAE1673-D95B-4ED0-9AAC-1D00149B5D25][Spike the enum filter and the by-trade read]] | BACKLOG | | | Initial task for: Complete the trade list's filters |
+| [[id:3BAE1673-D95B-4ED0-9AAC-1D00149B5D25][Spike the enum filter and the by-trade read]] | DONE | 2026-10-12 | 2026-10-12 | Initial task for: Complete the trade list's filters |
 | [[id:8FD0FC2F-6B77-4513-AE34-D7EF28DE6EB6][Read each trade child by trade id]] | BACKLOG | | | Add list_by_trade_id to the identifiers, party roles, portfolios, additional fields and instrument parts. |
 | [[id:95E127BE-AFC8-4CF6-8DB4-961135A76C19][Add the trade summary entity]] | BACKLOG | | | A read-only entity with list and get that carries the trade, its current state and booking, and the identifiers as one searchable text column. |
 | [[id:8380ADEE-85BD-4A96-A242-164EA07D29CB][Add range members to the filter record]] | BACKLOG | | | Date and timestamp columns that declare filterable get inclusive from and to members, in the spec, the generator and the TypeScript twin. |
 | [[id:9FE2CBEA-053D-4007-89D0-40936F96233D][Document the trade list filters]] | BACKLOG | | | State in the specification, the review journey and the backlog capture what the trade list now filters. |
+| [[id:94E49E8F-0B06-4D27-AFD7-6BE12FDD638E][Specify the search and filter standard]] | BACKLOG | | | Write the standard for finding entities into the entity protocol specification: the read-model entity, the enum filter member, the range members and the by-parent reads, so every entity follows one rule. |
 
 * Analysis
 
@@ -92,20 +94,21 @@ Equals on a date is useless, and the filter record has no range member. The prop
 
 * Decisions
 
-Open, to settle before the tasks that depend on them:
+Settled on 2026-10-12:
 
-- Option C (=trade_summary=) against option B (cross-entity filter members). Recommended: C. The spike and the summary task depend on it.
-- The range member for dates. Recommended: =_from= and =_to=, inclusive. The range task depends on it.
+- Option C: a read-only =trade_summary= entity carries state, book and the identifiers. Option B (cross-entity filter members) and the client-side join are rejected.
+- Date ranges use =_from= and =_to= members, both inclusive.
 - The limit of 1000 books for a portfolio subtree. Above it the client refuses the scope and says why. It never truncates, because a truncated filter returns a wrong total.
-- The instant of the trade summary. One read states one =as_of=, and the view takes the state and the booking that were current at that instant, so they never come from different instants.
+- The instant of the trade summary. One read states one =as_of=, and a set-returning SQL function applies it to the state and the booking, so they never come from different instants. A view cannot take the =as_of=, so the read model is a function, and the generator must support an entity without a table.
 
 * Order of work
 
 1. Spike the enum filter and =list_by= on a key column.
-2. Read each trade child by trade id.
-3. Add the trade summary entity, with state, book and identifier search.
-4. Add the range members, then the date filter.
-5. Document the filters.
+2. Specify the search and filter standard in the entity protocol specification. Whatever this story settles becomes the rule for every entity, as =as_of= did, so the rule is written before the code tasks build on it.
+3. Read each trade child by trade id.
+4. Add the trade summary entity, with state, book and identifier search.
+5. Add the range members, then the date filter.
+6. Document the trade list filters in the journey and the capture.
 
 * Out of scope
 

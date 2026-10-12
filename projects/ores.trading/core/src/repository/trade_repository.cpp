@@ -108,6 +108,8 @@ filter_condition(const std::optional<messaging::trades_filter>& filter) {
                         is_null("counterparty_id"));
     if (filter->trade_type)
         r.push_back(equals("trade_type", filter_value(*filter->trade_type)));
+    if (filter->counterparty_scope)
+        r.push_back(equals("counterparty_scope", filter_value(*filter->counterparty_scope)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
@@ -125,6 +127,12 @@ filter_condition(const std::optional<messaging::trades_filter>& filter) {
         for (const auto& v : *filter->trade_type_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("trade_type", std::move(values)));
+    }
+    if (filter->counterparty_scope_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->counterparty_scope_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("counterparty_scope", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
         r.push_back(contains_any({"trade_type"}, *filter->search));

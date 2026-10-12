@@ -107,6 +107,7 @@ std::string("Swap")
 :nullable:      false
 :default_value: ores::trading::domain::counterparty_scope::external
 :economic:      true
+:filterable:    true
 :END:
 
 Who the firm faces: =external=, =inter_entity= or =intra_entity=.

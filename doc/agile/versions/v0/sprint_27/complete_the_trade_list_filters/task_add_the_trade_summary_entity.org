@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/add-the-trade-summary-entity
 #+pr:
-#+blocked_on: The spike result and the decision on option C.
+#+blocked_on: The spike result and the specification task.
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
@@ -38,7 +38,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 - One read states one =as_of=, and the state and the booking in a row come from that instant.
 - The identifier search is measured on a large list, and a trigram index is added if the scan is too slow.
 - A portfolio scope over more than 1000 books is refused by the client, never truncated.
-- The trade summary is a view-backed, read-only entity with generated protocol, repository, service and TypeScript twin.
+- The generator supports a read-model entity that has no table of its own. It reads from a set-returning SQL function that takes the =as_of= and applies it to every part it joins.
+- The trade summary is such an entity, with generated protocol, repository, service and TypeScript twin.
 - It filters by state, book, counterparty, trade type and the enum columns, and searches every identifier.
 - A repository test covers each filter, the search and the total.
 

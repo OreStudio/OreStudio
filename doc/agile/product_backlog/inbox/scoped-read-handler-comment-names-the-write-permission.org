@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2F6D3C75-3C58-4094-B641-DFC1AABF72C5
+:END:
+#+title: The generated handler for a scoped read comments that it che…
+#+description: The generated handler for a scoped read comments that it checks the permission a write needs, but it checks the read permission. The wording comes from the handler template and appears in every scoped read (78 models). Fix the template and regenerate, not one entity. Found in the review of PR 3200.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

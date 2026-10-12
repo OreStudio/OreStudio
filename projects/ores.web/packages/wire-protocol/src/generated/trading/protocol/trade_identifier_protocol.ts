@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface TradeIdentifierKey {
     trade_id: string;
@@ -56,6 +57,11 @@ export interface TradeIdentifierLookup {
     trade_identifier: TradeIdentifier | null;
 }
 
+export interface TradeIdentifiersFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface TradeIdentifierEvent {
     event_id: string;
     key: TradeIdentifierKey;
@@ -80,6 +86,7 @@ export interface ListTradeIdentifiersRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeIdentifiersFilter | null;
     as_of: string | null;
 }
 
@@ -145,6 +152,21 @@ export interface DeleteManyTradeIdentifiersResponse {
     result: Result;
 }
 
+export interface ListByTradeIdTradeIdentifiersRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TradeIdentifiersFilter | null;
+}
+
+export interface ListByTradeIdTradeIdentifiersResponse {
+    result: Result;
+    identifiers: TradeIdentifier[];
+    total: number;
+}
+
 export interface ListTradeIdentifierVersionsRequest {
     key: TradeIdentifierKey;
     offset: number;
@@ -176,6 +198,7 @@ export const subjects = {
     put_many_trade_identifiers_request: 'trading.v1.trade_identifiers.put_many',
     delete_trade_identifier_request: 'trading.v1.trade_identifiers.delete',
     delete_many_trade_identifiers_request: 'trading.v1.trade_identifiers.delete_many',
+    list_by_trade_id_trade_identifiers_request: 'trading.v1.trade_identifiers.list_by_trade_id',
     list_trade_identifier_versions_request: 'trading.v1.trade_identifiers_versions.list',
     get_trade_identifier_version_request: 'trading.v1.trade_identifiers_versions.get',
 } as const;
@@ -192,6 +215,7 @@ export const requiresSession = {
     put_many_trade_identifiers_request: true,
     delete_trade_identifier_request: true,
     delete_many_trade_identifiers_request: true,
+    list_by_trade_id_trade_identifiers_request: true,
     list_trade_identifier_versions_request: true,
     get_trade_identifier_version_request: true,
 } as const;

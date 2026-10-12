@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/add-range-members-to-the-filter-record
 #+pr:
-#+blocked_on: The decision on the range members.
+#+blocked_on: The specification task.
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12

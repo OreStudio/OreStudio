@@ -26,11 +26,11 @@ A node takes work only when it is free, and never holds a job it is not running.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
-| Now          | Built and verified on the dev grid; in review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then requeue expired leases. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -89,3 +89,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A free wrapper now claims one job at a time from the work ledger through =claim_work=. It wakes on the =work_available= notice and polls every 5 seconds with jitter if the notice is lost. The dispatcher queues the result and rings the notice, and no longer mints a token or publishes to the assignments stream. The wrapper no longer reads or creates that stream. Five local wrappers claimed, ran and submitted every job of a short soak. Remote nodes were not redeployed because Newton and the laptop were offline.

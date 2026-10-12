@@ -73,6 +73,7 @@ enum class outcome_code {
     precondition_not_supported,
     precondition_incomplete,
     batch_removal_is_unconditional,
+    approval_required,
     internal_error,
 };
 
@@ -113,6 +114,8 @@ enum class outcome_code {
             return "precondition_incomplete";
         case outcome_code::batch_removal_is_unconditional:
             return "batch_removal_is_unconditional";
+        case outcome_code::approval_required:
+            return "approval_required";
         case outcome_code::internal_error:
             return "internal_error";
         default:
@@ -157,6 +160,8 @@ enum class outcome_code {
             return ores::utility::domain::outcome::invalid;
         case outcome_code::batch_removal_is_unconditional:
             return ores::utility::domain::outcome::invalid;
+        case outcome_code::approval_required:
+            return ores::utility::domain::outcome::denied;
         case outcome_code::internal_error:
             return ores::utility::domain::outcome::failed;
         default:
@@ -246,6 +251,10 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
         case outcome_code::batch_removal_is_unconditional:
             return detail::fill("A batch removal is unconditional; remove the rows one at a time "
                                 "to state a version.",
+                                a);
+        case outcome_code::approval_required:
+            return detail::fill("A change to this {entity} needs the approval of a request; raise "
+                                "one instead of writing it.",
                                 a);
         case outcome_code::internal_error:
             return detail::fill("The store refused the write: {reason}", a);

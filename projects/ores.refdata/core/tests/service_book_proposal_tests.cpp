@@ -350,7 +350,7 @@ TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", tag
     auto moved = *books.get_book(live.id);
     moved.description = "Changed by someone else";
     moved.change_reason_code = "system.test";
-    books.save_book(moved);
+    write_live(w, moved);
 
     const auto id = boost::uuids::to_string(proposal.request->id);
     const auto result = svc.apply(id);
@@ -439,7 +439,7 @@ TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
     auto moved = *books.get_book(live.id);
     moved.description = "Changed by someone else";
     moved.change_reason_code = "system.test";
-    books.save_book(moved);
+    write_live(w, moved);
 
     CHECK(svc.recheck(id).refused());
 }

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/gate-the-refdata-writes-behind-the-policy
+#+pr: 3158
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Make the generated and hand-written refdata writers refuse a gated act with appr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -44,6 +44,13 @@ Make the generated and hand-written refdata writers refuse a gated act with appr
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Put the gate in the generated service of a gated entity, below every handler, so the generated handlers and any hand-written one meet it. A model with =:gated: true= gets it from the service templates.
+- Ask the policy in one SQL function, =ores_inbox_gate_fn=. It answers free, approved or required for an act, the columns it changes and a request id.
+- Compare the proposed row with the live row in the service, so the columns the policy reads are the columns the write changes. A new row changes every column.
+- Tie the pass to a request. The applier names the request on the service in process. The service checks that the request is approved and holds an unapplied line for exactly this row, operation and version. No field of a client message can set it.
+- Let the preview through as a rehearsal, because it rolls its writes back. Take the preview's changed columns from the service, so the policy keeps one reading.
+- Refuse the in-process save and remove methods of a gated entity, because they take no request.
 
 * Measurements
 
@@ -61,6 +68,14 @@ task and name that file in the Command column.
 
 * Notes
 
+- The product owner chose to gate always and to fix the callers in later tasks. The ORE import (step 6 saves books), the shell book commands and today's book screen write books directly. They now get =approval_required= until they raise requests. I add a follow-up task for the import. The book screen moves in its own task.
+- A write that does not use the service does not meet the gate. The SQL that publishes a dataset into the tables is one. Whether the policy covers it is a separate decision.
+- The gate is not proof against a caller inside the process that sets the pass. The line check reads rows, but it does not compare the content of the write with the line. The pass is set only by the applier, and no wire message carries it.
+- The preview now takes the changed columns from the service. The key column is not reported, as before. A rename reads the live row by name, as the real write does.
+- Four existing tests wrote live books through the service's save and remove. They now go through the repository. The generated eventing test does the same for a gated entity, from the template.
+- The book has no delete policy row, so a removal is free today. The delete cases use a tenant policy row for the test.
+- Not done: a test against the running services with the web. The refdata binary, which holds the new cases, passed in one process. The other binaries that call a book write over NATS were not run.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,12 +91,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3158][#3158]] | [refdata] Gate the book writes behind the approval policy |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A request of N lines reads about N times N lines; 1001 is a magic number | book_service.cpp | Accept in part | The limit is now a named constant. I did not cache the lines: the applier checks lines one at a time and marks them applied in the same pass, so a cache would need care for a gain no one has measured. |
+| 2 | A batch delete cannot match a versioned line | delete_many_books | Accept in part | A comment says so. The batch fails closed, and the applier removes one row at a time with its version. I added no test: no policy row gates a book delete, so the case needs a second fixture for a path nothing calls. |
+| 3 | The id call in the changed-column function is dead | book_service.cpp | Decline | The function is generated from the write fields, and the key is one of them. The filter that drops it is deliberate, and the template cannot skip one field. |
+| 4 | The column array literal is not escaped | approval_gate.hpp | Accept | The doc comment now says a name is a plain identifier from the model. |
+| 5 | rehearse() is public and disables the gate | book_service.hpp | Decline | The pass is in process and no message sets it. A friend hook or a tagged constructor adds a layer for a caller that is already inside the service. A check that fails when rehearse appears outside the preview is worth a later task. |
+| 6 | The exception block opens a subtransaction on every call | gate function | Accept | The function tests the shape of the id first, in its own statement, so the cast cannot run on a bad id. |
+| 7 | Confirm no production path calls the four refused methods | book_service.cpp | Accept | I searched the tree. Only tests called them, and those now use the repository. |
+| 8 | Say why the gate runs before the claim check | prepare_change | Accept | A comment says it. |
+| 9 | Does the applier run while the request is approved | approval gate | Accept | It does. The apply reads the request as approved under a row lock, and the apply cases pass. |
 
 * Result
+
+A gated write is refused with =approval_required= unless it carries out a line of an approved request.
+
+- The outcome =approval_required= is in the catalogue, with the coarse outcome =denied=.
+- =ores_inbox_gate_fn= answers free, approved or required in one query.
+- The generated book service asks it for a put, a batch put, a delete and a batch delete. The applier names its request, the preview is a rehearsal, and the in-process save and remove are refused.
+- An act with no policy row is written as before.
+
+Evidence: the whole =ores.refdata.core.tests= binary passes, with 14 new cases in =service_book_gate_tests.cpp= (61 assertions). They cover a refused create, a refused gated column, a direct write of an ungated column, a gated and an ungated removal, a gated batch removal, an approved request, an unapproved request, a write the request does not hold, a stale version, a line used twice, a rehearsal, the refused in-process methods and the three answers of the SQL function. The catalogue drift sweep, the cmake source, populate reference, handler permission, test case reachability, pasted block symbol, derived-model and pattern use checks pass.
+
+Not done here: the callers named in Notes, and a run against the live services.

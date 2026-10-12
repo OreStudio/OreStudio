@@ -195,18 +195,29 @@ them.
 
 *** The gate
 
-The generated put and delete handlers of a gated entity check the policy. When the
-act has a part and the write does not come from an approved request, the handler
-refuses with the typed result =approval_required= and writes nothing. The refusal is
-a rule of the service, not of a screen, so a script or another client cannot skip the
-request.
+The gate sits in the generated service of a gated entity, below every handler that
+serves it, so a script, a hand-written handler or another client meets the same rule. The
+put, the batch put, the delete and the batch delete each ask the policy first. The
+service compares the proposed row with the live row, and a row that is new changes every
+column. The policy names a part for the act, or it does not. When it names none, the
+write goes ahead as before. When it names a part and the write does not come from an
+approved request, the service refuses with the typed result =approval_required=, which
+carries the outcome =denied=, and writes nothing.
 
-The apply is tied to a request, not to a caller. The applier passes the request's id
-with each line, and the handler checks, in the same transaction, that an approved
-request holds an unapplied line for exactly this entity, key, operation and version.
-Nothing the caller can set, such as a role or a flag, opens the gate: only a row in
-the database does. A hand-written handler, such as a composite write, calls the same
-check.
+The apply is tied to a request, not to a caller. The applier tells the service which
+request it carries out. For each write the service checks, in the same transaction,
+that the request is approved and holds an unapplied line for exactly this entity, key,
+operation and version. Nothing the caller can set opens the gate: only rows in the
+database do. The request is never a field of a message a client sends. It is set in
+process, by the applier alone. The preview runs the real writes in a transaction it never
+commits, so it marks the service as a rehearsal and the gate lets those writes through.
+The service's own in-process save and remove methods take no request, so a gated entity
+refuses them: the protocol operations are the only way to write.
+
+A hand-written handler, such as a composite write, reaches the store through the same
+service, so it meets the same check. A write that does not use the service does not meet
+it. The SQL that publishes a dataset into the tables is one such write. Whether the
+policy should cover it is a separate decision.
 
 *** States
 
@@ -284,8 +295,8 @@ The work splits so each piece is usable and reviewable alone:
    one raise for lines of several entities, the apply workflow with its one-transaction
    apply, =apply_failed=,
    and the apply workflow with its transient and permanent failures.
-4. *The gate.* The policy check in the generated handlers and the composite handler,
-   the =approval_required= result, and the request-tied pass for the applier.
+4. *The gate.* The policy check in the generated service, the =approval_required=
+   result, and the request-tied pass for the applier.
 5. *The common experience.* The BFF routes for preview, raise and the request page,
    the kind descriptor registry, the review panel, and the request page replacing the
    role-only detail.

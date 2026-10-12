@@ -21,6 +21,7 @@
 
 import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { OresmdComposeRequest } from '@ores/contracts';
+import { curves } from '../api/curves.js';
 import { oresmd } from '../api/oresmd.js';
 import { keyOf } from './editor.js';
 
@@ -34,6 +35,18 @@ const QUIET = { quiet: true } as const;
 const SCHEMA_STALE_MS = 5 * 60 * 1000;
 
 export const oresmdQueries = {
+    /**
+     * The series the party can see, with the axes each declares. It is the list the
+     * Evolution page reads, under the same key, so the two share one answer.
+     */
+    seriesList: (partyId: string) =>
+        queryOptions({
+            queryKey: ['market-series-list', partyId],
+            queryFn: () => curves.seriesList(),
+            retry: false,
+            meta: QUIET,
+        }),
+
     schema: () =>
         queryOptions({
             queryKey: ['oresmd-schema'],

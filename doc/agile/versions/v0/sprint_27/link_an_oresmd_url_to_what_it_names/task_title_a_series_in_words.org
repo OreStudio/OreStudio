@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Today the series page and the Evolution picker title a series with its raw ident
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -87,3 +87,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The oresmd schema table has a title for each of the 45 instrument types and words for each of the 17 quote types. =describe_oresmd_schema= sends them as =title= on each instrument and =quote_titles= beside =quotes=. The web fills the braces from the series identity, so the AUD/USD spot series reads =AUD/USD spot rate=. An identity field the title does not name follows it as =name=value=. The series page, the Evolution picker, the Evolution notice and the Inspect dialog use the title, and a type the schema does not know keeps its raw identity. Checked in headless Chrome. A standalone program checked that every title names only fields of its own row. The Catch2 test for the same rule is built but was not run, because the test binary needs the database of this environment and an earlier full test run polluted it.
+

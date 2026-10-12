@@ -8,7 +8,7 @@
 #+filetags: :link_an_oresmd_url_to_what_it_names:sprint_27:v0:
 #+owner: marco
 #+branch: feature/open-a-series-on-the-evolution-page-from-an-oresmd-url
-#+pr:
+#+pr: 3189
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3189][#3189]] | [web] Open a series on the Evolution page from an oresmd URL |
 
 * Review
 

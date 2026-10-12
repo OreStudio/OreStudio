@@ -912,6 +912,49 @@ export interface BackfillSeriesIdentityResponse {
 }
 
 /**
+ * @brief Keys a manual point on a node of a named object.
+ *
+ * The coordinates are checked against the shape the object declares, so a node
+ * the shape does not hold is refused. The point is stamped at the instant the
+ * server receives the request, and the caller is its author.
+ */
+export interface KeyManualPointRequest {
+    /** The object, as the typed identity the reads take. */
+    identity: ResolveSeriesIdentityRequest;
+    /** The node: one coordinate per declared axis, in the shape's order. */
+    coordinates: string[];
+    /** The value to key, as a number written in text. */
+    value: string;
+    /** The change reason code that says why the point is keyed. */
+    change_reason_code: string;
+    /** The free-text reason for the correction. */
+    change_commentary: string;
+}
+
+export interface KeyManualPointResponse {
+    success: boolean;
+    message: string;
+}
+
+/**
+ * @brief Clears the manual point on a node of a named object.
+ *
+ * Every manual point the node holds is released, whatever instant it was keyed
+ * at. The history keeps the value it replaced.
+ */
+export interface ClearManualPointRequest {
+    /** The object, as the typed identity the reads take. */
+    identity: ResolveSeriesIdentityRequest;
+    /** The node: one coordinate per declared axis, in the shape's order. */
+    coordinates: string[];
+}
+
+export interface ClearManualPointResponse {
+    success: boolean;
+    message: string;
+}
+
+/**
  * @brief Request to write the tenant's market data back out as ORE text.
  *
  * Takes no arguments: the export is the whole tenant's, because that is the
@@ -984,6 +1027,8 @@ export const subjects = {
     get_vintage_validity_request: 'marketdata.v1.ops.get_vintage_validity',
     export_market_data_to_storage_request: 'marketdata.v1.ops.export_market_data_to_storage',
     backfill_series_identity_request: 'marketdata.v1.ops.backfill_series_identity',
+    key_manual_point_request: 'marketdata.v1.ops.key_manual_point',
+    clear_manual_point_request: 'marketdata.v1.ops.clear_manual_point',
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
 } as const;
@@ -1011,6 +1056,8 @@ export const requiresSession = {
     get_vintage_validity_request: true,
     export_market_data_to_storage_request: true,
     backfill_series_identity_request: true,
+    key_manual_point_request: true,
+    clear_manual_point_request: true,
     export_market_data_request: true,
     market_tick: false,
 } as const;

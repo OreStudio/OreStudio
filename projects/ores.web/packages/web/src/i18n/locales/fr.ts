@@ -698,8 +698,10 @@ const fr: SourceCatalogue = {
         failed: 'Échec de la connexion.',
         chooseParty: 'Choisir une entité',
         choosePartyHint: 'Ce compte fonctionne dans plusieurs entités.',
-        partyTimedOut: 'Votre connexion a expiré, car vous n’avez pas choisi de partie à temps. Connectez-vous de nouveau.',
-        sessionEnded: 'Votre session a pris fin et vous avez été déconnecté. Connectez-vous de nouveau pour continuer.',
+        partyTimedOut:
+            'Votre connexion a expiré, car vous n’avez pas choisi de partie à temps. Connectez-vous de nouveau.',
+        sessionEnded:
+            'Votre session a pris fin et vous avez été déconnecté. Connectez-vous de nouveau pour continuer.',
         partyCategory: 'Catégorie',
     },
 
@@ -2142,6 +2144,17 @@ const fr: SourceCatalogue = {
                 age: 'Âge',
                 source: 'Source',
                 detail: 'Détail',
+                adjustActions: 'Actions',
+                adjustOpen: 'Ajuster',
+                adjustClear: 'Effacer',
+                adjustNewValue: 'Nouvelle valeur',
+                adjustSave: 'Enregistrer',
+                adjustSaving: 'Enregistrement...',
+                adjustCancel: 'Annuler',
+                adjustAdjusting: 'Ajuster {node}',
+                adjustValueInvalid: 'Saisissez la valeur sous forme de nombre.',
+                adjustManualNote:
+                    'Une valeur manuelle reste en place jusqu’à ce que vous l’effaciez.',
                 mixed: 'Ces valeurs viennent de plusieurs états de marché. La plus ancienne date de {oldest}, et elles couvrent {spread}.',
                 summary:
                     'La valeur la plus ancienne date de {oldest}. Les valeurs couvrent {spread}.',
@@ -4103,6 +4116,7 @@ const fr: SourceCatalogue = {
         deploymentRead:
             'voir tout le déploiement : ses locataires, ses services, sa grille, son bus de messages et ses journaux',
         curveSnapshotsRead: 'voir les courbes de données de marché',
+        observationsWrite: 'ajuster à la main des points de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
         irFeedsRead: 'voir les flux de courbes de taux synthétiques',
     },

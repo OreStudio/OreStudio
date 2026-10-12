@@ -45,6 +45,7 @@ const WORDS = {
     [PERMISSION.sessionsRead]: 'permissionWords.sessionsRead',
     [PERMISSION.deploymentRead]: 'permissionWords.deploymentRead',
     [PERMISSION.curveSnapshotsRead]: 'permissionWords.curveSnapshotsRead',
+    [PERMISSION.observationsWrite]: 'permissionWords.observationsWrite',
     [PERMISSION.fxFeedsRead]: 'permissionWords.fxFeedsRead',
     [PERMISSION.irFeedsRead]: 'permissionWords.irFeedsRead',
 } as const satisfies Record<Permission, string>;

@@ -40,6 +40,7 @@ set(files
     "service_corpus_import_tests.cpp"
     "service_import_party_series_tests.cpp"
     "service_import_service_tests.cpp"
+    "service_manual_point_service_tests.cpp"
     "service_ore_export_tests.cpp"
     "service_oresmd_schema_describer_tests.cpp"
     "service_oresmd_uri_service_tests.cpp"

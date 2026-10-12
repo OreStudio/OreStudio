@@ -89,6 +89,8 @@ public:
     delete_trade_identifier(const messaging::delete_trade_identifier_request& request);
     messaging::delete_many_trade_identifiers_response
     delete_many_trade_identifiers(const messaging::delete_many_trade_identifiers_request& request);
+    messaging::list_by_trade_id_trade_identifiers_response list_by_trade_id_trade_identifiers(
+        const messaging::list_by_trade_id_trade_identifiers_request& request);
     messaging::list_trade_identifier_versions_response list_trade_identifier_versions(
         const messaging::list_trade_identifier_versions_request& request);
     messaging::get_trade_identifier_version_response
@@ -111,6 +113,27 @@ public:
      * @return Total number of active trade identifiers.
      */
     std::uint32_t count_identifiers();
+
+
+    /**
+     * @brief Lists trade identifiers filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching trade identifiers for the requested page.
+     */
+    std::vector<domain::trade_identifier> list_identifiers_by_trade_id(const std::string& trade_id,
+                                                                       std::uint32_t offset,
+                                                                       std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active trade identifiers filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching trade identifiers.
+     */
+    std::uint32_t count_identifiers_by_trade_id(const std::string& trade_id);
 
 
     /**

@@ -28,6 +28,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -54,6 +55,16 @@ template <std::integral T>
     requires(!std::same_as<T, bool>)
 sqlgen::dynamic::Value filter_value(T v) {
     return {.val = sqlgen::dynamic::Integer{.val = static_cast<std::int64_t>(v)}};
+}
+
+/**
+ * @brief An enum is stored as its text, so a filter compares the text its
+ * to_string gives, found beside the enum.
+ */
+template <typename E>
+    requires std::is_enum_v<E>
+sqlgen::dynamic::Value filter_value(E v) {
+    return filter_value(std::string(to_string(v)));
 }
 
 namespace detail {

@@ -1091,6 +1091,67 @@ struct backfill_series_identity_response {
 };
 
 /**
+ * @brief Keys a manual point on a node of a named object.
+ *
+ * The coordinates are checked against the shape the object declares, so a node
+ * the shape does not hold is refused. The point is stamped at the instant the
+ * server receives the request, and the caller is its author.
+ */
+struct key_manual_point_request {
+    using response_type = struct key_manual_point_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.key_manual_point";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** The object, as the typed identity the reads take. */
+    resolve_series_identity_request identity;
+    /** The node: one coordinate per declared axis, in the shape's order. */
+    std::vector<std::string> coordinates;
+    /** The value to key, as a number written in text. */
+    std::string value;
+    /** The change reason code that says why the point is keyed. */
+    std::string change_reason_code;
+    /** The free-text reason for the correction. */
+    std::string change_commentary;
+};
+
+struct key_manual_point_response {
+    bool success = false;
+    std::string message;
+};
+
+/**
+ * @brief Clears the manual point on a node of a named object.
+ *
+ * Every manual point the node holds is released, whatever instant it was keyed
+ * at. The history keeps the value it replaced.
+ */
+struct clear_manual_point_request {
+    using response_type = struct clear_manual_point_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.clear_manual_point";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** The object, as the typed identity the reads take. */
+    resolve_series_identity_request identity;
+    /** The node: one coordinate per declared axis, in the shape's order. */
+    std::vector<std::string> coordinates;
+};
+
+struct clear_manual_point_response {
+    bool success = false;
+    std::string message;
+};
+
+/**
  * @brief Request to write the tenant's market data back out as ORE text.
  *
  * Takes no arguments: the export is the whole tenant's, because that is the

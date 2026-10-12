@@ -276,6 +276,10 @@ public:
                             const std::string& oresmd_uri,
                             std::chrono::system_clock::time_point observation_datetime);
 
+    std::size_t clear_manual_points(context ctx,
+                                    const boost::uuids::uuid& series_id,
+                                    const std::string& oresmd_uri);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

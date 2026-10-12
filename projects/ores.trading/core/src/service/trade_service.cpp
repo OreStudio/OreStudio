@@ -140,6 +140,12 @@ trade_service::list_trades(const messaging::list_trades_request& request) {
             refuse(outcome_code::filter_too_large, {.field = "trade_type_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->counterparty_scope_one_of &&
+        request.filter->counterparty_scope_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "counterparty_scope_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});

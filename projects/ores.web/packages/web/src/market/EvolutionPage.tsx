@@ -30,25 +30,28 @@
  * range. The "now" table states how old each value is and, when asked, where it
  * came from.
  *
- * No read lists the series yet, so the object is named by its identity and the
- * screen says so.
+ * A person who may write observations can also adjust a node by hand. A manual value
+ * owns its node until it is cleared, and the "now" table marks each manual node.
  *
  * An oresmd URL in the address, as `uri`, names the series to open: the screen
  * reads it through the server's parse, fills the identity from it and reads the
  * object, so a link to a URL is a link to its series.
  */
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type {
     CurveEvolution,
     CurveIdentity,
     CurveSeriesList,
     CurveSnapshot,
 } from '@ores/contracts';
+import { PERMISSION } from '../access/permissions.js';
+import { useHolds } from '../access/holds.js';
 import { curves, type CurveRange } from '../api/curves.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { ReasonFields, useReason } from '../refdata/shared.js';
 import { seriesOfUrl, seriesRoute, seriesVerdict } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
@@ -182,15 +185,144 @@ export function MatrixPanel({ evolution }: { readonly evolution: CurveEvolution 
     );
 }
 
+/** What the "now" table needs to let a person adjust nodes: the object, and what to do after a write. */
+export interface AdjustContext {
+    readonly identity: CurveIdentity;
+    readonly onChanged: () => void;
+}
+
+/** Whether text is one finite number, written whole. */
+function isNumber(text: string): boolean {
+    return text.trim() !== '' && Number.isFinite(Number(text));
+}
+
+/** The form that keys a manual value on one node, with the reason it is keyed for. */
+function NodeAdjust({
+    adjust,
+    coordinates,
+    label,
+    onClose,
+}: {
+    readonly adjust: AdjustContext;
+    readonly coordinates: readonly string[];
+    readonly label: string;
+    readonly onClose: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const reason = useReason('amend', true);
+    const [value, setValue] = useState('');
+    const [commentary, setCommentary] = useState('');
+    const key = useMutation({
+        mutationFn: () =>
+            curves.keyPoint(
+                adjust.identity,
+                coordinates,
+                value.trim(),
+                reason.code,
+                commentary.trim(),
+            ),
+        onSuccess: () => {
+            adjust.onChanged();
+            onClose();
+        },
+    });
+    const missing = commentary.trim() === '';
+    const valid = isNumber(value) && !missing && reason.code !== '';
+    return (
+        <form
+            className="space-y-3 rounded-md border border-line p-3"
+            aria-label={t('market.evolution.now.adjustAdjusting', { node: label })}
+            onSubmit={(event) => {
+                event.preventDefault();
+                if (valid) {
+                    key.mutate();
+                }
+            }}
+        >
+            <h3 className="text-sm font-medium">
+                {t('market.evolution.now.adjustAdjusting', { node: label })}
+            </h3>
+            <p className="text-xs text-ink-faint">{t('market.evolution.now.adjustManualNote')}</p>
+            <Field
+                label={t('market.evolution.now.adjustNewValue')}
+                {...(value !== '' && !isNumber(value)
+                    ? { error: t('market.evolution.now.adjustValueInvalid') }
+                    : {})}
+            >
+                <Input
+                    value={value}
+                    inputMode="decimal"
+                    onChange={(event) => setValue(event.target.value)}
+                />
+            </Field>
+            <ReasonFields
+                reason={reason}
+                commentary={commentary}
+                onCommentary={setCommentary}
+                missing={false}
+            />
+            {key.isError && <Notice tone="error">{key.error.message}</Notice>}
+            <div className="flex items-center gap-3">
+                <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={!valid}
+                    pending={key.isPending}
+                    pendingLabel={t('market.evolution.now.adjustSaving')}
+                >
+                    {t('market.evolution.now.adjustSave')}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={onClose}>
+                    {t('market.evolution.now.adjustCancel')}
+                </Button>
+            </div>
+        </form>
+    );
+}
+
+/** Clears the manual value on one node, so the feed value shows again. */
+function NodeClear({
+    adjust,
+    coordinates,
+}: {
+    readonly adjust: AdjustContext;
+    readonly coordinates: readonly string[];
+}): ReactNode {
+    const { t } = useTranslation();
+    const clear = useMutation({
+        mutationFn: () => curves.clearPoint(adjust.identity, coordinates),
+        onSuccess: adjust.onChanged,
+    });
+    return (
+        <>
+            <Button
+                type="button"
+                size="sm"
+                variant="danger"
+                pending={clear.isPending}
+                onClick={() => clear.mutate()}
+            >
+                {t('market.evolution.now.adjustClear')}
+            </Button>
+            {clear.isError && <Notice tone="error">{clear.error.message}</Notice>}
+        </>
+    );
+}
+
 export function NowPanel({
     snapshot,
     provenance,
+    adjust,
 }: {
     readonly snapshot: CurveSnapshot;
     readonly provenance: boolean;
+    /** Present only for a person who may write; it adds the adjust and clear controls. */
+    readonly adjust?: AdjustContext;
 }): ReactNode {
     const { t } = useTranslation();
     const rows = nowRowsOf(snapshot);
+    const [editing, setEditing] = useState<number | null>(null);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -233,50 +365,96 @@ export function NowPanel({
                                     </th>
                                 </>
                             )}
+                            {adjust !== undefined && (
+                                <th className="py-1 pr-4 font-normal">
+                                    {t('market.evolution.now.adjustActions')}
+                                </th>
+                            )}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-line-subtle">
                         {rows.map((row, index) => (
-                            <tr key={`${index}-${row.label}`}>
-                                <td className="py-2 pr-4 font-mono">{row.label}</td>
-                                <td className="py-2 pr-4 font-mono">
-                                    {row.value === '' ? (
-                                        <span
-                                            className="text-ink-faint"
-                                            title={t('market.evolution.matrix.hole')}
-                                        >
-                                            —
-                                        </span>
-                                    ) : (
-                                        row.value
+                            <Fragment key={`${index}-${row.label}`}>
+                                <tr>
+                                    <td className="py-2 pr-4 font-mono">{row.label}</td>
+                                    <td className="py-2 pr-4 font-mono">
+                                        {row.value === '' ? (
+                                            <span
+                                                className="text-ink-faint"
+                                                title={t('market.evolution.matrix.hole')}
+                                            >
+                                                —
+                                            </span>
+                                        ) : (
+                                            row.value
+                                        )}
+                                    </td>
+                                    <td className="py-2 pr-4 font-mono">
+                                        {row.ageSeconds === undefined
+                                            ? ''
+                                            : formatAge(row.ageSeconds)}
+                                    </td>
+                                    {provenance && (
+                                        <>
+                                            <td className="py-2 pr-4">
+                                                {(SOURCES as readonly string[]).includes(
+                                                    row.sourceKind,
+                                                ) && (
+                                                    <Tag
+                                                        tone={
+                                                            row.sourceKind === 'quoted'
+                                                                ? 'neutral'
+                                                                : 'accent'
+                                                        }
+                                                    >
+                                                        {t(
+                                                            `market.evolution.source.${row.sourceKind}`,
+                                                        )}
+                                                    </Tag>
+                                                )}
+                                            </td>
+                                            <td className="py-2 pr-4 font-mono text-xs">
+                                                {row.detail}
+                                            </td>
+                                        </>
                                     )}
-                                </td>
-                                <td className="py-2 pr-4 font-mono">
-                                    {row.ageSeconds === undefined ? '' : formatAge(row.ageSeconds)}
-                                </td>
-                                {provenance && (
-                                    <>
+                                    {adjust !== undefined && (
                                         <td className="py-2 pr-4">
-                                            {(SOURCES as readonly string[]).includes(
-                                                row.sourceKind,
-                                            ) && (
-                                                <Tag
-                                                    tone={
-                                                        row.sourceKind === 'quoted'
-                                                            ? 'neutral'
-                                                            : 'accent'
-                                                    }
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    onClick={() => setEditing(index)}
                                                 >
-                                                    {t(`market.evolution.source.${row.sourceKind}`)}
-                                                </Tag>
-                                            )}
+                                                    {t('market.evolution.now.adjustOpen')}
+                                                </Button>
+                                                {row.sourceKind === 'manual' && (
+                                                    <NodeClear
+                                                        adjust={adjust}
+                                                        coordinates={
+                                                            snapshot.nodes[index]?.coordinates ?? []
+                                                        }
+                                                    />
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="py-2 pr-4 font-mono text-xs">
-                                            {row.detail}
+                                    )}
+                                </tr>
+                                {adjust !== undefined && editing === index && (
+                                    <tr>
+                                        <td colSpan={6} className="pb-3">
+                                            <NodeAdjust
+                                                adjust={adjust}
+                                                coordinates={
+                                                    snapshot.nodes[index]?.coordinates ?? []
+                                                }
+                                                label={row.label}
+                                                onClose={() => setEditing(null)}
+                                            />
                                         </td>
-                                    </>
+                                    </tr>
                                 )}
-                            </tr>
+                            </Fragment>
                         ))}
                     </tbody>
                 </table>
@@ -354,6 +532,8 @@ export function SeriesPicker({
  */
 export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
+    // The server checks the write again; this only decides what the screen offers.
+    const mayAdjust = useHolds()(PERMISSION.observationsWrite);
     const [form, setForm] = useState<IdentityForm>({
         asset: '',
         scope: '',
@@ -467,9 +647,11 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
         enabled: asked !== null,
         retry: false,
     });
+    // A person who may adjust needs to see which nodes are manual, so the source is always read.
+    const showSource = (asked?.provenance ?? false) || mayAdjust;
     const snapshot = useQuery({
-        queryKey: ['market-snapshot', asked?.identity, asked?.provenance, reads],
-        queryFn: () => curves.snapshot(asked!.identity, asked!.provenance),
+        queryKey: ['market-snapshot', asked?.identity, showSource, reads],
+        queryFn: () => curves.snapshot(asked!.identity, showSource),
         enabled: asked !== null,
         retry: false,
     });
@@ -607,7 +789,18 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
                         <Notice tone="error">{snapshot.error.message}</Notice>
                     ) : (
                         snapshot.data !== undefined && (
-                            <NowPanel snapshot={snapshot.data} provenance={asked.provenance} />
+                            <NowPanel
+                                snapshot={snapshot.data}
+                                provenance={showSource}
+                                {...(mayAdjust
+                                    ? {
+                                          adjust: {
+                                              identity: asked.identity,
+                                              onChanged: () => setReads(reads + 1),
+                                          },
+                                      }
+                                    : {})}
+                            />
                         )
                     )}
                 </>

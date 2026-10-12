@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 52FB26D7-D8E5-49CE-A1D0-3570AC16FD49
+:END:
+#+title: Task: Adjust a node by hand on the evolution screen
+#+description: Offer set and clear on a node of the Now table for a person who may write, mark manual nodes as manual, and show the correction at once.
+#+type: task
+#+level: s1
+#+filetags: :key_a_manual_point_from_the_web:sprint_27:v0:
+#+owner: marco
+#+branch: feature/key-a-manual-point-from-the-web
+#+pr:
+#+blocked_on: Route the manual point through the BFF
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An operator corrects a node and clears the correction from the evolution screen.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D56E081D-D745-46FD-B665-29C29630B46D][Adjust a curve point by hand from the web]] |
+| Now          | Nothing. |
+| Waiting on   | The BFF routes.                        |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A person who holds the write permission sees Set by hand and Clear on the Now table, and a person who does not sees neither.
+- Setting asks for a value, a reason code and a commentary, and the node shows as manual with who set it.
+- A refused request shows the server's reason, in three languages.
+- The screen shows the correction at once, without a reload.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A person who holds =marketdata::market_observations:write= sees an Actions column in the Now table. Each node has an Adjust button that opens a form for the value, a change reason and a commentary. A node that shows as manual also has a Clear button. After a write the screen reads the object again. Such a person always gets the source column, so manual nodes are marked and show who keyed them. The catalogues have the new words in English, French and Portuguese, and the language parity test passes. The permission also has its plain-words entry.
+
+Static-markup tests cover what the panel offers with and without the write permission and that Clear shows only on manual nodes. The form itself opens on a click and is not covered by a test. I did not use the screen in a browser.
+
+Decisions:
+- The screen decides only what to offer. The server checks the write again.
+- Reasons come from the shared =useReason('amend')= list used by the other screens.

@@ -30,15 +30,17 @@ import type { LiveSession } from './sessions.js';
 /**
  * The reads of a composite object: the series an identity names, the series a party
  * can see, the object at one instant, one slice of it over time, and its evolution
- * over a range.
+ * over a range. Beside them, the two writes a person makes by hand: keying a
+ * manual point on one node, and clearing it.
  *
  * Each route forwards the typed request to the server's subject and returns the
  * reply without its success and message fields. The server checks the
  * permission and the shape, so a route adds no rule of its own beyond the
  * structure of the request.
  *
- * Every read is a POST because the identity is a structure, not a path. None of
- * them writes.
+ * Every route is a POST because the identity is a structure, not a path. Only the
+ * key and clear routes write. The server decides who may write, so the routes
+ * add no permission rule of their own.
  */
 
 /**
@@ -75,6 +77,19 @@ const identityBody = z.strictObject({ identity });
 const seriesListBody = z.strictObject({
     party_id: z.union([z.uuid(), z.literal('')]).default(''),
 });
+
+/** A node of the object: one coordinate for each declared axis, in the shape's order. */
+const coordinates = z.array(word).min(1).max(8);
+
+const keyPointBody = identityBody.extend({
+    coordinates,
+    // The server reads the text as a number and refuses what is not one.
+    value: z.string().trim().min(1).max(40),
+    change_reason_code: word,
+    change_commentary: z.string().trim().min(1).max(2000),
+});
+
+const clearPointBody = identityBody.extend({ coordinates });
 
 const snapshotBody = identityBody.extend({
     include_provenance: z.boolean().default(false),
@@ -157,6 +172,20 @@ export function registerCurveRoutes(
         const session = requireSession(request);
         const body = input(seriesListBody, request.body ?? {});
         return call(session, subjects.list_series_identities_request, body);
+    });
+
+    // Keys a manual point on one node. The point owns the node until it is cleared.
+    server.post('/api/curves/manual-point', async (request) => {
+        const session = requireSession(request);
+        const body = input(keyPointBody, request.body);
+        return call(session, subjects.key_manual_point_request, body);
+    });
+
+    // Clears the manual point on one node, so the feed value shows again.
+    server.post('/api/curves/manual-point/clear', async (request) => {
+        const session = requireSession(request);
+        const body = input(clearPointBody, request.body);
+        return call(session, subjects.clear_manual_point_request, body);
     });
 
     server.post('/api/curves/snapshot', async (request) => {

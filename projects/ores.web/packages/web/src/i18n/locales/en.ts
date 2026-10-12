@@ -692,8 +692,10 @@ export const en: SourceCatalogue = {
         failed: 'Sign in failed.',
         chooseParty: 'Choose a party',
         choosePartyHint: 'This account works in more than one party.',
-        partyTimedOut: 'Your sign-in timed out because you did not choose a party in time. Sign in again.',
-        sessionEnded: 'Your session has ended, so you have been signed out. Sign in again to continue.',
+        partyTimedOut:
+            'Your sign-in timed out because you did not choose a party in time. Sign in again.',
+        sessionEnded:
+            'Your session has ended, so you have been signed out. Sign in again to continue.',
         partyCategory: 'Category',
     },
 
@@ -2121,6 +2123,16 @@ export const en: SourceCatalogue = {
                 age: 'Age',
                 source: 'Source',
                 detail: 'Detail',
+                adjustActions: 'Actions',
+                adjustOpen: 'Adjust',
+                adjustClear: 'Clear',
+                adjustNewValue: 'New value',
+                adjustSave: 'Save',
+                adjustSaving: 'Saving...',
+                adjustCancel: 'Cancel',
+                adjustAdjusting: 'Adjust {node}',
+                adjustValueInvalid: 'Enter the value as a number.',
+                adjustManualNote: 'A manual value stays until you clear it.',
                 mixed: 'These values come from several market states. The oldest is {oldest} old, and they span {spread}.',
                 summary: 'The oldest value is {oldest} old. The values span {spread}.',
             },
@@ -4041,6 +4053,7 @@ export const en: SourceCatalogue = {
         deploymentRead:
             'see the whole deployment: its tenants, services, grid, message bus and logs',
         curveSnapshotsRead: 'see the market data curves',
+        observationsWrite: 'adjust market data points by hand',
         fxFeedsRead: 'see the synthetic FX price feeds',
         irFeedsRead: 'see the synthetic IR curve feeds',
     },

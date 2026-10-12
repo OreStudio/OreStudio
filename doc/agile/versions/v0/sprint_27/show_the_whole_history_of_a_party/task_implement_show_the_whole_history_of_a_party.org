@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-show-the-whole-history-of-a-party
+#+pr: 3188
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ Evidence: in the Acme tenant each of the four contact types is held by four part
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -46,9 +46,19 @@ Evidence: in the Acme tenant each of the four contact types is held by four part
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decision: a row whose declared key other rows share is addressed in the generic
+history by its own =id=. A composite string such as =party/type= is not used,
+because the addressing page rules out joining a pair into one address. The id is
+one row whatever the scope, and every such model already has a read by id.
+
+1. Codegen derives =history_by_row_id= for a model with a declared key that is
+   not the storage key, a natural key beyond it and =tenant_id=, and a uuid
+   storage key.
+2. The history provider template reads by =boost::lexical_cast<uuid>(entity_id)=
+   for such a model.
+3. Regenerate the ten models the flag selects.
+4. The party timeline reads an identifier, a contact and a business unit by the
+   row's id, and no longer filters or states a gap for another party's row.
 
 * Measurements
 
@@ -81,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3188][#3188]] | [codegen] Read a row's history by its id when its key is shared |
 
 * Review
 
@@ -90,3 +100,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A history provider no longer finds a row by a key that other rows share.
+
+- Codegen derives =history_by_row_id= for a model whose declared key is not the storage key, with a further natural key and a uuid storage key. The provider of such a model reads by the row's own id.
+- Ten models are affected: party and counterparty contacts, party, counterparty and netting set identifiers, business units, portfolios, portfolio rights, CSA eligible currencies and run grants.
+- The party timeline reads its identifiers, contacts and business units by row id. It no longer filters by id and no longer states a gap for another party's row. The product owner saw the contact versions and no gap note in the browser.
+- Link tables were already covered by the link history task: they read by the parent, and each version names its link as =parent/child=.
+- The UX specification and the entity addressing page state both rules.
+
+Not done: the generic shell =history= command now needs the row id for these ten entities, and a stale key returns the dispatcher's error text (bad lexical cast) with no clearer message.

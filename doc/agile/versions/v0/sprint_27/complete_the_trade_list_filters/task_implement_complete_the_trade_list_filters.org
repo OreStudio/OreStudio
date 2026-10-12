@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-complete-the-trade-list-filters
+#+pr: 3200
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9AAD348-74D0-4B65-989C-118CCBC2FBF3][Complete the trade list's filters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Prove two things the later tasks rely on: an enum filter member, and a by-trade 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A9AAD348-74D0-4B65-989C-118CCBC2FBF3][Complete the trade list's filters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -58,7 +58,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Spike tests | 9 cases, 22 assertions passed (7 earlier, 2 new) | =ores.trading.core.tests "[list_filter]"= | the spike commit on this branch |
 
 * Notes
 
@@ -77,12 +77,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3200][#3200]] | [trading] Spike the enum filter and the by-trade read |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No test for a filter on the by-trade read | repository_trade_filter_tests.cpp | accept | Added a trade_id_one_of that excludes the trade (empty, total 0) and one that includes it. |
+| 2 | The by-trade test does not show isolation explicitly | repository_trade_filter_tests.cpp | accept | The test now checks that the other trade's identifier is absent. |
+| 3 | The enum overload is tested for one namespace only | list_filter.hpp | decline | A missing to_string is a compile error, so no test can fail silently. |
+| 4 | The generated handler comment says a write permission | trade_identifier_handler.hpp | decline | It is generator boilerplate in all 78 scoped reads. Filed as a capture, not fixed in one entity. |
+| 5 | The unfiltered list_identifiers_by_trade_id pair may be unused | trade_identifier_service.hpp | decline | The generator emits the pair for every scoped read. Dropping it is a generator change. |
+| 6 | The by-trade read has no as_of | trade_identifier.org | accept | Only 9 of 78 scoped reads declare list_by_as_of. The specification task decides when a scoped read states it. The child-read task applies the rule. |
 
 * Result
+
+The spike answered the four questions.
+
+- *Enum filter.* The generator accepts =:filterable: true= on an enum column and emits an enum-typed member, an equals and a one-of condition, a =filter_too_large= guard and a TypeScript =string= member. The shared =filter_value= had no enum overload, so the generated code did not compile. A template overload in =list_filter.hpp= now compares the text of the enum's =to_string=, found beside the enum. It serves every entity. A repository test narrows the trades by =counterparty_scope=, by equals and by one-of.
+- *By-parent read.* =:list_by: true= belongs on the foreign key section of the model, not on the column. On a column that is also part of the primary key it works: the generator emits =list_by_trade_id= for the identifiers across the protocol, handler, service, repository, shell command and TypeScript twin. A repository test reads two identifiers of one trade and none of another.
+- *View-backed entity.* Not supported. No entity in the models binds to a view. The =read_only= flag only suppresses writes on a table. The summary task therefore includes generator work: a read-model entity that has no table of its own.
+- *The instant of a read model.* The existing =valid_at= condition names unqualified =valid_from= and =valid_to= columns, so it cannot narrow a join. The read model is therefore a set-returning SQL function that takes the =as_of= and applies it to every part it joins. The state and the booking in a row then come from one instant by construction. The generated repository reads from the function and appends the filter conditions.
+
+Both findings change the summary task: it gains the generator work, and its acceptance states the function form.

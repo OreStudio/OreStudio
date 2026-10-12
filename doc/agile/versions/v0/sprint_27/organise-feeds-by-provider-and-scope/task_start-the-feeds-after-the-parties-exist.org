@@ -81,7 +81,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #3172: the ingest loop appends the wildcard by hand | feed_ingest_loop.cpp | Declined | One call site, with a comment saying why it stays relative; a client helper for one caller adds API, not safety. |
+| 2 | PR #3172: subjects_below() has no remaining direct callers | client.hpp | Noted | Its doc says it is for stream filters and other absolute uses. |
+| 3 | PR #3172: sandbox ticks are not ingested | feed_ingest_loop.cpp | No change | Intended: a sandboxed feed's ticks are never stored, as producer_subject.hpp states. |
+| 4 | Local gate: format and the visibility test failed on this branch | app_feed_ingest_loop_tests.cpp, synthetic_system_feed_visibility_test.sql | Accepted | Fixed in 1173441b64; 4f836f1b45 drops drift files that commit swept in. |
 
 * Result
 

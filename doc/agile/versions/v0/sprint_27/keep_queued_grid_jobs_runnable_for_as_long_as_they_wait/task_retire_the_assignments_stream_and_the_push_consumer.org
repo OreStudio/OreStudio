@@ -66,6 +66,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- Deploy order. Upgrade the service and every wrapper together. An old wrapper calls =pull_work= and =result_started=, which the service no longer answers, so Newton and the laptop must get the new wrapper image before they return to the grid.
+- After the new service and wrappers run, delete the leftover stream with =nats stream rm <prefix>_compute_assignments=. Nothing reads it.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

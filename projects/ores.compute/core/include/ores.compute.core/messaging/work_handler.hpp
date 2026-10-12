@@ -26,16 +26,12 @@
 #include "ores.compute.core/repository/work_ledger_repository.hpp"
 #include "ores.compute.core/service/host_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
-#include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -43,7 +39,6 @@
 #include <chrono>
 #include <cstdint>
 #include <map>
-#include <optional>
 #include <rfl/json.hpp>
 #include <stdexcept>
 
@@ -99,12 +94,8 @@ inline std::string make_display_name(const boost::uuids::uuid& id) {
 
 } // namespace
 
-using ores::service::messaging::reply;
-using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
-using ores::service::messaging::error_reply;
-using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class ORES_COMPUTE_CORE_EXPORT work_handler {

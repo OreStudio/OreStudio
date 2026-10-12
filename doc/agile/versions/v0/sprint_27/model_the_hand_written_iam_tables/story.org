@@ -40,8 +40,8 @@ Every IAM table that holds data has a model, so the drift check covers it and no
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7C5269E1-7F8B-449A-B747-88169B4B8E9D][Scaffold story: Model the hand-written IAM tables]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E28819FD-7555-4744-AFC1-8BF60D2E9468][Model account_role as a junction]] | STARTED | 2026-10-12 | | Initial task for: Model the hand-written IAM tables |
-| [[id:79222DEC-CB96-4514-A5BE-3969C32A5E53][Model role_permission]] | BACKLOG | | | Generate the table that holds which permissions a role holds, and move its callers to the generated code. |
+| [[id:E28819FD-7555-4744-AFC1-8BF60D2E9468][Model account_role as a junction]] | DONE | 2026-10-12 | 2026-10-12 | Initial task for: Model the hand-written IAM tables |
+| [[id:79222DEC-CB96-4514-A5BE-3969C32A5E53][Model role_permission]] | DONE | | 2026-10-12 | Generate the table that holds which permissions a role holds, and move its callers to the generated code. |
 | [[id:DD0CADA6-5F29-450D-BF25-9E3674EC13B0][Model auth_event]] | BACKLOG | | | Generate the authentication audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
 | [[id:9A3B0B97-57CA-4D6A-A077-6CD5BD464937][Model run_token_issue]] | BACKLOG | | | Generate the run-token audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
 | [[id:6598DC0C-5369-4EAC-AF3C-128192773747][Model session_sample]] | BACKLOG | | | Generate the session telemetry table and move its callers to the generated code. |

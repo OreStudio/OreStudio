@@ -26,11 +26,11 @@ Every IAM table that holds data has a model, so the drift check covers it and no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:575E321C-CF36-4E2F-87C9-E29D8C698D3A][Model the hand-written IAM tables]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance

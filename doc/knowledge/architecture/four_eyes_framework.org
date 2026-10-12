@@ -108,6 +108,10 @@ no checks or insert-trigger rules, because those are the live row's rules and th
 dry run runs them by calling the real write. It is read-only to clients: only the
 raise operation writes a line. =compass codegen generate= derives it whenever it
 generates the gated model, and a drift check fails when a derived model is stale.
+A model can hold its changes before it enforces the gate. =:pending_change: true= derives
+the same pending model and its stack and leaves the entity's writes direct. =:gated: true=
+does both. A junction can carry either flag: its pending model holds the two halves as plain
+columns.
 
 The queue and the request page need three further typed facts that no entity
 table can give: the parts a request needs and their order. They live in one small

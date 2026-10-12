@@ -24,6 +24,7 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace ores::marketdata::service {
 
@@ -46,7 +47,7 @@ std::string_view kind_name(value_kind kind) {
         case value_kind::strike_label:
             return "strike_label";
     }
-    return "text";
+    std::unreachable();
 }
 
 std::string_view role_name(field_role role) {
@@ -86,9 +87,7 @@ messaging::oresmd_index_family describe_index(const index_row& row) {
     return out;
 }
 
-}
-
-messaging::describe_oresmd_schema_response oresmd_schema_describer::describe() {
+messaging::describe_oresmd_schema_response build() {
     messaging::describe_oresmd_schema_response out;
     for (std::size_t i = 0; i < asset_class_count; ++i)
         out.assets.emplace_back(name_of(static_cast<asset_class>(i)));
@@ -100,6 +99,14 @@ messaging::describe_oresmd_schema_response oresmd_schema_describer::describe() {
         out.indexes.push_back(describe_index(row));
     out.success = true;
     return out;
+}
+
+}
+
+messaging::describe_oresmd_schema_response oresmd_schema_describer::describe() {
+    // The tables are constants, so the answer is built once and copied.
+    static const auto answer = build();
+    return answer;
 }
 
 }

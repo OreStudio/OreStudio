@@ -931,6 +931,52 @@ describe('synthetic operations', () => {
         expect(calls).toEqual([]);
     });
 
+    it('converts IR parameters to the simple view through the synthetic service', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.convert_ir_parameters': {
+                success: true,
+                message: '',
+                has_simple_form: true,
+                parameter_names: ['start_rate', 'half_life_years'],
+                parameter_values: [0.03, 1.4],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/ir', {
+            process_type: 'VASICEK',
+            to_simple: true,
+            values: { kappa: 0.5, theta: 0.03 },
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            has_simple_form: true,
+            message: '',
+            caution: '',
+            values: { start_rate: 0.03, half_life_years: 1.4 },
+        });
+        expect(calls[0]?.body).toEqual({
+            process_type: 'VASICEK',
+            to_simple: true,
+            parameter_names: ['kappa', 'theta'],
+            parameter_values: [0.5, 0.03],
+        });
+    });
+
+    it('answers 400 with the server words when an IR conversion is refused', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.ops.convert_ir_parameters': {
+                success: false,
+                message: 'The half-life must be longer than zero.',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/ir', {
+            process_type: 'VASICEK',
+            to_simple: false,
+            values: { half_life_years: 0 },
+        });
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ message: 'The half-life must be longer than zero.' });
+    });
+
     it('answers 400 with the server words when a preview is refused', async () => {
         const { server, sessionId } = buildTestServer({
             'synthetic.v1.ops.simulate_ir_curve_paths': {

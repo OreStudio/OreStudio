@@ -3387,6 +3387,52 @@ export const en: SourceCatalogue = {
             removeWarning:
                 'The feed stops if it runs. Its parameters and its curve template are deleted first, then the feed. The history of each stays.',
         },
+        irSimple: {
+            lead: 'Answer four questions. The server turns the answers into the numbers the engine reads. Switch to Advanced to see them.',
+            start: 'Where are rates today?',
+            startHint: 'The short-term rate at the start, as a percent.',
+            longRun: 'Where do rates settle in the long run?',
+            longRunHint: 'The level rates drift back to, as a percent.',
+            halfLife: 'How fast do rates return to that level?',
+            halfLifeHint: 'Years to come half way back. A short time is a fast return.',
+            move: 'How much do rates move in a year?',
+            moveHint: 'A typical yearly change in the short-term rate.',
+            years: 'years',
+            bp: 'basis points',
+            number: 'Enter a number above zero.',
+            presets: {
+                slow: 'Slow',
+                medium: 'Medium',
+                fast: 'Fast',
+                calm: 'Calm',
+                normal: 'Normal',
+                stressed: 'Stressed',
+            },
+            lean: {
+                up: 'Rates start at {start}% and settle at {longRun}%, so the curve slopes up.',
+                down: 'Rates start at {start}% and settle at {longRun}%, so the curve slopes down.',
+                flat: 'Rates start at {start}% and settle at {longRun}%, so the curve is flat.',
+            },
+            caution: {
+                touches_zero:
+                    'Rates may touch zero. Lower the yearly move or raise the long-run level to keep them above it.',
+            },
+            byHand: 'These values are set by hand, so only Advanced can show them. {reason}',
+            readout: {
+                halfLife: 'Half-life: {value} years',
+                rate: '= {value}%',
+                move: 'Moves about {value} basis points a year',
+            },
+            engineHint: {
+                VASICEK: 'Smooth curves. Rates can go below zero.',
+                COX_INGERSOLL_ROSS:
+                    'Rates never go below zero. Moves are smaller when rates are low.',
+                HULL_WHITE: "Smooth curves that fit today's curve. Rates can go below zero.",
+                BLACK_KARASINSKI: 'Rates never go below zero. Moves scale with the rate.',
+                TWO_FACTOR_GAUSSIAN:
+                    'Richer curve shapes, with humps and twists. The second factor is set for you.',
+            },
+        },
         irProcess: {
             shape: 'Curve shape',
             paths: 'Sample short-rate paths',
@@ -3695,6 +3741,13 @@ export const en: SourceCatalogue = {
         askReason: 'I need to open {screen}.',
     },
 
+    editingMode: {
+        label: 'How to edit',
+        simple: 'Simple',
+        advanced: 'Advanced',
+        simpleHelp: 'Answer a few plain questions. The server sets the model for you.',
+        advancedHelp: "Set the model's own parameters.",
+    },
     common: {
         locked: 'Locked',
         unlocked: 'Unlocked',

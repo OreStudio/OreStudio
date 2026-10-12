@@ -1234,6 +1234,37 @@ export const api = {
             );
     },
 
+    /**
+     * An IR engine's parameters read as the simple view, or the simple view
+     * written as the engine's parameters, as the synthetic service converts
+     * them. Rates are decimals.
+     */
+    async convertIrParameters(input: {
+        readonly process_type: string;
+        readonly to_simple: boolean;
+        readonly values: Readonly<Record<string, number>>;
+    }): Promise<{
+        readonly has_simple_form: boolean;
+        readonly message: string;
+        readonly caution: string;
+        readonly values: Readonly<Record<string, number>>;
+    }> {
+        return z
+            .object({
+                has_simple_form: z.boolean(),
+                message: z.string(),
+                caution: z.string(),
+                values: z.record(z.string(), z.number()),
+            })
+            .parse(
+                await request('/api/synthetic/convert/ir', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            );
+    },
+
     /** Stops one feed. A feed that is not running stops nothing. */
     async stopFeed(id: string): Promise<void> {
         await request(`/api/synthetic/feeds/${encodeURIComponent(id)}/stop`, {

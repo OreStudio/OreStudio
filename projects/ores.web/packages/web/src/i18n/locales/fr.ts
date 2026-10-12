@@ -3441,6 +3441,55 @@ const fr: SourceCatalogue = {
             removeWarning:
                 "Le flux s'arrête s'il tourne. Ses paramètres et son modèle de courbe sont supprimés d'abord, puis le flux. L'historique de chacun reste.",
         },
+        irSimple: {
+            lead: 'Répondez à quatre questions. Le serveur transforme les réponses en nombres que le moteur lit. Passez en Avancé pour les voir.',
+            start: "Où sont les taux aujourd'hui ?",
+            startHint: 'Le taux court au départ, en pourcentage.',
+            longRun: 'Où les taux se stabilisent-ils à long terme ?',
+            longRunHint: 'Le niveau vers lequel les taux reviennent, en pourcentage.',
+            halfLife: 'À quelle vitesse les taux reviennent-ils à ce niveau ?',
+            halfLifeHint:
+                'Années pour faire la moitié du chemin. Une durée courte est un retour rapide.',
+            move: 'De combien les taux bougent-ils en un an ?',
+            moveHint: 'Une variation annuelle typique du taux court.',
+            years: 'ans',
+            bp: 'points de base',
+            number: 'Saisissez un nombre supérieur à zéro.',
+            presets: {
+                slow: 'Lent',
+                medium: 'Moyen',
+                fast: 'Rapide',
+                calm: 'Calme',
+                normal: 'Normal',
+                stressed: 'Tendu',
+            },
+            lean: {
+                up: 'Les taux partent de {start} % et se stabilisent à {longRun} %, donc la courbe monte.',
+                down: 'Les taux partent de {start} % et se stabilisent à {longRun} %, donc la courbe descend.',
+                flat: 'Les taux partent de {start} % et se stabilisent à {longRun} %, donc la courbe est plate.',
+            },
+            caution: {
+                touches_zero:
+                    'Les taux peuvent toucher zéro. Baissez la variation annuelle ou relevez le niveau à long terme.',
+            },
+            byHand: 'Ces valeurs sont réglées à la main, donc seul le mode Avancé peut les montrer. {reason}',
+            readout: {
+                halfLife: 'Demi-vie : {value} ans',
+                rate: '= {value} %',
+                move: 'Bouge d’environ {value} points de base par an',
+            },
+            engineHint: {
+                VASICEK: 'Courbes lisses. Les taux peuvent passer sous zéro.',
+                COX_INGERSOLL_ROSS:
+                    'Les taux ne passent jamais sous zéro. Les variations sont plus faibles quand les taux sont bas.',
+                HULL_WHITE:
+                    "Courbes lisses qui collent à la courbe d'aujourd'hui. Les taux peuvent passer sous zéro.",
+                BLACK_KARASINSKI:
+                    'Les taux ne passent jamais sous zéro. Les variations suivent le taux.',
+                TWO_FACTOR_GAUSSIAN:
+                    'Formes de courbe plus riches, avec bosses et torsions. Le second facteur est réglé pour vous.',
+            },
+        },
         irProcess: {
             shape: 'Forme de la courbe',
             paths: "Trajectoires d'échantillon du taux court",
@@ -3753,6 +3802,13 @@ const fr: SourceCatalogue = {
         askReason: 'J’ai besoin d’ouvrir {screen}.',
     },
 
+    editingMode: {
+        label: 'Mode de saisie',
+        simple: 'Simple',
+        advanced: 'Avancé',
+        simpleHelp: 'Répondez à quelques questions simples. Le serveur règle le modèle.',
+        advancedHelp: 'Réglez les paramètres propres au modèle.',
+    },
     common: {
         locked: 'Verrouillé',
         unlocked: 'Déverrouillé',

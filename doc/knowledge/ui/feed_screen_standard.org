@@ -260,6 +260,36 @@ is the process tab above with the parts that follow from that.
   engine's parameters are removed when the process is saved.
 - The previews below the table price the curve at the template's tenor entries and
   draw sample short-rate paths, both from the values on the screen.
+- Under each number the table says what it means in plain words: the half-life of
+  κ, the rate behind θ and the initial rate, and the yearly move behind σ. The
+  server works these out, so the screen does no model arithmetic.
+
+*** Simple and Advanced
+
+A process tab offers two ways to edit the same numbers. *Advanced* is the table
+above, the engine's own parameters. *Simple* is for a person who does not know the
+model, and it asks plain questions in place of the table.
+
+- The choice is a switch on the toolbar. It is one choice for the whole web
+  application, kept in the browser. A new person starts in Simple, and a person who
+  picks Advanced stays in Advanced on every screen that offers both (=EditingMode.tsx=).
+- A curve feed asks four questions: where rates are today, where they settle in the
+  long run, how fast they come back (a half-life in years, with the words Slow,
+  Medium and Fast), and how far they move in a year (basis points, with the words
+  Calm, Normal and Stressed). A sentence under the answers says what they make of the
+  curve: it slopes up, down or is flat. A line under the toolbar says in plain words
+  what the engine does.
+- The server converts both ways (=synthetic.v1.ops.convert_ir_parameters=,
+  [[id:4A7963B8-B814-42B8-A93D-65226BC1B929][convert_fx_mixture]] is the FX
+  counterpart). Each engine reads σ in its own unit, and Black-Karasinski reads θ as a
+  logarithm, so the screen never converts. An answer goes through the server and into
+  the same draft the table edits. Save, Discard and the previews work the same from
+  either mode.
+- Switching from Simple to Advanced loses nothing. A feed whose parameters have no
+  simple form, such as a reversion speed of zero or a Two-Factor Gaussian feed with a
+  second factor set by hand, shows the table in either mode, with a note that says why.
+- A warning appears when the parameters allow a risk, such as a
+  Cox-Ingersoll-Ross rate that can touch zero.
 
 ** The Ticks tab
 

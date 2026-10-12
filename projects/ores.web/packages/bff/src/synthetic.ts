@@ -61,6 +61,7 @@ import {
     type MarketDataGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
+import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
     subjects as definitionSubjects,
@@ -656,6 +657,19 @@ const irSimulateSchema = z.object({
     ...runSize,
 });
 
+const irConvertSchema = z.object({
+    process_type: code,
+    to_simple: z.boolean(),
+    values: z.record(z.string().max(100), z.number()),
+});
+
+const irConvertReplySchema = operationReplySchema.extend({
+    has_simple_form: z.boolean().default(false),
+    caution: z.string().default(''),
+    parameter_names: z.array(z.string()).default([]),
+    parameter_values: z.array(z.number()).default([]),
+});
+
 const irShapeSchema = z.object({
     process_type: code,
     parameters: parameterSpecs,
@@ -987,6 +1001,35 @@ export function registerSyntheticRoutes(
             gmm_means: reply.gmm_means,
             gmm_stdevs: reply.gmm_stdevs,
             gmm_weights: reply.gmm_weights,
+        };
+    });
+
+    /**
+     * The parameters of an IR engine in the terms of the simple view, or the
+     * simple view in the terms of the engine, converted by the synthetic
+     * service. Nothing is stored.
+     */
+    server.post('/api/synthetic/convert/ir', async (request) => {
+        const session = requireSession(request);
+        const body = input(irConvertSchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            irConvertSubjects.convert_ir_parameters_request,
+            {
+                process_type: body.process_type,
+                to_simple: body.to_simple,
+                parameter_names: Object.keys(body.values),
+                parameter_values: Object.values(body.values),
+            },
+            irConvertReplySchema,
+        );
+        refuseUnless(reply, invalidRequest);
+        return {
+            has_simple_form: reply.has_simple_form,
+            message: reply.message,
+            caution: reply.caution,
+            values: Object.fromEntries(
+                reply.parameter_names.map((name, i) => [name, reply.parameter_values[i] ?? 0]),
+            ),
         };
     });
 

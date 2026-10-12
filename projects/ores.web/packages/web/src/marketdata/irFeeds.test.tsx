@@ -246,6 +246,35 @@ describe('the IR curve feed screens', () => {
         expect(html).toContain('Hull-White');
     });
 
+    it('asks the four plain questions in Simple mode, once the server has read the values', () => {
+        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=process`, (client) => {
+            client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'process-types'], PROCESS_TYPES);
+            client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
+            client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
+            client.setQueryData(['records', 'ir-template-entries', FEED_ID], []);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(['ir-reading', 'VASICEK', { kappa: 0.5, initial_rate: 0.03 }], {
+                has_simple_form: true,
+                message: '',
+                caution: 'touches_zero',
+                values: {
+                    start_rate: 0.03,
+                    long_run_rate: 0.045,
+                    half_life_years: 1.386,
+                    yearly_move_bp: 100,
+                },
+            });
+        });
+        expect(html).toContain('Where are rates today?');
+        expect(html).toContain('How much do rates move in a year?');
+        expect(html).toContain('so the curve slopes up');
+        expect(html).toContain('Rates may touch zero');
+        expect(html).toContain('>Simple<');
+        expect(html).toContain('>Advanced<');
+        expect(html).not.toContain('Mean reversion speed');
+    });
+
     it('offers the defaults of a curve whose parameters were never saved, as unsaved', () => {
         const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=process`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);

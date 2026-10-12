@@ -24,6 +24,7 @@ import { useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { show, useRecords } from '../refdata/records.js';
+import { EditingModeToggle, useEditingMode } from '../ui/EditingMode.js';
 import { Button, Dialog, Field, Input, Notice, Select, Tag, cx } from '../ui/Primitives.js';
 import {
     parameterLines,
@@ -32,6 +33,8 @@ import {
     parameterPlan,
     type ParameterLine,
 } from './irCurve.js';
+import { IrSimplePanel, useIrReading } from './IrSimplePanel.js';
+import { parameterValues, readoutOf, typedFrom, type SimpleView } from './irSimple.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import { useSettled } from './MixturePanel.js';
 import { SavePartsDialog, type SaveEngine } from './SavePartsDialog.js';
@@ -93,10 +96,15 @@ export function IrProcessPanel({
     const [typed, setTyped] = useState<Readonly<Record<string, string>>>({});
     const [open, setOpen] = useState<ParameterLine | null>(null);
     const [saving, setSaving] = useState(false);
+    const [mode, setMode] = useEditingMode();
+    const [refusal, setRefusal] = useState('');
     const lines = parameterLines(definitions.data ?? NO_ROWS, saved, engine);
-    const valueOf = (line: ParameterLine): string => typed[show(line.definition['id'])] ?? line.value;
+    const valueOf = (line: ParameterLine): string =>
+        typed[show(line.definition['id'])] ?? line.value;
     const plan = parameterPlan(feedId, lines, typed, saved, () => crypto.randomUUID());
-    const problems = lines.filter((line) => parameterError(line.definition, valueOf(line)) !== undefined);
+    const problems = lines.filter(
+        (line) => parameterError(line.definition, valueOf(line)) !== undefined,
+    );
     const engineChanged = engine !== savedEngine;
     const dirty = engineChanged || plan.changes.length > 0 || plan.removals.length > 0;
     const counts = {
@@ -105,6 +113,22 @@ export function IrProcessPanel({
         removed: plan.removals.length,
     };
     const unsaved = counts.added + counts.changed + counts.removed + (engineChanged ? 1 : 0);
+    const reading = useIrReading(engine, parameterValues(lines, typed));
+    const simple = mode === 'simple' && reading.view !== undefined;
+
+    const applySimple = async (next: SimpleView): Promise<void> => {
+        try {
+            const out = await api.convertIrParameters({
+                process_type: engine,
+                to_simple: false,
+                values: next,
+            });
+            setTyped((current) => ({ ...current, ...typedFrom(lines, out.values) }));
+            setRefusal('');
+        } catch (error) {
+            setRefusal(error instanceof Error ? error.message : String(error));
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -120,24 +144,29 @@ export function IrProcessPanel({
                             {t('marketdata.irProcess.clean')}
                         </span>
                     )}
-                    <label className="ml-auto flex items-center gap-2 text-sm">
-                        <span className="text-ink-muted">{t('refdata.fields.process_type')}</span>
-                        <Select
-                            className={engineChanged ? 'border-warn' : ''}
-                            value={engine}
-                            disabled={!mayWrite}
-                            onChange={(event) => {
-                                setEngine(event.target.value);
-                                setTyped({});
-                            }}
-                        >
-                            {(types.data ?? NO_ROWS).map((row) => (
-                                <option key={show(row['code'])} value={show(row['code'])}>
-                                    {show(row['name'])}
-                                </option>
-                            ))}
-                        </Select>
-                    </label>
+                    <div className="ml-auto flex flex-wrap items-center gap-2">
+                        <EditingModeToggle mode={mode} onChange={setMode} />
+                        <label className="flex items-center gap-2 text-sm">
+                            <span className="text-ink-muted">
+                                {t('refdata.fields.process_type')}
+                            </span>
+                            <Select
+                                className={engineChanged ? 'border-warn' : ''}
+                                value={engine}
+                                disabled={!mayWrite}
+                                onChange={(event) => {
+                                    setEngine(event.target.value);
+                                    setTyped({});
+                                }}
+                            >
+                                {(types.data ?? NO_ROWS).map((row) => (
+                                    <option key={show(row['code'])} value={show(row['code'])}>
+                                        {show(row['name'])}
+                                    </option>
+                                ))}
+                            </Select>
+                        </label>
+                    </div>
                     {mayWrite && (
                         <div className="flex gap-2">
                             <Button
@@ -170,85 +199,112 @@ export function IrProcessPanel({
                         })}
                     </Notice>
                 )}
-                <div className="overflow-x-auto rounded-md border border-line">
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b border-line text-xs text-ink-muted">
-                                <th className="px-4 py-2 font-medium">
-                                    {t('marketdata.irProcess.parameter')}
-                                </th>
-                                <th className="px-4 py-2 text-right font-medium">
-                                    {t('marketdata.irProcess.value')}
-                                </th>
-                                <th className="px-4 py-2" />
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {lines.length === 0 && (
-                                <tr>
-                                    <td colSpan={3} className="px-4 py-3 text-ink-muted">
-                                        {t('marketdata.irProcess.none', {
-                                            engine: engineName(t, engine),
-                                        })}
-                                    </td>
+                {mode === 'simple' && (
+                    <p className="text-xs text-ink-faint">
+                        {t(`marketdata.irSimple.engineHint.${engine}`)}
+                    </p>
+                )}
+                {refusal !== '' && <Notice tone="warn">{refusal}</Notice>}
+                {mode === 'simple' && reading.view === undefined && reading.reason !== '' && (
+                    <Notice tone="info">
+                        {t('marketdata.irSimple.byHand', { reason: reading.reason })}
+                    </Notice>
+                )}
+                {simple && reading.view !== undefined ? (
+                    <IrSimplePanel
+                        view={reading.view}
+                        caution={reading.caution}
+                        mayWrite={mayWrite}
+                        engine={engine}
+                        onChange={(next) => void applySimple(next)}
+                    />
+                ) : (
+                    <div className="overflow-x-auto rounded-md border border-line">
+                        <table className="w-full text-left text-sm">
+                            <thead>
+                                <tr className="border-b border-line text-xs text-ink-muted">
+                                    <th className="px-4 py-2 font-medium">
+                                        {t('marketdata.irProcess.parameter')}
+                                    </th>
+                                    <th className="px-4 py-2 text-right font-medium">
+                                        {t('marketdata.irProcess.value')}
+                                    </th>
+                                    <th className="px-4 py-2" />
                                 </tr>
-                            )}
-                            {lines.map((line) => {
-                                const id = show(line.definition['id']);
-                                const value = valueOf(line);
-                                const added = line.saved === undefined;
-                                const changed =
-                                    !added && Number(value) !== Number(line.saved?.['parameter_value']);
-                                const wrong = parameterError(line.definition, value) !== undefined;
-                                return (
-                                    <tr
-                                        key={id}
-                                        className={cx(
-                                            'border-b border-line-subtle last:border-b-0',
-                                            mayWrite && 'cursor-pointer hover:bg-surface-hover',
-                                            added && 'bg-up/5',
-                                        )}
-                                        title={show(line.definition['description'])}
-                                        {...(mayWrite ? { onClick: () => setOpen(line) } : {})}
-                                    >
-                                        <td className="max-w-md px-4 py-2">
-                                            <span className="font-medium text-ink">
-                                                {show(line.definition['display_name'])}
-                                            </span>
-                                            {show(line.definition['symbol']) !== '' && (
-                                                <span className="text-ink-faint">
-                                                    {' '}
-                                                    · {show(line.definition['symbol'])}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td
-                                            className={cx(
-                                                'px-4 py-2 text-right font-mono text-xs',
-                                                changed && CHANGED_CELL,
-                                                wrong && 'text-down',
-                                            )}
-                                        >
-                                            {value}
-                                        </td>
-                                        <td className="px-4 py-2 text-right whitespace-nowrap">
-                                            {added && (
-                                                <Tag tone="up" small>
-                                                    {t('marketdata.irProcess.marks.added')}
-                                                </Tag>
-                                            )}
-                                            {changed && (
-                                                <Tag tone="warn" small>
-                                                    {t('marketdata.irProcess.marks.changed')}
-                                                </Tag>
-                                            )}
+                            </thead>
+                            <tbody>
+                                {lines.length === 0 && (
+                                    <tr>
+                                        <td colSpan={3} className="px-4 py-3 text-ink-muted">
+                                            {t('marketdata.irProcess.none', {
+                                                engine: engineName(t, engine),
+                                            })}
                                         </td>
                                     </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                )}
+                                {lines.map((line) => {
+                                    const id = show(line.definition['id']);
+                                    const value = valueOf(line);
+                                    const added = line.saved === undefined;
+                                    const changed =
+                                        !added &&
+                                        Number(value) !== Number(line.saved?.['parameter_value']);
+                                    const wrong =
+                                        parameterError(line.definition, value) !== undefined;
+                                    return (
+                                        <tr
+                                            key={id}
+                                            className={cx(
+                                                'border-b border-line-subtle last:border-b-0',
+                                                mayWrite && 'cursor-pointer hover:bg-surface-hover',
+                                                added && 'bg-up/5',
+                                            )}
+                                            title={show(line.definition['description'])}
+                                            {...(mayWrite ? { onClick: () => setOpen(line) } : {})}
+                                        >
+                                            <td className="max-w-md px-4 py-2">
+                                                <span className="font-medium text-ink">
+                                                    {show(line.definition['display_name'])}
+                                                </span>
+                                                {show(line.definition['symbol']) !== '' && (
+                                                    <span className="text-ink-faint">
+                                                        {' '}
+                                                        · {show(line.definition['symbol'])}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td
+                                                className={cx(
+                                                    'px-4 py-2 text-right font-mono text-xs',
+                                                    changed && CHANGED_CELL,
+                                                    wrong && 'text-down',
+                                                )}
+                                            >
+                                                {value}
+                                                <Readout
+                                                    name={show(line.definition['parameter_name'])}
+                                                    view={reading.view}
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2 text-right whitespace-nowrap">
+                                                {added && (
+                                                    <Tag tone="up" small>
+                                                        {t('marketdata.irProcess.marks.added')}
+                                                    </Tag>
+                                                )}
+                                                {changed && (
+                                                    <Tag tone="warn" small>
+                                                        {t('marketdata.irProcess.marks.changed')}
+                                                    </Tag>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </section>
             <IrPreview
                 feed={feed}
@@ -363,6 +419,23 @@ function ParameterDialog({
                 )}
             </div>
         </Dialog>
+    );
+}
+
+/** What a parameter means in the words of the simple view, under its number. */
+function Readout({
+    name,
+    view,
+}: {
+    readonly name: string;
+    readonly view: SimpleView | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const readout = view === undefined ? undefined : readoutOf(name, view);
+    return readout === undefined ? null : (
+        <div className="font-sans text-[11px] text-ink-faint">
+            {t(`marketdata.irSimple.readout.${readout.key}`, { value: readout.value })}
+        </div>
     );
 }
 

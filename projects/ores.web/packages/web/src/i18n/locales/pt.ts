@@ -3414,6 +3414,54 @@ const pt: SourceCatalogue = {
             removeWarning:
                 'O fluxo para se estiver a correr. Os seus parâmetros e o modelo da curva são apagados primeiro, depois o fluxo. O histórico de cada um fica.',
         },
+        irSimple: {
+            lead: 'Responda a quatro perguntas. O servidor transforma as respostas nos números que o motor lê. Passe para Avançado para vê-los.',
+            start: 'Onde estão as taxas hoje?',
+            startHint: 'A taxa de curto prazo no início, em percentagem.',
+            longRun: 'Onde as taxas se fixam a longo prazo?',
+            longRunHint: 'O nível para onde as taxas voltam, em percentagem.',
+            halfLife: 'Com que rapidez as taxas voltam a esse nível?',
+            halfLifeHint: 'Anos para fazer metade do caminho. Um tempo curto é um regresso rápido.',
+            move: 'Quanto se movem as taxas num ano?',
+            moveHint: 'Uma variação anual típica da taxa de curto prazo.',
+            years: 'anos',
+            bp: 'pontos base',
+            number: 'Introduza um número acima de zero.',
+            presets: {
+                slow: 'Lento',
+                medium: 'Médio',
+                fast: 'Rápido',
+                calm: 'Calmo',
+                normal: 'Normal',
+                stressed: 'Tenso',
+            },
+            lean: {
+                up: 'As taxas começam em {start}% e fixam-se em {longRun}%, por isso a curva sobe.',
+                down: 'As taxas começam em {start}% e fixam-se em {longRun}%, por isso a curva desce.',
+                flat: 'As taxas começam em {start}% e fixam-se em {longRun}%, por isso a curva é plana.',
+            },
+            caution: {
+                touches_zero:
+                    'As taxas podem tocar em zero. Baixe a variação anual ou suba o nível de longo prazo.',
+            },
+            byHand: 'Estes valores foram ajustados à mão, por isso só o modo Avançado os pode mostrar. {reason}',
+            readout: {
+                halfLife: 'Meia-vida: {value} anos',
+                rate: '= {value}%',
+                move: 'Move-se cerca de {value} pontos base por ano',
+            },
+            engineHint: {
+                VASICEK: 'Curvas suaves. As taxas podem ficar abaixo de zero.',
+                COX_INGERSOLL_ROSS:
+                    'As taxas nunca ficam abaixo de zero. Os movimentos são menores quando as taxas são baixas.',
+                HULL_WHITE:
+                    'Curvas suaves que ajustam à curva de hoje. As taxas podem ficar abaixo de zero.',
+                BLACK_KARASINSKI:
+                    'As taxas nunca ficam abaixo de zero. Os movimentos acompanham a taxa.',
+                TWO_FACTOR_GAUSSIAN:
+                    'Formas de curva mais ricas, com bossas e torções. O segundo fator é ajustado por si.',
+            },
+        },
         irProcess: {
             shape: 'Forma da curva',
             paths: 'Trajetórias de amostra da taxa curta',
@@ -3725,6 +3773,13 @@ const pt: SourceCatalogue = {
         askReason: 'Preciso de abrir {screen}.',
     },
 
+    editingMode: {
+        label: 'Modo de edição',
+        simple: 'Simples',
+        advanced: 'Avançado',
+        simpleHelp: 'Responda a algumas perguntas simples. O servidor ajusta o modelo.',
+        advancedHelp: 'Ajuste os parâmetros do próprio modelo.',
+    },
     common: {
         locked: 'Bloqueada',
         unlocked: 'Desbloqueada',

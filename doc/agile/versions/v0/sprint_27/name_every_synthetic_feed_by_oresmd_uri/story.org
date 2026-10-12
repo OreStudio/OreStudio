@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-12
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -29,12 +29,12 @@ The oresmd URI already names every ORE datum: 45 instrument types in 11 asset cl
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Closed. PR 3152 and PR 3182 merged.   |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-11                               |
+| Next          | The oresmd URI codec decision (a capture). |
+| Last touched  | 2026-10-12                               |
 
 * Acceptance
 
@@ -55,7 +55,7 @@ The oresmd URI already names every ORE datum: 45 instrument types in 11 asset cl
 | [[id:08451F14-BD34-465C-B7AA-9686C6D022A3][Scaffold story: Name every synthetic feed by its oresmd reference]] | DONE | 2026-10-11 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:2576F53F-5D5B-42E0-A8DB-E7E54373D1D9][Replace the ORE key and the qualifier of every synthetic feed with an oresmd reference]] | DONE | 2026-10-11 | 2026-10-12 | Initial task for: Name every synthetic feed by its oresmd reference |
 | [[id:1503D1BB-A74E-483C-B35C-E42B28F68466][Draw the IR curve feeds on the shared feed screens]] | DONE | 2026-10-11 | 2026-10-12 | An IR curve feed gets a list, a page, an add and edit dialog, a process tab with its parameters and previews, and a curve template tab, built on the feed kind that every asset class shares. |
-| [[id:19B36E18-2C0C-422E-98CA-3C65FDB0BD19][Name the republish subject by the oresmd URI]] | BACKLOG | | | The per consumer tick subject is built from the datum's ORE key, so a quote that has an oresmd URI and no ORE key is dropped at ingest. |
+| [[id:19B36E18-2C0C-422E-98CA-3C65FDB0BD19][Name the republish subject by the oresmd URI]] | DONE | 2026-10-12 | 2026-10-12 | The per consumer tick subject is built from the datum's ORE key, so a quote that has an oresmd URI and no ORE key is dropped at ingest. |
 
 * Decisions
 
@@ -66,6 +66,11 @@ The oresmd URI already names every ORE datum: 45 instrument types in 11 asset cl
 - The FOMC config and the standard curve of one currency both start at spot, so they publish into one series and conflict.
 - The feed screens are shared. =FeedKind= states what differs between asset classes, and =FeedsPage= and =FeedPage= draw the list, the page and the dialogs. The IR curve screens are the second kind.
 - Open: =market_tick_subject(tenant, party, ore_key)= builds the per consumer subject from the datum's canonical ORE key. A quote that has no ORE key, such as one with the quote type =hazard_rate=, has a URI and no key, so it cannot be republished by that subject. Decide whether the subject takes the URI (percent-encoded into a token), or whether such quotes stay out of the feeds. This touches =ores.marketdata=, not only the feeds.
+
+** Closing note
+
+- The role of a curve (discount or projection) is not part of a series, so the collision check ignores it and =curve_role= stays a field of the config.
+- The republish subject is moved: it ends in the datum's oresmd URI as one subject token. A quote that no ORE key can name still cannot flow, because the codec refuses it; the capture Let the oresmd URI name quotes that ORE cannot name holds that.
 
 * Out of scope
 

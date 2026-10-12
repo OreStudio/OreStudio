@@ -1,0 +1,296 @@
+:PROPERTIES:
+:ID: 3C255B2B-B7DE-4A55-8666-153D982A1167
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.credit_basket_constituent
+#+description: Codegen entity model for the trading =credit_basket_constituent= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One name of a credit basket, keyed to the trade and the name's ordinal.
+#+entity_singular: credit_basket_constituent
+#+entity_plural: credit_basket_constituents
+#+entity_title: Credit Basket Constituent
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+One row per name a credit basket states, keyed to the trade and the name's
+ordinal within the document.
+
+The ORE schema states a basket as an unbounded list of =Name= elements, each
+carrying an issuer, a credit curve, an optional notional, an optional weight
+and an optional currency, and a few more that this table does not hold yet.
+The list order is the document's order and the ordinal preserves it, so the
+export re-emits the names as the document held them.
+
+An index credit default swap and a synthetic CDO state a basket. A product
+that states none writes no rows.
+
+The notional is a money value, so the column holds an exact numeric. The
+weight is a continuous quantity, so the column holds a binary float. The
+document may state neither, and then the column is null rather than a zero the
+document never wrote.
+
+The trade row carries the party. The name rows are family-owned and ride the
+trade's scope.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:supplied_by:  user
+:END:
+
+The trade whose credit basket document states this name.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this name within the document's list, counting from one.
+
+The schema declares the list unbounded and a document's order is the order
+it stated, so the ordinal is what identifies a row and preserves that
+order.
+
+** issuer_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The issuer this name stands for.
+
+The ORE document states it in the =Name/IssuerId= element; the column refuses
+an empty issuer.
+
+** qualifier
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The qualifier of the name, when the document states one. Null otherwise.
+
+** credit_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The credit curve of the name, from the =CreditCurveId= element. Null when the
+document names the curve another way.
+
+** notional
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The notional this name carries in the basket, when the document states one.
+
+** weight
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The relative weight of this name in the basket, when the document states one.
+A document that states no weight leaves the column null, and the reverse mapper
+writes no =Weight= element back.
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of the name's notional, when the document states one.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_credit_basket_constituents_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+| "issuer_id" <> ''     |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: credit_basket_constituent
+:entity_plural_short:   credit_basket_constituents
+:entity_singular_words: credit basket constituent
+:entity_plural_words:   credit basket constituents
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: constituent
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| issuer_id       | Issuer      |
+| notional        | Notional    |
+| weight          | Weight      |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+The trade read path fetches the names of many credit baskets at
+once when it assembles the export payload, and no generated read covers
+that: =read_latest(context, ids)= filters on the child's own key and
+=read_latest_by_trade_id= reads one instrument at a time. The batch
+read below is one statement over the instrument set, which is what the
+generated stack cannot express.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 36596969-5526-46F8-8DC9-14A9D567142D
+:END:
+
+Reads every current name of the given instruments, ordered by
+instrument and ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::credit_basket_constituent>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::credit_basket_constituent>
+credit_basket_constituent_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<credit_basket_constituent_entity>> |
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "sequence_number"_c);
+    return execute_read_query<credit_basket_constituent_entity,
+                              domain::credit_basket_constituent>(
+        ctx,
+        query,
+        [](const auto& entities) { return credit_basket_constituent_mapper::map(entities); },
+        lg(),
+        "Reading credit basket constituents for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:0143968F-0BAF-44A0-A38B-C32146BD46F6][ores.trading.credit_instrument]] — the instrument whose document states these names.

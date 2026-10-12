@@ -12378,7 +12378,7 @@ struct nameData {
     domain::nameData_IssuerId_t IssuerId{};
     xsd::optional<domain::nameData_Qualifier_t> Qualifier;
     domain::creditCurveIdType_group_t creditCurveIdType{};
-    xsd::optional<float> Notional;
+    xsd::optional<domain::moneyFloat> Notional;
     xsd::optional<float> Weight;
     xsd::optional<domain::currencyCode> Currency;
     xsd::optional<domain::non_negative_decimal> PriorNotional;

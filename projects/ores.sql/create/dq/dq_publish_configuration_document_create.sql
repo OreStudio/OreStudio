@@ -72,6 +72,13 @@ comment on function ores_dq_party_uuid_fn(uuid, uuid) is
  *                        document. They are copied as staged and not re-keyed,
  *                        because a re-keyed value would point at nothing. Every
  *                        other uuid column of every table is a key of the document.
+ * @param p_resolve       for a table, the live columns whose value is an expression
+ *                        over the staged row, which is the alias a. A dataset cannot
+ *                        stage a column whose value differs between databases, such
+ *                        as the id of a parameter definition, so it stages a name and
+ *                        the expression looks the id up. A staged row whose expression
+ *                        is null refuses the publish. The shape is
+ *                        {"table": {"live_column": "sql expression"}}.
  *
  * A publish only inserts. The mode a caller passes has no effect, and a staged row
  * whose live id exists is left as it is, so a changed document needs new ids.
@@ -84,7 +91,8 @@ create or replace function ores_dq_publish_configuration_document_fn(
     p_component text,
     p_live_prefix text,
     p_tables text[],
-    p_external text[] default array[]::text[]
+    p_external text[] default array[]::text[],
+    p_resolve jsonb default '{}'::jsonb
 )
 returns table (action text, record_count bigint) as $$
 declare
@@ -99,6 +107,7 @@ declare
     v_exprs text;
     v_staged bigint := 0;
     v_n bigint;
+    v_col text;
     v_inserted bigint := 0;
 begin
     perform ores_utility_allow_version_replace_fn();
@@ -150,11 +159,28 @@ begin
             into v_n using p_dataset_id;
         v_staged := v_staged + v_n;
 
+        -- A column the dataset resolves by an expression must resolve for every staged
+        -- row, or the live insert would fail with a null and no hint of which row.
+        for v_col in
+            select k from jsonb_object_keys(coalesce(p_resolve -> v_table, '{}'::jsonb)) k
+        loop
+            execute format('select count(*) from %I a where a.dataset_id = $1 and (%s) is null',
+                           v_staging, p_resolve -> v_table ->> v_col)
+                into v_n using p_dataset_id;
+            if v_n > 0 then
+                raise exception 'Dataset % stages % row(s) of % whose % does not resolve.',
+                    v_dataset_name, v_n, v_table, v_col;
+            end if;
+        end loop;
+
         -- The live table's own data columns, in table order, less the columns
         -- this function stamps. A uuid column is re-keyed, and any other column
         -- is copied as staged.
         select string_agg(format('%I', c.column_name), ', ' order by c.ordinal_position),
-               string_agg(case when c.data_type = 'uuid' and c.column_name <> all (p_external)
+               string_agg(case when jsonb_exists(coalesce(p_resolve -> v_table, '{}'::jsonb),
+                                                 c.column_name)
+                    then format('(%s)', p_resolve -> v_table ->> c.column_name)
+                    when c.data_type = 'uuid' and c.column_name <> all (p_external)
                     then format('ores_dq_party_uuid_fn(%L::uuid, a.%I)', p_party_id::text,
                                 c.column_name)
                     else format('a.%I', c.column_name) end,
@@ -196,7 +222,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-comment on function ores_dq_publish_configuration_document_fn(uuid, uuid, uuid, text, text, text, text[], text[]) is
+comment on function ores_dq_publish_configuration_document_fn(uuid, uuid, uuid, text, text, text, text[], text[], jsonb) is
 'Copies a configuration document from its staging tables into the live tables of
  its owning component for one party, with its reporting configuration, re-keying
  every uuid per party. Idempotent per row.';

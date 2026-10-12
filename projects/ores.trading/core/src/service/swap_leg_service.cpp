@@ -111,6 +111,7 @@ domain::swap_leg to_domain(const messaging::swap_leg_write& write) {
     v.payment_frequency_code = write.payment_frequency_code;
     v.floating_index_code = write.floating_index_code;
     v.currency = write.currency;
+    v.leg_group = write.leg_group;
     return v;
 }
 

@@ -34,6 +34,7 @@ set(files
     "commodity_instrument_commands_tests.cpp"
     "composite_instrument_commands_tests.cpp"
     "composite_leg_commands_tests.cpp"
+    "credit_basket_constituent_commands_tests.cpp"
     "credit_instrument_commands_tests.cpp"
     "equity_accumulator_instrument_commands_tests.cpp"
     "equity_asian_option_instrument_commands_tests.cpp"

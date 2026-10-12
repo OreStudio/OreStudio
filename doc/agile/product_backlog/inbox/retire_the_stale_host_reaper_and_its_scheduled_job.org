@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 590D8324-6923-41BF-8F49-7CAEED46E742
+:END:
+#+title: Retire the stale-host reaper and its scheduled job
+#+description: The lease reaper replaces the reap_work handler and the compute.v1.reap.stale_results scheduled job, which are left in place.
+#+type: capture
+#+level: cross
+#+filetags: :compute:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Remove the =reap_work= handler in =work_handler=, the =reap_work_message= in the work model, and the scheduled job =compute.v1.reap.stale_results= that publishes it every minute. Remove the job from the compute populate script and from the live job table.
+
+* Why
+
+The lease reaper now returns the jobs of lost nodes to the queue, with an attempt limit. The older reaper picks results that are in progress on a host whose node samples stopped. It lists results as the system tenant, so it sees no tenant work, and it does nothing for the grid. It stays for now because a scheduled job publishes its message, and removing the job needs a change to the populate script and to the live job table. That change belongs in its own task.
+
+* References
+
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]]
+
+* See also
+
+-

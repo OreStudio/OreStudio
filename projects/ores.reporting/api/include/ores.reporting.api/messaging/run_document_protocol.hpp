@@ -25,10 +25,10 @@
 #ifndef ORES_REPORTING_API_MESSAGING_RUN_DOCUMENT_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_RUN_DOCUMENT_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/report_analytic.hpp"
+#include "ores.reporting.api/domain/configuration_analytic.hpp"
+#include "ores.reporting.api/domain/configuration_market_binding.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
-#include "ores.reporting.api/domain/report_market_binding.hpp"
-#include "ores.reporting.api/domain/report_run_setup.hpp"
+#include "ores.reporting.api/domain/risk_report_config.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -57,19 +57,37 @@ struct run_parameter {
  * order the document wrote them.
  */
 struct run_analytic {
-    ores::reporting::domain::report_analytic analytic;
+    ores::reporting::domain::configuration_analytic analytic;
     std::vector<run_parameter> parameters;
 };
 
 /**
- * @brief One ORE run document as reporting stores it against a report
- * definition: the setup, the analytics with their parameters, and the market
- * bindings.
+ * @brief The name a run document gives to one file it reads.
+ *
+ * The files are data and documents that live outside the configuration: the
+ * configuration documents, the portfolio, the market data and the fixings. A
+ * configuration does not store the names. They come from the table of well known
+ * file names when a run is built, and from the Setup of an ORE sample when one
+ * is imported, where the import uses them to find the files.
+ */
+struct run_file {
+    std::string parameter;
+    std::string name;
+};
+
+/**
+ * @brief One ORE run document, built from the configuration a report definition
+ * binds: the choices of the run, the analytics with their parameters, the market
+ * bindings and the names of the files the run reads.
+ *
+ * The choices, the analytics and the market bindings belong to the shared
+ * configuration. Only the file names are not stored.
  */
 struct run_document {
-    ores::reporting::domain::report_run_setup setup;
+    ores::reporting::domain::risk_report_config settings;
+    std::vector<run_file> files;
     std::vector<run_analytic> analytics;
-    std::vector<ores::reporting::domain::report_market_binding> market_bindings;
+    std::vector<ores::reporting::domain::configuration_market_binding> market_bindings;
 };
 
 /**

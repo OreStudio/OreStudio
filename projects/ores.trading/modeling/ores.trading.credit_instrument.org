@@ -426,6 +426,39 @@ is immutable.
     }
 #+end_src
 
+* Delete cascade
+
+The rows a credit instrument owns. Each is keyed by the instrument's own trade
+id, so the delete rule closes them all with one statement per table and the
+family does not outlive its instrument.
+
+The legs are the shared leg tables the rates family writes, told apart by the
+leg group; the basket is the credit family's own child.
+
+** credit_basket_constituents
+:PROPERTIES:
+:table:  ores_trading_credit_basket_constituents_tbl
+:column: trade_id
+:END:
+
+** swap_legs
+:PROPERTIES:
+:table:  ores_trading_swap_legs_tbl
+:column: trade_id
+:END:
+
+** swap_leg_amounts
+:PROPERTIES:
+:table:  ores_trading_swap_leg_amounts_tbl
+:column: trade_id
+:END:
+
+** swap_leg_rates
+:PROPERTIES:
+:table:  ores_trading_swap_leg_rates_tbl
+:column: trade_id
+:END:
+
 * SQL
 
 ** Flags

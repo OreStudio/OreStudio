@@ -215,8 +215,34 @@ create or replace trigger ores_trading_credit_instruments_insert_trg
 before insert on "ores_trading_credit_instruments_tbl"
 for each row execute function ores_trading_credit_instruments_insert_fn();
 
+-- The rows this row owns, closed when it is deleted. A function and not a
+-- rule body, because the rule resolves the tables it names when it is
+-- created and a child may be created after its parent; a plpgsql body
+-- resolves them when it runs.
+create or replace function ores_trading_credit_instruments_cascade_delete_fn(
+    p_row "ores_trading_credit_instruments_tbl")
+returns void as $$
+begin
+    -- Close every row this row owns, so one delete removes the family and
+    -- not the header alone. The store enforces it, so every caller gets it.
+    delete from "ores_trading_credit_basket_constituents_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_legs_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_amounts_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_rates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace rule ores_trading_credit_instruments_delete_rule as
 on delete to "ores_trading_credit_instruments_tbl" do instead (
+    select ores_trading_credit_instruments_cascade_delete_fn(OLD);
     update "ores_trading_credit_instruments_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id

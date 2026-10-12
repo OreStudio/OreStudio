@@ -22,6 +22,7 @@
 #include "ores.compute.service/app/application_exception.hpp"
 #include "ores.compute.service/app/batch_workflow_bridge.hpp"
 #include "ores.compute.service/app/compute_grid_poller.hpp"
+#include "ores.compute.service/app/lease_reaper.hpp"
 #include "ores.compute.service/app/workunit_dispatcher.hpp"
 #include "ores.compute.service/messaging/app_event_registrar.hpp"
 #include "ores.compute.service/messaging/app_version_event_registrar.hpp"
@@ -111,10 +112,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, event_bus, nats);
 
     // Must be constructed before event_source.start() so no change is missed.
-    app::workunit_dispatcher dispatcher(nats, make_context(cfg.database), svc_nats);
+    app::workunit_dispatcher dispatcher(nats, make_context(cfg.database));
 
-    // Grid dispatch seam: creates the result rows and publishes the JetStream
-    // assignments for shell-saved workunits. It reads the in-process bus rather
+    // Grid dispatch seam: creates the result rows, queues them in the work ledger and rings
+    // the doorbell for shell-saved workunits. It reads the in-process bus rather
     // than the NATS publication, and it needs the tenant, which the typed
     // event does not state. So it reads the change the event source publishes
     // beside it and keeps the workunit's.
@@ -139,6 +140,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // moved into run() for the subscription handlers.
     auto poller_ctx = make_context(cfg.database);
     auto bridge_ctx = make_context(cfg.database);
+    auto reaper_ctx = make_context(cfg.database);
     const auto telemetry_interval = cfg.telemetry_interval_seconds;
 
     co_await ores::service::service::run(
@@ -153,6 +155,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         [telemetry_interval,
          poller_ctx = std::move(poller_ctx),
          bridge_ctx = std::move(bridge_ctx),
+         reaper_ctx = std::move(reaper_ctx),
          &nats](boost::asio::io_context& ioc) mutable {
             if (telemetry_interval > 0) {
                 auto poller = std::make_shared<app::compute_grid_poller>(telemetry_interval,
@@ -165,6 +168,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             auto bridge = std::make_shared<app::batch_workflow_bridge>(
                 bridge_interval_seconds, nats, std::move(bridge_ctx));
             boost::asio::co_spawn(ioc, [bridge]() { return bridge->run(); }, boost::asio::detached);
+            // Sweeps the work ledger for leases that ended.
+            constexpr std::uint32_t reaper_interval_seconds = 15;
+            auto reaper = std::make_shared<app::lease_reaper>(
+                reaper_interval_seconds, nats, std::move(reaper_ctx));
+            boost::asio::co_spawn(ioc, [reaper]() { return reaper->run(); }, boost::asio::detached);
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);

@@ -525,13 +525,14 @@ begin
     ) then
         insert into ores_reporting_analytic_types_tbl (
             code, tenant_id, version,
-            name, description, parameter_entity, display_order,
+            name, description, parameter_entity, requires_analytic_type_code, display_order,
             modified_by, change_reason_code, change_commentary
         ) values (
             'pfe', v_sys_tenant, 0,
             'PFE',
             'Potential future exposure over the portfolio, at the stated confidence.',
             null,
+            'simulation',
             23,
             current_user, 'system.initial_load', 'Seed analytic type: pfe'
         );

@@ -82,7 +82,7 @@ void run_configuration_handler::import_run_configuration(ores::nats::message msg
         error_reply(nats_, msg, ctx.error());
         return;
     }
-    if (!has_permission(*ctx, "reporting::report_run_setups:write")) {
+    if (!has_permission(*ctx, "reporting::run_documents:write")) {
         error_reply(nats_, msg, ores::service::error_code::forbidden);
         return;
     }
@@ -135,7 +135,7 @@ void run_configuration_handler::export_run_configuration(ores::nats::message msg
         error_reply(nats_, msg, ctx.error());
         return;
     }
-    if (!has_permission(*ctx, "reporting::report_run_setups:read")) {
+    if (!has_permission(*ctx, "reporting::run_documents:read")) {
         error_reply(nats_, msg, ores::service::error_code::forbidden);
         return;
     }

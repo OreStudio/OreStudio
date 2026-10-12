@@ -27,6 +27,8 @@
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/domain/credit_basket_constituent.hpp"
+#include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
@@ -120,6 +122,19 @@ using composite_instrument_data = with_legs<composite_instrument, composite_leg>
 struct commodity_instrument_data {
     commodity_instrument instrument;
     std::vector<commodity_basket_constituent> constituents;
+};
+
+// A credit trade states its legs as rows of the shared leg tables, and an index
+// swap or a synthetic CDO states a basket of names beside the instrument. The
+// carrier holds the instrument with those rows, so each travels with the trade
+// it belongs to. A credit product that states no leg or no basket leaves the
+// collection empty.
+struct credit_instrument_data {
+    credit_instrument instrument;
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<credit_basket_constituent> constituents;
 };
 
 // An equity position states an entry collection beside the instrument that
@@ -229,6 +244,26 @@ inline void stamp_ids(commodity_instrument_data& data,
                       boost::uuids::uuid trade_id,
                       boost::uuids::uuid activity_id = {}) {
     stamp_ids(data.instrument, trade_id, activity_id);
+    for (auto& constituent : data.constituents) {
+        constituent.trade_id = trade_id;
+        constituent.trade_activity_id = activity_id;
+    }
+}
+
+inline void stamp_ids(credit_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    stamp_ids(data.instrument, trade_id, activity_id);
+    for (auto& leg : data.legs) {
+        leg.identity.trade_id = trade_id;
+        leg.identity.trade_activity_id = activity_id;
+    }
+    for (auto& amount : data.leg_amounts) {
+        stamp_ids(amount, trade_id, activity_id);
+    }
+    for (auto& rate : data.leg_rates) {
+        stamp_ids(rate, trade_id, activity_id);
+    }
     for (auto& constituent : data.constituents) {
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;

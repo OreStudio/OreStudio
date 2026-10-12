@@ -89,6 +89,7 @@ The default timeout is 30 seconds, set once in =ores.nats/service/timeouts.hpp= 
 
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every service operation is a request with an inbox; a refusal is an empty reply with =X-Error=.
 - [[id:A47C612B-9CAB-4656-B4FC-E9DA1D414F83][Job actions]] — the request form of =nats_publish= waits for the trigger's acknowledgement.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] — a node claims a job with a request and receives the assignment in the reply.
 
 * Related patterns
 

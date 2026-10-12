@@ -139,6 +139,7 @@ import {
     readSessionsPage,
     readTenantStatuses,
     readTenantTypes,
+    TEST_TENANT_TYPE,
     readTenant,
     readPartiesPage,
     readProvisioningRuns,
@@ -1831,9 +1832,6 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         offset: z.int().nonnegative(),
         limit: z.int().positive().max(1000),
     });
-
-    /** The tenant type that marks test infrastructure, hidden unless asked for. */
-    const TEST_TENANT_TYPE = 'automation';
 
     /** The deployment's own tenant, which the home page does not count. */
     const SYSTEM_TENANT_TYPE = 'system';

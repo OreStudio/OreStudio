@@ -11,15 +11,22 @@
 
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+This page describes the lifecycle as it runs today. The queue of jobs is a table
+in the database, and a free node claims one job at a time. An earlier design
+published a JetStream assignment for each job. It failed when a job waited in the
+queue for longer than the storage token lived. See
+[[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]]
+for the failure, the options and the design that replaced it.
+
 * Summary
 
 A compute job is a risk run of the ORE engine on a worker node of the
 =ores.compute= grid. The operator starts from the shell: an engine
 package and an input bundle are uploaded first, then a batch of
 identical jobs is created and dispatched. Dispatch stores one
-workunit per job and the service immediately publishes a JetStream
-assignment for each; a wrapper node of the matching platform consumes
-the assignment, downloads the engine package and the input, runs the
+workunit per job and the service queues a result for each in the work
+ledger; a free wrapper node of the matching platform claims one,
+downloads the engine package and the input, runs the
 engine as a child process, and uploads the job's =Output/= directory
 back to storage. A submit message carries the outcome to the service,
 which validates the result, records it on the workunit, and closes the
@@ -61,19 +68,18 @@ misread:
 
 - The workunit has no status column. Its state is derivable: it has no
   =canonical_result_id= yet, or it has one (the job is done).
-- The JetStream dispatch path never marks a result =InProgress=. The
-  dispatcher creates the result row as =Unsent= and the state stays
-  =Unsent= while the wrapper executes; the submit message moves it
-  straight to =Done=. =InProgress= is set only by the legacy =pull=
-  channel (a wrapper pulling work by host), where the server binds the
-  host and reaps the result back to =Unsent= if that host's heartbeats
-  stop for five minutes.
+- The dispatcher creates the result row as =Unsent=. The claim moves it
+  to =InProgress= and binds the claiming host. The submit message moves
+  it to =Done=. If the host stops extending its lease, the lease reaper
+  returns the entry to the queue, and the next claim runs the job again.
+  A job that uses its three attempts ends as =Done= with outcome
+  =NoReply=.
 
 ** The end-to-end flow
 
 The interaction diagram below is the map for everything that follows:
 
-#+caption: The compute job lifecycle from the operator's shell session to the finished output archive: package and input upload, batch dispatch, JetStream assignment, node execution, result submission, and assimilation.
+#+caption: The compute job lifecycle from the operator's shell session to the finished output archive: package and input upload, batch dispatch, queue and claim, node execution, result submission, and assimilation.
 [[proj:doc/knowledge/architecture/compute_job_lifecycle_sequence.png]]
 
 Source: [[./compute_job_lifecycle_sequence.puml][=compute_job_lifecycle_sequence.puml=]]. Regenerate with
@@ -85,7 +91,7 @@ The lifecycle has six stages:
 2. Prepare an input bundle — the job's working-directory snapshot.
 3. Create the batch — with the generated =batches add= command.
 4. Dispatch — with =compute dispatch-batch=; the service stores
-   workunits and publishes one assignment per job.
+   workunits and queues one result per job.
 5. Execute on a node — the wrapper downloads, verifies, runs, and
    uploads the output.
 6. Validate and close — the service accepts results, marks the
@@ -225,26 +231,25 @@ three parts:
 3. *Dispatch* — each stored workunit raises a domain event that the
    service's eventing listener feeds into the =workunit_dispatcher=.
    For every workunit short of its redundancy target the dispatcher
-   creates a result row (=server_state= =Unsent=) and publishes one
-   work-assignment event onto JetStream, keyed per platform:
+   creates a result row (=server_state= =Unsent=), queues it in the work
+   ledger with the platforms that can run it, and rings the
+   =compute.v1.ops.work_available= notice so idle nodes ask at once. A
+   dispatch that would pass the tenant's limit of waiting jobs is
+   refused.
 
-#+begin_example
-subject: compute.v1.ops.work_assignment.{tenant_id}.{platform_code}
-payload: result_id, workunit_id, app_version_id,
-         package_uri, package_sha256, input_uri, output_uri
-#+end_example
-
-The event is self-contained — the wrapper needs no further round trips
-to run the job. =package_uri= and =package_sha256= come from the
-app version's published platform row (hence the warning if a version
-has no package: the workunit is stored, no assignment is ever
-published, and the job sits =Unsent= forever). =output_uri= is
-pre-assigned as =output/{result_id}.tar.gz=.
+The ledger entry holds ids only. When a node claims the job, the
+service builds the assignment from the workunit: =package_uri= and
+=package_sha256= come from the app version's published platform row
+(hence the warning if a version has no package: the workunit is stored,
+no entry is ever claimed, and the job sits =Unsent= forever).
+=output_uri= is pre-assigned as =output/{result_id}.tar.gz=. The
+storage token is minted at the claim, so it is fresh however long the
+job waited.
 
 The dispatcher converges on the redundancy target: a workunit whose
-result count is already at target gets no new assignment, and a
-partially failed publish is topped up by the next workunit event
-instead of stranding the workunit. See
+result count is already at target gets no new result, and a partially
+failed dispatch is topped up by the next workunit event instead of
+stranding the workunit. See
 [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]] for the recipe.
 
 ** Stage 5 — execute on a node
@@ -252,21 +257,25 @@ instead of stranding the workunit. See
 A wrapper node is an =ores.compute.wrapper= process pointed at the
 environment (=--host-id= is mandatory; the node also needs its tenant,
 =work_dir=, heartbeat interval, and the storage HTTP base URL). On
-startup it ensures the JetStream stream exists and subscribes a
-durable, queue-grouped consumer on its own triplet:
+startup it starts a claim loop. The loop sends =compute.v1.ops.claim_work=
+with the host id and its own platform triplet, and the service answers
+with one job or with no work:
 
 #+begin_example
-subject:    compute.v1.ops.work_assignment.{tenant_id}.{own platform triplet}
-durable:    compute_wrapper_{tenant_id}_{platform}
-queue:      ores.compute.wrapper.{platform}
+request:  host_id, platform
+reply:    result_id, workunit_id, package_uri, package_sha256,
+          input_uri, output_uri, storage_token, attempt
 #+end_example
 
-Routing is per-triplet: the orchestrator publishes on the platform
-whose package it resolved, and nodes subscribe only to their own
-platform, so a node never sees an assignment it cannot run. Within one
-platform the queue group spreads assignments across the fleet, and
-JetStream holds a message until a node acknowledges completing it — a
-job survives a node that dies mid-run.
+A node asks only when it is free, and asks again at once after a job.
+When no work waits, it waits for the =work_available= notice or for its
+next poll, every few seconds with random jitter, so a lost notice costs
+seconds. The service chooses the job: the platform decides which
+entries a node can run, the tenant with the fewest running jobs goes
+first, and then priority and age. The claim holds the job under a
+lease of five minutes. The heartbeat extends the lease, and a node that
+dies mid-run loses it. The lease reaper then returns the job to the
+queue, or ends it as no reply after three attempts.
 
 Every =heartbeat_interval= (30 seconds by default) the node publishes
 =compute.v1.ops.heartbeat= with its host id. The first heartbeat
@@ -279,7 +288,7 @@ recency of its newest node sample.
 When telemetry is enabled the node additionally publishes node samples
 on =compute.v1.ops.node_sample=.
 
-On each assignment the wrapper runs =process_assignment=:
+On each claimed job the wrapper runs =process_assignment=:
 
 1. *Ensure the package* — =work_dir/packages/{app_version_id}/= holds
    the extracted engine. If the =manifest.json= is missing, the node
@@ -321,8 +330,9 @@ assimilator of the grid:
 
 1. *Record the result* — the result row is marked =Done= with the
    outcome, the submitting host bound as =host_id=, the output URI,
-   and a received timestamp. This is where the host of a JetStream-run
-   job is recorded — the dispatcher created the row without one.
+   and a received timestamp. A submit from a host that does not hold
+   the claim, or for a result that is already done or retired, changes
+   nothing.
 2. *Accept on the workunit* — once the workunit has
    =target_redundancy= (1 in shell dispatch) results in state =Done=,
    the validator records the last-submitted result's id as the
@@ -364,11 +374,11 @@ every result has outcome Success. See
 * Patterns used
 
 - [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — worker
-  nodes share a durable, queue-grouped consumer per platform.
-- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — assignments are routed
-  per platform, so one platform's backlog does not hold another's.
+  nodes claim jobs from one queue, and the database hands each job to one node.
+- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — a node claims only
+  jobs for its own platform, so one platform's backlog does not hold another's.
 - [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] —
-  JetStream holds each assignment until a node acknowledges it.
+  the ledger holds each job until a free node claims it.
 
 * See also
 

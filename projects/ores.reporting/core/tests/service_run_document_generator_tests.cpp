@@ -19,13 +19,14 @@
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 // The decision these pin: what an exported run asks ORE to do. A wrong answer
-// either runs an analytic the report did not ask for or names an input file
-// the export does not write.
+// either runs an analytic the configuration did not ask for, names an input file
+// the export does not write, or loses a parameter on the way.
 
 using namespace ores::reporting::service;
 
@@ -33,13 +34,26 @@ namespace {
 
 const std::string tags("[service][run_document_generator]");
 
+ores::reporting::messaging::run_analytic
+analytic(const std::string& type, int order, const std::string& active = "Y") {
+    ores::reporting::messaging::run_analytic a;
+    a.analytic.analytic_type_code = type;
+    a.analytic.display_order = order;
+    a.analytic.active = active;
+    return a;
+}
+
 run_document_inputs inputs() {
     run_document_inputs in;
-    in.asof_date = "2026-10-09";
+    in.risk.market_data_type = "date";
+    in.risk.market_data_date = "2026-10-09";
     in.risk.base_currency = "GBP";
-    in.risk.npv_enabled = 0;
-    in.risk.cashflow_enabled = 0;
-    in.risk.curves_enabled = 1;
+    ores::reporting::domain::configuration_market_binding pricing;
+    pricing.role = "pricing";
+    pricing.market_configuration_name = "default";
+    pricing.position = 1;
+    in.market_bindings = {pricing};
+    in.analytics = {analytic("curves", 1)};
     in.bound_types = {"conventions", "curve_configuration", "todays_market", "pricing_engines"};
     return in;
 }
@@ -53,108 +67,111 @@ std::vector<std::string> codes(const ores::reporting::messaging::run_document& d
 
 }
 
-TEST_CASE("a risk configuration with no switch set is refused", tags) {
+TEST_CASE("a configuration with no analytic is refused", tags) {
     auto in = inputs();
-    in.risk.curves_enabled = 0;
+    in.analytics.clear();
     CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
 }
 
-TEST_CASE("the portfolio details switch runs the portfolio details analytic", tags) {
+TEST_CASE("a configuration whose analytics are all off is refused", tags) {
     auto in = inputs();
-    in.risk.curves_enabled = 0;
-    in.risk.portfolio_details_enabled = 1;
-    const std::vector<std::string> expected{"portfolioDetails"};
+    in.analytics = {analytic("npv", 1, "N")};
+    CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
+}
+
+TEST_CASE("the analytics of the configuration are the analytics of the run, in order", tags) {
+    auto in = inputs();
+    in.analytics = {analytic("portfolioDetails", 1),
+                    analytic("npv", 2),
+                    analytic("saccr", 3),
+                    analytic("historicalSimulationVar", 4)};
+    const std::vector<std::string> expected{
+        "portfolioDetails", "npv", "saccr", "historicalSimulationVar"};
     CHECK(codes(generate_run_document(in)) == expected);
 }
 
-TEST_CASE("each switch set adds its analytic, in run order", tags) {
+TEST_CASE("an analytic that is off stays in the run with its flag", tags) {
     auto in = inputs();
-    in.risk.curves_enabled = 0;
-    in.risk.xva_enabled = 1;
-    in.risk.npv_enabled = 1;
-    in.risk.sensitivity_enabled = 1;
-    const std::vector<std::string> expected{"npv", "sensitivity", "xva"};
-    CHECK(codes(generate_run_document(in)) == expected);
-}
-
-TEST_CASE("the initial margin switch runs the initial margin analytic", tags) {
-    auto in = inputs();
-    in.risk.curves_enabled = 0;
-    in.risk.initial_margin_enabled = 1;
-    const std::vector<std::string> expected{"initialMargin"};
-    CHECK(codes(generate_run_document(in)) == expected);
-}
-
-TEST_CASE("every analytic is active and numbered from one", tags) {
-    auto in = inputs();
-    in.risk.curves_enabled = 0;
-    in.risk.npv_enabled = 1;
-    in.risk.cashflow_enabled = 1;
+    in.analytics = {analytic("npv", 1), analytic("cashflow", 2, "N")};
     const auto d = generate_run_document(in);
     REQUIRE(d.analytics.size() == 2);
-    CHECK(d.analytics[0].analytic.active == "Y");
-    CHECK(d.analytics[0].analytic.display_order == 1);
-    CHECK(d.analytics[1].analytic.display_order == 2);
+    CHECK(d.analytics[1].analytic.active == "N");
 }
 
-TEST_CASE("each analytic switch runs the analytic type of its name", tags) {
-    struct row {
-        int ores::reporting::domain::risk_report_config::* enabled;
-        const char* type;
-    };
-    const row rows[] = {
-        {&ores::reporting::domain::risk_report_config::saccr_enabled, "saccr"},
-        {&ores::reporting::domain::risk_report_config::calibration_enabled, "calibration"},
-        {&ores::reporting::domain::risk_report_config::credit_curves_enabled, "creditcurves"},
-        {&ores::reporting::domain::risk_report_config::historical_var_enabled,
-         "historicalSimulationVar"},
-        {&ores::reporting::domain::risk_report_config::pnl_explain_enabled, "pnlExplain"},
-    };
-    for (const auto& r : rows) {
-        auto in = inputs();
-        in.risk.curves_enabled = 0;
-        in.risk.*r.enabled = 1;
-        INFO(r.type);
-        const std::vector<std::string> expected{r.type};
-        CHECK(codes(generate_run_document(in)) == expected);
-    }
-}
-
-TEST_CASE("the value-at-risk switch runs the parametric value-at-risk analytic", tags) {
+TEST_CASE("the parameters of an analytic reach the run with their values and order", tags) {
     auto in = inputs();
-    in.risk.curves_enabled = 0;
-    in.risk.parametric_var_enabled = 1;
-    const std::vector<std::string> expected{"parametricVar"};
-    CHECK(codes(generate_run_document(in)) == expected);
+    auto pfe = analytic("pfe", 1);
+    pfe.parameters = {{"quantile", "0.95", 1}, {"calculationType", "Symmetric", 2}};
+    in.analytics = {analytic("simulation", 1), pfe};
+    const auto d = generate_run_document(in);
+    REQUIRE(d.analytics.size() == 2);
+    REQUIRE(d.analytics[1].parameters.size() == 2);
+    CHECK(d.analytics[1].parameters[0].name == "quantile");
+    CHECK(d.analytics[1].parameters[0].value == "0.95");
+    CHECK(d.analytics[1].parameters[1].name == "calculationType");
 }
 
-TEST_CASE("the setup names a file for each bound type and none for the others", tags) {
+TEST_CASE("the run names a file for each bound type and none for the others", tags) {
     auto in = inputs();
     in.bound_types = {"curve_configuration", "todays_market"};
-    const auto& s = generate_run_document(in).setup;
-    CHECK(s.curve_config_file == "curveconfig.xml");
-    CHECK(s.market_config_file == "todaysmarket.xml");
-    CHECK_FALSE(s.conventions_file);
-    CHECK_FALSE(s.pricing_engines_file);
+    const auto& files = generate_run_document(in).files;
+    REQUIRE(files.size() == 2);
+    CHECK(files[0].parameter == "curveConfigFile");
+    CHECK(files[0].name == "curveconfig.xml");
+    CHECK(files[1].parameter == "marketConfigFile");
+    CHECK(files[1].name == "todaysmarket.xml");
 }
 
-TEST_CASE("the setup carries the as-of date and the base currency", tags) {
-    const auto& s = generate_run_document(inputs()).setup;
-    CHECK(s.asof_date == "2026-10-09");
-    CHECK(s.base_currency == "GBP");
+TEST_CASE("the run carries the choices of the configuration as they are", tags) {
+    const auto& s = generate_run_document(inputs()).settings;
+    CHECK(s.market_data_type == "date");
+    CHECK(s.market_data_date == "2026-10-09");
+    CHECK(s.base_currency == std::optional<std::string>("GBP"));
 }
 
-TEST_CASE("the run prices against the named market configuration", tags) {
+TEST_CASE("the run carries the market bindings of the configuration", tags) {
     auto in = inputs();
-    in.market_configuration = "overnight";
+    in.market_bindings[0].market_configuration_name = "overnight";
     const auto d = generate_run_document(in);
     REQUIRE(d.market_bindings.size() == 1);
     CHECK(d.market_bindings[0].role == "pricing");
-    CHECK(d.market_bindings[0].configuration_name == "overnight");
+    CHECK(d.market_bindings[0].market_configuration_name == "overnight");
 }
 
-TEST_CASE("a run with no as-of date names none", tags) {
+TEST_CASE("a configuration with no market binding makes a run with none", tags) {
     auto in = inputs();
-    in.asof_date.clear();
-    CHECK_FALSE(generate_run_document(in).setup.asof_date);
+    in.market_bindings.clear();
+    CHECK(generate_run_document(in).market_bindings.empty());
+}
+
+TEST_CASE("an end of day run values the portfolio on the weekday before the run date", tags) {
+    auto in = inputs();
+    in.risk.market_data_type = "eod";
+    in.risk.market_data_date.clear();
+    in.run_date = "2026-10-12";
+    const auto& s = generate_run_document(in).settings;
+    CHECK(s.market_data_type == "date");
+    CHECK(s.market_data_date == "2026-10-09");
+}
+
+TEST_CASE("a live run values the portfolio on the run date", tags) {
+    auto in = inputs();
+    in.risk.market_data_type = "live";
+    in.risk.market_data_date.clear();
+    in.run_date = "2026-10-12";
+    CHECK(generate_run_document(in).settings.market_data_date == "2026-10-12");
+}
+
+TEST_CASE("a configuration that names its date keeps it whatever the run date", tags) {
+    auto in = inputs();
+    in.run_date = "2030-01-01";
+    CHECK(generate_run_document(in).settings.market_data_date == "2026-10-09");
+}
+
+TEST_CASE("a run date that is no date is refused for an end of day run", tags) {
+    auto in = inputs();
+    in.risk.market_data_type = "eod";
+    in.risk.market_data_date.clear();
+    in.run_date = "yesterday";
+    CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
 }

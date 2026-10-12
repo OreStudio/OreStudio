@@ -1,0 +1,320 @@
+:PROPERTIES:
+:ID: EAC1C2C9-66EB-5233-BF67-84A770A5B53F
+:END:
+#+title: ores.refdata.counterparty_identifier_change
+#+description: GENERATED from ores.refdata.counterparty_identifier by derive_pending_models.py. One proposed write to the counterparty_identifier, held until its request is decided.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:pending:
+#+brief: One proposed write to a counterparty_identifier, held for its request.
+#+entity_singular: counterparty_identifier_change
+#+entity_plural: counterparty_identifier_changes
+#+entity_title: Counterparty Identifier Change
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+Do not edit. Change ores.refdata.counterparty_identifier and run
+derive_pending_models.py.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:   uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID identifying this line.
+
+One proposed write inside a request.
+
+** request_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The approval request this line belongs to.
+
+References the approval requests table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** line_no
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:natural_key: true
+:END:
+
+The place of this line in its request, from one.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** operation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+What the line proposes: put or delete.
+
+#+begin_src cpp :name generator
+std::string("put")
+#+end_src
+
+** base_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+The version of the live row the maker read, or zero for a new row.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** applied
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether the apply has written this line. A line is applied once.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** entity_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this counterparty identifier.
+
+Surrogate key for the counterparty identifier record.
+
+** counterparty_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The counterparty this identifier belongs to.
+
+References the parent counterparty record.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** id_scheme
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
+:END:
+
+The identification scheme for this identifier.
+
+References the party_id_scheme lookup table (e.g. LEI, BIC).
+
+#+begin_src cpp :name generator
+// no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
+// Rotate so a batch of several identifiers for one counterparty gets
+// distinct schemes (max one identifier per scheme per counterparty).
+[idx]{
+    static constexpr const char* schemes[] = {
+        "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
+        "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"};
+    return std::string(schemes[idx % 10]);
+}()
+#+end_src
+
+** id_value
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:END:
+
+The identifier value.
+
+The actual identifier string within the scheme. Part of the natural
+key alongside counterparty_id and id_scheme — a counterparty can hold
+more than one identifier under the same scheme as long as the value
+differs.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional description of this identifier.
+
+Free text description providing additional context.
+
+#+begin_src cpp :name generator
+std::string("Test identifier")
+#+end_src
+
+** is_authoritative
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether this is the identifier the tenant resolves the counterparty by. At most
+one live identifier per counterparty may hold it.
+
+A counterparty carries identifiers under several schemes, and nothing in them
+says which one decides who the counterparty is. A screen that needs one applies
+a precedence of its own, LEI first and then BIC. Once the tenant can state the
+choice, that precedence is what it starts from.
+
+#+begin_src cpp :name generator
+// The first row a batch generates carries the LEI scheme, which is the
+// precedence a screen applied while the column did not exist. Ten schemes
+// rotate per counterparty, so at most one of its rows is marked.
+[idx]{
+    return idx % 10 == 0;
+}()
+#+end_src
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_counterparty_identifier_changes_tbl
+:END:
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the line belongs to.
+
+The seed asks as a service account. A person's account written into the shared
+test tenant would end the tenant's bootstrap, and every later test that writes as
+the unit test would be refused its modified_by.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto asker = ores::iam::generators::generate_synthetic_account(ctx);
+        asker.account_type = "service";
+        asker.change_reason_code = "system.test";
+        ores::iam::repository::account_repository asker_repo;
+        asker_repo.write(party_ctx, asker);
+
+        auto request = ores::inbox::generators::generate_synthetic_approval_request(ctx);
+        request.change_reason_code = "system.test";
+        request.requested_by = asker.id;
+
+        const auto system_ctx =
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+        const auto kinds = ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(kinds.empty());
+        request.kind_code = kinds.front().code;
+        const auto states =
+            ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(states.empty());
+        request.state_code = states.front().code;
+
+        ores::inbox::repository::approval_request_repository request_repo;
+        request_repo.write(party_ctx, request);
+        v.request_id = request.id;
+    }
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:parent_entity: counterparty
+:nullable:      false
+:error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:list_by_uuid:  true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column    | validation_function                       | cardinality_limit_table            | cardinality_limit_column | cardinality_scope_column | cardinality_noun |
+|-----------+--------------------------------------------+--------------------------------------+---------------------------+---------------------------+-------------------|
+| id_scheme | ores_refdata_validate_party_id_scheme_fn | ores_refdata_party_id_schemes_tbl | max_cardinality           | counterparty_id           | identifier       |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: counterparty_identifier_change
+:entity_plural_short:   counterparty_identifier_changes
+:entity_singular_words: counterparty_identifier change
+:entity_plural_words:   counterparty_identifier changes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+

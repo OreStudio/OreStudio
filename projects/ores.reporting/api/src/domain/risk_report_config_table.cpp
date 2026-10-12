@@ -25,23 +25,33 @@
 #include "ores.reporting.api/domain/risk_report_config_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::reporting::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<risk_report_config>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Name" << "Base Currency" << "Observation Model" << "Market Data"
-          << "NPV" << "Cashflow" << "XVA" << "Parametric VaR" << "Initial Margin" << "Modified By"
-          << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rrc : v) {
-        table << rrc.name << rrc.base_currency << rrc.observation_model << rrc.market_data_type
-              << rrc.npv_enabled << rrc.cashflow_enabled << rrc.xva_enabled
-              << rrc.parametric_var_enabled << rrc.initial_margin_enabled << rrc.modified_by
-              << rrc.version << fort::endr;
+        table << rrc.name << opt_str(rrc.base_currency) << opt_str(rrc.observation_model)
+              << rrc.market_data_type << rrc.modified_by << rrc.version << fort::endr;
     }
     return table.to_string();
 }

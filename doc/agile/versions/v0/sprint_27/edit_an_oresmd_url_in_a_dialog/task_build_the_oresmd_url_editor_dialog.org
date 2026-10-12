@@ -2,7 +2,7 @@
 :ID: ABC94C47-612F-4FC7-B94E-F00884024444
 :END:
 #+title: Task: Build the oresmd URL editor dialog
-#+description: Build the accepted editor of the prototype, variant C, as a component any screen calls: it opens in a modal over the screen, loads the URL it is given, offers the schema row of the chosen kind with the codes the system keeps as pickers, validates through the server, and writes the edited URI back on Apply.
+#+description: Build the accepted editor of the prototype, the composer of variant A, as a component any screen calls the way variant C does: it opens in a modal over the screen, loads the URL it is given, offers the schema row of the chosen kind with the codes the system keeps as pickers, validates through the server, and writes the edited URI back on Apply.
 #+type: task
 #+level: s1
 #+filetags: :edit_an_oresmd_url_in_a_dialog:sprint_27:v0:

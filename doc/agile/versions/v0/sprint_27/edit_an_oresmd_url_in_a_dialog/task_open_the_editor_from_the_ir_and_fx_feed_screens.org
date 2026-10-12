@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/open-the-editor-from-the-ir-and-fx-feed-screens
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: PR 3152, which draws the IR curve feeds
+#+blocked_since: 2026-10-12
 #+created: 2026-10-12
 #+updated: 2026-10-12
 #+environment:

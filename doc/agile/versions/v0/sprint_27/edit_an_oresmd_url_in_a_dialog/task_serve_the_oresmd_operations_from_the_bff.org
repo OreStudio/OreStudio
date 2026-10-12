@@ -36,6 +36,7 @@ The browser reaches the codec through the BFF, with the same session rules as th
 * Acceptance
 
 - A route serves the schema, one parses and one composes, each behind requireSession.
+- Each route is gated on the permission that the story decides in its open questions, and not on the session alone. The permission is decided before this task starts.
 - The BFF holds no grammar of its own and refuses a body that is not a URL or a set of fields.
 - Route tests parse every answer with the contracts schema.
 

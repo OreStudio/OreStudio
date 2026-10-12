@@ -80,7 +80,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The sprint row says BACKLOG and the story says STARTED | sprint.org | Fix | The row says STARTED with a start date of 2026-10-12. |
+| 2 | The scaffold task is DONE while the PR is open | scaffold task | Note | The convention. The Result is written. |
+| 3 | The dependency on PR 3152 is only in prose | task 5 | Fix | The task has blocked_on and blocked_since set. |
+| 4 | The routes need a permission from the start | task 3 | Fix | The acceptance says each route is gated on the permission that the story decides, and the permission is decided before the task starts. |
+| 5 | Variant A and variant C are mixed in the wording | story, task 4 | Fix | The editor is the composer of variant A, called as variant C calls it. |
 
 * Result
 

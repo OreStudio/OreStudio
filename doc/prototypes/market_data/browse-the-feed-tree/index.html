@@ -55,6 +55,10 @@ tr.sel td{background:#1d2633}
 .col{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;display:grid;gap:2px;align-content:start;max-height:66vh;overflow:auto}
 .col h3{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:2px 6px 6px}
 .more{padding:6px;text-align:center;font-size:.8rem;color:var(--accent);cursor:pointer}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:6px;cursor:pointer;align-content:start}
+.card:hover{border-color:var(--accent)}.card h3{font-size:.95rem}.card.new{border-style:dashed;border-color:#2b4466}
+.card .ic{font-size:1.2rem;color:var(--accent)}
 .toast{position:fixed;right:18px;bottom:80px;z-index:70;background:#0b0e13;border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;max-width:420px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:.86rem}
 .dialog-back{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:18px}
 .dialog{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;max-width:520px;display:grid;gap:12px}
@@ -70,29 +74,32 @@ tr.sel td{background:#1d2633}
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  Browse the feed tree: the Market data feed browser, the web successor of the
-  ores.qt Market Simulator (MarketSimulatorWindow.cpp) and its desktop prototype
-  (../synthetic-market-simulator/). It manages the tree of synthetic feeds and
-  their runs. It does not edit a feed: a leaf opens the existing FX or IR feed
-  page (/market-data/fx-feeds/:id, /market-data/ir-feeds/:id).
+  The synthetic feeds area: the web successor of the ores.qt Market Simulator
+  (MarketSimulatorWindow.cpp) and its desktop prototype
+  (../synthetic-market-simulator/). One connected flow of screens.
+
+  ?screen=market|synthetic|overview|tree|feed
+    market     Market data, the area: a Synthetic folder card joins Curve
+               evolution, and the FX and IR feed cards move under it.
+    synthetic  Market data › Synthetic: a folder card's page, cards only (Feed
+               overview, Feed tree, FX price feeds, IR curve feeds).
+    overview   Market data › Synthetic › Feed overview: drills down by scope,
+               provider and feed kind in columns, and never lists a feed.
+    tree       Market data › Synthetic › Feed tree: the tree to the feeds, the
+               selected node beside it. Choosing a feed leaves the tree.
+    feed       The feed's existing page (/market-data/fx-feeds/:id or
+               /market-data/ir-feeds/:id), drawn as a stub. Its breadcrumbs run
+               through the tree, and each crumb returns to the tree there.
 
   The tree follows the story's decision: System feeds by provider, then feed
-  kind, then the kind's own groups; and Test feeds by party, then collection.
-  Today the Bloomberg feeds are a party collection; the tree shows the target.
-
-  Variants with ?variant=a|b|c. The variant is the layout:
-    a  tree and node panel: the Qt layout. The tree on the left, the selected
-       node on the right: its roll-up, Start and Stop, and its children.
-    b  tree table: one expandable table, every node a row with its counts,
-       state and actions.
-    c  columns: drill-down columns, one per level, that load a page of
-       children at a time. The layout for thousands of feeds.
+  kind; Test feeds by party, then collection. Today the Bloomberg feeds are a
+  party collection; the tree shows the target.
 
   ?state=mixed|stopped|scale|search switches the mock data:
     mixed    Bloomberg FX running, Bloomberg IR stopped, a test feed running.
     stopped  Nothing running.
-    scale    Six providers, about 3,000 feeds, order books planned.
-    search   The search box holds "usd sofr": matches with their paths.
+    scale    Six providers, about 2,850 feeds, order books planned.
+    search   The tree's search holds "usd sofr".
 
   Start and Stop work on the mock: the node's feeds change state, the
   roll-ups recompute, and the report says started, already running, skipped.
@@ -104,7 +111,7 @@ tr.sel td{background:#1d2633}
 
 <script>
 const params = new URLSearchParams(location.search);
-const variant = params.get('variant') || 'a';
+let screen = params.get('screen') || 'synthetic';
 const state = params.get('state') || 'mixed';
 function set(key, value) {
   const p = new URLSearchParams(location.search);
@@ -192,6 +199,7 @@ function roll(n) {
 const pathOf = n => { const p = []; for (let x = n; x; x = x.parent) p.unshift(x); return p; };
 const stateWord = r => r.total === 0 ? 'Empty' : r.state === 'run' ? 'Running' : r.state === 'stop' ? 'Stopped' : `${r.running} of ${r.total} running`;
 const stateTag = r => r.total === 0 ? '<span class="tag plan">Empty</span>' : r.state === 'run' ? '<span class="tag ok">Running</span>' : r.state === 'stop' ? '<span class="tag">Stopped</span>' : `<span class="tag warn">${r.running} of ${r.total}</span>`;
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const fmt = v => Math.abs(v) >= 100 ? v.toFixed(2) : Math.abs(v) >= 1 ? v.toFixed(4) : v.toFixed(5);
 const fmtRate = v => (v * 100).toFixed(3) + '%';
 const pageOf = f => f.kind === 'fx' ? `/market-data/fx-feeds/${f.uuid}` : `/market-data/ir-feeds/${f.uuid}`;
@@ -254,10 +262,10 @@ function treeRows(nodes, depth) {
   }).join('');
 }
 
-function actions(n, small) {
+function actions(n, small, noOpen) {
   if (n.planned) return '';
   const r = roll(n), cls = small ? 'btn small' : 'btn';
-  const open = n.type === 'feed' ? ` <a class="${cls}" href="#" data-open="${n.id}">Open</a>` : '';
+  const open = n.type === 'feed' && !noOpen ? ` <a class="${cls}" href="#" data-open="${n.id}">Open</a>` : '';
   return `<button class="${cls}" data-start="${n.id}" ${r.running === r.total ? 'disabled' : ''}>Start</button>
           <button class="${cls}" data-stop="${n.id}" ${r.running === 0 ? 'disabled' : ''}>Stop</button>${open}`;
 }
@@ -295,91 +303,158 @@ function feedPanel(f, crumbs) {
     : `<div class="hero"><span style="font-size:2.2rem">${FLAG[f.ccy] || '🏳'}</span><div><div class="big">${f.label}</div><div class="muted">IR curve · ${f.pillars} pillars · short rate ${fmtRate(f.value)}</div></div></div>`;
   return `<div class="panel"><p class="crumbs">${crumbs}</p>${hero}
     <div class="toolbar">${f.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}${actions(f)}</div>
-    <dl class="kv"><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${f.series}</dd>
+    <dl class="kv"><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${esc(f.series)}</dd>
       <dt>Process</dt><dd>${f.process}</dd><dt>Cadence</dt><dd>${f.cadence}</dd><dt>Binding</dt><dd>${f.binding === 'bound' ? 'Bound: every bound party stores its ticks' : 'Sandboxed: no binding stores its ticks'}</dd>
       <dt>Ticks this hour</dt><dd>${f.ticks.toLocaleString()}</dd></dl>
     <p class="notice">The tree manages runs. The feed’s process, mixture, curve template and history are on its own page:
       <a href="#" data-open="${f.id}">${pageOf(f)}</a>.</p></div>`;
 }
 
-function variantA() {
-  return `<div class="split"><div class="panel"><h2>Feeds</h2><div class="tree">${treeRows(ROOTS, 0)}</div></div>${nodePanel(selected)}</div>`;
+function go(next, node) {
+  screen = next;
+  if (node) { selected = node; for (const p of pathOf(node)) expanded.add(p.id); }
+  window.scrollTo(0, 0);
+  draw();
 }
 
-function variantB() {
-  const rows = (nodes, depth) => nodes.filter(visible).map(n => {
-    const r = roll(n), open = expanded.has(n.id) || !!query || runningOnly;
-    const twisty = n.type === 'feed' || n.planned ? '' : open ? '▾' : '▸';
-    const what = n.type === 'feed' ? `<span class="mono faint">${n.source}</span>` : n.planned ? '<span class="faint">planned</span>' : `<span class="faint">${r.fx.toLocaleString()} FX · ${r.ir.toLocaleString()} IR</span>`;
-    const st = n.type === 'feed' ? (n.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>') : n.planned ? '<span class="tag plan">Planned</span>' : stateTag(r);
-    const last = n.type === 'feed' ? (n.kind === 'fx' ? fmt(n.value) : fmtRate(n.value)) : r.total.toLocaleString();
-    const row = `<tr class="${selected === n ? 'sel' : ''}"><td style="padding-left:${8 + depth * 18}px;white-space:nowrap"><span class="twisty" data-twist="${n.id}">${twisty}</span> ${icon(n)} ${n.label}</td>
-      <td>${what}</td><td class="num">${last}</td><td>${st}</td><td class="num">${r.ticks.toLocaleString()}</td><td style="white-space:nowrap">${actions(n, true)}</td></tr>`;
-    const kids = n.children && open ? n.children : [];
-    const capped = kids.length > 60 ? kids.slice(0, 60) : kids;
-    const more = kids.length > 60 ? `<tr><td colspan="6" style="padding-left:${26 + depth * 18}px" class="faint">… ${(kids.length - 60).toLocaleString()} more under ${n.label}, loaded as the table scrolls.</td></tr>` : '';
-    return row + rows(capped, depth + 1) + more;
+const crumbTrail = (...parts) => `<p class="crumbs">${parts.join(' › ')}</p>`;
+const toMarket = '<a href="#" data-go="market">Market data</a>';
+const toSynthetic = '<a href="#" data-go="synthetic">Synthetic</a>';
+const toTree = '<a href="#" data-go="tree">Feed tree</a>';
+
+function marketScreen() {
+  const card = (ic, title, body, target, extra = '') => `<div class="card ${extra}" ${target ? `data-go="${target}"` : ''}><span class="ic">${ic}</span><h3>${title}</h3><p class="muted">${body}</p></div>`;
+  return `${crumbTrail('<b>Market data</b>')}
+    <div class="top"><h1>Market data</h1></div><p class="muted">The prices and curves the platform receives or generates.</p>
+    <div class="cards">${card('◇', 'Synthetic', 'The feeds the platform generates: an overview of what runs, the feed tree, and the FX and IR feeds.', 'synthetic', 'new')}
+      ${card('〜', 'Curve evolution', 'Read a curve or surface over a range of instants, and as it stands now.', '')}</div>
+    <p class="notice">Synthetic is new. The FX price feeds and IR curve feeds cards move under it, beside the feed tree.</p>`;
+}
+
+function overviewPanel(n) {
+  const r = roll(n);
+  const kids = (n.children || []).filter(c => c.type !== 'feed');
+  const rows = kids.map(c => {
+    const cr = roll(c);
+    return `<tr data-node="${c.id}"><td><span class="ico">${c.icon || '▸'}</span> ${c.label}</td><td class="faint">${c.planned ? 'planned' : `${cr.fx.toLocaleString()} FX · ${cr.ir.toLocaleString()} IR`}</td>
+      <td class="num">${cr.total.toLocaleString()}</td><td>${c.planned ? '<span class="tag plan">Planned</span>' : stateTag(cr)}</td><td class="num">${cr.ticks.toLocaleString()}</td><td>${actions(c, true)}</td></tr>`;
   }).join('');
-  return `<div class="panel"><table><thead><tr><th>Name</th><th>Source or contents</th><th class="num">Last or feeds</th><th>State</th><th class="num">Ticks</th><th></th></tr></thead><tbody>${rows(ROOTS, 0)}</tbody></table></div>`;
+  const kindTail = n.role === 'kind' && !n.planned
+    ? `<p class="notice">The overview stops at the feed kind. The ${r.total.toLocaleString()} feeds are in the feed tree.</p>` : '';
+  return `<div class="panel">
+    <div class="top"><h1>${n.label}</h1>${n.providerKind ? `<span class="tag">${n.providerKind}</span>` : ''}${n.binding ? `<span class="tag ${n.binding === 'bound' ? 'ok' : ''}">${n.binding === 'bound' ? 'Bound' : 'Sandboxed'}</span>` : ''}${n.planned ? '<span class="tag plan">Planned</span>' : stateTag(r)}</div>
+    ${n.note ? `<p class="muted">${n.note}</p>` : ''}
+    <div class="stat"><div><b>${r.total.toLocaleString()}</b><span>Feeds</span></div><div><b>${r.running.toLocaleString()}</b><span>Running</span></div>
+      <div><b>${r.fx.toLocaleString()}</b><span>FX spots</span></div><div><b>${r.ir.toLocaleString()}</b><span>IR curves</span></div><div><b>${r.ticks.toLocaleString()}</b><span>Ticks this hour</span></div></div>
+    <div class="toolbar">${actions(n)}<button class="btn" data-totree="${n.id}">Open in feed tree</button></div>
+    ${rows ? `<table><thead><tr><th>Folder</th><th>Holds</th><th class="num">Feeds</th><th>State</th><th class="num">Ticks</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : ''}${kindTail}</div>`;
 }
 
-function variantC() {
-  const chain = pathOf(selected);
-  const levels = [ROOTS, ...chain.filter(n => n.children).map(n => n.children)];
+function syntheticScreen() {
+  const card = (ic, title, body, target) => `<div class="card" data-go="${target}"><span class="ic">${ic}</span><h3>${title}</h3><p class="muted">${body}</p></div>`;
+  return `${crumbTrail(toMarket, '<b>Synthetic</b>')}
+    <div class="top"><h1>Synthetic</h1></div><p class="muted">The feeds the platform generates rather than receives.</p>
+    <div class="cards">${card('▦', 'Feed overview', 'What runs, by scope, provider and kind. Start and stop a provider or a kind.', 'overview')}
+      ${card('⌸', 'Feed tree', 'Every feed by provider and scope. Start and stop any folder, and open a feed.', 'tree')}
+      ${card('⇄', 'FX price feeds', 'The synthetic FX spot feeds and the mixture that generates each.', 'fxlist')}
+      ${card('⌒', 'IR curve feeds', 'The synthetic curve feeds and the process and template of each.', 'irlist')}</div>
+    <p class="notice">A folder card's page holds cards and nothing else (menu structure, The area page), so the overview is a screen of its own.</p>`;
+}
+
+function overviewScreen() {
+  const chain = pathOf(selected.type === 'feed' ? selected.parent : selected);
+  const levels = [ROOTS, ...chain.filter(n => n.children && n.role !== 'kind').map(n => n.children.filter(c => c.type !== 'feed'))].filter(l => l.length);
   const cols = levels.map((nodes, i) => {
-    const shown = nodes.filter(visible);
-    const page = shown.slice(0, 40);
     const title = i === 0 ? 'Scope' : chain[i - 1].label;
-    return `<div class="col"><h3>${title}</h3>${page.map(n => `<div class="node ${chain.includes(n) ? 'sel' : ''}" data-node="${n.id}">${icon(n)}<span class="name">${n.label}</span><span class="roll">${rollChip(n)}</span></div>`).join('')}
-      ${shown.length > page.length ? `<div class="more">${(shown.length - page.length).toLocaleString()} more · load 40</div>` : ''}</div>`;
+    return `<div class="col"><h3>${title}</h3>${nodes.map(n => `<div class="node ${chain.includes(n) ? 'sel' : ''}" data-node="${n.id}"><span class="ico">${n.icon || '▸'}</span><span class="name">${n.label}</span><span class="roll">${rollChip(n)}</span></div>`).join('')}</div>`;
   }).join('');
-  return `<div class="cols">${cols}</div>${nodePanel(selected)}`;
+  const total = ROOTS.reduce((s, n) => s + roll(n).total, 0), running = ROOTS.reduce((s, n) => s + roll(n).running, 0);
+  return `${crumbTrail(toMarket, toSynthetic, '<b>Feed overview</b>')}
+    <div class="top"><h1>Feed overview</h1><span class="muted">${running.toLocaleString()} of ${total.toLocaleString()} feeds running</span></div>
+    <div class="cols">${cols}</div>${overviewPanel(chain[chain.length - 1])}`;
+}
+
+function treeScreen() {
+  const n = selected;
+  const shown = n.type === 'feed' ? n.parent : n;
+  return `${crumbTrail(toMarket, toSynthetic, '<b>Feed tree</b>')}
+    <div class="top"><h1>Feed tree</h1></div>
+    <div class="toolbar"><input class="search" id="q" placeholder="Search feeds by name, source or folder" value="${query}">
+      <label class="check"><input type="checkbox" id="ro" ${runningOnly ? 'checked' : ''}> Running only</label>
+      ${query || runningOnly ? `<span class="tag warn">${ROOTS.flatMap(leaves).filter(matches).length.toLocaleString()} match</span>` : ''}
+      <button class="btn" id="expand">Expand</button><button class="btn" id="collapse">Collapse</button></div>
+    <div class="split"><div class="panel"><div class="tree">${treeRows(ROOTS, 0)}</div></div>${nodePanel(shown)}</div>`;
+}
+
+function feedScreen() {
+  const f = selected;
+  const path = pathOf(f);
+  const crumbs = [toMarket, toSynthetic, toTree, ...path.slice(0, -1).map(p => `<a href="#" data-crumb="${p.id}">${p.label}</a>`), `<b>${f.label}</b>`];
+  const hero = f.kind === 'fx'
+    ? `<div class="hero"><span style="font-size:2.2rem">${flagsOf(f.base, f.quote)}</span><div><div class="big">${f.base}/${f.quote}</div><div class="muted">FX spot · ${fmt(f.value)}</div></div></div>`
+    : `<div class="hero"><span style="font-size:2.2rem">${FLAG[f.ccy] || '🏳'}</span><div><div class="big">${f.label}</div><div class="muted">IR curve · ${f.pillars} pillars · short rate ${fmtRate(f.value)}</div></div></div>`;
+  return `${crumbTrail(...crumbs)}${hero}
+    <div class="toolbar">${f.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}${actions(f, false, true)}</div>
+    <div class="panel"><p class="notice">The feed’s existing page, ${pageOf(f)}, drawn as a stub. It keeps its tabs (the ${f.kind === 'fx' ? 'mixture and ticks' : 'process, template and ticks'}) and its history.
+      What changes is the breadcrumb: it runs through the tree, so each folder on it returns to the feed tree with that folder chosen.</p>
+      <dl class="kv"><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${esc(f.series)}</dd><dt>Process</dt><dd>${f.process}</dd><dt>Cadence</dt><dd>${f.cadence}</dd></dl></div>`;
+}
+
+function listStub(kind) {
+  const all = ROOTS.flatMap(leaves).filter(f => f.kind === kind);
+  return `${crumbTrail(toMarket, toSynthetic, `<b>${kind === 'fx' ? 'FX price feeds' : 'IR curve feeds'}</b>`)}
+    <div class="top"><h1>${kind === 'fx' ? 'FX price feeds' : 'IR curve feeds'}</h1><span class="muted">${all.length.toLocaleString()} feeds</span></div>
+    <p class="notice">The existing list screen, unchanged but for its place: it now sits under Synthetic, and its breadcrumb says so.</p>`;
 }
 
 function draw() {
-  const total = ROOTS.reduce((s, n) => s + roll(n).total, 0);
-  const running = ROOTS.reduce((s, n) => s + roll(n).running, 0);
   document.getElementById('note').textContent =
-    `Prototype · Browse the feed tree · variant ${variant.toUpperCase()} · state ${state} · mock data · nothing is started`;
-  const body = variant === 'b' ? variantB() : variant === 'c' ? variantC() : variantA();
+    `Prototype · Synthetic feeds · screen ${screen} · state ${state} · mock data · nothing is started`;
+  const body = screen === 'market' ? marketScreen() : screen === 'tree' ? treeScreen() : screen === 'feed' ? feedScreen()
+             : screen === 'fxlist' ? listStub('fx') : screen === 'irlist' ? listStub('ir') : screen === 'overview' ? overviewScreen() : syntheticScreen();
   const dialog = pending ? `<div class="dialog-back"><div class="dialog"><h1>${pending.action === 'start' ? 'Start' : 'Stop'} ${pending.node.label}?</h1>
       <p>${pending.action === 'start' ? `Starts ${pending.touched.toLocaleString()} feeds; ${pending.r.running.toLocaleString()} are already running.` : `Stops ${pending.touched.toLocaleString()} running feeds.`}
       ${pending.node.binding === 'bound' && pending.action === 'stop' ? ' Every party bound to these feeds stops receiving their ticks.' : ''}</p>
       <p class="faint">One folder-scoped request; the server walks the subtree and reports what it started, what was already running and what it skipped.</p>
       <div class="toolbar"><button class="btn primary" id="go">${pending.action === 'start' ? 'Start' : 'Stop'}</button><button class="btn" id="cancel">Cancel</button></div></div></div>` : '';
-  document.getElementById('app').innerHTML = `
-    <div class="top"><p class="crumbs">Market data › <b>Feeds</b></p></div>
-    <div class="top"><h1>Feeds</h1><span class="muted">${running.toLocaleString()} of ${total.toLocaleString()} running</span>${query || runningOnly ? `<span class="tag warn">${ROOTS.flatMap(leaves).filter(matches).length.toLocaleString()} match</span>` : ''}</div>
-    <div class="toolbar"><input class="search" id="q" placeholder="Search feeds by name, source or folder" value="${query}">
-      <label class="check"><input type="checkbox" id="ro" ${runningOnly ? 'checked' : ''}> Running only</label>
-      <button class="btn" id="expand">Expand</button><button class="btn" id="collapse">Collapse</button></div>
-    ${body}${dialog}${toast ? `<div class="toast">${toast}</div>` : ''}`;
+  document.getElementById('app').innerHTML = body + dialog + (toast ? `<div class="toast">${toast}</div>` : '');
   wire();
+  bar.querySelectorAll('[data-sc]').forEach(b => b.classList.toggle('on', b.dataset.sc === screen));
 }
 
 function wire() {
   const app = document.getElementById('app');
+  app.querySelectorAll('[data-go]').forEach(e => e.onclick = ev => { ev.preventDefault(); go(e.dataset.go); });
+  app.querySelectorAll('[data-crumb]').forEach(e => e.onclick = ev => { ev.preventDefault(); go('tree', BY_ID.get(e.dataset.crumb)); });
+  app.querySelectorAll('[data-totree]').forEach(e => e.onclick = () => go('tree', BY_ID.get(e.dataset.totree)));
   app.querySelectorAll('[data-twist]').forEach(e => e.onclick = ev => { ev.stopPropagation(); const k = e.dataset.twist; expanded.has(k) ? expanded.delete(k) : expanded.add(k); draw(); });
-  app.querySelectorAll('[data-node]').forEach(e => e.onclick = ev => { if (ev.target.closest('button,a[data-open]')) return; ev.preventDefault(); selected = BY_ID.get(e.dataset.node); expanded.add(selected.id); for (const p of pathOf(selected)) expanded.add(p.id); draw(); });
+  app.querySelectorAll('[data-node]').forEach(e => e.onclick = ev => {
+    if (ev.target.closest('button,[data-twist]')) return;
+    ev.preventDefault();
+    const n = BY_ID.get(e.dataset.node);
+    if (n.type === 'feed') return go('feed', n);
+    selected = n; for (const p of pathOf(n)) expanded.add(p.id); expanded.add(n.id); draw();
+  });
   app.querySelectorAll('[data-start]').forEach(e => e.onclick = ev => { ev.stopPropagation(); ask(BY_ID.get(e.dataset.start), 'start'); });
   app.querySelectorAll('[data-stop]').forEach(e => e.onclick = ev => { ev.stopPropagation(); ask(BY_ID.get(e.dataset.stop), 'stop'); });
-  app.querySelectorAll('[data-open]').forEach(e => e.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); toast = `Opens ${pageOf(BY_ID.get(e.dataset.open))}, the feed’s existing page, with Back returning here.`; draw(); setTimeout(() => { toast = ''; draw(); }, 4000); });
+  app.querySelectorAll('[data-open]').forEach(e => e.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); go('feed', BY_ID.get(e.dataset.open)); });
   const q = document.getElementById('q');
-  q.oninput = () => { query = q.value; draw(); const again = document.getElementById('q'); again.focus(); again.setSelectionRange(again.value.length, again.value.length); };
-  document.getElementById('ro').onchange = e => { runningOnly = e.target.checked; draw(); };
-  document.getElementById('expand').onclick = () => { BY_ID.forEach(n => { if (n.children && n.children.length <= 60) expanded.add(n.id); }); draw(); };
-  document.getElementById('collapse').onclick = () => { expanded.clear(); draw(); };
-  const go = document.getElementById('go'); if (go) go.onclick = act;
+  if (q) q.oninput = () => { query = q.value; draw(); const again = document.getElementById('q'); again.focus(); again.setSelectionRange(again.value.length, again.value.length); };
+  const ro = document.getElementById('ro'); if (ro) ro.onchange = e => { runningOnly = e.target.checked; draw(); };
+  const ex = document.getElementById('expand'); if (ex) ex.onclick = () => { BY_ID.forEach(n => { if (n.children && n.children.length <= 60) expanded.add(n.id); }); draw(); };
+  const co = document.getElementById('collapse'); if (co) co.onclick = () => { expanded.clear(); draw(); };
+  const goBtn = document.getElementById('go'); if (goBtn) goBtn.onclick = act;
   const cancel = document.getElementById('cancel'); if (cancel) cancel.onclick = () => { pending = null; draw(); };
 }
 
 const bar = document.getElementById('bar');
-bar.innerHTML = '<span class="label faint">Variant</span>' +
-  [['a', 'tree and node'], ['b', 'tree table'], ['c', 'columns']].map(([v, l]) => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()} ${l}</button>`).join('') +
+bar.innerHTML = '<span class="label faint">Screen</span>' +
+  [['market', 'Market data'], ['synthetic', 'Synthetic'], ['overview', 'Feed overview'], ['tree', 'Feed tree']].map(([v, l]) => `<button data-sc="${v}">${l}</button>`).join('') +
   '<span class="sep">|</span><span class="label faint">State</span>' +
   ['mixed', 'stopped', 'scale', 'search'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
-bar.querySelectorAll('[data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+bar.querySelectorAll('[data-sc]').forEach(b => b.onclick = () => go(b.dataset.sc));
 bar.querySelectorAll('[data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+if (screen === 'feed' && selected.type !== 'feed') selected = leaves(ROOTS[0])[0];
 
 draw();
 </script>

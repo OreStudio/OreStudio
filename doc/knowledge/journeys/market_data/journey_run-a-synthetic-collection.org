@@ -101,8 +101,8 @@ Three design notes answer this journey.
   - States :: =running=, =allstopped=, =novintage= (which refuses every vintage-backed contributor)
   - Source :: =doc/prototypes/market_data/synthetic-market-simulator/index.html=
   - Open :: =/OreStudio/doc/prototypes/market_data/synthetic-market-simulator/= once the site is built, or the file directly
-- [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] — the web feed browser that succeeds the simulator: the tree by provider and scope, start and stop at any node, and leaves that open the feed pages.
-  - Variants :: =a= tree and node, =b= tree table, =c= columns
+- [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] — the synthetic area that succeeds the simulator: a feed overview, a feed tree whose feeds open their pages, and a breadcrumb back through the tree.
+  - Screens :: =market=, =synthetic=, =overview=, =tree=, =feed=
   - States :: =mixed=, =stopped=, =scale=, =search=
   - Source :: =doc/prototypes/market_data/browse-the-feed-tree/index.html=
 - [[id:2AE8A650-BE21-43C6-B01F-98CB8F705B31][Manage synthetic collections prototype]] — the collections window: the list, the detail form and the coverage.

@@ -2,7 +2,7 @@
 :ID: 17E6CB2C-E1C9-4911-81AC-591D88AC5B89
 :END:
 #+title: Browse the feed tree prototype
-#+description: The Market data feed browser before it is built: three layouts of the tree of synthetic feeds by provider and scope, with start and stop at any node and leaves that open the existing feed pages, on a throwaway page of mock data
+#+description: The synthetic feeds area before it is built: a Synthetic folder card under Market data, a feed overview, a feed tree whose feeds open their existing pages, and a breadcrumb back through the tree, on a throwaway page of mock data
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:synthetic:
@@ -17,70 +17,91 @@
 
 * Summary
 
-The feed tree prototype argues what the web's *Feeds* screen under *Market
-data* should show before it is built. It is the successor of the =ores.qt=
-Market Simulator window and of the
+The prototype argues where the synthetic feeds live in the web and how a person
+moves between them, before any of it is built. It is the successor of the
+=ores.qt= Market Simulator window and of the
 [[id:768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC][Market simulator prototype]], which
-argued the same window on the desktop, for three collections and sixteen feeds.
+argued that window on the desktop, for three collections and sixteen feeds.
 
-It argues one thing the earlier prototype did not have to: the tree is the screen
-that manages runs, not the one that edits feeds. A person finds a node, reads
-what runs under it, and starts or stops it with one request. A leaf opens the
-feed's existing page, =/market-data/fx-feeds/:id= or =/market-data/ir-feeds/:id=,
-where its process, mixture, curve template and history already are.
+It is one connected flow:
+
+- *Market data* gets a /Synthetic/ folder card, beside Curve evolution.
+- *Synthetic* is a page of cards: Feed overview, Feed tree, FX price feeds and
+  IR curve feeds.
+- *Feed overview* is the dashboard: drill-down columns by scope, provider and
+  feed kind, with the counts, the running roll-up and start and stop of a
+  provider or a kind. It never lists a feed.
+- *Feed tree* is the tree to the feeds, the selected node beside it, with
+  search and a running-only filter.
+- Choosing a feed leaves the tree for the feed's existing page,
+  =/market-data/fx-feeds/:id= or =/market-data/ir-feeds/:id=. Its breadcrumb
+  runs through the tree, and each folder on it returns to the tree there.
 
 It is throwaway, with no service and no build step. Open the
-[[file:browse-the-feed-tree/][feed tree]].
+[[file:browse-the-feed-tree/][prototype]].
 
 * Detail
 
 ** The question
 
-The feeds are now organised by provider and scope (see
+The feeds are organised by provider and scope (see
 [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]]):
 /System feeds/ by provider, then feed kind, and /Test feeds/ by party, then
-collection. Bloomberg alone holds 55 feeds, and the story expects many thousands
-once more providers and order books arrive. The open question is which layout
-keeps a node's running state and its start and stop in reach at that size.
+collection. Bloomberg alone holds 55 feeds, and the story expects many thousands.
+The open question was which layout keeps a node's running state and its start
+and stop in reach at that size, and where the screens sit in the menu.
 
-The tree carries the Qt window's ideas: a node is running, stopped or partial
-with its count; start and stop act on everything under a node through one
-folder-scoped request; and a pair reads as its two flags. It drops what belongs
-on the feed's own page: editing, the mixture and the live chart.
+** What was chosen
 
-** The variants
+A first version offered three layouts of one screen: a tree with a node panel,
+a single tree table, and drill-down columns. The columns became the overview,
+stopped at the feed kind, because they never draw a large folder whole. The tree
+became the screen that reaches a feed. The tree table was dropped.
 
-Switch with the bottom bar, or =?variant=. The default is =a=.
+From the Qt window the prototype keeps the running, stopped or partial state
+with its count on every node, one folder-scoped request to start or stop a
+subtree, and the two-flag pair. It leaves editing, the mixture and the live
+chart to the feed pages.
 
-| Variant | Name | The structural argument |
-|---------+------+-------------------------|
-| =A= | tree and node | The Qt layout. The tree on the left with a roll-up meter on every node; the selected node on the right with its counts, Start and Stop, and a table of its children. A leaf shows its source, series, process and binding, and links to its page. |
-| =B= | tree table | One expandable table. Every node is a row with what it holds, its count, its state, its ticks and its actions, so a whole subtree is read and acted on without a second pane. |
-| =C= | columns | Drill-down columns, one per level, each loading a page of children. The layout for thousands of feeds: no level is ever rendered whole, and the path stays visible across the columns. |
+** The screens and states
 
-*A* is the closest to the window the desk knows. *B* reads best when a person
-wants to compare siblings. *C* is the only one that does not degrade when a
-folder holds hundreds of feeds.
+Switch with the bottom bar, or =?screen= and =?state=.
 
-** The states
-
-Switch with the bottom bar, or =?state=. The default is =mixed=.
+| Screen | What it shows |
+|--------+---------------|
+| =market= | Market data with the Synthetic folder card |
+| =synthetic= | The Synthetic page of cards |
+| =overview= | Feed overview: the columns and the selected scope, provider or kind |
+| =tree= | Feed tree: the tree and the selected folder |
+| =feed= | A feed's page, as a stub, with the breadcrumb through the tree |
 
 | State | What it shows |
 |-------+---------------|
 | =mixed= | The Bloomberg FX spots running and its IR curves stopped, so Bloomberg reads 26 of 55; one test feed running. |
 | =stopped= | Nothing running. |
 | =scale= | Six providers and about 2,850 feeds, with an /Order books/ kind marked planned under each new provider. |
-| =search= | The search holds "usd sofr": the matching curves with their paths, and the match count. |
+| =search= | The tree's search holds "usd sofr". |
 
-** Driving it
+Start and Stop ask first, saying how many feeds the request touches, and that
+stopping a bound feed stops every party bound to it; the report then says what
+started, what was already running and what was skipped, and every roll-up
+recomputes.
 
-Nodes select, folders expand, and the search and the /Running only/ filter
-narrow the tree. Start and Stop ask first, saying how many feeds the request
-touches, and that stopping a bound feed stops every party bound to it; the
-report then says what started, what was already running and what was skipped,
-and every roll-up recomputes. /Open/ names the feed page it would open. Every
-control is prototype chrome or mock behaviour.
+** What it asks of the menu structure
+
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] allows it in part, and three points need a decision there:
+
+- *A folder card inside an area.* The page holds the folder and file cards, but
+  every folder today is an area. A Synthetic folder makes the trail Home, Market
+  data, Synthetic, then the screen, one level deeper than the rule states. The
+  addresses follow the trail: =/market-data/synthetic/...=, with the current
+  feed addresses redirected.
+- *A folder page holds cards only.* So the overview is a screen with its own file
+  card, not a panel on the Synthetic page.
+- *A feed page's breadcrumb runs through the tree.* A record page's trail is its
+  list and then the subject. Here the feed tree stands in for the list, with the
+  folders between, for every feed, whichever screen the person came from, so
+  the screen keeps one trail.
 
 ** What the prototype assumes
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :name_every_synthetic_feed_by_oresmd_uri:sprint_27:v0:
 #+owner: marco
-#+branch: feature/name-every-synthetic-feed-by-oresmd-uri
+#+branch: feature/name-the-republish-subject-by-the-oresmd-uri
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,24 +26,30 @@ Every valid oresmd quote reaches its consumers. Today plan_tick writes the ORE k
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:09E3EF10-022C-433F-80B0-96F3396AA9CC][Name every synthetic feed by its oresmd reference]] |
-| Now          | Not yet started.                       |
+| Now          | Reading the republish path and the binding claim. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
 
-- A quote with an oresmd URI and no ORE key, such as one with the quote type hazard_rate, is stored and republished.
+- The subject needs no ORE key: it is made from the URI alone.
+- A quote with an oresmd URI and no ORE key, such as one with the quote type hazard_rate, is stored and republished. This needs the oresmd URI codec to read such a quote, which it refuses today; see Notes.
 - The subject is built from the URI by one encoder with a round trip test, and no subject part holds a character NATS refuses.
 - The shell stream command, the market tick and feed binding pages, and every subscriber use the new subject.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The subject takes its last token from the datum's canonical oresmd URI, written
+by the codec, so every spelling of a datum has one subject. One encoder in
+=tick_subjects.hpp= makes the token (=subject_token=) and a second reads it back
+(=subject_token_text=). The ingest loop's plan, the shell stream command and the
+tests use it. The party's whole tree is =market_tick_subject_all=.
+
+The web has no reader of this subject: the BFF tick buffer reads the producer
+subject, and its rows already carry the URI.
 
 * Measurements
 
@@ -60,6 +66,17 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The drop of a quote with no ORE key is in the oresmd URI codec, not in
+  =plan_tick=. =oresmd_uri_codec::read= and =write= refuse a quote that
+  =ore_key_codec= cannot name (the test =a_quote_type_no_ore_key_can_name_is_refused=
+  holds that). So this task makes the subject independent of the ORE key, and
+  a hazard rate still cannot flow until the codec accepts it. That is a design
+  decision, because import, export and the curve republish all assume an ORE
+  key for a quote.
+- The capture about the feed binding's claim is out of date. A binding has no
+  ORE key; its natural key is the party and the source, the claim is read by
+  the row's id, and a read by source keeps the session party's row.
 
 * Test Scenarios
 

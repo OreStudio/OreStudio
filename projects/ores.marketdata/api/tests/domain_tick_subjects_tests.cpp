@@ -32,15 +32,60 @@ TEST_CASE("a_producer_publishes_on_its_source_subject", tags) {
           "synthetic.v1.ops.tick.usd.sofr");
 }
 
-TEST_CASE("a_consumer_reads_a_datum_under_its_lower_cased_ore_key", tags) {
-    CHECK(ores::marketdata::domain::market_tick_subject("t", "p", "FX/RATE/EUR/USD") ==
-          "marketdata.v1.ops.market_tick.t.p.fx.rate.eur.usd");
+TEST_CASE("a_subject_token_holds_only_what_a_subject_may", tags) {
+    const std::string uri =
+        "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD *>. \t";
+    const auto token = ores::marketdata::domain::subject_token(uri);
+    for (const char c : token) {
+        const bool allowed = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+                             (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '%';
+        CHECK(allowed);
+    }
+    CHECK(token.find('.') == std::string::npos);
+    CHECK(token.find(' ') == std::string::npos);
+    CHECK(token.find('*') == std::string::npos);
+    CHECK(token.find('>') == std::string::npos);
 }
 
-TEST_CASE("the_consumer_subject_starts_with_the_market_tick_subject", tags) {
-    const auto subject =
-        ores::marketdata::domain::market_tick_subject("t", "p", "IR_SWAP/RATE/USD/0D/1D/30D");
+TEST_CASE("a_subject_token_gives_its_text_back", tags) {
+    using ores::marketdata::domain::subject_token;
+    using ores::marketdata::domain::subject_token_text;
+    for (const auto& text : {std::string(""),
+                                   std::string("plain-Text_9"),
+                                   std::string("oresmd://fx/EUR?type=quote&ccy=USD"),
+                                   std::string("a.b c*d>e%f"),
+                                   std::string("caf\xc3\xa9"),
+                                   std::string("tab\there\nnewline")}) {
+        CAPTURE(text);
+        CHECK(subject_token_text(subject_token(text)) == text);
+    }
+}
+
+TEST_CASE("a_subject_token_refuses_text_it_could_not_have_made", tags) {
+    using ores::marketdata::domain::subject_token_text;
+    CHECK_FALSE(subject_token_text("a.b").has_value());
+    CHECK_FALSE(subject_token_text("%").has_value());
+    CHECK_FALSE(subject_token_text("%2").has_value());
+    CHECK_FALSE(subject_token_text("%ZZ").has_value());
+    CHECK_FALSE(subject_token_text("%2e").has_value());
+}
+
+TEST_CASE("different_data_never_share_a_token", tags) {
+    using ores::marketdata::domain::subject_token;
+    CHECK(subject_token("a.b") != subject_token("a%2Eb"));
+    CHECK(subject_token("a%b") != subject_token("a b"));
+}
+
+TEST_CASE("a_consumer_reads_a_datum_under_its_encoded_oresmd_uri", tags) {
+    const std::string uri = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
+    const auto subject = ores::marketdata::domain::market_tick_subject("t", "p", uri);
     CHECK(subject.starts_with(std::string(ores::marketdata::messaging::market_tick::nats_subject) +
-                              "."));
-    CHECK(subject.ends_with(".ir_swap.rate.usd.0d.1d.30d"));
+                              ".t.p."));
+    CHECK(subject.ends_with("." + ores::marketdata::domain::subject_token(uri)));
+    CHECK(subject.find('/') == std::string::npos);
+}
+
+TEST_CASE("a_party_reads_all_its_data_under_one_wildcard", tags) {
+    CHECK(ores::marketdata::domain::market_tick_subject_all("t", "p") ==
+          std::string(ores::marketdata::messaging::market_tick::nats_subject) + ".t.p.>");
 }

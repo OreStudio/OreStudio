@@ -42,10 +42,10 @@ namespace ores::marketdata::domain {
  * tick names its own datum by its oresmd quote URI and its producer by source,
  * and the ingest loop stores it once for each enabled binding of that source,
  * under the binding's tenant and party, and republishes it on the per-party
- * realtime stream marketdata.v1.ops.market_tick.<tenant_id>.<party_id>.<ore_key>, where the
- * key is the datum's canonical ORE key. Bindings are created by provisioning
- * against the system party's config, not per office: each party consumes the
- * shared stream into its own per-party series.
+ * realtime stream marketdata.v1.ops.market_tick.<tenant_id>.<party_id>.<token>, where the
+ * token is the datum's canonical oresmd URI as one subject token. Bindings are created by
+ * provisioning against the system party's config, not per office: each party consumes the shared
+ * stream into its own per-party series.
  *
  * Rebinding (editing source_name) switches the ingest source without restarting
  * producers. Setting enabled  false= suspends the subscription without deleting

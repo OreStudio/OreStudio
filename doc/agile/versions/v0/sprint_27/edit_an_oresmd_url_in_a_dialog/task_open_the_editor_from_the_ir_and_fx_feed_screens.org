@@ -8,12 +8,12 @@
 #+filetags: :edit_an_oresmd_url_in_a_dialog:sprint_27:v0:
 #+owner: marco
 #+branch: feature/open-the-editor-from-the-ir-and-fx-feed-screens
-#+pr:
+#+pr: 3175
 #+blocked_on: PR 3152, which draws the IR curve feeds
 #+blocked_since: 2026-10-12
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person on a synthetic feed screen opens the editor from the feed's market data
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -75,12 +75,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3175][#3175]] | [web] Open the editor from the IR and FX feed screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The wrapper closes the dialog before onApply | OresmdUrl.tsx | Note | Consistent. A double close is harmless. |
+| 2 | An empty URI returns an empty string, not null | OresmdUrl.tsx | Note | The test and the Details row expect text, and the hook order is stable. |
+| 3 | The click to open is only covered by the Chrome run | OresmdUrl.test.tsx | Note | The repo has no DOM test library. A follow-up. |
+| 4 | format and site-page fail on files from PR 3152 | | Note | irTicks.ts, mixture.test.ts and doc/knowledge/ui/feed_screen_standard.org belong to the session of that PR. I did not change them, and I told that session. |
 
 * Result
+
+PR 3152 is merged, and the IR curve feed and the FX feed share one set of screens through =FeedKind=. Both kinds draw their market data URI as a row of the Details tab through =extraDetails=. That row is now =OresmdUrl=: the URI as text with an *Open in the editor* button that opens the editor over the screen, loaded with that URI. =extraDetails= now returns a node and not only text, so a kind can draw a button.
+
+The editor opens read-only on these screens. A feed's URI follows from its currencies and its curve, so the feed owns no URI to change, and the story's open question about Apply is answered for the feeds: no Apply. =OresmdEditorDialog= takes =onApply= as optional, and without it the editor offers Copy and Cancel and no Apply. A screen that does store a URI passes =onApply= and gets the edited URI back.
+
+Tests: the two feed screens draw the button, =OresmdUrl= draws the URL, draws nothing for an empty URL and keeps the editor closed, and the dialog without =onApply= has no Apply. The full web suites pass (web 1332). I drove =OresmdUrl= in headless Chrome against a mock of the routes: the URL shows as text, the dialog is closed at first, the button opens the editor field by field with Copy and Cancel and no Apply, and Cancel closes it. I did not open the full feed pages in a browser, because they need a signed-in session and the records of a running server, and the feed tests that draw them as markup show the button. The routes were mocked, so the grammar and the wire shapes are not checked against the real services.
+
+With this task the five tasks of the story are done. What is left of the story is the open questions: modal against inline, encoding of the path, a value outside the catalogue, the catalogues that have no reader yet, and a run against the real services.

@@ -22,6 +22,7 @@
 import type { ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { OresmdUrl } from '../oresmd/OresmdUrl.js';
 import { show, type FieldSpec, type FieldValues } from '../refdata/records.js';
 import { syntheticStore } from '../refdata/store.js';
 import { FeedPage, FeedsPage } from './FeedScreens.js';
@@ -283,7 +284,9 @@ const FX_FEED_KIND: FeedKind = {
             sort: 'ticks_per_hour',
         },
     ],
-    extraDetails: (feed, t) => [[t('refdata.fields.oresmd_uri'), show(feed['oresmd_uri'])]],
+    extraDetails: (feed, t) => [
+        [t('refdata.fields.oresmd_uri'), <OresmdUrl uri={show(feed['oresmd_uri'])} />],
+    ],
     parts: [
         {
             resource: COMPONENTS,

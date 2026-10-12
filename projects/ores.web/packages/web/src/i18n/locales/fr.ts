@@ -1318,7 +1318,7 @@ const fr: SourceCatalogue = {
     },
 
     oresmd: {
-        open: 'Ouvrir dans l\'éditeur',
+        open: "Ouvrir dans l'éditeur",
         title: 'URL oresmd',
         cancel: 'Annuler',
         copy: 'Copier',

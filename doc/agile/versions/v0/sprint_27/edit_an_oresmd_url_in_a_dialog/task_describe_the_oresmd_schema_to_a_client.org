@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A client learns what an oresmd URL may hold from the server, so it keeps no copy
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -85,3 +85,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The server answers =marketdata.v1.ops.describe_oresmd_schema=. The answer is the codec's own tables read as data: the asset classes, every one of the 45 instrument types with its URI code, its ORE name, its asset class, its subject and its fields in key order, the 17 quote types as a URI spells them, and the 11 index families a fixing is quoted against. Each field says whether it names the series or a point in it, whether a URI may leave it out, the kind of value it holds, and the tokens ORE accepts when it is a code field.
+
+The operation is modelled in =ores.marketdata.operations=, and the C++ header and the TypeScript twin are generated from the model. =oresmd_schema_describer= reads =schema_of=, =codes_of=, =index_rows= and the codec's spellings, so it holds no copy of the grammar. =oresmd_schema_handler= serves it and the registrar subscribes it. The read needs =marketdata::market_series:read=, the permission of the series read. The schema is grammar, not data a party owns, so the story's open question on the permission is answered: no new permission.
+
+Tests: 8 cases and 1138 assertions pass in =ores.marketdata.core.tests=. They compare the answer with the tables in order, check each code against the codec's spelling, and take a URI the codec reads and a fixing it reads to show that every key is a described field. The handler has no unit test, as the other marketdata handlers have none. The web typecheck and the 175 wire-protocol tests pass with the new twin.

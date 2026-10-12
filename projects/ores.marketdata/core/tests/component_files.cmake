@@ -40,6 +40,7 @@ set(files
     "service_import_party_series_tests.cpp"
     "service_import_service_tests.cpp"
     "service_ore_export_tests.cpp"
+    "service_oresmd_schema_describer_tests.cpp"
     "service_series_evolution_reader_tests.cpp"
     "service_series_identity_lister_tests.cpp"
     "service_series_slice_reader_tests.cpp"

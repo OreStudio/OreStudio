@@ -106,6 +106,7 @@ to_domain(const messaging::overnight_index_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_overnight_index_conventions_response

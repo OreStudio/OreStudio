@@ -46,6 +46,8 @@ returns table (
 declare
     v_root_party_id uuid;
     v_inserted bigint := 0;
+    v_bound bigint := 0;
+    v_staged_bindings bigint := 0;
 begin
     perform ores_utility_allow_version_replace_fn();
     -- Resolve root party: explicit param or query tenant's operational root.
@@ -108,10 +110,65 @@ begin
 
     get diagnostics v_inserted = row_count;
 
+    -- The configuration documents each definition binds. A dataset that stages
+    -- bindings names the definition and the configuration, and both resolve for
+    -- this party, so the documents are published before the definitions.
+    -- Conventions have no document of their own: a binding to them means the
+    -- conventions the party sees. Their configuration is a header that says so, and
+    -- the first binding to one creates it.
+    insert into ores_reporting_configurations_tbl (
+        tenant_id, id, version, party_id, name, configuration_type_code, owning_component,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct
+        p_target_tenant_id, ores_dq_party_uuid_fn(v_root_party_id,
+            md5('conventions:' || b.configuration_name)::uuid),
+        0, v_root_party_id, b.configuration_name, b.configuration_type_code, 'ores.refdata',
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Published from DQ dataset'
+    from ores_dq_report_configurations_artefact_tbl b
+    where b.dataset_id = p_dataset_id
+      and b.configuration_type_code = 'conventions'
+      and not exists (
+        select 1 from ores_reporting_configurations_tbl c
+        where c.tenant_id = p_target_tenant_id and c.party_id = v_root_party_id
+          and c.configuration_type_code = b.configuration_type_code
+          and c.name = b.configuration_name
+          and c.valid_to = ores_utility_infinity_timestamp_fn());
+
+    insert into ores_reporting_report_configurations_tbl (
+        tenant_id, id, version, party_id, report_definition_id, configuration_type_code,
+        configuration_id, modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, v_root_party_id, d.id,
+        b.configuration_type_code, c.id,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Published from DQ dataset'
+    from ores_dq_report_configurations_artefact_tbl b
+    join ores_reporting_report_definitions_tbl d
+      on d.tenant_id = p_target_tenant_id and d.party_id = v_root_party_id
+     and d.name = b.report_name and d.valid_to = ores_utility_infinity_timestamp_fn()
+    join ores_reporting_configurations_tbl c
+      on c.tenant_id = p_target_tenant_id and c.party_id = v_root_party_id
+     and c.configuration_type_code = b.configuration_type_code
+     and c.name = b.configuration_name and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where b.dataset_id = p_dataset_id;
+
+    get diagnostics v_bound = row_count;
+
+    select count(*) into v_staged_bindings
+    from ores_dq_report_configurations_artefact_tbl
+    where dataset_id = p_dataset_id;
+
     -- Return summary
     return query
     select 'inserted'::text, v_inserted
-    where v_inserted > 0;
+    where v_inserted > 0
+    union all select 'bound'::text, v_bound
+    where v_bound > 0
+    union all select 'skipped'::text, v_staged_bindings - v_bound
+    where v_staged_bindings - v_bound > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
@@ -119,155 +176,101 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Risk Report Configs: reporting.v1.ops.publish_risk_report_configs_from_dq
 -- =============================================================================
 
--- Reads the risk report config artefacts and writes, for each row whose report
--- definition the party already carries, the risk report config the run
--- resolves by definition id plus the root portfolio scope that says which
--- books it reads.
+-- Publishes the risk report configurations a dataset stages for the target
+-- party. The copy, the re-keying and the reporting configuration each one is
+-- registered as are the shared ores_dq_publish_configuration_document_fn. A
+-- definition binds a configuration by name, as it binds its pricing engines, so
+-- this publish needs no definition and many definitions can share one row.
 --
--- The four ORE configuration documents a risk run reads -- pricing engines,
--- today's market, the curve configuration and the conventions -- come from
--- `ore import-run`, which is not a DQ dataset. This publish therefore reads
--- the bindings the import wrote and skips a definition that does not carry
--- all four, rather than binding a document the run would fail on.
+-- A staged row may name a scope portfolio. The portfolio is resolved by name for
+-- the target party and written as the configuration's portfolio scope. A scope
+-- that names a portfolio the party does not hold is refused: the configuration
+-- would read no books, and every run of it would fail.
 create or replace function ores_reporting_publish_risk_report_configs_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
     p_mode text default 'upsert',
     p_params jsonb default '{}'::jsonb
 )
-returns table (
-    action text,
-    record_count bigint
-) as $$
+returns table (action text, record_count bigint) as $$
 declare
-    v_required       text[] := array['pricing_engines', 'todays_market',
-                                     'curve_configuration', 'conventions'];
-    v_root_party_id  uuid;
-    v_root_portfolio uuid;
-    v_portfolio_ccy  text;
-    v_definition_id  uuid;
-    v_config         uuid;
-    v_inserted       bigint := 0;
-    v_skipped        bigint := 0;
-    a                record;
+    v_party_id uuid;
+    v_missing  text;
+    v_scoped   bigint;
+    r          record;
 begin
-    perform ores_utility_allow_version_replace_fn();
-
-    v_root_party_id := coalesce(
-        (p_params ->> 'party_id')::uuid,
-        (select id from ores_refdata_parties_tbl
-         where tenant_id = p_target_tenant_id
-           and parent_party_id is null
-           and party_category <> 'System'
-           and valid_to = ores_utility_infinity_timestamp_fn()
-         limit 1)
-    );
-
-    if v_root_party_id is null then
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
         return query select 'skipped_no_party'::text, 0::bigint;
         return;
     end if;
 
-    -- The root portfolio is the one with no parent. The run reaches its books
-    -- through the config's portfolio scope, and it aggregates to the
-    -- portfolio's currency unless the portfolio names none.
-    select p.id, p.aggregation_ccy
-    into v_root_portfolio, v_portfolio_ccy
-    from ores_refdata_portfolios_tbl p
-    where p.tenant_id = p_target_tenant_id
-      and p.party_id = v_root_party_id
-      and p.parent_portfolio_id is null
-      and p.valid_to = ores_utility_infinity_timestamp_fn()
-    order by p.name
-    limit 1;
-
-    if v_root_portfolio is null then
-        return query select 'skipped_no_root_portfolio'::text, 0::bigint;
-        return;
+    select string_agg(distinct a.scope_portfolio, ', ') into v_missing
+    from ores_dq_risk_report_configs_artefact_tbl a
+    where a.dataset_id = p_dataset_id
+      and a.scope_portfolio is not null
+      and not exists (
+          select 1 from ores_refdata_portfolios_tbl pf
+          where pf.tenant_id = p_target_tenant_id
+            and pf.party_id = v_party_id
+            and pf.name = a.scope_portfolio
+            and pf.valid_to = ores_utility_infinity_timestamp_fn());
+    if v_missing is not null then
+        raise exception 'Dataset % scopes risk report configurations to portfolios the party does not hold: %.',
+            p_dataset_id, v_missing;
     end if;
 
-    for a in
-        select *
-        from ores_dq_risk_report_configs_artefact_tbl
-        where dataset_id = p_dataset_id
-        order by display_order, report_name
+    for r in
+        select * from ores_dq_publish_configuration_document_fn(
+            p_dataset_id, p_target_tenant_id, v_party_id,
+            'risk_report_config', 'ores.reporting', 'ores_reporting_',
+            array['risk_report_configs'])
     loop
-        -- The config is keyed by report definition id, so the definition must
-        -- be published for this party before its configuration can be.
-        select d.id into v_definition_id
-        from ores_reporting_report_definitions_tbl d
-        where d.tenant_id = p_target_tenant_id
-          and d.party_id = v_root_party_id
-          and d.name = a.report_name
-          and d.report_type = 'risk'
-          and d.valid_to = ores_utility_infinity_timestamp_fn();
-
-        if v_definition_id is null then
-            v_skipped := v_skipped + 1;
-            continue;
-        end if;
-
-        if (
-            select count(distinct b.configuration_type_code)
-            from ores_reporting_report_configurations_tbl b
-            where b.tenant_id = p_target_tenant_id
-              and b.report_definition_id = v_definition_id
-              and b.configuration_type_code = any(v_required)
-              and b.valid_to = ores_utility_infinity_timestamp_fn()
-        ) < array_length(v_required, 1) then
-            v_skipped := v_skipped + 1;
-            continue;
-        end if;
-
-        if exists (
-            select 1 from ores_reporting_risk_report_configs_tbl
-            where tenant_id = p_target_tenant_id
-              and report_definition_id = v_definition_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            v_skipped := v_skipped + 1;
-            continue;
-        end if;
-
-        v_config := gen_random_uuid();
-
-        insert into ores_reporting_risk_report_configs_tbl (
-            tenant_id, id, version, report_definition_id, base_currency,
-            observation_model, n_threads, market_data_type,
-            npv_enabled, cashflow_enabled, curves_enabled, sensitivity_enabled,
-            simulation_enabled, xva_enabled, stress_enabled,
-            parametric_var_enabled, initial_margin_enabled, pfe_enabled,
-            xva_cva_enabled, xva_dva_enabled, xva_fva_enabled,
-            modified_by, performed_by, change_reason_code, change_commentary
-        ) values (
-            p_target_tenant_id, v_config, 0, v_definition_id,
-            coalesce(v_portfolio_ccy, a.base_currency),
-            a.observation_model, a.n_threads, a.market_data_type,
-            a.npv_enabled, a.cashflow_enabled, a.curves_enabled,
-            a.sensitivity_enabled, a.simulation_enabled, a.xva_enabled,
-            a.stress_enabled, a.parametric_var_enabled,
-            a.initial_margin_enabled, a.pfe_enabled,
-            a.xva_cva_enabled, a.xva_dva_enabled, a.xva_fva_enabled,
-            coalesce(ores_iam_current_service_fn(), current_user), current_user,
-            'system.external_data_import', 'Published from DQ dataset'
-        );
-
-        insert into ores_reporting_risk_report_config_portfolios_tbl (
-            tenant_id, risk_report_config_id, portfolio_id, valid_from, valid_to
-        ) values (
-            p_target_tenant_id, v_config, v_root_portfolio,
-            clock_timestamp(), ores_utility_infinity_timestamp_fn()
-        );
-
-        v_inserted := v_inserted + 1;
+        action := r.action;
+        record_count := r.record_count;
+        return next;
     end loop;
 
-    return query select 'inserted'::text, v_inserted where v_inserted > 0;
-    return query select 'skipped'::text, v_skipped where v_skipped > 0;
+    insert into ores_reporting_risk_report_config_portfolios_tbl (
+        tenant_id, risk_report_config_id, portfolio_id, valid_from, valid_to
+    )
+    select distinct on (live_id, pf.id)
+           p_target_tenant_id, live_id, pf.id,
+           clock_timestamp(), ores_utility_infinity_timestamp_fn()
+    from (
+        select a.scope_portfolio,
+               ores_dq_party_uuid_fn(v_party_id, a.id) as live_id
+        from ores_dq_risk_report_configs_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+          and a.scope_portfolio is not null
+    ) s
+    join ores_refdata_portfolios_tbl pf
+      on pf.tenant_id = p_target_tenant_id
+     and pf.party_id = v_party_id
+     and pf.name = s.scope_portfolio
+     and pf.valid_to = ores_utility_infinity_timestamp_fn()
+    where exists (
+        select 1 from ores_reporting_risk_report_configs_tbl c
+        where c.tenant_id = p_target_tenant_id
+          and c.id = s.live_id
+          and c.valid_to = ores_utility_infinity_timestamp_fn())
+      and not exists (
+        select 1 from ores_reporting_risk_report_config_portfolios_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.risk_report_config_id = s.live_id
+          and o.portfolio_id = pf.id
+          and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_scoped = row_count;
+    if v_scoped > 0 then
+        action := 'scoped';
+        record_count := v_scoped;
+        return next;
+    end if;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_reporting_publish_risk_report_configs_from_dq_fn(uuid, uuid, text, jsonb) is
-'Publishes the risk report config and its root portfolio scope for every
- artefact row whose report definition the target party already carries with all
- four required ORE configuration bindings. Idempotent per report definition.';
+'Publishes the risk report configurations a dataset stages for the target party,
+ each registered as a reporting configuration, with the portfolio scope a staged
+ row names. A publish only inserts, so the mode has no effect.';

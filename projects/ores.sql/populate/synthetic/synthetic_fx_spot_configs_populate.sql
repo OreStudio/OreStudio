@@ -70,7 +70,7 @@ BEGIN
         'Seed data for the synthetic FX spot Librarian bundle',
         current_date,
         'Internal Use Only',
-        'synthetic_theme'
+        'synthetic_feeds'
     );
 END $$;
 

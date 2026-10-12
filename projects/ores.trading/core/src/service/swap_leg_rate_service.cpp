@@ -116,6 +116,7 @@ domain::swap_leg_rate to_domain(const messaging::swap_leg_rate_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_swap_leg_rates_response

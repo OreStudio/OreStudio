@@ -22,14 +22,14 @@
  * Ibor Index Conventions Population Script
  *
  * Seeds one ores_refdata_ibor_index_conventions_tbl row per (currency, term
- * index family) pair used by the synthetic.ir_curve_configs.* seed themes --
- * id is "<currency_code>-<upper(index_family)>", matching
- * ir_curve_generation_config_service::validate_index_family()'s own lookup
- * shape. Covers both the 3M/6M-tenor legacy LIBOR/EURIBOR curves
- * (ore_samples_2016) and the overnight-tenor CNY/MXN/TWD curves
- * (realistic_2026/uniform_demo) whose real-world benchmark is technically
- * an IborIndex, not an OvernightIndex, even though this codebase's
- * synthetic themes use them at an overnight tenor.
+ * index family) pair used by the synthetic.feeds.* seed datasets -- id is
+ * "<currency_code>-<upper(index_family)>", the shape a curve's
+ * (currency_code, index_family) pair names; nothing validates a curve
+ * against these rows. Covers both the 3M/6M-tenor legacy LIBOR/EURIBOR
+ * curves (ore_samples_2016) and the overnight-tenor CNY/MXN/TWD curves
+ * (bloomberg/uniform_demo) whose real-world benchmark is technically an
+ * IborIndex, not an OvernightIndex, even though the synthetic feeds use
+ * them at an overnight tenor.
  *
  * fixing_calendar values are refdata.calendars codes (see
  * refdata_calendars_populate.sql); day_count_fraction values are FpML

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3efde3f1-fdac-48b2-b6ee-a1ab22b1bf3e
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_quote
 #+description: Codegen entity model for the refdata =curve_quote= table. One market quote a curve or a segment is built from.

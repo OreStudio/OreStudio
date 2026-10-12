@@ -107,6 +107,7 @@ domain::flexi_swap_instrument to_domain(const messaging::flexi_swap_instrument_w
     return v;
 }
 
+
 }
 
 messaging::list_flexi_swap_instruments_response

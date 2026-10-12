@@ -109,6 +109,7 @@ domain::swaption_instrument to_domain(const messaging::swaption_instrument_write
     return v;
 }
 
+
 }
 
 messaging::list_swaption_instruments_response

@@ -102,6 +102,7 @@ domain::treatment_dimension to_domain(const messaging::treatment_dimension_write
     return v;
 }
 
+
 }
 
 messaging::list_treatment_dimensions_response

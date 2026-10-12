@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-12T11:55:04.768754Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: synthetic
-Tables: 9
+Tables: 10
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -135,7 +135,7 @@ package "synthetic" #F9FBE7 {
         * base_currency_code : text
         * quote_currency_code : text
         * source_name : text
-        * ore_key : text
+        * oresmd_uri : text
         * price_source : text
         * gmm_initial_price : double
         * ticks_per_hour : integer
@@ -298,9 +298,9 @@ package "synthetic" #F9FBE7 {
     end note
 
     entity ores_synthetic_market_data_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
-          tenant_id : uuid <<FK>>
         * version : integer
           party_id : uuid <<FK>>
         * scope : text
@@ -309,6 +309,7 @@ package "synthetic" #F9FBE7 {
         * description : text
         * enabled : boolean
           dataset_id : uuid <<FK>>
+          provider_code : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -328,9 +329,48 @@ package "synthetic" #F9FBE7 {
     (system/tenant/party) decides the sharing radius -- who consumes the same
     generated data -- and binding_mode (bound/sandboxed) decides whether
     that data is authoritative for real feed consumers or reachable only by
-    explicit selection. tenant_id and party_id are populated per scope
-    level: system leaves both null, tenant sets tenant_id only, party sets
-    both.
+    explicit selection. tenant_id and party_id follow the scope: a system
+    collection belongs to the system tenant and its system party, the party the
+    super administrator works in; a tenant collection belongs to its tenant with
+    no party; a party collection belongs to its tenant and party. A system
+    collection's feeds are the installation's, and every tenant reads them.
+    end note
+
+    entity ores_synthetic_market_data_providers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * kind : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_market_data_providers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Provider Table
+    A catalogue of the providers whose market data the synthetic feeds simulate.
+    A system-scope collection names the provider it stands for, so the installation
+    can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it
+    as that provider's data. The provider is optional: a collection that stands for
+    no provider names none, or names generic.
+    Every provider here is simulated. Screens show it with the synthetic mark, as
+    "Bloomberg (synthetic)", and every source name a provider's feed publishes on
+    starts synthetic.<provider code>., so a simulated feed is never read as the
+    real one. A real provider integration, when one comes, belongs in market data
+    and not in this catalogue.
+    Scoped to ores.synthetic (not ores.refdata) because only synthetic
+    generation uses it today, following the yield_curve_process_type
+    precedent. Managed by the system tenant.
     end note
 
     entity ores_synthetic_process_parameter_definitions_tbl <<temporal>> #C6F0D8 {

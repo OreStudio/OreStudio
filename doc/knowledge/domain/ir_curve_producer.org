@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :synthetic:producers:ir:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-11
 
 * Summary
 
@@ -55,13 +55,17 @@ Each pass does this.
 
 ** How a pillar tick is named and priced
 
-The tick's datum is not the curve's identity. Each entry names its own
-pillar. The loop builds a quote key through
-=ores::marketdata::core::make_pillar_quote_key= from the currency taken out
-of the qualifier and the entry's own start tenor code, start date and end
-date, then turns that key into a URI through =pillar_datum_uri=. The series
-a point lands in therefore carries the instrument's identity rather than the
-pipeline's vocabulary.
+A curve is a series, as [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] explains. Each entry names its own pillar. The
+loop builds a quote key through =ores::marketdata::core::make_pillar_quote_key=
+from the config's currency, the config's index tenor and the entry's own start
+tenor code, start date and end date, then turns that key into a URI through
+=pillar_datum_uri=. The key is an =IR_SWAP/RATE= quote. Its =fwd_start= is the
+start of the pillar, its =tenor= is the tenor of the index the curve stands for,
+and its =term= is the end of the pillar. An overnight index such as SOFR has the
+tenor =1D=. A term index such as EURIBOR 6M has the tenor =6M=. The series a
+point lands in therefore carries the index of the curve, and a EURIBOR 6M curve
+and a EURIBOR 3M curve are two series, as [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] requires of a projection
+curve per index tenor.
 
 The value comes from =price_ir_curve_entry= in
 =ir_curve_template_resolver.cpp=. That function reads the process's
@@ -73,11 +77,15 @@ so a preview and a run cannot disagree about what a state implies.
 
 ** Identity and conflict
 
-The qualifier is built by =ir_curve_qualifier= from the currency and the
-index family, with the FOMC variant marked. The role comes from the config.
-The conflict key is =feed_conflict_key(qualifier, role)=, so two curves of one
-tuple with different roles coexist and two curves with the same tuple and the
-same role cannot.
+The feed reports the series its pillars land in through =series_uris()=: one
+series for the pillars that start at spot, and one for each later start date,
+such as a meeting-dated FOMC pillar. The feed builds the list once, from its
+resolved entries, through =pillar_series_uri=. Two feeds conflict when their
+lists share a series, because both would write points into it. The role comes
+from the config and is reported by =role()=, but it plays no part in what the
+feed owns: two curves of one currency and index tenor publish the
+same series, whatever their index family or role, and so cannot run together. See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]] for the identity, and [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] for
+the controller that enforces it.
 
 ** The facts the code shape does not show
 
@@ -111,3 +119,7 @@ points alongside it.
 - [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface contract this class implements.
 - [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], where =ir_curve_feed_kind= selects this builder.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the message each pillar publishes.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how a curve is a series, and what the grammar leaves to the consumer.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — what a curve is.
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family of curves, one series for each index tenor.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — the rule that two feeds with overlapping series cannot run together.

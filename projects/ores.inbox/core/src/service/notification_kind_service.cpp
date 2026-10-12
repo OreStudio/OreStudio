@@ -105,6 +105,7 @@ domain::notification_kind to_domain(const messaging::notification_kind_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_notification_kinds_response notification_kind_service::list_notification_kinds(

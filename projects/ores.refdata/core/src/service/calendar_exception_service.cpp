@@ -109,6 +109,7 @@ domain::calendar_exception to_domain(const messaging::calendar_exception_write& 
     return v;
 }
 
+
 }
 
 messaging::list_calendar_exceptions_response calendar_exception_service::list_calendar_exceptions(

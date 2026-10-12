@@ -21,7 +21,6 @@
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
@@ -47,21 +46,21 @@ auto& lg() {
 
 // Resolves the initial price from a real market_observation when cfg.price_source is "vintage",
 // mirroring the deleted feed_controller::vintage_data_available() -- the config's own series
-// (from its ore_key), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
+// (from its oresmd_uri), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
 //
 // @throws vintage_data_missing_error if no matching observation is found.
 double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
                                      const ores::synthetic::domain::fx_spot_generation_config& cfg,
                                      const std::string& caller_bearer_token) {
     const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
-                                 ", date=" + cfg.vintage_date + ", datum=" + cfg.ore_key + ".";
+                                 ", date=" + cfg.vintage_date + ", datum=" + cfg.oresmd_uri + ".";
 
-    // The series and the row are found by the URIs the key's datum writes as: the
-    // same codecs the marketdata service's ingest loop applies to a tick's key, so
+    // The series and the row are found by the URIs the config's datum writes as: the
+    // same codec the marketdata service's ingest loop applies to a tick's URI, so
     // the vintage read and the tick that follows it name one series.
-    const auto datum = ores::marketdata::datum::ore_key_codec::read(cfg.ore_key);
+    const auto datum = ores::marketdata::datum::oresmd_uri_codec::read(cfg.oresmd_uri);
     if (!datum)
-        throw vintage_data_missing_error("ORE key '" + cfg.ore_key + "': " + datum.error());
+        throw vintage_data_missing_error("oresmd URI '" + cfg.oresmd_uri + "': " + datum.error());
     const auto datum_uri = ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
     const auto series_uri =
         ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*datum))
@@ -74,7 +73,7 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
                                                 cfg.vintage_source,
                                                 cfg.vintage_date,
                                                 missing_message,
-                                                cfg.ore_key,
+                                                cfg.oresmd_uri,
                                                 boost::uuids::to_string(cfg.party_id));
     if (!found)
         throw vintage_data_missing_error(found.error());
@@ -90,8 +89,17 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   ores::synthetic::domain::binding_mode binding_mode,
                   const std::string& caller_bearer_token) {
+    // The config states the pair twice, as two currencies and as a URI. They must agree.
+    const auto expected = "oresmd://fx/" + cfg.base_currency_code +
+                          "?type=quote&instrument=fx_spot&quote=rate&ccy=" +
+                          cfg.quote_currency_code;
+    if (cfg.oresmd_uri != expected)
+        throw std::invalid_argument("make_fx_spot_feed: config '" + cfg.oresmd_uri +
+                                    "' is not the quote of the pair " + cfg.base_currency_code +
+                                    "/" + cfg.quote_currency_code + ": expected '" + expected +
+                                    "'.");
     if (components.empty())
-        throw std::invalid_argument("make_fx_spot_feed: config '" + cfg.ore_key +
+        throw std::invalid_argument("make_fx_spot_feed: config '" + cfg.oresmd_uri +
                                     "' has no GMM components.");
 
     std::vector<double> means, stdevs, weights;
@@ -129,7 +137,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                                                        seed);
 
     return std::make_shared<fx_spot_feed>(nats,
-                                          cfg.ore_key,
+                                          cfg.oresmd_uri,
                                           cfg.source_name,
                                           producer_subject(cfg.source_name, binding_mode),
                                           std::move(process),
@@ -138,13 +146,13 @@ make_fx_spot_feed(ores::nats::service::client& nats,
 
 fx_spot_feed::fx_spot_feed(
     ores::nats::service::client& nats,
-    std::string ore_key,
+    std::string quote_uri,
     std::string source_name,
     std::string nats_subject,
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
     double ticks_per_hour)
     : nats_(nats)
-    , ore_key_(std::move(ore_key))
+    , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
     , clock_(ticks_per_hour)
@@ -155,25 +163,24 @@ fx_spot_feed::fx_spot_feed(
     if (ticks_per_hour <= 0.0)
         throw std::invalid_argument("fx_spot_feed: ticks_per_hour must be positive");
 
-    const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key_);
-    if (!datum)
-        throw std::invalid_argument("fx_spot_feed: '" + ore_key_ +
-                                    "' names no datum: " + datum.error());
-    oresmd_uri_ = ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
-
-    // The qualifier is what follows the key's type and quote, such as EUR/USD.
-    const auto first = ore_key_.find('/');
-    const auto second = first == std::string::npos ? first : ore_key_.find('/', first + 1);
-    if (second != std::string::npos)
-        qualifier_ = ore_key_.substr(second + 1);
+    namespace datum = ores::marketdata::datum;
+    const auto read = datum::oresmd_uri_codec::read(quote_uri_);
+    if (!read)
+        throw std::invalid_argument("fx_spot_feed: '" + quote_uri_ +
+                                    "' names no datum: " + read.error());
+    if (read->type() != datum::instrument_type::fx_spot || read->is_series())
+        throw std::invalid_argument("fx_spot_feed: '" + quote_uri_ +
+                                    "' is not an fx_spot quote.");
+    quote_uri_ = datum::oresmd_uri_codec::write(*read).value();
+    series_uris_ = {datum::oresmd_uri_codec::write(datum::series_of(*read)).value()};
 }
 
 const std::string& fx_spot_feed::source_name() const {
     return source_name_;
 }
 
-const std::string& fx_spot_feed::qualifier() const {
-    return qualifier_;
+const std::vector<std::string>& fx_spot_feed::series_uris() const {
+    return series_uris_;
 }
 
 const std::string& fx_spot_feed::role() const {
@@ -181,15 +188,11 @@ const std::string& fx_spot_feed::role() const {
     return empty;
 }
 
-std::string fx_spot_feed::conflict_key() const {
-    return ores::marketdata::domain::feed_conflict_key(qualifier_, role());
-}
-
 void fx_spot_feed::start() {
     clock_.run(
         [this] {
             ores::marketdata::messaging::market_tick tick;
-            tick.oresmd_uri = oresmd_uri_;
+            tick.oresmd_uri = quote_uri_;
             tick.value = std::format("{}", process_->next());
             tick.observation_time = std::chrono::system_clock::now();
             tick.source = source_name_;
@@ -204,13 +207,13 @@ void fx_spot_feed::start() {
         [this](std::uint64_t n, const std::string& value) {
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
-                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='" << ore_key_
+                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' oresmd_uri='" << quote_uri_
                     << "' count=" << n << " value=" << value;
             }
         },
         [this](const std::exception& ex) {
             BOOST_LOG_SEV(lg(), error) << "SYNTHETIC PUBLISH FAILED: subject='" << nats_subject_
-                                       << "' ore_key='" << ore_key_ << "': " << ex.what();
+                                       << "' oresmd_uri='" << quote_uri_ << "': " << ex.what();
         });
 }
 

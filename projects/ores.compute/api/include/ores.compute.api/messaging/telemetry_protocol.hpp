@@ -174,6 +174,248 @@ struct get_grid_stats_response {
 };
 
 /**
+ * @brief Asks for the stored grid samples over a time range, as columns.
+ *
+ * The read serves the whole installation and needs the permission that
+ * get_grid_stats needs. The range widens to whole buckets, counted from the
+ * Unix epoch. A range that needs more than 5000 buckets is refused, so the
+ * caller widens the bucket and never pulls raw rows.
+ */
+struct get_grid_series_request {
+    using response_type = struct get_grid_series_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.get_grid_series";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief ISO-8601 start of the range, inclusive.
+     */
+    std::string start_time;
+    /**
+     * @brief ISO-8601 end of the range, exclusive.
+     */
+    std::string end_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 60;
+};
+
+/**
+ * @brief The grid samples of the range as columns on a regular time axis.
+ *
+ * Bucket i starts at start_time plus i times bucket_seconds, so the axis is
+ * implicit and every column has bucket_count entries. A column holds the value
+ * of the newest sample in the bucket. A bucket with no sample has samples[i]
+ * equal to 0 and zeros in every column, so a caller must read samples before
+ * it draws a value: a gap is not a measurement of zero. The outcome counts and
+ * results_done are totals that only grow, so a caller draws throughput as the
+ * difference between two buckets.
+ */
+struct get_grid_series_response {
+    /**
+     * @brief Whether the series was read.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    std::string message;
+    /**
+     * @brief ISO-8601 start of the first bucket.
+     */
+    std::string start_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 0;
+    /**
+     * @brief Number of buckets, and the length of every column.
+     */
+    int bucket_count = 0;
+    /**
+     * @brief Samples in each bucket. 0 marks a gap.
+     */
+    std::vector<int> samples;
+    /**
+     * @brief Hosts registered, per bucket.
+     */
+    std::vector<int> total_hosts;
+    /**
+     * @brief Hosts online, per bucket.
+     */
+    std::vector<int> online_hosts;
+    /**
+     * @brief Hosts online with no work, per bucket.
+     */
+    std::vector<int> idle_hosts;
+    /**
+     * @brief Results not yet sendable, per bucket.
+     */
+    std::vector<int> results_inactive;
+    /**
+     * @brief Results waiting for a node, per bucket.
+     */
+    std::vector<int> results_unsent;
+    /**
+     * @brief Results a node is running, per bucket.
+     */
+    std::vector<int> results_in_progress;
+    /**
+     * @brief Results finished, a total that only grows, per bucket.
+     */
+    std::vector<int> results_done;
+    /**
+     * @brief Work units, per bucket.
+     */
+    std::vector<int> total_workunits;
+    /**
+     * @brief Batches, per bucket.
+     */
+    std::vector<int> total_batches;
+    /**
+     * @brief Batches with work left, per bucket.
+     */
+    std::vector<int> active_batches;
+    /**
+     * @brief Results that ended in success, a total that only grows, per bucket.
+     */
+    std::vector<int> outcomes_success;
+    /**
+     * @brief Results that ended in a client error, a total that only grows, per bucket.
+     */
+    std::vector<int> outcomes_client_error;
+    /**
+     * @brief Results that ended with no reply, a total that only grows, per bucket.
+     */
+    std::vector<int> outcomes_no_reply;
+};
+
+/**
+ * @brief Asks for the stored node samples over a time range, as columns.
+ *
+ * The read serves the whole installation and needs the permission that
+ * get_grid_stats needs. The range widens to whole buckets, counted from the
+ * Unix epoch. A range that needs more than 5000 buckets, or more than 200000
+ * cells of nodes times buckets, is refused, so the caller widens the bucket and
+ * never pulls raw rows.
+ */
+struct get_node_series_request {
+    using response_type = struct get_node_series_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.get_node_series";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief ISO-8601 start of the range, inclusive.
+     */
+    std::string start_time;
+    /**
+     * @brief ISO-8601 end of the range, exclusive.
+     */
+    std::string end_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 60;
+};
+
+/**
+ * @brief One node that reported in the range.
+ */
+struct node_series_node {
+    /**
+     * @brief The node's host id.
+     */
+    std::string host_id;
+    /**
+     * @brief The computer the node runs on, from its newest sample that names one. Empty when none
+     * did.
+     */
+    std::string machine;
+};
+
+/**
+ * @brief The node samples of the range as columns on a regular time axis.
+ *
+ * Bucket j starts at start_time plus j times bucket_seconds, as in the grid
+ * series. The nodes are listed once, ordered by machine and then host id, so the
+ * nodes of one computer sit together. Every column below has
+ * nodes.size() times bucket_count entries, row-major: the cell of node i in
+ * bucket j is at i times bucket_count plus j. A cell with no sample has
+ * samples 0 and zeros in every column, so a caller must read samples before it
+ * draws a value: a gap is not a measurement of zero. Only nodes with a sample in
+ * the range are listed.
+ */
+struct get_node_series_response {
+    /**
+     * @brief Whether the series was read.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    std::string message;
+    /**
+     * @brief ISO-8601 start of the first bucket.
+     */
+    std::string start_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 0;
+    /**
+     * @brief Number of buckets.
+     */
+    int bucket_count = 0;
+    /**
+     * @brief The nodes that reported in the range.
+     */
+    std::vector<node_series_node> nodes;
+    /**
+     * @brief Samples in each cell. 0 marks a gap.
+     */
+    std::vector<int> samples;
+    /**
+     * @brief Tasks finished since the wrapper started, at the cell's newest sample.
+     */
+    std::vector<int> tasks_completed;
+    /**
+     * @brief Tasks that failed since the wrapper started, at the cell's newest sample.
+     */
+    std::vector<int> tasks_failed;
+    /**
+     * @brief Tasks finished in the cell, summed over its samples.
+     */
+    std::vector<int> tasks_since_last;
+    /**
+     * @brief Mean task duration in the cell, weighted by the tasks of each sample. 0 when the cell
+     * finished none.
+     */
+    std::vector<std::int64_t> avg_task_duration_ms;
+    /**
+     * @brief Longest task in the cell.
+     */
+    std::vector<std::int64_t> max_task_duration_ms;
+    /**
+     * @brief Bytes fetched in the cell, summed over its samples.
+     */
+    std::vector<std::int64_t> input_bytes_fetched;
+    /**
+     * @brief Bytes uploaded in the cell, summed over its samples.
+     */
+    std::vector<std::int64_t> output_bytes_uploaded;
+};
+
+/**
  * @brief One node's report, published fire-and-forget from a wrapper.
  *
  * It carries no response, so the wrapper does not wait for one. The
@@ -237,6 +479,86 @@ struct node_sample_message {
      * @brief Seconds since this node last heartbeated.
      */
     int seconds_since_hb = 0;
+};
+
+/**
+ * @brief Asks who uses the grid, with the work counted by group.
+ *
+ * It carries no fields, because the caller's session decides the scope and the
+ * grouping. A session in the system tenant reads the work of every tenant and
+ * gets one group for each tenant. Any other session reads its own tenant, and
+ * only the parties it acts for, and gets one group for each party.
+ */
+struct get_grid_usage_request {
+    using response_type = struct get_grid_usage_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.get_grid_usage";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The work of the grid counted by group, as columns.
+ *
+ * Group i is described by keys[i] and by entry i of every other column. The
+ * group is a tenant when group_kind is "tenant" and a party when it is
+ * "party". A key that is empty stands for work with no party, which predates
+ * the party scope. The share of a group is its entry in a column divided by the
+ * sum of that column, which the caller computes.
+ */
+struct get_grid_usage_response {
+    /**
+     * @brief Whether the usage was read.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    std::string message;
+    /**
+     * @brief What a group is: "tenant" or "party".
+     */
+    std::string group_kind = "";
+    /**
+     * @brief The id of each group, empty for work with no party.
+     */
+    std::vector<std::string> keys;
+    /**
+     * @brief Batches in each group.
+     */
+    std::vector<std::int64_t> batches;
+    /**
+     * @brief Workunits in each group.
+     */
+    std::vector<std::int64_t> workunits;
+    /**
+     * @brief Results in each group.
+     */
+    std::vector<std::int64_t> results;
+    /**
+     * @brief Results waiting to run in each group.
+     */
+    std::vector<std::int64_t> results_unsent;
+    /**
+     * @brief Results running in each group.
+     */
+    std::vector<std::int64_t> results_in_progress;
+    /**
+     * @brief Results finished in each group.
+     */
+    std::vector<std::int64_t> results_done;
+    /**
+     * @brief Results that finished with success in the last 24 hours.
+     */
+    std::vector<std::int64_t> outcomes_success;
+    /**
+     * @brief Results that finished with an error or no reply in the last 24 hours.
+     */
+    std::vector<std::int64_t> outcomes_failed;
 };
 
 }

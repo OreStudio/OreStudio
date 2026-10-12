@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5C5C7E70-9DBE-4E11-B797-A85FB0C602A1
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.inflation_curve_config
 #+description: Codegen entity model for the refdata =inflation_curve_config= table. The settings of one ORE inflation curve.

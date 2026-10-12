@@ -705,6 +705,112 @@ end.
 :cpp_type: std::vector<approval_request_version>
 :END:
 
+** approval_part_progress
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where one part of a request stands.
+ *
+ * A request that needs several functions to approve lists one of these for each.
+ * The state says what a person reading the request needs to know: whether the
+ * part has answered, whether its turn has come, or whether an earlier part
+ * must answer first.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** answer_order
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief approved, refused, waiting (its turn has come) or later (an earlier part
+ * must answer first).
+ */
+#+end_src
+
+*** decided_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account that answered the part, as a UUID string, or empty.
+ */
+#+end_src
+
+*** decided_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** comment
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_approval_parts_request
+:PROPERTIES:
+:subject:  inbox.v1.ops.get_approval_parts
+:response: get_approval_parts_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads where each part of one request stands.
+ *
+ * Answered when the caller raised the request, and when the caller may decide
+ * a request of its kind. Answered as not found otherwise, as opening the
+ * request is. The person who asked is the one who waits on the parts, so the
+ * entity read of the parts, which gates on the administrator's permission,
+ * cannot serve them.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_approval_parts_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** parts
+:PROPERTIES:
+:cpp_type: std::vector<approval_part_progress>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parts in the order they answer in. Empty for a request that names
+ * no parts.
+ */
+#+end_src
+
 * See also
 
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] -- the lifecycle these operations apply.

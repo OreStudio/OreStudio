@@ -44,11 +44,14 @@ Two fields are frequently mistaken for something they are not:
 
 ** The parameters
 
-The definition carries no engine parameters. Those live in
-=ores_reporting_risk_report_configs_tbl=, one row per definition, with the
-analytics switches a run enables and a book and portfolio scope held in two
-temporal junction tables. The configuration also supplies the market data date
-and the worker thread count the engine should use.
+The definition carries no engine parameters. Those live in a risk report
+configuration, =ores_reporting_risk_report_configs_tbl=, which a party names and
+shares between its definitions. A definition binds one in the =risk_report_config=
+slot, as it binds its pricing engines, and reports that run the same analytics over
+the same scope in the same currency bind the same row. The configuration holds the
+analytics switches a run enables, and a book and portfolio scope held in two
+temporal junction tables. It also supplies the market data date and the worker
+thread count the engine should use.
 [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] reads this
 row to decide what to select.
 

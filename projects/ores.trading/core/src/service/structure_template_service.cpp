@@ -102,6 +102,7 @@ domain::structure_template to_domain(const messaging::structure_template_write& 
     return v;
 }
 
+
 }
 
 messaging::list_structure_templates_response structure_template_service::list_structure_templates(

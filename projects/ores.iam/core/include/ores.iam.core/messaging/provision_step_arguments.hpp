@@ -439,26 +439,26 @@ struct photo_step_arguments {
     return result;
 }
 
-/// The theme whose feeds a start_market_feeds step starts.
+/// The synthetic feeds dataset whose feeds a start_market_feeds step starts.
 struct market_feed_step_arguments {
-    std::string theme;
+    std::string dataset;
 };
 
 /**
  * @brief Reads a start_market_feeds step's arguments.
  *
- * The theme names the dataset the feeds' configurations belong to; the kind
- * reads every other fact — the system party, the bindings' parties, the
- * folder — from the deployment. The theme's configurations are published with
- * the tenant's own bundles, so this step only binds and starts.
+ * The dataset is the synthetic feeds dataset the feeds' configurations were
+ * published from; the kind reads every other fact — the system party, the
+ * bindings' parties, the folder — from the deployment. The dataset is
+ * published with the tenant's own bundles, so this step only binds and starts.
  */
 [[nodiscard]] inline market_feed_step_arguments
 parse_market_feed_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
     market_feed_step_arguments result;
-    result.theme = detail::read_string(arguments, "theme");
-    if (result.theme.empty())
-        throw std::runtime_error("The step names no 'theme' argument.");
+    result.dataset = detail::read_string(arguments, "dataset");
+    if (result.dataset.empty())
+        throw std::runtime_error("The step names no 'dataset' argument.");
     return result;
 }
 

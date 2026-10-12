@@ -106,6 +106,7 @@ domain::ascot to_domain(const messaging::ascot_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_ascots_response

@@ -30,11 +30,13 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/book_change_repository.hpp"
+#include "ores.refdata.core/repository/book_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.refdata.core/service/book_service.hpp"
 #include "ores.refdata.service/service/book_proposal.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -155,10 +157,21 @@ inline book_change edit_line(const ores::refdata::domain::book& live, book_chang
 }
 
 /**
+ * @brief Writes a book to the live table through the repository.
+ *
+ * The approval gate sits in the service, so a fixture that arranges a live row
+ * goes under it, to a store the gate does not guard.
+ */
+inline ores::refdata::domain::book write_live(const world& w, ores::refdata::domain::book b) {
+    ores::service::messaging::stamp(b, w.ctx);
+    ores::refdata::repository::book_repository{}.write(w.ctx, b);
+    return *ores::refdata::service::book_service(w.ctx).get_book(b.id);
+}
+
+/**
  * @brief Writes the line's book to the live table, as an unapproved write would.
  */
 inline ores::refdata::domain::book make_live(const world& w, const book_change& line) {
-    ores::refdata::service::book_service svc(w.ctx);
     ores::refdata::domain::book b;
     b.id = line.entity_id;
     b.party_id = line.party_id;
@@ -175,8 +188,7 @@ inline ores::refdata::domain::book make_live(const world& w, const book_change& 
     b.is_sweepable = line.is_sweepable;
     b.rates_centre_code = line.rates_centre_code;
     b.change_reason_code = "system.test";
-    svc.save_book(b);
-    return *svc.get_book(b.id);
+    return write_live(w, b);
 }
 
 inline std::size_t pending_count(const world& w) {

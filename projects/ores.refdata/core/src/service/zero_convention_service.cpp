@@ -110,6 +110,7 @@ domain::zero_convention to_domain(const messaging::zero_convention_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_zero_conventions_response zero_convention_service::list_zero_conventions(

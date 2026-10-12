@@ -26,9 +26,9 @@ The Qt FX rate editor offers a simple mode next to the raw component table: slid
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Built on the feed screen branch: =FxSimplePanel= and =convert_fx_simple=. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-11                               |
@@ -39,6 +39,8 @@ The Qt FX rate editor offers a simple mode next to the raw component table: slid
 - A mixture the simple controls cannot express is shown in Advanced only, with a note that says so.
 - The mean reverting engine gets its own simple controls: κ by half-life and σ.
 - The preview and the save work the same from either mode.
+- The switch is the shared =EditingModeToggle= and =useEditingMode= (=ui/EditingMode.tsx=), which the IR process tab already uses. A person who picks Advanced there gets Advanced here too, and the other way round.
+- The conversion between the sliders and the components is the service's, like =convert_fx_mixture=. The screen does no model arithmetic.
 
 * Plan
 

@@ -107,6 +107,7 @@ domain::badge_definition to_domain(const messaging::badge_definition_write& writ
     return v;
 }
 
+
 }
 
 messaging::list_badge_definitions_response badge_definition_service::list_badge_definitions(

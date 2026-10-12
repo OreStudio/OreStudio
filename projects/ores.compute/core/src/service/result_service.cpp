@@ -111,6 +111,7 @@ domain::result to_domain(const messaging::result_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_results_response

@@ -101,6 +101,7 @@ domain::entry_channel_type to_domain(const messaging::entry_channel_type_write& 
     return v;
 }
 
+
 }
 
 messaging::list_entry_channel_types_response entry_channel_type_service::list_entry_channel_types(

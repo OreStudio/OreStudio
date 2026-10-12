@@ -113,6 +113,7 @@ to_domain(const messaging::pricing_model_product_parameter_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_pricing_model_product_parameters_response

@@ -111,6 +111,7 @@ domain::instrument_strike to_domain(const messaging::instrument_strike_write& wr
     return v;
 }
 
+
 }
 
 messaging::list_instrument_strikes_response instrument_strike_service::list_instrument_strikes(

@@ -118,6 +118,7 @@ domain::equity_curve_config to_domain(const messaging::equity_curve_config_write
     return v;
 }
 
+
 }
 
 messaging::list_equity_curve_configs_response

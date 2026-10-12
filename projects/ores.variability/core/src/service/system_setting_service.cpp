@@ -109,6 +109,7 @@ domain::system_setting to_domain(const messaging::system_setting_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_system_settings_response system_setting_service::list_system_settings(

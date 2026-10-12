@@ -116,6 +116,7 @@ domain::party to_domain(const messaging::party_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_parties_response

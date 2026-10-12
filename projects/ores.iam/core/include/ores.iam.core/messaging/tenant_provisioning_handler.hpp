@@ -26,7 +26,6 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
-#include "ores.dq.api/messaging/party_provisioning_plan.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.iam.api/domain/role_codes.hpp"
@@ -909,7 +908,7 @@ private:
         dq::messaging::publish_bundle_params params;
         params.opted_in_datasets = arguments.opted_in_datasets;
         // A bundle may publish party-scoped rows — the market data observations
-        // a synthetic theme carries, for one — and those publications read the
+        // a synthetic feeds dataset carries, for one — and those publications read the
         // party from here. The step acts for the tenant's system party, which
         // is where a shared stream belongs.
         if (!actor.party_id.is_nil())
@@ -1101,9 +1100,9 @@ private:
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
-    /// Binds every party the tenant holds to the theme the step names, through
-    /// the configurations the tenant's bundle publication already stored, and
-    /// starts that theme's feeds.
+    /// Binds every party the tenant holds to the feeds of the synthetic feeds
+    /// dataset the step names, through the configurations the tenant's bundle
+    /// publication already stored, and starts those feeds.
     void start_market_feeds_step(const ores::service::messaging::workflow_step_context& wf,
                                  const ores::iam::workflow::provision_tenant_step_command& command,
                                  const step_actor& actor) {
@@ -1133,9 +1132,8 @@ private:
                 const auto party_id = boost::uuids::to_string(party.id);
                 auto party_client =
                     make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                if (!create_theme_feed_bindings(
-                        system_client, party_client, arguments.theme, party_id))
-                    throw std::runtime_error("The theme '" + arguments.theme +
+                if (!create_feed_bindings(system_client, party_client, arguments.dataset, party_id))
+                    throw std::runtime_error("The feeds of '" + arguments.dataset +
                                              "' was not bound for the party '" + party_id + "'.");
                 bound.push_back(party_id);
             }
@@ -1144,11 +1142,11 @@ private:
             offset += page_size;
         }
 
-        if (!start_synthetic_theme_feeds(system_client, arguments.theme))
-            throw std::runtime_error("The theme '" + arguments.theme + "' feeds were not started.");
+        if (!start_synthetic_feeds(system_client, arguments.dataset))
+            throw std::runtime_error("The feeds of '" + arguments.dataset + "' were not started.");
 
         wf.complete(rfl::json::write(provision_step_result{
-            .kind = command.kind, .parties = bound, .datasets = {arguments.theme}}));
+            .kind = command.kind, .parties = bound, .datasets = {arguments.dataset}}));
     }
 
     /**
@@ -1374,21 +1372,17 @@ private:
         return matches.front();
     }
 
-    // Starts every feed under the calling party's (client's) theme
-    // collection folder for the given dq dataset code (e.g.
-    // "synthetic.themes.realistic_2026") via one folder-scoped request
-    // the server cascades across asset classes, resolved server-side from
+    // Starts every feed under the calling party's (client's) collection
+    // folder for the given synthetic feeds dataset code (e.g.
+    // "synthetic.feeds.bloomberg") via one folder-scoped request the server
+    // cascades across asset classes, resolved server-side from
     // synthetic_publish_from_dq's container-per-(tenant, party, dataset)
-    // convention rather than by matching on display name. Best-effort: logs
-    // and returns false on any resolution miss (dataset/config/folder not
-    // found, or a list request itself failing server-side) rather than
-    // failing provisioning over a cosmetic follow-on step -- the party
-    // itself is already fully provisioned by this point. Returns whether
-    // resolution succeeded far enough to attempt starting feeds, so the
-    // caller can surface a miss in its own step list rather than reporting
-    // "completed" for a no-op.
-    static bool start_synthetic_theme_feeds(internal_request_client& client,
-                                            const std::string& dataset_code) {
+    // convention rather than by matching on display name. Logs and returns
+    // false on any resolution miss (dataset/config/folder not found, or a
+    // list request itself failing server-side); the caller fails the step on
+    // false.
+    static bool start_synthetic_feeds(internal_request_client& client,
+                                      const std::string& dataset_code) {
         std::optional<boost::uuids::uuid> dataset_id;
         {
             dq::messaging::list_datasets_request req;
@@ -1396,7 +1390,7 @@ private:
             auto resp = client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: list datasets failed: " << resp.result.message;
+                    << "start_synthetic_feeds: list datasets failed: " << resp.result.message;
                 return false;
             }
             for (auto& d : resp.datasets)
@@ -1407,7 +1401,7 @@ private:
         }
         if (!dataset_id) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_theme_feeds: dataset not found: " << dataset_code;
+                << "start_synthetic_feeds: dataset not found: " << dataset_code;
             return false;
         }
 
@@ -1418,7 +1412,7 @@ private:
             auto resp = client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: list market_data_generation_configs "
+                    << "start_synthetic_feeds: list market_data_generation_configs "
                        "failed: "
                     << resp.result.message;
                 return false;
@@ -1431,7 +1425,7 @@ private:
         }
         if (!config_id) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_theme_feeds: no market_data_generation_config for dataset "
+                << "start_synthetic_feeds: no market_data_generation_config for dataset "
                 << dataset_code;
             return false;
         }
@@ -1443,7 +1437,7 @@ private:
             auto resp = client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: list folders failed: " << resp.result.message;
+                    << "start_synthetic_feeds: list folders failed: " << resp.result.message;
                 return false;
             }
             for (auto& f : resp.folders)
@@ -1454,7 +1448,7 @@ private:
         }
         if (!folder_id) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_theme_feeds: no collection folder for dataset " << dataset_code;
+                << "start_synthetic_feeds: no collection folder for dataset " << dataset_code;
             return false;
         }
         const auto folder_id_str = boost::uuids::to_string(*folder_id);
@@ -1466,7 +1460,7 @@ private:
         auto resp = client.request(req);
         if (!resp.success) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_theme_feeds: start folder failed: " << resp.message;
+                << "start_synthetic_feeds: start folder failed: " << resp.message;
             return false;
         }
         return true;
@@ -1484,14 +1478,14 @@ private:
         return std::nullopt;
     }
 
-    // Creates one feed binding per enabled FX source of the dq dataset
-    // (theme) resolved by @p dataset_code, for @p party_id_str -- the
+    // Creates one feed binding per enabled FX and IR source of the synthetic
+    // feeds dataset resolved by @p dataset_code, for @p party_id_str -- the
     // consumption contract of the consistent world (see the
-    // simulated-market-data strategy): the theme's config lives once under
+    // simulated-market-data strategy): the dataset's config lives once under
     // the system party, every party consumes the shared stream through its
     // own bindings, and the marketdata ingest loop materializes each
     // party's observations from it. Two clients are needed: the synthetic
-    // tables are party-isolated by RLS and the theme's configs live under
+    // tables are party-isolated by RLS and the dataset's configs live under
     // the system party, so resolution runs through @p resolve_client (the
     // system party's); the bindings themselves are saved through
     // @p save_client impersonating the consuming party, because
@@ -1499,19 +1493,14 @@ private:
     // context (a security boundary). Sources already bound for the party
     // are skipped, so the step is re-runnable: a party that already holds
     // every source returns true without writing, and a party that holds
-    // some of them writes only the rest. IR sources are deliberately not
-    // bound: IR producers
-    // publish on synthetic.v1.curve_family.<source>, a subject the ingest
-    // loop never listens to -- binding them would claim ingestion for a
-    // stream that never arrives. Best-effort, like
-    // start_synthetic_theme_feeds: logs and returns false on any
-    // resolution miss rather than failing provisioning; individual save
-    // failures are logged and skipped so one bad source does not drop the
-    // remaining bindings.
-    static bool create_theme_feed_bindings(internal_request_client& resolve_client,
-                                           internal_request_client& save_client,
-                                           const std::string& dataset_code,
-                                           const std::string& party_id_str) {
+    // some of them writes only the rest. Logs and returns false on any
+    // resolution miss, and the caller fails the step on false; individual
+    // save failures are logged and skipped so one bad source does not drop
+    // the remaining bindings.
+    static bool create_feed_bindings(internal_request_client& resolve_client,
+                                     internal_request_client& save_client,
+                                     const std::string& dataset_code,
+                                     const std::string& party_id_str) {
         std::optional<boost::uuids::uuid> dataset_id;
         {
             dq::messaging::list_datasets_request req;
@@ -1519,7 +1508,7 @@ private:
             auto resp = resolve_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list datasets failed: " << resp.result.message;
+                    << "create_feed_bindings: list datasets failed: " << resp.result.message;
                 return false;
             }
             for (auto& d : resp.datasets)
@@ -1530,7 +1519,7 @@ private:
         }
         if (!dataset_id) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "create_theme_feed_bindings: dataset not found: " << dataset_code;
+                << "create_feed_bindings: dataset not found: " << dataset_code;
             return false;
         }
 
@@ -1541,7 +1530,7 @@ private:
             auto resp = resolve_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list market_data_generation_configs "
+                    << "create_feed_bindings: list market_data_generation_configs "
                        "failed: "
                     << resp.result.message;
                 return false;
@@ -1554,7 +1543,7 @@ private:
         }
         if (!config_id) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "create_theme_feed_bindings: no market_data_generation_config for dataset "
+                << "create_feed_bindings: no market_data_generation_config for dataset "
                 << dataset_code;
             return false;
         }
@@ -1567,8 +1556,7 @@ private:
             auto resp = resolve_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list " << what
-                    << " failed: " << resp.result.message;
+                    << "create_feed_bindings: list " << what << " failed: " << resp.result.message;
                 return false;
             }
             for (const auto& c : configs_of(resp))
@@ -1594,8 +1582,7 @@ private:
             auto resp = save_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list feed_bindings failed: "
-                    << resp.result.message;
+                    << "create_feed_bindings: list feed_bindings failed: " << resp.result.message;
                 return false;
             }
             for (const auto& b : resp.feed_bindings)
@@ -1609,14 +1596,14 @@ private:
         for (const auto& source_name : sources) {
             if (std::find(existing.begin(), existing.end(), source_name) != existing.end()) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                    << "create_theme_feed_bindings: binding " << source_name << " for party "
+                    << "create_feed_bindings: binding " << source_name << " for party "
                     << party_id_str << " already exists; skipping";
                 continue;
             }
             marketdata::messaging::put_feed_binding_request req;
             req.change.write.id = uuid_gen();
             req.change.write.source_name = source_name;
-            // These bindings name the theme's simulated streams, so the series
+            // These bindings name the dataset's simulated streams, so the series
             // the ingest loop stamps from them are generated, not observed.
             req.change.write.producer_kind = "SYNTHETIC";
             req.change.write.enabled = true;
@@ -1639,7 +1626,7 @@ private:
             auto resp = save_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: save binding " << source_name << " for party "
+                    << "create_feed_bindings: save binding " << source_name << " for party "
                     << party_id_str << " failed: " << resp.result.message;
                 all_saved = false;
             } else {
@@ -1652,8 +1639,7 @@ private:
         }
         if (sources.empty())
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "create_theme_feed_bindings: no enabled feed sources for dataset "
-                << dataset_code;
+                << "create_feed_bindings: no enabled feed sources for dataset " << dataset_code;
         return all_saved;
     }
 

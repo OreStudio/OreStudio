@@ -116,6 +116,7 @@ to_domain(const messaging::instrument_option_premium_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_instrument_option_premiums_response

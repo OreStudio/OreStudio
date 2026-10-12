@@ -34,7 +34,7 @@ import { RefreshQueries } from '../ui/RefreshButton.js';
 import { useHolds } from '../access/holds.js';
 import { MyRequests } from './MyRequests.js';
 import { RequestStateChip } from './RequestStateChip.js';
-import { askedFor } from './words.js';
+import { summaryOf } from './kinds.js';
 
 /** How many requests the queue holds at once. */
 const PAGE = 100;
@@ -143,7 +143,7 @@ function Queue(): ReactNode {
                                             <PersonRef who={request.requestedBy} />
                                         </span>
                                         <span className="text-ink-muted">·</span>
-                                        <span>{askedFor(t, request)}</span>
+                                        <span>{summaryOf(t, request)}</span>
                                         <RequestStateChip stateCode={request.stateCode} />
                                         {request.decision !== null && (
                                             <span className="text-xs text-ink-faint">
@@ -201,7 +201,7 @@ function QueueRow({ request }: { readonly request: InboxRequestView }): ReactNod
                     <PersonRef who={request.requestedBy} />
                 </span>
             </td>
-            <td className="px-4 py-2 font-medium">{askedFor(t, request)}</td>
+            <td className="px-4 py-2 font-medium">{summaryOf(t, request)}</td>
             <td className="max-w-md px-4 py-2 text-ink-muted">
                 {request.reason === '' ? t('inbox.queue.noReason') : request.reason}
             </td>

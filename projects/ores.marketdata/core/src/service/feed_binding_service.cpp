@@ -108,6 +108,7 @@ domain::feed_binding to_domain(const messaging::feed_binding_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_feed_bindings_response

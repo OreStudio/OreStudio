@@ -57,7 +57,9 @@ export interface IrCurveTemplateEntryLookup {
 }
 
 export interface IrCurveTemplateEntriesFilter {
+    ir_curve_config_id: string | null;
     id_one_of: string[] | null;
+    ir_curve_config_id_one_of: string[] | null;
 }
 
 export interface IrCurveTemplateEntryEvent {

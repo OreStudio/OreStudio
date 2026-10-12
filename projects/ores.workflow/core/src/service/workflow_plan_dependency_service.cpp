@@ -108,6 +108,7 @@ domain::workflow_plan_dependency to_domain(const messaging::workflow_plan_depend
     return v;
 }
 
+
 }
 
 messaging::list_workflow_plan_dependencies_response

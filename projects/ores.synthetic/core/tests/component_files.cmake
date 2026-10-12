@@ -32,5 +32,6 @@ set(files
     "ir_curve_template_entry_eventing_integration_tests.cpp"
     "main.cpp"
     "market_data_generation_config_eventing_integration_tests.cpp"
+    "market_data_provider_eventing_integration_tests.cpp"
     "yield_curve_process_type_eventing_integration_tests.cpp"
 )

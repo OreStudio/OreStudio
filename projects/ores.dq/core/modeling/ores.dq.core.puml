@@ -374,6 +374,14 @@ namespace ores #F2F2F2 {
                 +get_synthetic_fx_spot_config(ores::nats::message msg) : void
                 +get_many_synthetic_fx_spot_configs(ores::nats::message msg) : void
             }
+            class synthetic_market_data_provider_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_synthetic_market_data_providers(ores::nats::message msg) : void
+                +get_synthetic_market_data_provider(ores::nats::message msg) : void
+                +get_many_synthetic_market_data_providers(ores::nats::message msg) : void
+            }
             class treatment_dimension_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -1559,6 +1567,42 @@ namespace ores #F2F2F2 {
                 -replace_claim(context ctx, const domain::synthetic_fx_spot_config& v) : ores::utility::domain::precondition
                 -apply_claim(context ctx, const domain::synthetic_fx_spot_config& v, const ores::utility::domain::precondition& claim) : domain::synthetic_fx_spot_config
             }
+            class synthetic_market_data_provider_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +name : string
+                +kind : string
+                +description : string
+                +display_order : int
+            }
+            class synthetic_market_data_provider_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const synthetic_market_data_provider_entity& v) : domain::synthetic_market_data_provider
+                +map(const domain::synthetic_market_data_provider& v) : synthetic_market_data_provider_entity
+                +map(const vector<synthetic_market_data_provider_entity>& v) : vector<domain::synthetic_market_data_provider>
+                +map(const vector<domain::synthetic_market_data_provider>& v) : vector<synthetic_market_data_provider_entity>
+            }
+            class synthetic_market_data_provider_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::synthetic_market_data_provider& v) : void
+                +write(context ctx, const vector<domain::synthetic_market_data_provider>& v) : void
+                +write(context ctx, const domain::synthetic_market_data_provider& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::synthetic_market_data_provider>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::synthetic_market_data_provider>
+                +read_latest(context ctx, const string& code) : vector<domain::synthetic_market_data_provider>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::synthetic_market_data_provider>
+                +read_all(context ctx, const string& code) : vector<domain::synthetic_market_data_provider>
+                +is_sortable(string_view field) : bool
+                +get_total_provider_count(context ctx, const optional<messaging::synthetic_market_data_providers_filter>& filter) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::synthetic_market_data_provider& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::synthetic_market_data_provider& v, const ores::utility::domain::precondition& claim) : domain::synthetic_market_data_provider
+            }
             class treatment_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
@@ -2218,6 +2262,23 @@ namespace ores #F2F2F2 {
                 +save_configs(const vector<domain::synthetic_fx_spot_config>& configs) : void
                 +delete_config(const boost::uuids::uuid& id) : void
                 +delete_configs(const vector<string>& ids) : void
+            }
+            class synthetic_market_data_provider_service {
+                -ctx_ : context
+                -repo_ : repository::synthetic_market_data_provider_repository
+                -lg() : [[nodiscard]] static auto&
+                +synthetic_market_data_provider_service(context ctx)
+                +list_synthetic_market_data_providers(const messaging::list_synthetic_market_data_providers_request& request) : messaging::list_synthetic_market_data_providers_response
+                +get_synthetic_market_data_provider(const messaging::get_synthetic_market_data_provider_request& request) : messaging::get_synthetic_market_data_provider_response
+                +get_many_synthetic_market_data_providers(const messaging::get_many_synthetic_market_data_providers_request& request) : messaging::get_many_synthetic_market_data_providers_response
+                +list_providers(uint32_t offset, uint32_t limit) : vector<domain::synthetic_market_data_provider>
+                +count_providers() : uint32_t
+                +get_provider(const string& code) : optional<domain::synthetic_market_data_provider>
+                +get_providers(const vector<string>& codes) : vector<domain::synthetic_market_data_provider>
+                +save_provider(const domain::synthetic_market_data_provider& provider) : void
+                +save_providers(const vector<domain::synthetic_market_data_provider>& providers) : void
+                +delete_provider(const string& code) : void
+                +delete_providers(const vector<string>& codes) : void
             }
             class treatment_dimension_service {
                 -ctx_ : context

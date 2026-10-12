@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 3B9F7C52-6D4A-4E18-A2C7-8E1D5B0F9A63
+:END:
+#+title: ores.analytics.publish_operations
+#+description: Codegen operation model for the workflow steps that publish an analytics configuration document from a DQ dataset.
+#+type: ores.codegen.operation
+#+component: analytics
+#+subcomponent: api
+#+entity_singular: publish_operation
+#+namespace: ores::analytics::messaging
+#+brief: The analytics publish-from-DQ workflow steps.
+#+filetags: :model:operation:analytics:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+The workflow steps that publish the configuration documents analytics owns from a
+DQ dataset: the pricing engines document and the today's market document. Each is
+a trigger, as the reporting component's publish steps are. The DQ publisher sends
+it and reads no reply, so a step states a subject and no response, and its body is
+the DQ artefact the server-side function knows how to expand.
+
+The SQL function a step calls is derived from its subject, so the spelling of a
+subject matters twice: once as the subject the registrar subscribes and once as the
+function the handler calls. That is why each subject is declared here and
+referenced, never spelled out at a call site.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string_view>
+#+end_src
+
+* Messages
+
+** publish_pricing_engines_from_dq_request
+:PROPERTIES:
+:subject: analytics.v1.ops.publish_pricing_engines_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes a DQ-cleared pricing engines document.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_analytics_publish_pricing_engines_from_dq_fn.
+ */
+#+end_src
+
+** publish_todays_market_from_dq_request
+:PROPERTIES:
+:subject: analytics.v1.ops.publish_todays_market_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes a DQ-cleared today's market document.
+ *
+ * The same trigger shape as publish_pricing_engines_from_dq_request. The SQL function
+ * the handler calls is ores_analytics_publish_todays_market_from_dq_fn.
+ */
+#+end_src

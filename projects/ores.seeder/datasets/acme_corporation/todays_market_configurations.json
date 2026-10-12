@@ -1,0 +1,38 @@
+[
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "70712e44-e4d4-5c10-b463-970ad9b4e793",
+    "todays_market_config_id": "f922f760-0d6b-5bf1-8f70-deac22c4f381",
+    "configuration_id": "default",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e1e2476c-f669-5690-9d45-6e73dc39ad23",
+    "todays_market_config_id": "9a9cf3ba-ad78-59ae-9e4f-ccc0e8b1e32b",
+    "configuration_id": "default",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e7b294b0-8797-5bb3-99c4-fb2fd6c263e2",
+    "todays_market_config_id": "135d59a9-075e-50d1-81f6-83f6b866c18a",
+    "configuration_id": "default",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f7e42a84-3554-5b7d-ad2c-9a888ad7dccd",
+    "todays_market_config_id": "512eaa01-5828-5e84-8728-aa1b106e4b0f",
+    "configuration_id": "default",
+    "position": 0
+  }
+]

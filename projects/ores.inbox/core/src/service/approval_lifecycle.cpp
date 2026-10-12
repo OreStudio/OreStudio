@@ -160,6 +160,53 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     return *written;
 }
 
+std::vector<part_progress> approval_lifecycle::progress_of(const std::string& request_id) {
+    const auto all = parts_of(request_id);
+    const auto open = open_parts_of(request_id);
+
+    // A refusal ends the request, so a part has at most one answer that counts.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select part_code, decision_code, decided_by::text, "
+        "       to_char(decided_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'), comment "
+        "from ores_inbox_approval_decisions_tbl "
+        "where request_id = $1::uuid "
+        "  and part_code is not null "
+        "  and decision_code in ('approve', 'refuse') "
+        "  and valid_to = ores_utility_infinity_timestamp_fn() "
+        "order by decided_at",
+        {request_id},
+        lg(),
+        "Reading the answers given for the parts of a request");
+
+    const auto text = [](const std::vector<std::optional<std::string>>& row, std::size_t i) {
+        return i < row.size() && row[i] ? *row[i] : std::string{};
+    };
+
+    std::vector<part_progress> progress;
+    progress.reserve(all.size());
+    for (const auto& p : all) {
+        part_progress entry{.code = p.code,
+                            .name = p.name,
+                            .answer_order = p.answer_order,
+                            .state = "later"};
+        if (std::ranges::any_of(open, [&](const auto& o) { return o.code == p.code; }))
+            entry.state = "waiting";
+        // A part with an approval is never open, so an answer below replaces
+        // waiting and never contradicts it.
+        for (const auto& row : rows) {
+            if (text(row, 0) != p.code)
+                continue;
+            entry.state = text(row, 1) == "approve" ? "approved" : "refused";
+            entry.decided_by = text(row, 2);
+            entry.decided_at = text(row, 3);
+            entry.comment = text(row, 4);
+        }
+        progress.push_back(std::move(entry));
+    }
+    return progress;
+}
+
 std::optional<domain::approval_part> approval_lifecycle::part(const std::string& code) {
     // Parts are system tenant lookups, so they are read under the system tenant.
     repository::approval_part_repository repo;
@@ -432,8 +479,7 @@ std::vector<stalled_apply>
 approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of) {
     // Seconds as a double hold a moment to well under a millisecond, which is
     // far finer than a window counted in hours.
-    const auto epoch_seconds =
-        std::chrono::duration<double>(as_of.time_since_epoch()).count();
+    const auto epoch_seconds = std::chrono::duration<double>(as_of.time_since_epoch()).count();
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text,"

@@ -107,6 +107,7 @@ domain::approval_policy to_domain(const messaging::approval_policy_write& write)
     return v;
 }
 
+
 }
 
 messaging::list_approval_policies_response approval_policy_service::list_approval_policies(

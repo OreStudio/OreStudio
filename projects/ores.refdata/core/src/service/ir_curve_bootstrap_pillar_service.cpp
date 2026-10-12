@@ -112,6 +112,7 @@ to_domain(const messaging::ir_curve_bootstrap_pillar_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_ir_curve_bootstrap_pillars_response

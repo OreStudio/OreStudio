@@ -104,6 +104,14 @@ export interface BookDraft {
     readonly commentary: string;
     readonly refusal: BookRefusal | undefined;
     readonly written: Book | undefined;
+    /** The request raised for the change, when the policy gated it. */
+    readonly raised: RaisedRequest | undefined;
+}
+
+/** A request raised instead of a write: where it is, and who has to answer it. */
+export interface RaisedRequest {
+    readonly requestId: string;
+    readonly partCodes: readonly string[];
 }
 
 export function blankFields(): BookFields {
@@ -135,6 +143,7 @@ export function blankDraft(): BookDraft {
         commentary: '',
         refusal: undefined,
         written: undefined,
+        raised: undefined,
     };
 }
 
@@ -174,6 +183,7 @@ export type BookAction =
     | { readonly kind: 'set-reason'; readonly reasonCode: string }
     | { readonly kind: 'set-commentary'; readonly commentary: string }
     | { readonly kind: 'record-written'; readonly book: Book | undefined }
+    | { readonly kind: 'record-raised'; readonly raised: RaisedRequest }
     | { readonly kind: 'record-refusal'; readonly refusal: BookRefusal }
     | { readonly kind: 'clear-refusal' };
 
@@ -221,6 +231,7 @@ export function reduceBook(draft: BookDraft, action: BookAction): BookDraft {
                 bookId: crypto.randomUUID(),
                 fields: blankFields(),
                 written: undefined,
+                raised: undefined,
                 refusal: undefined,
             };
         case 'open-book':
@@ -233,6 +244,7 @@ export function reduceBook(draft: BookDraft, action: BookAction): BookDraft {
                 newPortfolio: undefined,
                 fields: fieldsOf(action.book),
                 written: undefined,
+                raised: undefined,
                 refusal: undefined,
             };
         case 'set-field':
@@ -245,13 +257,16 @@ export function reduceBook(draft: BookDraft, action: BookAction): BookDraft {
                 ...draft,
                 fields: { ...fieldsOf(action.book), name: draft.fields.name },
                 written: undefined,
+                raised: undefined,
             };
         case 'set-reason':
             return { ...draft, reasonCode: action.reasonCode };
         case 'set-commentary':
             return { ...draft, commentary: action.commentary };
         case 'record-written':
-            return { ...draft, written: action.book, refusal: undefined };
+            return { ...draft, written: action.book, raised: undefined, refusal: undefined };
+        case 'record-raised':
+            return { ...draft, raised: action.raised, written: undefined, refusal: undefined };
         case 'record-refusal':
             return { ...draft, refusal: action.refusal };
         case 'clear-refusal':
@@ -503,6 +518,7 @@ export interface BookStructure extends BookDraft {
     readonly setReason: (reasonCode: string) => void;
     readonly setCommentary: (commentary: string) => void;
     readonly recordWritten: (book: Book | undefined) => void;
+    readonly recordRaised: (raised: RaisedRequest) => void;
     readonly recordRefusal: (refusal: BookRefusal) => void;
     readonly clearRefusal: () => void;
 }
@@ -528,6 +544,7 @@ export function useBookStructure(): BookStructure {
         setReason: (reasonCode) => dispatch({ kind: 'set-reason', reasonCode }),
         setCommentary: (commentary) => dispatch({ kind: 'set-commentary', commentary }),
         recordWritten: (book) => dispatch({ kind: 'record-written', book }),
+        recordRaised: (raised) => dispatch({ kind: 'record-raised', raised }),
         recordRefusal: (refusal) => dispatch({ kind: 'record-refusal', refusal }),
         clearRefusal: () => dispatch({ kind: 'clear-refusal' }),
     };

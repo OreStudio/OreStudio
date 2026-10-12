@@ -114,6 +114,7 @@ to_domain(const messaging::instrument_option_exercise_fee_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_instrument_option_exercise_fees_response

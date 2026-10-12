@@ -23,9 +23,12 @@ components are separate =gmm_component= rows.
 
 - The pair, as =base_currency_code= and =quote_currency_code=. Both are soft
   foreign keys to currencies.
-- The datum, as =ore_key=, spelled the ORE way, for example
-  ="FX/RATE/EUR/USD"=. The key is derived from the pair rather than typed,
-  and the feed turns it into an oresmd URI at construction. See
+- The datum, as =oresmd_uri=, the quote URI of the spot rate, for example
+  ="oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD"=. It is
+  derived from the pair rather than typed. The feed reads it with the strict
+  codec at construction, and refuses a URI that is not an =fx_spot= quote or
+  whose pair differs from the two currencies. See
+  [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] and
   [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]].
 - The provenance, as =source_name=, for example ="synthetic.eurusd"=. It is
   derived from the pair, it is unique per tenant and party, and it is what
@@ -81,7 +84,7 @@ The two flags are orthogonal and they answer different questions.
   config.
 
 Starting a feed is refused outright when another feed is already running for
-the same =ore_key=. Nothing auto-disables the running one, so a switch is a
+the same series. Nothing auto-disables the running one, so a switch is a
 Stop followed by a Start.
 
 ** The fact the code shape does not show
@@ -92,7 +95,7 @@ made by hand has no position in the Market Simulator tree even though
 
 The pair is not the process identity. Two configs for the same pair differ by
 =source_name= and by their component rows, and the collision rule binds them
-by the =ore_key= alone, so they cannot run at the same time whatever else
+by the series URI alone, so they cannot run at the same time whatever else
 differs.
 
 * See also

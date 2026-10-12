@@ -101,6 +101,7 @@ domain::average_type to_domain(const messaging::average_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_average_types_response

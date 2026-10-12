@@ -104,6 +104,7 @@ domain::notification_channel to_domain(const messaging::notification_channel_wri
     return v;
 }
 
+
 }
 
 messaging::list_notification_channels_response

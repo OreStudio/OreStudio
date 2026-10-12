@@ -101,6 +101,7 @@ domain::data_domain to_domain(const messaging::data_domain_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_data_domains_response

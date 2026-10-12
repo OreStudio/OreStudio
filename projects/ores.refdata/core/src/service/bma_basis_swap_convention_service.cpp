@@ -114,6 +114,7 @@ to_domain(const messaging::bma_basis_swap_convention_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bma_basis_swap_conventions_response

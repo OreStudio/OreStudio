@@ -40,7 +40,7 @@ namespace ores::telemetry::database::repository {
 /**
  * @brief How recent a heartbeat must be for its instance to count as running.
  */
-inline constexpr std::chrono::minutes service_running_window{5};
+inline constexpr std::chrono::minutes service_running_window{2};
 
 /**
  * @brief Repository for telemetry log persistence and querying.

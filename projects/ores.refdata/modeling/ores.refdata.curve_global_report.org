@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 604A169C-1B12-4E06-9302-4819EFC12EE6
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_global_report
 #+description: Codegen entity model for the refdata =curve_global_report= table. The report settings of one curve family in an ORE curve configuration's ReportConfiguration.

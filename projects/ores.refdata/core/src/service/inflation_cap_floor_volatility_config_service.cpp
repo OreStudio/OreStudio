@@ -128,6 +128,7 @@ to_domain(const messaging::inflation_cap_floor_volatility_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_inflation_cap_floor_volatility_configs_response

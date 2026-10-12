@@ -110,6 +110,7 @@ domain::bond_option to_domain(const messaging::bond_option_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_bond_options_response

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-12T10:59:04.698805Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -689,7 +689,10 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
-        * report_definition_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+        * configuration_id : uuid <<FK>>
         * base_currency : text
         * observation_model : text
         * n_threads : integer
@@ -705,6 +708,12 @@ package "reporting" #E0F7FA {
         * parametric_var_enabled : integer
         * initial_margin_enabled : integer
         * pfe_enabled : integer
+        * portfolio_details_enabled : integer
+        * saccr_enabled : integer
+        * calibration_enabled : integer
+        * credit_curves_enabled : integer
+        * historical_var_enabled : integer
+        * pnl_explain_enabled : integer
           xva_quantile : numeric(5,4)
         * xva_cva_enabled : integer
         * xva_dva_enabled : integer
@@ -731,14 +740,7 @@ package "reporting" #E0F7FA {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Risk Report Config Table
-    The ORE-level parameters for a risk report definition: base currency,
-    observation model, analytics flags, XVA/VaR/SIMM settings and threading.
-    Each row is owned by exactly one report_definition (1:1, enforced by the
-    unique index on report_definition_id). Portfolio and book scope live in
-    separate temporal junction tables; an empty set in either junction means
-    "all visible to the tenant".
-    Analytics flags use integer 0/1, not boolean, to match the project
-    convention. npv and cashflow default to enabled; all others default off.
+    The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row.
     end note
 
 }
@@ -760,7 +762,7 @@ ores_reporting_configurations_tbl ||--o{ ores_reporting_report_configurations_tb
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_definitions_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
-ores_reporting_report_definitions_tbl ||--o{ ores_reporting_risk_report_configs_tbl : "has"
+ores_reporting_configurations_tbl ||--o{ ores_reporting_risk_report_configs_tbl : "has"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.reporting.puml"

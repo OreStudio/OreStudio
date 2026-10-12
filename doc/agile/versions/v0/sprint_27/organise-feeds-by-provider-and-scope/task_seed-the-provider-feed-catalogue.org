@@ -59,6 +59,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- The first provider dataset, =synthetic.feeds.bloomberg=, landed with
+  [[id:67676632-0008-417E-86E4-8E2490B78337][Model providers and feed scope]]. It is a party
+  collection published by the one synthetic feeds path, not a system-tenant
+  collection, and its feeds sit under one collection folder by asset class,
+  not yet the provider, kind and folder layout this task asks for.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

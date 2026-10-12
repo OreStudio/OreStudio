@@ -1,0 +1,233 @@
+[
+  {
+    "company_code": "acme_group",
+    "id": "d72df645-377b-5822-95e8-016161fb990f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1a57ead2-29c3-5220-8423-72aff0672f9b",
+    "pricing_engine_type_code": "Swap",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingSwapEngine",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "id": "20fd45ca-114f-5b7f-a888-a67b2b68de54",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1a57ead2-29c3-5220-8423-72aff0672f9b",
+    "pricing_engine_type_code": "FxForward",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingFxForwardEngine",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "d325f531-784e-54ce-9827-4cab70632931",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1a57ead2-29c3-5220-8423-72aff0672f9b",
+    "pricing_engine_type_code": "Bond",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingRiskyBondEngine",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "e5765f45-af09-5901-9539-3d7fd27307c0",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "Swap",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingSwapEngine",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "89472fdb-6de0-5087-85ff-f419e77926b2",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "CrossCurrencySwap",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingCrossCurrencySwapEngine",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "922ccc3c-f023-565e-8419-95695e915f61",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "FxForward",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingFxForwardEngine",
+    "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "9a5a558b-2b12-5a32-a7f6-8e183b038037",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "CreditDefaultSwap",
+    "model": "DiscountedCashflows",
+    "engine": "MidPointCdsEngine",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "d6476b86-e080-5f65-bc2c-79968557555e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "Bond",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingRiskyBondEngine",
+    "position": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "4938e350-cc9f-5000-92c6-047fda1aa2bb",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "FxOption",
+    "model": "GarmanKohlhagen",
+    "engine": "AnalyticEuropeanEngine",
+    "position": 5
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "0944aa78-c5e3-5a7e-a269-7933eca119f6",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "CapFloor",
+    "model": "IborCapModel",
+    "engine": "IborCapEngine",
+    "position": 6
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "a7db7684-f5ab-5cb3-a878-40cab31ff434",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "pricing_engine_type_code": "EuropeanSwaption",
+    "model": "BlackBachelier",
+    "engine": "BlackBachelierSwaptionEngine",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "id": "fdb9e492-68c8-583f-b473-23f230340a50",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "pricing_engine_type_code": "Swap",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingSwapEngine",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9711a179-e40c-5f44-998b-944f2929be82",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "pricing_engine_type_code": "CrossCurrencySwap",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingCrossCurrencySwapEngine",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9d51adab-ce65-5f00-87e2-c261f76b908b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "pricing_engine_type_code": "FxForward",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingFxForwardEngine",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "54b5534b-5e45-5498-b793-7868e81f45b1",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "pricing_engine_type_code": "CreditDefaultSwap",
+    "model": "DiscountedCashflows",
+    "engine": "MidPointCdsEngine",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "id": "bd19422d-094c-57c7-8542-a52da54f2ee1",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "pricing_engine_type_code": "Bond",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingRiskyBondEngine",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "219487f7-41a5-5659-8f73-1bb015cfd83c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "pricing_engine_type_code": "Swap",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingSwapEngine",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "0eeec0de-48d4-5f1c-8e65-15f034cda352",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "pricing_engine_type_code": "CrossCurrencySwap",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingCrossCurrencySwapEngine",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "0b9a17b7-2cf3-59d0-8fb6-8ad91adb5f69",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "pricing_engine_type_code": "FxForward",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingFxForwardEngine",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "87edabcf-46f6-5ffc-bdc6-623821984d49",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "pricing_engine_type_code": "CreditDefaultSwap",
+    "model": "DiscountedCashflows",
+    "engine": "MidPointCdsEngine",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f6fb7544-44bc-51f0-bda9-956d621a02ad",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "pricing_engine_type_code": "Bond",
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingRiskyBondEngine",
+    "position": 4
+  }
+]

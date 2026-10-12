@@ -106,6 +106,7 @@ domain::app to_domain(const messaging::app_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_apps_response app_service::list_apps(const messaging::list_apps_request& request) {

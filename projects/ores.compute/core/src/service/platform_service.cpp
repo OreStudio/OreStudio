@@ -111,6 +111,7 @@ domain::platform to_domain(const messaging::platform_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_platforms_response

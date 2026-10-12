@@ -47,8 +47,13 @@ domain::risk_report_config risk_report_config_mapper::map(const risk_report_conf
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
+
+    r.name = v.name;
+
+    r.description = v.description.value_or("");
+    r.configuration_id = boost::lexical_cast<boost::uuids::uuid>(v.configuration_id);
     r.base_currency = v.base_currency;
     r.observation_model = v.observation_model;
     r.n_threads = v.n_threads;
@@ -64,6 +69,12 @@ domain::risk_report_config risk_report_config_mapper::map(const risk_report_conf
     r.parametric_var_enabled = v.parametric_var_enabled;
     r.initial_margin_enabled = v.initial_margin_enabled;
     r.pfe_enabled = v.pfe_enabled;
+    r.portfolio_details_enabled = v.portfolio_details_enabled;
+    r.saccr_enabled = v.saccr_enabled;
+    r.calibration_enabled = v.calibration_enabled;
+    r.credit_curves_enabled = v.credit_curves_enabled;
+    r.historical_var_enabled = v.historical_var_enabled;
+    r.pnl_explain_enabled = v.pnl_explain_enabled;
     r.xva_quantile = v.xva_quantile.value_or(0);
     r.xva_cva_enabled = v.xva_cva_enabled;
     r.xva_dva_enabled = v.xva_dva_enabled;
@@ -93,8 +104,13 @@ risk_report_config_entity risk_report_config_mapper::map(const domain::risk_repo
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
+    r.party_id = boost::uuids::to_string(v.party_id);
 
+
+    r.name = v.name;
+
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.configuration_id = boost::uuids::to_string(v.configuration_id);
     r.base_currency = v.base_currency;
     r.observation_model = v.observation_model;
     r.n_threads = v.n_threads;
@@ -111,6 +127,12 @@ risk_report_config_entity risk_report_config_mapper::map(const domain::risk_repo
     r.parametric_var_enabled = v.parametric_var_enabled;
     r.initial_margin_enabled = v.initial_margin_enabled;
     r.pfe_enabled = v.pfe_enabled;
+    r.portfolio_details_enabled = v.portfolio_details_enabled;
+    r.saccr_enabled = v.saccr_enabled;
+    r.calibration_enabled = v.calibration_enabled;
+    r.credit_curves_enabled = v.credit_curves_enabled;
+    r.historical_var_enabled = v.historical_var_enabled;
+    r.pnl_explain_enabled = v.pnl_explain_enabled;
     r.xva_quantile = v.xva_quantile == 0 ? std::nullopt : std::optional(v.xva_quantile);
     r.xva_cva_enabled = v.xva_cva_enabled;
     r.xva_dva_enabled = v.xva_dva_enabled;

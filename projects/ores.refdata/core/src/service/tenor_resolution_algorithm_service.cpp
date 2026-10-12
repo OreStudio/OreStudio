@@ -105,6 +105,7 @@ to_domain(const messaging::tenor_resolution_algorithm_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenor_resolution_algorithms_response

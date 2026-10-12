@@ -132,6 +132,17 @@ struct ir_curve_bootstrap_config final {
     std::string currency_code;
 
     /**
+     * @brief The tenor of the floating-rate index this curve stands for, as a period such as 1D for
+     * an overnight index or 6M for a term index. It is the second segment a pillar cannot supply: a
+     * pillar carries tenor codes and a role, and a series of the curve is named by the currency,
+     * the pillar's start and the index tenor (the tenor identity field of the ir_swap series in
+     * [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]). A reader
+     * resolving a pillar to its series is told the tenor here, so a EURIBOR 3M curve and a EURIBOR
+     * 6M curve of one currency read two series and not one.
+     */
+    std::string index_tenor;
+
+    /**
      * @brief Whether this config bootstraps the discounting anchor curve of its family (FUNDING) or
      * a dependent curve discounted off one (PROJECTION) -- see
      * [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]. Fixed 2-value

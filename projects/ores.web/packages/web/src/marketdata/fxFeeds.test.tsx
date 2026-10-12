@@ -27,7 +27,7 @@ import type { AccountAccess } from '@ores/wire-protocol/browser';
 import type { RecordRow, SyntheticResourceView } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
-import { completeFeed, feedWrite, FxFeedPage, FxFeedsPage } from './fxFeeds.js';
+import { completeFeed, feedWrite, FxFeedPage, FxFeedsPage, syntheticSource } from './fxFeeds.js';
 import { MarketDataPage } from './MarketDataPage.js';
 
 const FEED_ID = '55555555-5555-4555-8555-555555555555';
@@ -76,7 +76,7 @@ const feed: RecordRow = {
     base_currency_code: 'EUR',
     quote_currency_code: 'USD',
     source_name: 'synthetic.eurusd',
-    ore_key: 'FX/RATE/EUR/USD',
+    oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
     price_source: 'fixed',
     gmm_initial_price: 1.08,
     ticks_per_hour: 3600,
@@ -133,7 +133,7 @@ describe('the fields a feed derives', () => {
                 vintage_date: null,
             }),
         ).toMatchObject({
-            ore_key: 'FX/RATE/GBP/JPY',
+            oresmd_uri: 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=JPY',
             source_name: 'synthetic.gbpjpy',
             gmm_initial_price: 190,
             vintage_source: '',
@@ -146,18 +146,28 @@ describe('the fields a feed derives', () => {
             completeFeed({
                 base_currency_code: 'EUR',
                 quote_currency_code: 'USD',
-                source_name: 'synthetic.themes.eurusd',
+                source_name: 'synthetic.feeds.eurusd',
                 price_source: 'vintage',
                 gmm_initial_price: null,
                 vintage_source: 'ore.reference',
                 vintage_date: '2016-02-05',
             }),
         ).toMatchObject({
-            source_name: 'synthetic.themes.eurusd',
+            source_name: 'synthetic.feeds.eurusd',
             gmm_initial_price: 0,
             vintage_source: 'ore.reference',
             vintage_date: '2016-02-05',
         });
+    });
+});
+
+describe('the synthetic mark', () => {
+    it('puts every source name under the synthetic mark, once', () => {
+        expect(syntheticSource('', 'EUR', 'USD')).toBe('synthetic.eurusd');
+        expect(syntheticSource('desk.eurusd', 'EUR', 'USD')).toBe('synthetic.desk.eurusd');
+        expect(syntheticSource('synthetic.desk.eurusd', 'EUR', 'USD')).toBe(
+            'synthetic.desk.eurusd',
+        );
     });
 });
 
@@ -200,7 +210,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain('EUR/USD');
         expect(html).toContain('synthetic.eurusd');
         expect(html).toContain('Geometric');
-        expect(html).toContain('Add feed');
+        expect(html).toContain('>Add<');
         expect(html).toContain('Search…');
     });
 
@@ -210,7 +220,10 @@ describe('the FX feed screens', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('synthetic.eurusd');
-        expect(html).toContain('FX/RATE/EUR/USD');
+        expect(html).toContain(
+            'oresmd://fx/EUR?type=quote&amp;instrument=fx_spot&amp;quote=rate&amp;ccy=USD',
+        );
+        expect(html).toContain('>Open in the editor<');
         expect(html).toContain('A fixed price');
         expect(html).toContain('>Price behaviour<');
         expect(html).toContain('Edit');
@@ -250,13 +263,52 @@ describe('the FX feed screens', () => {
         expect(html).toContain('>11.1%<');
         expect(html).toContain('No unsaved changes.');
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*>.*?Save</);
-        expect(html.lastIndexOf('so the price stays positive')).toBeGreaterThan(
+        expect(html.indexOf('so the price stays positive')).toBeLessThan(
             html.indexOf('Sample paths'),
         );
         expect(html).toContain('Return distribution');
         expect(html).toContain('<svg');
         expect(html).toContain('>Add</button>');
         expect(html).not.toContain('Save mixture');
+    });
+
+    it('asks the plain questions in Simple mode, once the server has read the mixture', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(
+                [
+                    'fx-reading',
+                    {
+                        process_type: 'geometric',
+                        to_simple: true,
+                        initial_price: 1.08,
+                        ticks_per_hour: 3600,
+                        gmm_means: [0],
+                        gmm_stdevs: [0.01],
+                        gmm_weights: [1],
+                    },
+                ],
+                {
+                    has_simple_form: true,
+                    message: '',
+                    trend_pct_per_hour: 0,
+                    volatility_pct_per_hour: 0.1,
+                    jump_share_pct: 0,
+                    half_life_minutes: 0,
+                    gmm_means: [],
+                    gmm_stdevs: [],
+                    gmm_weights: [],
+                },
+            );
+        });
+        expect(html).toContain('Which way does the price drift?');
+        expect(html).toContain('How far does the price move in an hour?');
+        expect(html).toContain('>Simple<');
+        expect(html).toContain('>Advanced<');
+        expect(html).not.toContain('>Share</th>');
+        expect(html).not.toContain('>Add</button>');
     });
 
     it('says what a feed with no mixture lacks', () => {
@@ -281,8 +333,8 @@ describe('the FX feed screens', () => {
         expect(html).toContain('>Running<');
         expect(html).toContain('>Stopped<');
         expect(html).toContain('Choose synthetic.gbpusd');
-        expect(html).toContain('Start chosen (0)');
-        expect(html).toContain('Stop chosen (0)');
+        expect(html).toContain('>Start<');
+        expect(html).toContain('>Stop<');
     });
 
     it('offers a reader the status but no start or stop', () => {
@@ -298,7 +350,7 @@ describe('the FX feed screens', () => {
             );
         });
         expect(html).toContain('>Stopped<');
-        expect(html).not.toContain('Start chosen');
+        expect(html).not.toContain('>Start<');
         expect(html).not.toContain('aria-label="Choose ');
     });
 
@@ -472,6 +524,6 @@ describe('the FX feed screens', () => {
         expect(html).toContain('gmm_component');
         expect(html).toContain('common.correction');
         expect(html.match(/>Revert</g)?.length).toBe(1);
-        expect(html).toContain('A component deleted from the mixture is not in this stream');
+        expect(html).toContain('A row deleted from the feed is not in this stream');
     });
 });

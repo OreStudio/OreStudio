@@ -103,6 +103,7 @@ domain::curve_role to_domain(const messaging::curve_role_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_curve_roles_response

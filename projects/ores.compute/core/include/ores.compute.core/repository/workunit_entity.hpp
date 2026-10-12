@@ -45,6 +45,7 @@ struct workunit_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::optional<std::string> party_id;
     std::string batch_id;
     std::string app_version_id;
     std::string input_uri;

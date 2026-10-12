@@ -34,6 +34,7 @@ export interface Workunit {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string | null;
     batch_id: string;
     app_version_id: string;
     input_uri: string;

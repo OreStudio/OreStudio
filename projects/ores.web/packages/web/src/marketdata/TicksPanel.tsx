@@ -36,7 +36,7 @@ export const TICK_COUNTS = [50, 200, 500] as const;
 /** How often a running feed's ticks are read again. */
 const TICKS_EVERY_MS = 2_000;
 
-function clock(ms: number): string {
+export function clock(ms: number): string {
     return new Date(ms).toISOString().slice(11, 19);
 }
 
@@ -55,7 +55,7 @@ function download(sourceName: string, ticks: readonly Tick[]): void {
 }
 
 /** One labelled figure of the stats strip. */
-function Stat({
+export function Stat({
     label,
     children,
     tone,

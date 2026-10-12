@@ -112,6 +112,7 @@ domain::netting_set to_domain(const messaging::netting_set_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_netting_sets_response

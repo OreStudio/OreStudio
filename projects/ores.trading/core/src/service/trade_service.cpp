@@ -111,6 +111,7 @@ domain::trade to_domain(const messaging::trade_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_trades_response
@@ -125,6 +126,23 @@ trade_service::list_trades(const messaging::list_trades_request& request) {
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->counterparty_id_one_of &&
+        request.filter->counterparty_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "counterparty_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->trade_type_one_of &&
+        request.filter->trade_type_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_type_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

@@ -104,6 +104,7 @@ domain::series_subclass_code to_domain(const messaging::series_subclass_code_wri
     return v;
 }
 
+
 }
 
 messaging::list_series_subclass_codes_response

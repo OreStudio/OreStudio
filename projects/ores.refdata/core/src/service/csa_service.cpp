@@ -125,6 +125,7 @@ domain::csa to_domain(const messaging::csa_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_csas_response csa_service::list_csas(const messaging::list_csas_request& request) {

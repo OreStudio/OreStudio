@@ -1,0 +1,42 @@
+[
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f922f760-0d6b-5bf1-8f70-deac22c4f381",
+    "name": "Group today's market",
+    "description": "How ACME Corporation Group marks its trades: each currency on its own overnight curve.",
+    "config_variant": "",
+    "configuration_id": "196401fd-c378-5be9-89a3-9d04a88144e2"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9a9cf3ba-ad78-59ae-9e4f-ccc0e8b1e32b",
+    "name": "UK today's market",
+    "description": "How ACME Corporation UK marks its trades: each currency on its own overnight curve.",
+    "config_variant": "",
+    "configuration_id": "18aebca9-0d32-5884-84af-35893aa54553"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "135d59a9-075e-50d1-81f6-83f6b866c18a",
+    "name": "US today's market",
+    "description": "How ACME Corporation US marks its trades: each currency on its own overnight curve.",
+    "config_variant": "",
+    "configuration_id": "25059599-6a35-51b6-aaf2-afb3d3c132a0"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "512eaa01-5828-5e84-8728-aa1b106e4b0f",
+    "name": "HK today's market",
+    "description": "How ACME Corporation HK marks its trades: each currency on its own overnight curve.",
+    "config_variant": "",
+    "configuration_id": "445e22fe-885f-5915-b762-598f37df06f0"
+  }
+]

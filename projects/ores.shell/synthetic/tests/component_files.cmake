@@ -28,6 +28,7 @@ set(files
     "ir_curve_template_entry_commands_tests.cpp"
     "main.cpp"
     "market_data_generation_config_commands_tests.cpp"
+    "market_data_provider_commands_tests.cpp"
     "yield_curve_process_parameter_definition_commands_tests.cpp"
     "yield_curve_process_type_commands_tests.cpp"
 )

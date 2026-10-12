@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A4E3078C-C80C-49CE-A220-57459C065B23
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.equity_volatility_config
 #+description: Codegen entity model for the refdata =equity_volatility_config= table. The settings of one ORE equity volatility.

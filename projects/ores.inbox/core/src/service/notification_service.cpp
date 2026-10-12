@@ -110,6 +110,7 @@ domain::notification to_domain(const messaging::notification_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_notifications_response

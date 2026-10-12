@@ -103,6 +103,7 @@ domain::ledger_feed_type to_domain(const messaging::ledger_feed_type_write& writ
     return v;
 }
 
+
 }
 
 messaging::list_ledger_feed_types_response ledger_feed_type_service::list_ledger_feed_types(

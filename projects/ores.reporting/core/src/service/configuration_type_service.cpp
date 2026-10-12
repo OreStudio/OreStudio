@@ -105,6 +105,7 @@ domain::configuration_type to_domain(const messaging::configuration_type_write& 
     return v;
 }
 
+
 }
 
 messaging::list_configuration_types_response configuration_type_service::list_configuration_types(

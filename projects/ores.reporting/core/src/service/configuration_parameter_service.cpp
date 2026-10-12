@@ -109,6 +109,7 @@ domain::configuration_parameter to_domain(const messaging::configuration_paramet
     return v;
 }
 
+
 }
 
 messaging::list_configuration_parameters_response

@@ -108,6 +108,7 @@ domain::bond_yield_convention to_domain(const messaging::bond_yield_convention_w
     return v;
 }
 
+
 }
 
 messaging::list_bond_yield_conventions_response

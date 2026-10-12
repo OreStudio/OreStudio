@@ -28,6 +28,7 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::compute::presentation {
@@ -38,6 +39,8 @@ std::vector<ores::diff::domain::field_value> render_batch_fields(const domain::b
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "External Ref", .value = v.external_ref});
+    fields.push_back({.name = "Party ID",
+                      .value = v.party_id ? boost::uuids::to_string(*v.party_id) : std::string{}});
     fields.push_back({.name = "Status", .value = v.status});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

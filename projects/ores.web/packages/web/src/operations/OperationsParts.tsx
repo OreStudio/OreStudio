@@ -43,7 +43,7 @@ import { LinkButton, Tag } from '../ui/Primitives.js';
  * The roster reply does not carry the window, so the web cannot derive it and
  * restates it here. The reply should carry it, and then this copy can go.
  */
-export const SERVICE_RUNNING_WINDOW_MINUTES = 5;
+export const SERVICE_RUNNING_WINDOW_MINUTES = 2;
 
 /** The way back to the operations area, for a screen's header actions. */
 export function OperationsBack(): ReactNode {

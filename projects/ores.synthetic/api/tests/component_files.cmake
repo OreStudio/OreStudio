@@ -25,6 +25,8 @@ set(files
     "domain_synthetic_catalog_tests.cpp"
     "feed_factory_tests.cpp"
     "fx_mixture_conversion_tests.cpp"
+    "fx_simple_conversion_tests.cpp"
+    "ir_parameter_conversion_tests.cpp"
     "main.cpp"
     "tick_clock_tests.cpp"
 )

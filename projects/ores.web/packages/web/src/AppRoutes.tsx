@@ -33,6 +33,7 @@ import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { ErrorBanner } from './components/ErrorBanner.js';
+import { ToastViewport } from './ui/Toasts.js';
 import { setupAnswerStep } from './session/setupAnswer.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
@@ -57,6 +58,7 @@ import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
 import { BusPage } from './operations/BusPage.js';
 import { EvolutionPage } from './market/EvolutionPage.js';
+import { GridNodePage } from './operations/GridNodePage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
@@ -76,7 +78,7 @@ import { StaffOfMyParties } from './membership/StaffOfMyParties.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
-import { RequestDetailPage } from './inbox/RequestDetailPage.js';
+import { RequestPage } from './inbox/RequestPage.js';
 import { RequestStoryPage } from './inbox/RequestStoryPage.js';
 import { RequestsPage } from './inbox/RequestsPage.js';
 import { ClassificationListPage } from './refdata/ClassificationListPage.js';
@@ -89,6 +91,7 @@ import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js'
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage, FxFeedsPage } from './marketdata/fxFeeds.js';
+import { IrFeedPage, IrFeedsPage } from './marketdata/irFeeds.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -535,6 +538,18 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path="/operations/grid/nodes/:hostId"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridNodePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path="/operations/bus"
                 element={signedIn(
                     gate.version,
@@ -756,6 +771,30 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path="/market-data/ir-feeds"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <IrFeedsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/ir-feeds/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <IrFeedPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path="/refdata/classifications"
                 element={signedIn(
                     gate.version,
@@ -944,7 +983,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <RequestDetailPage me={view.username} />
+                        <RequestPage me={view.username} />
                     ),
                     'workspace',
                 )}
@@ -1083,6 +1122,7 @@ export function ConnectedApp(): ReactNode {
              * said on the page beside the screen that stands in for it.
              */}
             <ErrorBanner />
+            <ToastViewport />
             <ErrorBoundary title={t('journey.failedHeading')} hint={t('journey.reloadHint')}>
                 <AppRoutes
                     gate={gate}

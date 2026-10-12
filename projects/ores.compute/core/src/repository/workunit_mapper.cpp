@@ -47,6 +47,9 @@ domain::workunit workunit_mapper::map(const workunit_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = v.party_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
+                     std::nullopt;
     r.batch_id = boost::lexical_cast<boost::uuids::uuid>(v.batch_id);
     r.app_version_id = boost::lexical_cast<boost::uuids::uuid>(v.app_version_id);
     r.input_uri = v.input_uri;
@@ -73,6 +76,8 @@ workunit_entity workunit_mapper::map(const domain::workunit& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id =
+        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
     r.batch_id = boost::uuids::to_string(v.batch_id);
     r.app_version_id = boost::uuids::to_string(v.app_version_id);
     r.input_uri = v.input_uri;

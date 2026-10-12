@@ -37,6 +37,7 @@ set(files
     "repository_pricing_model_product_parameter_repository_tests.cpp"
     "repository_pricing_model_product_repository_tests.cpp"
     "repository_shift_vocabulary_seed_tests.cpp"
+    "service_publish_subject_plan_tests.cpp"
     "shift_type_eventing_integration_tests.cpp"
     "stress_shift_family_eventing_integration_tests.cpp"
     "stress_test_library_eventing_integration_tests.cpp"

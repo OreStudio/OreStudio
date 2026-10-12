@@ -89,8 +89,8 @@ inline constexpr const char* could_not_apply = "could not apply";
  * kind's window has ended and no run is still working on it, or starts its run
  * again and asks the engine to resume it. A run that is still working past the
  * window is left alone: ending its request would tell the person it failed
- * while the run may yet apply it. Both engine calls are safe to repeat: a start that names a run the engine
- * holds changes nothing, and a resume of a run that has not stopped is refused.
+ * while the run may yet apply it. Both engine calls are safe to repeat: a start that names a run
+ * the engine holds changes nothing, and a resume of a run that has not stopped is refused.
  *
  * A run that stopped on a refusal is never retried, because the refusal moves
  * its request to apply_failed and the request is no longer approved.
@@ -115,8 +115,8 @@ public:
      * One request failing does not stop the others: the failure is logged and
      * the next pass tries it again.
      */
-    apply_retry_outcome run(std::chrono::system_clock::time_point as_of =
-                                std::chrono::system_clock::now());
+    apply_retry_outcome
+    run(std::chrono::system_clock::time_point as_of = std::chrono::system_clock::now());
 
 private:
     void give_up(approval_lifecycle& lifecycle,

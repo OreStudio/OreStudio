@@ -170,5 +170,10 @@ on delete to "ores_iam_tenants_tbl" do instead (
     set valid_to = clock_timestamp(),
         status = 'terminated'
     where id = OLD.id
+      -- A tenant reads the shared rows of the system tenant, so OLD can be one.
+      -- The rule runs with the owner's rights, which row-level security does
+      -- not bind, so the rule states the own-tenant limit that the delete
+      -- policy cannot enforce here.
+      and tenant_id = ores_iam_current_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

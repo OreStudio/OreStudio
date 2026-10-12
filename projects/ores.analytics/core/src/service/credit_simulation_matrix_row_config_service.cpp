@@ -118,6 +118,7 @@ to_domain(const messaging::credit_simulation_matrix_row_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_credit_simulation_matrix_row_configs_response

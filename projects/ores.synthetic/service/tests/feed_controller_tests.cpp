@@ -48,17 +48,18 @@ const std::string test_bearer("test-session-token");
 // the test.
 class stub_feed final : public IFeed {
 public:
-    stub_feed(std::string kind, std::string source, std::string qualifier, std::string role)
+    stub_feed(std::string kind, std::string source, std::string oresmd_uri, std::string role)
         : kind_(std::move(kind))
         , source_(std::move(source))
-        , qualifier_(std::move(qualifier))
+        , series_uris_(oresmd_uri.empty() ? std::vector<std::string>{} :
+                                            std::vector<std::string>{std::move(oresmd_uri)})
         , role_(std::move(role)) {}
 
     const std::string& source_name() const override {
         return source_;
     }
-    const std::string& qualifier() const override {
-        return qualifier_;
+    const std::vector<std::string>& series_uris() const override {
+        return series_uris_;
     }
     const std::string& role() const override {
         return role_;
@@ -69,9 +70,6 @@ public:
     std::string_view kind() const override {
         return kind_;
     }
-    std::string conflict_key() const override {
-        return ores::marketdata::domain::feed_conflict_key(qualifier_, role_);
-    }
     void start() override {}
     void stop() override {}
     std::uint64_t publish_count() const override {
@@ -81,7 +79,7 @@ public:
 private:
     std::string kind_;
     std::string source_;
-    std::string qualifier_;
+    std::vector<std::string> series_uris_;
     std::string role_;
     std::string subject_;
 };
@@ -121,9 +119,9 @@ struct controller_fixture {
 
     std::shared_ptr<IFeed> feed(const std::string& kind,
                                 const std::string& source,
-                                const std::string& qualifier,
+                                const std::string& oresmd_uri,
                                 const std::string& role = {}) {
-        return std::make_shared<stub_feed>(kind, source, qualifier, role);
+        return std::make_shared<stub_feed>(kind, source, oresmd_uri, role);
     }
 };
 
@@ -133,12 +131,12 @@ struct controller_fixture {
 struct producer_kinds {
     std::string fx_kind = "fx_spot";
     std::string fx_source = "EUR_USD_GBM_1";
-    std::string fx_qualifier = "EUR/USD";
+    std::string fx_oresmd_uri = "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
     std::string fx_role;
 
     std::string ir_kind = "ir_curve";
     std::string ir_source = "usd.sofr";
-    std::string ir_qualifier = "USD/SOFR";
+    std::string ir_oresmd_uri = "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D";
     std::string ir_role = "self_discounting";
 };
 
@@ -190,8 +188,8 @@ TEST_CASE("starting a bound feed creates its feed_binding, for FX and IR alike",
     controller_fixture f;
 
     const std::vector<std::shared_ptr<IFeed>> feeds{
-        f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
-        f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role)};
+        f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
+        f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
     REQUIRE(f.ctrl->start(feeds[0], binding_mode::bound, test_bearer) ==
             feed_controller::start_result::started);
     REQUIRE(f.ctrl->start(feeds[1], binding_mode::bound, test_bearer) ==
@@ -217,10 +215,10 @@ TEST_CASE("starting a sandboxed feed never creates a feed_binding, for FX and IR
     producer_kinds kinds;
     controller_fixture f;
 
-    REQUIRE(f.ctrl->start(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
+    REQUIRE(f.ctrl->start(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
                           binding_mode::sandboxed,
                           test_bearer) == feed_controller::start_result::started);
-    REQUIRE(f.ctrl->start(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role),
+    REQUIRE(f.ctrl->start(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role),
                           binding_mode::sandboxed,
                           test_bearer) == feed_controller::start_result::started);
 
@@ -234,8 +232,8 @@ TEST_CASE("starting a bound feed twice does not duplicate its feed_binding, for 
     controller_fixture f;
 
     const std::vector<std::shared_ptr<IFeed>> feeds{
-        f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
-        f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role)};
+        f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
+        f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
     for (const auto& feed : feeds) {
         REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
                 feed_controller::start_result::started);
@@ -253,7 +251,7 @@ TEST_CASE("an already-running sandboxed feed is not bound by a re-start, whateve
     producer_kinds kinds;
     controller_fixture f;
 
-    const auto feed = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role);
+    const auto feed = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role);
     REQUIRE(f.ctrl->start(feed, binding_mode::sandboxed, test_bearer) ==
             feed_controller::start_result::started);
     REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
@@ -266,10 +264,10 @@ TEST_CASE("add() binds a feed of every kind through the same gate start() uses",
     producer_kinds kinds;
     controller_fixture f;
 
-    CHECK(f.ctrl->add(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
+    CHECK(f.ctrl->add(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
                       binding_mode::bound,
                       test_bearer));
-    CHECK(f.ctrl->add(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role),
+    CHECK(f.ctrl->add(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role),
                       binding_mode::sandboxed,
                       test_bearer));
 
@@ -277,35 +275,46 @@ TEST_CASE("add() binds a feed of every kind through the same gate start() uses",
     CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
 }
 
-TEST_CASE("feeds_conflict: same qualifier and same role is a conflict — a second feed "
-          "would publish into the same observation series",
+TEST_CASE("feeds_conflict: feeds that share a series conflict — both would write points "
+          "into it",
           tags) {
-    CHECK(feeds_conflict("USD-SOFR", "self_discounting", "USD-SOFR", "self_discounting"));
+    const std::vector<std::string> sofr{"oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"};
+    CHECK(feeds_conflict(sofr, sofr));
 }
 
-TEST_CASE("feeds_conflict: same qualifier with a different role is not a conflict — a "
-          "discount feed and a projection feed for the same qualifier coexist",
-          tags) {
-    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "USD-SOFR", "projection"));
+TEST_CASE("feeds_conflict: one shared series among several is enough", tags) {
+    const std::vector<std::string> spot{"oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"};
+    const std::vector<std::string> spot_and_dated{
+        "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D",
+        "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=20260128&tenor=1D"};
+    CHECK(feeds_conflict(spot, spot_and_dated));
+    CHECK(feeds_conflict(spot_and_dated, spot));
 }
 
-TEST_CASE("feeds_conflict: different qualifiers never conflict, regardless of role", tags) {
-    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "EUR-EURIBOR", "self_discounting"));
-    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "EUR-EURIBOR", "projection"));
+TEST_CASE("feeds_conflict: feeds of different series never conflict, whatever their role", tags) {
+    const std::vector<std::string> usd{"oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"};
+    const std::vector<std::string> eur_6m{"oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M"};
+    const std::vector<std::string> eur_3m{"oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M"};
+    CHECK_FALSE(feeds_conflict(usd, eur_6m));
+    CHECK_FALSE(feeds_conflict(eur_6m, eur_3m));
 }
 
-TEST_CASE("feeds_conflict: an empty qualifier (an unparseable ORE key) has no published key "
-          "to protect and conflicts with nothing",
+TEST_CASE("feeds_conflict: a feed that names no series has nothing to protect and conflicts "
+          "with nothing",
           tags) {
-    CHECK_FALSE(feeds_conflict("", "self_discounting", "", "self_discounting"));
-    CHECK_FALSE(feeds_conflict("", "", "", ""));
-    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "", "self_discounting"));
-    CHECK_FALSE(feeds_conflict("", "self_discounting", "USD-SOFR", "self_discounting"));
+    const std::vector<std::string> none;
+    const std::vector<std::string> empty_name{""};
+    const std::vector<std::string> usd{"oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"};
+    CHECK_FALSE(feeds_conflict(none, none));
+    CHECK_FALSE(feeds_conflict(empty_name, empty_name));
+    CHECK_FALSE(feeds_conflict(usd, none));
+    CHECK_FALSE(feeds_conflict(none, usd));
 }
 
-TEST_CASE("feeds_conflict: FX feeds carry an empty role, making the comparison "
-          "qualifier-only — two FX feeds on the same pair conflict",
+TEST_CASE("feeds_conflict: two FX feeds on the same pair conflict, and on different pairs do not",
           tags) {
-    CHECK(feeds_conflict("FX/RATE/EUR/USD", "", "FX/RATE/EUR/USD", ""));
-    CHECK_FALSE(feeds_conflict("FX/RATE/EUR/USD", "", "FX/RATE/GBP/USD", ""));
+    const std::vector<std::string> eur{"oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD"};
+    const std::vector<std::string> gbp{"oresmd://fx/GBP?type=series&instrument=fx_spot&quote=rate&ccy=USD"};
+    CHECK(feeds_conflict(eur, eur));
+    CHECK_FALSE(feeds_conflict(eur, gbp));
 }

@@ -55,7 +55,9 @@ export interface IrCurveGenerationConfigProcessParameterValueLookup {
 }
 
 export interface IrCurveGenerationConfigProcessParameterValuesFilter {
+    config_id: string | null;
     id_one_of: string[] | null;
+    config_id_one_of: string[] | null;
 }
 
 export interface IrCurveGenerationConfigProcessParameterValueEvent {

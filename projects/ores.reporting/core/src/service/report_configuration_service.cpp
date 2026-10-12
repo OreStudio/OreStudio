@@ -108,6 +108,7 @@ domain::report_configuration to_domain(const messaging::report_configuration_wri
     return v;
 }
 
+
 }
 
 messaging::list_report_configurations_response

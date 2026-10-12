@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 22F9E0F3-6AAA-4C97-B648-0605F49ACD00
+:END:
+#+title: Story: Project the identities of the series a publish seeds
+#+description: A publish from the data quality area inserts market series in SQL, which cannot run the codec, so the series have no identity rows and the resolver and the series list cannot see them. Project them when the publish completes.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every market series a publish creates can be found by the resolver and listed by the picker as soon as the publish completes, without anyone running a backfill by hand.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The change is built and proven on a real publish. It is in review. |
+| Waiting on    | Nothing.                               |
+| Next          | Merge it, then close the story. |
+| Last touched  | 2026-10-12                               |
+
+* Acceptance
+
+- One function projects the identities a tenant's series lack, and the backfill command and the publish handler both call it.
+- When a publish from the data quality area inserts or updates series, the handler projects the identities before it reports the step complete.
+- A test shows a series with no identity row gets one, a projected series is left alone, and a second call writes nothing.
+- A fresh environment's picker lists the seeded series for each party with no manual backfill.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F718C10F-4C0E-4AAF-9802-6A52A30498AC][Project the identities a publish seeds]] | DONE | 2026-10-12 | 2026-10-12 | Extract the identity backfill into one function and call it from the data quality publish handler once the SQL function has inserted series. |
+
+* Decisions
+
+* Out of scope
+
+- The one system-tenant series that a SQL populate script seeds. It lives in the system tenant and no screen lists it.
+- Making the SQL publish function project the identity itself. It cannot run the codec, and the codec must stay the only reader of the grammar.

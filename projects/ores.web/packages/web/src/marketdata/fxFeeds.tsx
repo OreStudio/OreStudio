@@ -19,29 +19,14 @@
  *
  */
 
-import { useState, type ReactNode } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import { api, type RecordRow } from '../api/client.js';
+import type { ReactNode } from 'react';
+import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { useAreaParts, useAreaRoot } from '../shell/AreaTrail.js';
-import { RecordList, useRecordSource } from '../refdata/RecordList.js';
-import {
-    RecordDetails,
-    RecordDialog,
-    RecordGate,
-    RecordHeader,
-    RemoveRecordDialog,
-    show,
-    useRecordPermissions,
-    useRecordTabs,
-    useRecords,
-    type FieldSpec,
-    type FieldValues,
-} from '../refdata/records.js';
-import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
-import { Button, Notice } from '../ui/Primitives.js';
-import { FeedStatus, RunOutcomeText, useFeedRuns, useRunningFeeds } from './feedRuns.js';
-import { FeedHistory } from './FeedHistory.js';
+import { OresmdUrl } from '../oresmd/OresmdUrl.js';
+import { show, type FieldSpec, type FieldValues } from '../refdata/records.js';
+import { syntheticStore } from '../refdata/store.js';
+import { FeedPage, FeedsPage } from './FeedScreens.js';
+import { feedPath, type FeedKind } from './feedKind.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
 import { TicksPanel } from './TicksPanel.js';
 
@@ -154,7 +139,7 @@ const FEED_WRITE_FIELDS = [
     'base_currency_code',
     'quote_currency_code',
     'source_name',
-    'ore_key',
+    'oresmd_uri',
     'price_source',
     'gmm_initial_price',
     'ticks_per_hour',
@@ -177,6 +162,15 @@ export function feedWrite(
     };
 }
 
+/** A component's fields, for its revert; the mixture table edits the rest. */
+const COMPONENT_FIELDS: readonly FieldSpec[] = [
+    { field: 'component_index', history: 'Component Index', kind: { kind: 'int', min: 0 } },
+    { field: 'description', history: 'Description', kind: { kind: 'text' }, blank: true },
+    { field: 'mean', history: 'Mean', kind: { kind: 'decimal' } },
+    { field: 'stdev', history: 'Stdev', kind: { kind: 'decimal' } },
+    { field: 'weight', history: 'Weight', kind: { kind: 'decimal' } },
+];
+
 const NEW_FEED: FieldValues = {
     process_type: 'geometric',
     ticks_per_hour: '3600',
@@ -187,9 +181,7 @@ const NEW_FEED: FieldValues = {
 };
 
 export function fxFeedPath(id?: string): string {
-    return id === undefined
-        ? '/market-data/fx-feeds'
-        : `/market-data/fx-feeds/${encodeURIComponent(id)}`;
+    return feedPath(FX_FEED_KIND, id);
 }
 
 /** The pair a feed quotes, as the pair screens write it. */
@@ -197,10 +189,23 @@ function pairOf(feed: Readonly<Record<string, unknown>>): string {
     return `${show(feed['base_currency_code'])}/${show(feed['quote_currency_code'])}`;
 }
 
+/** The synthetic mark every feed's source name starts with, so a simulated feed is never read as a real one. */
+export const SYNTHETIC_MARK = 'synthetic.';
+
 /**
- * The fields that follow from the others: the ORE key from the pair, a source
- * name from the pair when none is given, and the price fields the source does
- * not use emptied, as the table requires.
+ * A feed's source name: the pair under the synthetic mark when none is given,
+ * and the given name under the mark when it lacks it. The table refuses a
+ * source name without it.
+ */
+export function syntheticSource(given: string, base: string, quote: string): string {
+    const name = given.trim() === '' ? `${base}${quote}`.toLowerCase() : given.trim();
+    return name.startsWith(SYNTHETIC_MARK) ? name : `${SYNTHETIC_MARK}${name}`;
+}
+
+/**
+ * The fields that follow from the others: the oresmd URI from the pair, a source
+ * name under the synthetic mark, from the pair when none is given, and the price
+ * fields the source does not use emptied, as the table requires.
  */
 export function completeFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
     const base = show(write['base_currency_code']);
@@ -208,11 +213,8 @@ export function completeFeed(write: Readonly<Record<string, unknown>>): Record<s
     const fixed = write['price_source'] === 'fixed';
     return {
         ...write,
-        ore_key: `FX/RATE/${base}/${quote}`,
-        source_name:
-            show(write['source_name']) === ''
-                ? `synthetic.${base}${quote}`.toLowerCase()
-                : write['source_name'],
+        oresmd_uri: `oresmd://fx/${base}?type=quote&instrument=fx_spot&quote=rate&ccy=${quote}`,
+        source_name: syntheticSource(show(write['source_name']), base, quote),
         gmm_initial_price: fixed ? write['gmm_initial_price'] : 0,
         vintage_source: fixed ? '' : write['vintage_source'],
         vintage_date: fixed ? '' : write['vintage_date'],
@@ -230,267 +232,77 @@ function useFeedCheck(): (values: FieldValues) => readonly string[] {
     };
 }
 
-/** The FX price feeds of the party: one page at a time, searched and sorted on the server. */
-export function FxFeedsPage(): ReactNode {
-    return (
-        <RecordStoreProvider store={syntheticStore}>
-            <FxFeedsList />
-        </RecordStoreProvider>
-    );
-}
-
-function FxFeedsList(): ReactNode {
-    const { t } = useTranslation();
-    const trail = useAreaParts('marketdata', t('marketdata.fxFeeds.title'));
-    const navigate = useNavigate();
-    const [adding, setAdding] = useState(false);
-    const source = useRecordSource(FEEDS);
-    const check = useFeedCheck();
-    const may = useRecordPermissions(FEEDS);
-    const running = useRunningFeeds();
-    const runs = useFeedRuns();
-    const [chosen, setChosen] = useState<ReadonlyMap<string, string>>(new Map());
-    const choose = (row: RecordRow, on: boolean): void => {
-        const next = new Map(chosen);
-        if (on) {
-            next.set(show(row['id']), show(row['source_name']));
-        } else {
-            next.delete(show(row['id']));
-        }
-        setChosen(next);
-    };
-    const run = (action: 'start' | 'stop'): void => {
-        runs.run(
-            action,
-            [...chosen].map(([id, label]) => ({ id, label })),
-        );
-        setChosen(new Map());
-    };
-    return (
-        <>
-            {runs.outcome !== undefined && (
-                <Notice tone={runs.outcome.refused.length > 0 ? 'warn' : 'success'}>
-                    <RunOutcomeText outcome={runs.outcome} />
-                </Notice>
-            )}
-            <RecordList
-                source={source}
-                {...(may.write
-                    ? {
-                          actions: (
-                              <>
-                                  <Button
-                                      disabled={chosen.size === 0}
-                                      pending={runs.pending}
-                                      onClick={() => run('start')}
-                                  >
-                                      {t('marketdata.runs.startChosen', {
-                                          count: String(chosen.size),
-                                      })}
-                                  </Button>
-                                  <Button
-                                      disabled={chosen.size === 0}
-                                      pending={runs.pending}
-                                      onClick={() => run('stop')}
-                                  >
-                                      {t('marketdata.runs.stopChosen', {
-                                          count: String(chosen.size),
-                                      })}
-                                  </Button>
-                              </>
-                          ),
-                      }
-                    : {})}
-                title={t('marketdata.fxFeeds.title')}
-                lead={t('marketdata.fxFeeds.lead')}
-                crumbs={trail}
-                pathOf={(row) => fxFeedPath(show(row['id']))}
-                addLabel={t('marketdata.fxFeeds.add')}
-                onAdd={() => setAdding(true)}
-                columns={[
-                    ...(may.write
-                        ? [
-                              {
-                                  id: 'chosen',
-                                  header: t('marketdata.runs.choose'),
-                                  cell: (row: RecordRow) => (
-                                      <input
-                                          type="checkbox"
-                                          aria-label={t('marketdata.runs.chooseFeed', {
-                                              feed: show(row['source_name']),
-                                          })}
-                                          checked={chosen.has(show(row['id']))}
-                                          onChange={(event) => choose(row, event.target.checked)}
-                                      />
-                                  ),
-                              },
-                          ]
-                        : []),
-                    {
-                        id: 'status',
-                        header: t('marketdata.runs.status'),
-                        cell: (row) => (
-                            <FeedStatus running={running?.has(show(row['source_name']))} />
-                        ),
-                    },
-                    {
-                        id: 'pair',
-                        header: t('marketdata.fxFeeds.pair'),
-                        cell: (row) => pairOf(row),
-                        mono: true,
-                        sort: 'base_currency_code',
-                        flag: { source: 'pair', code: (row) => pairOf(row) },
-                    },
-                    {
-                        id: 'source_name',
-                        header: t('refdata.fields.source_name'),
-                        cell: (row) => show(row['source_name']),
-                        mono: true,
-                        sort: 'source_name',
-                    },
-                    {
-                        id: 'ore_key',
-                        header: t('refdata.fields.ore_key'),
-                        cell: (row) => show(row['ore_key']),
-                        mono: true,
-                        sort: 'ore_key',
-                    },
-                    {
-                        id: 'process_type',
-                        header: t('refdata.fields.process_type'),
-                        cell: (row) =>
-                            t(`refdata.choices.process_type.${show(row['process_type'])}`),
-                    },
-                    {
-                        id: 'ticks_per_hour',
-                        header: t('refdata.fields.ticks_per_hour'),
-                        cell: (row) => show(row['ticks_per_hour']),
-                        numeric: true,
-                        sort: 'ticks_per_hour',
-                    },
-                    {
-                        id: 'enabled',
-                        header: t('refdata.fields.enabled'),
-                        cell: (row) =>
-                            row['enabled'] === true
-                                ? t('refdata.records.yes')
-                                : t('refdata.records.no'),
-                    },
-                    {
-                        id: 'auto_start',
-                        header: t('refdata.fields.auto_start'),
-                        cell: (row) =>
-                            row['auto_start'] === true
-                                ? t('refdata.records.yes')
-                                : t('refdata.records.no'),
-                        hidden: true,
-                    },
-                ]}
-            />
-            {adding && (
-                <RecordDialog
-                    title={t('marketdata.fxFeeds.addTitle')}
-                    resource={FEEDS}
-                    specs={FEED_FIELDS}
-                    row={undefined}
-                    given={{ id: crypto.randomUUID(), folder_id: null }}
-                    initial={NEW_FEED}
-                    complete={completeFeed}
-                    check={check}
-                    onClose={() => setAdding(false)}
-                    onSaved={(write) =>
-                        void navigate(`${fxFeedPath(show(write['id']))}?tab=behaviour`)
-                    }
-                />
-            )}
-        </>
-    );
-}
-
-/** One feed: its fields, the mixture its process draws from with what it implies, and its history. */
-export function FxFeedPage(): ReactNode {
-    const { id } = useParams();
-    return (
-        <RecordStoreProvider store={syntheticStore}>
-            <RecordGate resource={FEEDS} recordKey={id ?? ''} listPath={fxFeedPath()}>
-                {(feed) => <FxFeedBody key={show(feed['id'])} feed={feed} />}
-            </RecordGate>
-        </RecordStoreProvider>
-    );
-}
-
-function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
-    const { t } = useTranslation();
-    const root = useAreaRoot('marketdata');
-    const navigate = useNavigate();
-    const id = show(feed['id']);
-    const pair = pairOf(feed);
-    const may = useRecordPermissions(FEEDS);
-    const mayComponents = useRecordPermissions(COMPONENTS);
-    const check = useFeedCheck();
-    const mixture = useRecords(COMPONENTS, id);
-    const { tab, bar } = useRecordTabs({
-        label: pair,
-        tabs: ['details', 'behaviour', 'ticks', 'history'],
-    });
-    const running = useRunningFeeds()?.has(show(feed['source_name']));
-    const runs = useFeedRuns();
-    const [editing, setEditing] = useState(false);
-    const [removing, setRemoving] = useState(false);
-
-    return (
-        <div className="space-y-4">
-            <RecordHeader
-                crumbs={[
-                    ...root,
-                    { label: t('marketdata.fxFeeds.title'), to: fxFeedPath() },
-                    { label: pair },
-                ]}
-                title={show(feed['source_name'])}
-                recordKey={pair}
-                version={feed.version}
-                detail={t(`refdata.choices.process_type.${show(feed['process_type'])}`)}
-                flag="pair"
-                access={null}
-                own={
-                    <>
-                        <FeedStatus running={running} />
-                        {may.write && running !== undefined && (
-                            <Button
-                                size="sm"
-                                pending={runs.pending}
-                                onClick={() =>
-                                    runs.run(running ? 'stop' : 'start', [
-                                        { id, label: show(feed['source_name']) },
-                                    ])
-                                }
-                            >
-                                {running ? t('marketdata.runs.stop') : t('marketdata.runs.start')}
-                            </Button>
-                        )}
-                    </>
-                }
-                onEdit={may.write ? () => setEditing(true) : undefined}
-                onDelete={may.remove ? () => setRemoving(true) : undefined}
-            />
-            {runs.outcome !== undefined && runs.outcome.refused.length > 0 && (
-                <Notice tone="warn">
-                    <RunOutcomeText outcome={runs.outcome} />
-                </Notice>
-            )}
-            {bar}
-            {tab === 'details' && (
-                <RecordDetails
-                    specs={FEED_FIELDS}
-                    row={feed}
-                    extra={[[t('refdata.fields.ore_key'), show(feed['ore_key'])]]}
-                />
-            )}
-            {tab === 'behaviour' && (
+/** The FX price feeds, as the shared feed screens draw them. */
+const FX_FEED_KIND: FeedKind = {
+    resource: FEEDS,
+    entity: 'ores.synthetic.fx_spot_generation_config',
+    historySubject: 'fx_feed',
+    path: '/market-data/fx-feeds',
+    words: 'fxFeeds',
+    fields: FEED_FIELDS,
+    editFields: FEED_EDIT_FIELDS,
+    kept: FEED_KEPT,
+    initial: NEW_FEED,
+    complete: completeFeed,
+    useCheck: useFeedCheck,
+    nameOf: pairOf,
+    flag: 'pair',
+    detailOf: (feed, t) => t(`refdata.choices.process_type.${show(feed['process_type'])}`),
+    columns: (t) => [
+        {
+            id: 'pair',
+            header: t('marketdata.fxFeeds.pair'),
+            cell: (row) => pairOf(row),
+            mono: true,
+            sort: 'base_currency_code',
+            flag: { source: 'pair', code: (row) => pairOf(row) },
+        },
+        {
+            id: 'source_name',
+            header: t('refdata.fields.source_name'),
+            cell: (row) => show(row['source_name']),
+            mono: true,
+            sort: 'source_name',
+        },
+        {
+            id: 'oresmd_uri',
+            header: t('refdata.fields.oresmd_uri'),
+            cell: (row) => show(row['oresmd_uri']),
+            mono: true,
+            sort: 'oresmd_uri',
+        },
+        {
+            id: 'process_type',
+            header: t('refdata.fields.process_type'),
+            cell: (row) => t(`refdata.choices.process_type.${show(row['process_type'])}`),
+        },
+        {
+            id: 'ticks_per_hour',
+            header: t('refdata.fields.ticks_per_hour'),
+            cell: (row) => show(row['ticks_per_hour']),
+            numeric: true,
+            sort: 'ticks_per_hour',
+        },
+    ],
+    extraDetails: (feed, t) => [
+        [t('refdata.fields.oresmd_uri'), <OresmdUrl uri={show(feed['oresmd_uri'])} />],
+    ],
+    parts: [
+        {
+            resource: COMPONENTS,
+            entity: 'ores.synthetic.gmm_component',
+            specs: COMPONENT_FIELDS,
+            keep: ['id', 'fx_spot_config_id'],
+        },
+    ],
+    tabs: [
+        {
+            name: 'behaviour',
+            render: ({ feed, running, mayWrite }) => (
                 <MixturePanel
                     feed={feed}
                     running={running === true}
-                    mayWriteFeed={may.write}
+                    mayWriteFeed={mayWrite}
                     saveEngine={async (engine, intent) => {
                         await api.saveSynthetic(
                             FEEDS,
@@ -504,59 +316,24 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                         );
                     }}
                 />
-            )}
-            {tab === 'ticks' && (
-                <TicksPanel feed={feed} running={running} mixture={mixture.data ?? []} />
-            )}
-            {tab === 'history' && (
-                <FeedHistory
-                    feed={feed}
-                    components={mixture.data ?? []}
-                    feedSpecs={FEED_FIELDS}
-                    feedResource={FEEDS}
-                    componentResource={COMPONENTS}
-                    complete={completeFeed}
-                    keep={['id', ...FEED_KEPT]}
-                    mayWrite={{ feed: may.write, components: mayComponents.write }}
-                />
-            )}
-            {editing && (
-                <RecordDialog
-                    title={t('refdata.records.editTitle', { code: pair })}
-                    resource={FEEDS}
-                    specs={FEED_EDIT_FIELDS}
-                    row={feed}
-                    keep={['id', 'process_type', ...FEED_KEPT]}
-                    complete={completeFeed}
-                    check={check}
-                    onClose={() => setEditing(false)}
-                />
-            )}
-            {removing && (
-                <RemoveRecordDialog
-                    resource={FEEDS}
-                    title={t('refdata.records.deleteTitle', { code: pair })}
-                    warning={t('marketdata.fxFeeds.removeWarning')}
-                    recordKey={{ id }}
-                    version={feed.version}
-                    before={async (intent) => {
-                        await api.stopFeed(id);
-                        const components = mixture.data ?? [];
-                        if (components.length > 0) {
-                            await api.removeSynthetic(
-                                COMPONENTS,
-                                components.map((row) => ({
-                                    key: show(row['id']),
-                                    version: components.length === 1 ? row.version : null,
-                                })),
-                                intent,
-                            );
-                        }
-                    }}
-                    onClose={() => setRemoving(false)}
-                    onRemoved={() => void navigate(fxFeedPath())}
-                />
-            )}
-        </div>
-    );
+            ),
+        },
+        {
+            name: 'ticks',
+            render: ({ feed, running, parts }) => (
+                <TicksPanel feed={feed} running={running} mixture={parts[0] ?? []} />
+            ),
+        },
+    ],
+    afterAdd: 'behaviour',
+};
+
+/** The FX price feeds of the party: one page at a time, searched and sorted on the server. */
+export function FxFeedsPage(): ReactNode {
+    return <FeedsPage kind={FX_FEED_KIND} />;
+}
+
+/** One feed: its fields, the mixture its process draws from with what it implies, and its history. */
+export function FxFeedPage(): ReactNode {
+    return <FeedPage kind={FX_FEED_KIND} />;
 }

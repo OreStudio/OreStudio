@@ -33,6 +33,7 @@ create table if not exists "ores_compute_workunits_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid null,
     "batch_id" uuid not null,
     "app_version_id" uuid not null,
     "input_uri" text not null,

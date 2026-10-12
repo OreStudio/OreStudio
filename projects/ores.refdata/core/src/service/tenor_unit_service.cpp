@@ -103,6 +103,7 @@ domain::tenor_unit to_domain(const messaging::tenor_unit_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_tenor_units_response

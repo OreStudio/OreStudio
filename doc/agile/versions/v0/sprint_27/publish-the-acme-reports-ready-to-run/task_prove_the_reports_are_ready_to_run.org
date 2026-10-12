@@ -29,8 +29,8 @@ Ready to run is the story's claim, so it needs a check. State what a definition 
 | State        | BACKLOG                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Waiting on   | The merge of the first PR. The check grows with each task that adds a document or an analytic. |
+| Next         | Write the readiness query for what the first PR publishes: bindings, run settings, scope and a non empty analytic list. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -59,6 +59,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The check starts with what the first PR publishes. A definition is ready when it binds each type its report type requires, its run settings reach at least one book, and its run document has an analytic. It then lists, for each definition, the document an analytic reads that nothing stores yet. The reports blocked in that way are the ones the tasks "Add the analytic configuration documents with DQ support" and "Add the input documents the exposure reports read with DQ support" unblock.
 
 * Test Scenarios
 

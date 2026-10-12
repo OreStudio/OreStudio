@@ -66,7 +66,12 @@ struct trade_lookup {
 };
 
 struct trades_filter {
+    std::optional<std::optional<boost::uuids::uuid>> counterparty_id;
+    std::optional<std::string> trade_type;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
+    std::optional<std::vector<std::string>> trade_type_one_of;
+    std::optional<std::string> search;
 };
 
 struct trade_event {

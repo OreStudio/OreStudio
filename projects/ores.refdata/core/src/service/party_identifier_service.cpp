@@ -109,6 +109,7 @@ domain::party_identifier to_domain(const messaging::party_identifier_write& writ
     return v;
 }
 
+
 }
 
 messaging::list_party_identifiers_response party_identifier_service::list_party_identifiers(

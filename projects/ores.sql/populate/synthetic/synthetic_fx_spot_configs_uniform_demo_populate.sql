@@ -21,7 +21,7 @@
 /**
  * Synthetic FX Spot Config Seed Population Script — Uniform Volatility Demo
  *
- * Registers the synthetic.fx_spot_configs.uniform_demo dataset: all 8 major +
+ * Registers the synthetic.feeds.uniform_demo dataset: all 8 major +
  * 3 EM/exotic FX driver pairs from the marketdata.fx_driver_rates
  * dataset (see marketdata_fx_driver_rates_populate.sql), seeded from
  * the 2016-02-05 Fed H.10 vintage (an arbitrary starting price for this
@@ -32,11 +32,11 @@
  * every UI feature (ticking, charting, GMM editing) gets exercised without
  * needing to squint.
  *
- * This is not a vintage theme -- it doesn't pin to any point in market
+ * These are not vintage feeds -- they don't pin to any point in market
  * history -- it's a deliberately simple demo/exercise archetype. Contrast
  * with synthetic_fx_spot_configs_ore_samples_2016_populate.sql, whose
  * per-pair volatility is calibrated to plausible real-world FX behaviour
- * for the 2016 ORE Samples vintage theme.
+ * for the 2016 ORE Samples vintage feeds.
  *
  * This script is idempotent.
  */
@@ -58,16 +58,16 @@ END $$;
 -- Dataset Registration
 -- =============================================================================
 
--- Registers the theme dataset itself (synthetic.themes.uniform_demo) -- shared
--- with this theme's IR curve configs (see
+-- Registers the synthetic feeds dataset itself (synthetic.feeds.uniform_demo) -- shared
+-- with this dataset's IR curve configs (see
 -- synthetic_ir_curve_configs_uniform_demo_populate.sql), which looks this
--- dataset up by code rather than registering its own. One theme, one
--- dataset, published atomically by ores_synthetic_publish_theme_from_dq_fn --
+-- dataset up by code rather than registering its own. One set of feeds, one
+-- dataset, published atomically by ores_synthetic_publish_feeds_from_dq_fn --
 -- see doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.themes.uniform_demo',
+        'synthetic.feeds.uniform_demo',
         'Synthetic Market Data',
         'Trading',
         'Reference Data',
@@ -76,13 +76,13 @@ BEGIN
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        'Synthetic Theme: Uniform Volatility Demo',
+        'Synthetic Feeds: Uniform Volatility Demo',
         '8 major + 3 EM/exotic FX driver pairs (single-component geometric process) and one Vasicek short-rate curve per top-20-by-turnover currency, all deliberately exaggerated/uniform for easy eyeballing — exercises every UI feature.',
         'ORESTUDIO',
-        'Uniform Volatility Demo theme for the Synthetic data collections bundle',
+        'Uniform Volatility Demo feeds for the Synthetic data collections bundle',
         current_date,
         'Internal Use Only',
-        'synthetic_theme'
+        'synthetic_feeds'
     );
 END $$;
 
@@ -102,11 +102,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.themes.uniform_demo'
+      and code = 'synthetic.feeds.uniform_demo'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.themes.uniform_demo';
+        raise exception 'Dataset not found: synthetic.feeds.uniform_demo';
     end if;
 
     if exists (
@@ -117,7 +117,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic FX spot configs (uniform demo) for dataset: synthetic.themes.uniform_demo';
+    raise debug 'Populating synthetic FX spot configs (uniform demo) for dataset: synthetic.feeds.uniform_demo';
 
     insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,

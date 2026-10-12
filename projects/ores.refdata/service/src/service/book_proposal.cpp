@@ -63,98 +63,6 @@ void in_transaction(const ores::database::context& ctx, const std::string& sql) 
         throw std::runtime_error(r.error().what());
 }
 
-/**
- * @brief A column of the book and whether a line changes it.
- *
- * The names are the columns the policy names, so the policy and the
- * comparison read one vocabulary.
- */
-struct column {
-    const char* name;
-    bool (*differs)(const domain::book&, const domain::book_change&);
-};
-
-const column columns[] = {
-    {"party_id",
-     [](const auto& b, const auto& l) {
-         return b.party_id != l.party_id;
-     }},
-    {"name",
-     [](const auto& b, const auto& l) {
-         return b.name != l.name;
-     }},
-    {"description",
-     [](const auto& b, const auto& l) {
-         return b.description != l.description;
-     }},
-    {"parent_portfolio_id",
-     [](const auto& b, const auto& l) {
-         return b.parent_portfolio_id != l.parent_portfolio_id;
-     }},
-    {"owner_unit_id",
-     [](const auto& b, const auto& l) {
-         return b.owner_unit_id != l.owner_unit_id;
-     }},
-    {"functional_currency",
-     [](const auto& b, const auto& l) {
-         return b.functional_currency != l.functional_currency;
-     }},
-    {"gl_account_ref",
-     [](const auto& b, const auto& l) {
-         return b.gl_account_ref != l.gl_account_ref;
-     }},
-    {"cost_center",
-     [](const auto& b, const auto& l) {
-         return b.cost_center != l.cost_center;
-     }},
-    {"book_status",
-     [](const auto& b, const auto& l) {
-         return b.book_status != l.book_status;
-     }},
-    {"regulatory_book_type",
-     [](const auto& b, const auto& l) {
-         return b.regulatory_book_type != l.regulatory_book_type;
-     }},
-    {"book_purpose_type",
-     [](const auto& b, const auto& l) {
-         return b.book_purpose_type != l.book_purpose_type;
-     }},
-    {"ledger_feed_type",
-     [](const auto& b, const auto& l) {
-         return b.ledger_feed_type != l.ledger_feed_type;
-     }},
-    {"is_sweepable",
-     [](const auto& b, const auto& l) {
-         return b.is_sweepable != l.is_sweepable;
-     }},
-    {"rates_centre_code",
-     [](const auto& b, const auto& l) {
-         return b.rates_centre_code != l.rates_centre_code;
-     }},
-    {"sandbox_id",
-     [](const auto& b, const auto& l) {
-         return b.sandbox_id != l.sandbox_id;
-     }},
-};
-
-/**
- * @brief The columns a line changes.
- *
- * A line that creates a row changes every column. A delete changes none: the
- * policy reads the operation alone.
- */
-std::vector<std::string> changed_columns(const std::optional<domain::book>& live,
-                                         const domain::book_change& line) {
-    std::vector<std::string> names;
-    if (line.operation == "delete")
-        return names;
-    for (const auto& c : columns) {
-        if (!live || c.differs(*live, line))
-            names.push_back(c.name);
-    }
-    return names;
-}
-
 messaging::book_write to_write(const domain::book_change& l) {
     return {.id = l.entity_id,
             .party_id = l.party_id,
@@ -267,6 +175,8 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
     db::unit_of_work uow(ctx_);
     const auto& ctx = uow.ctx();
     book_service svc(ctx);
+    // The writes below are rolled back, so the approval gate lets them through.
+    svc.rehearse();
 
     book_preview result;
     int line_no = 0;
@@ -279,7 +189,9 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
                          .refusal = {}};
 
         const auto live = svc.get_book(line.entity_id);
-        out.columns = changed_columns(live, line);
+        // A delete changes no column: the policy reads the operation alone.
+        if (line.operation != "delete")
+            out.columns = svc.changed_columns(to_write(line));
 
         in_transaction(ctx, std::string("savepoint ") + savepoint);
         try {
@@ -298,7 +210,8 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
             std::string(out.refusal.empty() ? "release savepoint " : "rollback to savepoint ") +
                 savepoint);
 
-        for (const auto& code : policy_parts(ctx, line.operation, out.columns)) {
+        out.part_codes = policy_parts(ctx, line.operation, out.columns);
+        for (const auto& code : out.part_codes) {
             if (std::ranges::find(result.part_codes, code) == result.part_codes.end())
                 result.part_codes.push_back(code);
         }
@@ -331,6 +244,113 @@ std::vector<domain::book_change> lines_of(const ores::database::context& ctx,
     return rows;
 }
 
+}
+
+namespace {
+
+std::string text_of(const boost::uuids::uuid& v) {
+    return boost::uuids::to_string(v);
+}
+
+std::string text_of(const std::optional<boost::uuids::uuid>& v) {
+    return v ? boost::uuids::to_string(*v) : std::string{};
+}
+
+std::string text_of(bool v) {
+    return v ? "true" : "false";
+}
+
+std::string text_of(const std::string& v) {
+    return v;
+}
+
+/**
+ * @brief A column of the book beside the same column of a line, as text.
+ *
+ * The names are the columns the policy names, so a screen and the policy read
+ * one vocabulary.
+ */
+template <typename BookMember, typename LineMember>
+field_delta delta_of(const char* name,
+                     const std::optional<domain::book>& live,
+                     BookMember book_member,
+                     const domain::book_change& line,
+                     LineMember line_member) {
+    field_delta d;
+    d.name = name;
+    d.after = text_of(line.*line_member);
+    if (live)
+        d.before = text_of((*live).*book_member);
+    d.changed = !live || d.before != d.after;
+    return d;
+}
+
+}
+
+std::vector<line_delta> book_proposal_service::deltas(const std::string& request_id) {
+    const auto rows = lines_of(ctx_, request_id);
+    book_service svc(ctx_);
+
+    std::vector<line_delta> out;
+    out.reserve(rows.size());
+    for (const auto& line : rows) {
+        line_delta d{.line_no = line.line_no,
+                     .operation = line.operation,
+                     .entity_id = line.entity_id,
+                     .base_version = line.base_version,
+                     .applied = line.applied,
+                     .fields = {}};
+        if (line.operation == "put") {
+            // The book as the maker read it, so a line that has applied still
+            // shows what it changed. A new book has nothing before it.
+            std::optional<domain::book> live;
+            if (line.base_version > 0) {
+                live = svc.get_book_at_version(line.entity_id,
+                                               static_cast<std::uint32_t>(line.base_version));
+            }
+            using B = domain::book;
+            using L = domain::book_change;
+            d.fields = {
+                delta_of("party_id", live, &B::party_id, line, &L::party_id),
+                delta_of("name", live, &B::name, line, &L::name),
+                delta_of("description", live, &B::description, line, &L::description),
+                delta_of("parent_portfolio_id",
+                         live,
+                         &B::parent_portfolio_id,
+                         line,
+                         &L::parent_portfolio_id),
+                delta_of("owner_unit_id", live, &B::owner_unit_id, line, &L::owner_unit_id),
+                delta_of("functional_currency",
+                         live,
+                         &B::functional_currency,
+                         line,
+                         &L::functional_currency),
+                delta_of("gl_account_ref", live, &B::gl_account_ref, line, &L::gl_account_ref),
+                delta_of("cost_center", live, &B::cost_center, line, &L::cost_center),
+                delta_of("book_status", live, &B::book_status, line, &L::book_status),
+                delta_of("regulatory_book_type",
+                         live,
+                         &B::regulatory_book_type,
+                         line,
+                         &L::regulatory_book_type),
+                delta_of("book_purpose_type",
+                         live,
+                         &B::book_purpose_type,
+                         line,
+                         &L::book_purpose_type),
+                delta_of("ledger_feed_type", live, &B::ledger_feed_type, line, &L::ledger_feed_type),
+                delta_of("is_sweepable", live, &B::is_sweepable, line, &L::is_sweepable),
+                delta_of("rates_centre_code",
+                         live,
+                         &B::rates_centre_code,
+                         line,
+                         &L::rates_centre_code),
+                delta_of("sandbox_id", live, &B::sandbox_id, line, &L::sandbox_id),
+            };
+        }
+        out.push_back(std::move(d));
+    }
+    return out;
 }
 
 book_preview book_proposal_service::recheck(const std::string& request_id) {
@@ -376,6 +396,9 @@ book_apply book_proposal_service::apply(const std::string& request_id) {
         }
 
         book_service svc(ctx);
+        // The gate lets a write through only when this approved request holds
+        // the line the write carries out.
+        svc.carry_out_request(request_id);
         repository::book_change_repository lines;
 
         for (auto row : stored) {

@@ -259,10 +259,12 @@ export const en: SourceCatalogue = {
             approved: 'Approved',
             refused: 'Refused',
             withdrawn: 'Withdrawn',
+            apply_failed: 'Could not apply',
             expired: 'Expired',
         },
         kind: {
             'iam.role_grant': 'Role request',
+            'refdata.book_change': 'Book change',
         },
         bell: {
             label: 'Notifications, {count} unread',
@@ -328,6 +330,82 @@ export const en: SourceCatalogue = {
                 granted: 'Granted',
             },
         },
+        operation: {
+            put: 'Change',
+            delete: 'Remove',
+            grant: 'Grant',
+            new: 'New',
+        },
+        part: {
+            controller: 'Controller',
+            finance: 'Finance',
+            market_risk: 'Market risk',
+            operations: 'Operations',
+        },
+        partState: {
+            approved: 'Approved',
+            refused: 'Refused',
+            waiting: 'Waiting',
+            later: 'Later',
+        },
+        field: {
+            'refdata.book_change': {
+                party_id: 'Party',
+                name: 'Name',
+                description: 'Description',
+                parent_portfolio_id: 'Parent portfolio',
+                owner_unit_id: 'Owner unit',
+                functional_currency: 'Functional currency',
+                gl_account_ref: 'GL account',
+                cost_center: 'Cost center',
+                book_status: 'Status',
+                regulatory_book_type: 'Regulatory type',
+                book_purpose_type: 'Purpose',
+                ledger_feed_type: 'Ledger feed',
+                is_sweepable: 'Sweepable',
+                rates_centre_code: 'Rates centre',
+                sandbox_id: 'Sandbox',
+            },
+            'iam.role_grant': {
+                role: 'Role',
+                description: 'Description',
+            },
+        },
+        delta: {
+            none: 'This request holds no changes to show.',
+            line: 'Line {line}',
+            version: 'read at version {version}',
+            applied: 'Applied',
+            removes: 'Removes it.',
+            field: 'Field',
+            before: 'Now',
+            after: 'Would be',
+            nothingChanged: 'This line changes nothing.',
+            unchanged: { one: '{count} field unchanged', other: '{count} fields unchanged' },
+        },
+        parts: {
+            title: 'Who must answer',
+        },
+        checks: {
+            title: 'Checks now',
+            allStand: 'Every line would still stand.',
+            refused: 'Would be refused',
+        },
+        review: {
+            title: 'Review the changes',
+            lead: 'Each change is shown with the function that decides it.',
+            changes: 'Changes:',
+            decidedBy: 'Decided by:',
+            nobody: 'nobody, it is written directly',
+            refused: 'A change is refused. Correct it before you go on.',
+            goesTo: 'This goes to {parts}. Nothing changes until each of them approves.',
+            reason: 'Why you ask',
+            reasonHint: 'The people who decide read this.',
+            needsNoRequest:
+                'No function needs to approve these changes, so they are written directly.',
+            raise: 'Raise the request',
+            write: 'Save',
+        },
         request: {
             title: 'Asks for {role}',
             id: 'Request {id}',
@@ -346,6 +424,13 @@ export const en: SourceCatalogue = {
             decided: 'Decided',
             notFound:
                 'This request is not here. It may have been taken away, or it may not be yours to see.',
+            approve: 'Approve',
+            answeringFor: 'Answering for',
+            applyFailed:
+                'This request was approved, and the changes could not be made. Raise a new request from the current record.',
+            changes: 'What it would change',
+            checksRefused: 'A line would now be refused. Check it before you approve.',
+            noTurn: 'No part is waiting for an answer from you yet. An earlier part answers first.',
         },
     },
 
@@ -1219,6 +1304,31 @@ export const en: SourceCatalogue = {
      * doing. The versions screen belongs to every session, so it is offered
      * from Home as well as from this area's hub.
      */
+    oresmd: {
+        open: 'Open in the editor',
+        title: 'oresmd URL',
+        cancel: 'Cancel',
+        copy: 'Copy',
+        copied: 'Copied',
+        apply: 'Apply',
+        refused: 'The URL was refused: {message}',
+        choose: 'Choose an instrument and a quote type.',
+        kind: 'Kind',
+        family: 'Index family',
+        instrument: 'Instrument type',
+        quote: 'Quote type',
+        authority: 'Asset class: {asset}',
+        path: '{name} (path)',
+        optional: 'Optional',
+        required: 'Required',
+        coordinate: 'Coordinate',
+        preview: 'URL',
+        kinds: {
+            quote: 'Quote',
+            series: 'Series',
+            fixing: 'Fixing',
+        },
+    },
     development: {
         lead: 'The work a team does on the product, starting with the tests a tester can run.',
         tabs: {
@@ -1536,10 +1646,129 @@ export const en: SourceCatalogue = {
                 noSample:
                     'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
             },
+            tabs: {
+                label: 'Grid views',
+                overview: 'Overview',
+                usage: 'Usage',
+                nodes: 'Nodes',
+                heatmap: 'Heatmap',
+            },
+            usage: {
+                title: { tenant: 'Usage by tenant', party: 'Usage by party' },
+                note: 'A share is the group’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
+                empty: 'No work has run on the grid yet.',
+                unassigned: 'No party',
+                columns: {
+                    tenant: 'Tenant',
+                    party: 'Party',
+                    batches: 'Batches',
+                    workunits: 'Workunits',
+                    results: 'Results',
+                    inProgress: 'Running',
+                    unsent: 'Waiting',
+                    done: 'Finished',
+                    succeeded: 'Succeeded',
+                    failed: 'Failed',
+                    share: 'Share',
+                },
+            },
+            heatmap: {
+                title: 'Node load',
+                lead: 'One row per node and one column per interval, coloured by what the node did. The times are UTC.',
+                metricLabel: 'Colour by',
+                metrics: { work: 'Work', failures: 'Failures', bytes: 'Bytes' },
+                none: 'No node reported in this range.',
+                legend: 'A grey cell holds no sample, and is not a measurement of zero. A clear cell had a sample and nothing to show. A darker cell is more.',
+            },
+            node: {
+                description:
+                    'One compute node: its machine and runner, and how its work moved over the range.',
+                back: 'Back to the nodes',
+                machine: 'Machine',
+                host: 'Host',
+                status: 'Runner',
+                heartbeat: 'Since heartbeat',
+                version: 'Version',
+                instance: 'Instance',
+                done: 'Tasks done',
+                failed: 'Failed',
+                fetched: 'Fetched',
+                uploaded: 'Uploaded',
+                hostId: 'Host id',
+                charts: 'Charts',
+                notFound: 'No node has this id.',
+                silent: 'This node reported no sample in this range.',
+                tasks: {
+                    title: 'Tasks done',
+                    caption: 'Tasks finished in each interval',
+                    done: 'Done',
+                },
+                failures: {
+                    title: 'Failures',
+                    caption: 'Tasks that failed in each interval',
+                    failed: 'Failed',
+                },
+                time: {
+                    title: 'Task time',
+                    caption: 'Mean and longest task in each interval',
+                    mean: 'Mean',
+                    longest: 'Longest',
+                },
+                bytes: {
+                    title: 'Data moved',
+                    caption: 'Bytes fetched and uploaded in each interval',
+                    fetched: 'Fetched',
+                    uploaded: 'Uploaded',
+                },
+            },
+            series: {
+                title: 'Over time',
+                lead: 'How the grid moved over the range. The times are UTC.',
+                rangeLabel: 'Range',
+                ranges: { hour: 'Last hour', day: 'Last day', week: 'Last week' },
+                empty: 'There are no samples in this range. The sampler may not have run yet, or the grid was stopped.',
+                gapNote:
+                    'A shaded band is a stretch with no sample. It is not a measurement of zero.',
+                load: {
+                    title: 'Load',
+                    caption: 'Work in flight by result state',
+                    inactive: 'Inactive',
+                    unsent: 'Unsent',
+                    inProgress: 'In progress',
+                },
+                fleet: {
+                    title: 'Fleet',
+                    caption: 'Hosts, online and idle',
+                    total: 'Hosts',
+                    online: 'Online',
+                    idle: 'Idle',
+                },
+                throughput: {
+                    title: 'Throughput',
+                    caption: 'Results finished in each interval',
+                    finished: 'Finished',
+                },
+                outcomes: {
+                    title: 'Outcomes',
+                    caption: 'How the results finished in each interval',
+                    success: 'Success',
+                    clientError: 'Client error',
+                    noReply: 'No reply',
+                },
+            },
+            machine: {
+                cpus: 'Processors',
+                memory: 'Memory',
+                nodes: 'Nodes',
+                done: 'Tasks done',
+                failed: 'Failed',
+            },
             machines: {
                 title: 'Machines',
                 summary: '{up} of {total} machines up',
                 columns: {
+                    cpus: 'CPUs',
+                    memory: 'Memory',
                     machine: 'Machine',
                     status: 'Status',
                     nodes: 'Nodes',
@@ -1553,6 +1782,8 @@ export const en: SourceCatalogue = {
                 hint: 'Nodes that report no machine are grouped here.',
             },
             nodes: {
+                filter: 'Nodes of {machine}',
+                clearFilter: 'Show all nodes',
                 title: 'Nodes',
                 rows: '{count} rows',
                 showing: '{first}–{last} of {total} nodes',
@@ -1561,6 +1792,7 @@ export const en: SourceCatalogue = {
                 missing: '{count} missing',
                 columns: {
                     node: 'Node',
+                    machine: 'Machine',
                     status: 'Status',
                     version: 'Version',
                     instance: 'Instance',
@@ -1580,17 +1812,13 @@ export const en: SourceCatalogue = {
                     'Waits for the compute journeys, which own the host and workunit screens.',
             },
             gap: {
-                history: {
-                    title: 'No history',
-                    body: "The read answers with the newest stored sample only, so the screen cannot show a trend, and a batch's progress over time is not visible. The poller keeps writing samples that no read returns. The candidate is a read over grid samples in a time range.",
-                },
                 noHost: {
                     title: 'A node with no host row',
                     body: 'The join fixes the common case, and a node the host registry does not know shows a bare id. The screen must say that no host names the node, rather than printing the id as if it were a name.',
                 },
                 oneTenant: {
-                    title: "The summary's counters are one tenant's",
-                    body: "The node table is the installation's, but the counters above it are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count — hosts, results, workunits and batches — by the tenant it is handed, and the poller hands it its own session tenant. The read that would make them the installation's own usage is the ledger Account for the grid's usage builds, and it is not built. Until it is, the screen states that the counters are computed for one tenant rather than presenting them as every tenant's work.",
+                    title: "The charts' counters are one tenant's",
+                    body: "The node table is the installation's, but the counts behind the charts are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count (results, workunits and batches) by the tenant it is handed, and the poller hands it its own session tenant. Until the installation records its own usage, the charts count one tenant's work and not every tenant's.",
                 },
             },
         },
@@ -2507,6 +2735,8 @@ export const en: SourceCatalogue = {
                 none: 'No right is granted at this node.',
             },
             review: {
+                policyAtConfirm:
+                    'The policy is asked when you confirm: the new portfolio is written first, then the book is either written or raised as a request for the functions that decide it.',
                 title: 'Review',
                 lead: 'Nothing is written until you confirm.',
                 nothing: 'Nothing has changed yet.',
@@ -2530,8 +2760,10 @@ export const en: SourceCatalogue = {
             },
             outcome: {
                 title: 'Outcome',
-                lead: 'The book is written.',
+                lead: 'The book is written, or a request is raised for it.',
                 written: '{name} is now at version {version}.',
+                raised: 'The change to {name} is waiting for {parts}. Nothing changes until each of them approves.',
+                openRequest: 'Open the request',
                 history: 'See the history',
                 tree: 'Back to the tree',
                 done: 'Leave the book structure',
@@ -2982,6 +3214,8 @@ export const en: SourceCatalogue = {
                 counterparties: 'Counterparties',
                 behaviour: 'Price behaviour',
                 ticks: 'Ticks',
+                process: 'Process',
+                template: 'Curve template',
             },
         },
         fields: {
@@ -3065,7 +3299,7 @@ export const en: SourceCatalogue = {
             base_currency_code: 'Base currency',
             quote_currency_code: 'Quote currency',
             source_name: 'Source name',
-            ore_key: 'ORE key',
+            oresmd_uri: 'oresmd URI',
             process_type: 'Engine',
             ticks_per_hour: 'Ticks per hour',
             price_source: 'Initial price from',
@@ -3077,6 +3311,16 @@ export const en: SourceCatalogue = {
             mean: 'Mean (μ)',
             stdev: 'Deviation (σ)',
             weight: 'Weight (w)',
+            currency_code: 'Currency',
+            index_family: 'Index name',
+            tenor: 'Tenor',
+            role: 'Role',
+            vintage_series_uri: 'Vintage series',
+            sequence_index: 'Sequence',
+            fixed_leg_payment_frequency_code: 'Fixed leg frequency',
+            start_tenor_code: 'Start tenor',
+            end_tenor_code: 'End tenor',
+            instrument_code: 'Instrument',
             component_index: 'Index',
         },
         choices: {
@@ -3084,6 +3328,35 @@ export const en: SourceCatalogue = {
                 geometric: 'Geometric',
                 arithmetic: 'Arithmetic',
                 ornstein_uhlenbeck: 'Mean reverting (Ornstein-Uhlenbeck)',
+            },
+            role: {
+                self_discounting: 'Self-discounting',
+                discount: 'Discount',
+                projection: 'Projection',
+            },
+            index_family: {
+                libor: 'LIBOR',
+                euribor: 'EURIBOR',
+                sofr: 'SOFR',
+                estr: 'ESTR',
+                sonia: 'SONIA',
+                tona: 'TONA',
+                saron: 'SARON',
+                aonia: 'AONIA',
+                corra: 'CORRA',
+                honia: 'HONIA',
+                sora: 'SORA',
+                swestr: 'SWESTR',
+                nowa: 'NOWA',
+                kofr: 'KOFR',
+                mibor: 'MIBOR',
+                zaronia: 'ZARONIA',
+                destr: 'DESTR',
+                polonia: 'POLONIA',
+                nzonia: 'NZONIA',
+                shibor: 'SHIBOR',
+                tiie: 'TIIE',
+                taibor: 'TAIBOR',
             },
             price_source: {
                 fixed: 'A fixed price',
@@ -3284,6 +3557,9 @@ export const en: SourceCatalogue = {
                 fxFeeds: 'FX price feeds',
                 fxFeedsBody:
                     'Compose the synthetic FX feeds: the pair, the engine and the mixture each one draws from.',
+                irFeeds: 'IR curve feeds',
+                irFeedsBody:
+                    'Compose the synthetic IR curve feeds: the currency and index, the short-rate engine with its parameters, and the curve template.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3291,7 +3567,7 @@ export const en: SourceCatalogue = {
         fxFeeds: {
             title: 'FX price feeds',
             lead: 'The synthetic FX feeds of your party. A feed produces nothing until it is enabled and started.',
-            add: 'Add feed',
+            add: 'Add',
             addTitle: 'Add an FX price feed',
             pair: 'Pair',
             samePair: 'The base and quote currencies must differ.',
@@ -3308,6 +3584,187 @@ export const en: SourceCatalogue = {
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
         },
+        irFeeds: {
+            title: 'IR curve feeds',
+            lead: 'The synthetic interest rate curve feeds of your party. A feed produces nothing until it is enabled and started.',
+            add: 'New IR curve',
+            addTitle: 'New IR curve',
+            curve: 'Curve',
+            priceSource: 'Starting rate from',
+            tenorNeeded: 'A term index needs a tenor, such as 3M or 6M.',
+            tenorOnlyFomc: 'Only the meeting-dated variant of SOFR takes a tenor, and it is FOMC.',
+            help: {
+                tenor: 'The tenor of a term index, such as 3M or 6M. Leave it empty for an overnight index. FOMC marks the meeting-dated variant of SOFR.',
+                role: {
+                    self_discounting: 'One curve serving both uses.',
+                    discount: 'The curve cashflows are discounted on.',
+                    projection: 'The curve a floating index projects its forward rates on.',
+                },
+                ticks_per_hour: 'How many curves the feed makes in an hour. 3600 is one a second.',
+                price_source: {
+                    fixed: 'The curve starts from the rate you give on the Process tab.',
+                    vintage:
+                        'The curve starts from the rate an imported market data vintage holds for the currency and index.',
+                },
+                enabled: 'A feed that is not enabled cannot start.',
+                auto_start: 'The feed starts when the synthetic service starts.',
+            },
+            engine: {
+                VASICEK: 'Vasicek',
+                COX_INGERSOLL_ROSS: 'Cox-Ingersoll-Ross',
+                HULL_WHITE: 'Hull-White',
+                TWO_FACTOR_GAUSSIAN: 'Two-Factor Gaussian',
+                BLACK_KARASINSKI: 'Black-Karasinski',
+            },
+            removeWarning:
+                'The feed stops if it runs. Its parameters and its curve template are deleted first, then the feed. The history of each stays.',
+        },
+        fxSimple: {
+            lead: 'Answer three questions about the price in an hour. The server turns the answers into the components the engine reads. Switch to Advanced to see them.',
+            leadReverting:
+                'Answer two questions. The server turns the answers into the numbers the engine reads. Switch to Advanced to see them.',
+            trend: 'Which way does the price drift?',
+            trendHint:
+                'The average change over an hour, as a percent of the price. Below zero is down.',
+            move: 'How far does the price move in an hour?',
+            moveHint: 'A typical move over an hour, as a percent of the price, up or down.',
+            jumps: 'How often does it jump?',
+            jumpsHint: 'The share of updates that come from a wide jump regime.',
+            halfLife: 'How long does the price take to come half way back?',
+            halfLifeHint: 'The price is pulled back to {price}. A short time is a strong pull.',
+            perHour: '% an hour',
+            ofUpdates: '% of updates',
+            minutes: 'minutes',
+            presets: {
+                trend: { falling: 'Falling', level: 'Level', rising: 'Rising' },
+                move: { calm: 'Calm', normal: 'Normal', stressed: 'Stressed' },
+                jumps: { none: 'None', rare: 'Rare', often: 'Often' },
+                reversion: { quick: 'Quick', medium: 'Medium', slow: 'Slow' },
+            },
+            sentence: {
+                rising: 'The price rises about {trend}% an hour on average, and a typical hour moves it about {move}% either way.',
+                falling:
+                    'The price falls about {trend}% an hour on average, and a typical hour moves it about {move}% either way.',
+                level: 'The price has no trend, and a typical hour moves it about {move}% either way.',
+            },
+            sentenceReverting:
+                'The price is pulled back to {price}. Half the distance closes in {minutes} minutes, and a typical hour moves it about {move}%.',
+            switched: {
+                jumps: 'Switched to Simple. The closest simple form replaced {from} components with {to}: a primary component and a jump regime that covers {jump}% of updates and is four times as wide. Nothing is saved until you press Save. Discard brings the old components back.',
+                none: 'Switched to Simple. The closest simple form replaced {from} components with one primary component and no jumps. Nothing is saved until you press Save. Discard brings the old components back.',
+                reverting:
+                    'Switched to Simple. The mean-reverting engine reads one component, so {removed} others were removed. Nothing is saved until you press Save. Discard brings them back.',
+            },
+        },
+        irSimple: {
+            lead: 'Answer four questions. The server turns the answers into the numbers the engine reads. Switch to Advanced to see them.',
+            start: 'Where are rates today?',
+            startHint: 'The short-term rate at the start, as a percent.',
+            longRun: 'Where do rates settle in the long run?',
+            longRunHint: 'The level rates drift back to, as a percent.',
+            halfLife: 'How fast do rates return to that level?',
+            halfLifeHint: 'Years to come half way back. A short time is a fast return.',
+            move: 'How much do rates move in a year?',
+            moveHint: 'A typical yearly change in the short-term rate.',
+            years: 'years',
+            bp: 'basis points',
+            presets: {
+                slow: 'Slow',
+                medium: 'Medium',
+                fast: 'Fast',
+                calm: 'Calm',
+                normal: 'Normal',
+                stressed: 'Stressed',
+            },
+            lean: {
+                up: 'Rates start at {start}% and settle at {longRun}%, so the curve slopes up.',
+                down: 'Rates start at {start}% and settle at {longRun}%, so the curve slopes down.',
+                flat: 'Rates start at {start}% and settle at {longRun}%, so the curve is flat.',
+            },
+            caution: {
+                touches_zero:
+                    'Rates may touch zero. Lower the yearly move or raise the long-run level to keep them above it.',
+            },
+            switched:
+                'Switched to Simple. The second factor and the correlation were set by hand. The simple form sets them: the second factor reverts at 60% of the first speed with half its volatility, and the correlation is zero. Nothing is saved until you press Save. Discard brings the old values back.',
+            byHand: 'These values have no simple form, so only Advanced can show them. {reason}',
+            readout: {
+                halfLife: 'Half-life: {value} years',
+                rate: '= {value}%',
+                move: 'Moves about {value} basis points a year',
+            },
+            engineHint: {
+                VASICEK: 'Smooth curves. Rates can go below zero.',
+                COX_INGERSOLL_ROSS:
+                    'Rates never go below zero. Moves are smaller when rates are low.',
+                HULL_WHITE: "Smooth curves that fit today's curve. Rates can go below zero.",
+                BLACK_KARASINSKI: 'Rates never go below zero. Moves scale with the rate.',
+                TWO_FACTOR_GAUSSIAN:
+                    'Richer curve shapes, with humps and twists. The second factor is set for you.',
+            },
+        },
+        irProcess: {
+            shape: 'Curve shape',
+            paths: 'Sample short-rate paths',
+            shapeWaiting:
+                'Give every parameter a value, and add a tenor entry on the Curve template tab, to see the curve.',
+            previewNote:
+                'The server prices these from the values on the screen, with the {engine} engine. Nothing is saved.',
+            marks: {
+                added: 'New',
+                changed: 'Changed',
+            },
+            lead: 'The short-rate engine the curve is drawn from and the parameters it reads. Click a parameter to change its value, then save the values together with the engine.',
+            engine: 'Engine',
+            parameter: 'Parameter',
+            value: 'Value',
+            editTitle: 'Parameter: {name}',
+            limits: {
+                none: 'Any number.',
+                min: 'At least {min}.',
+                max: 'At most {max}.',
+                both: 'Between {min} and {max}.',
+            },
+            none: 'The {engine} engine has no parameters.',
+            save: 'Save',
+            discard: 'Discard',
+            unsaved: '{count} unsaved changes',
+            clean: 'No unsaved changes.',
+            engineChanged:
+                'Engine: {from} → {to}. The parameters of {from} are removed when you save.',
+            problems: {
+                number: 'Enter a number.',
+                min: 'Below the minimum, {min}.',
+                max: 'Above the maximum, {max}.',
+            },
+            saveTitle: 'Save the process',
+            saveButton: 'Save',
+            saveEngine: 'Engine: {from} → {to}.',
+            saveSummary: '{added} added, {changed} changed and {removed} deleted.',
+            runningNote: 'The feed is running on the old parameters.',
+            restart: 'Restart it to apply',
+            stoppedNote: 'The feed is stopped. It applies on start.',
+        },
+        irTicks: {
+            lead: 'The last curves the feed made, newest over the ones before it. The web server keeps the last 500 ticks of each running feed from when it began to listen, and a curve is a tick for each tenor entry, so a feed with many entries shows fewer curves.',
+            history: 'History',
+            historyHelp: 'Number of recent curves to overlay.',
+            legend: 'Newest curve bold; older snapshots overlaid, fading with age.',
+            at: 'Time',
+            short: 'Short end ({tenor})',
+            long: 'Long end ({tenor})',
+            slope: 'Slope (bp)',
+            curveChart: 'The last curves of the feed',
+            waiting: 'The feed runs. The plot shows when a whole curve has arrived.',
+            noTemplate:
+                'The curve has no tenor entries, so its ticks cannot be told apart. Add them on the Curve template tab.',
+        },
+        irTemplate: {
+            lead: 'The tenor entries the curve is priced at: where each starts and ends, and the instrument that prices it. Add at least one before the feed starts.',
+            add: 'Add a tenor entry',
+            one: 'Tenor entry',
+            remove: 'Delete the tenor entry',
+        },
         runs: {
             status: 'Status',
             running: 'Running',
@@ -3316,15 +3773,13 @@ export const en: SourceCatalogue = {
             stop: 'Stop',
             choose: 'Choose',
             chooseFeed: 'Choose {feed}',
-            startChosen: 'Start chosen ({count})',
-            stopChosen: 'Stop chosen ({count})',
             startedCount: 'Started {count} feeds.',
             stoppedCount: 'Stopped {count} feeds.',
             refused: '{feed}: {message}',
         },
         history: {
-            lead: "The feed and every component of its mixture, in one stream, newest first. Revert writes an older version's values back as a new version.",
-            gap: 'A component deleted from the mixture is not in this stream: the screen reads the history of the components the feed holds now.',
+            lead: "The feed and every row it owns, in one stream, newest first. Revert writes an older version's values back as a new version.",
+            gap: 'A row deleted from the feed is not in this stream: the screen reads the history of the rows the feed holds now.',
         },
         ticks: {
             lead: 'The last prices the feed made, newest on the right. The web server keeps the last 500 of each running feed from when it began to listen, so a feed started before that shows only what came since.',
@@ -3346,6 +3801,7 @@ export const en: SourceCatalogue = {
             title: '{pair} synthetic price path',
         },
         process: {
+            belowZero: 'Can go below zero',
             about: {
                 geometric:
                     'Geometric: each update draws a log-return from the mixture, so the price stays positive. μ is the drift and σ the volatility of the log-return per update.',
@@ -3535,6 +3991,7 @@ export const en: SourceCatalogue = {
             'see the whole deployment: its tenants, services, grid, message bus and logs',
         curveSnapshotsRead: 'see the market data curves',
         fxFeedsRead: 'see the synthetic FX price feeds',
+        irFeedsRead: 'see the synthetic IR curve feeds',
     },
 
     unavailable: {
@@ -3553,6 +4010,19 @@ export const en: SourceCatalogue = {
         askReason: 'I need to open {screen}.',
     },
 
+    toast: {
+        close: 'Close',
+    },
+    editingMode: {
+        bps: 'bps',
+        number: 'Enter a number.',
+        positive: 'Enter a number above zero.',
+        label: 'How to edit',
+        simple: 'Simple',
+        advanced: 'Advanced',
+        simpleHelp: 'Answer a few plain questions. The server sets the model for you.',
+        advancedHelp: "Set the model's own parameters.",
+    },
     common: {
         locked: 'Locked',
         unlocked: 'Unlocked',

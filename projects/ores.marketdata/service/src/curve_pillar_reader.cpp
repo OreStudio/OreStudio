@@ -49,6 +49,7 @@ read_pillar_rates(ores::database::context ctx,
     pillar_read out;
     for (const auto& p : pillars) {
         const auto key = core::make_pillar_quote_key(config.currency_code,
+                                                     config.index_tenor,
                                                      p.start_tenor_code,
                                                      resolve_tenor_date(refctx, p.start_tenor_code),
                                                      resolve_tenor_date(refctx, p.end_tenor_code));

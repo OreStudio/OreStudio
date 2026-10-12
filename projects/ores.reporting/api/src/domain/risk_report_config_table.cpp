@@ -33,15 +33,15 @@ std::string convert_to_table(const std::vector<risk_report_config>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Definition" << "Base Currency" << "Observation Model" << "Market Data"
+    table << fort::header << "Name" << "Base Currency" << "Observation Model" << "Market Data"
           << "NPV" << "Cashflow" << "XVA" << "Parametric VaR" << "Initial Margin" << "Modified By"
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rrc : v) {
-        table << boost::uuids::to_string(rrc.report_definition_id) << rrc.base_currency
-              << rrc.observation_model << rrc.market_data_type << rrc.npv_enabled
-              << rrc.cashflow_enabled << rrc.xva_enabled << rrc.parametric_var_enabled
-              << rrc.initial_margin_enabled << rrc.modified_by << rrc.version << fort::endr;
+        table << rrc.name << rrc.base_currency << rrc.observation_model << rrc.market_data_type
+              << rrc.npv_enabled << rrc.cashflow_enabled << rrc.xva_enabled
+              << rrc.parametric_var_enabled << rrc.initial_margin_enabled << rrc.modified_by
+              << rrc.version << fort::endr;
     }
     return table.to_string();
 }

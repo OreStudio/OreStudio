@@ -101,6 +101,7 @@ domain::barrier_type to_domain(const messaging::barrier_type_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_barrier_types_response

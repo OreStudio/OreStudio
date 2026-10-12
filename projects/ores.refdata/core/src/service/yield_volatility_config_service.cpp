@@ -115,6 +115,7 @@ domain::yield_volatility_config to_domain(const messaging::yield_volatility_conf
     return v;
 }
 
+
 }
 
 messaging::list_yield_volatility_configs_response

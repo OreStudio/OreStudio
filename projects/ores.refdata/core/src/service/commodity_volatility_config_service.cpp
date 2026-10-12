@@ -120,6 +120,7 @@ to_domain(const messaging::commodity_volatility_config_write& write) {
     return v;
 }
 
+
 }
 
 messaging::list_commodity_volatility_configs_response

@@ -1326,6 +1326,7 @@ const fr: SourceCatalogue = {
         assetClass: "Classe d'actifs",
         edit: 'Modifier',
         inspect: 'Inspecter',
+        series: 'Série',
         title: 'URL oresmd',
         cancel: 'Annuler',
         copy: 'Copier',

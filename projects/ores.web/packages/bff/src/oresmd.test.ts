@@ -139,6 +139,7 @@ const SCHEMA_REPLY = {
         {
             code: 'ir_swap',
             ore_name: 'IR_SWAP',
+            title: '{subject} swap',
             asset: 'ir',
             subject: 'ccy',
             fields: [
@@ -148,6 +149,7 @@ const SCHEMA_REPLY = {
         },
     ],
     quotes: ['rate'],
+    quote_titles: ['rate'],
     indexes: [
         { code: 'ibor', asset: 'ir', subject: 'ccy', fields: [{ name: 'name', optional: false }] },
     ],
@@ -189,6 +191,7 @@ describe('the oresmd routes', () => {
             assets: SCHEMA_REPLY.assets,
             instruments: SCHEMA_REPLY.instruments,
             quotes: SCHEMA_REPLY.quotes,
+            quote_titles: SCHEMA_REPLY.quote_titles,
             indexes: SCHEMA_REPLY.indexes,
         });
         expect(response.headers['cache-control']).toBe('private, max-age=300');

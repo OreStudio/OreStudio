@@ -26,9 +26,9 @@ The Qt FX rate editor offers a simple mode next to the raw component table: slid
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Built on the feed screen branch: =FxSimplePanel= and =convert_fx_simple=. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-11                               |

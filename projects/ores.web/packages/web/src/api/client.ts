@@ -1235,6 +1235,54 @@ export const api = {
     },
 
     /**
+     * An FX mixture read as the simple view, or the simple view written as a
+     * mixture, as the synthetic service converts it. Every figure is per hour.
+     */
+    async convertFxSimple(input: {
+        readonly process_type: string;
+        readonly to_simple: boolean;
+        readonly initial_price: number;
+        readonly ticks_per_hour: number;
+        readonly gmm_means?: readonly number[];
+        readonly gmm_stdevs?: readonly number[];
+        readonly gmm_weights?: readonly number[];
+        readonly trend_pct_per_hour?: number;
+        readonly volatility_pct_per_hour?: number;
+        readonly jump_share_pct?: number;
+        readonly half_life_minutes?: number;
+    }): Promise<{
+        readonly has_simple_form: boolean;
+        readonly message: string;
+        readonly trend_pct_per_hour: number;
+        readonly volatility_pct_per_hour: number;
+        readonly jump_share_pct: number;
+        readonly half_life_minutes: number;
+        readonly gmm_means: readonly number[];
+        readonly gmm_stdevs: readonly number[];
+        readonly gmm_weights: readonly number[];
+    }> {
+        return z
+            .object({
+                has_simple_form: z.boolean(),
+                message: z.string(),
+                trend_pct_per_hour: z.number(),
+                volatility_pct_per_hour: z.number(),
+                jump_share_pct: z.number(),
+                half_life_minutes: z.number(),
+                gmm_means: z.array(z.number()),
+                gmm_stdevs: z.array(z.number()),
+                gmm_weights: z.array(z.number()),
+            })
+            .parse(
+                await request('/api/synthetic/convert/fx-simple', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            );
+    },
+
+    /**
      * An IR engine's parameters read as the simple view, or the simple view
      * written as the engine's parameters, as the synthetic service converts
      * them. Rates are decimals.

@@ -115,6 +115,10 @@ export function IrProcessPanel({
     const unsaved = counts.added + counts.changed + counts.removed + (engineChanged ? 1 : 0);
     const reading = useIrReading(engine, parameterValues(lines, typed));
     const simple = mode === 'simple' && reading.view !== undefined;
+    const savedReading = useIrReading(
+        savedEngine,
+        engineChanged ? undefined : parameterValues(lines, {}),
+    );
 
     const applySimple = async (next: SimpleView): Promise<void> => {
         try {
@@ -213,6 +217,7 @@ export function IrProcessPanel({
                 {simple && reading.view !== undefined ? (
                     <IrSimplePanel
                         view={reading.view}
+                        saved={engineChanged ? undefined : savedReading.view}
                         caution={reading.caution}
                         mayWrite={mayWrite}
                         engine={engine}

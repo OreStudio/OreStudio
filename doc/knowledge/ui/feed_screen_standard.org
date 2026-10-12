@@ -290,6 +290,16 @@ model, and it asks plain questions in place of the table.
   second factor set by hand, shows the table in either mode, with a note that says why.
 - A warning appears when the parameters allow a risk, such as a
   Cox-Ingersoll-Ross rate that can touch zero.
+- A field whose value differs from the saved one is tinted, as a changed cell of the
+  table is.
+- The FX price behaviour tab offers the same switch (=FxSimplePanel.tsx=). Its
+  questions are per hour, so they do not depend on the feed's rate: which way the
+  price drifts, how far it moves, and how often it jumps; the mean-reverting engine
+  asks how long the price takes to come half way back, and how far it moves. The
+  server converts both ways (=synthetic.v1.ops.convert_fx_simple=). A mixture the
+  simple form cannot stand for, such as three hand-set components, shows the table
+  with a note and a button, /Use the closest simple form/, which replaces the
+  components with an approximation.
 
 ** The Ticks tab
 

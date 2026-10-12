@@ -261,6 +261,46 @@ describe('the FX feed screens', () => {
         expect(html).not.toContain('Save mixture');
     });
 
+    it('asks the plain questions in Simple mode, once the server has read the mixture', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(
+                [
+                    'fx-reading',
+                    {
+                        process_type: 'geometric',
+                        to_simple: true,
+                        initial_price: 1.08,
+                        ticks_per_hour: 3600,
+                        gmm_means: [0],
+                        gmm_stdevs: [0.01],
+                        gmm_weights: [1],
+                    },
+                ],
+                {
+                    has_simple_form: true,
+                    message: '',
+                    trend_pct_per_hour: 0,
+                    volatility_pct_per_hour: 0.1,
+                    jump_share_pct: 0,
+                    half_life_minutes: 0,
+                    gmm_means: [],
+                    gmm_stdevs: [],
+                    gmm_weights: [],
+                },
+            );
+        });
+        expect(html).toContain('Which way does the price drift?');
+        expect(html).toContain('How far does the price move in an hour?');
+        expect(html).toContain('The price has no trend');
+        expect(html).toContain('>Simple<');
+        expect(html).toContain('>Advanced<');
+        expect(html).not.toContain('>Share</th>');
+        expect(html).not.toContain('>Add</button>');
+    });
+
     it('says what a feed with no mixture lacks', () => {
         const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);

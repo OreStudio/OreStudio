@@ -20,10 +20,11 @@
  */
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Field, Input, Notice, cx } from '../ui/Primitives.js';
+import { Notice } from '../ui/Primitives.js';
+import { Answer, Presets, differs } from './SimpleControls.js';
 import {
     HALF_LIFE_PRESETS,
     MOVE_PRESETS,
@@ -74,105 +75,6 @@ export function useIrReading(
 }
 
 /**
- * One answer of the simple view. The text is the person's until they leave the
- * field or press Enter, so a half-typed number never reaches the service.
- */
-function Answer({
-    label,
-    hint,
-    unit,
-    value,
-    positive,
-    disabled,
-    onCommit,
-}: {
-    readonly label: string;
-    readonly hint: string;
-    readonly unit: string;
-    readonly value: number;
-    /** Whether zero is refused as well as a negative number. */
-    readonly positive: boolean;
-    readonly disabled: boolean;
-    readonly onCommit: (value: number) => void;
-}): ReactNode {
-    const { t } = useTranslation();
-    const [text, setText] = useState(String(value));
-    useEffect(() => setText(String(value)), [value]);
-    const parsed = Number(text);
-    const wrong =
-        text.trim() === '' || !Number.isFinite(parsed) || parsed < 0 || (positive && parsed === 0);
-    const commit = (): void => {
-        if (!wrong && parsed !== value) {
-            onCommit(parsed);
-        }
-    };
-    return (
-        <Field
-            label={label}
-            hint={hint}
-            {...(wrong ? { error: t('marketdata.irSimple.number') } : {})}
-        >
-            <div className="flex items-center gap-2">
-                <Input
-                    className="max-w-40 font-mono"
-                    inputMode="decimal"
-                    value={text}
-                    disabled={disabled}
-                    aria-invalid={wrong}
-                    onChange={(event) => setText(event.target.value)}
-                    onBlur={commit}
-                    onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                            commit();
-                        }
-                    }}
-                />
-                <span className="text-sm text-ink-muted">{unit}</span>
-            </div>
-        </Field>
-    );
-}
-
-/** A row of ready answers, the one that matches the value marked. */
-function Presets({
-    items,
-    current,
-    disabled,
-    onPick,
-}: {
-    readonly items: readonly {
-        readonly key: string;
-        readonly value: number;
-        readonly label: string;
-    }[];
-    readonly current: number;
-    readonly disabled: boolean;
-    readonly onPick: (value: number) => void;
-}): ReactNode {
-    return (
-        <div className="flex flex-wrap gap-2">
-            {items.map((item) => (
-                <button
-                    key={item.key}
-                    type="button"
-                    disabled={disabled}
-                    aria-pressed={Math.abs(item.value - current) < 1e-9}
-                    className={cx(
-                        'rounded-full border px-3 py-0.5 text-xs disabled:opacity-50',
-                        Math.abs(item.value - current) < 1e-9
-                            ? 'border-accent/60 bg-accent/10 text-ink'
-                            : 'border-line text-ink-muted hover:bg-surface-hover',
-                    )}
-                    onClick={() => onPick(item.value)}
-                >
-                    {item.label}
-                </button>
-            ))}
-        </div>
-    );
-}
-
-/**
  * The Process tab for a person who does not know short-rate models: four plain
  * questions and a sentence that says what the answers make of the curve. The
  * service turns the answers into the engine's parameters, and what a person
@@ -181,12 +83,15 @@ function Presets({
  */
 export function IrSimplePanel({
     view,
+    saved,
     caution,
     mayWrite,
     engine,
     onChange,
 }: {
     readonly view: SimpleView;
+    /** The answers the saved values make, when the engine is the saved one; fields that differ are tinted. */
+    readonly saved: SimpleView | undefined;
     readonly caution: string;
     readonly mayWrite: boolean;
     readonly engine: string;
@@ -208,6 +113,7 @@ export function IrSimplePanel({
                     value={Number(percentText(view.start_rate))}
                     positive={engine === 'BLACK_KARASINSKI'}
                     disabled={!mayWrite}
+                    changed={differs(view.start_rate, saved?.start_rate)}
                     onCommit={(percent) => set({ start_rate: rateOf(percent) })}
                 />
                 <Answer
@@ -217,6 +123,7 @@ export function IrSimplePanel({
                     value={Number(percentText(view.long_run_rate))}
                     positive={engine === 'BLACK_KARASINSKI' || engine === 'COX_INGERSOLL_ROSS'}
                     disabled={!mayWrite}
+                    changed={differs(view.long_run_rate, saved?.long_run_rate)}
                     onCommit={(percent) => set({ long_run_rate: rateOf(percent) })}
                 />
                 <div className="space-y-2">
@@ -227,6 +134,7 @@ export function IrSimplePanel({
                         value={Number(view.half_life_years.toPrecision(4))}
                         positive
                         disabled={!mayWrite}
+                        changed={differs(view.half_life_years, saved?.half_life_years)}
                         onCommit={(years) => set({ half_life_years: years })}
                     />
                     <Presets
@@ -248,6 +156,7 @@ export function IrSimplePanel({
                         value={Number(view.yearly_move_bp.toPrecision(4))}
                         positive={false}
                         disabled={!mayWrite}
+                        changed={differs(view.yearly_move_bp, saved?.yearly_move_bp)}
                         onCommit={(bp) => set({ yearly_move_bp: bp })}
                     />
                     <Presets

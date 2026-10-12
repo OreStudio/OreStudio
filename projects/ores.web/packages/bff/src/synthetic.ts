@@ -61,6 +61,7 @@ import {
     type MarketDataGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
+import { subjects as fxSimpleSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_simple_protocol';
 import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
@@ -651,6 +652,28 @@ const mixtureReplySchema = operationReplySchema.extend({
     gmm_weights: z.array(z.number()).default([]),
 });
 
+const fxSimpleSchema = z.object({
+    process_type: fxEngine,
+    to_simple: z.boolean(),
+    initial_price: z.number().positive(),
+    ticks_per_hour: z.int().positive(),
+    gmm_means: z.array(z.number()).max(100).default([]),
+    gmm_stdevs: z.array(z.number()).max(100).default([]),
+    gmm_weights: z.array(z.number()).max(100).default([]),
+    trend_pct_per_hour: z.number().default(0),
+    volatility_pct_per_hour: z.number().default(0),
+    jump_share_pct: z.number().default(0),
+    half_life_minutes: z.number().default(0),
+});
+
+const fxSimpleReplySchema = mixtureReplySchema.extend({
+    has_simple_form: z.boolean().default(false),
+    trend_pct_per_hour: z.number().default(0),
+    volatility_pct_per_hour: z.number().default(0),
+    jump_share_pct: z.number().default(0),
+    half_life_minutes: z.number().default(0),
+});
+
 const irSimulateSchema = z.object({
     process_type: code,
     parameters: parameterSpecs,
@@ -1002,6 +1025,22 @@ export function registerSyntheticRoutes(
             gmm_stdevs: reply.gmm_stdevs,
             gmm_weights: reply.gmm_weights,
         };
+    });
+
+    /**
+     * An FX mixture read as the simple view, or the simple view written as a
+     * mixture, converted by the synthetic service. Nothing is stored.
+     */
+    server.post('/api/synthetic/convert/fx-simple', async (request) => {
+        const session = requireSession(request);
+        const reply = await session.client.callAuthenticated(
+            fxSimpleSubjects.convert_fx_simple_request,
+            input(fxSimpleSchema, request.body),
+            fxSimpleReplySchema,
+        );
+        refuseUnless(reply, invalidRequest);
+        const { success: _success, ...answer } = reply;
+        return answer;
     });
 
     /**

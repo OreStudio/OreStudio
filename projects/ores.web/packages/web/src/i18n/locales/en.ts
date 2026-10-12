@@ -3387,6 +3387,39 @@ export const en: SourceCatalogue = {
             removeWarning:
                 'The feed stops if it runs. Its parameters and its curve template are deleted first, then the feed. The history of each stays.',
         },
+        fxSimple: {
+            lead: 'Answer three questions about the price in an hour. The server turns the answers into the components the engine reads. Switch to Advanced to see them.',
+            leadReverting:
+                'Answer two questions. The server turns the answers into the numbers the engine reads. Switch to Advanced to see them.',
+            trend: 'Which way does the price drift?',
+            trendHint:
+                'The average change over an hour, as a percent of the price. Below zero is down.',
+            move: 'How far does the price move in an hour?',
+            moveHint: 'A typical move over an hour, as a percent of the price, up or down.',
+            jumps: 'How often does it jump?',
+            jumpsHint: 'The share of updates that come from a wide jump regime.',
+            halfLife: 'How long does the price take to come half way back?',
+            halfLifeHint: 'The price is pulled back to {price}. A short time is a strong pull.',
+            perHour: '% an hour',
+            ofUpdates: '% of updates',
+            minutes: 'minutes',
+            presets: {
+                trend: { falling: 'Falling', level: 'Level', rising: 'Rising' },
+                move: { calm: 'Calm', normal: 'Normal', stressed: 'Stressed' },
+                jumps: { none: 'None', rare: 'Rare', often: 'Often' },
+                reversion: { quick: 'Quick', medium: 'Medium', slow: 'Slow' },
+            },
+            sentence: {
+                rising: 'The price rises about {trend}% an hour on average, and a typical hour moves it about {move}% either way.',
+                falling:
+                    'The price falls about {trend}% an hour on average, and a typical hour moves it about {move}% either way.',
+                level: 'The price has no trend, and a typical hour moves it about {move}% either way.',
+            },
+            sentenceReverting:
+                'The price is pulled back to {price}. Half the distance closes in {minutes} minutes, and a typical hour moves it about {move}%.',
+            byHand: 'These components are set by hand, so only Advanced can show them. {reason}',
+            approximate: 'Use the closest simple form',
+        },
         irSimple: {
             lead: 'Answer four questions. The server turns the answers into the numbers the engine reads. Switch to Advanced to see them.',
             start: 'Where are rates today?',
@@ -3399,7 +3432,6 @@ export const en: SourceCatalogue = {
             moveHint: 'A typical yearly change in the short-term rate.',
             years: 'years',
             bp: 'basis points',
-            number: 'Enter a number above zero.',
             presets: {
                 slow: 'Slow',
                 medium: 'Medium',
@@ -3742,6 +3774,8 @@ export const en: SourceCatalogue = {
     },
 
     editingMode: {
+        number: 'Enter a number.',
+        positive: 'Enter a number above zero.',
         label: 'How to edit',
         simple: 'Simple',
         advanced: 'Advanced',

@@ -3441,6 +3441,40 @@ const fr: SourceCatalogue = {
             removeWarning:
                 "Le flux s'arrête s'il tourne. Ses paramètres et son modèle de courbe sont supprimés d'abord, puis le flux. L'historique de chacun reste.",
         },
+        fxSimple: {
+            lead: 'Répondez à trois questions sur le prix en une heure. Le serveur transforme les réponses en composantes que le moteur lit. Passez en Avancé pour les voir.',
+            leadReverting:
+                'Répondez à deux questions. Le serveur transforme les réponses en nombres que le moteur lit. Passez en Avancé pour les voir.',
+            trend: 'Dans quel sens le prix dérive-t-il ?',
+            trendHint:
+                "La variation moyenne en une heure, en pourcentage du prix. Sous zéro, c'est une baisse.",
+            move: 'De combien le prix bouge-t-il en une heure ?',
+            moveHint:
+                'Un mouvement typique sur une heure, en pourcentage du prix, à la hausse ou à la baisse.',
+            jumps: 'À quelle fréquence saute-t-il ?',
+            jumpsHint: 'La part des mises à jour qui viennent d’un régime de sauts larges.',
+            halfLife: 'Combien de temps le prix met-il pour faire la moitié du chemin de retour ?',
+            halfLifeHint: 'Le prix est ramené vers {price}. Une durée courte est un rappel fort.',
+            perHour: '% par heure',
+            ofUpdates: '% des mises à jour',
+            minutes: 'minutes',
+            presets: {
+                trend: { falling: 'Baisse', level: 'Stable', rising: 'Hausse' },
+                move: { calm: 'Calme', normal: 'Normal', stressed: 'Tendu' },
+                jumps: { none: 'Aucun', rare: 'Rare', often: 'Fréquent' },
+                reversion: { quick: 'Rapide', medium: 'Moyen', slow: 'Lent' },
+            },
+            sentence: {
+                rising: 'Le prix monte d’environ {trend} % par heure en moyenne, et une heure typique le déplace d’environ {move} % dans un sens ou l’autre.',
+                falling:
+                    'Le prix baisse d’environ {trend} % par heure en moyenne, et une heure typique le déplace d’environ {move} % dans un sens ou l’autre.',
+                level: 'Le prix n’a pas de tendance, et une heure typique le déplace d’environ {move} % dans un sens ou l’autre.',
+            },
+            sentenceReverting:
+                'Le prix est ramené vers {price}. La moitié de la distance se referme en {minutes} minutes, et une heure typique le déplace d’environ {move} %.',
+            byHand: 'Ces composantes sont réglées à la main, donc seul le mode Avancé peut les montrer. {reason}',
+            approximate: 'Utiliser la forme simple la plus proche',
+        },
         irSimple: {
             lead: 'Répondez à quatre questions. Le serveur transforme les réponses en nombres que le moteur lit. Passez en Avancé pour les voir.',
             start: "Où sont les taux aujourd'hui ?",
@@ -3454,7 +3488,6 @@ const fr: SourceCatalogue = {
             moveHint: 'Une variation annuelle typique du taux court.',
             years: 'ans',
             bp: 'points de base',
-            number: 'Saisissez un nombre supérieur à zéro.',
             presets: {
                 slow: 'Lent',
                 medium: 'Moyen',
@@ -3803,6 +3836,8 @@ const fr: SourceCatalogue = {
     },
 
     editingMode: {
+        number: 'Saisissez un nombre.',
+        positive: 'Saisissez un nombre supérieur à zéro.',
         label: 'Mode de saisie',
         simple: 'Simple',
         advanced: 'Avancé',

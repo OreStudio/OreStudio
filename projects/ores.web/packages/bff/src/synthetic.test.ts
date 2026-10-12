@@ -931,6 +931,55 @@ describe('synthetic operations', () => {
         expect(calls).toEqual([]);
     });
 
+    it('reads an FX mixture as the simple view through the synthetic service', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.convert_fx_simple': {
+                success: true,
+                message: '',
+                has_simple_form: true,
+                trend_pct_per_hour: 0.05,
+                volatility_pct_per_hour: 0.1,
+                jump_share_pct: 10,
+                half_life_minutes: 0,
+            },
+        });
+        const body = {
+            process_type: 'geometric',
+            to_simple: true,
+            initial_price: 1.1,
+            ticks_per_hour: 3600,
+            gmm_means: [0],
+            gmm_stdevs: [0.001],
+            gmm_weights: [1],
+        };
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/convert/fx-simple',
+            body,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            has_simple_form: true,
+            volatility_pct_per_hour: 0.1,
+            jump_share_pct: 10,
+        });
+        expect(calls[0]?.body).toMatchObject(body);
+    });
+
+    it('refuses an FX simple conversion for an engine it does not know', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/fx-simple', {
+            process_type: 'jump',
+            to_simple: true,
+            initial_price: 1,
+            ticks_per_hour: 60,
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('converts IR parameters to the simple view through the synthetic service', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.convert_ir_parameters': {
@@ -974,7 +1023,9 @@ describe('synthetic operations', () => {
             values: { half_life_years: 0 },
         });
         expect(response.statusCode).toBe(400);
-        expect(response.json()).toMatchObject({ message: 'The half-life must be longer than zero.' });
+        expect(response.json()).toMatchObject({
+            message: 'The half-life must be longer than zero.',
+        });
     });
 
     it('answers 400 with the server words when a preview is refused', async () => {

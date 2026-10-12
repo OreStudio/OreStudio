@@ -3414,6 +3414,41 @@ const pt: SourceCatalogue = {
             removeWarning:
                 'O fluxo para se estiver a correr. Os seus parâmetros e o modelo da curva são apagados primeiro, depois o fluxo. O histórico de cada um fica.',
         },
+        fxSimple: {
+            lead: 'Responda a três perguntas sobre o preço numa hora. O servidor transforma as respostas nos componentes que o motor lê. Passe para Avançado para os ver.',
+            leadReverting:
+                'Responda a duas perguntas. O servidor transforma as respostas nos números que o motor lê. Passe para Avançado para os ver.',
+            trend: 'Para que lado o preço deriva?',
+            trendHint:
+                'A variação média numa hora, em percentagem do preço. Abaixo de zero é uma descida.',
+            move: 'Quanto se move o preço numa hora?',
+            moveHint:
+                'Um movimento típico numa hora, em percentagem do preço, para cima ou para baixo.',
+            jumps: 'Com que frequência salta?',
+            jumpsHint: 'A parte das atualizações que vem de um regime de saltos largos.',
+            halfLife: 'Quanto tempo leva o preço a fazer metade do caminho de volta?',
+            halfLifeHint:
+                'O preço é puxado de volta para {price}. Um tempo curto é uma puxada forte.',
+            perHour: '% por hora',
+            ofUpdates: '% das atualizações',
+            minutes: 'minutos',
+            presets: {
+                trend: { falling: 'A descer', level: 'Estável', rising: 'A subir' },
+                move: { calm: 'Calmo', normal: 'Normal', stressed: 'Tenso' },
+                jumps: { none: 'Nenhuma', rare: 'Rara', often: 'Frequente' },
+                reversion: { quick: 'Rápido', medium: 'Médio', slow: 'Lento' },
+            },
+            sentence: {
+                rising: 'O preço sobe cerca de {trend}% por hora em média, e uma hora típica move-o cerca de {move}% para cada lado.',
+                falling:
+                    'O preço desce cerca de {trend}% por hora em média, e uma hora típica move-o cerca de {move}% para cada lado.',
+                level: 'O preço não tem tendência, e uma hora típica move-o cerca de {move}% para cada lado.',
+            },
+            sentenceReverting:
+                'O preço é puxado de volta para {price}. Metade da distância fecha-se em {minutes} minutos, e uma hora típica move-o cerca de {move}%.',
+            byHand: 'Estes componentes foram ajustados à mão, por isso só o modo Avançado os pode mostrar. {reason}',
+            approximate: 'Usar a forma simples mais próxima',
+        },
         irSimple: {
             lead: 'Responda a quatro perguntas. O servidor transforma as respostas nos números que o motor lê. Passe para Avançado para vê-los.',
             start: 'Onde estão as taxas hoje?',
@@ -3426,7 +3461,6 @@ const pt: SourceCatalogue = {
             moveHint: 'Uma variação anual típica da taxa de curto prazo.',
             years: 'anos',
             bp: 'pontos base',
-            number: 'Introduza um número acima de zero.',
             presets: {
                 slow: 'Lento',
                 medium: 'Médio',
@@ -3774,6 +3808,8 @@ const pt: SourceCatalogue = {
     },
 
     editingMode: {
+        number: 'Introduza um número.',
+        positive: 'Introduza um número acima de zero.',
         label: 'Modo de edição',
         simple: 'Simples',
         advanced: 'Avançado',

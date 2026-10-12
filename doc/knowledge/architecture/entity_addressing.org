@@ -72,6 +72,19 @@ generated registrar registers nothing for a compound key. The alternative --
 joining a pair into the one id -- would answer for a row that does not exist
 while looking like it answered for the one that does.
 
+Two cases look like a compound key and are not, and each has its own answer.
+
+- A row whose declared key other rows of the tenant share, such as a contact
+  type that every party holds, is addressed by the row's own =id=. The id is one
+  row whatever the scope. The generated provider states =history_by_row_id= for
+  such a model: it has a declared key that is not the storage key, a natural key
+  beyond that one, and a uuid storage key. Reading it by the declared key alone
+  answers with the newest row of any scope, which is another party's.
+- A link table reads by its parent, because the history of a link is the
+  history of every link its parent holds. Each version names its link as
+  =parent/child= in its =ID= field, which is how the reader tells one link from
+  another. That string is read from an answer. It is never sent as an address.
+
 ** Where this is emitted
 
 The model declares the key once, and every projection reads that one

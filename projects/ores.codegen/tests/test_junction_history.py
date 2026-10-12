@@ -147,7 +147,7 @@ def test_a_version_a_later_version_replaced_is_not_a_closing(tmp_path):
     # closed and opened again, which numbers from one, ends the first run.
     assert "rows.back().link.item_code == row.link.item_code" in source
     assert "rows.back().link.version == row.link.version + 1" in source
-    assert "row.closed_at = timestamp_to_timepoint(entity.valid_to);" in source
+    assert "row.closed_at = validity_end(entity.valid_to);" in source
 
 
 def test_the_link_is_named_by_both_keys_and_says_when_it_ended(tmp_path):

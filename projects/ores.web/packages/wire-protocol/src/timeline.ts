@@ -289,23 +289,21 @@ export function linkEvents(
         const events = recordEvents(entityType, id, own);
         const closings = own
             .filter((version) => fieldValue(version.fields, CLOSED_AT_FIELD) !== '')
-            .map(
-                (version): TimelineEvent => ({
-                    entityType,
-                    entityId: id,
-                    kind: 'closed',
-                    at: fieldValue(version.fields, CLOSED_AT_FIELD),
-                    actor: '',
-                    version: version.version,
-                    reasonCode: '',
-                    commentary: '',
-                    fields: version.fields.filter(
-                        (field) =>
-                            !TIMELINE_PROVENANCE_FIELDS.has(field.name) &&
-                            field.name !== CLOSED_AT_FIELD,
-                    ),
-                }),
-            );
+            .map((version): TimelineEvent => ({
+                entityType,
+                entityId: id,
+                kind: 'closed',
+                at: fieldValue(version.fields, CLOSED_AT_FIELD),
+                actor: '',
+                version: version.version,
+                reasonCode: '',
+                commentary: '',
+                fields: version.fields.filter(
+                    (field) =>
+                        !TIMELINE_PROVENANCE_FIELDS.has(field.name) &&
+                        field.name !== CLOSED_AT_FIELD,
+                ),
+            }));
         return [...events, ...closings];
     });
 }
@@ -458,37 +456,20 @@ export const BUSINESS_UNIT_ENTITY = 'ores.refdata.business_unit';
 
 /**
  * The kinds of record that belong to a party, each with the resource that lists
- * them by party and the key its history is read by.
+ * them by party.
  *
- * A history provider resolves a row by the key its model declares, which is not
- * always the row's id: an identifier by its value, a contact by its type and a
- * unit by its code. The id is what ties a version to its row, so the versions
- * read are kept only when they carry the id of the row asked for.
+ * Their histories are read by the row's id. The key a model declares for these
+ * is shared by the rows of other parties: every party holds a Legal contact,
+ * and two may hold the same identifier value. The id is one row.
  */
 const PARTY_PARTS: readonly {
     readonly resource: string;
     readonly entityType: string;
-    readonly key: (row: RecordRow) => string;
     readonly name: string;
 }[] = [
-    {
-        resource: 'party-identifiers',
-        entityType: PARTY_IDENTIFIER_ENTITY,
-        key: (row) => String(row['id_value'] ?? ''),
-        name: 'identifier',
-    },
-    {
-        resource: 'party-contacts',
-        entityType: PARTY_CONTACT_ENTITY,
-        key: (row) => String(row['contact_type'] ?? ''),
-        name: 'contact',
-    },
-    {
-        resource: 'business-units',
-        entityType: BUSINESS_UNIT_ENTITY,
-        key: (row) => String(row['unit_code'] ?? ''),
-        name: 'business unit',
-    },
+    { resource: 'party-identifiers', entityType: PARTY_IDENTIFIER_ENTITY, name: 'identifier' },
+    { resource: 'party-contacts', entityType: PARTY_CONTACT_ENTITY, name: 'contact' },
+    { resource: 'business-units', entityType: BUSINESS_UNIT_ENTITY, name: 'business unit' },
 ];
 
 /**
@@ -602,17 +583,10 @@ export async function readPartyTimeline(
                         gaps,
                         part.entityType,
                         `The versions of a ${part.name} could not be read, so they are not shown.`,
-                        () => readEntityHistory(caller, part.entityType, part.key(row)),
+                        () => readEntityHistory(caller, part.entityType, id),
                         [],
                     );
-                    const own = versionsOfRow(versions, id);
-                    if (own.length === 0 && versions.length > 0) {
-                        gaps.push({
-                            entity: part.entityType,
-                            reason: `The history of a ${part.name} is read by a key that other parties may share, and the server answered with another party’s row, so this one’s versions are not shown.`,
-                        });
-                    }
-                    return recordEvents(part.entityType, id, own);
+                    return recordEvents(part.entityType, id, versions);
                 }),
             );
             return perRow.flat();

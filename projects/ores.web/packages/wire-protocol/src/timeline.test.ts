@@ -169,6 +169,32 @@ describe('the story of a party', () => {
         expect(story.events[0]?.actor).toBe('priya');
     });
 
+    it('reads the history of a contact by the contact’s own id and states no gap', async () => {
+        const CONTACT = '99999999-9999-4999-8999-999999999999';
+        const asked: string[] = [];
+        const story = await readPartyTimeline(
+            caller({
+                ...base,
+                'refdata.v1.party_contact_informations.list_by_party_id': {
+                    result: ok,
+                    party_contact_informations: [
+                        { version: 1, id: CONTACT, party_id: PARTY, contact_type: 'Legal' },
+                    ],
+                },
+                'refdata.v1.history.get': (body: { entity_type?: string; entity_id?: string }) => {
+                    if (body.entity_type === 'ores.refdata.party_contact_information') {
+                        asked.push(body.entity_id ?? '');
+                    }
+                    return history([version(1, PARTY, { 'Short Code': 'ACME_UK' })])(body);
+                },
+            }),
+            PARTY,
+        );
+
+        expect(asked).toEqual([CONTACT]);
+        expect(story.gaps).toEqual([]);
+    });
+
     /** One version of a link, which names the pair as its ID and says when it ended. */
     function linkVersion(number: number, link: string, closedAt = '') {
         const [, country = ''] = link.split('/');

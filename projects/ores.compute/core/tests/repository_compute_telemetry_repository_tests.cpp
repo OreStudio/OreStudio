@@ -31,6 +31,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -474,6 +475,50 @@ TEST_CASE("grid_series_of_a_party_session_sums_only_the_parties_it_acts_for", ta
     // Party A's row and the row with no party, and never party B's.
     CHECK(series.results_unsent == std::vector<int>{3});
     CHECK(series.results_done == std::vector<int>{5});
+}
+
+TEST_CASE("grid_series_of_a_session_in_the_system_party_sums_every_party", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto model = generate_synthetic_grid_sample(gen);
+    const auto own = h.tenant_id();
+
+    // The tenant's system party administers it. A test tenant may have none, and then
+    // there is nothing to act in.
+    auto lg = ores::logging::make_logger(test_suite);
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        h.context(),
+        "SELECT id::text FROM ores_refdata_read_system_party_fn(ores_iam_current_tenant_id_fn())",
+        {},
+        lg,
+        "reading the system party");
+    if (rows.empty() || rows.front().empty() || !rows.front().front()) {
+        WARN("The test tenant has no system party, so the system party read is not tested.");
+        return;
+    }
+    const auto system_party = boost::lexical_cast<boost::uuids::uuid>(*rows.front().front());
+    const auto party_a = random_uuid();
+    const auto party_b = random_uuid();
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+    const auto at = t0 + seconds(10);
+
+    grid_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.range("ores_compute_grid_samples_tbl", own, t0, t0 + seconds(120));
+    repo.write(h.context(), party_row(model, own, party_a, at, 2, 4));
+    repo.write(h.context(), party_row(model, own, party_b, at, 3, 6));
+
+    compute_telemetry_repository telemetry;
+    const auto as_system = h.context().with_party(own, system_party, {system_party}, h.db_user());
+    const auto as_a = h.context().with_party(own, party_a, {party_a}, h.db_user());
+
+    // The system party reads every party's row, and a party reads only its own.
+    CHECK(telemetry.grid_series_in_range(as_system, t0, t0 + seconds(60), 60).results_done ==
+          std::vector<int>{10});
+    CHECK(telemetry.grid_series_in_range(as_a, t0, t0 + seconds(60), 60).results_done ==
+          std::vector<int>{4});
 }
 
 TEST_CASE("parties_with_work_always_lists_the_empty_party", tags) {

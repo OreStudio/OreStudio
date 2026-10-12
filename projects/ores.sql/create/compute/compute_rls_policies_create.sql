@@ -224,6 +224,17 @@ with check (
 -- carry no party and stay visible within the tenant.
 -- -----------------------------------------------------------------------------
 
+-- A session that acts in the tenant's system party administers the tenant, so it sees
+-- the work of every party of the tenant. Every other party sees its own work and the
+-- parties below it. This is a rule inside one tenant and reads no other tenant's work.
+-- The call is wrapped in a select in each policy, so it runs once for a query and not
+-- once for a row.
+create or replace function ores_compute_session_is_system_party_fn()
+returns boolean as $$
+    select ores_iam_current_party_id_fn() is not null
+       and ores_iam_current_party_id_fn() = ores_iam_system_party_id_fn();
+$$ language sql stable;
+
 drop policy if exists batches_party_isolation_policy
     on ores_compute_batches_tbl;
 
@@ -234,6 +245,7 @@ for select using (
     ores_iam_visible_party_ids_fn() is null
     or party_id is null
     or party_id = any(ores_iam_visible_party_ids_fn())
+    or (select ores_compute_session_is_system_party_fn())
 );
 
 drop policy if exists workunits_party_isolation_policy
@@ -246,6 +258,7 @@ for select using (
     ores_iam_visible_party_ids_fn() is null
     or party_id is null
     or party_id = any(ores_iam_visible_party_ids_fn())
+    or (select ores_compute_session_is_system_party_fn())
 );
 
 drop policy if exists results_party_isolation_policy
@@ -258,11 +271,13 @@ for select using (
     ores_iam_visible_party_ids_fn() is null
     or party_id is null
     or party_id = any(ores_iam_visible_party_ids_fn())
+    or (select ores_compute_session_is_system_party_fn())
 );
 
 -- A grid sample row counts one party's work, or the work with no party. A session
 -- that acts for parties reads their rows and the rows with no party, so the fleet
--- row and the rows of other tenants' shared fleet stay visible to it.
+-- row and the rows of other tenants' shared fleet stay visible to it. A session in
+-- the tenant's system party reads the rows of every party of the tenant.
 drop policy if exists grid_samples_party_isolation_policy
     on ores_compute_grid_samples_tbl;
 
@@ -273,6 +288,7 @@ for select using (
     ores_iam_visible_party_ids_fn() is null
     or party_id is null
     or party_id = any(ores_iam_visible_party_ids_fn())
+    or (select ores_compute_session_is_system_party_fn())
 );
 
 -- -----------------------------------------------------------------------------

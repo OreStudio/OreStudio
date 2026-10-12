@@ -48,7 +48,7 @@ An oresmd URL behaves like every other reference in the app. The link goes to th
 | [[id:5114C1FA-0CA4-4B13-9D89-63CE54E5A49E][Show a series as a time series]] | DONE | 2026-10-12 | 2026-10-12 | Add a series page that draws the values of one series over time with the line chart and lists the latest observations, for a series that declares no axis, such as an FX spot rate. It opens from an oresmd URL in the address, and says in words when the party has no such series or the series has no observation yet. |
 | [[id:BF4B13D6-0E42-4DB7-B3D0-1BC749B20B66][Explain the oresmd URI on the feed screens]] | DONE | 2026-10-12 | 2026-10-12 | The oresmd URI of a feed is its target: the series the feed writes its values to. Say so in a tooltip on the label of the Details row, so a reader knows what the URI means before inspecting it. |
 | [[id:A42BD55E-C2D5-4929-B961-52BA87304B77][Title a series in words]] | DONE | 2026-10-12 | 2026-10-12 | Give each instrument type and quote type a title template in the oresmd schema, and show a series by that title, so AUD/USD spot rate replaces fx / AUD / fx_spot / rate · ccy=USD. |
-| [[id:84C6DE53-C113-4492-B725-FF8024016F8D][Format spot rates by their pair convention]] | BACKLOG | | | Show the values of an FX spot series with the decimal places of the currency pair's convention, so the series page reads as a trader expects. |
+| [[id:84C6DE53-C113-4492-B725-FF8024016F8D][Format spot rates by their pair convention]] | STARTED | 2026-10-13 | | Show the values of an FX spot series with the decimal places of the currency pair's convention, so the series page reads as a trader expects. |
 
 ** Build order
 

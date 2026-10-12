@@ -20,6 +20,8 @@
  */
 
 import type { Observation } from '@ores/contracts';
+import type { RecordRow } from '../api/client.js';
+import type { TitledIdentity } from '../oresmd/title.js';
 
 /**
  * The instant as ISO text. The wire writes UTC with a Z, and a text with no zone is
@@ -65,4 +67,34 @@ export function latestFirst(
     count: number,
 ): readonly Observation[] {
     return observations.slice(-count).reverse();
+}
+
+/**
+ * The decimal places a series' values are shown with, or nothing to keep the
+ * plain format. Only an FX spot rate has them: they come from the convention of
+ * its currency pair, whose code is the unit currency over the quoted currency.
+ */
+export function placesOf(
+    identity: TitledIdentity,
+    conventions: readonly RecordRow[],
+): number | undefined {
+    if (identity.instrument_type !== 'fx_spot' || identity.quote_type !== 'rate') return undefined;
+    const quoted = identity.fields.find((field) => field.name === 'ccy')?.text;
+    if (quoted === undefined) return undefined;
+    const row = conventions.find((c) => c['pair_code'] === `${identity.scope}/${quoted}`);
+    const places = Number(row?.['decimal_places']);
+    return Number.isInteger(places) && places >= 0 && places <= 10 ? places : undefined;
+}
+
+/** A value with a fixed number of places, or in the plain format of up to seven digits when none is known. */
+export function formatValue(value: number, places: number | undefined): string {
+    return places === undefined ? String(Number(value.toPrecision(7))) : value.toFixed(places);
+}
+
+/** A stored value text in the same format, or the text itself when it does not read as a number. */
+export function formatText(text: string, places: number | undefined): string {
+    const value = Number(text);
+    return places === undefined || text.trim() === '' || !Number.isFinite(value)
+        ? text
+        : value.toFixed(places);
 }

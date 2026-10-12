@@ -30,7 +30,14 @@ import { oresmdQueries } from '../oresmd/queries.js';
 import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
-import { instantLabel, latestFirst, pointsOf } from './seriesView.js';
+import {
+    formatText,
+    formatValue,
+    instantLabel,
+    latestFirst,
+    placesOf,
+    pointsOf,
+} from './seriesView.js';
 
 /** How many observations the page reads, and how many rows of them it lists. */
 const READ = DEFAULT_OBSERVATIONS;
@@ -116,6 +123,8 @@ function Observations({
     const { t } = useTranslation();
     const titled = useSeriesTitle();
     const read = useQuery(oresmdQueries.observations(series.series_id, READ));
+    const conventions = useQuery(oresmdQueries.pairConventions());
+    const places = placesOf(series.identity, conventions.data ?? []);
     if (read.isError) return <Notice tone="error">{read.error.message}</Notice>;
     if (read.isPending) return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     const { observations, total } = read.data;
@@ -137,7 +146,7 @@ function Observations({
                     label={t('market.series.chart')}
                     xs={points.map((point) => point.at)}
                     xFormat={instantLabel}
-                    format={(value) => String(Number(value.toPrecision(7)))}
+                    format={(value) => formatValue(value, places)}
                     series={[
                         {
                             points: points.map((point) => point.value),
@@ -166,7 +175,9 @@ function Observations({
                                 className="border-b border-line-subtle"
                             >
                                 <td className="py-1.5 font-mono text-xs">{row.at}</td>
-                                <td className="py-1.5 text-right font-mono text-xs">{row.value}</td>
+                                <td className="py-1.5 text-right font-mono text-xs">
+                                    {formatText(row.value, places)}
+                                </td>
                                 <td className="py-1.5 pl-6 text-ink-muted">{row.source}</td>
                             </tr>
                         ))}

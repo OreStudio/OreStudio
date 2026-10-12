@@ -237,8 +237,8 @@ describe('the IR curve feed screens', () => {
         expect(html).toContain('>0.7</td>');
         expect(html).toContain('Initial short rate');
         expect(html).toContain('>0.03</td>');
-        expect(html).toContain('>Min<');
-        expect(html).toContain('>Max<');
+        expect(html).not.toContain('>Min<');
+        expect(html).not.toContain('>Max<');
         expect(html).not.toContain('Allowed range');
         expect(html).toContain('>Discard<');
         expect(html).not.toContain('Discard changes');

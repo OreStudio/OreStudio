@@ -3456,10 +3456,6 @@ const fr: SourceCatalogue = {
             engine: 'Moteur',
             parameter: 'Paramètre',
             value: 'Valeur',
-            min: 'Min',
-            max: 'Max',
-            minHelp: "La plus petite valeur que le moteur accepte. Un tiret signifie qu'il n'y en a pas.",
-            maxHelp: "La plus grande valeur que le moteur accepte. Un tiret signifie qu'il n'y en a pas.",
             editTitle: 'Paramètre : {name}',
             limits: {
                 none: 'Tout nombre.',

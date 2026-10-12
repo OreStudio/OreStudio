@@ -248,12 +248,11 @@ is the process tab above with the parts that follow from that.
   *Discard* and *Save*. There is no *Add*, and a row has no *↑*, *↓* or *Delete*,
   because the engine states which parameters it reads.
 - The table lists the engine's parameters, read only: the parameter with its
-  symbol, the value, and the *Min* and *Max* the engine accepts. A dash means no
-  limit. The header tooltips say so, and each row's tooltip is the parameter's
-  description.
-- A click on a row opens the parameter in a dialog with the description, the value
-  and what it accepts, such as "At least 0." or "Between 0 and 1." *Done* puts the
-  value back into the table and writes nothing.
+  symbol and the value. Each row's tooltip is the parameter's description.
+- A click on a row opens the parameter in a dialog with the description and the
+  value. What the parameter accepts, such as "At least 0." or "Between 0 and 1.",
+  is the tooltip of the field, and the dialog refuses a value outside it before
+  *Done*. *Done* puts the value back into the table and writes nothing.
 - A parameter with no saved value is tagged /New/ and shows the engine's default. A
   value that differs from the saved one is tinted and tagged /Changed/. A value the
   engine refuses is shown in red, and *Save* waits.

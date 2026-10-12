@@ -3402,10 +3402,6 @@ export const en: SourceCatalogue = {
             engine: 'Engine',
             parameter: 'Parameter',
             value: 'Value',
-            min: 'Min',
-            max: 'Max',
-            minHelp: 'The lowest value the engine accepts. A dash means no lowest value.',
-            maxHelp: 'The highest value the engine accepts. A dash means no highest value.',
             editTitle: 'Parameter: {name}',
             limits: {
                 none: 'Any number.',

@@ -3429,10 +3429,6 @@ const pt: SourceCatalogue = {
             engine: 'Motor',
             parameter: 'Parâmetro',
             value: 'Valor',
-            min: 'Mín',
-            max: 'Máx',
-            minHelp: 'O menor valor que o motor aceita. Um traço significa que não há.',
-            maxHelp: 'O maior valor que o motor aceita. Um traço significa que não há.',
             editTitle: 'Parâmetro: {name}',
             limits: {
                 none: 'Qualquer número.',

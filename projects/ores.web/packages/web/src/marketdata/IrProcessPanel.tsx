@@ -180,25 +180,13 @@ export function IrProcessPanel({
                                 <th className="px-4 py-2 text-right font-medium">
                                     {t('marketdata.irProcess.value')}
                                 </th>
-                                <th
-                                    className="px-4 py-2 text-right font-medium"
-                                    title={t('marketdata.irProcess.minHelp')}
-                                >
-                                    {t('marketdata.irProcess.min')}
-                                </th>
-                                <th
-                                    className="px-4 py-2 text-right font-medium"
-                                    title={t('marketdata.irProcess.maxHelp')}
-                                >
-                                    {t('marketdata.irProcess.max')}
-                                </th>
                                 <th className="px-4 py-2" />
                             </tr>
                         </thead>
                         <tbody>
                             {lines.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-3 text-ink-muted">
+                                    <td colSpan={3} className="px-4 py-3 text-ink-muted">
                                         {t('marketdata.irProcess.none', {
                                             engine: engineName(t, engine),
                                         })}
@@ -242,12 +230,6 @@ export function IrProcessPanel({
                                             )}
                                         >
                                             {value}
-                                        </td>
-                                        <td className="px-4 py-2 text-right font-mono text-xs text-ink-muted">
-                                            {show(line.definition['min_value']) || '—'}
-                                        </td>
-                                        <td className="px-4 py-2 text-right font-mono text-xs text-ink-muted">
-                                            {show(line.definition['max_value']) || '—'}
                                         </td>
                                         <td className="px-4 py-2 text-right whitespace-nowrap">
                                             {added && (
@@ -354,22 +336,23 @@ function ParameterDialog({
                 {show(definition['description']) !== '' && (
                     <p className="text-sm text-ink-muted">{show(definition['description'])}</p>
                 )}
-                <Field
-                    label={
-                        show(definition['symbol']) === ''
-                            ? show(definition['display_name'])
-                            : `${show(definition['display_name'])} (${show(definition['symbol'])})`
-                    }
-                    hint={limitsText(t, min, max)}
-                >
-                    <Input
-                        className="font-mono"
-                        inputMode="decimal"
-                        value={typed}
-                        aria-invalid={problem !== undefined}
-                        onChange={(event) => setTyped(event.target.value)}
-                    />
-                </Field>
+                <div title={limitsText(t, min, max)}>
+                    <Field
+                        label={
+                            show(definition['symbol']) === ''
+                                ? show(definition['display_name'])
+                                : `${show(definition['display_name'])} (${show(definition['symbol'])})`
+                        }
+                    >
+                        <Input
+                            className="font-mono"
+                            inputMode="decimal"
+                            value={typed}
+                            aria-invalid={problem !== undefined}
+                            onChange={(event) => setTyped(event.target.value)}
+                        />
+                    </Field>
+                </div>
                 {problem !== undefined && (
                     <Notice tone="warn">
                         {t(`marketdata.irProcess.problems.${problem}`, {

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person sees what runs, by scope, provider and feed kind, and starts or stops a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3215][#3215]] | Add the Synthetic folder and the feed overview |
 
 * Review
 
@@ -107,3 +107,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Market data has a Synthetic folder, and the folder holds the Feed overview, FX price feeds and IR curve feeds. The feed screens moved to =/market-data/synthetic/...= with redirects from the earlier addresses, and their trails gained the Synthetic step. A card names its folder with =in=, which is new to the shell, and the walk of every screen's trail follows it.
+
+The Feed overview drills down by scope, provider and feed kind. Every node shows its FX and IR feeds and what runs, and the chosen node has Start and Stop, which ask first and report in a toast. A new service read, =synthetic.v1.ops.list_feed_folders=, returns a folder's children with the counts and the running ones, so the page reads a few folders and never the feeds. The roll-up is a pure function with its own tests.
+
+Checked: the synthetic api suite (61 cases), the BFF route tests (51), 1441 web tests, the synthetic drift gate, and, as the Acme tenant administrator, the folder read and a start of the 2016 ORE Samples collection through the folder route, which started 17 feeds and showed 17 running under it.
+
+Not met: the Feed tree, and a feed page's trail through it, are the next slice. No dataset publishes a system collection, so System feeds is empty. The screens were not looked at in a browser by the author.

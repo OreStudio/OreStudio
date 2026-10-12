@@ -1677,7 +1677,8 @@ export const en: SourceCatalogue = {
                     other: 'Others',
                 },
                 age: {
-                    caution: 'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
+                    caution:
+                        'The oldest waiting job has waited {time}. A job that waits {limit} loses its place.',
                     over: 'The oldest waiting job has waited {time}, past the {limit} a job can wait.',
                 },
                 empty: 'No work has run on the grid yet.',

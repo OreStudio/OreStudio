@@ -1688,7 +1688,8 @@ const pt: SourceCatalogue = {
                     other: 'Outros',
                 },
                 age: {
-                    caution: 'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
+                    caution:
+                        'A tarefa em espera mais antiga espera há {time}. Uma tarefa que espera {limit} perde o seu lugar.',
                     over: 'A tarefa em espera mais antiga espera há {time}, acima dos {limit} que uma tarefa pode esperar.',
                 },
                 empty: 'Ainda não correu trabalho na grelha.',

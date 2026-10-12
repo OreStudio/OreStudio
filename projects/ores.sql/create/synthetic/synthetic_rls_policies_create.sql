@@ -293,8 +293,11 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Market data providers (system-tenant reference data; tenant isolation
--- only, same shape as yield_curve_process_types)
+-- Market data providers (the installation's catalogue). The providers are
+-- published into the system tenant alone, and every tenant reads them, so the
+-- policy is the shared shape: a tenant reads its own rows and the system
+-- tenant's, and writes only its own. The providers are published into the
+-- system tenant alone, and a role that may write a provider is the system's.
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_market_data_providers_tbl enable row level security;
 
@@ -305,6 +308,7 @@ create policy market_data_providers_tenant_isolation_policy
 on ores_synthetic_market_data_providers_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

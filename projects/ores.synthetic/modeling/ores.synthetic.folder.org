@@ -171,7 +171,13 @@ std::nullopt
 :entity_plural_short:   folders
 :entity_singular_words: folder
 :entity_plural_words:   folders
+:system_tenant_visible: true
 :END:
+
+The installation's system collections, their feeds and the provider catalogue ship
+under the system tenant, and every tenant reads them, which
+=:system_tenant_visible: true= states on the repository. The row-level security
+policy still decides which system rows a tenant sees and who may write them.
 
 ** Domain includes
 

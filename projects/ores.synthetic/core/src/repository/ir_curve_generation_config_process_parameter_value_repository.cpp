@@ -28,6 +28,7 @@
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value_json_io.hpp" // IWYU pragma: keep.
@@ -210,9 +211,11 @@ std::vector<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::read<std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | order_by("id"_c);
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
                               domain::ir_curve_generation_config_process_parameter_value>(
@@ -232,9 +235,11 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(conte
         << "Reading latest IR curve generation config process parameter value. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::read<std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+              "valid_to"_c == max.value());
 
     return execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
                               domain::ir_curve_generation_config_process_parameter_value>(
@@ -255,9 +260,10 @@ ir_curve_generation_config_process_parameter_value_repository::read_all(context 
         << "Reading all IR curve generation config process parameter value versions. "
         << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::read<std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
         order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
@@ -278,9 +284,12 @@ ir_curve_generation_config_process_parameter_value_repository::read_at_version(
         << "Reading IR curve generation config process parameter value at version. " << "id: " << id
         << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::read<std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) | sqlgen::limit(1);
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+              "version"_c == version) |
+        sqlgen::limit(1);
 
     const auto entities =
         execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
@@ -353,9 +362,11 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(
         << "Reading latest IR curve generation config process parameter values with offset: "
         << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::read<std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
-        where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys)) | sqlgen::offset(offset) |
+        sqlgen::limit(limit);
 
     return execute_ordered_read_query<ir_curve_generation_config_process_parameter_value_entity,
                                       domain::ir_curve_generation_config_process_parameter_value>(
@@ -380,9 +391,10 @@ std::uint32_t ir_curve_generation_config_process_parameter_value_repository::
         << "Retrieving total active IR curve generation config process parameter value count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::read<std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
-        where("tenant_id"_c == tid);
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<ir_curve_generation_config_process_parameter_value_entity>(
         ctx,
@@ -399,9 +411,11 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::read<std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
-        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
+              "valid_to"_c == max.value());
     auto result = execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
                                      domain::ir_curve_generation_config_process_parameter_value>(
         ctx,

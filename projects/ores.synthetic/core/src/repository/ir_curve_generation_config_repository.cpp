@@ -28,6 +28,7 @@
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_json_io.hpp" // IWYU pragma: keep.
@@ -195,9 +196,11 @@ std::vector<domain::ir_curve_generation_config>
 ir_curve_generation_config_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<ir_curve_generation_config_entity,
                               domain::ir_curve_generation_config>(
@@ -213,8 +216,10 @@ ir_curve_generation_config_repository::read_latest(context ctx, const std::strin
     BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve generation config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<ir_curve_generation_config_entity,
                               domain::ir_curve_generation_config>(
@@ -231,8 +236,9 @@ ir_curve_generation_config_repository::read_all(context ctx, const std::string& 
     BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve generation config versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<ir_curve_generation_config_entity,
@@ -251,8 +257,10 @@ ir_curve_generation_config_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading IR curve generation config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -312,8 +320,10 @@ std::vector<domain::ir_curve_generation_config> ir_curve_generation_config_repos
     BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve generation configs with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<ir_curve_generation_config_entity,
                                       domain::ir_curve_generation_config>(
@@ -333,8 +343,9 @@ std::uint32_t ir_curve_generation_config_repository::get_total_ir_curve_generati
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active IR curve generation config count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<ir_curve_generation_config_entity>> | where("tenant_id"_c == tid);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<ir_curve_generation_config_entity>(
         ctx,
@@ -351,8 +362,10 @@ ir_curve_generation_config_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
+                             "valid_to"_c == max.value());
     auto result =
         execute_read_query<ir_curve_generation_config_entity, domain::ir_curve_generation_config>(
             ctx,

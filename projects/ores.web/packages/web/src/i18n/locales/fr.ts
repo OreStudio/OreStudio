@@ -1697,7 +1697,8 @@ const fr: SourceCatalogue = {
                     other: 'Autres',
                 },
                 age: {
-                    caution: 'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
+                    caution:
+                        'La plus ancienne tâche en attente attend depuis {time}. Une tâche qui attend {limit} perd sa place.',
                     over: 'La plus ancienne tâche en attente attend depuis {time}, au-delà des {limit} qu’une tâche peut attendre.',
                 },
                 empty: 'Aucun travail n’a encore été exécuté sur la grille.',

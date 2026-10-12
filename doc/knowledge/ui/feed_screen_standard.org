@@ -444,15 +444,12 @@ of its own, and a kind with a mixture-like process would share the FX one.
 
 ** Gaps
 
-- The Ticks tab shows only what the web server heard. The stored observations
-  need the feed's series identity, which
-  [[id:3CD588CB-1B74-40BA-896F-75CFF8157EAF][Name a feed by its oresmd URI]]
-  brings; then the tab reads its history from the store.
+- The Ticks tab shows only what the web server heard. The stored observations are
+  written under the feed's series identity, which a feed now names by its oresmd URI;
+  the tab does not read its history from the store yet.
 - The browser still computes some figures it only displays: the shares, the
   mean reverting half-life and band, the profiles and the distribution curve.
   Each moves to the server when a screen first needs it from there.
-- The Qt editor's simple mode, sliders for drift, volatility and jumps, waits
-  for [[id:AACBF6DA-53E9-46F4-BBD7-A476625E1732][Give the mixture a simple mode]].
 
 * See also
 

@@ -212,7 +212,7 @@ TEST_CASE("read_account_access_is_denied_without_the_read_permission", tags) {
      * behind by taking Member back -- the trigger gives Member once and never
      * again -- so the gate is asked about that caller here.
      */
-    account_role_repository(h.context()).remove_all_for_account(caller.id);
+    account_role_repository(h.context()).remove_by_account(caller.id);
 
     authorization_service svc(h.context());
     const auto access = assigned(svc.read_account_access(caller.id, other.id));

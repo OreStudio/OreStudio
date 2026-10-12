@@ -33,6 +33,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -136,4 +137,32 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     for (const auto& ar : read_ars) {
         CHECK(ar.account_id == acc.id);
     }
+}
+
+TEST_CASE("a_role_taken_away_is_in_the_history_of_the_account_with_the_time_it_ended", tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    account_repository acc_repo;
+    role_repository role_repo;
+    account_role_repository repo(h.context());
+
+    auto acc = generate_synthetic_account(ctx);
+    auto r = generate_synthetic_role(ctx);
+    acc_repo.write(h.context(), acc);
+    role_repo.write(h.context(), r);
+
+    auto ar = generate_synthetic_account_role(ctx);
+    ar.account_id = acc.id;
+    ar.role_id = r.id;
+    repo.write(ar);
+    repo.remove(acc.id, r.id);
+
+    CHECK(repo.read_latest(acc.id, r.id).empty());
+
+    const auto history = repo.read_all_by_account(acc.id);
+    const auto closed = std::ranges::find_if(history, [&](const auto& row) {
+        return row.link.role_id == r.id && row.closed_at.has_value();
+    });
+    REQUIRE(closed != history.end());
 }

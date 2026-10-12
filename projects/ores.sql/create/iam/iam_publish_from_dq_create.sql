@@ -170,10 +170,10 @@ begin
         -- rather than blocking account creation.
         if r.role is not null then
             insert into ores_iam_account_roles_tbl (
-                tenant_id, account_id, role_id, assigned_by, assigned_at,
+                tenant_id, account_id, role_id, version, modified_by, performed_by,
                 change_reason_code, change_commentary, valid_from, valid_to
             )
-            select p_target_tenant_id, v_account_id, rl.id, current_user, current_timestamp,
+            select p_target_tenant_id, v_account_id, rl.id, 0, current_user, current_user,
                    'system.external_data_import', 'Published from organisation dataset',
                    current_timestamp, ores_utility_infinity_timestamp_fn()
             from ores_iam_roles_tbl rl

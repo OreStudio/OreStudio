@@ -894,16 +894,16 @@ begin
     end if;
 
     insert into ores_iam_account_roles_tbl (
-        tenant_id, account_id, role_id,
-        assigned_by, assigned_at,
+        account_id, tenant_id, role_id, version,
+        modified_by, performed_by,
         change_reason_code, change_commentary,
         valid_from, valid_to)
     values (
-        p_tenant_id, v_account_id, v_role_id,
-        current_user, current_timestamp,
+        v_account_id, p_tenant_id, v_role_id, 0,
+        current_user, current_user,
         'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (account_id, role_id, valid_from) do nothing;
+    on conflict do nothing;
 end;
 $$ language plpgsql;
 

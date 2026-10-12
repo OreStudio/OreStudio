@@ -39,7 +39,7 @@
 
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
-import { readAccountAccess } from './access.js';
+import { readRoles } from './access.js';
 import { readEntityHistory } from './classifications.js';
 import { readAccount, readAuthEvents } from './credentials.js';
 import { readContactInformation } from './profile-operations.js';
@@ -79,8 +79,8 @@ export type TimelineEvent = z.infer<typeof timelineEventSchema>;
 /**
  * A source the stream could not draw from, and why.
  *
- * A gap is part of the answer rather than a failure of it. A grant that was
- * closed, a junction with no history provider, a window that has aged out: each
+ * A gap is part of the answer rather than a failure of it. A source this caller
+ * may not read, a record with no history provider, a window that has aged out: each
  * is a fact about what the product can say, and a reader who is not told it
  * will read the stream as complete.
  */
@@ -171,6 +171,7 @@ export const CONTACT_ENTITY = 'ores.iam.account_contact_information';
 
 /** The link between a person and a party they work in. */
 export const ACCOUNT_PARTY_ENTITY = 'ores.iam.account_party';
+export const ACCOUNT_ROLE_ENTITY = 'ores.iam.account_role';
 
 /** One person's grants or refusals of a sign-in. */
 export const AUTH_EVENT_ENTITY = 'ores.iam.auth_event';
@@ -313,9 +314,9 @@ export function linkEvents(
  *
  * The account, its contact record, the roles it holds and its sign-ins are four
  * reads over four tables, merged into one stream. The parts are not equally
- * answerable, and the stream says so rather than rounding: a grant that was
- * taken away has no read at all, and the sign-in log keeps a window rather than
- * everything. Each is a gap on the answer.
+ * answerable, and the stream says so rather than rounding: the sign-in log keeps
+ * a window rather than everything, and a source this caller may not read is
+ * missing. Each is a gap on the answer.
  *
  * A username nothing holds answers with an empty stream, which is what the
  * person screen answers for the same name.
@@ -331,7 +332,7 @@ export async function readPersonTimeline(
 
     const gaps: TimelineGap[] = [];
 
-    const [accountVersions, contact, grants, signIns, partyLinks] = await Promise.all([
+    const [accountVersions, contact, roleVersions, roles, signIns, partyLinks] = await Promise.all([
         orGap(
             gaps,
             ACCOUNT_ENTITY,
@@ -348,10 +349,17 @@ export async function readPersonTimeline(
         ),
         orGap(
             gaps,
-            'ores.iam.account_role',
-            'The roles read refused this caller, so the grants this person holds are not shown.',
-            () => readAccountAccess(caller, account.id),
-            { roles: [] },
+            ACCOUNT_ROLE_ENTITY,
+            'The roles this person was given could not be read, so giving or taking one away is not shown.',
+            () => readEntityHistory(caller, ACCOUNT_ROLE_ENTITY, account.id),
+            [],
+        ),
+        orGap(
+            gaps,
+            'ores.iam.role',
+            'The roles could not be read, so a role is named by its id.',
+            () => readRoles(caller),
+            [],
         ),
         orGap(
             gaps,
@@ -381,25 +389,26 @@ export async function readPersonTimeline(
               ).then((versions) => recordEvents(CONTACT_ENTITY, contact.id, versions));
 
     /*
-     * A grant is read as the roles held now, with who gave each and when. The
-     * grant's own row is versioned and would carry its closure, but no read
-     * returns a closed one, so the stream can say that a role was given and
-     * cannot say that it was taken away.
+     * A role given is a "Granted" entry and a role taken away a "Closed" one.
+     * The link's versions carry both, so a role no longer held is still told.
+     * A role is named by its name where the roles could be read.
      */
-    const grantEvents: readonly TimelineEvent[] = grants.roles.map((role) => ({
-        entityType: 'ores.iam.account_role',
-        entityId: role.roleId,
-        kind: 'granted',
-        at: role.givenAt,
-        actor: role.givenBy,
-        version: 1,
-        reasonCode: role.reasonCode,
-        commentary: role.commentary,
-        fields: [
-            { name: 'Role', value: role.name },
-            { name: 'Description', value: role.description },
-        ],
-    }));
+    const roleNames = new Map<string, (typeof roles)[number]>(roles.map((role) => [role.id, role]));
+    const grantEvents: readonly TimelineEvent[] = linkEvents(ACCOUNT_ROLE_ENTITY, roleVersions).map(
+        (event) => ({
+            ...event,
+            kind: event.kind === 'raised' ? 'granted' : event.kind,
+            fields: event.fields.flatMap((field) => {
+                const role = field.name === 'Role' ? roleNames.get(field.value) : undefined;
+                return role === undefined
+                    ? [field]
+                    : [
+                          { name: 'Role', value: role.name },
+                          { name: 'Description', value: role.description },
+                      ];
+            }),
+        }),
+    );
 
     const partyLinkEvents = await namedLinks(
         caller,
@@ -425,10 +434,6 @@ export async function readPersonTimeline(
         ],
     }));
 
-    gaps.push({
-        entity: 'ores.iam.account_role',
-        reason: 'A grant that was taken away is closed by its end time, and no read returns a closed grant, so only the grants held now are shown.',
-    });
     gaps.push({
         entity: AUTH_EVENT_ENTITY,
         reason: `The sign-in log keeps a rolling window rather than everything, so a sign-in older than the window is not shown. This stream reads the most recent ${SIGN_IN_PAGE}.`,

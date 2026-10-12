@@ -2342,7 +2342,8 @@ export const en: SourceCatalogue = {
                 'The counterparties it may trade with could not be read, so adding or removing one is not shown.',
             account_party:
                 'The parties a person works in could not be read, so joining or leaving one is not shown.',
-            account_role: 'A role that was taken away is not shown, only the roles held now.',
+            account_role:
+                'The roles a person was given could not be read, so giving or taking one away is not shown.',
             auth_event: 'Only the most recent sign-ins are kept, so older ones are not shown.',
             unread: 'Part of this history could not be read, so it is not shown.',
         },

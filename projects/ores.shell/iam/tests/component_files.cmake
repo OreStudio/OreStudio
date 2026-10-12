@@ -25,6 +25,7 @@ set(files
     "account_credential_commands_tests.cpp"
     "account_operations_operations_commands_tests.cpp"
     "account_party_commands_tests.cpp"
+    "account_role_commands_tests.cpp"
     "account_status_commands_tests.cpp"
     "account_type_commands_tests.cpp"
     "auth_event_operations_operations_commands_tests.cpp"

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.core/repository/account_role_repository.hpp"
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.api/domain/account_role.hpp"
+#include "ores.iam.api/domain/account_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_role_entity.hpp"
 #include "ores.iam.core/repository/account_role_mapper.hpp"
-#include <boost/lexical_cast.hpp>
+#include "ores.logging/boost_severity.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/postgres.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <optional>
+#include <sqlgen/aggregations.hpp>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/select_from.hpp>
+#include <sqlgen/to.hpp>
+#include <sqlgen/where.hpp>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -40,167 +68,396 @@ std::string account_role_repository::sql() {
 account_role_repository::account_role_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void account_role_repository::write(const domain::account_role& account_role) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account-role assignment to database.";
+ores::utility::domain::precondition
+account_role_repository::replace_claim(const domain::account_role& v) {
+    const auto current = read_latest(v.account_id, v.role_id);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
 
-    execute_write_query(ctx_,
-                        account_role_mapper::map(account_role),
-                        lg(),
-                        "writing account-role assignment to database");
+domain::account_role
+account_role_repository::apply_claim(const domain::account_role& v,
+                                     const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(v.account_id, v.role_id);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
+void account_role_repository::write(const domain::account_role& account_role) {
+    write(account_role, replace_claim(account_role));
 }
 
 void account_role_repository::write(const std::vector<domain::account_role>& account_roles) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account-role assignments to database. "
-                               << "Count: " << account_roles.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(account_roles.size());
+    for (const auto& item : account_roles)
+        claims.push_back(replace_claim(item));
+    write(account_roles, claims);
+}
 
-    execute_write_query(ctx_,
-                        account_role_mapper::map(account_roles),
-                        lg(),
-                        "writing account-role assignments to database");
+void account_role_repository::write(const domain::account_role& account_role,
+                                    const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing account role to database: " << account_role.account_id
+                               << "/" << account_role.role_id;
+    const auto t = apply_claim(account_role, claim);
+    execute_write_query(
+        ctx_, account_role_mapper::map(t), lg(), "writing account role to database");
+}
+
+void account_role_repository::write(
+    const std::vector<domain::account_role>& account_roles,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing account roles to database. Count: "
+                               << account_roles.size();
+    std::vector<domain::account_role> batch;
+    batch.reserve(account_roles.size());
+    for (std::size_t i = 0; i < account_roles.size(); ++i)
+        batch.push_back(apply_claim(account_roles[i], claims[i]));
+    execute_write_query(
+        ctx_, account_role_mapper::map(batch), lg(), "writing account roles to database");
 }
 
 std::vector<domain::account_role> account_role_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query =
-        sqlgen::read<std::vector<account_role_entity>> | where("valid_to"_c == max.value());
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_role_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("account_id"_c, "role_id"_c);
 
     return execute_read_query<account_role_entity, domain::account_role>(
         ctx_,
         query,
         [](const auto& entities) { return account_role_mapper::map(entities); },
         lg(),
-        "Reading latest account-role assignments");
+        "Reading latest account roles");
+}
+
+std::vector<domain::account_role> account_role_repository::read_latest(std::uint32_t offset,
+                                                                       std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_role_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("account_id"_c, "role_id"_c) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
+
+    return execute_read_query<account_role_entity, domain::account_role>(
+        ctx_,
+        query,
+        [](const auto& entities) { return account_role_mapper::map(entities); },
+        lg(),
+        "Reading latest account roles (paginated).");
+}
+
+std::vector<domain::account_role>
+account_role_repository::read_latest(const boost::uuids::uuid& account_id,
+                                     const boost::uuids::uuid& role_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account role. " << account_id << "/" << role_id;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    const auto role_id_str = boost::uuids::to_string(role_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_role_entity>> |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+                             "role_id"_c == role_id_str && "valid_to"_c == max.value());
+
+    return execute_read_query<account_role_entity, domain::account_role>(
+        ctx_,
+        query,
+        [](const auto& entities) { return account_role_mapper::map(entities); },
+        lg(),
+        "Reading latest account role by key.");
+}
+
+std::uint32_t account_role_repository::get_total_account_role_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<account_role_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active account roles count: " << count;
+    return count;
 }
 
 std::vector<domain::account_role>
 account_role_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading roles for account: " << account_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_role_entity>> |
-                       where("account_id"_c == account_id_str && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+                             "valid_to"_c == max.value()) |
+                       order_by("role_id"_c);
 
-    return execute_read_query<account_role_entity, domain::account_role>(
+    auto rows = execute_read_query<account_role_entity, domain::account_role>(
         ctx_,
         query,
         [](const auto& entities) { return account_role_mapper::map(entities); },
         lg(),
-        "Reading account-role assignments by account.");
+        "Reading latest account roles by account.");
+
+    return rows;
 }
 
 std::vector<domain::account_role>
 account_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading accounts for role: " << role_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto role_id_str = boost::lexical_cast<std::string>(role_id);
-    const auto query = sqlgen::read<std::vector<account_role_entity>> |
-                       where("role_id"_c == role_id_str && "valid_to"_c == max.value());
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto role_id_str = boost::uuids::to_string(role_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_role_entity>> |
+        where("tenant_id"_c == tid && "role_id"_c == role_id_str && "valid_to"_c == max.value()) |
+        order_by("account_id"_c);
 
-    return execute_read_query<account_role_entity, domain::account_role>(
+    auto rows = execute_read_query<account_role_entity, domain::account_role>(
         ctx_,
         query,
         [](const auto& entities) { return account_role_mapper::map(entities); },
         lg(),
-        "Reading account-role assignments by role.");
+        "Reading latest account roles by role.");
+
+    return rows;
 }
 
-bool account_role_repository::exists(const boost::uuids::uuid& account_id,
-                                     const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Checking if role " << role_id << " is assigned to account "
-                               << account_id;
+std::vector<domain::account_role> account_role_repository::read_latest_by_account(
+    const boost::uuids::uuid& account_id, std::uint32_t offset, std::uint32_t limit) {
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id
+                               << " offset: " << offset << " limit: " << limit;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const auto role_id_str = boost::lexical_cast<std::string>(role_id);
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_role_entity>> |
-                       where("account_id"_c == account_id_str && "role_id"_c == role_id_str &&
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value()) |
-                       limit(1);
+                       order_by("role_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    const auto result = execute_read_query<account_role_entity, domain::account_role>(
+    auto rows = execute_read_query<account_role_entity, domain::account_role>(
         ctx_,
         query,
         [](const auto& entities) { return account_role_mapper::map(entities); },
         lg(),
-        "Checking account-role assignment existence.");
+        "Reading latest account roles by account (paginated).");
 
-    return !result.empty();
+    return rows;
+}
+
+std::uint32_t account_role_repository::get_total_account_role_count_by_account(
+    const boost::uuids::uuid& account_id) {
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Account: "
+                               << account_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<account_role_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active account roles count by account: " << count;
+    return count;
+}
+
+std::vector<domain::account_role> account_role_repository::read_latest_by_role(
+    const boost::uuids::uuid& role_id, std::uint32_t offset, std::uint32_t limit) {
+    const auto role_id_str = boost::uuids::to_string(role_id);
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id
+                               << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_role_entity>> |
+        where("tenant_id"_c == tid && "role_id"_c == role_id_str && "valid_to"_c == max.value()) |
+        order_by("account_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    auto rows = execute_read_query<account_role_entity, domain::account_role>(
+        ctx_,
+        query,
+        [](const auto& entities) { return account_role_mapper::map(entities); },
+        lg(),
+        "Reading latest account roles by role (paginated).");
+
+    return rows;
+}
+
+std::uint32_t
+account_role_repository::get_total_account_role_count_by_role(const boost::uuids::uuid& role_id) {
+    const auto role_id_str = boost::uuids::to_string(role_id);
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Role: " << role_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<account_role_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "role_id"_c == role_id_str && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active account roles count by role: " << count;
+    return count;
+}
+
+std::vector<account_role_history_row>
+account_role_repository::read_all_by_account(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the account roles. Account: "
+                               << account_id;
+
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_role_entity>> |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
+                       order_by("role_id"_c, "valid_from"_c.desc());
+
+    return execute_read_query<account_role_entity, account_role_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<account_role_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                account_role_history_row row;
+                row.link = account_role_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().link.role_id == row.link.role_id &&
+                                      rows.back().link.version == row.link.version + 1;
+                if (!replaced)
+                    row.closed_at = validity_end(entity.valid_to);
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the account roles by account.");
 }
 
 void account_role_repository::remove(const boost::uuids::uuid& account_id,
                                      const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account-role assignment. Account: " << account_id
-                               << ", Role: " << role_id;
-
-    // Delete the assignment - the database rule will close the temporal record
-    // instead of actually deleting it (sets valid_to = current_timestamp)
-    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const auto role_id_str = boost::lexical_cast<std::string>(role_id);
-    const auto query = sqlgen::delete_from<account_role_entity> |
-                       where("account_id"_c == account_id_str && "role_id"_c == role_id_str);
-
-    execute_delete_query(ctx_, query, lg(), "removing account-role assignment from database");
+    static_cast<void>(remove(account_id, role_id, std::nullopt));
 }
 
-void account_role_repository::remove_all_for_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all roles for account: " << account_id;
+account_role_repository::remove_status
+account_role_repository::remove(const boost::uuids::uuid& account_id,
+                                const boost::uuids::uuid& role_id,
+                                std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing account role from database: " << account_id << "/"
+                               << role_id;
 
-    // Delete the assignments - the database rule will close the temporal records
-    // instead of actually deleting them (sets valid_to = current_timestamp)
-    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    const auto current = read_latest(account_id, role_id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    const auto role_id_str = boost::uuids::to_string(role_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<account_role_entity> | where("account_id"_c == account_id_str);
+        sqlgen::delete_from<account_role_entity> |
+        where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+              "role_id"_c == role_id_str && "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing all account-role assignments for account");
+    execute_delete_query(ctx_, query, lg(), "removing account role from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(account_id, role_id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
 }
 
-std::vector<std::string>
-account_role_repository::read_effective_permissions(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading effective permissions for account: " << account_id;
-
-    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-
-    // Call the SQL function defined in iam_rbac_functions_create.sql
-    const std::string sql =
-        "SELECT code FROM ores_iam_get_effective_permissions_fn('" + account_id_str + "'::uuid)";
-
-    return execute_raw_string_query(ctx_, sql, lg(), "Reading effective permissions for account");
+void account_role_repository::remove(const std::vector<boost::uuids::uuid>& account_ids,
+                                     const std::vector<boost::uuids::uuid>& role_ids) {
+    // A junction's key is the pair of columns, and a per-column .in() DELETE
+    // would be a cross-product over-delete (rows outside the requested pairs),
+    // so each pair is removed on its own.
+    if (account_ids.size() != role_ids.size())
+        throw std::invalid_argument(
+            "account_role_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < account_ids.size(); ++i)
+        static_cast<void>(remove(account_ids[i], role_ids[i], std::nullopt));
 }
 
-std::vector<domain::role>
-account_role_repository::read_roles_with_permissions(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading roles with permissions for account: " << account_id;
+void account_role_repository::remove_by_account(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing all account roles from database: " << account_id;
 
-    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<account_role_entity> |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str);
 
-    // Call the SQL function defined in iam_rbac_functions_create.sql
-    const std::string sql = "SELECT role_id, role_version, role_name, role_description, "
-                            "role_modified_by, permission_codes "
-                            "FROM ores_iam_get_account_roles_with_permissions_fn('" +
-                            account_id_str + "'::uuid)";
-
-    const auto rows =
-        execute_raw_multi_column_query(ctx_, sql, lg(), "Reading roles with permissions");
-
-    std::vector<domain::role> result;
-    result.reserve(rows.size());
-
-    for (const auto& row : rows) {
-        if (row.size() >= 6 && row[0] && row[1] && row[2] && row[3] && row[4]) {
-            domain::role r;
-            r.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-            r.version = std::stoi(*row[1]);
-            r.name = *row[2];
-            r.description = *row[3];
-            r.modified_by = *row[4];
-            result.push_back(std::move(r));
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Read roles with permissions. Total: " << result.size();
-    return result;
+    execute_delete_query(ctx_, query, lg(), "removing all account roles from database");
 }
+
 
 }

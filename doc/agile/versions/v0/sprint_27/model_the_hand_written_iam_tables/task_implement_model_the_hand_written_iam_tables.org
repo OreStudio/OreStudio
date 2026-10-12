@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :model_the_hand_written_iam_tables:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-model-the-hand-written-iam-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:575E321C-CF36-4E2F-87C9-E29D8C698D3A][Model the hand-written IAM tables]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every IAM table that holds data has a model, so the drift check covers it and no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:575E321C-CF36-4E2F-87C9-E29D8C698D3A][Model the hand-written IAM tables]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

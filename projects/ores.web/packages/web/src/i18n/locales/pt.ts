@@ -2362,7 +2362,7 @@ const pt: SourceCatalogue = {
             account_party:
                 'As partes em que uma pessoa trabalha não puderam ser lidas, por isso não se mostra quando entra ou sai de uma.',
             account_role:
-                'Um papel que foi retirado não se mostra, apenas os papéis detidos agora.',
+                'Os papéis dados a uma pessoa não puderam ser lidos, por isso não se mostra quando um é dado ou retirado.',
             auth_event:
                 'Só se guardam os inícios de sessão mais recentes, por isso os mais antigos não se mostram.',
             unread: 'Parte deste histórico não pôde ser lida, por isso não se mostra.',

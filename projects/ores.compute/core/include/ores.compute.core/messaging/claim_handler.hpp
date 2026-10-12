@@ -24,6 +24,7 @@
 #include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/messaging/assignment_grants.hpp"
+#include "ores.compute.core/messaging/submit_decision.hpp"
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.compute.core/repository/work_ledger_repository.hpp"
 #include "ores.compute.core/service/result_service.hpp"
@@ -162,9 +163,7 @@ private:
         auto result = result_svc.get_result(entry.result_id);
         // Unsent, or in progress when an earlier claim of the entry lost its lease: the reaper
         // returns the entry to the queue and leaves the result as that node marked it.
-        const bool runnable =
-            result && (result->server_state == 2 || (result->server_state == 4 && entry.attempts > 1));
-        if (!runnable) {
+        if (!result || !claimable(result->server_state, entry.attempts)) {
             // Retired, done or gone while it waited. Nothing can run it.
             BOOST_LOG_SEV(claim_handler_lg(), ores::logging::info)
                 << "Dropping ledger entry for result "

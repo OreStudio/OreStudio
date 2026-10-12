@@ -304,18 +304,19 @@ TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", tags) {
 TEST_CASE("waiting_counts_the_queued_entries_of_one_tenant", tags) {
     database_helper h;
     ledger_cleanup cleanup(h);
-    const auto platform = unique_platform();
     const auto tenant = random_uuid();
-    cleanup.add(entry_for(platform, tenant));
-    cleanup.add(entry_for(platform, tenant));
-    cleanup.add(entry_for(platform, random_uuid()));
+    const auto other_platform = unique_platform();
+    cleanup.add(entry_for(unique_platform(), tenant));
+    cleanup.add(entry_for(unique_platform(), tenant));
+    cleanup.add(entry_for(other_platform, tenant));
+    cleanup.add(entry_for(unique_platform(), random_uuid()));
     work_ledger_repository ledger;
-    REQUIRE(ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300)).has_value());
 
-    // Two were queued for the tenant and one claim took one of the three, whichever it was.
-    const auto waiting = ledger.waiting(cleanup.system(), tenant);
-    CHECK(waiting >= 1);
-    CHECK(waiting <= 2);
+    CHECK(ledger.waiting(cleanup.system(), tenant) == 3);
+
+    // A claim takes one of the tenant's entries out of the waiting count.
+    REQUIRE(ledger.claim(cleanup.system(), random_uuid(), other_platform, seconds(300)).has_value());
+    CHECK(ledger.waiting(cleanup.system(), tenant) == 2);
 }
 
 TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", tags) {

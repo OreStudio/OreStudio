@@ -72,9 +72,10 @@ void lease_reaper::end_exhausted() {
             ores::compute::service::result_service result_svc(tenant_ctx);
             const auto result = result_svc.get_result(entry.result_id);
 
-            // Only a result still in progress is ended. One that was submitted, or retired,
-            // after the reaper read the entry keeps its state, and only the entry goes.
-            if (result && result->server_state == 4) {
+            // Only a result still unsent or in progress is ended. A node that died between the
+            // claim and the mark leaves it unsent. One that was submitted, or retired, after
+            // the reaper read the entry keeps its state, and only the entry goes.
+            if (result && (result->server_state == 2 || result->server_state == 4)) {
                 auto ended = *result;
                 // Done, with outcome NoReply.
                 ended.server_state = 5;

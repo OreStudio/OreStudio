@@ -42,8 +42,10 @@ using ores::service::messaging::stamp;
 
 namespace {
 
-/// The most jobs of one tenant that wait in the queue. At the grid's pace of about 130 jobs a
-/// minute, this is a wait of about half an hour for the last job of a tenant alone in the queue.
+/// The most jobs of one tenant that wait in the queue. The cap is soft: the count and the
+/// inserts are not one step, so two dispatches at once can pass it by one workunit each. At the
+/// grid's pace of about 130 jobs a minute, this is a wait of about half an hour for the last job
+/// of a tenant alone in the queue.
 constexpr std::int64_t tenant_queue_limit = 3600;
 
 }

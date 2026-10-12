@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: ABC94C47-612F-4FC7-B94E-F00884024444
+:END:
+#+title: Task: Build the oresmd URL editor dialog
+#+description: Build the accepted editor of the prototype, the composer of variant A, as a component any screen calls the way variant C does: it opens in a modal over the screen, loads the URL it is given, offers the schema row of the chosen kind with the codes the system keeps as pickers, validates through the server, and writes the edited URI back on Apply.
+#+type: task
+#+level: s1
+#+filetags: :edit_an_oresmd_url_in_a_dialog:sprint_27:v0:
+#+owner: marco
+#+branch: feature/build-the-oresmd-url-editor-dialog
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A screen calls the editor with a URL and a callback and gets a valid URL back, and the editor holds none of the grammar.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The dialog loads a URL and shows the codec's reason when it is refused.
+- Choosing a kind changes the field table, and a closed set is a select.
+- Copy and Apply stay disabled while a message stands, and Apply writes the URI back and closes the dialog.
+- The text is in English, French and Portuguese.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

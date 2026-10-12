@@ -60,6 +60,12 @@
 #include "ores.trading.service/messaging/composite_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/composite_leg_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_basket_constituent_event_registrar.hpp"
+#include "ores.trading.service/messaging/credit_default_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/index_credit_default_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/index_credit_default_swap_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/synthetic_cdo_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/credit_linked_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/risk_participation_agreement_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
@@ -301,6 +307,24 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto credit_basket_constituent_sub =
         ores::trading::service::messaging::register_credit_basket_constituent_event_mapping(
+            event_source, event_bus, nats);
+    auto credit_default_swap_instrument_sub =
+        ores::trading::service::messaging::register_credit_default_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto index_credit_default_swap_instrument_sub =
+        ores::trading::service::messaging::register_index_credit_default_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto index_credit_default_swap_option_instrument_sub =
+        ores::trading::service::messaging::register_index_credit_default_swap_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto synthetic_cdo_instrument_sub =
+        ores::trading::service::messaging::register_synthetic_cdo_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto credit_linked_swap_instrument_sub =
+        ores::trading::service::messaging::register_credit_linked_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto risk_participation_agreement_instrument_sub =
+        ores::trading::service::messaging::register_risk_participation_agreement_instrument_event_mapping(
             event_source, event_bus, nats);
     auto credit_instrument_sub =
         ores::trading::service::messaging::register_credit_instrument_event_mapping(

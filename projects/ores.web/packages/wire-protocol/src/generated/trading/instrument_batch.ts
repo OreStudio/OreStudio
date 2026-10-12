@@ -53,10 +53,14 @@ import type { CapFloorInstrument } from './domain/cap_floor_instrument.js';
 import type { CommodityBasketConstituent } from './domain/commodity_basket_constituent.js';
 import type { CompositeLeg } from './domain/composite_leg.js';
 import type { CreditBasketConstituent } from './domain/credit_basket_constituent.js';
+import type { CreditDefaultSwapInstrument } from './domain/credit_default_swap_instrument.js';
+import type { CreditLinkedSwapInstrument } from './domain/credit_linked_swap_instrument.js';
 import type { EquityPositionOptionUnderlying } from './domain/equity_position_option_underlying.js';
 import type { FlexiSwapInstrument } from './domain/flexi_swap_instrument.js';
 import type { FlexiSwapLowerNotional } from './domain/flexi_swap_lower_notional.js';
 import type { FraInstrument } from './domain/fra_instrument.js';
+import type { IndexCreditDefaultSwapInstrument } from './domain/index_credit_default_swap_instrument.js';
+import type { IndexCreditDefaultSwapOptionInstrument } from './domain/index_credit_default_swap_option_instrument.js';
 import type { InflationSwapInstrument } from './domain/inflation_swap_instrument.js';
 import type { InstrumentOption } from './domain/instrument_option.js';
 import type { InstrumentOptionExerciseFee } from './domain/instrument_option_exercise_fee.js';
@@ -67,10 +71,12 @@ import type { InstrumentSchedule } from './domain/instrument_schedule.js';
 import type { InstrumentScheduleDate } from './domain/instrument_schedule_date.js';
 import type { InstrumentStrike } from './domain/instrument_strike.js';
 import type { KnockOutSwapInstrument } from './domain/knock_out_swap_instrument.js';
+import type { RiskParticipationAgreementInstrument } from './domain/risk_participation_agreement_instrument.js';
 import type { SwapLeg } from './domain/swap_leg.js';
 import type { SwapLegAmount } from './domain/swap_leg_amount.js';
 import type { SwapLegRate } from './domain/swap_leg_rate.js';
 import type { SwaptionInstrument } from './domain/swaption_instrument.js';
+import type { SyntheticCdoInstrument } from './domain/synthetic_cdo_instrument.js';
 import type { VanillaSwapInstrument } from './domain/vanilla_swap_instrument.js';
 
 /**
@@ -113,10 +119,14 @@ export interface InstrumentBatch {
     commodity_basket_constituents: CommodityBasketConstituent[];
     composite_legs: CompositeLeg[];
     credit_basket_constituents: CreditBasketConstituent[];
+    credit_default_swap_instruments: CreditDefaultSwapInstrument[];
+    credit_linked_swap_instruments: CreditLinkedSwapInstrument[];
     equity_position_option_underlyings: EquityPositionOptionUnderlying[];
     flexi_swap_instruments: FlexiSwapInstrument[];
     flexi_swap_lower_notionals: FlexiSwapLowerNotional[];
     fra_instruments: FraInstrument[];
+    index_credit_default_swap_instruments: IndexCreditDefaultSwapInstrument[];
+    index_credit_default_swap_option_instruments: IndexCreditDefaultSwapOptionInstrument[];
     inflation_swap_instruments: InflationSwapInstrument[];
     instrument_options: InstrumentOption[];
     instrument_option_exercise_fees: InstrumentOptionExerciseFee[];
@@ -127,9 +137,11 @@ export interface InstrumentBatch {
     instrument_schedule_dates: InstrumentScheduleDate[];
     instrument_strikes: InstrumentStrike[];
     knock_out_swap_instruments: KnockOutSwapInstrument[];
+    risk_participation_agreement_instruments: RiskParticipationAgreementInstrument[];
     swap_legs: SwapLeg[];
     swap_leg_amounts: SwapLegAmount[];
     swap_leg_rates: SwapLegRate[];
     swaption_instruments: SwaptionInstrument[];
+    synthetic_cdo_instruments: SyntheticCdoInstrument[];
     vanilla_swap_instruments: VanillaSwapInstrument[];
 }

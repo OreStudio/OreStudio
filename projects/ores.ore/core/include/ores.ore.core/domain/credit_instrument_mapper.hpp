@@ -51,9 +51,11 @@ private:
 
 public:
     /**
-     * The credit trade as the family carrier: the instrument, the trade's legs
-     * as rows of the shared leg tables, and the names of a basket. A product
-     * that states no leg or no basket leaves the collection empty.
+     * The credit trade as the family carrier: the header, the product's fact
+     * row, the trade's legs as rows of the shared leg tables, the names of a
+     * basket, and an index option's strike and exercise dates as shared strike
+     * and schedule rows. A product that states none of them leaves the
+     * collection empty.
      */
     static trading::domain::credit_instrument_data forward_cds(const trade& t);
     static trading::domain::credit_instrument_data forward_index_cds(const trade& t);
@@ -71,24 +73,6 @@ public:
     static trade reverse_rpa(const ores::trading::domain::credit_instrument_data& data);
 
 private:
-    static ores::trading::domain::credit_instrument instrument_cds(const trade& t);
-    static ores::trading::domain::credit_instrument instrument_index_cds(const trade& t);
-    static ores::trading::domain::credit_instrument instrument_index_cds_option(const trade& t);
-    static ores::trading::domain::credit_instrument instrument_credit_linked_swap(const trade& t);
-    static ores::trading::domain::credit_instrument instrument_synthetic_cdo(const trade& t);
-    static ores::trading::domain::credit_instrument instrument_rpa(const trade& t);
-
-    static trade trade_cds(const ores::trading::domain::credit_instrument& instr);
-    static trade trade_index_cds(const ores::trading::domain::credit_instrument& instr);
-    static trade trade_index_cds_option(const ores::trading::domain::credit_instrument& instr);
-    static trade trade_credit_linked_swap(const ores::trading::domain::credit_instrument& instr);
-    static trade trade_synthetic_cdo(const ores::trading::domain::credit_instrument& instr);
-    static trade trade_rpa(const ores::trading::domain::credit_instrument& instr);
-
-    static void map_cds_leg(const legData& ld, ores::trading::domain::credit_instrument& instr);
-
-    static legData reverse_cds_leg(const ores::trading::domain::credit_instrument& instr);
-
     /** Appends one ORE leg to the carrier as rows of the shared leg tables. */
     static void append_leg(ores::trading::domain::credit_instrument_data& result,
                            const legData& ld,

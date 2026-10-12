@@ -35,25 +35,8 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
 export interface CreditInstrument {
     identity: InstrumentIdentity;
     reference_entity: string;
-    currency: string;
-    notional: string;
-    spread: string;
-    recovery_rate: number;
-    tenor: string;
-    start_date: string;
-    maturity_date: string;
-    day_count_fraction_code: string;
-    payment_frequency_code: string;
-    index_name: string;
-    index_series: number | null;
-    seniority: string;
-    restructuring: string;
+    start_date: string | null;
+    maturity_date: string | null;
     description: string;
-    option_type: string;
-    option_expiry_date: string | null;
-    option_strike: string | null;
-    linked_asset_code: string;
-    tranche_attachment: number | null;
-    tranche_detachment: number | null;
     audit: AuditRecord;
 }

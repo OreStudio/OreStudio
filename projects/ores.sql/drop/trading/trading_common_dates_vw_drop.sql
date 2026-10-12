@@ -25,4 +25,5 @@
  * Drops the common-date views.
  */
 
+drop view if exists ores_trading_credit_instruments_common_dates_vw;
 drop view if exists ores_trading_rate_instruments_common_dates_vw;

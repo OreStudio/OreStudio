@@ -24,23 +24,28 @@
  *
  * Credit Instrument Table
  *
- * Represents the credit product types ORE states. trade_type_code
- * discriminates the exact product, and the optional field blocks are null
- * when the sub-type does not state them: the index block for CDSIndex
- * products, the option block for CDS option products, the tranche block for
- * CBO and SyntheticCDO products, and the linked-asset code for
- * CreditLinkedSwap.
+ * One row per credit trade, the family's own header. It holds what every
+ * product in the family states the same way: the trade it belongs to, the trade
+ * type code, the party, the activity that wrote the version, the reference
+ * entity, the instrument's start and maturity dates and its description. It
+ * holds no product economics.
  *
- * The table is a flat instrument sub-type, so it binds
- * :profile: trading-instrument. Two table features justify that binding:
- * the table is tenant-scoped through tenant_id and the tenant isolation
- * policy, its insert
- * trigger stamps party_id from the session variable app.current_party_id
- * rather than taking it from the client. The profile also fixes the identity
- * and audit field groups, the batch read and the generator facet, and leaves
- * the table with no UI surface -- the per-instrument forms were hand-crafted
- * in the removed desktop client and consumed the generated messaging
- * protocol.
+ * The header is the family's *coverage*: the trade_type_code check that the
+ * routed-instrument template generates from ores.trading.trade_type_catalogue
+ * lists exactly the six codes the importer writes, and the two codes with no
+ * importer, CreditDefaultSwapOption and CBO, stay out until a mapper writes them.
+ * It is also the family's *owner*: the delete cascade section below names every
+ * table the family writes, so the delete rule closes the legs, the basket and
+ * the facts with the header and the family does not outlive it.
+ *
+ * The products' own fields stay in their fact tables, keyed by the same trade
+ * and joined to this row by the trade id. A fact table carries no party_id and
+ * no trade_type_code: the header is the family's party boundary and its
+ * routing boundary.
+ *
+ * The dates are the family's *common dates*, the one set of names for the start
+ * and the maturity of every credit product. A risk participation agreement's
+ * protection start and end are those dates.
  */
 
 create table if not exists "ores_trading_credit_instruments_tbl" (
@@ -51,26 +56,9 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     "party_id" uuid not null,
     "trade_activity_id" uuid not null,
     "reference_entity" text not null,
-    "currency" text not null,
-    "notional" numeric(38, 12) not null,
-    "spread" numeric(38, 12) not null,
-    "recovery_rate" double precision not null,
-    "tenor" text not null,
-    "start_date" date not null,
-    "maturity_date" date not null,
-    "day_count_fraction_code" text not null,
-    "payment_frequency_code" text not null,
-    "index_name" text null,
-    "index_series" integer null,
-    "seniority" text null,
-    "restructuring" text null,
+    "start_date" date null,
+    "maturity_date" date null,
     "description" text null,
-    "option_type" text null,
-    "option_expiry_date" date null,
-    "option_strike" numeric(38, 12) null,
-    "linked_asset_code" text null,
-    "tranche_attachment" double precision null,
-    "tranche_detachment" double precision null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -85,13 +73,9 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('RiskParticipationAgreement', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO')),
-    check ("notional" > 0),
-    check ("spread" >= 0),
-    check ("recovery_rate" >= 0 AND "recovery_rate" <= 1),
+    check ("trade_type_code" in ('RiskParticipationAgreement', 'CreditDefaultSwap', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap')),
     check ("reference_entity" <> ''),
-    check ("tenor" <> ''),
-    check ("option_type" is null or "option_type" in ('Call', 'Put'))
+    check ("maturity_date" is null or "start_date" is null or "maturity_date" >= "start_date")
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -148,8 +132,18 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate payment_frequency_code
-    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
+    -- Validate the anchor pin to ores_trading_trades_tbl
+    if NEW.trade_id is not null and NEW.party_id is not null and NEW.trade_type_code is not null and not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and party_id = NEW.party_id
+          and trade_type = NEW.trade_type_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. The party and trade type must be the trade''s own.', NEW.trade_id
+            using errcode = '23503';
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -235,6 +229,33 @@ begin
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
     delete from "ores_trading_swap_leg_rates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_strikes_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedules_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedule_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_cds_instruments_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_index_cds_instruments_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_index_cds_option_instruments_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_synthetic_cdo_instruments_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_credit_linked_swap_instruments_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_risk_participation_instruments_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
 end;

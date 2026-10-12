@@ -25,21 +25,34 @@
 #include "ores.trading.api/domain/credit_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<credit_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Reference" << "Ccy" << "Notional" << "Spread"
-          << "Maturity" << "Recorded At" << fort::endr;
+    table << fort::header << "ID" << "Type" << "Reference" << "Start Date" << "Maturity Date"
+          << "Description" << "Version" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& ci : v) {
         table << ci.identity.trade_id << ci.identity.trade_type_code << ci.reference_entity
-              << ci.currency << ci.notional << ci.spread << ci.maturity_date << ci.audit.recorded_at
-              << fort::endr;
+              << opt_str(ci.start_date) << opt_str(ci.maturity_date) << ci.description
+              << ci.identity.version << ci.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

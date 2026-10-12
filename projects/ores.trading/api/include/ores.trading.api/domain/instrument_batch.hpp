@@ -37,7 +37,9 @@
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent.hpp"
+#include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
@@ -58,6 +60,8 @@
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
@@ -69,11 +73,13 @@
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
+#include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <utility>
@@ -218,6 +224,14 @@ struct instrument_batch {
      */
     std::vector<credit_basket_constituent> credit_basket_constituents;
     /**
+     * @brief The credit_default_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<credit_default_swap_instrument> credit_default_swap_instruments;
+    /**
+     * @brief The credit_linked_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<credit_linked_swap_instrument> credit_linked_swap_instruments;
+    /**
      * @brief The equity_position_option_underlying rows, keyed by trade id.
      */
     std::vector<equity_position_option_underlying> equity_position_option_underlyings;
@@ -233,6 +247,15 @@ struct instrument_batch {
      * @brief The fra_instrument rows, keyed by trade id.
      */
     std::vector<fra_instrument> fra_instruments;
+    /**
+     * @brief The index_credit_default_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<index_credit_default_swap_instrument> index_credit_default_swap_instruments;
+    /**
+     * @brief The index_credit_default_swap_option_instrument rows, keyed by trade id.
+     */
+    std::vector<index_credit_default_swap_option_instrument>
+        index_credit_default_swap_option_instruments;
     /**
      * @brief The inflation_swap_instrument rows, keyed by trade id.
      */
@@ -274,6 +297,10 @@ struct instrument_batch {
      */
     std::vector<knock_out_swap_instrument> knock_out_swap_instruments;
     /**
+     * @brief The risk_participation_agreement_instrument rows, keyed by trade id.
+     */
+    std::vector<risk_participation_agreement_instrument> risk_participation_agreement_instruments;
+    /**
      * @brief The swap_leg rows, keyed by trade id.
      */
     std::vector<swap_leg> swap_legs;
@@ -289,6 +316,10 @@ struct instrument_batch {
      * @brief The swaption_instrument rows, keyed by trade id.
      */
     std::vector<swaption_instrument> swaption_instruments;
+    /**
+     * @brief The synthetic_cdo_instrument rows, keyed by trade id.
+     */
+    std::vector<synthetic_cdo_instrument> synthetic_cdo_instruments;
     /**
      * @brief The vanilla_swap_instrument rows, keyed by trade id.
      */
@@ -531,6 +562,20 @@ inline void append(instrument_batch& batch, credit_basket_constituent v) {
 }
 
 /**
+ * @brief Adds one credit_default_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, credit_default_swap_instrument v) {
+    batch.credit_default_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one credit_linked_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, credit_linked_swap_instrument v) {
+    batch.credit_linked_swap_instruments.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one equity_position_option_underlying to the array that holds its type.
  */
 inline void append(instrument_batch& batch, equity_position_option_underlying v) {
@@ -556,6 +601,20 @@ inline void append(instrument_batch& batch, flexi_swap_lower_notional v) {
  */
 inline void append(instrument_batch& batch, fra_instrument v) {
     batch.fra_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one index_credit_default_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, index_credit_default_swap_instrument v) {
+    batch.index_credit_default_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one index_credit_default_swap_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, index_credit_default_swap_option_instrument v) {
+    batch.index_credit_default_swap_option_instruments.push_back(std::move(v));
 }
 
 /**
@@ -629,6 +688,13 @@ inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
 }
 
 /**
+ * @brief Adds one risk_participation_agreement_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, risk_participation_agreement_instrument v) {
+    batch.risk_participation_agreement_instruments.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one swap_leg to the array that holds its type.
  */
 inline void append(instrument_batch& batch, swap_leg v) {
@@ -654,6 +720,13 @@ inline void append(instrument_batch& batch, swap_leg_rate v) {
  */
 inline void append(instrument_batch& batch, swaption_instrument v) {
     batch.swaption_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one synthetic_cdo_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, synthetic_cdo_instrument v) {
+    batch.synthetic_cdo_instruments.push_back(std::move(v));
 }
 
 /**

@@ -54,6 +54,12 @@
 #include "ores.trading.core/messaging/callable_swap_call_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/commodity_basket_constituent_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/credit_basket_constituent_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/credit_default_swap_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/index_credit_default_swap_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/index_credit_default_swap_option_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/synthetic_cdo_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/credit_linked_swap_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/risk_participation_agreement_instrument_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/counterparty_scope_type_registrar.hpp"
 #include "ores.trading.core/messaging/entry_channel_type_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
@@ -224,6 +230,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_callable_swap_call_date_history_provider(hist_registry);
     register_commodity_basket_constituent_history_provider(hist_registry);
     register_credit_basket_constituent_history_provider(hist_registry);
+    register_credit_default_swap_instrument_history_provider(hist_registry);
+    register_index_credit_default_swap_instrument_history_provider(hist_registry);
+    register_index_credit_default_swap_option_instrument_history_provider(hist_registry);
+    register_synthetic_cdo_instrument_history_provider(hist_registry);
+    register_credit_linked_swap_instrument_history_provider(hist_registry);
+    register_risk_participation_agreement_instrument_history_provider(hist_registry);
     register_equity_position_option_underlying_history_provider(hist_registry);
     register_exercise_type_history_provider(hist_registry);
     register_flexi_swap_lower_notional_history_provider(hist_registry);

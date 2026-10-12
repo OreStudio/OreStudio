@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/credit_instrument_generator.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -50,19 +49,10 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_activity_id = ctx.generate_uuid();
     r.reference_entity = std::string("ACME Corp");
-    r.currency = std::string("USD");
-    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
-    r.spread = ores::utility::decimal::decimal::from_string("100.0").value();
-    r.recovery_rate = 0.4;
-    r.tenor = std::string("5Y");
-    r.start_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
-    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2031} / 1 / 15};
-    r.day_count_fraction_code = std::string("Actual365Fixed");
-    r.payment_frequency_code = std::string("Quarterly");
-    r.option_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
-    r.option_strike = ores::utility::decimal::decimal::from_string(
-                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
-                          .value();
+    r.start_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.maturity_date =
+        std::chrono::year_month_day{std::chrono::sys_days{*r.start_date} + std::chrono::days{365}};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

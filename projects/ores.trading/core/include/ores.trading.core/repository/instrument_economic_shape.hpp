@@ -33,7 +33,9 @@
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
+#include "ores.trading.core/repository/credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_instrument_repository.hpp"
+#include "ores.trading.core/repository/credit_linked_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
@@ -51,12 +53,16 @@
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
+#include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
 #include "ores.trading.core/repository/swaption_instrument_repository.hpp"
+#include "ores.trading.core/repository/synthetic_cdo_instrument_repository.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
 #include <string>
 #include <vector>
@@ -87,6 +93,13 @@ void read_instrument_components(ores::database::context ctx,
             break;
         case domain::instrument_table::credit_instrument:
             append(credit_instrument_repository{}.read_latest(ctx, trade_id));
+            append(credit_default_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(credit_linked_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(index_credit_default_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(index_credit_default_swap_option_instrument_repository{}.read_latest(ctx,
+                                                                                        trade_id));
+            append(risk_participation_agreement_instrument_repository{}.read_latest(ctx, trade_id));
+            append(synthetic_cdo_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::equity_accumulator_instrument:
             append(equity_accumulator_instrument_repository{}.read_latest(ctx, trade_id));

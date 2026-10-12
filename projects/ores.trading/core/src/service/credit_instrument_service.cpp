@@ -104,26 +104,9 @@ domain::credit_instrument to_domain(const messaging::credit_instrument_write& wr
     v.identity.trade_type_code = write.trade_type_code;
     v.identity.trade_activity_id = write.trade_activity_id;
     v.reference_entity = write.reference_entity;
-    v.currency = write.currency;
-    v.notional = write.notional;
-    v.spread = write.spread;
-    v.recovery_rate = write.recovery_rate;
-    v.tenor = write.tenor;
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
-    v.day_count_fraction_code = write.day_count_fraction_code;
-    v.payment_frequency_code = write.payment_frequency_code;
-    v.index_name = write.index_name;
-    v.index_series = write.index_series;
-    v.seniority = write.seniority;
-    v.restructuring = write.restructuring;
     v.description = write.description;
-    v.option_type = write.option_type;
-    v.option_expiry_date = write.option_expiry_date;
-    v.option_strike = write.option_strike;
-    v.linked_asset_code = write.linked_asset_code;
-    v.tranche_attachment = write.tranche_attachment;
-    v.tranche_detachment = write.tranche_detachment;
     return v;
 }
 

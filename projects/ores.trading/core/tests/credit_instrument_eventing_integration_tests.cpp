@@ -157,6 +157,7 @@ TEST_CASE("write_credit_instrument_publishes_an_event", tags) {
     {
         auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = *party_ctx.party_id();
+        anchor.trade_type = v.identity.trade_type_code;
         ores::trading::repository::trade_repository().write(party_ctx, anchor);
         v.identity.trade_id = anchor.id;
     }

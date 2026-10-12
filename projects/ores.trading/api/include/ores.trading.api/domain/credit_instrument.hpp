@@ -27,9 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
-#include "ores.utility/decimal/decimal.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -38,158 +37,65 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Credit instrument.
+ * @brief The credit family header: one row per credit trade, keyed by trade_id, owning the family's
+ * facts, legs and basket.
  *
- * Represents the credit product types ORE states. trade_type_code
- * discriminates the exact product, and the optional field blocks are null
- * when the sub-type does not state them: the index block for CDSIndex
- * products, the option block for CDS option products, the tranche block for
- * CBO and SyntheticCDO products, and the linked-asset code for
- * CreditLinkedSwap.
+ * One row per credit trade, the family's own header. It holds what every
+ * product in the family states the same way: the trade it belongs to, the trade
+ * type code, the party, the activity that wrote the version, the reference
+ * entity, the instrument's start and maturity dates and its description. It
+ * holds no product economics.
  *
- * The table is a flat instrument sub-type, so it binds
- * :profile: trading-instrument. Two table features justify that binding:
- * the table is tenant-scoped through tenant_id and the tenant isolation
- * policy, its insert
- * trigger stamps party_id from the session variable app.current_party_id
- * rather than taking it from the client. The profile also fixes the identity
- * and audit field groups, the batch read and the generator facet, and leaves
- * the table with no UI surface -- the per-instrument forms were hand-crafted
- * in the removed desktop client and consumed the generated messaging
- * protocol.
+ * The header is the family's *coverage*: the trade_type_code check that the
+ * routed-instrument template generates from ores.trading.trade_type_catalogue
+ * lists exactly the six codes the importer writes, and the two codes with no
+ * importer, CreditDefaultSwapOption and CBO, stay out until a mapper writes them.
+ * It is also the family's *owner*: the delete cascade section below names every
+ * table the family writes, so the delete rule closes the legs, the basket and
+ * the facts with the header and the family does not outlive it.
+ *
+ * The products' own fields stay in their fact tables, keyed by the same trade
+ * and joined to this row by the trade id. A fact table carries no party_id and
+ * no trade_type_code: the header is the family's party boundary and its
+ * routing boundary.
+ *
+ * The dates are the family's *common dates*, the one set of names for the start
+ * and the maturity of every credit product. A risk participation agreement's
+ * protection start and end are those dates.
  */
 struct credit_instrument final {
     instrument_identity identity;
 
     /**
-     * @brief Name or identifier of the reference entity.
+     * @brief Name or identifier of the reference entity the risk is on.
+     *
+     * Every credit product states one: the issuer or the credit curve of a swap, the index, the
+     * qualifier of a CDO.
      */
     std::string reference_entity;
 
     /**
-     * @brief ISO 4217 currency code (e.g. USD).
+     * @brief The instrument's start date. A risk participation agreement's protection start is this
+     * column.
      *
-     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
-     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
-     * foreign key.
-     */
-    std::string currency;
-
-    /**
-     * @brief Notional amount of the credit instrument. Must be positive.
-     */
-    ores::utility::decimal::decimal notional;
-
-    /**
-     * @brief Credit spread in basis points (e.g. 100.0 for 100 bps).
-     */
-    ores::utility::decimal::decimal spread = ores::utility::decimal::decimal{};
-
-    /**
-     * @brief Recovery rate as a decimal (e.g. 0.4 for 40%).
-     */
-    double recovery_rate = 0.0;
-
-    /**
-     * @brief Tenor of the instrument (e.g. "5Y", "3Y").
-     */
-    std::string tenor;
-
-    /**
-     * @brief Start date (ISO 8601 date string, e.g. 2026-01-15).
-     */
-    std::chrono::year_month_day start_date;
-
-    /**
-     * @brief Maturity date (ISO 8601 date string, e.g. 2031-01-15).
-     */
-    std::chrono::year_month_day maturity_date;
-
-    /**
-     * @brief Day count convention code (e.g. Actual365Fixed, Thirty360).
+     * Null when the product states none.
      *
-     * Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to
-     * ores.refdata, so the dependency is recorded rather than copied. CreditInstrument stores ORE
-     * dayCounter spellings (Actual365Fixed, Thirty360) while the reference table keys on ISDA short
-     * codes (A365F, 30/360), so PR 4 needs a conversion helper in the shape of
-     * payment_frequency_conversion.hpp. PR 4 tightens the soft reference into a real foreign key.
+     * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string day_count_fraction_code;
+    std::optional<std::chrono::year_month_day> start_date;
 
     /**
-     * @brief Payment frequency code (e.g. Quarterly, SemiAnnual).
+     * @brief The instrument's maturity date. A risk participation agreement's protection end is
+     * this column.
      *
-     * Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata,
-     * so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a
-     * real foreign key.
+     * Null with start_date, and for the same reason.
      */
-    std::string payment_frequency_code;
-
-    /**
-     * @brief Optional index name for CDSIndex trades (e.g. "CDX.NA.IG").
-     *
-     * Empty for non-index products.
-     */
-    std::string index_name;
-
-    /**
-     * @brief Optional index series number for CDSIndex trades.
-     *
-     * Null when the trade states no series.
-     */
-    std::optional<int> index_series = std::nullopt;
-
-    /**
-     * @brief Optional seniority (e.g. "Senior", "Subordinated").
-     *
-     * Empty when not applicable.
-     */
-    std::string seniority;
-
-    /**
-     * @brief Optional restructuring clause (e.g. "MM", "MR", "CR", "XR").
-     *
-     * Empty when not applicable.
-     */
-    std::string restructuring;
+    std::optional<std::chrono::year_month_day> maturity_date;
 
     /**
      * @brief Optional free-text description.
      */
     std::string description;
-
-    /**
-     * @brief Call or Put for CreditDefaultSwapOption; empty otherwise.
-     *
-     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
-     * Put). PR 4 tightens the soft reference into a real foreign key.
-     */
-    std::string option_type;
-
-    /**
-     * @brief Option expiry date (ISO 8601) for CDS options. Empty otherwise.
-     */
-    std::optional<std::chrono::year_month_day> option_expiry_date;
-
-    /**
-     * @brief Option strike spread in bps for CDS options. Null when not set.
-     */
-    std::optional<ores::utility::decimal::decimal> option_strike;
-
-    /**
-     * @brief Reference asset code for CreditLinkedSwap. Empty otherwise.
-     */
-    std::string linked_asset_code;
-
-    /**
-     * @brief CBO tranche attachment point as a fraction. Null when not set.
-     */
-    std::optional<double> tranche_attachment;
-
-    /**
-     * @brief CBO tranche detachment point as a fraction. Null when not set.
-     */
-    std::optional<double> tranche_detachment;
 
     ores::dq::domain::audit_record audit;
     /**
@@ -212,25 +118,8 @@ struct credit_instrument final {
  */
 inline constexpr std::string_view credit_instrument_economic_fields[] = {
     "reference_entity",
-    "currency",
-    "notional",
-    "spread",
-    "recovery_rate",
-    "tenor",
     "start_date",
     "maturity_date",
-    "day_count_fraction_code",
-    "payment_frequency_code",
-    "index_name",
-    "index_series",
-    "seniority",
-    "restructuring",
-    "option_type",
-    "option_expiry_date",
-    "option_strike",
-    "linked_asset_code",
-    "tranche_attachment",
-    "tranche_detachment",
 };
 
 /**

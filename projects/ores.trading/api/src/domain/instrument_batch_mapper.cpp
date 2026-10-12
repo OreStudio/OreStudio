@@ -54,6 +54,26 @@ swap_instrument_data as_swap(const instrument_batch& batch,
 }
 
 /**
+ * A credit header, the product's fact row and the children the family owns,
+ * which are the parts of the family carrier the batch stores separately.
+ */
+template <typename Leaf>
+credit_instrument_data as_credit(const instrument_batch& batch,
+                                 const credit_instrument& header,
+                                 const Leaf& leaf,
+                                 boost::uuids::uuid trade_id) {
+    return credit_instrument_data{header,
+                                  leaf,
+                                  find_all(batch.swap_legs, trade_id),
+                                  find_all(batch.swap_leg_amounts, trade_id),
+                                  find_all(batch.swap_leg_rates, trade_id),
+                                  find_all(batch.credit_basket_constituents, trade_id),
+                                  find_all(batch.instrument_strikes, trade_id),
+                                  find_all(batch.instrument_schedules, trade_id),
+                                  find_all(batch.instrument_schedule_dates, trade_id)};
+}
+
+/**
  * An equity leaf and the position entries it owns.
  */
 template <typename Leaf>
@@ -148,6 +168,14 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.credit_basket_constituents.insert(batch.credit_basket_constituents.end(),
                                                         v.constituents.begin(),
                                                         v.constituents.end());
+                append_variant(batch, v.facts);
+                batch.instrument_strikes.insert(
+                    batch.instrument_strikes.end(), v.strikes.begin(), v.strikes.end());
+                batch.instrument_schedules.insert(
+                    batch.instrument_schedules.end(), v.schedules.begin(), v.schedules.end());
+                batch.instrument_schedule_dates.insert(batch.instrument_schedule_dates.end(),
+                                                       v.schedule_dates.begin(),
+                                                       v.schedule_dates.end());
             } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                 append(batch, v.instrument);
                 batch.composite_legs.insert(
@@ -219,12 +247,20 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
 
     if (const auto* v = find(batch.bond_instruments, trade_id))
         return *v;
-    if (const auto* v = find(batch.credit_instruments, trade_id))
-        return credit_instrument_data{*v,
-                                      find_all(batch.swap_legs, trade_id),
-                                      find_all(batch.swap_leg_amounts, trade_id),
-                                      find_all(batch.swap_leg_rates, trade_id),
-                                      find_all(batch.credit_basket_constituents, trade_id)};
+    if (const auto* header = find(batch.credit_instruments, trade_id)) {
+        if (const auto* v = find(batch.credit_default_swap_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.index_credit_default_swap_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.index_credit_default_swap_option_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.synthetic_cdo_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.credit_linked_swap_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.risk_participation_agreement_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+    }
     if (const auto* v = find(batch.commodity_instruments, trade_id))
         return commodity_instrument_data{*v,
                                          find_all(batch.commodity_basket_constituents, trade_id)};

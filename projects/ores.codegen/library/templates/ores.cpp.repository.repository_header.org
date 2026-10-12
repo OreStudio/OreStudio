@@ -380,6 +380,9 @@ private:
 #define ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
 
 #include <cstdint>
+{{#history}}
+#include <chrono>
+{{/history}}
 #include <optional>
 #include <string>
 #include <vector>
@@ -395,6 +398,26 @@ private:
 
 namespace ores::{{component}}::repository {
 
+{{#history}}
+/**
+ * @brief One version of a {{name_singular_words}}, with the end of its validity.
+ *
+ * A link is closed by ending its validity, not by deleting the row, so a closed
+ * link is a row whose end is in the past. @c closed_at is set on a version that
+ * ended because the link was closed, and empty on a version that a later
+ * version replaced and on a link that is open. The domain type does not carry
+ * it, and it is final, so the history row holds the link beside it. The actor
+ * and the time stand flat on the row as well, which is the shape the history
+ * builder reads.
+ */
+struct {{name_singular}}_history_row {
+    domain::{{name_singular}} link;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::optional<std::chrono::system_clock::time_point> closed_at;
+};
+
+{{/history}}
 /**
 {{#read_only}}
  * @brief Reads {{name_words}} from data storage. Read-only: this
@@ -509,6 +532,18 @@ public:
      */
     std::uint32_t get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
         const {{right.cpp_type}}& {{right.column}});
+{{#history}}
+
+    /**
+     * @brief Reads every version of every {{name_singular_words}} of one {{history_parent.column_title_lower}}.
+     *
+     * Closed links are included. The rows are grouped by {{history_child.column_title_lower}}
+     * and run newest first within a group, so a caller numbers and diffs the
+     * versions of one link by walking a group.
+     */
+    std::vector<{{name_singular}}_history_row>
+    read_all_by_{{history_parent.column_short}}(const {{history_parent.cpp_type}}& {{history_parent.column}});
+{{/history}}
 
 {{^read_only}}
     /**

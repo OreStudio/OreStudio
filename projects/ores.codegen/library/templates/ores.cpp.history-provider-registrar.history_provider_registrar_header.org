@@ -49,6 +49,22 @@ void register_{{entity_singular}}_history_provider(
 
 #endif
 {{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_HISTORY_PROVIDER_REGISTRAR_HPP
+
+#include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.{{component_core}}/export.hpp"
+
+namespace ores::{{component}}::messaging {
+
+ORES_{{component_core_upper}}_EXPORT void register_{{name_singular}}_history_provider(
+    ores::history::service::dispatch_registry& registry);
+
+}
+
+#endif
+{{/junction}}
 #+end_src
 
 * See also

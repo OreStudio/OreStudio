@@ -105,17 +105,36 @@ describe('the story of a party', () => {
         };
     }
 
-    function caller(replies: Record<string, unknown>): AuthenticatedCaller {
+    /** A reply, or a function of the request when the same subject answers by entity type. */
+    type Reply = unknown | ((body: { entity_type?: string }) => unknown);
+
+    function caller(replies: Record<string, Reply>): AuthenticatedCaller {
         return {
             async callAuthenticated(
                 subject: string,
-                _body: unknown,
+                body: { entity_type?: string },
                 schema: { parse: (value: unknown) => unknown },
             ): Promise<never> {
                 if (!(subject in replies)) throw new Error(`No canned reply for ${subject}`);
-                return schema.parse(replies[subject]) as never;
+                const reply = replies[subject];
+                return schema.parse(typeof reply === 'function' ? reply(body) : reply) as never;
             },
         } as unknown as AuthenticatedCaller;
+    }
+
+    /** A history answer: the party's own versions, and the link versions by entity type. */
+    function history(
+        partyVersions: readonly unknown[],
+        links: Record<string, readonly unknown[]> = {},
+    ) {
+        return (body: { entity_type?: string }) => ({
+            success: true,
+            message: '',
+            versions:
+                body.entity_type === 'ores.refdata.party'
+                    ? partyVersions
+                    : (links[body.entity_type ?? ''] ?? []),
+        });
     }
 
     const base = {
@@ -124,14 +143,10 @@ describe('the story of a party', () => {
             parties: [{ version: 3, id: PARTY, short_code: 'ACME_UK' }],
             total: 1,
         },
-        'refdata.v1.history.get': {
-            success: true,
-            message: '',
-            versions: [
-                version(1, PARTY, { 'Short Code': 'ACME_UK', 'Full Name': 'Acme UK' }),
-                version(2, PARTY, { 'Short Code': 'ACME_UK', 'Full Name': 'Acme UK Ltd' }),
-            ],
-        },
+        'refdata.v1.history.get': history([
+            version(1, PARTY, { 'Short Code': 'ACME_UK', 'Full Name': 'Acme UK' }),
+            version(2, PARTY, { 'Short Code': 'ACME_UK', 'Full Name': 'Acme UK Ltd' }),
+        ]),
         'refdata.v1.party_identifiers.list_by_party_id': {
             result: ok,
             party_identifiers: [],
@@ -154,30 +169,139 @@ describe('the story of a party', () => {
         expect(story.events[0]?.actor).toBe('priya');
     });
 
-    it('says what the junctions cannot answer, and never leaves them out as empty', async () => {
-        const story = await readPartyTimeline(caller(base), PARTY);
+    /** One version of a link, which names the pair as its ID and says when it ended. */
+    function linkVersion(number: number, link: string, closedAt = '') {
+        const [, country = ''] = link.split('/');
+        return {
+            version: number,
+            modified_by: 'priya',
+            recorded_at: `2026-10-0${String(number)}T10:00:00Z`,
+            fields: [
+                { name: 'ID', value: link },
+                { name: 'Party', value: PARTY },
+                { name: 'Country', value: country },
+                { name: 'Closed At', value: closedAt },
+                { name: 'Change Reason Code', value: 'system.new_record' },
+            ],
+            changes: { entries: [] },
+        };
+    }
 
-        expect(story.gaps.map((gap) => gap.entity)).toEqual(
-            expect.arrayContaining([
-                'ores.refdata.party_country',
-                'ores.refdata.party_currency',
-                'ores.refdata.party_counterparty',
-            ]),
+    it('draws the opening, the change and the closing of a link the party held', async () => {
+        const link = `${PARTY}/GB`;
+        const story = await readPartyTimeline(
+            caller({
+                ...base,
+                'refdata.v1.history.get': history(
+                    [version(1, PARTY, { 'Short Code': 'ACME_UK' })],
+                    {
+                        'ores.refdata.party_country': [
+                            linkVersion(1, link),
+                            linkVersion(2, link, '2026-10-05T10:00:00Z'),
+                        ],
+                    },
+                ),
+            }),
+            PARTY,
         );
+
+        const own = story.events.filter((e) => e.entityType === 'ores.refdata.party_country');
+        expect(own.map((e) => [e.kind, e.version, e.entityId])).toEqual([
+            ['closed', 2, link],
+            ['changed', 2, link],
+            ['raised', 1, link],
+        ]);
+        // The store records when a link ended and not who ended it.
+        expect(own[0]?.actor).toBe('');
+        expect(own[0]?.at).toBe('2026-10-05T10:00:00Z');
+        expect(own[0]?.fields.map((f) => f.name)).toEqual(['ID', 'Party', 'Country']);
+    });
+
+    it('keeps two links of one party apart, and states no gap for a link read that worked', async () => {
+        const story = await readPartyTimeline(
+            caller({
+                ...base,
+                'refdata.v1.history.get': history(
+                    [version(1, PARTY, { 'Short Code': 'ACME_UK' })],
+                    {
+                        'ores.refdata.party_country': [
+                            linkVersion(1, `${PARTY}/GB`),
+                            linkVersion(1, `${PARTY}/FR`),
+                        ],
+                    },
+                ),
+            }),
+            PARTY,
+        );
+
+        const ids = story.events
+            .filter((e) => e.entityType === 'ores.refdata.party_country')
+            .map((e) => e.entityId)
+            .sort();
+        expect(ids).toEqual([`${PARTY}/FR`, `${PARTY}/GB`]);
+        expect(story.gaps.map((g) => g.entity)).not.toContain('ores.refdata.party_country');
+    });
+
+    it('says the counterparty of a link by its name and not by its id', async () => {
+        const counterparty = '55555555-5555-4555-8555-555555555555';
+        const link = `${PARTY}/${counterparty}`;
+        const story = await readPartyTimeline(
+            caller({
+                ...base,
+                'refdata.v1.counterparties.list': {
+                    result: ok,
+                    counterparties: [{ id: counterparty, full_name: 'Globex Corporation' }],
+                    total: 1,
+                },
+                'refdata.v1.history.get': history(
+                    [version(1, PARTY, { 'Short Code': 'ACME_UK' })],
+                    {
+                        'ores.refdata.party_counterparty': [
+                            {
+                                ...linkVersion(1, link),
+                                fields: [
+                                    { name: 'ID', value: link },
+                                    { name: 'Party', value: PARTY },
+                                    { name: 'Counterparty', value: counterparty },
+                                    { name: 'Closed At', value: '' },
+                                ],
+                            },
+                        ],
+                    },
+                ),
+            }),
+            PARTY,
+        );
+
+        const own = story.events.find((e) => e.entityType === 'ores.refdata.party_counterparty');
+        expect(own?.fields.find((f) => f.name === 'Counterparty')?.value).toBe(
+            'Globex Corporation',
+        );
+    });
+
+    it('states a gap for a link kind whose history the server refuses', async () => {
+        const story = await readPartyTimeline(
+            caller({
+                ...base,
+                'refdata.v1.history.get': (body: { entity_type?: string }) =>
+                    body.entity_type === 'ores.refdata.party_currency'
+                        ? { success: false, message: 'refused', versions: [] }
+                        : { success: true, message: '', versions: [] },
+            }),
+            PARTY,
+        );
+
+        expect(story.gaps.map((g) => g.entity)).toEqual(['ores.refdata.party_currency']);
     });
 
     it('keeps only the versions that belong to the party asked for', async () => {
         const story = await readPartyTimeline(
             caller({
                 ...base,
-                'refdata.v1.history.get': {
-                    success: true,
-                    message: '',
-                    versions: [
-                        version(1, PARTY, { 'Short Code': 'ACME_UK' }),
-                        version(2, OTHER, { 'Short Code': 'ACME_UK' }),
-                    ],
-                },
+                'refdata.v1.history.get': history([
+                    version(1, PARTY, { 'Short Code': 'ACME_UK' }),
+                    version(2, OTHER, { 'Short Code': 'ACME_UK' }),
+                ]),
             }),
             PARTY,
         );

@@ -52,6 +52,32 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v);
 
 #endif
 {{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_core_upper}}_PRESENTATION_{{name_singular_upper}}_HISTORY_FIELD_MAPPER_HPP
+#define ORES_{{component_core_upper}}_PRESENTATION_{{name_singular_upper}}_HISTORY_FIELD_MAPPER_HPP
+
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.{{component_core}}/export.hpp"
+#include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
+#include <vector>
+
+namespace ores::{{component}}::presentation {
+
+/**
+ * @brief Renders one version of a {{name_singular_words}} to an ordered field
+ * list for history-diff display.
+ *
+ * The first field, @c ID, names the link by both of its keys, so the versions
+ * of one link pair up in a stream that holds many links. The last field before
+ * the provenance is @c Closed At, empty while the link is open.
+ */
+[[nodiscard]] ORES_{{component_core_upper}}_EXPORT std::vector<ores::diff::domain::field_value>
+render_{{name_singular}}_fields(const repository::{{name_singular}}_history_row& v);
+
+}
+
+#endif
+{{/junction}}
 #+end_src
 
 * See also

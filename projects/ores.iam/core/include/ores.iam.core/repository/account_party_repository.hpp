@@ -31,6 +31,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
@@ -38,6 +39,24 @@
 #include <vector>
 
 namespace ores::iam::repository {
+
+/**
+ * @brief One version of a account party, with the end of its validity.
+ *
+ * A link is closed by ending its validity, not by deleting the row, so a closed
+ * link is a row whose end is in the past. @c closed_at is set on a version that
+ * ended because the link was closed, and empty on a version that a later
+ * version replaced and on a link that is open. The domain type does not carry
+ * it, and it is final, so the history row holds the link beside it. The actor
+ * and the time stand flat on the row as well, which is the shape the history
+ * builder reads.
+ */
+struct account_party_history_row {
+    domain::account_party link;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::optional<std::chrono::system_clock::time_point> closed_at;
+};
 
 /**
  * @brief Reads and writes account parties to data storage.
@@ -126,6 +145,16 @@ public:
      * @brief Gets the total count of active account parties filtered by party_id.
      */
     std::uint32_t get_total_account_party_count_by_party(const boost::uuids::uuid& party_id);
+
+    /**
+     * @brief Reads every version of every account party of one account.
+     *
+     * Closed links are included. The rows are grouped by party
+     * and run newest first within a group, so a caller numbers and diffs the
+     * versions of one link by walking a group.
+     */
+    std::vector<account_party_history_row>
+    read_all_by_account(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Deletes a account party by its pair of keys.

@@ -18,10 +18,8 @@
  *
  */
 #include "ores.ore.core/log/ore_log_parser.hpp"
-#include "ores.platform/time/time_utils.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <ctime>
 #include <string>
 
 namespace {
@@ -31,16 +29,12 @@ const std::string tags("[ore][log][ore_log_parser]");
 // Build a UTC time_point from explicit fields (no DST, no timezone conversion).
 std::chrono::system_clock::time_point
 make_utc(int year, int mon, int mday, int hour, int min, int sec, long microseconds = 0) {
-    std::tm tm = {};
-    tm.tm_year = year - 1900;
-    tm.tm_mon = mon - 1;
-    tm.tm_mday = mday;
-    tm.tm_hour = hour;
-    tm.tm_min = min;
-    tm.tm_sec = sec;
-    tm.tm_isdst = 0;
-    const std::time_t t = ores::platform::time::time_utils::timegm_safe(&tm);
-    return std::chrono::system_clock::from_time_t(t) + std::chrono::microseconds(microseconds);
+    using namespace std::chrono;
+    const auto day = year_month_day{std::chrono::year{year},
+                                    std::chrono::month{static_cast<unsigned>(mon)},
+                                    std::chrono::day{static_cast<unsigned>(mday)}};
+    return sys_days{day} + hours{hour} + minutes{min} + seconds{sec} +
+           std::chrono::microseconds{microseconds};
 }
 
 } // namespace

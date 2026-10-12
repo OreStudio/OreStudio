@@ -26,6 +26,8 @@ can act on behalf of.
 * Flags
 :PROPERTIES:
 :profile: tenant-scoped-junction
+:history: true
+:history_read_permission: iam::accounts:read
 :END:
 
 * Left

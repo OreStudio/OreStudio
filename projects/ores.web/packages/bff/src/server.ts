@@ -552,6 +552,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 availableParties: outcome.availableParties,
                 defaultPartyId: outcome.defaultPartyId,
                 passwordResetRequired: outcome.passwordResetRequired,
+                accessLifetimeSeconds: outcome.accessLifetimeSeconds,
             });
         }
         if (outcome.kind === 'active') {

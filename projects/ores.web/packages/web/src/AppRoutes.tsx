@@ -213,6 +213,8 @@ export interface AppRoutesProps {
     readonly environment?: EnvironmentView | undefined;
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
+    /** Whether the person is at the sign-in form because their session ended under them. */
+    readonly sessionEnded?: boolean;
     readonly onSignOut: () => void;
     readonly onSwitchParty: (partyId: string) => Promise<void>;
     readonly onRetryBootstrap: () => void;
@@ -234,6 +236,7 @@ export function AppRoutes({
     environment,
     onSignIn,
     onChooseParty,
+    sessionEnded = false,
     onSignOut,
     onSwitchParty,
     onRetryBootstrap,
@@ -358,7 +361,11 @@ export function AppRoutes({
                         <Navigate to="/" replace />
                     ) : (
                         <PublicShell serverVersion={gate.version} environment={environment}>
-                            <SignInPage onSignIn={onSignIn} onChooseParty={onChooseParty} />
+                            <SignInPage
+                                onSignIn={onSignIn}
+                                onChooseParty={onChooseParty}
+                                sessionEnded={sessionEnded}
+                            />
                         </PublicShell>
                     )
                 }
@@ -1035,7 +1042,15 @@ export function AppRoutes({
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck, reading } = useBootstrap();
-    const { state: session, signIn, chooseParty, switchParty, refresh, signOut } = useSession();
+    const {
+        state: session,
+        ended,
+        signIn,
+        chooseParty,
+        switchParty,
+        refresh,
+        signOut,
+    } = useSession();
     const { environment } = useSite();
     const { t } = useTranslation();
     const server = useJourneyServer();
@@ -1211,6 +1226,7 @@ export function ConnectedApp(): ReactNode {
                     journeyInProgress={journeyInProgress}
                     onSignIn={signIn}
                     onChooseParty={chooseParty}
+                    sessionEnded={ended}
                     onSignOut={() => {
                         void signOut();
                     }}

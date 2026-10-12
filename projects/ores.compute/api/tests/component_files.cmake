@@ -28,4 +28,5 @@ set(files
     "domain_result_tests.cpp"
     "domain_workunit_tests.cpp"
     "main.cpp"
+    "messaging_assignment_expiry_tests.cpp"
 )

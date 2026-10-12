@@ -78,6 +78,7 @@ import {
     throughputSeries,
 } from './GridSeries.js';
 import { GridNodePage, nodeColumns, formatMs, formatMiB } from './GridNodePage.js';
+import { formatRam, machineFacts } from './GridPage.js';
 import { VersionsPage } from './VersionsPage.js';
 
 /**
@@ -292,6 +293,8 @@ function gridNode(overrides: Partial<GridNodeRow> = {}): GridNodeRow {
         host_id: '9e0f33aa-0000-4000-8000-000000000001',
         host: 'grid-01.example.com',
         machine: 'rack-a',
+        cpu_count: 8,
+        ram_mb: 16384,
         instance_id: '1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6',
         state: 'running',
         version: 'v0.0.25',
@@ -1429,6 +1432,34 @@ describe('the grid over time', () => {
         const every = seeded('/?tab=nodes');
         expect(every).toContain('grid-01.example.com');
         expect(every).not.toContain('Show all nodes');
+    });
+
+    it('shows a computer’s hardware on its page, and its processors and memory in the machines table', () => {
+        const seeded = (path: string): string =>
+            withProviders(<GridPage />, path, [], gridView(), busView(), logsView(), [], gridSeriesView());
+
+        const page = seeded('/?tab=nodes&machine=rack-a');
+        expect(page).toContain('Processors');
+        expect(page).toContain('16.0 GiB');
+
+        // The overview carries the same figures in the machines table.
+        const overview = seeded('/');
+        expect(overview).toContain('CPUs');
+        expect(overview).toContain('16.0 GiB');
+    });
+
+    it('reads a computer’s facts from the nodes that gave them, and states none it was not given', () => {
+        const none = machineFacts([gridNode({ cpu_count: 0, ram_mb: 0 })]);
+        expect(none).toEqual({ cpuCount: 0, ramMb: 0 });
+        expect(formatRam(0)).toBe('—');
+
+        // An older sample gives nothing, so the figure a node gave wins.
+        const mixed = machineFacts([
+            gridNode({ cpu_count: 0, ram_mb: 0 }),
+            gridNode({ cpu_count: 4, ram_mb: 7168 }),
+        ]);
+        expect(mixed).toEqual({ cpuCount: 4, ramMb: 7168 });
+        expect(formatRam(7168)).toBe('7.0 GiB');
     });
 
     it('keeps the grid screen on three tabs, so each page stays short', () => {

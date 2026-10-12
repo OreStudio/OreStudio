@@ -135,14 +135,24 @@ export interface WorkAssignmentEvent {
 /**
  * @brief A wrapper node's liveness signal.
  *
- * Fire-and-forget and unauthenticated: the handler touches the host row
- * with the service context, and registers the host on its first heartbeat.
+ * Fire-and-forget and unauthenticated: the handler registers the host on its
+ * first heartbeat with the service context. It also carries what the computer
+ * says about its hardware, which the handler writes to the host row only when
+ * it differs from the row, so a known host's heartbeat still writes nothing.
  */
 export interface HeartbeatMessage {
     /**
      * @brief The node that is alive.
      */
     host_id: string;
+    /**
+     * @brief Logical processors of the computer, 0 when the node could not read it.
+     */
+    cpu_count: number;
+    /**
+     * @brief Physical memory of the computer in MiB, 0 when the node could not read it.
+     */
+    ram_mb: number;
 }
 
 /**
@@ -151,6 +161,47 @@ export interface HeartbeatMessage {
  * It carries no fields, because the stale threshold is the service's own.
  */
 export interface ReapWorkMessage {}
+
+/**
+ * @brief Tells the service that a wrapper node has begun a job.
+ *
+ * The node waits for the reply before it runs the job, so the service has
+ * recorded the result as in progress before the node can submit it. Without the
+ * wait a fast job could submit first, and the late start would overwrite the
+ * finished result. Like the submit, the channel is trusted at the transport
+ * layer, because a node holds no user JWT.
+ */
+export interface ResultStartedRequest {
+    /**
+     * @brief The tenant the assignment named; the result is scoped to it.
+     */
+    tenant_id: string;
+    /**
+     * @brief The result the node has begun.
+     */
+    result_id: string;
+    /**
+     * @brief The node that runs it.
+     */
+    host_id: string;
+}
+
+/**
+ * @brief Whether the start was recorded.
+ *
+ * A start for a result that is not unsent is not an error: the result is already
+ * further on, and the reply says so in the message with success set.
+ */
+export interface ResultStartedResponse {
+    /**
+     * @brief Whether the start was recorded or was already moot.
+     */
+    success: boolean;
+    /**
+     * @brief Why it was not recorded, when it was not.
+     */
+    message: string;
+}
 
 /**
  * @brief Hands a finished job back from a wrapper node.
@@ -210,6 +261,7 @@ export const subjects = {
     work_assignment_event: 'compute.v1.ops.work_assignment',
     heartbeat_message: 'compute.v1.ops.heartbeat',
     reap_work_message: 'compute.v1.ops.reap_work',
+    result_started_request: 'compute.v1.ops.result_started',
     submit_result_request: 'compute.v1.ops.submit_result',
 } as const;
 /**
@@ -222,5 +274,6 @@ export const requiresSession = {
     work_assignment_event: false,
     heartbeat_message: false,
     reap_work_message: false,
+    result_started_request: false,
     submit_result_request: false,
 } as const;

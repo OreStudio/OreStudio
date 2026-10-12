@@ -2007,6 +2007,8 @@ export const listHostsReplySchema = z.object({
  */
 export const gridNodeRowSchema = nodeSummarySchema.extend({
     host: text.nullable().default(null),
+    cpu_count: z.int().nonnegative().default(0),
+    ram_mb: z.int().nonnegative().default(0),
     instance_id: z.string().nullable().default(null),
     state: z.string().default('missing'),
     version: z.string().nullable().default(null),

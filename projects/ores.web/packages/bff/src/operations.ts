@@ -304,6 +304,10 @@ export function registerOperationsRoutes(
         );
         const nameOf = (hostId: string | null): string | null =>
             hostId === null ? null : (hostNames.get(hostId) ?? null);
+        // The host row holds what the computer reported about its hardware.
+        const hardware = new Map(
+            hosts.map((host) => [host.id, { cpu_count: host.cpu_count, ram_mb: host.ram_mb }]),
+        );
         const runnersByHost = new Map<string, (typeof slots)[number]>();
         for (const slot of slots) {
             if (slot.service_name === COMPUTE_RUNNER && slot.host_id !== null) {
@@ -326,6 +330,8 @@ export function registerOperationsRoutes(
                 return {
                     ...node,
                     host: nameOf(node.host_id),
+                    cpu_count: hardware.get(node.host_id)?.cpu_count ?? 0,
+                    ram_mb: hardware.get(node.host_id)?.ram_mb ?? 0,
                     instance_id: runner?.instance_id ?? null,
                     state: runner?.state ?? 'missing',
                     version: runner?.version ?? null,

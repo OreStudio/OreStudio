@@ -1622,10 +1622,19 @@ const fr: SourceCatalogue = {
                     noReply: 'Sans réponse',
                 },
             },
+            machine: {
+                cpus: 'Processeurs',
+                memory: 'Mémoire',
+                nodes: 'Nœuds',
+                done: 'Tâches terminées',
+                failed: 'Échecs',
+            },
             machines: {
                 title: 'Machines',
                 summary: '{up} machines sur {total} en marche',
                 columns: {
+                    cpus: 'CPU',
+                    memory: 'Mémoire',
                     machine: 'Machine',
                     status: 'État',
                     nodes: 'Nœuds',

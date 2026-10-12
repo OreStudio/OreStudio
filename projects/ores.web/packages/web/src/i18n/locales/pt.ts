@@ -1613,10 +1613,19 @@ const pt: SourceCatalogue = {
                     noReply: 'Sem resposta',
                 },
             },
+            machine: {
+                cpus: 'Processadores',
+                memory: 'Memória',
+                nodes: 'Nós',
+                done: 'Tarefas concluídas',
+                failed: 'Falhas',
+            },
             machines: {
                 title: 'Máquinas',
                 summary: '{up} de {total} máquinas ativas',
                 columns: {
+                    cpus: 'CPU',
+                    memory: 'Memória',
                     machine: 'Máquina',
                     status: 'Estado',
                     nodes: 'Nós',

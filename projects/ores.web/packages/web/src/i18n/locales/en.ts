@@ -1602,10 +1602,19 @@ export const en: SourceCatalogue = {
                     noReply: 'No reply',
                 },
             },
+            machine: {
+                cpus: 'Processors',
+                memory: 'Memory',
+                nodes: 'Nodes',
+                done: 'Tasks done',
+                failed: 'Failed',
+            },
             machines: {
                 title: 'Machines',
                 summary: '{up} of {total} machines up',
                 columns: {
+                    cpus: 'CPUs',
+                    memory: 'Memory',
                     machine: 'Machine',
                     status: 'Status',
                     nodes: 'Nodes',

@@ -389,6 +389,8 @@ interface GridBody {
         readonly version: string | null;
         readonly tasks_failed: number;
         readonly max_task_duration_ms: number;
+        readonly cpu_count: number;
+        readonly ram_mb: number;
     }[];
 }
 
@@ -588,6 +590,12 @@ describe('GET /api/operations/grid', () => {
         expect(body.nodes.map((node) => node.host)).toEqual(['Grid 01', null]);
         expect(body.nodes[1]?.host_id).toBe(UNKNOWN_HOST);
         expect(body.nodes[0]?.tasks_failed).toBe(2);
+        // The hardware the host row holds travels on the node, and a node whose host
+        // the registry does not know has none rather than a guess.
+        expect(body.nodes[0]?.cpu_count).toBe(8);
+        expect(body.nodes[0]?.ram_mb).toBe(32768);
+        expect(body.nodes[1]?.cpu_count).toBe(0);
+        expect(body.nodes[1]?.ram_mb).toBe(0);
         expect(body.nodes[0]?.max_task_duration_ms).toBe(51_000);
         // The runner is folded onto the node it reports for, so the node its
         // host id names carries that instance's state, version and id.

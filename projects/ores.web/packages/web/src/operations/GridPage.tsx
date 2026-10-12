@@ -192,6 +192,76 @@ export function machinesOf(nodes: readonly GridNodeRow[]): readonly Machine[] {
         }));
 }
 
+/** What a computer says about itself, read from its nodes. */
+export interface MachineFacts {
+    readonly cpuCount: number;
+    readonly ramMb: number;
+}
+
+/**
+ * The facts of a computer from the samples of its nodes.
+ *
+ * Every node on a computer has its own host row, and each holds the same
+ * processors and memory once the node has reported them, so the largest figure
+ * is the one a node actually gave.
+ */
+export function machineFacts(nodes: readonly GridNodeRow[]): MachineFacts {
+    return {
+        cpuCount: Math.max(0, ...nodes.map((node) => node.cpu_count)),
+        ramMb: Math.max(0, ...nodes.map((node) => node.ram_mb)),
+    };
+}
+
+/** A memory size in MiB as gibibytes, or a dash when the computer gave none. */
+export function formatRam(ramMb: number): string {
+    return ramMb <= 0 ? '—' : `${(ramMb / 1024).toFixed(1)} GiB`;
+}
+
+/** A computer's own page: its hardware, its nodes and what they have done. */
+function MachineInfo({
+    machine,
+    nodes,
+}: {
+    readonly machine: string;
+    readonly nodes: readonly GridNodeRow[];
+}): ReactNode {
+    const { t } = useTranslation();
+    const facts = machineFacts(nodes);
+    const running = nodes.filter((node) => node.state === 'running').length;
+    const field = (label: string, value: ReactNode): ReactNode => (
+        <div className="space-y-1">
+            <dt className="text-xs text-ink-faint">{label}</dt>
+            <dd className="font-mono text-sm">{value}</dd>
+        </div>
+    );
+    return (
+        <section className="card space-y-4 p-6">
+            <h2 className="text-lg font-medium">
+                {machine === '' ? t('operations.grid.machines.unnamed') : machine}
+            </h2>
+            <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+                {field(
+                    t('operations.grid.machine.cpus'),
+                    facts.cpuCount > 0 ? facts.cpuCount : '—',
+                )}
+                {field(t('operations.grid.machine.memory'), formatRam(facts.ramMb))}
+                {field(
+                    t('operations.grid.machine.nodes'),
+                    t('operations.grid.machines.nodes', { running, total: nodes.length }),
+                )}
+                {field(
+                    t('operations.grid.machine.done'),
+                    nodes.reduce((sum, node) => sum + node.tasks_completed, 0),
+                )}
+                {field(
+                    t('operations.grid.machine.failed'),
+                    nodes.reduce((sum, node) => sum + node.tasks_failed, 0),
+                )}
+            </dl>
+        </section>
+    );
+}
+
 /** One row per computer, so a computer that has gone down shows at a glance. */
 function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
@@ -213,6 +283,12 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                         </th>
                         <th className="py-1 font-normal">
                             {t('operations.grid.machines.columns.status')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.cpus')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.memory')}
                         </th>
                         <th className="py-1 font-normal">
                             {t('operations.grid.machines.columns.nodes')}
@@ -241,6 +317,12 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                                 ) : (
                                     <Tag tone="warn">{t('operations.grid.machines.down')}</Tag>
                                 )}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {machineFacts(machine.nodes).cpuCount || '—'}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {formatRam(machineFacts(machine.nodes).ramMb)}
                             </td>
                             <td className="py-2 font-mono">
                                 {t('operations.grid.machines.nodes', {
@@ -457,6 +539,23 @@ function NodesPanel({ nodes: every }: { readonly nodes: readonly GridNodeRow[] }
     );
 }
 
+/** The Nodes tab: the node list, and above it the computer it is narrowed to. */
+function NodesTab({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
+    const [search] = useSearchParams();
+    const machine = search.get('machine');
+    return (
+        <>
+            {machine !== null && (
+                <MachineInfo
+                    machine={machine}
+                    nodes={nodes.filter((node) => node.machine === machine)}
+                />
+            )}
+            <NodesPanel nodes={nodes} />
+        </>
+    );
+}
+
 export function GridPage(): ReactNode {
     const { t } = useTranslation();
     const grid = useQuery({ queryKey: GRID_QUERY_KEY, queryFn: api.grid });
@@ -519,7 +618,9 @@ export function GridPage(): ReactNode {
                 </>
             )}
 
-            {tab === 'nodes' && <NodesPanel nodes={view.nodes} />}
+            {tab === 'nodes' && (
+                <NodesTab nodes={view.nodes} />
+            )}
 
             {tab === 'heatmap' && <GridNodeLoad range={range} onRange={setRange} />}
 

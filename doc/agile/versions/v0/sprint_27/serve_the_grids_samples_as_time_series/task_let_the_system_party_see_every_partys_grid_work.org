@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: feature/let-the-system-party-see-every-partys-grid-work
-#+pr:
+#+pr: 3217
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3217][#3217]] | [compute] Let the system party see every party's grid work |
 
 * Review
 

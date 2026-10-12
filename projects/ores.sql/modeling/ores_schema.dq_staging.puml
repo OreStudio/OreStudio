@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T19:54:28.835119Z
+' Generated: 2026-10-12T23:45:57.598630Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -917,7 +917,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_csas_artefact_tbl
-    The credit support annex of a netting set, with the terms ORE reads from a netting set definition. The set is named by code; publishing resolves it in the target tenant. The eligible collateral currencies are a comma separated list in posting order. - Artefact Table
+    A Credit Support Annex holds the collateral terms of a [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][netting set]]: thresholds, minimum transfer amounts, margining frequencies, the margin period of risk and the eligible collateral. Netting reduces exposure, and collateral mitigates what remains (see [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]]). A CSA has a lifecycle of its own: it is added, changed or switched off without touching the trades in its set. A set has at most one active CSA; an inactive one keeps its terms, as ORE keeps the details of a set whose CSA flag is off. The columns follow ORE's CSADetails one for one, and the eligible collateral currencies are [[id:25090994-3093-470E-BB3F-7832EDCA26A4][rows of their own]]. - Artefact Table
     end note
 
     entity ores_dq_currencies_artefact_tbl  #F7E5FF {
@@ -1923,6 +1923,22 @@ package "dq_staging" #F3E5F5 {
           retrieved_at : timestamptz
     }
 
+    entity ores_dq_market_data_providers_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * kind : text
+        * description : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_market_data_providers_artefact_tbl
+    A catalogue of the providers whose market data the synthetic feeds simulate. A system-scope collection names the provider it stands for, so the installation can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it as that provider's data. The provider is optional: a collection that stands for no provider names none, or names generic. Every provider here is simulated. Screens show it with the synthetic mark, as "Bloomberg (synthetic)", and every source name a provider's feed publishes on starts synthetic.<provider code>., so a simulated feed is never read as the real one. A real provider integration, when one comes, belongs in market data and not in this catalogue. Scoped to ores.synthetic (not ores.refdata) because only synthetic generation uses it today, following the yield_curve_process_type precedent. Managed by the system tenant. - Artefact Table
+    end note
+
     entity ores_dq_netting_agreements_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1936,7 +1952,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_netting_agreements_artefact_tbl
-    A master netting agreement, such as an ISDA Master Agreement, between the party a publish targets and a counterparty. The counterparty is named by LEI, because its id differs from tenant to tenant, and the party is the one the publish names: a staged agreement belongs to no party until published. - Artefact Table
+    A netting agreement is the legal document, such as an ISDA Master Agreement, that lets one legal entity of the firm and one counterparty replace what each owes the other under it with a single net amount. It is the legal fact behind a [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][netting set]]: a set opened under an agreement belongs to the agreement's two parties, and a set with no agreement holds trades that do not net. The agreement's two parties never change across its versions: both columns are fixed, so a new version that changes either is refused. A netting set copies them and pins the copy to the agreement, so a set cannot be filed under another counterparty's agreement, and the copy stays true. Closing an agreement does not close its sets, as for every soft foreign key in the schema; a set's agreement is checked when the set is written. - Artefact Table
     end note
 
     entity ores_dq_netting_set_aliases_artefact_tbl  #F7E5FF {
@@ -1969,7 +1985,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_netting_sets_artefact_tbl
-    A netting set of the party a publish targets. It names its master agreement by number and its counterparty by LEI; publishing resolves both in the target tenant. A set with no agreement holds trades that do not net. - Artefact Table
+    A netting set is the group of trades with one counterparty whose values offset one another when credit exposure is computed. Every trade names exactly one set, as ORE requires; a trade with nothing to net against sits in a set of its own. See [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] for the analysis. A set opened under a [[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreement]] copies the agreement's counterparty and legal entity, and a pinned key holds the copy to the agreement, so a set cannot be filed under another counterparty's agreement. A set with no agreement holds trades that do not net; its counterparty may be unknown, as it is for a set read from an ORE document, which names none. Every set belongs to a legal entity of the firm, and the entity that imports the document is the one it belongs to. The code is the netting set id ORE uses. The call type and initial margin type are the remaining parts of ORE's netting set details, and the risk weight is ORE's. - Artefact Table
     end note
 
     entity ores_dq_ois_conventions_artefact_tbl  #F7E5FF {
@@ -2249,10 +2265,12 @@ package "dq_staging" #F3E5F5 {
         * schedule_expression : text
         * concurrency_policy : text
         * display_order : integer
+        * tier : text
+          applicable_jurisdiction : text
     }
 
     note right of ores_dq_report_definitions_artefact_tbl
-    Report Definition artefacts - default report templates for the ORE analytics bundle - Artefact Table
+    The persistent template for a report. Describes what to run, when to run it, how to handle concurrent executions, and how much of the processing pipeline a run executes. Type-specific configuration (e.g. risk parameters) lives in a separate table keyed by report_definition_id. The run configuration is held here rather than in the environment so that a run is reproducible from the database alone. pre_processing and post_processing name, for each substitutable phase, whether the phase runs or is replaced by a prepared substitute. Lifecycle is managed through the report_definition_lifecycle FSM machine. fsm_state_id points to the current state in ores_dq_fsm_states_tbl. scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set by the scheduler service when the definition is activated (state: active). It is cleared when the definition is suspended or archived. - Artefact Table
     end note
 
     entity ores_dq_reporting_regimes_artefact_tbl  #F7E5FF {
@@ -2496,22 +2514,6 @@ package "dq_staging" #F3E5F5 {
     Synthetic IR Curve Template Entry artefacts - per-currency Curve Template
     rows backing an ir_curve_configs artefact row, keyed by currency+index
     within the same dataset - Artefact Table
-    end note
-
-    entity ores_dq_synthetic_market_data_providers_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
-        * version : integer
-        * name : text
-        * kind : text
-        * description : text
-        * display_order : integer
-    }
-
-    note right of ores_dq_synthetic_market_data_providers_artefact_tbl
-    Market Data Provider artefacts: one row per simulated market data provider (Bloomberg, Refinitiv, the exchanges, a broker, and the generic provider), staged for the system_core bundle and published into ores_synthetic_market_data_providers_tbl in the system tenant. Every provider is simulated; see the synthetic catalogue's own model for the synthetic mark. - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {

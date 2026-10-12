@@ -84,6 +84,22 @@ messaging::parse_oresmd_uri_response parsed(const market_index& index) {
     return out;
 }
 
+/// Whether the query of @p uri has the key type with the value fixing.
+bool states_fixing(std::string_view uri) {
+    const auto query = uri.find('?');
+    if (query == std::string_view::npos)
+        return false;
+    for (const std::string_view pair : {"?type=fixing", "&type=fixing"}) {
+        for (auto at = uri.find(pair, query); at != std::string_view::npos;
+             at = uri.find(pair, at + 1)) {
+            const auto end = at + pair.size();
+            if (end == uri.size() || uri[end] == '&' || uri[end] == '#')
+                return true;
+        }
+    }
+    return false;
+}
+
 messaging::parse_oresmd_uri_response refused_parse(std::string why) {
     messaging::parse_oresmd_uri_response out;
     out.message = std::move(why);
@@ -121,6 +137,8 @@ compose_fixing(const messaging::compose_oresmd_uri_request& request) {
     const auto family = index_family_named(request.instrument);
     if (!family)
         return refused_compose(std::format("'{}' is not an index family", request.instrument));
+    // A blank field is one the index leaves out, as for a quote. The index
+    // refuses a field given twice, so no duplicate check is made here.
     std::vector<market_index::field_text> fields;
     for (const auto& field : request.fields) {
         if (!field.text.empty())
@@ -201,7 +219,7 @@ oresmd_uri_service::parse(const messaging::parse_oresmd_uri_request& request) {
         return parsed(*index);
     // A fixing is read by another reader, so its refusal is the one to show
     // when the URI says it is a fixing.
-    if (request.uri.find("type=fixing") != std::string::npos)
+    if (states_fixing(request.uri))
         return refused_parse(index.error());
     return refused_parse(datum.error());
 }

@@ -207,6 +207,16 @@ TEST_CASE("parse of a refused fixing gives the index reader's words", tags) {
     CHECK(parts.message == oresmd_uri_codec::read_index(uri).error());
 }
 
+TEST_CASE("only the type key makes a URI a fixing when the reader's words are chosen", tags) {
+    const std::string fixing = "oresmd://ir/EUR?type=fixing&index=ibor&tenor=6M";
+    CHECK(parse(fixing).message == oresmd_uri_codec::read_index(fixing).error());
+    const std::string not_a_fixing =
+        "oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&index_name=type=fixing";
+    CHECK(parse(not_a_fixing).message == oresmd_uri_codec::read(not_a_fixing).error());
+    const std::string other_key = "oresmd://ir/EUR?xtype=fixing&type=quote";
+    CHECK(parse(other_key).message == oresmd_uri_codec::read(other_key).error());
+}
+
 TEST_CASE("compose writes the URI in the codec's order whatever order the fields come in", tags) {
     const auto forward = oresmd_uri_service::compose(quote_request(
         "ir_swap",
@@ -290,6 +300,8 @@ TEST_CASE("compose of a fixing is as strict as the codec", tags) {
     const auto fixing = oresmd_uri_service::compose(request);
     REQUIRE(fixing.success);
     CHECK(fixing.uri == "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M");
+    request.fields = {{"name", "EURIBOR"}, {"tenor", "6M"}, {"tenor", "3M"}};
+    CHECK_FALSE(oresmd_uri_service::compose(request).success);
     request.fields = {{"tenor", "6M"}};
     CHECK_FALSE(oresmd_uri_service::compose(request).success);
     request.instrument = "nonsense";

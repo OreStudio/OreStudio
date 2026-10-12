@@ -82,7 +82,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Fixing detection is a substring match | oresmd_uri_service.cpp | Fix | A function reads the query and accepts type=fixing only as a key of its own, after a question mark or an ampersand. A test covers a value that contains the text and a key that ends in type. |
+| 2 | A duplicate field in a fixing is not checked | oresmd_uri_service.cpp | Fix | market_index::make refuses a field given twice. A test covers it, and a comment says so. |
+| 3 | Blank fields differ for a fixing and a quote | oresmd_uri_service.cpp | Fix | A comment says a blank field is one the index leaves out, as for a quote. |
+| 4 | upper() and the C locale | oresmd_uri_service.cpp | Note | The result is compared with the codec's spelling, so a mismatch is a refusal. |
+| 5 | The handler's permission path has no test | oresmd_uri_handler.hpp | Note | There is no handler test harness in marketdata. handler-permissions and route-auth cover the rule structurally. |
+| 6 | The order of the checks in the handler | oresmd_uri_handler.hpp | Note | Authentication, then permission, then decode. Correct. |
+| 7 | Run component-drift and the full ctest before merge | | Partly done | component-drift fails only on SQL for compute and iam that main carries; no marketdata file drifted. The module tests ran: 21 cases and 1213 assertions across both operations. The full ctest was not run. |
 
 * Result
 

@@ -374,6 +374,12 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_inbox_fail_apply_fn",
+      "file": "projects/ores.sql/create/inbox/inbox_approval_fail_apply_fn_create.sql",
+      "reason": "moves an approved request to apply_failed in one guarded statement and answers ok, missing or conflict, which the repository does not express"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_inbox_mark_notifications_read_fn",
       "file": "projects/ores.sql/create/inbox/inbox_notification_fn_create.sql",
       "reason": "predates the check"
@@ -536,18 +542,6 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_refdata_publish_currency_currency_groups_from_dq_fn",
-      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
-      "reason": "publishes a DQ dataset into the tenant, like every other publish_from_dq function"
-    },
-    {
-      "kind": "sql_function",
-      "name": "ores_refdata_publish_currency_groups_from_dq_fn",
-      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
-      "reason": "publishes a DQ dataset into the tenant, like every other publish_from_dq function"
-    },
-    {
-      "kind": "sql_function",
       "name": "ores_refdata_publish_currency_calendars_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "predates the check"
@@ -557,6 +551,18 @@
       "name": "ores_refdata_publish_currency_countries_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_currency_groups_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes a DQ dataset into the tenant, like every other publish_from_dq function"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_groups_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes a DQ dataset into the tenant, like every other publish_from_dq function"
     },
     {
       "kind": "sql_function",
@@ -602,12 +608,6 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_refdata_publish_sandbox_portfolios_from_dq_fn",
-      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
-      "reason": "predates the check"
-    },
-    {
-      "kind": "sql_function",
       "name": "ores_refdata_publish_netting_agreements_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "predates the check"
@@ -623,6 +623,30 @@
       "name": "ores_refdata_publish_netting_sets_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_party_contact_informations_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes a DQ dataset into the party a publish names, like every other publish_from_dq function"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_party_counterparties_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes a DQ dataset into the party a publish names, like every other publish_from_dq function"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_party_countries_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes a DQ dataset into the party a publish names, like every other publish_from_dq function"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_party_currencies_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes a DQ dataset into the party a publish names, like every other publish_from_dq function"
     },
     {
       "kind": "sql_function",
@@ -663,6 +687,12 @@
     {
       "kind": "sql_function",
       "name": "ores_refdata_publish_reporting_regimes_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_sandbox_portfolios_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "predates the check"
     },

@@ -411,6 +411,7 @@ describe('the extra details of a record', () => {
         const html = draw([['Target', 'x', 'Where it writes']]);
         expect(html).toContain('title="Where it writes"');
         expect(html).toContain('cursor-help');
+        expect(html).toContain('decoration-dotted');
     });
 
     it('leaves a label with no hint plain', () => {

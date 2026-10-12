@@ -5375,6 +5375,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             declared_key_field,
             declared_key_column,
             key_is_primary,
+            _column_name,
             entity_shell_plan,
             entity_http_route_plan,
             http_recipe_document,
@@ -5489,6 +5490,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # took.
         domain_entity['declared_key'] = declared_key_field(domain_entity)
         domain_entity['key_is_primary'] = key_is_primary(domain_entity)
+        # A declared key that other rows of the tenant share is only half of a
+        # row's identity: a party's Legal contact and another party's carry the
+        # same contact type. The generic history of such an entity is therefore
+        # addressed by the row's own id, which is one row whatever the scope.
+        _scope = [
+            _column_name(c) for c in (domain_entity.get('natural_keys') or [])
+            if _column_name(c) not in (domain_entity['declared_key'], 'tenant_id')]
+        domain_entity['history_by_row_id'] = bool(
+            domain_entity['declared_key']
+            and not domain_entity['key_is_primary']
+            and _scope
+            and domain_entity.get('service_find_by_uuid'))
         _declared_column = declared_key_column(domain_entity)
         domain_entity['declared_key_text'] = (
             _key_as_text(f'key.{domain_entity["declared_key"]}', _declared_column)

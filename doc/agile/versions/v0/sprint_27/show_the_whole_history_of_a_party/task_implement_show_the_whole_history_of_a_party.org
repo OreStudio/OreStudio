@@ -32,9 +32,9 @@ Evidence: in the Acme tenant each of the four contact types is held by four part
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] |
-| Now          | Not yet started.                       |
+| Now          | Built; awaiting the C++ test run and sign-off. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the refdata tests, then review.    |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -46,9 +46,19 @@ Evidence: in the Acme tenant each of the four contact types is held by four part
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decision: a row whose declared key other rows share is addressed in the generic
+history by its own =id=. A composite string such as =party/type= is not used,
+because the addressing page rules out joining a pair into one address. The id is
+one row whatever the scope, and every such model already has a read by id.
+
+1. Codegen derives =history_by_row_id= for a model with a declared key that is
+   not the storage key, a natural key beyond it and =tenant_id=, and a uuid
+   storage key.
+2. The history provider template reads by =boost::lexical_cast<uuid>(entity_id)=
+   for such a model.
+3. Regenerate the ten models the flag selects.
+4. The party timeline reads an identifier, a contact and a business unit by the
+   row's id, and no longer filters or states a gap for another party's row.
 
 * Measurements
 

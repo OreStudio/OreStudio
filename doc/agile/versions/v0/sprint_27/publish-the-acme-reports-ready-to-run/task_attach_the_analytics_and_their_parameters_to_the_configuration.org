@@ -8,7 +8,7 @@
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
 #+branch: feature/attach-the-analytics-and-their-parameters-to-the-configuration
-#+pr:
+#+pr: 3186
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3186][#3186]] | [reporting,dq,sql] Attach the analytics and their parameters to the configuration |
 
 * Review
 

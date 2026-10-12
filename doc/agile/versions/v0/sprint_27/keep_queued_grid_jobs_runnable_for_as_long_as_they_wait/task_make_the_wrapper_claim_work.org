@@ -8,12 +8,12 @@
 #+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
 #+owner: marco
 #+branch: feature/make-the-wrapper-claim-work
-#+pr:
+#+pr: 3199
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A node takes work only when it is free, and never holds a job it is not running.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ A node takes work only when it is free, and never holds a job it is not running.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The wrapper runs a claim loop. It asks the service for one job, runs it, and asks again at once.
+- An idle wrapper waits for the =compute.v1.ops.work_available= notice. It also asks every 5 seconds with jitter (=--claim-poll-seconds=).
+- A failed ask backs off from 1 second up to 30 seconds, with jitter.
+- The service claim marks the result in progress, so the wrapper no longer announces the start of a job.
+- The dispatcher creates the result, queues it in the work ledger and rings the notice. It no longer mints a token or publishes to the stream.
+- The wrapper no longer creates or reads the assignments stream.
 
 * Measurements
 
@@ -57,7 +60,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Compute api and core test suites | pass | =ctest --preset linux-clang-debug-make -R "ores.compute.(api|core).tests" -j2= | branch head |
+| Jobs claimed, run and submitted by 5 local wrappers | 6 of 6 queued | soak at 0.2 to 0.3 of 60 jobs a minute for 75 seconds, then the wrapper journals | branch head |
 
 * Notes
 
@@ -76,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3199][#3199]] | [compute] Make the wrapper claim its work |
 
 * Review
 
@@ -85,3 +89,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A free wrapper now claims one job at a time from the work ledger through =claim_work=. It wakes on the =work_available= notice and polls every 5 seconds with jitter if the notice is lost. The dispatcher queues the result and rings the notice, and no longer mints a token or publishes to the assignments stream. The wrapper no longer reads or creates that stream. Five local wrappers claimed, ran and submitted every job of a short soak. Remote nodes were not redeployed because Newton and the laptop were offline.

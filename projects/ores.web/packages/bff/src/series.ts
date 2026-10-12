@@ -56,7 +56,7 @@ const replySchema = z.looseObject({
             }),
         )
         .default([]),
-    total: z.number().default(0),
+    total: z.number().optional(),
 });
 
 export function registerSeriesRoutes(
@@ -88,6 +88,9 @@ export function registerSeriesRoutes(
                 source: row.source,
             }))
             .reverse();
-        return seriesObservationsSchema.parse({ observations, total: reply.total });
+        return seriesObservationsSchema.parse({
+            observations,
+            total: reply.total ?? observations.length,
+        });
     });
 }

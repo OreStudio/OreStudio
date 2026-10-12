@@ -22,7 +22,9 @@
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include "ores.compute.core/repository/node_sample_repository.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/test_database_manager.hpp"
@@ -32,6 +34,9 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <format>
+#include <random>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -57,6 +62,92 @@ std::vector<std::string> host_ids_of(const std::vector<ores::compute::domain::no
     for (const auto& row : rows)
         ids.push_back(boost::uuids::to_string(row.host_id));
     return ids;
+}
+
+/// Deletes the sample rows a test wrote when the test ends.
+///
+/// The tests run against the development database, so a row they leave behind
+/// is a row the grid screen shows: a future-dated grid sample hid the real
+/// newest one, and a generated node sample showed as a machine that does not
+/// exist. A row is deleted as the tenant that wrote it, because the policy lets
+/// a session delete only its own tenant's rows.
+class sample_cleanup {
+public:
+    explicit sample_cleanup(ores::testing::database_helper& h)
+        : h_(h) {}
+    sample_cleanup(const sample_cleanup&) = delete;
+    sample_cleanup& operator=(const sample_cleanup&) = delete;
+
+    ~sample_cleanup() {
+        for (const auto& step : steps_) {
+            try {
+                ores::database::repository::execute_parameterized_command(
+                    h_.context().with_tenant(step.tenant, h_.db_user()),
+                    step.sql,
+                    step.params,
+                    logger(),
+                    "deleting a test sample");
+            } catch (const std::exception&) {
+                // A failed delete leaves a row behind and must not fail the test.
+            }
+        }
+    }
+
+    /// One grid sample row, by its id.
+    void grid(const ores::utility::uuid::tenant_id& tenant, const boost::uuids::uuid& id) {
+        steps_.push_back({tenant,
+                          "DELETE FROM ores_compute_grid_samples_tbl WHERE id = $1::uuid",
+                          {boost::uuids::to_string(id)}});
+    }
+
+    /// One node sample row, by its id.
+    void node(const ores::utility::uuid::tenant_id& tenant, const boost::uuids::uuid& id) {
+        steps_.push_back({tenant,
+                          "DELETE FROM ores_compute_node_samples_tbl WHERE id = $1::uuid",
+                          {boost::uuids::to_string(id)}});
+    }
+
+    /// Every row of a table that one tenant wrote in a time range.
+    void range(const std::string& table,
+               const ores::utility::uuid::tenant_id& tenant,
+               std::chrono::system_clock::time_point from,
+               std::chrono::system_clock::time_point to) {
+        namespace dt = ores::platform::time;
+        steps_.push_back(
+            {tenant,
+             std::format("DELETE FROM {} WHERE tenant_id = $1::uuid AND "
+                         "sampled_at >= $2::timestamptz AND sampled_at < $3::timestamptz",
+                         table),
+             {tenant.to_string(),
+              dt::datetime::to_db_string(from),
+              dt::datetime::to_db_string(to)}});
+    }
+
+private:
+    struct step {
+        ores::utility::uuid::tenant_id tenant;
+        std::string sql;
+        std::vector<std::string> params;
+    };
+
+    static ores::logging::logger_t& logger() {
+        static auto instance = ores::logging::make_logger("ores.compute.tests.sample_cleanup");
+        return instance;
+    }
+
+    ores::testing::database_helper& h_;
+    std::vector<step> steps_;
+};
+
+/// The generator leaves the 64-bit members of a node sample indeterminate, because
+/// the codegen gives a default to int and bool alone. A test that writes the row
+/// as it is would store stack garbage, so it states them.
+ores::compute::domain::node_sample with_defined_counters(ores::compute::domain::node_sample row) {
+    row.avg_task_duration_ms = 0;
+    row.max_task_duration_ms = 0;
+    row.input_bytes_fetched = 0;
+    row.output_bytes_uploaded = 0;
+    return row;
 }
 
 } // namespace
@@ -91,22 +182,26 @@ TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third"
                                    provision_ctx, third_code, "compute telemetry third tenant"))
             .value();
 
-    auto own_row = generate_synthetic_node_sample(gen);
+    auto own_row = with_defined_counters(generate_synthetic_node_sample(gen));
     own_row.tenant_id = own;
     own_row.host_id = random_uuid();
     own_row.sampled_at = std::chrono::system_clock::now();
 
-    auto system_row = generate_synthetic_node_sample(gen);
+    auto system_row = with_defined_counters(generate_synthetic_node_sample(gen));
     system_row.tenant_id = system;
     system_row.host_id = random_uuid();
     system_row.sampled_at = std::chrono::system_clock::now();
 
-    auto third_row = generate_synthetic_node_sample(gen);
+    auto third_row = with_defined_counters(generate_synthetic_node_sample(gen));
     third_row.tenant_id = third;
     third_row.host_id = random_uuid();
     third_row.sampled_at = std::chrono::system_clock::now();
 
     node_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.node(own, own_row.id);
+    cleanup.node(system, system_row.id);
+    cleanup.node(third, third_row.id);
     repo.write(h.context(), own_row);
     repo.write(h.context().with_tenant(system, h.db_user()), system_row);
     repo.write(h.context().with_tenant(third, h.db_user()), third_row);
@@ -162,6 +257,10 @@ TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant
     third_row.sampled_at = now + std::chrono::hours(24 * 365 * 2);
 
     grid_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.grid(own, own_row.id);
+    cleanup.grid(system, system_row.id);
+    cleanup.grid(third, third_row.id);
     repo.write(h.context(), own_row);
     repo.write(h.context().with_tenant(system, h.db_user()), system_row);
     repo.write(h.context().with_tenant(third, h.db_user()), third_row);
@@ -181,4 +280,262 @@ TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant
     CHECK(newest->id != own_row.id);
     CHECK(newest->id != third_row.id);
     CHECK(newest->tenant_id == system);
+}
+
+namespace {
+
+/// A bucket-aligned instant at random in the past, so no other row or test shares the range.
+///
+/// The rows a test writes stay in the database, and a row in the future would
+/// become the newest sample that other tests read. So the range lies between
+/// 1990 and 2010, and a repeated run draws another range.
+std::chrono::system_clock::time_point random_past_bucket_start(std::chrono::seconds bucket) {
+    static std::mt19937_64 engine{std::random_device{}()};
+    constexpr long long from_1990 = 631152000;
+    constexpr long long twenty_years = 20LL * 365 * 24 * 3600;
+    const long long secs = from_1990 + static_cast<long long>(engine() % twenty_years);
+    const long long aligned = secs / bucket.count() * bucket.count();
+    return std::chrono::system_clock::time_point(std::chrono::seconds(aligned));
+}
+
+grid_sample sample_at(const grid_sample& model,
+                      const tenant_id& tenant,
+                      std::chrono::system_clock::time_point at,
+                      int results_done) {
+    auto row = model;
+    row.id = random_uuid();
+    row.tenant_id = tenant;
+    row.sampled_at = at;
+    row.results_done = results_done;
+    return row;
+}
+
+} // namespace
+
+TEST_CASE("grid_series_holds_the_newest_sample_of_each_bucket_and_marks_the_gaps", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto model = generate_synthetic_grid_sample(gen);
+
+    auto provision_ctx = h.context();
+    const auto third =
+        tenant_id::from_string(
+            test_database_manager::provision_test_tenant(
+                provision_ctx,
+                test_database_manager::generate_test_tenant_code("ores.compute.telemetry"),
+                "compute telemetry third tenant"))
+            .value();
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    // Bucket 0 holds three samples, bucket 1 none, bucket 2 one, bucket 3 none.
+    // A third tenant's newer row sits in bucket 2 and the policy hides it. One
+    // more row lies past the end of the range.
+    grid_sample_repository repo;
+    const auto own = h.tenant_id();
+    sample_cleanup cleanup(h);
+    cleanup.range("ores_compute_grid_samples_tbl", own, t0, t0 + seconds(400));
+    cleanup.range("ores_compute_grid_samples_tbl", third, t0, t0 + seconds(400));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(5), 1));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(35), 3));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(20), 2));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(130), 7));
+    repo.write(h.context().with_tenant(third, h.db_user()),
+               sample_at(model, third, t0 + seconds(150), 99));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(300), 50));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(240), 60);
+
+    BOOST_LOG_SEV(lg, info) << "The series has " << series.bucket_count
+                            << " bucket(s); each column must hold the newest sample of its "
+                               "bucket, and the empty buckets must say they hold no sample.";
+
+    CHECK(series.start == t0);
+    CHECK(series.bucket_seconds == 60);
+    REQUIRE(series.bucket_count == 4);
+    REQUIRE(series.samples.size() == 4);
+    REQUIRE(series.results_done.size() == 4);
+    CHECK(series.samples == std::vector<int>{3, 0, 1, 0});
+    CHECK(series.results_done == std::vector<int>{3, 0, 7, 0});
+}
+
+TEST_CASE("grid_series_widens_the_range_to_whole_buckets", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    const auto series =
+        telemetry.grid_series_in_range(h.context(), t0 + seconds(30), t0 + seconds(150), 60);
+
+    CHECK(series.start == t0);
+    CHECK(series.bucket_count == 3);
+}
+
+TEST_CASE("grid_series_of_an_empty_range_says_every_bucket_holds_no_sample", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(600), 60);
+
+    REQUIRE(series.bucket_count == 10);
+    CHECK(series.samples == std::vector<int>(10, 0));
+}
+
+TEST_CASE("grid_series_refuses_a_bad_bucket_and_a_range_that_needs_too_many", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    CHECK_THROWS_AS(telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(600), 0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(telemetry.grid_series_in_range(h.context(), t0 + seconds(60), t0, 60),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(6000 * 60), 60),
+                    std::invalid_argument);
+}
+
+namespace {
+
+node_sample node_sample_at(const node_sample& model,
+                           const tenant_id& tenant,
+                           const boost::uuids::uuid& host,
+                           const std::string& machine,
+                           std::chrono::system_clock::time_point at,
+                           int completed,
+                           int failed,
+                           int since_last,
+                           std::int64_t avg_ms,
+                           std::int64_t max_ms,
+                           std::int64_t fetched,
+                           std::int64_t uploaded) {
+    auto row = model;
+    row.id = random_uuid();
+    row.tenant_id = tenant;
+    row.host_id = host;
+    row.machine = machine;
+    row.sampled_at = at;
+    row.tasks_completed = completed;
+    row.tasks_failed = failed;
+    row.tasks_since_last = since_last;
+    row.avg_task_duration_ms = avg_ms;
+    row.max_task_duration_ms = max_ms;
+    row.input_bytes_fetched = fetched;
+    row.output_bytes_uploaded = uploaded;
+    return row;
+}
+
+} // namespace
+
+TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machine", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto model = with_defined_counters(generate_synthetic_node_sample(gen));
+
+    auto provision_ctx = h.context();
+    const auto third =
+        tenant_id::from_string(
+            test_database_manager::provision_test_tenant(
+                provision_ctx,
+                test_database_manager::generate_test_tenant_code("ores.compute.telemetry"),
+                "compute telemetry third tenant"))
+            .value();
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+    const auto own = h.tenant_id();
+
+    const auto beta_node = random_uuid();
+    const auto alpha_node = random_uuid();
+    const auto hidden_node = random_uuid();
+
+    // The beta node has two samples in bucket 0, the first naming no machine,
+    // and one in bucket 2. The alpha node has one sample in bucket 1. A third
+    // tenant's node reports in bucket 0 and the policy hides it.
+    node_sample_repository repo;
+    sample_cleanup cleanup(h);
+    cleanup.range("ores_compute_node_samples_tbl", own, t0, t0 + seconds(400));
+    cleanup.range("ores_compute_node_samples_tbl", third, t0, t0 + seconds(400));
+    repo.write(
+        h.context(),
+        node_sample_at(model, own, beta_node, "", t0 + seconds(10), 5, 1, 2, 100, 150, 10, 1));
+    repo.write(
+        h.context(),
+        node_sample_at(model, own, beta_node, "beta", t0 + seconds(40), 7, 1, 3, 200, 400, 20, 2));
+    repo.write(
+        h.context(),
+        node_sample_at(model, own, beta_node, "beta", t0 + seconds(125), 9, 2, 2, 50, 60, 5, 5));
+    repo.write(h.context(),
+               node_sample_at(
+                   model, own, alpha_node, "alpha", t0 + seconds(70), 4, 0, 4, 10, 20, 100, 200));
+    repo.write(
+        h.context().with_tenant(third, h.db_user()),
+        node_sample_at(model, third, hidden_node, "gamma", t0 + seconds(15), 1, 0, 1, 1, 1, 1, 1));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.node_series_in_range(h.context(), t0, t0 + seconds(180), 60);
+
+    BOOST_LOG_SEV(lg, info) << "The node series lists " << series.nodes.size() << " node(s) over "
+                            << series.bucket_count << " bucket(s).";
+
+    REQUIRE(series.bucket_count == 3);
+    REQUIRE(series.nodes.size() == 2);
+    // Ordered by machine: alpha before beta, and the hidden node absent.
+    CHECK(series.nodes[0].host_id == boost::uuids::to_string(alpha_node));
+    CHECK(series.nodes[0].machine == "alpha");
+    CHECK(series.nodes[1].host_id == boost::uuids::to_string(beta_node));
+    CHECK(series.nodes[1].machine == "beta");
+
+    REQUIRE(series.samples.size() == 6);
+    // Row 0 is alpha: a sample in bucket 1 only.
+    CHECK(series.samples == std::vector<int>{0, 1, 0, 2, 0, 1});
+    CHECK(series.tasks_since_last == std::vector<int>{0, 4, 0, 5, 0, 2});
+    CHECK(series.input_bytes_fetched == std::vector<std::int64_t>{0, 100, 0, 30, 0, 5});
+    CHECK(series.output_bytes_uploaded == std::vector<std::int64_t>{0, 200, 0, 3, 0, 5});
+    // The counters that count from the wrapper's start take the newest value.
+    CHECK(series.tasks_completed == std::vector<int>{0, 4, 0, 7, 0, 9});
+    CHECK(series.tasks_failed == std::vector<int>{0, 0, 0, 1, 0, 2});
+    // The longest task is the maximum, and the mean is weighted by the tasks:
+    // (100 * 2 + 200 * 3) / 5 = 160.
+    CHECK(series.max_task_duration_ms == std::vector<std::int64_t>{0, 20, 0, 400, 0, 60});
+    CHECK(series.avg_task_duration_ms == std::vector<std::int64_t>{0, 10, 0, 160, 0, 50});
+}
+
+TEST_CASE("node_series_of_an_empty_range_lists_no_nodes", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.node_series_in_range(h.context(), t0, t0 + seconds(600), 60);
+
+    CHECK(series.bucket_count == 10);
+    CHECK(series.nodes.empty());
+    CHECK(series.samples.empty());
+}
+
+TEST_CASE("node_series_refuses_a_bad_bucket_and_an_empty_range", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    CHECK_THROWS_AS(telemetry.node_series_in_range(h.context(), t0, t0 + seconds(600), 0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(telemetry.node_series_in_range(h.context(), t0 + seconds(60), t0, 60),
+                    std::invalid_argument);
 }

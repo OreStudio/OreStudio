@@ -195,7 +195,8 @@ public:
         // Heartbeats are unauthenticated fire-and-forget publishes from wrapper
         // nodes — use the service context directly (no JWT required).
         //
-        // A heartbeat from a known host writes nothing. It used to bump a
+        // A heartbeat from a known host writes nothing unless the hardware it
+        // reports differs from the row. It used to bump a
         // last-seen column, but that column lives on a bitemporal table, so
         // every heartbeat added a version: five nodes at one heartbeat per
         // thirty seconds grew the host table by fourteen thousand rows a day,
@@ -219,10 +220,24 @@ public:
                     }
                     h.external_id = req->host_id;
                     h.display_name = make_display_name(h.id);
+                    h.cpu_count = req->cpu_count;
+                    h.ram_mb = req->ram_mb;
                     h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                     h.change_commentary = "Auto-registered on first heartbeat";
                     BOOST_LOG_SEV(work_handler_lg(), info)
                         << "Assigned display name: " << h.display_name;
+                    stamp(h, ctx_);
+                    svc.save_host(h);
+                } else if ((req->cpu_count > 0 && existing->cpu_count != req->cpu_count) ||
+                           (req->ram_mb > 0 && existing->ram_mb != req->ram_mb)) {
+                    // The row holds the facts the computer gave, and they change only when
+                    // the node moves to other hardware, so this writes once per change
+                    // and not once per heartbeat.
+                    auto h = *existing;
+                    h.cpu_count = req->cpu_count;
+                    h.ram_mb = req->ram_mb;
+                    h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
+                    h.change_commentary = "Machine facts reported by the node";
                     stamp(h, ctx_);
                     svc.save_host(h);
                 }

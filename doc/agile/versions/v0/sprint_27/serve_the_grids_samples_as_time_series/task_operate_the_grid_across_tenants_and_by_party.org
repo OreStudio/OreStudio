@@ -1,0 +1,212 @@
+:PROPERTIES:
+:ID: 046E315D-EA73-4902-9863-B09BD883C235
+:END:
+#+title: Task: Operate the grid across tenants and by party
+#+description: Super admin sees the whole grid across tenants with a breakdown by tenant. A tenant admin sees the same screens for one tenant, broken down by party.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/read-the-grid-samples-over-a-range
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the grid screens one shape for two scopes: the whole grid by tenant for the super admin, and one tenant by party for a tenant admin.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- A super admin sees every host, node, batch, workunit and result of every tenant, with a breakdown that shows each tenant's share of the grid.
+- A tenant admin sees the same screens limited to the tenant, with a breakdown by party, and sees no other tenant's rows or counters.
+- Batches, workunits and results carry a party id, set when the batch is created.
+- The guard script lists each widened compute policy with its reason.
+- Every host records its RAM and a cost rate. Each completed result records its cost, computed from its run time and the slot rate of its host.
+- The usage and jobs screens show cost for every role: the overall grid cost for the operator, with a breakdown by tenant, and the tenant's cost for a tenant admin, with a breakdown by party and report.
+- Idle cost is apportioned to tenants, and inside a tenant to parties and reports, in proportion to job cost. A test shows that the loaded costs plus the unallocated cost equal the host costs.
+
+* Plan
+
+** Analysis from first principles
+
+*** Who uses the grid, and what each role needs
+
+The grid is one shared installation resource. Tenants own the work that runs on it. Parties submit that work inside a tenant. Three roles look at it from three distances.
+
+| Role | Owns | Questions they ask | Needs to see |
+|------+------+--------------------+--------------|
+| Grid operator (super admin, system tenant) | The hosts, the nodes, the capacity | Is the grid healthy? Is a machine down? Is the queue growing? Who uses the grid? Does one tenant starve the others? Do I need more capacity? | Every host, node, batch, workunit and result of every tenant. Load, fleet, throughput and outcomes over a range. Each tenant's share. |
+| Tenant admin | One tenant's work | Is my work running? Which of my parties submits it? Which party fails most, or uses most? Why is a batch slow? | The same screens limited to the tenant. Jobs, batches, workunits and results per party. The fleet as capacity, with no other tenant's rows. |
+| Party user (submits work) | The party's own batches | Did my batch finish? Which workunit failed, and why? | Only the parties the session may see. This role needs the Jobs screen and no breakdown. |
+
+The tenant admin and the operator ask the same questions of different scopes. The screens stay the same. The scope picks the filter and the grouping key.
+
+| Session | Filter | Group by |
+|---------+--------+----------|
+| System tenant | None, the whole grid | Tenant |
+| Tenant admin | The tenant | Party |
+| Party user | The visible parties | None, a list of jobs |
+
+The server derives the scope from the session. The request never carries it, so a client cannot ask for a wider scope.
+
+*** What is shared and what is owned
+
+Three ownership classes apply, from the tenancy docs.
+
+- *Installation data.* Grid samples and node samples. The policy already shows the system tenant's rows to every session. No change.
+- *Operated resources.* Hosts. This task must check which tenant owns the host rows. If the system tenant owns all of them, hosts need no widening.
+- *Tenant work.* Batches, workunits, results. The policies are strictly per tenant. The operator cannot see them today. This is the gap.
+
+*** Four findings
+
+1. *The operator needs a read widening, not only an aggregate.* The operator manages the grid. A count cannot answer "which batch is stuck" or "which node ran it". The compute job tables get a read-only system-tenant policy. Writes stay with the current tenant. Each policy goes on the guard's exception list, with the reason that the system tenant operates the grid. Row-level security cannot hide columns. So the handler returns metadata only (ids, state, timings, tenant, party, host). It never returns a workunit input or a result payload across tenants.
+2. *Party does not exist on the job tables.* Batches, workunits and results hold =tenant_id= only. The submit path already knows the party. =report_submit_handler.cpp= reads =req.party_id= and builds its context with =for_requested_party=. The batch takes the party there. Workunits and results copy it, so a policy compares one column and needs no join. Existing rows get no party. The screen shows them as "Unassigned".
+3. *Party policies already have a shape.* Other tables use a restrictive select policy: =party_id = any(ores_iam_visible_party_ids_fn())=, plus the system tenant. The scheduler tables also admit =party_id is null=. The compute tables follow that shape. A party user then sees only the visible parties, and the operator sees all.
+4. *The grid samples would leak across tenants once their counters widen.* A sample row holds one set of counters, and its policy shows it to every session. Today the counters are the system tenant's jobs. If =ores_compute_grid_stats_fn= counts the whole grid for the poller, every tenant admin reads every tenant's load. The fleet columns (hosts, nodes) are installation capacity and fine to share. The job columns (queued, in progress, completed, failed) are tenant work. Recommendation: the poller writes one installation row for the fleet and one row per active tenant for the job columns. The tenant admin's charts read the fleet row and the tenant's own row. The operator's charts sum the tenant rows. The series shape stays, and the tenant breakdown over time falls out of the same table.
+
+*** The screens
+
+One set of tabs serves every role. Each tab asks the server for the scope the session allows.
+
+- *Overview.* The charts and the machines. Operator: whole grid. Tenant admin: fleet plus own job counters.
+- *Usage.* New. The breakdown. Operator: one row per tenant, with batches, workunits and results by state and the share of the grid. Tenant admin: one row per party, with the same columns.
+- *Jobs.* New. Batches with their workunits and results. A filter by tenant (operator) or by party (tenant admin). A party user sees only the visible parties.
+- *Nodes and Heatmap.* Installation view. A tenant admin sees the fleet and no job detail from other tenants. The node page lists the jobs the node ran, within the scope.
+
+** Cost attribution
+
+*** Why
+
+The tenant breakdown and the party breakdown count jobs. A count does not say what the work costs. A short job on a large host and a long job on a small host count the same. The operator wants to charge or compare tenants. A tenant admin wants the cost per party and per report. Both need a cost for each job.
+
+*** Inputs we need
+
+- *Host RAM.* The heartbeat already carries =cpu_count= and =ram_mb=, and the host row keeps them. This task must confirm that every host has them. Hosts that never sent a heartbeat since the change have none.
+- *A cost rate per host.* Add =cost_per_hour= and a currency to the host row. A rate that stays a plain number is a multiplier on time. The host table is bitemporal, so a change of rate keeps its history.
+- *Job time.* The started signal sets the start. The completion sets the end. The run time of a job is the difference.
+- *Job memory.* The peak memory per job comes from the other task in this story (engine run time and peak memory). Until it lands, memory is the host's RAM divided by its slots.
+
+*** What the hyperscalers do
+
+The problem is the one Kubernetes cost tools and cloud split-cost features solve. They share the price of a node among the workloads that ran on it.
+
+- Take the price of the node for the period.
+- Split it between the resources, CPU and memory, with a fixed ratio. A common ratio follows the price of the cloud's own CPU and memory in custom machine types.
+- Charge each workload for each resource at the larger of what it reserved and what it used. The reservation is what the workload kept other workloads from using.
+- Compute a unit price for each resource: the resource's share of the node price, divided by the capacity of that resource over the period.
+- The cost left over is idle capacity. Tools show it as its own line, or spread it over the workloads in proportion to their charge.
+
+The fair-share ideas behind this are two. Charge for what a job prevents others from using (reservation), and share the cost of an empty machine in proportion to use. A full game-theory split (the Shapley value) is exact and too costly to compute for this case. The proportional rule gives the same order of result.
+
+*** A proposal for the grid
+
+A wrapper runs one job at a time and owns one core. A host with N cores runs N - 1 wrappers. So the unit of capacity is a *slot*, and a slot holds one job at a time. This removes the hard part of the shared-machine problem: the jobs on a host never overlap in the same slot.
+
+1. Split the host rate into a CPU part and a memory part with a ratio kept in configuration. Start at 80 to 20.
+2. The *slot rate* is the CPU part divided by the cores of the host, plus the memory part divided by the host's RAM, times the RAM that a slot holds. Count all the cores, so the reserved core and the operating system are paid for by the slots.
+3. The *job cost* is the run time times the slot rate. When the peak memory is known, the memory part uses the larger of the slot's share of RAM and the job's peak.
+4. The *idle cost* of a host is its rate over the period, minus the sum of its job costs.
+5. The idle cost is *apportioned*. Each host's idle cost goes to the tenants that ran jobs on that host in the period, in proportion to their job cost on it. A tenant's *loaded cost* is its job cost plus these shares. Inside a tenant, the loaded cost splits by party, and by report, in proportion to job cost in the same way. A host with no job in the period has nobody to charge. Its cost shows as *unallocated*, so the totals still reconcile.
+6. The totals reconcile. Over any period, the loaded costs of all tenants plus the unallocated cost equal the sum of the host costs. The operator's overall grid cost is that sum. Each tenant's figure is one part of it, and each party's figure is one part of the tenant's.
+7. Stamp the job cost on the result when it completes, with the rate that applied. A later change of rate then does not rewrite old bills. The idle cost cannot be stamped, because it depends on the whole period. Compute it when the report is read, from the host rates, the job costs and the host's up time. The breakdowns by party, report, tenant, host and period are sums over results plus the apportioned idle cost.
+
+*** Who sees which cost
+
+| Role | Overall figure | Breakdown |
+|------+----------------+-----------|
+| Grid operator | The cost of the whole grid for the period | By tenant, host and period, with unallocated cost as its own line |
+| Tenant admin | The tenant's loaded cost | By party, report, host and period |
+| Party user | The party's loaded cost | By report and period |
+
+A tenant never sees another tenant's cost or the rate of a host beyond its own slot rate.
+
+*** Rates for the existing hardware
+
+The hosts are owned machines. Price them as the cloud would rent equivalent capacity. This is an estimate, and the setting is a number the operator can change.
+
+- Start from an on-demand cloud price of about 0.04 per vCPU-hour and 0.005 per GB-hour. These are assumptions to check against a current price list before use.
+- Host rate per hour = cores times the CPU price, plus RAM in GB times the memory price.
+- Record the rate for Newton, goedel, the laptop and wiener from their measured cores and RAM. Do not guess the hardware. Read it from the host row.
+- Express the screen's cost per minute, since a job lasts minutes. Keep the stored rate per hour.
+
+*** Questions to settle
+
+- The currency and the unit shown (per hour, per minute).
+- How to measure a host's up time for the idle cost. The node samples show when a host had nodes online. Use them.
+- Whether the 80 to 20 split of CPU and memory is right for the engine's workloads.
+
+** Steps
+
+1. Check which tenant owns the host rows, and in which tenant the wrappers' jobs run.
+2. Add =party_id= to batches, workunits and results. Change the entity models and regenerate. Write the SQL migration. Stamp the party in the submit path. Copy it to workunits and results.
+3. Add the restrictive party policies. Add the system-tenant read policies. List them in the guard. Add a policy test for each role: operator, tenant admin, party user.
+4. Make the stats function and the poller scope-aware. Write the per-tenant sample rows. Make the grid and node series reads filter by scope.
+5. Add the usage and jobs reads to the compute service, with permissions. Generate the protocol from the operation model.
+6. Add the BFF routes. Add the Usage and Jobs tabs. Make the Overview and Nodes tabs follow the scope.
+7. Add the cost rate and currency to the host. Compute the cost of a result when it completes. Add the cost to the usage and jobs reads, with breakdowns by tenant, party, report, host and period. Show the cost on the Usage and Jobs tabs.
+8. Document the exception in "Data read across tenants" and update the story.
+
+** Open decisions
+
+- Per-tenant sample rows (recommended above) or a single installation row.
+- Backfill existing rows from the submitting user's party, or leave them "Unassigned".
+- Whether the party user gets the Jobs tab in this task or later.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

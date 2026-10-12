@@ -29,6 +29,7 @@ set(files
     "numeric_floating_point_tests.cpp"
     "process_executable_tests.cpp"
     "process_pid_tests.cpp"
+    "system_system_info_tests.cpp"
     "time_datetime_tests.cpp"
     "time_relative_time_formatter_tests.cpp"
     "time_utils_tests.cpp"

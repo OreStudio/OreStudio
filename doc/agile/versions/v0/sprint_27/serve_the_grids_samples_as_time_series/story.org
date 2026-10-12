@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 61A3C1DF-CC23-439D-BD96-AF03B2D6B63E
+:END:
+#+title: Story: Serve the grid's samples as time series
+#+description: The grid stores a sample every 30 seconds, for the grid and for each node, and no read returns more than the newest. Serve both as bucketed time series over a range, and draw the Watch the grid charts from them: load, fleet, throughput, outcomes, the node heatmap and the node state ribbon. Then add the engine's run time and peak memory to the node sample.
+#+type: story
+#+level: s2
+#+filetags: :compute:telemetry:web:grid:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A system administrator picks last hour, day or week and reads how the grid's load, fleet, throughput and outcomes moved, and which node was busy or quiet when. Both stored sample tables already hold the data. No subject reads a range of either, so the story adds the reads, serves them through the BFF, and draws the panels the Watch the grid journey names. A week of node samples is about half a million rows for 26 nodes, so the reads bucket the rows on the server. The second half reads ORE's runtimes.csv and its memory lines in the wrapper, so each node sample can also state how long the engine ran and how much memory it peaked at.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Scaffolded. The findings below record what exists and what is missing. |
+| Waiting on    | Nothing.                               |
+| Next          | Read the grid samples over a range. |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- A grid sample range read returns the samples between two times, bucketed to a width the caller asks for, so a week comes back as hundreds of points and not tens of thousands.
+- A node sample range read returns one series per node over the same range and buckets, with the tasks done, failed, mean and longest duration and bytes moved.
+- Both reads serve the whole installation, are gated by a permission, and say an empty range is empty and not a flat line at zero.
+- The BFF serves both reads with the range presets of the other operations screens, and the grid screen draws load, fleet, throughput and outcomes on one shared time axis.
+- The grid screen draws the node load heatmap and the node state ribbon from the node series, grouped by machine.
+- A node sample carries the engine run time and the peak memory of its jobs, read from runtimes.csv and the memory lines, and the screen can chart them.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:25074FA7-2489-40BF-AFD7-8562BD99462A][Scaffold story: Serve the grid's samples as time series]] | DONE | 2026-10-11 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:109AD3A6-9F4B-40DA-9965-F7791460B746][Read the grid samples over a range]] | DONE | 2026-10-11 | 2026-10-12 | Initial task for: Serve the grid's samples as time series |
+| [[id:06CBD19C-E786-4F13-B037-62CD8609E2A1][Read the node samples over a range]] | DONE | | 2026-10-12 | One series per node over a range, bucketed on the server, with the failure fields and the machine name. |
+| [[id:C18E61DD-04F3-4F80-8C6F-FEF9A8108801][Serve the series through the BFF]] | DONE | | 2026-10-12 | A BFF route for the grid and node series, with the range presets of the other operations screens. |
+| [[id:F4472843-743E-42F1-8E14-948D27A498D9][Draw load, fleet, throughput and outcomes]] | DONE | | 2026-10-12 | The first panels of the Watch the grid journey on one shared time axis. |
+| [[id:C84D4CE6-CE41-4F7B-A71E-BAA8CA2F84FE][Draw the node heatmap and the state ribbon]] | BACKLOG | | | One row per node, one column per interval, grouped by machine. |
+| [[id:8737DBA8-5049-4F1F-934A-C7C49029EA91][Add the engine run time and peak memory to the node sample]] | BACKLOG | | | The wrapper reads ORE's runtimes.csv and its memory lines and reports them in the node sample. |
+| [[id:046E315D-EA73-4902-9863-B09BD883C235][Operate the grid across tenants and by party]] | BACKLOG | | | Super admin sees the whole grid across tenants with a breakdown by tenant. A tenant admin sees the same screens for one tenant, broken down by party. |
+
+* Findings
+
+Read on 2026-10-11 at main 5c7b5a0324.
+
+** What the docs already say
+
+- The journey [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]] is the
+  specification. It names the ranges (last hour, day, week), nine panels on one
+  shared time axis, and eight gaps. It marks the range reads for grid and node
+  samples as missing, with no subject and no permission gate.
+- The capture [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]]
+  is the core gap. The grid read answers with the newest sample alone, and
+  nothing reads a range.
+- The capture [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]
+  is the same shape from the other side. Its four reads aggregate logs and
+  sessions and not grid samples, so only the pattern carries over.
+- The story [[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Account for the grid's usage]]
+  owns the Usage tab, the allocation by tenant. This story does not build it.
+- The message bus screen is the precedent. It reads NATS samples over a range
+  with a request that carries a time range and a limit, and the BFF works out
+  the window on the server.
+
+** What is stored
+
+On 2026-10-11 the grid samples table held 3529 rows from 2026-10-10 13:39, and
+the node samples table held 36661. Both are hypertables with a 30 day retention
+and a 30 second write interval. For 26 nodes that is about 75000 node rows a
+day and about 525000 for a week. That is a calculation and not a measurement.
+A read over a week therefore buckets the rows on the server.
+
+** What the ORE logs offer
+
+Measured on 60 jobs unpacked from storage, each a 20 year interest rate swap.
+
+- Each job writes =runtimes.csv= (total, count, maximum, minimum and average per
+  phase) and =pricingstats.csv= (timing per trade). The values fit microseconds.
+  A total of 20000 matches the log's median PRICING analytic span of 24 ms.
+  These files are structured, so they are safer to read than log text.
+- The six memory lines per run show 50 to 53 MiB at the start and 61 to 66 MiB
+  at the finish.
+- The log timestamps give phase spans. Market data load has a median of 2 ms,
+  the PRICING analytic 24 ms, and the whole log 40 ms with a maximum of 121 ms.
+- The NOTICE lines also carry the quotes required, the fixings and the FX
+  triangulation sizes. Those describe the portfolio and not the node's load.
+- The test job is tiny, so the wrapper's own steps (download, unpack, upload)
+  dominate. The engine numbers say little about node load until real portfolios
+  run.
+
+** What is missing
+
+- A range read of grid samples, and one of node samples, each with a bucket
+  width. Neither model generates a protocol.
+- A permission gate on both reads.
+- A node state beyond heartbeat age. The ribbon can state online and quiet, and
+  lost only from the runner state.
+- The grid summary counts are computed for one tenant. The ledger story fixes
+  that, so the load panel states whose work it counts until then.
+
+* Decisions
+
+- The reads bucket on the server, and the caller asks for the width. The bucket
+  is plain SQL on the epoch, so the read runs on a PostgreSQL without
+  TimescaleDB. The browser never receives raw rows for a week.
+- A series travels as columns on a regular time axis, not as a list of rows. The
+  reply carries the start, the bucket width and the bucket count once, then one
+  integer array per counter. A chart reads one column at a time, the time axis
+  is implicit, and no field name or timestamp repeats per point. A =samples=
+  column says how many samples each bucket held, and 0 marks a gap, so a gap is
+  never read as a measured zero.
+- The node series uses the same time axis. The nodes are listed once, and each
+  metric is one flat array of nodes times buckets, row-major, which is the shape
+  the heatmap draws.
+- The engine run time and peak memory come from =runtimes.csv= and the memory
+  lines in the wrapper, and not from the telemetry log rows. A structured file
+  is read once per job, and a log line can change its wording.
+
+* Out of scope
+
+- The Usage tab, the allocation by tenant (the ledger story).
+- Per-node views that open from a row.
+- Control of a node, such as draining or stopping it.
+- The Qt client.

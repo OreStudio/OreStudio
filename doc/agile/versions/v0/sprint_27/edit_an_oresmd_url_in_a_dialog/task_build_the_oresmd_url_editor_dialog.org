@@ -8,7 +8,7 @@
 #+filetags: :edit_an_oresmd_url_in_a_dialog:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-oresmd-url-editor-dialog
-#+pr:
+#+pr: 3168
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3168][#3168]] | [web] Build the oresmd URL editor dialog |
 
 * Review
 

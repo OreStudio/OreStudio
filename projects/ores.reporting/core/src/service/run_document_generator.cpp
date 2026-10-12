@@ -19,6 +19,9 @@
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
 #include <algorithm>
+#include <chrono>
+#include <cstdio>
+#include <format>
 #include <optional>
 #include <stdexcept>
 
@@ -39,6 +42,34 @@ constexpr input_file input_files[] = {
     {"pricing_engines", "pricingEnginesFile", "pricingengine.xml"},
 };
 
+// The weekday before a date. Holiday calendars are not consulted.
+std::string previous_weekday(const std::string& iso_date) {
+    int y = 0;
+    unsigned m = 0, d = 0;
+    char tail = 0;
+    if (std::sscanf(iso_date.c_str(), "%d-%u-%u%c", &y, &m, &d, &tail) != 3)
+        throw std::invalid_argument(
+            std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
+    const std::chrono::year_month_day ymd{std::chrono::year{y}, std::chrono::month{m},
+                                          std::chrono::day{d}};
+    if (!ymd.ok())
+        throw std::invalid_argument(
+            std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
+    std::chrono::sys_days day{ymd};
+    do {
+        day -= std::chrono::days{1};
+    } while (std::chrono::weekday{day} == std::chrono::Saturday ||
+             std::chrono::weekday{day} == std::chrono::Sunday);
+    return std::format("{:%F}", day);
+}
+
+// The date a run values the portfolio at.
+std::string as_of(const domain::risk_report_config& risk, const std::string& run_date) {
+    if (risk.market_data_type == "date")
+        return risk.market_data_date;
+    return risk.market_data_type == "eod" ? previous_weekday(run_date) : run_date;
+}
+
 }
 
 messaging::run_document generate_run_document(const run_document_inputs& in) {
@@ -49,6 +80,8 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
 
     messaging::run_document r;
     r.settings = in.risk;
+    r.settings.market_data_date = as_of(in.risk, in.run_date);
+    r.settings.market_data_type = "date";
     for (const auto& f : input_files) {
         const auto bound = std::ranges::find(in.bound_types, f.type_code) != in.bound_types.end();
         if (bound)

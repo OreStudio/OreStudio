@@ -34,6 +34,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <chrono>
 #include <format>
 #include <map>
 #include <set>
@@ -245,6 +246,8 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
 
     run_document_inputs in;
     in.risk = risk.front();
+    in.run_date = std::format("{:%F}", std::chrono::floor<std::chrono::days>(
+                                           std::chrono::system_clock::now()));
     in.analytics = analytics_of(ctx_, configuration_id);
     in.market_bindings = market_bindings_of(ctx_, configuration_id);
     for (const auto& b : bindings(report_definition_id))

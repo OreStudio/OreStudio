@@ -44,6 +44,13 @@ struct run_document_inputs {
     ores::reporting::domain::risk_report_config risk;
 
     /**
+     * @brief The date the run is built on, as an ISO 8601 date. A live
+     * configuration values the portfolio on it and an end of day one on the
+     * weekday before it. A configuration that names its own date ignores it.
+     */
+    std::string run_date;
+
+    /**
      * @brief The analytics of the risk configuration with their parameters, in
      * the order the run executes them.
      */
@@ -67,7 +74,9 @@ struct run_document_inputs {
  * The document carries the choices, the analytics and the market bindings of the
  * configuration as they are. It names one input file for each configuration type
  * the definition binds, and nothing for a type it does not bind, so the export
- * writes exactly the files that exist. A run with no analytic that is on is
+ * writes exactly the files that exist. The settings of the document always name
+ * the date the run values the portfolio at, resolved from the configuration's
+ * market data type. A run with no analytic that is on is
  * refused, because an ORE run with none does nothing.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT messaging::run_document

@@ -143,3 +143,35 @@ TEST_CASE("a configuration with no market binding makes a run with none", tags) 
     in.market_bindings.clear();
     CHECK(generate_run_document(in).market_bindings.empty());
 }
+
+TEST_CASE("an end of day run values the portfolio on the weekday before the run date", tags) {
+    auto in = inputs();
+    in.risk.market_data_type = "eod";
+    in.risk.market_data_date.clear();
+    in.run_date = "2026-10-12";
+    const auto& s = generate_run_document(in).settings;
+    CHECK(s.market_data_type == "date");
+    CHECK(s.market_data_date == "2026-10-09");
+}
+
+TEST_CASE("a live run values the portfolio on the run date", tags) {
+    auto in = inputs();
+    in.risk.market_data_type = "live";
+    in.risk.market_data_date.clear();
+    in.run_date = "2026-10-12";
+    CHECK(generate_run_document(in).settings.market_data_date == "2026-10-12");
+}
+
+TEST_CASE("a configuration that names its date keeps it whatever the run date", tags) {
+    auto in = inputs();
+    in.run_date = "2030-01-01";
+    CHECK(generate_run_document(in).settings.market_data_date == "2026-10-09");
+}
+
+TEST_CASE("a run date that is no date is refused for an end of day run", tags) {
+    auto in = inputs();
+    in.risk.market_data_type = "eod";
+    in.risk.market_data_date.clear();
+    in.run_date = "yesterday";
+    CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
+}

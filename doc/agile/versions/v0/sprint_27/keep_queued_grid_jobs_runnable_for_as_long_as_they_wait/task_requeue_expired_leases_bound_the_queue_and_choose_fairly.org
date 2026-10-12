@@ -26,11 +26,11 @@ A bad job ends in a visible state, one tenant cannot fill the queue, and no tena
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
-| Now          | Built and verified on the dev grid; in review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then show the queue depth and the oldest wait. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance

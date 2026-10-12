@@ -25,7 +25,7 @@
 #ifndef ORES_REPORTING_API_MESSAGING_RUN_DOCUMENT_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_RUN_DOCUMENT_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/report_analytic.hpp"
+#include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
 #include "ores.reporting.api/domain/report_market_binding.hpp"
 #include "ores.reporting.api/domain/report_run_setup.hpp"
@@ -57,7 +57,7 @@ struct run_parameter {
  * order the document wrote them.
  */
 struct run_analytic {
-    ores::reporting::domain::report_analytic analytic;
+    ores::reporting::domain::configuration_analytic analytic;
     std::vector<run_parameter> parameters;
 };
 

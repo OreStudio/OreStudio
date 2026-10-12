@@ -24,7 +24,7 @@
  *
  * Risk Report Config Table
  *
- * The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row.
+ * The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row.
  */
 
 create table if not exists "ores_reporting_risk_report_configs_tbl" (
@@ -40,35 +40,6 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     "n_threads" integer not null default 1,
     "market_data_type" text not null default 'eod',
     "market_data_date" date null,
-    "npv_enabled" integer not null default 1,
-    "cashflow_enabled" integer not null default 1,
-    "curves_enabled" integer not null default 0,
-    "sensitivity_enabled" integer not null default 0,
-    "simulation_enabled" integer not null default 0,
-    "xva_enabled" integer not null default 0,
-    "stress_enabled" integer not null default 0,
-    "parametric_var_enabled" integer not null default 0,
-    "initial_margin_enabled" integer not null default 0,
-    "pfe_enabled" integer not null default 0,
-    "portfolio_details_enabled" integer not null default 0,
-    "saccr_enabled" integer not null default 0,
-    "calibration_enabled" integer not null default 0,
-    "credit_curves_enabled" integer not null default 0,
-    "historical_var_enabled" integer not null default 0,
-    "pnl_explain_enabled" integer not null default 0,
-    "xva_quantile" numeric(5,4) null,
-    "xva_cva_enabled" integer not null default 1,
-    "xva_dva_enabled" integer not null default 0,
-    "xva_fva_enabled" integer not null default 0,
-    "xva_colva_enabled" integer not null default 0,
-    "xva_dim_enabled" integer not null default 0,
-    "xva_dim_quantile" numeric(5,4) null,
-    "xva_dim_horizon_calendar_days" integer null,
-    "xva_dim_regression_order" integer null,
-    "var_quantiles" numeric(5,4)[] null,
-    "var_method" text null,
-    "simm_version" text null,
-    "simm_calculation_currency" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -87,32 +58,7 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     check ("observation_model" in ('disable', 'none', 'move', 'defer')),
     check ("n_threads" >= 1),
     check ("market_data_type" in ('live', 'eod', 'date')),
-    check ((market_data_type = 'date') = (market_data_date is not null)),
-    check ("npv_enabled" in (0, 1)),
-    check ("cashflow_enabled" in (0, 1)),
-    check ("curves_enabled" in (0, 1)),
-    check ("sensitivity_enabled" in (0, 1)),
-    check ("simulation_enabled" in (0, 1)),
-    check ("xva_enabled" in (0, 1)),
-    check ("stress_enabled" in (0, 1)),
-    check ("parametric_var_enabled" in (0, 1)),
-    check ("initial_margin_enabled" in (0, 1)),
-    check ("pfe_enabled" in (0, 1)),
-    check ("portfolio_details_enabled" in (0, 1)),
-    check ("saccr_enabled" in (0, 1)),
-    check ("calibration_enabled" in (0, 1)),
-    check ("credit_curves_enabled" in (0, 1)),
-    check ("historical_var_enabled" in (0, 1)),
-    check ("pnl_explain_enabled" in (0, 1)),
-    check ("xva_cva_enabled" in (0, 1)),
-    check ("xva_dva_enabled" in (0, 1)),
-    check ("xva_fva_enabled" in (0, 1)),
-    check ("xva_colva_enabled" in (0, 1)),
-    check ("xva_dim_enabled" in (0, 1)),
-    check ("xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3),
-    check ("var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo')),
-    check ("npv_enabled" + "cashflow_enabled" + "curves_enabled" + "sensitivity_enabled" + "simulation_enabled" + "xva_enabled" + "stress_enabled" + "parametric_var_enabled" + "initial_margin_enabled" + "pfe_enabled" + "portfolio_details_enabled" + "saccr_enabled" + "calibration_enabled" + "credit_curves_enabled" + "historical_var_enabled" + "pnl_explain_enabled" >= 1),
-    check ("pfe_enabled" = 0 or "simulation_enabled" = 1)
+    check ((market_data_type = 'date') = (market_data_date is not null))
 );
 
 -- Composite natural key: unique combination for active records

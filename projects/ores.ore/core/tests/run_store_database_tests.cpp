@@ -170,8 +170,11 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
              parties.a_context))
         if (b.report_definition_id == definition)
             slots.insert(b.configuration_type_code);
-    CHECK(slots == std::set<std::string>{
-                       "conventions", "curve_configuration", "pricing_engines", "todays_market"});
+    CHECK(slots == std::set<std::string>{"conventions",
+                                         "curve_configuration",
+                                         "pricing_engines",
+                                         "risk_report_config",
+                                         "todays_market"});
 }
 
 TEST_CASE("another party cannot export a run it does not own", tags) {

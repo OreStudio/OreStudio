@@ -1,9 +1,12 @@
 """
-Generates the risk report configurations of the ACME Corporation dataset:
-risk_report_configs.json, read by generate_sql.py in this same directory.
+Generates the risk report configurations of the ACME Corporation dataset, read by
+generate_sql.py in this same directory: risk_report_configs.json holds the
+configurations, configuration_analytics.json the analytics each one runs, and
+configuration_analytic_parameters.json the values of their parameters.
 
 A risk report configuration holds the run settings of a report: the analytics it
-switches on, the currency it reports in, and the portfolio whose subtree it reads.
+runs with their parameters, the currency it reports in, and the portfolio whose
+subtree it reads.
 Reports that run the same analytics over the same scope in the same currency share
 one configuration, so an entity holds far fewer configurations than reports. A
 definition binds a configuration by name, as it binds its pricing engines.
@@ -102,30 +105,94 @@ ROOT_PORTFOLIO = {
     "acme_hk": "Global Portfolio",
 }
 
-# The switch columns of the configuration, by analytic.
-SWITCH_COLUMNS = {
-    "saccr": "saccr_enabled",
-    "calibration": "calibration_enabled",
-    "credit_curves": "credit_curves_enabled",
-    "historical_var": "historical_var_enabled",
-    "pnl_explain": "pnl_explain_enabled",
-    "portfolio_details": "portfolio_details_enabled",
-    "npv": "npv_enabled",
-    "cashflow": "cashflow_enabled",
-    "curves": "curves_enabled",
-    "sensitivity": "sensitivity_enabled",
-    "simulation": "simulation_enabled",
-    "xva": "xva_enabled",
-    "stress": "stress_enabled",
-    "parametric_var": "parametric_var_enabled",
-    "initial_margin": "initial_margin_enabled",
-    "pfe": "pfe_enabled",
+# The analytic types of the ORE run document that each analytic key stands for, in
+# the order a run executes them.
+ORE_TYPES = {
+    "portfolio_details": "portfolioDetails",
+    "npv": "npv",
+    "cashflow": "cashflow",
+    "curves": "curves",
+    "credit_curves": "creditcurves",
+    "calibration": "calibration",
+    "sensitivity": "sensitivity",
+    "stress": "stress",
+    "simulation": "simulation",
+    "xva": "xva",
+    "pfe": "pfe",
+    "saccr": "saccr",
+    "historical_var": "historicalSimulationVar",
+    "pnl_explain": "pnlExplain",
+    "initial_margin": "initialMargin",
+    "parametric_var": "parametricVar",
 }
 
-# The quantile exposure and value-at-risk report at, and the threads a simulation
-# of the exposure profiles needs.
-EXPOSURE_QUANTILE = 0.95
-VAR_QUANTILE = 0.99
+# The window a stressed VaR looks back over. It is the financial crisis of 2008 and
+# 2009. This is an ACME choice that the shipped samples do not give, and a reviewer
+# who knows the regime confirms it.
+STRESS_WINDOW = "2008-09-01,2009-03-31"
+
+# The choices each analytic stores, as (parameter, value). A value that names a
+# currency is written {ccy}. The parameters that name a file are not stored: the
+# export resolves an input document through the bindings and takes an output name
+# from the file types table. The values are the most common ones in the ORE samples,
+# counted in the investigation "The analytics of a configuration and their
+# parameters".
+PARAMETERS = {
+    "portfolioDetails": [],
+    "npv": [("baseCurrency", "{ccy}")],
+    "cashflow": [],
+    "curves": [("configuration", "default"), ("grid", "240,1M")],
+    "creditcurves": [("configuration", "default"), ("grid", "240,1M")],
+    "calibration": [],
+    "sensitivity": [
+        ("recalibrateModels", "Y"),
+        ("outputSensitivityThreshold", "0.000001"),
+        ("parSensitivity", "Y"),
+    ],
+    "stress": [],
+    "simulation": [("baseCurrency", "{ccy}"), ("storeFlows", "Y"), ("amc", "N")],
+    "xva": [
+        ("exposureProfiles", "Y"),
+        ("cva", "Y"),
+        ("dva", "Y"),
+        ("fva", "Y"),
+        ("quantile", "0.95"),
+        ("calculationType", "Symmetric"),
+        ("allocationMethod", "None"),
+        ("exposureProfilesByTrade", "Y"),
+        ("exerciseNextBreak", "N"),
+        ("baseCurrency", "{ccy}"),
+    ],
+    "pfe": [
+        ("exposureProfiles", "Y"),
+        ("exposureProfilesByTrade", "N"),
+        ("quantile", "0.95"),
+        ("calculationType", "Symmetric"),
+        ("allocationMethod", "None"),
+        ("marginalAllocationLimit", "1.0"),
+        ("exerciseNextBreak", "N"),
+        ("baseCurrency", "{ccy}"),
+    ],
+    "saccr": [("simmVersion", "2.1")],
+    "historicalSimulationVar": [
+        ("historicalPeriod", STRESS_WINDOW),
+        ("mporDays", "10"),
+        ("mporCalendar", "{ccy}"),
+        ("mporOverlappingPeriods", "true"),
+        ("quantiles", "0.99"),
+        ("includeExpectedShortfall", "Y"),
+        ("breakdown", "Y"),
+    ],
+    "pnlExplain": [("parSensitivity", "Y")],
+    "initialMargin": [],
+    "parametricVar": [
+        ("quantiles", "0.99"),
+        ("method", "DeltaGammaNormal"),
+        ("breakdown", "Y"),
+    ],
+}
+
+# The threads a simulation of the exposure profiles needs.
 SIMULATION_THREADS = 4
 
 
@@ -181,31 +248,6 @@ def check_exposure_needs_simulation(name, analytics):
         raise SystemExit(f"{name} switches pfe on without a simulation")
 
 
-def settings(analytics):
-    """The columns that follow from the analytics alone."""
-    s = {column: 0 for column in SWITCH_COLUMNS.values()}
-    for analytic in analytics:
-        s[SWITCH_COLUMNS[analytic]] = 1
-    exposure = "pfe" in analytics or "xva" in analytics
-    s.update({
-        "n_threads": SIMULATION_THREADS if "simulation" in analytics else 1,
-        "xva_quantile": EXPOSURE_QUANTILE if exposure else None,
-        "xva_cva_enabled": 1 if "xva" in analytics else 0,
-        "xva_dva_enabled": 1 if "xva" in analytics else 0,
-        "xva_fva_enabled": 1 if "xva" in analytics else 0,
-        "xva_colva_enabled": 0,
-        "xva_dim_enabled": 0,
-        "xva_dim_quantile": None,
-        "xva_dim_horizon_calendar_days": None,
-        "xva_dim_regression_order": None,
-        "var_quantiles": [VAR_QUANTILE] if "parametric_var" in analytics else None,
-        "var_method": "delta" if "parametric_var" in analytics else None,
-        "simm_version": None,
-        "simm_calculation_currency": None,
-    })
-    return s
-
-
 def check_scopes(company, names, portfolios):
     held = {p["name"] for p in portfolios if p["company_code"] == company}
     for name in names:
@@ -213,9 +255,42 @@ def check_scopes(company, names, portfolios):
             raise SystemExit(f"{company} scopes a configuration to {name}, which it does not hold")
 
 
+def analytic_rows(company, name, configuration_id, analytics, currency):
+    """The analytics of one configuration and the values of their parameters."""
+    rows, values = [], []
+    for key, ore_type in ORE_TYPES.items():
+        if key not in analytics:
+            continue
+        row_id = documents.new_uuid(f"configuration_analytic:{company}:{name}:{ore_type}")
+        rows.append({
+            "company_code": company,
+            "id": row_id,
+            "version": 0,
+            "party_id": documents.NO_PARTY,
+            "configuration_id": configuration_id,
+            "analytic_type_code": ore_type,
+            "display_order": len(rows) + 1,
+            "active": "Y",
+        })
+        for position, (parameter, value) in enumerate(PARAMETERS[ore_type], start=1):
+            values.append({
+                "company_code": company,
+                "id": documents.new_uuid(
+                    f"configuration_analytic_parameter:{company}:{name}:{ore_type}:{parameter}"),
+                "version": 0,
+                "party_id": documents.NO_PARTY,
+                "configuration_analytic_id": row_id,
+                "parameter_name": parameter,
+                "value": value.format(ccy=currency),
+                "position": position,
+            })
+    return rows, values
+
+
 def risk_report_configs(definitions, portfolios):
-    """One configuration for each distinct (analytics, scope) of an entity's reports."""
-    records = []
+    """One configuration for each distinct (analytics, scope) of an entity's reports,
+    with its analytics and their parameters."""
+    configs, analytics_rows, parameter_rows = [], [], []
     for company in documents.LABEL:
         used = {}
         for d in definitions:
@@ -230,49 +305,34 @@ def risk_report_configs(definitions, portfolios):
             first, reports = used[name]
             analytics = analytics_of(first)
             check_exposure_needs_simulation(name, analytics)
-            records.append({
+            configuration_id = documents.new_uuid(f"risk_report_config_header:{company}:{name}")
+            configs.append({
                 "company_code": company,
                 "id": documents.new_uuid(f"risk_report_config:{company}:{name}"),
                 "version": 0,
                 "party_id": documents.NO_PARTY,
                 "name": name,
                 "description": f"Run settings shared by {', '.join(sorted(reports))}.",
-                "configuration_id": documents.new_uuid(f"risk_report_config_header:{company}:{name}"),
+                "configuration_id": configuration_id,
                 "base_currency": currency,
                 "observation_model": "disable",
+                "n_threads": SIMULATION_THREADS if "simulation" in analytics else 1,
                 "market_data_type": "eod",
                 "market_data_date": None,
-                **settings(analytics),
                 "scope_portfolio": scope_of(company, first),
             })
-    return [with_staging_order(r) for r in records]
-
-
-# The columns in the order of the staging table.
-STAGING_ORDER = [
-    "company_code", "id", "version", "party_id", "name", "description", "configuration_id",
-    "base_currency", "observation_model", "n_threads", "market_data_type", "market_data_date",
-    "npv_enabled", "cashflow_enabled", "curves_enabled", "sensitivity_enabled",
-    "simulation_enabled", "xva_enabled", "stress_enabled", "parametric_var_enabled",
-    "initial_margin_enabled", "pfe_enabled", "portfolio_details_enabled", "saccr_enabled", "calibration_enabled",
-    "credit_curves_enabled", "historical_var_enabled", "pnl_explain_enabled", "xva_quantile", "xva_cva_enabled",
-    "xva_dva_enabled", "xva_fva_enabled", "xva_colva_enabled", "xva_dim_enabled",
-    "xva_dim_quantile", "xva_dim_horizon_calendar_days", "xva_dim_regression_order",
-    "var_quantiles", "var_method", "simm_version", "simm_calculation_currency",
-    "scope_portfolio",
-]
-
-
-def with_staging_order(record):
-    missing = set(STAGING_ORDER) ^ set(record)
-    if missing:
-        raise SystemExit(f"A risk report configuration differs from the staging table in {sorted(missing)}")
-    return {c: record[c] for c in STAGING_ORDER}
+            rows, values = analytic_rows(company, name, configuration_id, analytics, currency)
+            analytics_rows.extend(rows)
+            parameter_rows.extend(values)
+    return configs, analytics_rows, parameter_rows
 
 
 def main():
     definitions = load("report_definitions")
-    write("risk_report_configs", risk_report_configs(definitions, load("portfolios")))
+    configs, analytics_rows, parameter_rows = risk_report_configs(definitions, load("portfolios"))
+    write("risk_report_configs", configs)
+    write("configuration_analytics", analytics_rows)
+    write("configuration_analytic_parameters", parameter_rows)
 
 
 if __name__ == "__main__":

@@ -45,10 +45,16 @@ struct run_document_inputs {
     std::string asof_date;
 
     /**
-     * @brief The definition's risk configuration, which holds the analytic
-     * switches and the run's base currency.
+     * @brief The definition's risk configuration, which holds the base currency,
+     * the thread count, the observation model and the market data of the run.
      */
     ores::reporting::domain::risk_report_config risk;
+
+    /**
+     * @brief The analytics of the risk configuration with their parameters, in
+     * the order the run executes them.
+     */
+    std::vector<messaging::run_analytic> analytics;
 
     /**
      * @brief The configuration type codes the definition binds.
@@ -63,21 +69,14 @@ struct run_document_inputs {
 };
 
 /**
- * @brief The analytics a risk configuration switches on, in run order.
- *
- * An analytic is included when its switch is set. Each name is an analytic type
- * of the run vocabulary.
- */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::vector<std::string>
-enabled_analytic_types(const ores::reporting::domain::risk_report_config& risk);
-
-/**
  * @brief Builds the run document for a definition.
  *
  * The document names one input file for each configuration type the definition
  * binds, and nothing for a type it does not bind, so the export writes exactly
- * the files that exist. It binds the market role to the named today's market
- * configuration.
+ * the files that exist. It carries the analytics of the configuration with
+ * their parameters, and binds the market role to the named today's market
+ * configuration. A run with no analytic that is on is refused, because an ORE
+ * run with none does nothing.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT messaging::run_document
 generate_run_document(const run_document_inputs& in);

@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
+-- The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_risk_report_configs_artefact_tbl" (
@@ -41,35 +41,6 @@ create table if not exists "ores_dq_risk_report_configs_artefact_tbl" (
     "n_threads" integer not null,
     "market_data_type" text not null,
     "market_data_date" date null,
-    "npv_enabled" integer not null,
-    "cashflow_enabled" integer not null,
-    "curves_enabled" integer not null,
-    "sensitivity_enabled" integer not null,
-    "simulation_enabled" integer not null,
-    "xva_enabled" integer not null,
-    "stress_enabled" integer not null,
-    "parametric_var_enabled" integer not null,
-    "initial_margin_enabled" integer not null,
-    "pfe_enabled" integer not null,
-    "portfolio_details_enabled" integer not null,
-    "saccr_enabled" integer not null,
-    "calibration_enabled" integer not null,
-    "credit_curves_enabled" integer not null,
-    "historical_var_enabled" integer not null,
-    "pnl_explain_enabled" integer not null,
-    "xva_quantile" numeric(5,4) null,
-    "xva_cva_enabled" integer not null,
-    "xva_dva_enabled" integer not null,
-    "xva_fva_enabled" integer not null,
-    "xva_colva_enabled" integer not null,
-    "xva_dim_enabled" integer not null,
-    "xva_dim_quantile" numeric(5,4) null,
-    "xva_dim_horizon_calendar_days" integer null,
-    "xva_dim_regression_order" integer null,
-    "var_quantiles" numeric(5,4)[] null,
-    "var_method" text null,
-    "simm_version" text null,
-    "simm_calculation_currency" text null,
     "scope_portfolio" text null
 );
 

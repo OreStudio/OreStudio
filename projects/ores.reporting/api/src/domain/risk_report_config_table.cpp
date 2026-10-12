@@ -34,14 +34,11 @@ std::string convert_to_table(const std::vector<risk_report_config>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Name" << "Base Currency" << "Observation Model" << "Market Data"
-          << "NPV" << "Cashflow" << "XVA" << "Parametric VaR" << "Initial Margin" << "Modified By"
-          << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rrc : v) {
         table << rrc.name << rrc.base_currency << rrc.observation_model << rrc.market_data_type
-              << rrc.npv_enabled << rrc.cashflow_enabled << rrc.xva_enabled
-              << rrc.parametric_var_enabled << rrc.initial_margin_enabled << rrc.modified_by
-              << rrc.version << fort::endr;
+              << rrc.modified_by << rrc.version << fort::endr;
     }
     return table.to_string();
 }

@@ -39,14 +39,16 @@ select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::t
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 
--- Every uuid column of the document tables other than the key, the tenant, the party and
--- the reporting configuration. Each refers to a row of the same document: a header, a
--- collection, a curve definition or a segment.
+-- Every uuid column of the document tables other than the key, the tenant, the party, the
+-- reporting configuration and the parameter definition, which a publish resolves by name.
+-- Each refers to a row of the same document: a header, a collection, a curve definition,
+-- a segment or an analytic.
 select is(
     (select string_agg(distinct column_name, ' ' order by column_name)
      from information_schema.columns c
      where table_schema = 'public' and data_type = 'uuid'
-       and column_name not in ('id', 'tenant_id', 'party_id', 'configuration_id')
+       and column_name not in ('id', 'tenant_id', 'party_id', 'configuration_id',
+                               'parameter_definition_id')
        and table_name in (
          select concat('ores_analytics_', t, '_tbl') from unnest(array['pricing_model_configs',
            'pricing_model_products', 'pricing_model_product_parameters', 'todays_market_configs',
@@ -68,8 +70,9 @@ select is(
            'curve_bootstrap_configs', 'curve_segments', 'curve_segment_curves',
            'curve_quotes']) t
          union all
-         select 'ores_reporting_risk_report_configs_tbl')),
-    'commodity_price_segment_id curve_configuration_id curve_definition_id curve_segment_id '
+         select concat('ores_reporting_', t, '_tbl') from unnest(array['risk_report_configs',
+           'configuration_analytics', 'configuration_analytic_parameters']) t)),
+    'commodity_price_segment_id configuration_analytic_id curve_configuration_id curve_definition_id curve_segment_id '
     'default_curve_configuration_id pricing_model_config_id pricing_model_product_id '
     'todays_market_collection_id todays_market_config_id todays_market_configuration_id',
     'every uuid key column of a document refers to a row of the same document');

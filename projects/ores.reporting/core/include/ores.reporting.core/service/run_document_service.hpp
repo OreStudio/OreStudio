@@ -37,9 +37,11 @@ namespace ores::reporting::service {
  * configurations it names.
  *
  * The run document is the setup, the analytics with their parameters, and the
- * market bindings. Each configuration document the run names lives with the
- * component that owns it; reporting holds only the configuration row that
- * names it and the binding that puts it in the definition's slot.
+ * market bindings. The setup and the market bindings belong to the definition.
+ * The analytics and their parameters belong to the risk report configuration
+ * that the definition binds, so a stored document creates and binds one. Each configuration
+ * document the run names lives with the component that owns it; reporting holds only the
+ * configuration row that names it and the binding that puts it in the definition's slot.
  */
 class ORES_REPORTING_CORE_EXPORT run_document_service {
 public:
@@ -96,6 +98,10 @@ public:
     bindings(const boost::uuids::uuid& report_definition_id);
 
 private:
+    std::vector<domain::report_configuration>
+    bindings_of_type(const boost::uuids::uuid& report_definition_id,
+                     const std::string& configuration_type_code);
+
     context ctx_;
 };
 

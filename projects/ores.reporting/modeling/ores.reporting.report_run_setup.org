@@ -22,7 +22,7 @@ all four hundred and sixteen shipped run documents, and =asofDate=, =inputPath=,
 Each row is owned by exactly one =report_definition= (1:1, enforced by the
 unique index on =report_definition_id=). It replaces the part of
 =risk_report_config= that held a handful of these parameters as columns mixed in
-with the analytic switches; the switches become rows in =report_analytic=, and
+with the analytic switches; the switches become rows in =configuration_analytic=, and
 what is left of the run's configuration is here.
 
 Values are held as ORE spells them rather than converted, because the run

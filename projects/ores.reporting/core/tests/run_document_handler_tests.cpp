@@ -29,6 +29,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <functional>
 #include <optional>
@@ -157,8 +158,16 @@ TEST_CASE("a run document saves, binds, reads back and deletes through the opera
     REQUIRE(got->success);
     REQUIRE(got->document.analytics.size() == 1);
     CHECK(got->document.analytics[0].parameters[0].name == "baseCurrency");
-    REQUIRE(got->bindings.size() == 1);
-    CHECK(boost::uuids::to_string(got->bindings[0].configuration_id) == bound->configuration_id);
+    // The stored run settings are bound beside the configuration the test binds.
+    REQUIRE(got->bindings.size() == 2);
+    const auto find = [&](const std::string& type) {
+        return std::ranges::find_if(
+            got->bindings, [&](const auto& b) { return b.configuration_type_code == type; });
+    };
+    REQUIRE(find("risk_report_config") != got->bindings.end());
+    const auto curve = find("curve_configuration");
+    REQUIRE(curve != got->bindings.end());
+    CHECK(boost::uuids::to_string(curve->configuration_id) == bound->configuration_id);
     CHECK(got->party_id == boost::uuids::to_string(f.party));
 
     const auto deleted = decode_reply<delete_run_document_response>(

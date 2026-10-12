@@ -47,8 +47,10 @@ Decisions=): JSON only — no SQL, no server-side wiring yet.
 | =report_catalogue.json=   | The report definitions the platform seeds: text, schedule, concurrency policy, tier and jurisdiction |
 | =report_definitions.json= | ores_dq_report_definitions_artefact_tbl shape -- the reports each entity runs, chosen by rules, not one shared list |
 | =report_configurations.json= | ores_dq_report_configurations_artefact_tbl shape -- the documents and run settings each report binds, by name |
-| =generate_risk_config_data.py= | Run settings design table; re-run to regenerate risk_report_configs.json from report_definitions.json |
+| =generate_risk_config_data.py= | Run settings design table; re-run to regenerate the three configuration files from report_definitions.json |
 | =risk_report_configs.json= | ores_dq_risk_report_configs_artefact_tbl shape -- the run settings each entity shares between its reports, with the portfolio each reads |
+| =configuration_analytics.json= | ores_dq_configuration_analytics_artefact_tbl shape -- the analytics each configuration runs, in order |
+| =configuration_analytic_parameters.json= | ores_dq_configuration_analytic_parameters_artefact_tbl shape -- the value of each analytic parameter, named by the parameter |
 | =manifest.json=           | Dataset/catalog descriptor following the crafted-dataset convention |
 | =methodology.txt=         | Full generation approach and how to extend (add an office/desk)    |
 

@@ -22,7 +22,7 @@
 
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.reporting.api/domain/report_analytic.hpp"
+#include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include "ores.reporting.api/domain/report_market_binding.hpp"
 #include "ores.reporting.api/domain/report_run_setup.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"

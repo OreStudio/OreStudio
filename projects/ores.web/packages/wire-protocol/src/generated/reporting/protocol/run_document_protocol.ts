@@ -22,7 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { ReportAnalytic } from '../domain/report_analytic.js';
+import type { ConfigurationAnalytic } from '../domain/configuration_analytic.js';
 import type { ReportMarketBinding } from '../domain/report_market_binding.js';
 import type { ReportRunSetup } from '../domain/report_run_setup.js';
 
@@ -48,7 +48,7 @@ export interface RunParameter {
  * order the document wrote them.
  */
 export interface RunAnalytic {
-    analytic: ReportAnalytic;
+    analytic: ConfigurationAnalytic;
     parameters: RunParameter[];
 }
 

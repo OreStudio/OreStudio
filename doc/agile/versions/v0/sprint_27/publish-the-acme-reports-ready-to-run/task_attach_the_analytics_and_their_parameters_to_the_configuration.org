@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Replace the sixteen analytic switches of the risk report configuration with the analytics of the configuration as rows, and give each analytic its parameters, so that a configuration says which analytics a run executes and how. A report definition owns neither, because it binds a shared configuration. Publish the rows through DQ datasets that are generated from the domain entities, and populate each party's datasets with the analytics and parameters decided for its reports.
+Replace the sixteen analytic switches of the risk report configuration with the analytics of the configuration as rows, and give each analytic its parameters, so that a configuration says which analytics a run executes and how. A report definition owns neither, because it binds a shared configuration. Publish the rows through DQ datasets that are generated from the domain entities, and populate each party's datasets with the analytics and parameters decided for its reports. The same change moves the rest of the run document, the Setup choices and the Markets block, onto the configuration: everything in the run document that is not a data file is a choice of the shared configuration, and the data files are named from the file types table.
 
 * Status
 
@@ -40,6 +40,10 @@ Replace the sixteen analytic switches of the risk report configuration with the 
 - The DQ staging tables for the analytic rows and the parameter rows are generated from the entities. A staged row names its configuration, its analytic type and its parameter definition by name and not by id, because ids differ between databases.
 - Each ACME party publishes the analytics and the parameters decided for the reports that bind each configuration, and a test shows that the exported analytics equal the decided ones.
 - A configuration with no analytic is refused at publish or by a trigger, because a database check cannot count child rows.
+- Every Setup parameter that is not a data file is a column of =risk_report_config=, which is DQ enabled, so the staging table is generated with it. The values come from the shipped samples: the log mask, the paths, =implyTodaysFixings=, =continueOnError=, =buildFailedTrades=, =lazyMarketBuilding=, =includeTodaysCashFlows=, the calendar and the convention. The flags are typed columns, and the export writes each in the spelling ORE uses for that parameter.
+- The Markets block is held on the configuration: =report_market_binding= is renamed =configuration_market_binding= and re-keyed to the configuration, with DQ staging, and ACME publishes the roles it needs.
+- =report_run_setup= and its file name columns are removed, because the file names come from the file types table. =ore import-run= maps a sample Setup onto the configuration and stores no file names.
+- The exported Setup of every ACME definition contains each non-file parameter that the samples set in at least half of their run documents, and a test shows that the exported Setup carries the stored choices.
 
 * Plan
 
@@ -49,6 +53,9 @@ Replace the sixteen analytic switches of the risk report configuration with the 
 4. Remove the old entities and the switches, generate the new ones, and generate the DQ staging from them. The staged rows name the configuration, the analytic type and the parameter definition.
 5. Decide the analytics and parameters of each report from the ORE samples, record them in the report design, and publish them in each party's datasets.
 6. Build the run document from the rows, and test that the exported analytics equal the decided ones for all 78 definitions.
+7. Add the non-file Setup parameters as columns of =risk_report_config=, regenerate, and publish the decided values with the configurations.
+8. Rename =report_market_binding= to =configuration_market_binding=, re-key it to the configuration, and add its DQ staging and its ACME rows.
+9. Remove =report_run_setup=. Change =ore import-run= to map the Setup onto the configuration, and the generator to build the Setup from the columns.
 
 * Measurements
 

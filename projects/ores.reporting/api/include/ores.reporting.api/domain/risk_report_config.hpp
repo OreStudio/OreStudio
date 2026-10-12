@@ -39,8 +39,9 @@ namespace ores::reporting::domain {
  * The ORE-level run settings that risk report definitions of a party share: base currency,
  * observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition
  * binds the configuration through report_configurations, in the slot of configuration type
- * risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate
- * temporal junction tables keyed by this row.
+ * risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters,
+ * are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope
+ * live in separate temporal junction tables keyed by this row.
  */
 struct risk_report_config final {
     /**
@@ -108,153 +109,6 @@ struct risk_report_config final {
      * market_data_type stays eod.
      */
     std::string market_data_date;
-
-    /**
-     * @brief Enables the NPV analytic.
-     */
-    int npv_enabled = 1;
-
-    /**
-     * @brief Enables the cashflow analytic.
-     */
-    int cashflow_enabled = 1;
-
-    /**
-     * @brief Enables curve analytic output.
-     */
-    int curves_enabled = 0;
-
-    /**
-     * @brief Enables sensitivity analytic output.
-     */
-    int sensitivity_enabled = 0;
-
-    /**
-     * @brief Enables Monte Carlo simulation output.
-     */
-    int simulation_enabled = 0;
-
-    /**
-     * @brief Enables XVA analytics. Gates the xva_* settings below.
-     */
-    int xva_enabled = 0;
-
-    /**
-     * @brief Enables stress test analytics.
-     */
-    int stress_enabled = 0;
-
-    /**
-     * @brief Enables parametric VaR. Gates the var_* settings below.
-     */
-    int parametric_var_enabled = 0;
-
-    /**
-     * @brief Enables initial margin (SIMM) calculation. Gates the simm_* settings.
-     */
-    int initial_margin_enabled = 0;
-
-    /**
-     * @brief Enables potential future exposure output.
-     */
-    int pfe_enabled = 0;
-
-    /**
-     * @brief Enables the portfolio details output: the market objects and risk factors the
-     * portfolio needs. A report that prices nothing, such as a data completeness check, still runs
-     * the engine, and an engine run needs at least one analytic.
-     */
-    int portfolio_details_enabled = 0;
-
-    /**
-     * @brief Enables the standardised approach for counterparty credit risk (SA-CCR): exposure at
-     * default, replacement cost and potential future exposure per netting set.
-     */
-    int saccr_enabled = 0;
-
-    /**
-     * @brief Enables model calibration: it calibrates the simulation models to the market and
-     * writes the calibrated parameters and the fit.
-     */
-    int calibration_enabled = 0;
-
-    /**
-     * @brief Enables the credit curves output: the survival probability and hazard rate curves
-     * bootstrapped from credit spreads.
-     */
-    int credit_curves_enabled = 0;
-
-    /**
-     * @brief Enables value at risk by historical simulation over a stated historical window. A
-     * stressed value at risk is the same analytic over a stressed window.
-     */
-    int historical_var_enabled = 0;
-
-    /**
-     * @brief Enables the profit and loss explain: the decomposition of the profit and loss of a
-     * period into risk factor components and an unexplained residual.
-     */
-    int pnl_explain_enabled = 0;
-
-    /**
-     * @brief XVA confidence quantile. NULL means "not set".
-     */
-    double xva_quantile = 0.95;
-
-    /**
-     * @brief Enables the CVA adjustment within XVA.
-     */
-    int xva_cva_enabled = 0;
-
-    /**
-     * @brief Enables the DVA adjustment within XVA.
-     */
-    int xva_dva_enabled = 0;
-
-    /**
-     * @brief Enables the FVA adjustment within XVA.
-     */
-    int xva_fva_enabled = 0;
-
-    /**
-     * @brief Enables the ColVA adjustment within XVA.
-     */
-    int xva_colva_enabled = 0;
-
-    /**
-     * @brief Enables the DIM (dynamic initial margin) calculation within XVA.
-     */
-    int xva_dim_enabled = 0;
-
-    /**
-     * @brief DIM confidence quantile. NULL means "not set".
-     */
-    double xva_dim_quantile = 0.99;
-
-    /**
-     * @brief DIM horizon in calendar days. NULL means "not set".
-     */
-    int xva_dim_horizon_calendar_days = 14;
-
-    /**
-     * @brief Regression order for the DIM backtest, 1 to 3. NULL means "not set".
-     */
-    int xva_dim_regression_order = 0;
-
-    /**
-     * @brief Parametric VaR method: delta, delta_gamma_normal or monte_carlo. NULL means "not set".
-     */
-    std::string var_method = "delta";
-
-    /**
-     * @brief SIMM methodology version. NULL means "not set".
-     */
-    std::string simm_version;
-
-    /**
-     * @brief Currency the SIMM amount is expressed in. NULL means "not set".
-     */
-    std::string simm_calculation_currency;
 
     /**
      * @brief Username of the person who last modified this risk report config.

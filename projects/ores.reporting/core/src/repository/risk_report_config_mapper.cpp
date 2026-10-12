@@ -59,34 +59,6 @@ domain::risk_report_config risk_report_config_mapper::map(const risk_report_conf
     r.n_threads = v.n_threads;
     r.market_data_type = v.market_data_type;
     r.market_data_date = v.market_data_date.value_or("");
-    r.npv_enabled = v.npv_enabled;
-    r.cashflow_enabled = v.cashflow_enabled;
-    r.curves_enabled = v.curves_enabled;
-    r.sensitivity_enabled = v.sensitivity_enabled;
-    r.simulation_enabled = v.simulation_enabled;
-    r.xva_enabled = v.xva_enabled;
-    r.stress_enabled = v.stress_enabled;
-    r.parametric_var_enabled = v.parametric_var_enabled;
-    r.initial_margin_enabled = v.initial_margin_enabled;
-    r.pfe_enabled = v.pfe_enabled;
-    r.portfolio_details_enabled = v.portfolio_details_enabled;
-    r.saccr_enabled = v.saccr_enabled;
-    r.calibration_enabled = v.calibration_enabled;
-    r.credit_curves_enabled = v.credit_curves_enabled;
-    r.historical_var_enabled = v.historical_var_enabled;
-    r.pnl_explain_enabled = v.pnl_explain_enabled;
-    r.xva_quantile = v.xva_quantile.value_or(0);
-    r.xva_cva_enabled = v.xva_cva_enabled;
-    r.xva_dva_enabled = v.xva_dva_enabled;
-    r.xva_fva_enabled = v.xva_fva_enabled;
-    r.xva_colva_enabled = v.xva_colva_enabled;
-    r.xva_dim_enabled = v.xva_dim_enabled;
-    r.xva_dim_quantile = v.xva_dim_quantile.value_or(0);
-    r.xva_dim_horizon_calendar_days = v.xva_dim_horizon_calendar_days.value_or(0);
-    r.xva_dim_regression_order = v.xva_dim_regression_order.value_or(0);
-    r.var_method = v.var_method.value_or("");
-    r.simm_version = v.simm_version.value_or("");
-    r.simm_calculation_currency = v.simm_calculation_currency.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -117,39 +89,6 @@ risk_report_config_entity risk_report_config_mapper::map(const domain::risk_repo
     r.market_data_type = v.market_data_type;
     r.market_data_date =
         v.market_data_date.empty() ? std::nullopt : std::optional(v.market_data_date);
-    r.npv_enabled = v.npv_enabled;
-    r.cashflow_enabled = v.cashflow_enabled;
-    r.curves_enabled = v.curves_enabled;
-    r.sensitivity_enabled = v.sensitivity_enabled;
-    r.simulation_enabled = v.simulation_enabled;
-    r.xva_enabled = v.xva_enabled;
-    r.stress_enabled = v.stress_enabled;
-    r.parametric_var_enabled = v.parametric_var_enabled;
-    r.initial_margin_enabled = v.initial_margin_enabled;
-    r.pfe_enabled = v.pfe_enabled;
-    r.portfolio_details_enabled = v.portfolio_details_enabled;
-    r.saccr_enabled = v.saccr_enabled;
-    r.calibration_enabled = v.calibration_enabled;
-    r.credit_curves_enabled = v.credit_curves_enabled;
-    r.historical_var_enabled = v.historical_var_enabled;
-    r.pnl_explain_enabled = v.pnl_explain_enabled;
-    r.xva_quantile = v.xva_quantile == 0 ? std::nullopt : std::optional(v.xva_quantile);
-    r.xva_cva_enabled = v.xva_cva_enabled;
-    r.xva_dva_enabled = v.xva_dva_enabled;
-    r.xva_fva_enabled = v.xva_fva_enabled;
-    r.xva_colva_enabled = v.xva_colva_enabled;
-    r.xva_dim_enabled = v.xva_dim_enabled;
-    r.xva_dim_quantile = v.xva_dim_quantile == 0 ? std::nullopt : std::optional(v.xva_dim_quantile);
-    r.xva_dim_horizon_calendar_days = v.xva_dim_horizon_calendar_days == 0 ?
-                                          std::nullopt :
-                                          std::optional(v.xva_dim_horizon_calendar_days);
-    r.xva_dim_regression_order =
-        v.xva_dim_regression_order == 0 ? std::nullopt : std::optional(v.xva_dim_regression_order);
-    r.var_method = v.var_method.empty() ? std::nullopt : std::optional(v.var_method);
-    r.simm_version = v.simm_version.empty() ? std::nullopt : std::optional(v.simm_version);
-    r.simm_calculation_currency = v.simm_calculation_currency.empty() ?
-                                      std::nullopt :
-                                      std::optional(v.simm_calculation_currency);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

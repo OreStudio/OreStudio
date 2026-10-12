@@ -25,34 +25,8 @@
 namespace ores::reporting::service {
 
 using domain::report_run_setup;
-using domain::risk_report_config;
 
 namespace {
-
-struct switch_rule {
-    int risk_report_config::* enabled;
-    const char* analytic_type;
-};
-
-// In the order ORE runs the analytics.
-constexpr switch_rule switch_rules[] = {
-    {&risk_report_config::portfolio_details_enabled, "portfolioDetails"},
-    {&risk_report_config::npv_enabled, "npv"},
-    {&risk_report_config::cashflow_enabled, "cashflow"},
-    {&risk_report_config::curves_enabled, "curves"},
-    {&risk_report_config::credit_curves_enabled, "creditcurves"},
-    {&risk_report_config::calibration_enabled, "calibration"},
-    {&risk_report_config::sensitivity_enabled, "sensitivity"},
-    {&risk_report_config::stress_enabled, "stress"},
-    {&risk_report_config::simulation_enabled, "simulation"},
-    {&risk_report_config::xva_enabled, "xva"},
-    {&risk_report_config::pfe_enabled, "pfe"},
-    {&risk_report_config::saccr_enabled, "saccr"},
-    {&risk_report_config::historical_var_enabled, "historicalSimulationVar"},
-    {&risk_report_config::pnl_explain_enabled, "pnlExplain"},
-    {&risk_report_config::initial_margin_enabled, "initialMargin"},
-    {&risk_report_config::parametric_var_enabled, "parametricVar"},
-};
 
 struct input_file {
     const char* type_code;
@@ -69,17 +43,8 @@ constexpr input_file input_files[] = {
 
 }
 
-std::vector<std::string> enabled_analytic_types(const risk_report_config& risk) {
-    std::vector<std::string> r;
-    for (const auto& rule : switch_rules)
-        if (risk.*rule.enabled != 0)
-            r.emplace_back(rule.analytic_type);
-    return r;
-}
-
 messaging::run_document generate_run_document(const run_document_inputs& in) {
-    const auto types = enabled_analytic_types(in.risk);
-    if (types.empty())
+    if (std::ranges::none_of(in.analytics, [](const auto& a) { return a.analytic.active == "Y"; }))
         throw std::invalid_argument(
             "The risk report configuration switches no analytic on. An ORE run needs at "
             "least one.");
@@ -102,16 +67,7 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
             setup.*f.member = f.file;
     }
 
-    int order = 0;
-    for (const auto& type : types) {
-        messaging::run_analytic a;
-        a.analytic.party_id = in.party_id;
-        a.analytic.report_definition_id = in.report_definition_id;
-        a.analytic.analytic_type_code = type;
-        a.analytic.display_order = ++order;
-        a.analytic.active = "Y";
-        r.analytics.push_back(std::move(a));
-    }
+    r.analytics = in.analytics;
 
     domain::report_market_binding market;
     market.party_id = in.party_id;

@@ -70,7 +70,21 @@ Both shapes give a DQ staging table for each entity through the shared document 
 
 ** Where do the run setup and the market bindings go?
 
-They are also keyed by the definition, and the setup duplicates columns of the shared configuration (base currency, thread count, observation model). The generator builds the setup from the configuration and writes nothing per definition. ACME publishes no stored setup. Moving them with the analytics would make the shared configuration the whole run document, which is a larger change than the product owner asked for. They stay with the definition in this task, and the open point below records the choice.
+The product owner decided on 2026-10-12 that everything in the run document that is not a data file is a choice of the shared configuration. They also decided that the choices go on =risk_report_config=, which is the entity of the run settings and is already DQ enabled.
+
+The 43 =Setup= parameters fall into three groups.
+
+| Group | Parameters | Treatment |
+|-------+------------+-----------|
+| Data files | The portfolio, market data, fixings and their mappings, the four configuration documents, the calendar adjustment, currency configuration, reference data, counterparty, script library and IBOR fallback files | Named from the file types table and filled by the export. Not stored. |
+| Choices | =inputPath=, =outputPath=, =logFile=, =logMask=, =nThreads=, =observationModel=, =baseCurrency=, =dateCalendar=, =dateConvention=, =implyTodaysFixings=, =continueOnError=, =buildFailedTrades=, =lazyMarketBuilding=, =includeTodaysCashFlows=, =includeReferenceDateEvents=, =enrichIndexFixings=, =useAnalytics=, =csvCommentReportHeader=, =defaultMappingToIdentity=, =portfolioRecurseIntoSubDirectories=, =ignoreFixingLag= | Columns of =risk_report_config=, typed, with the DQ staging generated from the entity. |
+| Run time | =asofDate=, =accrualDate=, =fixingCutoff= | Filled at run time. Not stored on the configuration. |
+
+The sample counts that set the defaults are: =implyTodaysFixings= 410 of 416 (N in 271), =logMask= 343 (31 in 216), =continueOnError= 103 (false in 90), =nThreads= 62, =buildFailedTrades= 17 (true in 17), =lazyMarketBuilding= 11, =includeTodaysCashFlows= 7, =dateCalendar= and =dateConvention= 3 each.
+
+The =Markets= block maps a role to a today's market configuration, so it is a choice as well. =report_market_binding= is renamed =configuration_market_binding= and re-keyed to the configuration. =report_run_setup= has no column left to hold, so it is removed.
+
+Why one entity and not two. The configuration has one set of run settings, read together by the export. A second one-row entity with the same key would split values that are always used together and repeat the base currency, thread count and observation model that =risk_report_config= already holds. The data oriented design page asks for data organised by how code reads it together, with identity by key and a split of core state from cold annexes (regime 2, persisted domain data). The Setup choices are one record of the same lifetime and the same reader, so they belong in one row. The columns that the samples rarely set (fewer than ten of 416) are nullable. They are cold, but a row for each configuration is a few dozen rows for each party, so the split would cost more than the empty columns do.
 
 ** How are the rules enforced once the analytics are rows?
 
@@ -113,7 +127,7 @@ Two parameters are not choices of the configuration: a date such as =mporDate= o
 1. The analytics and their parameters belong to the shared configuration, and the =report_= prefix goes. Shape A is the recommendation: rename =report_analytic= to =configuration_analytic= and =report_analytic_parameter= to =configuration_analytic_parameter=, and re-key the first from the report definition to the configuration header. This keeps the document shape the mappers and the corpus tests know, allows a repeated type as the schema does, and leaves =configuration_parameter= with one meaning. My earlier suggestion of shape B was made before I had read the entities, and it needs a uniqueness invariant and a lookup through the definition that A does not.
 2. The DQ staging of both entities is generated from the entities. The staged analytic row names its configuration and its analytic type. The staged parameter row cannot hold a definition id, so its declared staging columns are the analytic type and the parameter name, and the publish resolves them to the definition of the target database. The shared document publish gains one hook for this, so each document does not write its own insert.
 3. The sixteen switches and the checks on them leave =risk_report_config=. The rule that a configuration switches at least one analytic on moves to the binding and the publish. The dependency of the exposure analytic on the simulation moves to the vocabulary of analytic types.
-4. The run setup and the market bindings stay with the definition in this task. The generator keeps building the setup from the configuration.
+4. The non-file Setup parameters become columns of =risk_report_config=, the Markets block moves to =configuration_market_binding=, and =report_run_setup= is removed.
 5. The import path creates a configuration, binds it and stores the analytics on it.
 6. The values in the table above are the ones to stage, with the ACME choices marked there. The file parameters are left out and resolved at export.
 
@@ -125,13 +139,13 @@ Do the work in this order, each step ending in a check.
 2. Add the DQ staging for both entities, the hook on the shared publish, and the pgTAP test.
 3. Add the binding and publish rules, and the column on the analytic type.
 4. Change the import path, and the corpus round trip tests that read analytics.
-5. Stage the analytics and parameters of each ACME configuration from the table above, and test that the exported analytics and the stored parameters equal the decided ones for all 78 definitions.
+5. Add the Setup choices to =risk_report_config=, move the Markets block, and remove =report_run_setup=.
+6. Stage the analytics, parameters, Setup choices and market roles of each ACME configuration, and test that the exported run document carries the decided ones for all 78 definitions.
 
 Open points for the product owner.
 
-- Does the run setup move to the configuration as well? It would make the shared configuration the whole run document and remove the duplicated columns, at the cost of a wider change.
-- Is the repeat of an analytic type needed? If not, shape B saves one table and the model can add the uniqueness rule.
-- The stressed window and the other values marked as ACME choices need a reviewer who knows the regime.
+- Is the repeat of an analytic type needed? If not, shape B saves one table and the model can add the uniqueness rule. The product owner chose shape A on 2026-10-12.
+- The stressed window and the other values marked as ACME choices need a reviewer who knows the regime. The product owner will settle them with the user journeys and the four eyes processes.
 
 * See also
 

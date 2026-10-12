@@ -65,7 +65,7 @@
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/reporting/concurrency_policy_commands.hpp"
-#include "ores.shell/app/commands/reporting/report_analytic_parameter_commands.hpp"
+#include "ores.shell/app/commands/reporting/configuration_analytic_parameter_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_definition_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_instance_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_market_binding_commands.hpp"
@@ -136,7 +136,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     accounts_commands::register_commands(*root, session_, pagination_);
     system_setting_commands::register_commands(*root, session_);
     concurrency_policy_commands::register_commands(*root, session_);
-    report_analytic_parameter_commands::register_commands(*root, session_);
+    configuration_analytic_parameter_commands::register_commands(*root, session_);
     report_definition_commands::register_commands(*root, session_);
     report_instance_commands::register_commands(*root, session_);
     report_market_binding_commands::register_commands(*root, session_);

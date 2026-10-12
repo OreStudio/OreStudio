@@ -76,6 +76,77 @@ export interface ResolveSeriesIdentityResponse {
 }
 
 /**
+ * @brief One field of a schema row.
+ *
+ * The role says whether the field names the series or a point within it. A field
+ * that may be none can be left out of a URI. `codes` holds the tokens a code field
+ * accepts and is empty for any other kind.
+ */
+export interface OresmdFieldSpec {
+    name: string;
+    role: string;
+    may_be_none: boolean;
+    kind: string;
+    codes: string[];
+}
+
+/**
+ * @brief One instrument type of the schema, with its fields in key order.
+ *
+ * `code` is the text a URI writes under `instrument=`. `subject` is the field a
+ * URI writes as its path.
+ */
+export interface OresmdInstrument {
+    code: string;
+    ore_name: string;
+    asset: string;
+    subject: string;
+    fields: OresmdFieldSpec[];
+}
+
+/** @brief One field of an index family, which a fixing URI writes in the row's order. */
+export interface OresmdIndexField {
+    name: string;
+    optional: boolean;
+}
+
+/**
+ * @brief One family of index.
+ *
+ * A fixing URI writes `type=fixing` and `index=` with the family's code. The path
+ * is the subject and the query holds the other fields in the row's order.
+ */
+export interface OresmdIndexFamily {
+    code: string;
+    asset: string;
+    subject: string;
+    fields: OresmdIndexField[];
+}
+
+/**
+ * @brief Asks for the oresmd schema.
+ *
+ * The request carries nothing. The schema is the codec's own table, and it is the
+ * same for every caller.
+ */
+export interface DescribeOresmdSchemaRequest {}
+
+/**
+ * @brief The oresmd schema, read from the codec's own tables.
+ *
+ * `instruments` follows the order of ORE's instrument types and each row's fields
+ * follow the order its key writes them. Every list is in a stable order.
+ */
+export interface DescribeOresmdSchemaResponse {
+    assets: string[];
+    instruments: OresmdInstrument[];
+    quotes: string[];
+    indexes: OresmdIndexFamily[];
+    success: boolean;
+    message: string;
+}
+
+/**
  * @brief Requests the typed identity of each series the caller can see.
  *
  * A party reads only its own series, so the list is the caller's view and not the
@@ -828,6 +899,7 @@ export interface MarketTick {
 
 export const subjects = {
     resolve_series_identity_request: 'marketdata.v1.ops.resolve_series_identity',
+    describe_oresmd_schema_request: 'marketdata.v1.ops.describe_oresmd_schema',
     list_series_identities_request: 'marketdata.v1.ops.list_series_identities',
     get_crm_rate_request: 'marketdata.v1.ops.get_crm_rate',
     get_crm_rates_request: 'marketdata.v1.ops.get_crm_rates',
@@ -852,6 +924,7 @@ export const subjects = {
  */
 export const requiresSession = {
     resolve_series_identity_request: true,
+    describe_oresmd_schema_request: true,
     list_series_identities_request: true,
     get_crm_rate_request: true,
     get_crm_rates_request: true,

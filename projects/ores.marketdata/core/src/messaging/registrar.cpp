@@ -34,6 +34,7 @@
 #include "ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
 #include "ores.marketdata.core/messaging/ore_export_handler.hpp"
+#include "ores.marketdata.core/messaging/oresmd_schema_handler.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
@@ -147,6 +148,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             series_identity_handler h(nats, ctx, verifier);
                                             h.list(std::move(msg));
+                                        }));
+
+    // The oresmd schema: what a URI may hold, for a client that edits one.
+    subs.push_back(nats.queue_subscribe(std::string(describe_oresmd_schema_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            oresmd_schema_handler h(nats, ctx, verifier);
+                                            h.describe(std::move(msg));
                                         }));
 
     // Import

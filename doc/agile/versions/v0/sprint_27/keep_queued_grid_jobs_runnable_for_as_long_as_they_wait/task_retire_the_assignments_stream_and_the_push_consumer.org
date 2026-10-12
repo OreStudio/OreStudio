@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 9BB7093F-39B9-40A9-84C7-4B6EF53A5994
+:END:
+#+title: Task: Retire the assignments stream and the push consumer
+#+description: Remove the dispatcher's publish, the wrapper's durable consumer, the assignments stream and the storage-token mint at dispatch, once the claim carries all work.
+#+type: task
+#+level: s1
+#+filetags: :keep_queued_grid_jobs_runnable_for_as_long_as_they_wait:sprint_27:v0:
+#+owner: marco
+#+branch: feature/retire-the-assignments-stream-and-the-push-consumer
+#+pr: 3203
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No job and no credential travels through JetStream.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- The dispatcher publishes no assignment and mints no token.
+- The assignments stream and its durable consumer are not created.
+- The JetStream and lifecycle pages describe the claim as the way work moves.
+
+* Plan
+
+- The dispatcher and the wrapper stopped using the stream in the task that made the wrapper claim work. This task removes what was left behind.
+- Remove the =pull_work= and =result_started= operations: the model entries, the handlers and the registrations. A claim does what both did.
+- Trim =work_handler= to the heartbeat and the old reaper, since it no longer needs the NATS client or the verifier.
+- Turn =work_assignment_event= into the plain payload the wrapper builds from a claim. It has no subject and is not published.
+- Rewrite the JetStream page, the job lifecycle page and its sequence diagram, the interface table and the wire format note so that the claim is the way work moves.
+- Leave the =reap_work= handler and its scheduled job. A scheduled job publishes it, and removing the job needs a change to the populate script and to the live job table. The inbox holds a capture for it.
+- A deployment that ran the earlier wrapper may hold a stream =compute_assignments= and a durable consumer. Nothing uses them. The JetStream page says they may be deleted.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Compute api and core test suites | pass | =ctest --preset linux-clang-debug-make -R "ores.compute.(api|core).tests" -j2= | branch head |
+| Jobs claimed, run and submitted by 5 local wrappers after the removal | 8 of 8 submitted | a 40 second soak, then the wrapper journals | branch head |
+
+* Notes
+
+- Deploy order. Upgrade the service and every wrapper together. An old wrapper calls =pull_work= and =result_started=, which the service no longer answers, so Newton and the laptop must get the new wrapper image before they return to the grid.
+- After the new service and wrappers run, delete the leftover stream with =nats stream rm <prefix>_compute_assignments=. Nothing reads it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3203][#3203]] | [compute] Retire the assignments stream and the push consumer |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The service no longer answers =pull_work= or =result_started=. No code creates or reads the assignments stream, and the dispatcher publishes no assignment. The documents describe the claim as the way work moves. The stale-host reaper and its scheduled job remain, and the inbox holds a capture to remove them.

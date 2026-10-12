@@ -223,7 +223,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain(
             'oresmd://fx/EUR?type=quote&amp;instrument=fx_spot&amp;quote=rate&amp;ccy=USD',
         );
-        expect(html).toContain('>Open in the editor<');
+        expect(html).toContain('>Inspect<');
         expect(html).toContain('A fixed price');
         expect(html).toContain('>Price behaviour<');
         expect(html).toContain('Edit');

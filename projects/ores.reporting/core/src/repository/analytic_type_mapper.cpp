@@ -46,6 +46,7 @@ domain::analytic_type analytic_type_mapper::map(const analytic_type_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.parameter_entity = v.parameter_entity;
+    r.requires_analytic_type_code = v.requires_analytic_type_code;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -67,6 +68,7 @@ analytic_type_entity analytic_type_mapper::map(const domain::analytic_type& v) {
     r.name = v.name;
     r.description = v.description;
     r.parameter_entity = v.parameter_entity;
+    r.requires_analytic_type_code = v.requires_analytic_type_code;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

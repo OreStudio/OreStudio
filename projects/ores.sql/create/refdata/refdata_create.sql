@@ -219,6 +219,12 @@
 \ir ./refdata_books_notify_trigger_create.sql
 \ir ./refdata_book_changes_create.sql
 \ir ./refdata_book_changes_notify_trigger_create.sql
+\ir ./refdata_counterparty_changes_create.sql
+\ir ./refdata_counterparty_changes_notify_trigger_create.sql
+\ir ./refdata_counterparty_identifier_changes_create.sql
+\ir ./refdata_counterparty_identifier_changes_notify_trigger_create.sql
+\ir ./refdata_party_counterparty_changes_create.sql
+\ir ./refdata_party_counterparty_changes_notify_trigger_create.sql
 \ir ./refdata_book_change_parties_fn_create.sql
 
 -- ORE conventions (curve-building conventions imported from conventions.xml)

@@ -21,7 +21,11 @@
 
 import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { OresmdComposeRequest } from '@ores/contracts';
+import { api } from '../api/client.js';
+import { curves } from '../api/curves.js';
+import { series } from '../api/series.js';
 import { oresmd } from '../api/oresmd.js';
+import { refdataStore } from '../refdata/store.js';
 import { keyOf } from './editor.js';
 
 /**
@@ -34,6 +38,51 @@ const QUIET = { quiet: true } as const;
 const SCHEMA_STALE_MS = 5 * 60 * 1000;
 
 export const oresmdQueries = {
+    /**
+     * The currencies the system keeps, for the suggestions of a currency field.
+     *
+     * They are read from the refdata store by name. The editor opens over screens
+     * that wrap their parts in another store, such as the synthetic feeds, and the
+     * store of the screen has no currencies. A missing list of suggestions is no
+     * reason for a banner, so the read is quiet.
+     */
+    currencies: () =>
+        queryOptions({
+            queryKey: ['oresmd-currencies'],
+            queryFn: () => refdataStore.records('currencies'),
+            staleTime: SCHEMA_STALE_MS,
+            meta: QUIET,
+        }),
+
+    /**
+     * The series the party can see, with the axes each declares. It is the list the
+     * Evolution page reads, under the same key, so the two share one answer.
+     */
+    seriesList: (partyId: string) =>
+        queryOptions({
+            queryKey: ['market-series-list', partyId],
+            queryFn: () => curves.seriesList(),
+            retry: false,
+            meta: QUIET,
+        }),
+
+    /** The latest observations of one series, oldest first. */
+    observations: (seriesId: string, limit: number) =>
+        queryOptions({
+            queryKey: ['series-observations', seriesId, limit],
+            queryFn: () => series.observations(seriesId, limit),
+            retry: false,
+            meta: QUIET,
+        }),
+
+    dayCounters: () =>
+        queryOptions({
+            queryKey: ['oresmd-day-counters'],
+            queryFn: () => api.classificationRows('day-counter'),
+            staleTime: SCHEMA_STALE_MS,
+            meta: QUIET,
+        }),
+
     schema: () =>
         queryOptions({
             queryKey: ['oresmd-schema'],

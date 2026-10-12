@@ -69,7 +69,7 @@ BEGIN
     -- ReportRun: the run document and the owners' configuration documents it
     -- reads, the trades and market data it gathers, the storage objects it
     -- writes and reads, and its compute batch.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::report_run_setups:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::run_documents:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::curve_configurations:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'analytics::pricing_model_configs:read');
@@ -574,7 +574,7 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'refdata::curve_configurations:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'refdata::netting_set_identifiers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'refdata::portfolios:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'reporting::report_run_setups:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'reporting::run_documents:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'trading::bond_issues:read');
 
     -- Market data service: full access to market data domain

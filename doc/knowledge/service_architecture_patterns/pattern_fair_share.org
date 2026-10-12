@@ -82,6 +82,7 @@ Availability across tenants: no tenant's load can starve another's.
 * In ORE Studio
 
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — admission, step concurrency and grid dispatch each share capacity across tenants.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] — the claim chooses the next job across tenants.
 
 * Related patterns
 

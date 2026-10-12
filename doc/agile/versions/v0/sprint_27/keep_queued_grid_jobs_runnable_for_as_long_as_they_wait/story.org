@@ -21,11 +21,11 @@ A job that waits in the grid queue for any length of time still runs when a node
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Findings and options written.          |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The first task settles the decision.   |
+| Next          | Nothing. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -40,7 +40,13 @@ A job that waits in the grid queue for any length of time still runs when a node
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6FD6CBD3-468F-46F8-BC9C-9560CB8402F7][Scaffold story: Keep queued grid jobs runnable for as long as they wait]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:EC9CFACA-5DCD-41F1-9822-3097C11F587F][Implement Keep queued grid jobs runnable for as long as they wait]] | BACKLOG | | | Initial task for: Keep queued grid jobs runnable for as long as they wait |
+| [[id:EC9CFACA-5DCD-41F1-9822-3097C11F587F][Implement Keep queued grid jobs runnable for as long as they wait]] | DONE | 2026-10-12 | 2026-10-12 | Initial task for: Keep queued grid jobs runnable for as long as they wait |
+| [[id:CF6AFD45-1BAB-4461-9EA8-D1CA6CA1B5C4][Make a late or repeated assignment harmless]] | DONE | 2026-10-12 | 2026-10-12 | A node skips an assignment whose storage token has ended, and a submit for a result that is retired or done changes nothing. Both hold in any queue design and go before the claim. |
+| [[id:0FB3FEAF-420C-40F3-B888-78039D2CF028][Add the work ledger and serve a leased claim]] | DONE | 2026-10-12 | 2026-10-12 | A result gets a lease time and an attempt count. The server serves compute.v1.ops.claim_work: it picks the next unsent result, marks it taken, mints the storage token for that job, and replies with the assignment. The heartbeat extends the lease. |
+| [[id:9F534561-CFB9-4E3D-947B-34C94CE34939][Make the wrapper claim work]] | DONE | 2026-10-12 | 2026-10-12 | A free wrapper claims one job at a time, wakes on a plain NATS notice, and polls with jitter as a fallback. It runs the job, extends its lease through the heartbeat, and submits. |
+| [[id:BAF8A3FC-6541-49E0-A4AF-F3DF35F84501][Requeue expired leases and bound the queue]] | DONE | 2026-10-12 | 2026-10-12 | The reaper returns a result whose lease ended to the queue, and ends it as no reply after three attempts. A dispatch that would pass a tenant's limit is refused. The claim chooses across tenants. |
+| [[id:F299EB5C-78E6-4CC3-916B-1D820D670315][Show the queue depth and the oldest wait]] | DONE | 2026-10-12 | 2026-10-12 | One query gives the depth of the queue and the age of the oldest waiting job. The grid screen shows both, for the grid to the operator and for the tenant to a tenant administrator, and the over-capacity warning uses the same figures. |
+| [[id:9BB7093F-39B9-40A9-84C7-4B6EF53A5994][Retire the assignments stream and the push consumer]] | DONE | 2026-10-12 | 2026-10-12 | Remove the dispatcher's publish, the wrapper's durable consumer, the assignments stream and the storage-token mint at dispatch, once the claim carries all work. |
 
 * Findings
 
@@ -93,6 +99,32 @@ Three facts combine.
 
 So a job that waits longer than one hour is certain to fail. A failed job takes about a second, as the wrapper log shows one failure each second on one node, so the nodes look idle while the queue drains by failing.
 
+** A second failure: stale assignments froze the whole grid
+
+On the afternoon of 2026-10-12 the grid screen warned that 3006 jobs waited, that the grid finished 1.7 a minute, and that they needed 29 hours. The grid had finished 27 jobs a minute over 72 minutes earlier that day, so the rate was not a measure of capacity.
+
+What the server and the nodes showed:
+
+| What | Value | How |
+|------+-------+-----|
+| Messages the shared durable had delivered | 1,413,010, for 3,020 messages in the stream | =nats consumer info= on =compute_wrapper_shared_x64-linux= |
+| Outstanding acks | 1,000 of a maximum of 1,000 | the same command |
+| Redelivered messages | 1,000 | the same command |
+| Ack wait | 30 seconds | the same command |
+| Successes after 13:36 | none; the last success was at 13:36 | =max(received_at)= of the results with outcome 1, by tenant |
+| Reason the nodes gave | =Token has expired= on every storage request | the journal of =ores.http.server= |
+
+The mechanism has four parts.
+
+1. The wrapper subscribes to a push durable. The server pushes each wrapper every message it has no ack for, up to the durable's window of 1000, and the NATS client buffers them in the wrapper.
+2. The client acknowledges a message only after the handler returns, and a wrapper runs one job at a time. A wrapper that holds 40 buffered assignments needs more than 30 seconds to reach the last of them, so the server counts those as unacknowledged and pushes them again.
+3. Every assignment that had waited more than an hour had a token that had ended, so each one failed after a second. The failures kept the window full, and the duplicates filled the buffers again.
+4. With 1000 messages outstanding, the server delivered nothing else. New jobs waited behind a window of jobs that could not succeed.
+
+Purging the stream did not end it. The wrappers still held the delivered messages in their buffers, and a restart of the wrappers cleared them. A second effect: a wrapper that ran an assignment for a result that had been retired submitted its failure, and the server wrote it over the retired result.
+
+The task "Make a late or repeated assignment harmless" makes the two ends of this robust in any design: a wrapper does not start an assignment whose token has ended, and a submit for a retired or a done result changes nothing. It does not remove the wait. A job that waits past the token's hour still ends as a client error, and the push consumer still hands work out early. The decision below replaces the design.
+
 ** What the grid will meet
 
 The grid is shared by many tenants and its capacity is fixed. Any burst of work larger than the capacity makes a queue. A report run, a stress run or a month-end batch can queue hours of work. So waiting is the normal state of work on this grid, and the design must treat it as normal.
@@ -135,17 +167,24 @@ The dispatcher keeps a result unsent in the database and publishes its assignmen
 
 * Decisions
 
-None yet. The recommendation, to settle in the first task: take the credential off the queue. Mint the token when a node takes the job. Keep the queue in the database, order it by priority and age, and publish an assignment only when a node can take it. Bound the queue per tenant, so one tenant's burst cannot starve the others, and state what happens to a job that waits past the bound.
+*The queue is the database, and a free node claims a job.* Decided on 2026-10-12, after the second failure above.
 
-The candidate rules for a job that waits past the bound, for the first task to choose from:
+- A node asks for work when it is free. The server picks the next waiting result, marks it taken under a lease, mints the storage token for that job at that moment, and replies with the assignment.
+- A lease that ends returns the job to the queue. A job with no attempts left ends as a failure that a person sees.
+- A plain NATS notice wakes idle nodes, and nodes also poll with jitter. JetStream carries events and records and carries no work.
+- A JetStream pull consumer was considered and not chosen alone. Running it beside the database queue gives two queues that disagree, and the disagreement caused the failure. A pull consumer can sit in front of the claim as claim tickets if the claim ever becomes a bottleneck.
+- Tuning the push consumer was considered and not chosen, because it leaves a node holding jobs early and the credential in the queue.
+- The queue is bounded for each tenant, and the claim chooses across tenants. The rule for a job that waits past the bound is to refuse the dispatch.
 
-- Refuse the submit, so the caller learns at once and nothing waits unseen.
-- Expire the job after a stated wait, mark it so a person sees why, and let the caller submit it again.
-- Shed the oldest job of the tenant with the longest queue, which keeps the newest work and loses the oldest.
-
-Refusing at submit is the plainest and the only one that never loses work a person believes is queued.
+The page [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] holds the comparison, the protocol and the rollout. The tasks follow its rollout order.
 
 * Out of scope
 
 - Charging for the wait. The cost task in the story "Serve the grid's samples as time series" covers the cost of running a job.
 - Choosing which tenant's job runs first. The first task states a fair rule, and a weighted scheduler is a later story.
+
+* Result
+
+The grid queue is now a table that the installation owns. A free node asks for a job, and the service gives it the next entry under a lease of five minutes, with a storage token minted at that moment. The heartbeat extends the lease. A lease that ends returns the job to the queue, and a job that ends three leases ends as no reply with a message. A plain NATS notice wakes idle nodes, and nodes poll with jitter. A tenant cannot queue more than 3600 jobs, and the claim chooses across tenants. The Usage tab shows how long the oldest job has waited and warns from the age. JetStream carries no work. Six PRs delivered it: #3184, #3198, #3199, #3201, #3202 and #3203.
+
+Open follow-ups, all in the inbox or the notes: remove the stale-host reaper and its scheduled job, generate a table that holds an installation-owned current state, name the waiting group in the age warning, make the tenant limit an option, and redeploy the remote nodes (Newton and the laptop) with the new wrapper image. Until then, those nodes run the old wrapper, which takes no work and fails no job, because nothing publishes to the stream it reads.

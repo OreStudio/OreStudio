@@ -19,7 +19,6 @@
  */
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -34,8 +33,10 @@ std::expected<tick_plan, tick_drop> plan_tick(const messaging::market_tick& tick
     auto tick_datum = datum::oresmd_uri_codec::read(tick.oresmd_uri);
     if (!tick_datum)
         return std::unexpected(tick_drop::unnameable_datum);
-    const auto ore_key = datum::ore_key_codec::write(*tick_datum);
-    if (!ore_key)
+    // The codec reads only a datum's one spelling, so the URI it writes is the
+    // tick's own and the subject is the datum's alone. A datum needs no ORE key.
+    const auto uri = datum::oresmd_uri_codec::write(*tick_datum);
+    if (!uri)
         return std::unexpected(tick_drop::unnameable_datum);
 
     const auto value = ores::platform::numeric::parse_double(tick.value);
@@ -48,7 +49,7 @@ std::expected<tick_plan, tick_drop> plan_tick(const messaging::market_tick& tick
         plan.targets.push_back({b,
                                 domain::market_tick_subject(b.tenant_id.to_string(),
                                                             boost::uuids::to_string(b.party_id),
-                                                            *ore_key)});
+                                                            *uri)});
     return plan;
 }
 

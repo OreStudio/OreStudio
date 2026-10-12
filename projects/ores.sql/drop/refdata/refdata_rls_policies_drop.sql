@@ -27,6 +27,9 @@
 drop policy if exists book_changes_sandbox_isolation_policy on "ores_refdata_book_changes_tbl";
 drop policy if exists book_changes_party_isolation_policy on "ores_refdata_book_changes_tbl";
 drop policy if exists book_changes_tenant_isolation_policy on "ores_refdata_book_changes_tbl";
+drop policy if exists counterparty_changes_tenant_isolation_policy on "ores_refdata_counterparty_changes_tbl";
+drop policy if exists counterparty_identifier_changes_tenant_isolation_policy on "ores_refdata_counterparty_identifier_changes_tbl";
+drop policy if exists party_counterparty_changes_tenant_isolation_policy on "ores_refdata_party_counterparty_changes_tbl";
 drop policy if exists books_sandbox_isolation_policy on "ores_refdata_books_tbl";
 drop policy if exists books_tenant_isolation_policy on "ores_refdata_books_tbl";
 drop policy if exists netting_agreements_party_isolation_policy on "ores_refdata_netting_agreements_tbl";

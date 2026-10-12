@@ -121,6 +121,16 @@ export function useAccessLifetimeSeconds(): number | undefined {
         : undefined;
 }
 
+/**
+ * The party the signed-in person acts in, or nothing outside a signed-in
+ * session. A read that is kept per party, such as the series list, keys itself by
+ * it, so the answer of one party is never shown for another.
+ */
+export function useActingPartyId(): string | undefined {
+    const value = use(SessionContext);
+    return value?.state.status === 'authenticated' ? value.state.session.party.id : undefined;
+}
+
 export function useSession(): SessionContextValue {
     const value = use(SessionContext);
     if (value === undefined) {

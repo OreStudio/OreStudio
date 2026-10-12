@@ -80,6 +80,7 @@ No security consequence beyond availability.
 
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — a run over its quota is born =queued= and promoted as runs finish.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — JetStream holds each assignment until a node acknowledges it.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] — the compute queue is the table of results, and a node claims a job when it is free.
 
 * Related patterns
 

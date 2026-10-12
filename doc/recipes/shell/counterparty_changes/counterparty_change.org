@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 032C5BF8-1642-5EC3-8A42-D92E8A0B05F7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the counterparty_changes commands from the shell?
+#+description: Every command the counterparty_changes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:counterparty_changes:
+
+This file documents the counterparty_changes resource at the shell, one section per command. Every command is a subcommand of =counterparty_changes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5EF4159F-56AA-5622-A7CA-6366EE65869C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_changes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_changes.list=.
+
+#+name: counterparty_changes-list
+#+begin_src ores-shell :tangle counterparty_changes-list.ores :exports none
+counterparty_changes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: EB672153-E816-587E-BD92-1C3DA4764274
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_changes get <id>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_changes.get=.
+
+#+name: counterparty_changes-get
+#+begin_src ores-shell :tangle counterparty_changes-get.ores :exports none
+counterparty_changes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B021D716-669C-5BB5-989B-843C4DDE773D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_changes get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_changes.get_many=.
+
+#+name: counterparty_changes-get-many
+#+begin_src ores-shell :tangle counterparty_changes-get-many.ores :exports none
+counterparty_changes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =by-request-id=
+:PROPERTIES:
+:ID: 40043621-8809-5451-9B56-42B1FC81FA34
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_changes by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_changes.list_by_request_id=.
+
+#+name: counterparty_changes-by-request-id
+#+begin_src ores-shell :tangle counterparty_changes-by-request-id.ores :exports none
+counterparty_changes by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F1FEC759-BD45-5A54-84F7-709520D142E7
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_changes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_changes_versions.list=.
+
+#+name: counterparty_changes-versions
+#+begin_src ores-shell :tangle counterparty_changes-versions.ores :exports none
+counterparty_changes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 924B5D28-EDDA-5CB0-8C51-B5E8A631ACC5
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_changes version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_changes_versions.get=.
+
+#+name: counterparty_changes-version
+#+begin_src ores-shell :tangle counterparty_changes-version.ores :exports none
+counterparty_changes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

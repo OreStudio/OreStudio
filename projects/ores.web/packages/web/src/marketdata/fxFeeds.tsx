@@ -285,7 +285,11 @@ const FX_FEED_KIND: FeedKind = {
         },
     ],
     extraDetails: (feed, t) => [
-        [t('refdata.fields.oresmd_uri'), <OresmdUrl uri={show(feed['oresmd_uri'])} />],
+        [
+            t('refdata.fields.oresmd_uri'),
+            <OresmdUrl uri={show(feed['oresmd_uri'])} />,
+            t('marketdata.feeds.targetUri'),
+        ],
     ],
     parts: [
         {

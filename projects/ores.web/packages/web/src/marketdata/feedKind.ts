@@ -100,7 +100,7 @@ export interface FeedKind {
     readonly extraDetails: (
         feed: RecordRow,
         t: (key: string) => string,
-    ) => readonly (readonly [string, ReactNode])[];
+    ) => readonly (readonly [string, ReactNode, string?])[];
     /** The rows a feed owns. */
     readonly parts: readonly FeedPartKind[];
     /** The tabs between Details and History. */

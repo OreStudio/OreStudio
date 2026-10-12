@@ -36,7 +36,7 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
 import type { GridNodeRow, GridView, SeriesRange } from '@ores/wire-protocol/browser';
@@ -56,7 +56,7 @@ import {
 import { GridLoadTab, GridNodeLoad } from './GridSeries.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { gridNodePath } from '../shell/paths.js';
+import { gridMachinePath, gridNodePath } from '../shell/paths.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
@@ -70,7 +70,7 @@ const JOURNEYS: readonly JourneyId[] = [
 ];
 
 /** The tabs of the grid screen, in the order they are drawn. */
-export const GRID_TABS = ['overview', 'load', 'nodes'] as const;
+export const GRID_TABS = ['overview', 'nodes', 'heatmap'] as const;
 
 /** Where the grid read's answer is cached, so a test can seed it. */
 export const GRID_QUERY_KEY = ['operations-grid'] as const;
@@ -78,20 +78,6 @@ export const GRID_QUERY_KEY = ['operations-grid'] as const;
 /** The instant a read answered, as the wall clock a person reads, in UTC. */
 export function readTime(at: number): string {
     return `${new Date(at).toISOString().slice(11, 19)} UTC`;
-}
-
-/**
- * The instant a stored sample was taken, as a wall clock a person reads, in UTC.
- *
- * Nothing when no sample is stored, or the time is unreadable: a summary
- * without its age cannot be trusted, so an unreadable time is an absent one
- * rather than a made-up one.
- */
-export function sampleTime(at: string | null): string | undefined {
-    if (at === null || !isWireTimestamp(at)) {
-        return undefined;
-    }
-    return `${fromWireTimestamp(at).toISOString().slice(11, 19)} UTC`;
 }
 
 /** A byte count in GiB, as the node table states what a node fetched. */
@@ -131,78 +117,6 @@ export function formatAge(seconds: number, t: Translator['t']): string {
         hours: Math.floor(minutes / 60),
         minutes: minutes % 60,
     });
-}
-
-/** The grid's counters, and the sample time they were computed at. */
-function SummaryPanel({ view }: { readonly view: GridView }): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <section className="card space-y-4 p-6">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">{t('operations.grid.summary.title')}</h2>
-                <span className="text-xs text-ink-faint">
-                    {t('operations.grid.summary.sampled', {
-                        at: sampleTime(view.sampled_at) ?? '',
-                    })}
-                </span>
-            </header>
-            <div className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
-                <div className="space-y-1">
-                    <span className="block text-xs text-ink-faint">
-                        {t('operations.grid.summary.hosts')}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono">{view.total_hosts}</span>
-                        <Tag tone="neutral">
-                            {t('operations.grid.summary.online', { count: view.online_hosts })}
-                        </Tag>
-                        <Tag tone="neutral">
-                            {t('operations.grid.summary.idle', { count: view.idle_hosts })}
-                        </Tag>
-                    </span>
-                </div>
-                <div className="space-y-1">
-                    <span className="block text-xs text-ink-faint">
-                        {t('operations.grid.summary.work')}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono">
-                            {t('operations.grid.summary.workunits', {
-                                workunits: view.total_workunits,
-                                batches: view.total_batches,
-                            })}
-                        </span>
-                        <Tag tone="accent">
-                            {t('operations.grid.summary.active', { count: view.active_batches })}
-                        </Tag>
-                    </span>
-                </div>
-                <div className="space-y-1">
-                    <span className="block text-xs text-ink-faint">
-                        {t('operations.grid.summary.outcomes')}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2">
-                        <Tag tone="neutral">
-                            {t('operations.grid.summary.success', {
-                                count: view.outcomes_success,
-                            })}
-                        </Tag>
-                        <Tag tone="warn">
-                            {t('operations.grid.summary.clientError', {
-                                count: view.outcomes_client_error,
-                            })}
-                        </Tag>
-                        <Tag tone="warn">
-                            {t('operations.grid.summary.noReply', {
-                                count: view.outcomes_no_reply,
-                            })}
-                        </Tag>
-                    </span>
-                </div>
-            </div>
-            <p className="text-xs text-ink-faint">{t('operations.grid.summary.oneTenant')}</p>
-        </section>
-    );
 }
 
 /**
@@ -315,9 +229,11 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                     {machines.map((machine) => (
                         <tr key={machine.name}>
                             <td className="py-2 font-mono">
-                                {machine.name === ''
-                                    ? t('operations.grid.machines.unnamed')
-                                    : machine.name}
+                                <Link to={gridMachinePath(machine.name)} className="underline">
+                                    {machine.name === ''
+                                        ? t('operations.grid.machines.unnamed')
+                                        : machine.name}
+                                </Link>
                             </td>
                             <td className="py-2">
                                 {machine.running > 0 ? (
@@ -349,8 +265,13 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
     );
 }
 
-function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
+function NodesPanel({ nodes: every }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
+    const [search] = useSearchParams();
+    // A machine in the address narrows the list to its nodes. An empty name is the
+    // nodes that report no machine, and no parameter is every node.
+    const machine = search.get('machine');
+    const nodes = machine === null ? every : every.filter((node) => node.machine === machine);
     const [offset, setOffset] = useState(0);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const running = nodes.filter((node) => node.state === 'running');
@@ -388,6 +309,19 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                     )}
                 </div>
             </header>
+            {machine !== null && (
+                <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <Tag tone="accent">
+                        {t('operations.grid.nodes.filter', {
+                            machine:
+                                machine === '' ? t('operations.grid.machines.unnamed') : machine,
+                        })}
+                    </Tag>
+                    <Link to="/operations/grid?tab=nodes" className="underline">
+                        {t('operations.grid.nodes.clearFilter')}
+                    </Link>
+                </div>
+            )}
             <table className="w-full text-sm">
                 <thead className="text-left text-xs text-ink-faint">
                     <tr>
@@ -541,7 +475,6 @@ export function GridPage(): ReactNode {
     }
 
     const view = grid.data;
-    const hasSample = sampleTime(view.sampled_at) !== undefined;
     const gaps: readonly ScreenGap[] = [
         {
             title: t('operations.grid.gap.noHost.title'),
@@ -581,28 +514,14 @@ export function GridPage(): ReactNode {
 
             {tab === 'overview' && (
                 <>
-                    {hasSample ? (
-                        <SummaryPanel view={view} />
-                    ) : (
-                        <section className="card space-y-2 p-6">
-                            <h2 className="text-lg font-medium">
-                                {t('operations.grid.summary.title')}
-                            </h2>
-                            <Notice tone="warn">{t('operations.grid.summary.noSample')}</Notice>
-                        </section>
-                    )}
+                    <GridLoadTab range={range} onRange={setRange} />
                     <MachinesPanel nodes={view.nodes} />
                 </>
             )}
 
-            {tab === 'load' && <GridLoadTab range={range} onRange={setRange} />}
+            {tab === 'nodes' && <NodesPanel nodes={view.nodes} />}
 
-            {tab === 'nodes' && (
-                <>
-                    <GridNodeLoad range={range} onRange={setRange} />
-                    <NodesPanel nodes={view.nodes} />
-                </>
-            )}
+            {tab === 'heatmap' && <GridNodeLoad range={range} onRange={setRange} />}
 
             <GapPanel gaps={gaps} />
             <RelatedJourneys ids={JOURNEYS} />

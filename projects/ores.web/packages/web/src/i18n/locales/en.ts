@@ -1094,12 +1094,6 @@ export const en: SourceCatalogue = {
                 open: 'Open',
                 unread: 'Could not be read',
                 sampled: 'Sampled',
-                summary: {
-                    needAttention: {
-                        one: '{count} area needs attention',
-                        other: '{count} areas need attention',
-                    },
-                },
                 services: {
                     title: 'Services',
                     needAttention: {
@@ -1533,7 +1527,7 @@ export const en: SourceCatalogue = {
                 noSample:
                     'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
             },
-            tabs: { label: 'Grid views', overview: 'Overview', load: 'Load', nodes: 'Nodes' },
+            tabs: { label: 'Grid views', overview: 'Overview', nodes: 'Nodes', heatmap: 'Heatmap' },
             heatmap: {
                 title: 'Node load',
                 lead: 'One row per node and one column per interval, coloured by what the node did. The times are UTC.',
@@ -1625,6 +1619,8 @@ export const en: SourceCatalogue = {
                 hint: 'Nodes that report no machine are grouped here.',
             },
             nodes: {
+                filter: 'Nodes of {machine}',
+                clearFilter: 'Show all nodes',
                 title: 'Nodes',
                 rows: '{count} rows',
                 showing: '{first}–{last} of {total} nodes',
@@ -1658,8 +1654,8 @@ export const en: SourceCatalogue = {
                     body: 'The join fixes the common case, and a node the host registry does not know shows a bare id. The screen must say that no host names the node, rather than printing the id as if it were a name.',
                 },
                 oneTenant: {
-                    title: "The summary's counters are one tenant's",
-                    body: "The node table is the installation's, but the counters above it are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count — hosts, results, workunits and batches — by the tenant it is handed, and the poller hands it its own session tenant. The read that would make them the installation's own usage is the ledger Account for the grid's usage builds, and it is not built. Until it is, the screen states that the counters are computed for one tenant rather than presenting them as every tenant's work.",
+                    title: "The charts' counters are one tenant's",
+                    body: "The node table is the installation's, but the counts behind the charts are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count (results, workunits and batches) by the tenant it is handed, and the poller hands it its own session tenant. Until the installation records its own usage, the charts count one tenant's work and not every tenant's.",
                 },
             },
         },

@@ -1111,12 +1111,6 @@ const fr: SourceCatalogue = {
                 open: 'Ouvrir',
                 unread: 'N’a pas pu être lu',
                 sampled: 'Échantillon de',
-                summary: {
-                    needAttention: {
-                        one: '{count} zone demande votre attention',
-                        other: '{count} zones demandent votre attention',
-                    },
-                },
                 services: {
                     title: 'Services',
                     needAttention: {
@@ -1553,7 +1547,7 @@ const fr: SourceCatalogue = {
                 noSample:
                     'Aucun échantillon pour l’instant. Le déploiement ne stocke aucun résumé de grille, donc les compteurs ne peuvent pas être dessinés ; le tableau des nœuds ci-dessous tient seul.',
             },
-            tabs: { label: 'Vues de la grille', overview: 'Vue d\'ensemble', load: 'Charge', nodes: 'Nœuds' },
+            tabs: { label: 'Vues de la grille', overview: "Vue d'ensemble", nodes: 'Nœuds', heatmap: 'Carte de chaleur' },
             heatmap: {
                 title: 'Charge des nœuds',
                 lead: 'Une ligne par nœud et une colonne par intervalle, colorées selon l\'activité du nœud. Les heures sont en UTC.',
@@ -1645,6 +1639,8 @@ const fr: SourceCatalogue = {
                 hint: "Les nœuds qui n'indiquent aucune machine sont regroupés ici.",
             },
             nodes: {
+                filter: 'Nœuds de {machine}',
+                clearFilter: 'Afficher tous les nœuds',
                 title: 'Nœuds',
                 rows: '{count} lignes',
                 showing: '{first}–{last} sur {total} nœuds',
@@ -1679,8 +1675,8 @@ const fr: SourceCatalogue = {
                     body: 'La jointure règle le cas courant, et un nœud que le registre des hôtes ne connaît pas montre un identifiant nu. L’écran doit dire qu’aucun hôte ne nomme le nœud, plutôt que d’afficher l’identifiant comme s’il était un nom.',
                 },
                 oneTenant: {
-                    title: 'Les compteurs du résumé sont ceux d’un seul locataire',
-                    body: 'Le tableau des nœuds est celui de l’installation, mais les compteurs au-dessus ne le sont pas. Ils sont calculés par ores_compute_grid_stats_fn(p_tenant_id), qui filtre chaque comptage — hôtes, résultats, unités de travail et lots — par le locataire qui lui est transmis, et le collecteur lui transmet son propre locataire de session. La lecture qui en ferait l’usage propre de l’installation est le grand livre que construit « Rendre compte de l’usage de la grille », et il n’est pas construit. Tant qu’il ne l’est pas, l’écran énonce que les compteurs sont calculés pour un seul locataire plutôt que de les présenter comme le travail de tous les locataires.',
+                    title: "Les compteurs des graphiques sont ceux d'un seul locataire",
+                    body: "Le tableau des nœuds est celui de l'installation, mais les comptes derrière les graphiques ne le sont pas. Ils sont calculés par ores_compute_grid_stats_fn(p_tenant_id), qui filtre chaque compte (résultats, unités de travail et lots) par le locataire reçu, et l'échantillonneur lui passe son propre locataire de session. Tant que l'installation n'enregistre pas son propre usage, les graphiques comptent le travail d'un seul locataire.",
                 },
             },
         },

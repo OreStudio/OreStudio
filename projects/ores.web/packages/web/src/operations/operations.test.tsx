@@ -57,7 +57,6 @@ import {
     asMiB,
     asSeconds,
     formatAge as formatGridAge,
-    sampleTime,
 } from './GridPage.js';
 import {
     LogsPage,
@@ -851,29 +850,12 @@ describe('the compute grid screen', () => {
         tasks_since_last: 2,
     });
 
-    it('states the counters with the sample time beside them', () => {
+    it('says the charts count one tenant’s work rather than every tenant’s', () => {
         const html = withProviders(<GridPage />);
 
-        expect(html).toContain('Compute grid');
-        // The counters mirror one stored sample, so the sample time sits beside
-        // them, labelled UTC.
-        expect(html).toContain('sampled 14:31:02 UTC');
-        expect(html).toContain('>6<');
-        expect(html).toContain('Online 5');
-        expect(html).toContain('Idle 2');
-        expect(html).toContain('128 workunits · 9 batches');
-        expect(html).toContain('Active 3');
-        expect(html).toContain('412 success');
-        expect(html).toContain('3 client error');
-        expect(html).toContain('1 no reply');
-    });
-
-    it('says the counters are one tenant’s rather than every tenant’s work', () => {
-        const html = withProviders(<GridPage />);
-
-        // The summary counters are narrower than the whole-grid node read.
-        expect(html).toContain('These counters are computed for one tenant');
-        expect(html).toContain('The node table below is the whole installation');
+        // The counts behind the charts are narrower than the whole-grid node read.
+        expect(html).toContain('The charts&#x27; counters are one tenant&#x27;s');
+        expect(html).toContain('The node table is the installation&#x27;s');
     });
 
     it('keeps a quiet node’s row, and shows its failures and its slowest task', () => {
@@ -1009,26 +991,6 @@ describe('the compute grid screen', () => {
         expect(html.match(/older build/g) ?? []).toHaveLength(1);
     });
 
-    it('states no sample rather than presenting zero hosts as the fleet', () => {
-        const html = withProviders(
-            <GridPage />,
-            '/',
-            [],
-            gridView({ sampled_at: null, total_hosts: 0 }),
-        );
-
-        expect(html).toContain('No sample yet');
-        expect(html).not.toContain('Online 5');
-        // The node table stands alone, on its own tab.
-        const nodes = withProviders(
-            <GridPage />,
-            '/?tab=nodes',
-            [],
-            gridView({ sampled_at: null, total_hosts: 0 }),
-        );
-        expect(nodes).toContain('grid-01.example.com');
-    });
-
     it('states only the gaps the journey still records', () => {
         const html = withProviders(<GridPage />);
 
@@ -1068,10 +1030,6 @@ describe('the compute grid screen', () => {
     });
 
     it('states a sample time labelled UTC, and units a person reads', () => {
-        expect(sampleTime('2026-10-04 14:31:02Z')).toBe('14:31:02 UTC');
-        expect(sampleTime(null)).toBeUndefined();
-        expect(sampleTime('')).toBeUndefined();
-        expect(sampleTime('not a time')).toBeUndefined();
         expect(asGiB(1_288_490_188, t)).toBe('1.20 GiB');
         expect(asMiB(230_686_720, t)).toBe('220 MiB');
         expect(asSeconds(42_000, t)).toBe('42 s');
@@ -1449,24 +1407,56 @@ describe('the grid over time', () => {
         expect(html).not.toContain('<svg');
     });
 
+    it('opens a machine to the nodes that run on it', () => {
+        const seeded = (path: string): string =>
+            withProviders(<GridPage />, path, [], gridView(), busView(), logsView(), [], gridSeriesView());
+
+        // Each machine on the overview links to the node list narrowed to it.
+        expect(seeded('/')).toContain('href="/operations/grid?tab=nodes&amp;machine=rack-a"');
+
+        // The list shows that machine's nodes, says it is narrowed, and offers all of them.
+        const narrowed = seeded('/?tab=nodes&machine=rack-a');
+        expect(narrowed).toContain('Nodes of rack-a');
+        expect(narrowed).toContain('Show all nodes');
+        expect(narrowed).toContain('grid-01.example.com');
+
+        // A machine with no node leaves the list empty rather than showing the others.
+        const other = seeded('/?tab=nodes&machine=nowhere');
+        expect(other).toContain('Nodes of nowhere');
+        expect(other).not.toContain('grid-01.example.com');
+
+        // With no machine in the address the list is every node, with no filter line.
+        const every = seeded('/?tab=nodes');
+        expect(every).toContain('grid-01.example.com');
+        expect(every).not.toContain('Show all nodes');
+    });
+
     it('keeps the grid screen on three tabs, so each page stays short', () => {
-        const overview = withProviders(<GridPage />, '/', [], gridView(), busView(), logsView(), [], gridSeriesView());
+        const seeded = (path: string): string =>
+            withProviders(<GridPage />, path, [], gridView(), busView(), logsView(), [], gridSeriesView());
+
+        const overview = seeded('/');
         expect(overview).toContain('role="tablist"');
-        for (const title of ['Overview', 'Load', 'Nodes']) {
+        for (const title of ['Overview', 'Nodes', 'Heatmap']) {
             expect(overview).toContain(`>${title}<`);
         }
-        // The overview holds the summary and the machines, and not the charts.
+        // The overview holds the charts and the machines, and no separate summary.
+        expect(overview).toContain('Over time');
         expect(overview).toContain('Machines');
-        expect(overview).not.toContain('Over time');
+        expect(overview).not.toContain('Grid summary');
+        expect(overview).not.toContain('Node load');
 
-        const load = withProviders(<GridPage />, '/?tab=load', [], gridView(), busView(), logsView(), [], gridSeriesView());
-        expect(load).toContain('Over time');
-        expect(load).not.toContain('Machines');
-
-        const nodes = withProviders(<GridPage />, '/?tab=nodes', [], gridView(), busView(), logsView(), [], gridSeriesView());
-        expect(nodes).toContain('Node load');
+        // The nodes tab is the list alone.
+        const nodes = seeded('/?tab=nodes');
         expect(nodes).toContain('grid-01.example.com');
         expect(nodes).not.toContain('Over time');
+        expect(nodes).not.toContain('Machines');
+
+        // The heatmap tab is the heatmap alone.
+        const heatmap = seeded('/?tab=heatmap');
+        expect(heatmap).toContain('Node load');
+        expect(heatmap).not.toContain('Over time');
+        expect(heatmap).not.toContain('grid-01.example.com');
     });
 });
 

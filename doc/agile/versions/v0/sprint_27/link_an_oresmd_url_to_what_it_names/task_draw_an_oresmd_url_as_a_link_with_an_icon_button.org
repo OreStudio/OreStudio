@@ -26,11 +26,11 @@ An oresmd URL behaves as every other reference in the app, and the dialog is one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -86,3 +86,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An oresmd URL is a real link to the series it names, found through the server's parse and the party's series list: the Evolution page for a series with an axis, the series page for one without. A fixing and a series the party does not have stay plain text. The button is the text Inspect, or Edit where a screen stores the URL, because the icon was not signed off. The task keeps its original file name, which still says icon.
+

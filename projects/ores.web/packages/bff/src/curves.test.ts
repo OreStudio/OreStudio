@@ -433,6 +433,90 @@ describe('the curve read routes', () => {
         expect(response.json().code).toBe('forbidden');
     });
 
+    const KEY = {
+        identity: IDENTITY,
+        coordinates: ['2Y', 'ATM'],
+        value: '0.090',
+        change_reason_code: 'system.test',
+        change_commentary: 'operator correction',
+    };
+
+    it('keys a manual point and forwards the whole request', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.key_manual_point': { success: true, message: '' },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/manual-point', KEY);
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({});
+        expect(calls[0]?.body).toEqual(KEY);
+    });
+
+    it('answers a refused key with the server words as 422', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.key_manual_point': {
+                success: false,
+                message: "'9Y' is not a declared expiry of the series.",
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/manual-point', KEY);
+        expect(response.statusCode).toBe(422);
+        expect(response.json().message).toContain('9Y');
+    });
+
+    it('reports a missing write permission on a key as forbidden', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.key_manual_point': new ServerError(
+                'forbidden',
+                'marketdata.v1.ops.key_manual_point',
+            ),
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/manual-point', KEY);
+        expect(response.statusCode).toBe(403);
+    });
+
+    it('refuses a key with no commentary, no coordinates or an unknown field, without asking the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        for (const bad of [
+            { ...KEY, change_commentary: '  ' },
+            { ...KEY, coordinates: [] },
+            { ...KEY, party: 'x' },
+        ]) {
+            const response = await send(server, sessionId, 'POST', '/api/curves/manual-point', bad);
+            expect(response.statusCode).toBe(400);
+        }
+        expect(calls).toHaveLength(0);
+    });
+
+    it('clears a manual point', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.clear_manual_point': { success: true, message: '' },
+        });
+        const body = { identity: IDENTITY, coordinates: ['2Y', 'ATM'] };
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/curves/manual-point/clear',
+            body,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual(body);
+    });
+
+    it('answers a clear with nothing to clear as 422', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.clear_manual_point': {
+                success: false,
+                message: 'The node holds no manual point.',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/manual-point/clear', {
+            identity: IDENTITY,
+            coordinates: ['2Y', 'ATM'],
+        });
+        expect(response.statusCode).toBe(422);
+    });
+
     it('needs a session', async () => {
         const { server, calls } = buildTestServer({});
         const response = await server.inject({

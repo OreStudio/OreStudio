@@ -2,7 +2,7 @@
 :ID: DD0F79D0-38B4-43DE-B2E0-135976B8BA25
 :END:
 #+title: Task: Author the credit family header and its fact tables
-#+description: Replace the 25-column credit table with a header holding the reference entity and the two dates, and six product fact tables keyed by the trade. Remove the two importer-less codes from the routing. (Staging unit 4.)
+#+description: Replace the 25-column credit table with a header holding the reference entity and the two dates, and six product fact tables keyed by the trade. Remove the two importer-less codes from the routing. (Staging unit 5.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:

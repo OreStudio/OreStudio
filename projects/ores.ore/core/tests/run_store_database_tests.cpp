@@ -25,7 +25,7 @@
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/repository/report_run_setup_repository.hpp"
+#include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
@@ -136,7 +136,13 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
 
     const auto run = parse<domain::ore>(original.at("ore.xml"));
     const auto exported_run = parse<domain::ore>(exported.at("ore.xml"));
-    CHECK(parameters_of(exported_run.Setup) == parameters_of(run.Setup));
+    // The export names the files it writes. The portfolio, the market data and the
+    // fixings are data the configuration does not hold, so the export writes none
+    // of them and names none.
+    auto expected_setup = parameters_of(run.Setup);
+    for (const auto* data_file : {"portfolioFile", "marketDataFile", "fixingDataFile"})
+        expected_setup.erase(data_file);
+    CHECK(parameters_of(exported_run.Setup) == expected_setup);
     REQUIRE(exported_run.Markets);
     CHECK(parameters_of(*exported_run.Markets) == parameters_of(*run.Markets));
     REQUIRE(exported_run.Analytics.Analytic.size() == run.Analytics.Analytic.size());
@@ -170,8 +176,11 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
              parties.a_context))
         if (b.report_definition_id == definition)
             slots.insert(b.configuration_type_code);
-    CHECK(slots == std::set<std::string>{
-                       "conventions", "curve_configuration", "pricing_engines", "todays_market"});
+    CHECK(slots == std::set<std::string>{"conventions",
+                                         "curve_configuration",
+                                         "pricing_engines",
+                                         "risk_report_config",
+                                         "todays_market"});
 }
 
 TEST_CASE("another party cannot export a run it does not own", tags) {
@@ -202,10 +211,11 @@ TEST_CASE("an import naming a file the input lacks is refused before it writes",
         store::import_run(parties.a_context, definition, "Example_1", files),
         "The run document names curveconfig.xml as its curve_configuration file, which the input "
         "does not hold.");
-    const auto setups =
-        ores::reporting::repository::report_run_setup_repository().read_latest(parties.a_context);
+    const auto bindings =
+        ores::reporting::repository::report_configuration_repository().read_latest(
+            parties.a_context);
     CHECK(std::ranges::none_of(
-        setups, [&](const auto& s) { return s.report_definition_id == definition; }));
+        bindings, [&](const auto& b) { return b.report_definition_id == definition; }));
 }
 
 TEST_CASE("a second import into the same report definition is refused", tags) {
@@ -216,7 +226,7 @@ TEST_CASE("a second import into the same report definition is refused", tags) {
     store::import_run(parties.a_context, definition, "first", files);
     CHECK_THROWS_WITH(
         store::import_run(parties.a_context, definition, "second", files),
-        "The report definition already holds a run document; import into a new definition.");
+        "The report definition already binds a risk report configuration; import into a new definition.");
 }
 
 TEST_CASE("an export from a session with no party reads the definition's party", tags) {
@@ -317,8 +327,9 @@ TEST_CASE("an import whose document does not parse is refused before it writes",
     auto files = example_input();
     files["curveconfig.xml"] = "<CurveConfiguration><not closed";
     CHECK_THROWS(store::import_run(parties.a_context, definition, "Example_1", files));
-    const auto setups =
-        ores::reporting::repository::report_run_setup_repository().read_latest(parties.a_context);
+    const auto bindings =
+        ores::reporting::repository::report_configuration_repository().read_latest(
+            parties.a_context);
     CHECK(std::ranges::none_of(
-        setups, [&](const auto& s) { return s.report_definition_id == definition; }));
+        bindings, [&](const auto& b) { return b.report_definition_id == definition; }));
 }

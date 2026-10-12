@@ -47,10 +47,14 @@ the schema row behind it.
 
 ** The republish subject
 
-=market_tick_subject(tenant, party, ore_key)=, in
+=market_tick_subject(tenant, party, oresmd_uri)=, in
 =ores.marketdata.api/domain/tick_subjects.hpp=, builds the per consumer
-subject ="marketdata.v1.ops.market_tick.<tenant>.<party>.<key>"=. The key is the
-datum's canonical ORE key, lower cased with its slashes turned into dots.
+subject ="marketdata.v1.ops.market_tick.<tenant>.<party>.<token>"=. The token is the
+datum's canonical oresmd URI as one subject token: every byte outside letters, digits,
+hyphen and underscore becomes a percent sign and two hexadecimal digits, so the token
+holds no dot, space or wildcard, and =subject_token_text()= gives the URI back. The
+subject needs no ORE key. A party reads all its data with
+=market_tick_subject_all(tenant, party)=, which ends in =.>=.
 The producer subject note states the other end of this traffic, which is
 the subject a producer publishes on.
 

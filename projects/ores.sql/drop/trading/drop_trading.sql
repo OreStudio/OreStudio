@@ -190,6 +190,8 @@
 \ir ./trading_bond_legs_drop.sql
 
 -- Credit instruments
+\ir ./trading_credit_basket_constituents_notify_trigger_drop.sql
+\ir ./trading_credit_basket_constituents_drop.sql
 \ir ./trading_credit_instruments_notify_trigger_drop.sql
 \ir ./trading_credit_instruments_drop.sql
 

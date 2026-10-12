@@ -57,6 +57,9 @@ export const listTenantTypesRequestSchema = z.object({
     as_of: z.string().nullable().default(null),
 }) satisfies z.ZodType<GeneratedListTenantTypesRequest>;
 
+/** The tenant type that marks test infrastructure, hidden unless asked for. */
+export const TEST_TENANT_TYPE = 'automation';
+
 /** Every tenant type, in the order the rows declare. */
 export async function readTenantTypes(caller: AuthenticatedCaller): Promise<readonly TenantType[]> {
     const listed = await caller.callAuthenticated(

@@ -72,8 +72,8 @@ make_feed_series(const domain::feed_binding& binding,
  * carries no owner. refresh() caches the enabled feed bindings by source, and
  * each binding of the tick's source is one consumer: the tick is stored as a
  * market_observation under that binding's tenant and party, and republished
- * on market_tick_subject() for that consumer and the datum's canonical ORE
- * key. A tick from a source with no enabled binding is dropped, with one
+ * on market_tick_subject() for that consumer and the datum's canonical oresmd
+ * URI. A tick from a source with no enabled binding is dropped, with one
  * warning per source, and so is a tick whose URI names no datum or whose
  * value is not a number.
  *

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T10:59:04.698805Z
+' Generated: 2026-10-12T19:54:28.835119Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 128
+Tables: 131
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -722,6 +722,57 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_commodity_volatility_configs_artefact_tbl
     The settings of one CommodityVolatility entry of a curveconfig.xml, one row per curve_definition in the CommodityVolatilities section: the currency, the instrument the surface is quoted on, and the price curve, yield curve and future convention it is built with. Its volatility configurations, written directly or inside a VolatilityConfig element, are rows of curve_volatility_config. Its Report is a row of curve_report_configuration. The schema also allows a OneDimSolverConfig, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+    end note
+
+    entity ores_dq_configuration_analytic_parameters_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * configuration_analytic_id : uuid <<FK>>
+        * parameter_name : text
+        * value : text
+        * position : integer
+    }
+
+    note right of ores_dq_configuration_analytic_parameters_artefact_tbl
+    One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in parameter_definition whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column. - Artefact Table
+    end note
+
+    entity ores_dq_configuration_analytics_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * configuration_id : uuid <<FK>>
+        * analytic_type_code : text
+        * display_order : integer
+        * active : text
+    }
+
+    note right of ores_dq_configuration_analytics_artefact_tbl
+    One row per Analytic element in the run document that a configuration describes: which analytic to run, in what order, and whether it is on. A report definition binds a shared configuration, and the configuration owns its analytics, so reports that run the same analytics share one set of rows. The parameters of an analytic are rows of configuration_analytic_parameter. - Artefact Table
+    end note
+
+    entity ores_dq_configuration_market_bindings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * configuration_id : uuid <<FK>>
+        * role : text
+        * market_configuration_name : text
+        * position : integer
+    }
+
+    note right of ores_dq_configuration_market_bindings_artefact_tbl
+    One Parameter of the Markets block in a run document: a market role, and the market configuration the run binds to it. The block belongs to the configuration that describes the run, so reports that share a configuration share its market roles. The role is a free string in ORE's schema, and the value names a configuration set built in todaysmarket.xml, which ores.analytics owns. This table holds the binding, not the configuration it names. - Artefact Table
     end note
 
     entity ores_dq_counterparty_aliases_artefact_tbl  #F7E5FF {
@@ -2228,45 +2279,39 @@ package "dq_staging" #F3E5F5 {
         * name : text
           description : text
         * configuration_id : uuid <<FK>>
-        * base_currency : text
-        * observation_model : text
-        * n_threads : integer
+          base_currency : text
+          observation_model : text
+          n_threads : integer
         * market_data_type : text
           market_data_date : date
-        * npv_enabled : integer
-        * cashflow_enabled : integer
-        * curves_enabled : integer
-        * sensitivity_enabled : integer
-        * simulation_enabled : integer
-        * xva_enabled : integer
-        * stress_enabled : integer
-        * parametric_var_enabled : integer
-        * initial_margin_enabled : integer
-        * pfe_enabled : integer
-        * portfolio_details_enabled : integer
-        * saccr_enabled : integer
-        * calibration_enabled : integer
-        * credit_curves_enabled : integer
-        * historical_var_enabled : integer
-        * pnl_explain_enabled : integer
-          xva_quantile : numeric(5,4)
-        * xva_cva_enabled : integer
-        * xva_dva_enabled : integer
-        * xva_fva_enabled : integer
-        * xva_colva_enabled : integer
-        * xva_dim_enabled : integer
-          xva_dim_quantile : numeric(5,4)
-          xva_dim_horizon_calendar_days : integer
-          xva_dim_regression_order : integer
-          var_quantiles : numeric(5,4)[]
-          var_method : text
-          simm_version : text
-          simm_calculation_currency : text
+          accrual_date : text
+          fixing_cutoff : text
+        * input_path : text
+          input_path_market : text
+          input_path_portfolio : text
+        * output_path : text
+        * log_file : text
+          date_calendar : text
+          date_convention : text
+          continue_on_error : text
+          build_failed_trades : text
+          imply_todays_fixings : text
+          include_todays_cash_flows : text
+          include_reference_date_events : text
+          lazy_market_building : text
+          enrich_index_fixings : text
+          use_analytics : text
+          csv_comment_report_header : text
+          default_mapping_to_identity : text
+          portfolio_recurse_into_sub_directories : text
+          log_mask : integer
+          ignore_fixing_lag : integer
+          additional_results : text
           scope_portfolio : text
     }
 
     note right of ores_dq_risk_report_configs_artefact_tbl
-    The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
+    The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
     end note
 
     entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {

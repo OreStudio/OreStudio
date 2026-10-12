@@ -59160,7 +59160,7 @@ void* _get_nameData_creditCurveIdType_ReferenceInformation(domain::nameData* par
     return &*(parent->creditCurveIdType.ReferenceInformation = domain::_ReferenceInformation_t());
 }
 void* _get_nameData_Notional(domain::nameData* parent) {
-    return &*(parent->Notional = float());
+    return &*(parent->Notional = domain::moneyFloat());
 }
 void* _get_nameData_Weight(domain::nameData* parent) {
     return &*(parent->Weight = float());
@@ -59214,7 +59214,7 @@ xsdcpp::ChildElementInfo _nameData_Children[] = {
      &domain::__ReferenceInformation_t_Info,
      0,
      1},
-    {"Notional", 3, (xsdcpp::get_field_t)&_get_nameData_Notional, &domain::_float_Info, 0, 1},
+    {"Notional", 3, (xsdcpp::get_field_t)&_get_nameData_Notional, &domain::_moneyFloat_Info, 0, 1},
     {"Weight", 4, (xsdcpp::get_field_t)&_get_nameData_Weight, &domain::_float_Info, 0, 1},
     {"Currency",
      5,
@@ -72453,7 +72453,7 @@ _serialize_nameData(xsdcpp::XmlWriter& w, const char* name, const domain::nameDa
         _serialize_nameData_Qualifier_t(w, "Qualifier", *v.Qualifier);
     _serialize_creditCurveIdType_group_t(w, "creditCurveIdType", v.creditCurveIdType);
     if (v.Notional)
-        _serialize_float(w, "Notional", *v.Notional);
+        _serialize_moneyFloat(w, "Notional", *v.Notional);
     if (v.Weight)
         _serialize_float(w, "Weight", *v.Weight);
     if (v.Currency)

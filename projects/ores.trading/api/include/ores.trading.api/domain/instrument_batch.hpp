@@ -36,6 +36,7 @@
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/domain/credit_basket_constituent.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
@@ -212,6 +213,10 @@ struct instrument_batch {
      * @brief The composite_leg rows, keyed by trade id.
      */
     std::vector<composite_leg> composite_legs;
+    /**
+     * @brief The credit_basket_constituent rows, keyed by trade id.
+     */
+    std::vector<credit_basket_constituent> credit_basket_constituents;
     /**
      * @brief The equity_position_option_underlying rows, keyed by trade id.
      */
@@ -516,6 +521,13 @@ inline void append(instrument_batch& batch, commodity_basket_constituent v) {
  */
 inline void append(instrument_batch& batch, composite_leg v) {
     batch.composite_legs.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one credit_basket_constituent to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, credit_basket_constituent v) {
+    batch.credit_basket_constituents.push_back(std::move(v));
 }
 
 /**

@@ -22,9 +22,9 @@
 
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.reporting.api/domain/report_analytic.hpp"
-#include "ores.reporting.api/domain/report_market_binding.hpp"
-#include "ores.reporting.api/domain/report_run_setup.hpp"
+#include "ores.reporting.api/domain/configuration_analytic.hpp"
+#include "ores.reporting.api/domain/configuration_market_binding.hpp"
+#include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include <string>
 #include <vector>
@@ -32,37 +32,53 @@
 namespace ores::ore::domain {
 
 /**
- * @brief Maps between an ORE run document and the reporting run entities.
+ * @brief What the Setup block of a run document holds.
  *
- * The Setup block is the first half: its forty parameters are named strings in
- * ORE's schema and typed columns in report_run_setup. The mapper reads each
- * named parameter into its column and writes the columns back as the named
- * parameters ORE expects, so a run document's Setup block survives a trip
- * through the entity.
+ * The choices belong to the configuration and are stored. The names of the files
+ * the run reads are data, not choices, and are not stored: a configuration does
+ * not name its files. They travel beside the choices so an import can find the
+ * files and an export can write them back.
+ */
+struct mapped_setup final {
+    reporting::domain::risk_report_config settings;
+    std::vector<ores::reporting::messaging::run_file> files;
+};
+
+/**
+ * @brief Maps between an ORE run document and the reporting configuration entities.
+ *
+ * The Setup block is the first half. Each parameter that is a choice of the run
+ * is read into its column of risk_report_config. Each parameter that names a file
+ * is read into a run_file. The mapper writes both back as the named parameters
+ * ORE expects, so a run document's Setup block survives a trip through the
+ * entities.
  *
  * Values are carried as ORE spells them. The flags are not all booleans -- the
  * fixing and cashflow flags are Y or N, the model flags are true or false, and
  * accrualDate may be the literal ASOF -- so the columns are text and the
  * mapping is a rename, not a conversion.
+ *
+ * The as-of date is the one parameter with a column pair: asofDate is the
+ * market_data_type 'date' together with market_data_date.
  */
 class ORES_ORE_CORE_EXPORT run_document_mapper {
 public:
     /**
-     * @brief Maps an ORE run document's Setup block to the setup entity.
+     * @brief Maps an ORE run document's Setup block to the configuration choices
+     * and the file names.
      *
-     * A parameter the entity has no column for is refused rather than dropped,
-     * and a value that cannot be read as the column's type is refused too: a
-     * document that loses a parameter on the way in would otherwise lose it
-     * silently. The corpus uses forty names and the entity carries all forty,
-     * so nothing shipped is refused.
+     * A parameter that is neither a choice nor a file is refused rather than
+     * dropped, and a value that cannot be read as the column's type is refused
+     * too: a document that loses a parameter on the way in would otherwise lose
+     * it silently.
      *
      * A name that appears twice is read from its last occurrence. Three shipped
      * documents repeat continueOnError and in all three the values agree.
      */
-    static reporting::domain::report_run_setup map_setup(const ore& v);
+    static mapped_setup map_setup(const ore& v);
 
     /**
-     * @brief Reconstructs an ORE Setup block from the setup entity.
+     * @brief Reconstructs an ORE Setup block from the choices and the file names.
      *
      * The parameters are written in the mapper's own fixed order, which is not
      * necessarily the order the document wrote them in: the entity is a row of
@@ -70,7 +86,7 @@ public:
      * the order is lossy on purpose and the round trip compares names and
      * values rather than positions.
      */
-    static parameterListType reverse_setup(const reporting::domain::report_run_setup& v);
+    static parameterListType reverse_setup(const mapped_setup& v);
 
     /**
      * @brief Maps a run document's ordered analytic list to the entities.
@@ -98,13 +114,13 @@ public:
      * Each binding is a market role and the configuration set the run asks it
      * for, in the order the document wrote them.
      */
-    static std::vector<reporting::domain::report_market_binding> map_market_bindings(const ore& v);
+    static std::vector<reporting::domain::configuration_market_binding> map_market_bindings(const ore& v);
 
     /**
      * @brief Reconstructs a run document's named market bindings.
      */
     static parameterListType
-    reverse_market_bindings(const std::vector<reporting::domain::report_market_binding>& v);
+    reverse_market_bindings(const std::vector<reporting::domain::configuration_market_binding>& v);
 };
 
 }

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 55FC04F8-EA8E-4369-908D-61374B302D74
+:END:
+#+title: Let the oresmd URI name quotes that ORE cannot name
+#+description: oresmd_uri_codec refuses a quote no ORE key can name, such as a hazard rate, so the ingest loop drops its tick; decide which quote types the URI may name beyond ORE and relax the codec and its callers.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:oresmd:codec:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let =oresmd_uri_codec::read= and =write= accept a quote that no ORE key can name,
+such as a hazard rate (=oresmd://credit/ACME?type=quote&instrument=hazard_rate&...=).
+Today they refuse it with "no ORE key names this datum", and the test
+=a_quote_type_no_ore_key_can_name_is_refused= holds that. Decide which quote types
+the URI may name beyond ORE, then change the codec and the callers that assume an ORE
+key for a quote.
+
+* Why
+
+The market data reference is oresmd, and ORE is one consumer of it. A quote that ORE
+cannot name is still market data a desk reads, and the codec's ORE key check makes it
+unrepresentable: the ingest loop drops the tick at the URI read, before it is stored.
+The republish subject no longer needs an ORE key, so this check is the last thing that
+stops such a quote from flowing.
+
+Relaxing it is a design decision, because four callers assume an ORE key for a quote:
+the import service, the series classifier, the export to ORE market data (which must
+skip a quote it cannot write) and the curve republish =datum_for= check. The one datum,
+one URI rule must hold for the new quotes too.
+
+* References
+
+- [[id:19B36E18-2C0C-422E-98CA-3C65FDB0BD19][Name the republish subject by the oresmd URI]], which made the subject independent of the ORE key and found this limit.
+
+* See also
+
+-

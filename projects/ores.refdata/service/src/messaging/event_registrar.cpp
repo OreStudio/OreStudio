@@ -56,8 +56,10 @@
 #include "ores.refdata.service/messaging/commodity_price_segment_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/contact_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/counterparty_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_contact_information_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_event_registrar.hpp"
+#include "ores.refdata.service/messaging/counterparty_identifier_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_identifier_event_registrar.hpp"
 #include "ores.refdata.service/messaging/country_event_registrar.hpp"
 #include "ores.refdata.service/messaging/crm_driver_pair_event_registrar.hpp"
@@ -123,6 +125,7 @@
 #include "ores.refdata.service/messaging/ois_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/overnight_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_contact_information_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_counterparty_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_identifier_event_registrar.hpp"
@@ -182,6 +185,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_calendar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_contact_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_counterparty_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_counterparty_change_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_crm_driver_pair_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_crm_enabled_derived_pair_event_mapping(event_source, event_bus, nats));
@@ -245,6 +249,9 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_counterparty_contact_information_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_counterparty_identifier_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_counterparty_identifier_change_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_party_counterparty_change_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_cross_currency_basis_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(

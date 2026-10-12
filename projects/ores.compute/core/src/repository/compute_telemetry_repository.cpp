@@ -256,13 +256,13 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
             SELECT coalesce(t.party_id::text, '') AS k,
                 count(*) AS batches, 0::bigint AS workunits, 0::bigint AS results,
                 0::bigint AS unsent, 0::bigint AS in_progress, 0::bigint AS done,
-                0::bigint AS ok, 0::bigint AS failed
+                0::bigint AS ok, 0::bigint AS failed, 0::bigint AS oldest
             FROM ores_compute_batches_tbl t
             WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
             GROUP BY 1
           UNION ALL
             SELECT coalesce(t.party_id::text, ''),
-                0, count(*), 0, 0, 0, 0, 0, 0
+                0, count(*), 0, 0, 0, 0, 0, 0, 0
             FROM ores_compute_workunits_tbl t
             WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
             GROUP BY 1
@@ -275,14 +275,16 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
                 count(*) FILTER (WHERE t.server_state = 5 AND t.outcome = 1
                     AND t.received_at > now() - interval '24 hours'),
                 count(*) FILTER (WHERE t.server_state = 5 AND t.outcome IN (3, 4)
-                    AND t.received_at > now() - interval '24 hours')
+                    AND t.received_at > now() - interval '24 hours'),
+                coalesce(floor(max(extract(epoch FROM now() - t.valid_from))
+                    FILTER (WHERE t.server_state = 2)), 0)::bigint
             FROM ores_compute_results_tbl t
             WHERE t.valid_to = ores_utility_infinity_timestamp_fn()
             GROUP BY 1
         )
         SELECT k, sum(batches)::bigint, sum(workunits)::bigint, sum(results)::bigint,
             sum(unsent)::bigint, sum(in_progress)::bigint, sum(done)::bigint,
-            sum(ok)::bigint, sum(failed)::bigint
+            sum(ok)::bigint, sum(failed)::bigint, max(oldest)::bigint
         FROM parts
         GROUP BY k
         ORDER BY sum(results) DESC, k
@@ -297,7 +299,7 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
         return cell ? std::stoll(*cell) : 0;
     };
     for (const auto& row : rows) {
-        if (row.size() < 9)
+        if (row.size() < 10)
             continue;
         usage.keys.push_back(row[0] ? *row[0] : std::string{});
         usage.batches.push_back(number(row[1]));
@@ -308,6 +310,7 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
         usage.results_done.push_back(number(row[6]));
         usage.outcomes_success.push_back(number(row[7]));
         usage.outcomes_failed.push_back(number(row[8]));
+        usage.oldest_unsent_seconds.push_back(number(row[9]));
     }
     return usage;
 }

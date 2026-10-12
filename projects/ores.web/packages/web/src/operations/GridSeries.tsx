@@ -152,7 +152,7 @@ export function throughputSeries(view: GridSeriesView, t: Translator['t']): read
 export const QUEUE_WAIT_LIMIT_MINUTES = 60;
 
 /** The queue is worth a warning when it needs more than this share of the wait limit. */
-const QUEUE_CAUTION_MINUTES = QUEUE_WAIT_LIMIT_MINUTES / 2;
+export const QUEUE_CAUTION_MINUTES = QUEUE_WAIT_LIMIT_MINUTES / 2;
 
 /** The known intervals the rate is read over, newest last. */
 const OUTLOOK_INTERVALS = 10;

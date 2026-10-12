@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person sees how many jobs wait and for how long, and the warning rests on the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] |
-| Now          | Not yet started.                       |
+| Now          | Built and verified; in review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge, then retire the assignments stream. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -40,9 +40,11 @@ A person sees how many jobs wait and for how long, and the warning rests on the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The usage read already counts the waiting results of each group. It now also returns the wait of the oldest one, in seconds, counted from the time the result was queued (=oldest_unsent_seconds=).
+- The read keeps its scope. A tenant administrator gets one row for each party. An operator gets one row for each tenant, read by entering the tenant, and a tenant's wait is the longest wait of its parties.
+- The Usage tab shows the wait as a column, and warns from the age. The warning is a caution at half the limit that a job can wait (30 minutes) and an error at the limit (60 minutes), because a storage token of a job lives one hour.
+- A result that the reaper returned to the queue stays in progress in the results, so the count of waiting results does not include it until its next claim. The ledger holds it, and the tenant cannot read the ledger.
+- The warning on the Load tab stays an estimate from the rate. The usage read enters every tenant and the server records each entry, so the Load tab does not poll it.
 
 * Measurements
 
@@ -56,7 +58,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Compute api and core test suites | pass | =ctest --preset linux-clang-debug-make -R "ores.compute.(api|core).tests" -j2= | branch head |
+| BFF operations tests and web operations tests | pass | =npx vitest run src/operations.test.ts= in bff and =npx vitest run src/operations/operations.test.tsx= in web | branch head |
+| Oldest wait of queued results with no node running | 22, 32 and 46 seconds for three tenants | the new SQL expression run against the dev database after a 30 second soak | branch head |
 
 * Notes
 
@@ -84,3 +88,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The usage read now gives the wait of the oldest waiting result of each group. The Usage tab shows it and warns when a job nears or passes the one hour that it can wait. The Load tab warning stays an estimate from the rate of the grid, because the usage read is not polled.

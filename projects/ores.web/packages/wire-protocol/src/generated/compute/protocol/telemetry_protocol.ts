@@ -501,6 +501,13 @@ export interface GetGridUsageResponse {
      * @brief Results that finished with an error or no reply in the last 24 hours.
      */
     outcomes_failed: number[];
+    /**
+     * @brief How long the oldest waiting result of each group has waited, in seconds.
+     *
+     * Zero when the group has no result waiting. The wait is counted from the moment the
+     * result was queued.
+     */
+    oldest_unsent_seconds: number[];
 }
 
 export const subjects = {

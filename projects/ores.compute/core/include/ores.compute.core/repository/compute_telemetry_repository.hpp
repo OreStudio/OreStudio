@@ -52,6 +52,7 @@ struct grid_usage {
     std::vector<std::int64_t> results_done;
     std::vector<std::int64_t> outcomes_success;
     std::vector<std::int64_t> outcomes_failed;
+    std::vector<std::int64_t> oldest_unsent_seconds;
 };
 
 /**

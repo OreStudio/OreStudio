@@ -603,6 +603,9 @@ TEST_CASE("grid_usage_of_a_tenant_session_groups_its_batches_by_party", tags) {
     CHECK(usage.batches[static_cast<std::size_t>(a)] == 2);
     CHECK(usage.batches[static_cast<std::size_t>(b)] == 1);
     CHECK(usage_index_of(usage, "") >= 0);
+    // A group that waits on nothing has a wait of zero, and every column has a row for each group.
+    REQUIRE(usage.oldest_unsent_seconds.size() == usage.keys.size());
+    CHECK(usage.oldest_unsent_seconds[static_cast<std::size_t>(a)] == 0);
 }
 
 TEST_CASE("grid_usage_of_a_session_that_acts_for_a_party_hides_the_other_parties", tags) {

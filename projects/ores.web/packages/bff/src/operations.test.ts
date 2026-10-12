@@ -205,6 +205,7 @@ function wireGridUsage(overrides: Record<string, unknown> = {}): Record<string, 
         results_done: [20, 10],
         outcomes_success: [18, 10],
         outcomes_failed: [2, 0],
+        oldest_unsent_seconds: [90, 0],
         ...overrides,
     };
 }
@@ -797,6 +798,24 @@ describe('GET /api/operations/grid/usage', () => {
         expect(response.json<{ groups: { share: number }[] }>().groups[0]?.share).toBe(0);
     });
 
+    it('serves the wait of the oldest waiting job of each party', async () => {
+        const { server, cookies } = buildTestServer('tenant-administration', [], wireGridStats());
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/usage',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(
+            response
+                .json<{ groups: { oldest_unsent_seconds: number }[] }>()
+                .groups.map((group) => group.oldest_unsent_seconds),
+        ).toEqual([90, 0]);
+    });
+
     it('takes no query fields', async () => {
         const { server, cookies, calls } = buildTestServer('tenant', []);
 
@@ -840,6 +859,7 @@ describe('GET /api/operations/grid/usage for an operator', () => {
         results_done: [20, 10],
         outcomes_success: [20, 10],
         outcomes_failed: [0, 0],
+        oldest_unsent_seconds: [120, 5400],
     });
     const BARCLAYS_USAGE = wireGridUsage({
         keys: ['cccccccc-cccc-4ccc-8ccc-cccccccccccc'],
@@ -851,6 +871,7 @@ describe('GET /api/operations/grid/usage for an operator', () => {
         results_done: [10],
         outcomes_success: [10],
         outcomes_failed: [0],
+        oldest_unsent_seconds: [0],
     });
     const SYSTEM_USAGE = wireGridUsage({
         keys: [''],
@@ -862,6 +883,7 @@ describe('GET /api/operations/grid/usage for an operator', () => {
         results_done: [0],
         outcomes_success: [0],
         outcomes_failed: [0],
+        oldest_unsent_seconds: [0],
     });
 
     function operatorServer(
@@ -901,7 +923,13 @@ describe('GET /api/operations/grid/usage for an operator', () => {
         expect(response.statusCode).toBe(200);
         const body = response.json<{
             group_kind: string;
-            groups: { name: string; results: number; share: number; unavailable: boolean }[];
+            groups: {
+                name: string;
+                results: number;
+                share: number;
+                oldest_unsent_seconds: number;
+                unavailable: boolean;
+            }[];
         }>();
         expect(body.group_kind).toBe('tenant');
         expect(body.groups.map((group) => group.name)).toEqual([
@@ -911,6 +939,8 @@ describe('GET /api/operations/grid/usage for an operator', () => {
         ]);
         expect(body.groups.map((group) => group.results)).toEqual([0, 30, 10]);
         expect(body.groups.map((group) => group.share)).toEqual([0, 0.75, 0.25]);
+        // A tenant's wait is the longest wait of its parties.
+        expect(body.groups.map((group) => group.oldest_unsent_seconds)).toEqual([0, 5400, 0]);
         // The session's own tenant is read as the session and the others are entered.
         const entered = calls.filter((call) => call.subject === 'enter').map((call) => call.body);
         expect(entered).toEqual([ACME_TENANT_ID, BARCLAYS_TENANT_ID]);

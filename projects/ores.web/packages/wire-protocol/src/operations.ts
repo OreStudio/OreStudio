@@ -1902,6 +1902,7 @@ const gridUsageColumns = {
     results_done: countColumn,
     outcomes_success: countColumn,
     outcomes_failed: countColumn,
+    oldest_unsent_seconds: countColumn,
 };
 
 /**
@@ -1934,6 +1935,8 @@ export const gridUsageGroupSchema = z.object({
     results_done: z.int().nonnegative(),
     outcomes_success: z.int().nonnegative(),
     outcomes_failed: z.int().nonnegative(),
+    /** Seconds the oldest waiting result of the group has waited, 0 when none waits. */
+    oldest_unsent_seconds: z.int().nonnegative().default(0),
     /** This group's results as a fraction of every result in the view, 0 when there are none. */
     share: z.number().min(0).max(1),
     /** True when the group could not be read, so its counts are not zero but unknown. */

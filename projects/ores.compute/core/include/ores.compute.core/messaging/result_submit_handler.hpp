@@ -22,8 +22,8 @@
 
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/export.hpp"
-#include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/messaging/submit_decision.hpp"
+#include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/domain/context.hpp"

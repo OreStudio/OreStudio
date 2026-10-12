@@ -38,6 +38,7 @@ A free node can ask for a job and receive it, with a credential minted for that 
 - A claim picks the next unsent result with skip locked, and two claims never take one result.
 - The token in the reply is minted at the claim and covers the keys of that job.
 - A submit changes a result only when it is in progress and the host holds the claim.
+- The check and the write of a submit are one conditional update, such as =update ... where server_state = 4 and host_id = $host=, so two concurrent submits cannot both write. The first task reads the state and writes afterwards, which leaves a gap that this task closes.
 
 * Plan
 

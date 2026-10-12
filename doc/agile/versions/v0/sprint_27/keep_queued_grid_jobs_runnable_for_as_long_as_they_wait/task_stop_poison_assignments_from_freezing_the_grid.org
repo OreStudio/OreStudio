@@ -87,3 +87,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A wrapper reads the expiry of the storage token in an assignment and, when it has ended, reports one client error and takes the next assignment, without downloading the input. A node that cannot read the expiry, or that reads one in exponent form or with too many digits, starts the job and lets the storage service decide. A submit for a retired result, or a second submit for a done result, changes nothing and replies that it succeeded.
+
+Verified by unit tests of the expiry and of the submit decision, and by the compute api and core suites. Not verified on the live grid. The check and the write of a submit are still two steps, and the claim task closes that gap. A late assignment still ends as a client error that counts toward the redundancy target, and the retry task decides that.

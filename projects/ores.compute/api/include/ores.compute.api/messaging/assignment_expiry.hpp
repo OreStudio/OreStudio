@@ -92,14 +92,22 @@ inline std::optional<std::chrono::system_clock::time_point> token_expiry(std::st
     std::size_t i = at + key.size();
     while (i < claims->size() && (*claims)[i] == ' ')
         ++i;
+    // A date in seconds has ten digits for the next centuries. A longer run is not
+    // a date a node can read, and reading it could overflow the count.
+    constexpr std::size_t max_digits = 12;
     std::int64_t seconds = 0;
-    bool any = false;
+    std::size_t digits = 0;
     while (i < claims->size() && (*claims)[i] >= '0' && (*claims)[i] <= '9') {
+        if (++digits > max_digits)
+            return std::nullopt;
         seconds = seconds * 10 + ((*claims)[i] - '0');
-        any = true;
         ++i;
     }
-    if (!any)
+    if (digits == 0)
+        return std::nullopt;
+    // A number in exponent form, such as 1.7e9, would read as its mantissa and make
+    // a live token look ended. The storage service decides such a token.
+    if (i < claims->size() && ((*claims)[i] == 'e' || (*claims)[i] == 'E'))
         return std::nullopt;
     return std::chrono::system_clock::time_point{std::chrono::seconds{seconds}};
 }

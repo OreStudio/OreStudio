@@ -42,3 +42,10 @@ TEST_CASE("decide_submit_does_not_revive_a_retired_result", tags) {
 TEST_CASE("decide_submit_ignores_a_second_outcome_for_a_done_result", tags) {
     CHECK(decide_submit(5) == submit_action::ignore_final);
 }
+
+TEST_CASE("decide_submit_records_the_outcome_for_a_state_it_does_not_know", tags) {
+    // Only a retired or a done result is protected. Any other state is recorded as before.
+    CHECK(decide_submit(0) == submit_action::accept);
+    CHECK(decide_submit(3) == submit_action::accept);
+    CHECK(decide_submit(99) == submit_action::accept);
+}

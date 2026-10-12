@@ -79,6 +79,22 @@ TEST_CASE("token_expiry_is_unknown_for_text_that_is_not_a_token", tags) {
     CHECK(!token_expiry(token_with("!!!not base64!!!")).has_value());
 }
 
+TEST_CASE("token_expiry_is_unknown_for_an_exponent_form", tags) {
+    // 1.7e9 must not read as 1, which would make a live token look ended.
+    CHECK(!token_expiry(token_with("eyJleHAiOjEuN2U5fQ")).has_value());
+}
+
+TEST_CASE("token_expiry_is_unknown_for_a_run_of_digits_too_long_to_be_a_date", tags) {
+    CHECK(!token_expiry(token_with("eyJleHAiOjk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTl9")).has_value());
+}
+
+TEST_CASE("token_expiry_reads_a_fractional_date_as_its_whole_seconds", tags) {
+    const auto expiry = token_expiry(token_with("eyJleHAiOjE3NjAwMDAwMDAuNX0"));
+
+    REQUIRE(expiry.has_value());
+    CHECK(*expiry == at(1760000000));
+}
+
 TEST_CASE("assignment_expired_when_the_token_has_ended", tags) {
     const auto token = token_with("eyJleHAiOjEwMDB9");
 

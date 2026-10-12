@@ -35,6 +35,7 @@ A bad job ends in a visible state, one tenant cannot fill the queue, and no tena
 
 * Acceptance
 
+- A decision is recorded on a result that never started. Today a late assignment ends as a client error, and the validator counts any done result toward the redundancy target, so the workunit completes with that failure as its canonical result. The decision is either that such a result does not count and returns to the queue for another attempt, or that it counts.
 - A result with attempts left returns to unsent when its lease ends, and one without ends as no reply with a message that names the lease.
 - A dispatch past the tenant's limit is refused and says how many jobs wait.
 - With two tenants queued, claims alternate between them.

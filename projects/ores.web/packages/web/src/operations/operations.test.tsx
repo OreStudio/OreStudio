@@ -88,7 +88,7 @@ import {
     queueOutlook,
 } from './GridSeries.js';
 import { GridNodePage, nodeColumns, formatMs, formatMiB } from './GridNodePage.js';
-import { formatRam, machineFacts } from './GridPage.js';
+import { formatRam, machineFacts, machineTotals, machinesOf } from './GridPage.js';
 import { VersionsPage } from './VersionsPage.js';
 
 /**
@@ -1481,7 +1481,9 @@ describe('the grid over time', () => {
             );
 
         // Each machine on the machines tab links to the node list narrowed to it.
-        expect(seeded('/?tab=machines')).toContain('href="/operations/grid?tab=nodes&amp;machine=rack-a"');
+        expect(seeded('/?tab=machines')).toContain(
+            'href="/operations/grid?tab=nodes&amp;machine=rack-a"',
+        );
 
         // The list shows that machine's nodes, says it is narrowed, and offers all of them.
         const narrowed = seeded('/?tab=nodes&machine=rack-a');
@@ -1521,6 +1523,57 @@ describe('the grid over time', () => {
         const machines = seeded('/?tab=machines');
         expect(machines).toContain('CPUs');
         expect(machines).toContain('16.0 GiB');
+    });
+
+    it('totals the machines table: machines up, hardware, nodes and tasks', () => {
+        const nodes = [
+            gridNode({
+                host_id: 'a1',
+                machine: 'rack-a',
+                cpu_count: 8,
+                ram_mb: 16384,
+                tasks_completed: 10,
+                tasks_failed: 1,
+            }),
+            gridNode({
+                host_id: 'a2',
+                machine: 'rack-a',
+                state: 'lost',
+                cpu_count: 8,
+                ram_mb: 16384,
+                tasks_completed: 5,
+                tasks_failed: 0,
+            }),
+            gridNode({
+                host_id: 'b1',
+                machine: 'rack-b',
+                state: 'lost',
+                cpu_count: 4,
+                ram_mb: 8192,
+                tasks_completed: 2,
+                tasks_failed: 2,
+            }),
+        ];
+
+        const totals = machineTotals(machinesOf(nodes));
+
+        expect(totals).toEqual({
+            machines: 2,
+            up: 1,
+            cpuCount: 12,
+            ramMb: 24576,
+            running: 1,
+            nodes: 3,
+            tasksCompleted: 17,
+            tasksFailed: 3,
+        });
+        const html = withProviders(<GridPage />, '/?tab=machines', [], gridView({ nodes }));
+        expect(html).toContain('<tfoot');
+        expect(html).toContain('>Total<');
+        expect(html).toContain('24.0 GiB');
+        const footer = html.slice(html.indexOf('<tfoot'), html.indexOf('</tfoot>'));
+        expect(footer).toContain('1 of 2');
+        expect(footer).toContain('1 of 3');
     });
 
     it('reads a computer’s facts from the nodes that gave them, and states none it was not given', () => {
@@ -1828,7 +1881,10 @@ describe('the grid usage tab', () => {
     it('warns when the oldest waiting job nears the limit a job can wait', () => {
         const html = renderUsage([
             usageGroup({ oldest_unsent_seconds: 600 }),
-            usageGroup({ key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', oldest_unsent_seconds: 2400 }),
+            usageGroup({
+                key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                oldest_unsent_seconds: 2400,
+            }),
         ]);
 
         expect(html).toContain('has waited 40 min');

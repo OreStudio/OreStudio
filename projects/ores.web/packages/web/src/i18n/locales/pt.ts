@@ -1817,6 +1817,8 @@ const pt: SourceCatalogue = {
                 up: 'Ativa',
                 down: 'Parada',
                 unnamed: 'Máquina sem nome',
+                total: 'Total',
+                upOfTotal: '{up} de {total}',
                 nodes: '{running} de {total}',
                 hint: 'Os nós que não indicam máquina ficam agrupados aqui.',
             },

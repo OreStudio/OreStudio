@@ -1826,6 +1826,8 @@ const fr: SourceCatalogue = {
                 up: 'En marche',
                 down: 'Arrêtée',
                 unnamed: 'Machine sans nom',
+                total: 'Total',
+                upOfTotal: '{up} sur {total}',
                 nodes: '{running} sur {total}',
                 hint: "Les nœuds qui n'indiquent aucune machine sont regroupés ici.",
             },

@@ -264,11 +264,51 @@ function MachineInfo({
     );
 }
 
+/** The sums of the machines table: what the whole fleet holds and has done. */
+export interface MachineTotals {
+    readonly machines: number;
+    readonly up: number;
+    readonly cpuCount: number;
+    readonly ramMb: number;
+    readonly running: number;
+    readonly nodes: number;
+    readonly tasksCompleted: number;
+    readonly tasksFailed: number;
+}
+
+/** The totals of the machines, each summed from the rows the table draws. */
+export function machineTotals(machines: readonly Machine[]): MachineTotals {
+    const totals = {
+        machines: machines.length,
+        up: 0,
+        cpuCount: 0,
+        ramMb: 0,
+        running: 0,
+        nodes: 0,
+        tasksCompleted: 0,
+        tasksFailed: 0,
+    };
+    for (const machine of machines) {
+        const facts = machineFacts(machine.nodes);
+        totals.up += machine.running > 0 ? 1 : 0;
+        totals.cpuCount += facts.cpuCount;
+        totals.ramMb += facts.ramMb;
+        totals.running += machine.running;
+        totals.nodes += machine.nodes.length;
+        for (const node of machine.nodes) {
+            totals.tasksCompleted += node.tasks_completed;
+            totals.tasksFailed += node.tasks_failed;
+        }
+    }
+    return totals;
+}
+
 /** One row per computer, so a computer that has gone down shows at a glance. */
 function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
     const machines = machinesOf(nodes);
-    const up = machines.filter((machine) => machine.running > 0).length;
+    const totals = machineTotals(machines);
+    const up = totals.up;
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -341,6 +381,29 @@ function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): R
                         </tr>
                     ))}
                 </tbody>
+                {machines.length > 0 && (
+                    <tfoot className="border-t border-line">
+                        <tr className="font-medium">
+                            <td className="py-2">{t('operations.grid.machines.total')}</td>
+                            <td className="py-2 font-mono">
+                                {t('operations.grid.machines.upOfTotal', {
+                                    up: totals.up,
+                                    total: totals.machines,
+                                })}
+                            </td>
+                            <td className="py-2 font-mono">{totals.cpuCount || '—'}</td>
+                            <td className="py-2 font-mono">{formatRam(totals.ramMb)}</td>
+                            <td className="py-2 font-mono">
+                                {t('operations.grid.machines.nodes', {
+                                    running: totals.running,
+                                    total: totals.nodes,
+                                })}
+                            </td>
+                            <td className="py-2 font-mono">{totals.tasksCompleted}</td>
+                            <td className="py-2 font-mono">{totals.tasksFailed}</td>
+                        </tr>
+                    </tfoot>
+                )}
             </table>
             {machines.some((machine) => machine.name === '') && (
                 <p className="text-xs text-ink-faint">{t('operations.grid.machines.hint')}</p>

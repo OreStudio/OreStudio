@@ -1326,6 +1326,7 @@ const fr: SourceCatalogue = {
         assetClass: "Classe d'actifs",
         edit: 'Modifier',
         inspect: 'Inspecter',
+        series: 'Série',
         title: 'URL oresmd',
         cancel: 'Annuler',
         copy: 'Copier',
@@ -1681,6 +1682,8 @@ const fr: SourceCatalogue = {
                 nodes: 'Nœuds',
                 heatmap: 'Carte de chaleur',
             },
+            tenantDescription:
+                'La charge, le débit et les résultats du travail que vous pouvez voir, dans le temps, et la capacité de l’installation.',
             usage: {
                 title: { tenant: 'Utilisation par locataire', party: 'Utilisation par partie' },
                 note: {

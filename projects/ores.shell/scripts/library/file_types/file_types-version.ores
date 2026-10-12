@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/file_types/file_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+file_types version __none__ --version 1

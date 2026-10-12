@@ -97,6 +97,7 @@ export function registerOresmdRoutes(
             assets: answer.assets,
             instruments: answer.instruments,
             quotes: answer.quotes,
+            quote_titles: answer.quote_titles,
             indexes: answer.indexes,
         };
     });

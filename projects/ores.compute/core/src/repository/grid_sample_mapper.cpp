@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -49,6 +50,9 @@ domain::grid_sample grid_sample_mapper::map(const grid_sample_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.sampled_at = timestamp_to_timepoint(std::string_view{v.sampled_at.value()});
+    r.party_id = v.party_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
+                     std::nullopt;
     r.total_hosts = v.total_hosts;
     r.online_hosts = v.online_hosts;
     r.idle_hosts = v.idle_hosts;
@@ -74,6 +78,8 @@ grid_sample_entity grid_sample_mapper::map(const domain::grid_sample& v) {
     r.id = boost::uuids::to_string(v.id);
     r.sampled_at = ores::platform::time::datetime::to_db_string(v.sampled_at);
     r.tenant_id = v.tenant_id.to_string();
+    r.party_id =
+        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
     r.total_hosts = v.total_hosts;
     r.online_hosts = v.online_hosts;
     r.idle_hosts = v.idle_hosts;

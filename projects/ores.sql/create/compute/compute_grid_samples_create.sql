@@ -50,6 +50,7 @@ create table if not exists "ores_compute_grid_samples_tbl" (
     "id" uuid not null,
     "sampled_at" timestamp with time zone not null,
     "tenant_id" uuid not null,
+    "party_id" uuid null,
     "total_hosts" integer not null default 0,
     "online_hosts" integer not null default 0,
     "idle_hosts" integer not null default 0,

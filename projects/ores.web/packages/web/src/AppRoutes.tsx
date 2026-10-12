@@ -541,8 +541,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <GridPage />
+                    (view) => (
+                        <GridPage mode={view.mode} />
                     ),
                     'workspace',
                 )}

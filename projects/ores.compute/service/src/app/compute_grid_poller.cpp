@@ -20,11 +20,17 @@
 #include "ores.compute.service/app/compute_grid_poller.hpp"
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
+#include "ores.compute.core/repository/work_tenant_repository.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::compute::service::app {
 
@@ -37,17 +43,47 @@ compute_grid_poller::compute_grid_poller(std::uint32_t interval_seconds,
 
 void compute_grid_poller::poll_once() {
     repository::compute_telemetry_repository telemetry_repo;
-    auto sample = telemetry_repo.compute_grid_stats(ctx_);
-    // The row is a fact about an instant rather than a running record, so the
-    // writer names it and the generated repository writes it.
-    sample.id = boost::uuids::random_generator()();
     repository::grid_sample_repository sample_repo;
-    sample_repo.write(ctx_, sample);
+    // One instant for every row of the poll, so a session that reads the rows of a tenant
+    // sums the rows of its parties as one sample.
+    const auto sampled_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg(), debug) << "Grid sample: hosts=" << sample.total_hosts
-                               << " online=" << sample.online_hosts << " idle=" << sample.idle_hosts
-                               << " in_progress=" << sample.results_in_progress
-                               << " workunits=" << sample.total_workunits;
+    // The system tenant is counted first and carries the fleet. The other tenants are the
+    // ones that have dispatched work, and each is entered to count its own work.
+    const auto system = ores::utility::uuid::tenant_id::system().to_string();
+    std::vector<std::string> tenants{system};
+    for (const auto& tenant : repository::work_tenant_repository().list(ctx_)) {
+        const auto id = boost::uuids::to_string(tenant);
+        if (id != system)
+            tenants.push_back(id);
+    }
+
+    std::size_t rows = 0;
+    for (const auto& tenant : tenants) {
+        try {
+            const bool is_system = tenant == system;
+            const auto tenant_ctx =
+                is_system ? ctx_ : ores::database::service::tenant_context::with_tenant(ctx_, tenant);
+            for (const auto& party : telemetry_repo.parties_with_work(tenant_ctx)) {
+                // The row of the system tenant's work with no party also counts the hosts,
+                // which belong to the installation.
+                auto sample =
+                    telemetry_repo.compute_grid_stats(tenant_ctx, party, is_system && !party);
+                // The row is a fact about an instant rather than a running record, so the
+                // writer names it and the generated repository writes it.
+                sample.sampled_at = sampled_at;
+                sample.id = boost::uuids::random_generator()();
+                sample_repo.write(tenant_ctx, sample);
+                ++rows;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Could not sample the grid for tenant " << tenant << ": " << e.what();
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Grid sample: " << rows << " row(s) for " << tenants.size()
+                               << " tenant(s)";
 }
 
 boost::asio::awaitable<void> compute_grid_poller::run() {

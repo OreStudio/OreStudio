@@ -54,6 +54,8 @@ import { useTranslation } from '../i18n/Provider.js';
 import { ReasonFields, useReason } from '../refdata/shared.js';
 import { seriesOfUrl, seriesRoute, seriesVerdict } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
+import { titleOrRaw } from '../oresmd/title.js';
+import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Button, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import {
@@ -65,7 +67,6 @@ import {
     neverQuoted,
     nowRowsOf,
     rangeOf,
-    seriesLabel,
     type IdentityForm,
 } from './evolutionView.js';
 
@@ -484,6 +485,7 @@ export function SeriesPicker({
     readonly onPick: (seriesId: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
+    const titled = useSeriesTitle();
     if (loading) {
         return <p className="text-sm text-ink-muted">{t('market.evolution.picker.loading')}</p>;
     }
@@ -508,8 +510,8 @@ export function SeriesPicker({
                             disabled={!canBeShown(listed)}
                         >
                             {canBeShown(listed)
-                                ? seriesLabel(listed)
-                                : `${seriesLabel(listed)} (${t('market.evolution.picker.noShape')})`}
+                                ? titled(listed.identity)
+                                : `${titled(listed.identity)} (${t('market.evolution.picker.noShape')})`}
                         </option>
                     ))}
                 </Select>
@@ -600,7 +602,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
                 verdict.kind === 'not-listed'
                     ? t('market.evolution.errors.notListed')
                     : t('market.evolution.errors.noShape', {
-                          series: seriesLabel(verdict.listed),
+                          series: titleOrRaw(schema.data, verdict.listed.identity),
                       }),
             );
             return;

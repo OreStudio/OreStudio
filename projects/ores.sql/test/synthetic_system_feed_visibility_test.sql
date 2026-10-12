@@ -19,7 +19,8 @@
  */
 
 /**
- * System feeds are read by every tenant and written by the system tenant only.
+ * System feeds and the provider catalogue are read by every tenant and written by the
+ * system tenant only.
  *
  * A system collection belongs to the system tenant and its system party, and
  * so do its feeds and their mixtures. A tenant reads them; it reads no feed of
@@ -32,7 +33,7 @@
 
 begin;
 
-select plan(5);
+select plan(8);
 
 create temporary table t_ids on commit drop as
 select
@@ -103,11 +104,34 @@ select i.system_component, ores_utility_system_tenant_id_fn(), 0, p.id, i.system
        'calm', 0, 0.001, 1, current_user, current_user, 'system.test', 'visibility test'
 from t_ids i, t_system_party p;
 
+insert into ores_synthetic_market_data_providers_tbl (
+    code, tenant_id, version, name, kind, description, display_order,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    'visibility_probe', ores_utility_system_tenant_id_fn(), 0, 'Visibility probe', 'generic',
+    'A provider the visibility test holds in the system tenant.', 999,
+    current_user, current_user, 'system.test', 'visibility test'
+);
+
 select set_config('app.current_tenant_id', coalesce((select id::text from t_other),
     ores_utility_system_tenant_id_fn()::text), true);
 
+-- A tenant's delete reaches the delete rule of the table, which runs with the
+-- owner's rights and so limits itself to the tenant's own rows.
+delete from ores_synthetic_market_data_providers_tbl where code = 'visibility_probe';
+
+-- A tenant's insert names the system tenant, and the insert trigger resolves the
+-- row to the acting tenant, as it does for the feeds.
+insert into ores_synthetic_market_data_providers_tbl (
+    code, tenant_id, version, name, kind, description, display_order,
+    modified_by, performed_by, change_reason_code, change_commentary
+) select 'visibility_intruder', ores_utility_system_tenant_id_fn(), 0, 'Intruder', 'generic',
+    'A provider a tenant must not write into the catalogue.', 1000,
+    current_user, current_user, 'system.test', 'visibility test'
+where exists(select 1 from t_other);
+
 select case when not exists(select 1 from t_other)
-    then skip('no other active tenant is provisioned', 5)
+    then skip('no other active tenant is provisioned', 7)
     else collect_tap(
         ok(exists(select 1 from ores_synthetic_market_data_generation_configs_tbl
                   where id = (select system_collection from t_ids)),
@@ -141,8 +165,28 @@ select case when not exists(select 1 from t_other)
             -- write is allowed.
             null,
             null,
-            'a tenant cannot write a feed into a system collection'))
+            'a tenant cannot write a feed into a system collection'),
+        ok(exists(select 1 from ores_synthetic_market_data_providers_tbl
+                  where code = 'visibility_probe'),
+           'a tenant reads a provider the system tenant holds, and its delete leaves it'),
+        ok(exists(select 1 from ores_synthetic_market_data_providers_tbl
+                  where code = 'visibility_intruder'
+                    and tenant_id = ores_iam_current_tenant_id_fn()
+                    and valid_to = ores_utility_infinity_timestamp_fn())
+           and not exists(select 1 from ores_synthetic_market_data_providers_tbl
+                          where code = 'visibility_intruder'
+                            and tenant_id = ores_utility_system_tenant_id_fn()),
+           'a tenant''s write of a provider lands in its own rows and never in the system catalogue'))
     end;
+
+select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+delete from ores_synthetic_market_data_providers_tbl where code = 'visibility_probe';
+
+select ok(not exists(select 1 from ores_synthetic_market_data_providers_tbl
+                     where code = 'visibility_probe'
+                       and valid_to = ores_utility_infinity_timestamp_fn()),
+          'the system tenant deletes a provider of its own');
 
 select * from finish();
 

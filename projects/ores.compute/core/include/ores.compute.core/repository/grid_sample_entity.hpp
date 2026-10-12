@@ -45,6 +45,7 @@ struct grid_sample_entity {
     sqlgen::PrimaryKey<std::string> id;
     sqlgen::PrimaryKey<std::string> sampled_at;
     std::string tenant_id;
+    std::optional<std::string> party_id;
     int total_hosts = 0;
     int online_hosts = 0;
     int idle_hosts = 0;

@@ -26,6 +26,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Button, Detail, Dialog, Notice } from '../ui/Primitives.js';
 import { fromParse, rowOf } from './editor.js';
 import { oresmdQueries } from './queries.js';
+import { titleOfUrl } from './title.js';
 
 /** How long the word Copied stays after a copy. */
 const COPIED_MS = 2000;
@@ -56,9 +57,11 @@ export function OresmdView({
     }
     const fixing = parts.kind === 'fixing';
     const path = rowOf(schema, fromParse(parts))?.subject ?? '';
+    const title = titleOfUrl(schema, parts);
     return (
         <div className="space-y-4">
             <dl className="grid gap-4 sm:grid-cols-2">
+                {title !== undefined && <Detail label={t('oresmd.series')} value={title} />}
                 <Detail label={t('oresmd.kind')} value={t(`oresmd.kinds.${parts.kind}`)} />
                 <Detail
                     label={fixing ? t('oresmd.family') : t('oresmd.instrument')}

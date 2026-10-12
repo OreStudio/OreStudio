@@ -25,8 +25,10 @@
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -160,8 +162,24 @@ public:
      * Runs a single parameterized CTE query against the compute domain tables
      * (hosts, results, workunits, batches) to return counts and breakdowns
      * without loading full tables into memory. Sets sampled_at to now().
+     *
+     * The counts are those of the session's own tenant and of one party of it,
+     * or of the work that has no party when the party is empty. The hosts belong
+     * to the installation, so they are counted only when @p fleet is true, and
+     * the row of a tenant's party carries job counters and no host counts.
      */
-    domain::grid_sample compute_grid_stats(context ctx);
+    domain::grid_sample compute_grid_stats(context ctx,
+                                           std::optional<boost::uuids::uuid> party,
+                                           bool fleet);
+
+    /**
+     * @brief The parties whose work the session's tenant holds.
+     *
+     * Reads the batches, workunits and results the session may see, and always
+     * lists the empty party, which stands for work with no party. A session that
+     * acts for parties sees only theirs.
+     */
+    std::vector<std::optional<boost::uuids::uuid>> parties_with_work(context ctx);
 
     /**
      * @brief Return the stored grid samples of a range as columns.

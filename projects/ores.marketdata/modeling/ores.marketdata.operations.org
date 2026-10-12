@@ -257,6 +257,13 @@ The text a URI writes under instrument=, such as ir_swap.
 
 The name ORE gives the type, such as IR_SWAP.
 
+*** title
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The words that name a series of this type, with the fields written as {subject} or {field_name}, such as {subject}/{ccy} spot. A reader fills the braces from the series identity. A quote label follows it.
+
 *** asset
 :PROPERTIES:
 :cpp_type: std::string
@@ -392,6 +399,13 @@ Every instrument type, with its fields.
 :END:
 
 The quote types as a URI writes them under quote=.
+
+*** quote_titles
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The words for each quote type, such as rate or log-normal volatility, in the order of quotes. Empty for the quote type none.
 
 *** indexes
 :PROPERTIES:

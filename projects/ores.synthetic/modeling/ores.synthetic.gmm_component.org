@@ -176,7 +176,13 @@ faker::number::decimal(0.0, 1.0)
 :entity_plural_short:   gmm_components
 :entity_singular_words: GMM component
 :entity_plural_words:   GMM components
+:system_tenant_visible: true
 :END:
+
+The installation's system collections, their feeds and the provider catalogue ship
+under the system tenant, and every tenant reads them, which
+=:system_tenant_visible: true= states on the repository. The row-level security
+policy still decides which system rows a tenant sees and who may write them.
 
 ** Domain includes
 

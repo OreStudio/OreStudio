@@ -1316,6 +1316,7 @@ const pt: SourceCatalogue = {
         assetClass: 'Classe de ativos',
         edit: 'Editar',
         inspect: 'Inspecionar',
+        series: 'Série',
         title: 'URL oresmd',
         cancel: 'Cancelar',
         copy: 'Copiar',
@@ -1672,6 +1673,8 @@ const pt: SourceCatalogue = {
                 nodes: 'Nós',
                 heatmap: 'Mapa de calor',
             },
+            tenantDescription:
+                'A carga, o débito e os resultados do trabalho que pode ver, ao longo do tempo, e a capacidade da instalação.',
             usage: {
                 title: { tenant: 'Utilização por inquilino', party: 'Utilização por parte' },
                 note: {

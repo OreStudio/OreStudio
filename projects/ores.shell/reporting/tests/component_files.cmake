@@ -27,6 +27,7 @@ set(files
     "configuration_market_binding_commands_tests.cpp"
     "configuration_parameter_commands_tests.cpp"
     "configuration_type_commands_tests.cpp"
+    "file_type_commands_tests.cpp"
     "main.cpp"
     "parameter_definition_commands_tests.cpp"
     "parameter_value_domain_commands_tests.cpp"

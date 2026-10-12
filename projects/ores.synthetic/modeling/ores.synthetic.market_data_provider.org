@@ -158,7 +158,13 @@ drop function if exists ores_synthetic_validate_market_data_provider_fn;
 :entity_plural_short:   providers
 :entity_singular_words: market data provider
 :entity_plural_words:   market data providers
+:system_tenant_visible: true
 :END:
+
+The installation's system collections, their feeds and the provider catalogue ship
+under the system tenant, and every tenant reads them, which
+=:system_tenant_visible: true= states on the repository. The row-level security
+policy still decides which system rows a tenant sees and who may write them.
 
 ** Domain includes
 

@@ -232,7 +232,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.gridBody',
         to: '/operations/grid',
         icon: 'apps',
-        permission: DEPLOYMENT_READ,
+        permission: 'compute::grid_samples:read',
         screenTitleKey: 'operations.grid.title',
     },
     bus: {

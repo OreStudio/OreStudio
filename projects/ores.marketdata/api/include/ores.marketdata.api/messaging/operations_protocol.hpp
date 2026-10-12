@@ -121,6 +121,7 @@ struct oresmd_field_spec {
 struct oresmd_instrument {
     std::string code;
     std::string ore_name;
+    std::string title;
     std::string asset;
     std::string subject;
     std::vector<oresmd_field_spec> fields;
@@ -173,6 +174,7 @@ struct describe_oresmd_schema_response {
     std::vector<std::string> assets;
     std::vector<oresmd_instrument> instruments;
     std::vector<std::string> quotes;
+    std::vector<std::string> quote_titles;
     std::vector<oresmd_index_family> indexes;
     bool success = false;
     std::string message;

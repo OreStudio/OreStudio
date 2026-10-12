@@ -55,6 +55,19 @@ export const oresmdQueries = {
         }),
 
     /**
+     * The currency pair conventions, for the decimal places of a spot rate. They are
+     * read from the refdata store by name and quietly, so a failed read leaves a
+     * rate in its plain format and raises no banner.
+     */
+    pairConventions: () =>
+        queryOptions({
+            queryKey: ['oresmd-pair-conventions'],
+            queryFn: () => refdataStore.records('currency-pair-conventions'),
+            staleTime: SCHEMA_STALE_MS,
+            meta: QUIET,
+        }),
+
+    /**
      * The series the party can see, with the axes each declares. It is the list the
      * Evolution page reads, under the same key, so the two share one answer.
      */

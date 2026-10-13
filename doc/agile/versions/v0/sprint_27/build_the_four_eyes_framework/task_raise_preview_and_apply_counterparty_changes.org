@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/raise-preview-and-apply-counterparty-changes
-#+pr:
+#+pr: 3230
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3230][#3230]] | [refdata] Raise, preview and apply counterparty changes |
 
 * Review
 

@@ -39,7 +39,7 @@ Every machine on the local network runs this environment's compute nodes beside 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:56CEF280-FEFB-4677-ADEF-418080385B94][Fix the compute deploy for co-hosted hosts]] | STARTED | 2026-10-13 | | Isolate each environment's compute state on a shared host, and fix what running the grid exposed in the image build and on the grid screen. |
+| [[id:56CEF280-FEFB-4677-ADEF-418080385B94][Fix the compute deploy for co-hosted hosts]] | DONE | 2026-10-13 | 2026-10-13 | Isolate each environment's compute state on a shared host, and fix what running the grid exposed in the image build and on the grid screen. |
 
 * Decisions
 

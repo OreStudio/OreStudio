@@ -43,10 +43,10 @@ Usage, from the repository root:
     python3 tools/grid_soak/grid_soak.py --app-version <id of the engine version>
     python3 tools/grid_soak/grid_soak.py --capacity 90 --seed 7
 
-Each wave also switches to a party of the sender's tenant, drawn at random from the
-parties the tenant has other than its system party, so the work lands in every party and
-the screens that split by party have rows to show. The parties are read from the
-database when the run starts. --no-spread-parties keeps the party the login opens in.
+Each wave is shared out among the parties of the sender's tenant other than its system
+party, with a random share for each, so every wave lands in every party and the screens that
+split by party have rows to show. The parties are read from the database when the run starts.
+--no-spread-parties keeps the party the login opens in.
 
 The app version changes when the database is recreated. Each wave is sent by a
 principal drawn by weight, so the work lands in several tenants and the grid's
@@ -157,21 +157,41 @@ def discover_parties(root, tenant_code):
     return parties
 
 
-def wave_script(principal, password, reference, count, app_version, package, party=None):
-    """The ores.shell script of one wave."""
-    switch = [f"account_operations switch-party {party}"] if party else []
-    return "\n".join(
-        [
-            "connect $ORES_NATS_URL",
-            f"login {principal} {password}",
-            *switch,
-            f'batches add {reference} open system.new_record "grid soak"',
-            f"compute dispatch-batch {reference} {count} {app_version} {package}",
-            "logout",
-            "exit",
-            "",
-        ]
-    )
+def split_count(rng, count, parties):
+    """The jobs of a wave shared out among the parties, as (party, jobs) pairs.
+
+    Every party gets a random share, so one wave reaches all of them. A wave with fewer
+    jobs than parties reaches a random subset, with a job each. The shares always add up
+    to the count, and every party in the result has at least one job.
+    """
+    if count <= 0 or not parties:
+        return []
+    if count < len(parties):
+        return [(party, 1) for party in rng.sample(parties, count)]
+    weights = [0.2 + rng.random() for _ in parties]
+    total = sum(weights)
+    # One job each first, then the rest by weight, with the remainder to the heaviest.
+    spare = count - len(parties)
+    shares = [1 + int(spare * w / total) for w in weights]
+    shares[weights.index(max(weights))] += count - sum(shares)
+    return list(zip(parties, shares))
+
+
+def wave_script(principal, password, reference, parts, app_version, package):
+    """The ores.shell script of one wave.
+
+    A part is a (party, jobs) pair. A party of None keeps the party the login opens in. Each
+    part is its own batch, so the work of a wave lands in every party it names.
+    """
+    lines = ["connect $ORES_NATS_URL", f"login {principal} {password}"]
+    for index, (party, count) in enumerate(parts, start=1):
+        ref = reference if len(parts) == 1 else f"{reference}-p{index}"
+        if party:
+            lines.append(f"account_operations switch-party {party}")
+        lines.append(f'batches add {ref} open system.new_record "grid soak"')
+        lines.append(f"compute dispatch-batch {ref} {count} {app_version} {package}")
+    lines += ["logout", "exit", ""]
+    return "\n".join(lines)
 
 
 def send_wave(root, args, rng, reference, count):
@@ -179,11 +199,11 @@ def send_wave(root, args, rng, reference, count):
     names, weights = args.principals
     principal = rng.choices(names, weights)[0]
     pool = args.party_pools.get(tenant_code_of(principal), [])
-    party = rng.choice(pool) if pool else None
-    where = f" in party {party}" if party else ""
-    print(f"[soak] {reference} sent by {principal}{where}", flush=True)
+    parts = split_count(rng, count, pool) if pool else [(None, count)]
+    where = ", ".join(f"{n} in {str(p)[:8]}" for p, n in parts if p)
+    print(f"[soak] {reference} sent by {principal}" + (f": {where}" if where else ""), flush=True)
     script = wave_script(
-        principal, args.password, reference, count, args.app_version, args.package, party
+        principal, args.password, reference, parts, args.app_version, args.package
     )
     with tempfile.NamedTemporaryFile("w", suffix=".ores", delete=False) as handle:
         handle.write(script)

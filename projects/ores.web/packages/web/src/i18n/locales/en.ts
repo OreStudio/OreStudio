@@ -1671,6 +1671,7 @@ export const en: SourceCatalogue = {
                     party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
                 },
                 unavailable: 'Could not be read',
+                outcomes: { title: 'Outcomes of the results finished in the last 24 hours' },
                 pie: {
                     tenant: 'Share of the results by tenant',
                     party: 'Share of the results by party',

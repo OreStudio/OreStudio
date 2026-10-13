@@ -41,6 +41,7 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
+#include "ores.database/repository/range_bound.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -127,6 +128,52 @@ trade_booking_service::list_trade_bookings(const messaging::list_trade_bookings_
         request.filter->trade_id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->trade_date_one_of &&
+        request.filter->trade_date_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_date_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->execution_timestamp_one_of &&
+        request.filter->execution_timestamp_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "execution_timestamp_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->trade_date_from &&
+        !ores::database::repository::range_bound(
+            *request.filter->trade_date_from, ores::database::repository::range_end::from, false)) {
+        response.result =
+            refuse(outcome_code::filter_range_invalid,
+                   {.field = "trade_date_from", .value = *request.filter->trade_date_from});
+        return response;
+    }
+    if (request.filter && request.filter->trade_date_to &&
+        !ores::database::repository::range_bound(
+            *request.filter->trade_date_to, ores::database::repository::range_end::to, false)) {
+        response.result =
+            refuse(outcome_code::filter_range_invalid,
+                   {.field = "trade_date_to", .value = *request.filter->trade_date_to});
+        return response;
+    }
+    if (request.filter && request.filter->execution_timestamp_from &&
+        !ores::database::repository::range_bound(*request.filter->execution_timestamp_from,
+                                                 ores::database::repository::range_end::from,
+                                                 true)) {
+        response.result = refuse(outcome_code::filter_range_invalid,
+                                 {.field = "execution_timestamp_from",
+                                  .value = *request.filter->execution_timestamp_from});
+        return response;
+    }
+    if (request.filter && request.filter->execution_timestamp_to &&
+        !ores::database::repository::range_bound(*request.filter->execution_timestamp_to,
+                                                 ores::database::repository::range_end::to,
+                                                 true)) {
+        response.result = refuse(
+            outcome_code::filter_range_invalid,
+            {.field = "execution_timestamp_to", .value = *request.filter->execution_timestamp_to});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

@@ -59,7 +59,15 @@ export interface TradeBookingLookup {
 }
 
 export interface TradeBookingsFilter {
+    trade_date: string | null | null;
+    execution_timestamp: string | null | null;
     trade_id_one_of: string[] | null;
+    trade_date_one_of: string[] | null;
+    execution_timestamp_one_of: string[] | null;
+    trade_date_from: string | null;
+    trade_date_to: string | null;
+    execution_timestamp_from: string | null;
+    execution_timestamp_to: string | null;
 }
 
 export interface TradeBookingEvent {

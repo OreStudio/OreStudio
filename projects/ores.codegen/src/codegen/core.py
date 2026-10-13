@@ -5485,6 +5485,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['filter_members'] = _filter['members']
         domain_entity['search_columns'] = _cpp_string_list(_filter['searchable'])
         domain_entity['has_search'] = bool(_filter['searchable'])
+        domain_entity['has_range_filter'] = any(
+            m.get('is_range') for m in _filter['members'])
         # A model can turn its protocol off, and then the record does not
         # exist for the repository to take.
         domain_entity['has_filter_record'] = bool(

@@ -95,3 +95,50 @@ def test_a_filterable_column_gives_equals_and_one_of_members():
     assert members['status']['is_equals']
     assert members['status']['cpp_type'] == 'std::string'
     assert members['status_one_of']['cpp_type'] == 'std::vector<std::string>'
+
+
+def temporal(name, cpp_type, **extra):
+    return {'name': name, 'cpp_type': cpp_type, 'filterable': True, **extra}
+
+
+def test_a_filterable_date_column_gives_from_and_to_members():
+    e = entity(columns=[temporal('agreed_on', 'std::optional<std::chrono::year_month_day>')])
+    members = by_member(filter_members(e))
+    assert members['agreed_on_from']['is_range']
+    assert members['agreed_on_from']['is_from']
+    assert members['agreed_on_to']['is_to']
+    assert members['agreed_on_from']['column'] == 'agreed_on'
+    assert members['agreed_on_from']['cpp_type'] == 'std::string'
+    assert not members['agreed_on_from']['is_timestamp']
+
+
+def test_a_filterable_timestamp_column_marks_its_range_as_a_timestamp():
+    e = entity(columns=[temporal('executed_at', 'std::chrono::system_clock::time_point')])
+    members = by_member(filter_members(e))
+    assert members['executed_at_from']['is_timestamp']
+    assert members['executed_at_to']['is_timestamp']
+
+
+def test_a_temporal_column_keeps_its_equals_and_one_of_members():
+    e = entity(columns=[temporal('agreed_on', 'std::chrono::year_month_day')])
+    members = by_member(filter_members(e))
+    assert members['agreed_on']['is_equals']
+    assert members['agreed_on_one_of']['is_one_of']
+
+
+def test_a_column_that_is_not_filterable_gives_no_range():
+    e = entity(columns=[{'name': 'agreed_on', 'cpp_type': 'std::chrono::year_month_day'}])
+    assert not any(m.get('is_range') for m in filter_members(e)['members'])
+
+
+def test_a_filterable_column_of_another_type_gives_no_range():
+    e = entity(columns=[temporal('status', 'std::string'), temporal('size', 'int')])
+    assert not any(m.get('is_range') for m in filter_members(e)['members'])
+
+
+def test_the_record_carries_each_bound_as_an_optional_string():
+    e = entity(columns=[temporal('agreed_on', 'std::chrono::year_month_day')])
+    fields = {f['name']: f for f in filter_record_fields(e)}
+    for name in ('agreed_on_from', 'agreed_on_to'):
+        assert fields[name]['cpp_type'] == 'std::optional<std::string>'
+        assert fields[name]['ts_type'] == 'string | null'

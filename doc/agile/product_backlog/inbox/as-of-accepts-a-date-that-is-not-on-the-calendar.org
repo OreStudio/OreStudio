@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2A9FB61C-F602-4512-977E-808C6981D8C1
+:END:
+#+title: The parser for an as-of instant, parse_as_of in ores.databas…
+#+description: The parser for an as-of instant, parse_as_of in ores.database, accepts a date that is not on the calendar, such as 2026-02-30, because the time library normalises it. The request is not refused with as_of_invalid, and the database receives a day that does not exist. The range bound check added in the range members task checks the calendar itself. Do the same for as_of.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -66,6 +66,14 @@ th.sort{cursor:pointer}
 .hist .cmp{padding:12px;display:grid;gap:10px;align-content:start}
 .diff{font-family:var(--mono);font-size:.82rem}.diff .rm{background:#2a1517;color:#ffb3ad;padding:2px 8px}.diff .ad{background:#10261a;color:#9be9a8;padding:2px 8px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
+.axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px}
+.tl .item{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.tl .item.mark{background:#1d2530}
+.tl .when{color:var(--ink-faint);font-family:var(--mono);font-size:.8rem}.emblem{color:var(--accent)}
+.tl .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tl .who{font-weight:600}
+.avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
+.tl details summary{cursor:pointer;color:var(--ink-faint);margin-top:4px}.tl .diff{margin-top:6px}
 .dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
 .dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
 .dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
@@ -91,9 +99,10 @@ th.sort{cursor:pointer}
       Details and History, the Last changed line;
     - Add and Edit are one dialog, Delete and Revert have their own, and the
       Inspect view of an oresmd URL is the shipped one. All four share one shell.
-    - History is the shared panel: the timeline, a comparison with From and To,
-      All fields and Only changes, Hide system activity, and Revert.
-  What the standard leaves open is listed in the design note as questions.
+    - History is the shared timeline: a chart of events over time above a rail of one-line
+      entries, newest first, details collapsed, the current-version emblem, Hide system
+      activity, and Revert on older versions.
+  What the standards left open is recorded in the design note as decisions.
 
   Addresses: ?screen=list | record&id=..&tab=details|history | stand-ins:
   series&uri=.. and feed&src=.. (pages the product already has).
@@ -264,29 +273,38 @@ function detailsTab(b) {
   </div>${lastChanged(b)}</div>`;
 }
 
+// History is the shared Timeline of the entity screen specification: a chart of the events over time
+// above a rail of one-line entries, newest first, with the details collapsed.
+const KIND_COLOUR = { Created: '#8b5cf6', Changed: '#58a6ff' };
+const initials = n => n.split(/[\s_]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 function historyTab(b) {
   const all = (history[b.id] || []).slice().reverse(), cur = all[0];
-  const list = all.filter(x => x.v === cur.v || !(hideSystem && x.service));
-  const toV = picked[b.id] && list.find(x => x.v === picked[b.id].to) ? picked[b.id].to : cur.v;
-  const to = list.find(x => x.v === toV) || cur;
-  const olderV = all.filter(x => x.v < to.v);
-  const fromV = picked[b.id] && olderV.find(x => x.v === picked[b.id].from) ? picked[b.id].from : to.v - 1;
-  const from = all.find(x => x.v === fromV);
-  const only = picked[b.id] ? picked[b.id].only !== false : true;
-  const names = Object.keys(to.fields).filter(n => !only || !from || from.fields[n] !== to.fields[n]);
-  const items = list.map(x => `<li class="${x.v === to.v ? 'on' : ''}" data-ver="${x.v}"><span><b>v${x.v}</b> ${x.v === cur.v ? tag('current', 'ok') : ''} <span style="float:right;font-size:.78rem;color:var(--ink-faint)" title="${exact(x.at)}">${rel(x.at)}</span></span>
-      <span class="muted">${x.by === x.forWho ? 'Modified by ' + x.by : 'Modified by ' + x.by + ' for ' + x.forWho}</span><span class="mono" style="font-size:.78rem">${esc(x.reason)}</span>${x.commentary ? `<span style="font-style:italic;color:var(--ink-dim)">${esc(x.commentary)}</span>` : ''}</li>`).join('');
-  const diff = n => from && from.fields[n] !== to.fields[n] ? `<div class="diff"><div class="rm">- ${esc(from.fields[n])}</div><div class="ad">+ ${esc(to.fields[n])}</div></div>` : `<div class="diff">${esc(to.fields[n])}</div>`;
-  return `<div class="muted">Every version of this record, newest first.</div>
+  const rows = all.filter(x => !(hideSystem && x.service));
+  const kindOf = x => x.v === 1 ? 'Created' : 'Changed';
+  const prevOf = x => all.find(y => y.v === x.v - 1);
+  const changed = x => { const p = prevOf(x); return Object.keys(x.fields).filter(n => !p || p.fields[n] !== x.fields[n]); };
+  // The chart: one bar for each day, split by kind, every bucket from the first entry to the last.
+  const days = {}; rows.forEach(x => { const d = x.at.slice(0, 10); (days[d] = days[d] || { Created: 0, Changed: 0 })[kindOf(x)]++; });
+  const keys = Object.keys(days).sort(), first = keys[0] ? Date.parse(keys[0]) : 0, last = keys.length ? Date.parse(keys[keys.length - 1]) : 0;
+  const buckets = []; for (let t = first; t <= last; t += 86400000) { const k = new Date(t).toISOString().slice(0, 10); buckets.push([k, days[k] || { Created: 0, Changed: 0 }]); }
+  const max = Math.max(1, ...buckets.map(([, c]) => c.Created + c.Changed));
+  const bar = ([k, c]) => `<div class="bar" data-day="${k}" title="${k}: ${c.Created} created, ${c.Changed} changed">${['Changed', 'Created'].map(t => c[t] ? `<i style="height:${Math.round(c[t] / max * 44)}px;background:${KIND_COLOUR[t]}" title="${t} ${c[t]}"></i>` : '').join('')}</div>`;
+  const legend = ['Created', 'Changed'].map(t => [t, rows.filter(x => kindOf(x) === t).length]).filter(([, n]) => n).map(([t, n]) => `<span><i style="background:${KIND_COLOUR[t]}"></i>${t} ${n}</span>`).join('');
+  const entry = x => {
+    const p = prevOf(x), names = changed(x), isCur = x.v === cur.v;
+    const author = x.service ? `<span class="who">${esc(x.by)}</span>` : `<a class="link who" data-nav href="${href({ screen: 'person', src: x.by })}">${esc(x.by)}</a>`;
+    const diff = names.map(n => p ? `<div class="diff"><b>${n}</b><div class="rm">- ${esc(p.fields[n])}</div><div class="ad">+ ${esc(x.fields[n])}</div></div>` : `<div class="diff"><b>${n}</b> ${esc(x.fields[n])}</div>`).join('');
+    return `<div class="item" id="e${x.v}" data-day="${x.at.slice(0, 10)}"><div class="when">${x.at.slice(11, 19)}${isCur ? ' <span class="emblem" title="Current version">●</span>' : ''}</div>
+      <div><div class="head"><span class="avatar">${initials(x.by)}</span>${tag(kindOf(x), kindOf(x) === 'Created' ? 'ok' : '')}<span class="mono faint">feed_binding ${b.id} v${x.v}</span>${p ? `<span class="faint">${names.join(', ') || 'No changes'}</span>` : ''}<span class="tag warn mono">${esc(x.reason)}</span>${author}${!isCur && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.commentary ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.commentary)}</div>` : ''}
+      ${names.length ? `<details style="margin-left:34px"><summary>Details</summary>${diff}</details>` : '<div class="faint" style="margin-left:34px">No changes</div>'}</div></div>`;
+  };
+  const rail = []; let day = '';
+  rows.forEach(x => { const d = x.at.slice(0, 10); if (d !== day) { day = d; rail.push(`<div class="daydiv">${new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}</div>`); } rail.push(entry(x)); });
+  return `<div class="muted">Every version of this binding, in one stream, newest first. Revert writes an older version's values back as a new version.</div>
   <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div>
-  <section class="hist"><ol aria-label="Timeline">${items}</ol>
-    <div class="cmp"><h2>${from ? `Comparing v${from.v} with v${to.v}` : 'Initial version'}</h2>
-      <div class="row"><div class="field" style="min-width:100px"><label>From</label><select id="h-from" ${from ? '' : 'disabled'}>${olderV.map(x => `<option value="${x.v}" ${x.v === fromV ? 'selected' : ''}>v${x.v}</option>`).join('')}</select></div>
-        <div class="field" style="min-width:100px"><label>To</label><select id="h-to">${list.map(x => `<option value="${x.v}" ${x.v === to.v ? 'selected' : ''}>v${x.v}</option>`).join('')}</select></div>
-        <div class="seg"><button data-only="0" class="${only ? '' : 'on'}">All fields</button><button data-only="1" class="${only ? 'on' : ''}">Only changes</button></div>
-        ${to.v !== cur.v && may('edit') ? btn('Revert to this version', 'revert', '', `data-revert="${to.v}"`) : ''}</div>
-      ${names.length ? `<table><thead><tr><th>Field</th><th>${from ? 'Value diff' : 'Value'}</th></tr></thead><tbody>${names.map(n => `<tr><td>${n}</td><td>${diff(n)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No field changes between these versions.</div>'}
-    </div></section>`;
+  <div class="card" style="padding:12px"><div class="chart">${buckets.map(bar).join('')}</div><div class="axis"><span>${keys[0] || ''}</span><span>${keys[keys.length - 1] || ''}</span></div><div class="legend">${legend}</div></div>
+  <div class="tl">${rail.join('')}</div>`;
 }
 
 function accessMark() { return may('edit') ? `<span class="access" title="A market data operator can change it.">✎ Editable</span>` : `<span class="access" title="Your access shows it but does not let you change it.">🔒 Read only</span>`; }
@@ -303,6 +321,7 @@ function recordScreen(b) {
 }
 
 function stubScreen(r) {
+  if (r.screen === 'person') return `${crumbs([['Home', LIST()], ['Organisation', LIST()], ['Staff', LIST()], [esc(r.src || 'Person')]])}<div class="titlebar"><div><h1>${esc(r.src || '')}</h1><div class="sub">Person</div></div></div><div class="notice">This stands in for the person's page, which the product already has. The name of an author on the timeline is a link to it, where the reader may open people.</div>`;
   if (r.screen === 'series') {
     const s = SOURCES.find(x => x.uri === r.uri) || bindings.map(seriesOf).find(x => x.uri === r.uri) || { series: 'Series' };
     return `${crumbs([['Home', LIST()], ['Market data', LIST()], ['Series']])}<div class="titlebar"><div><h1>${s.series}</h1><div class="sub mono">${esc(r.uri || '')}</div></div></div>
@@ -396,18 +415,14 @@ function wire() {
   const s = document.getElementById('search'); if (s) s.oninput = () => { search = s.value; render(); const n = document.getElementById('search'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
   const kf = document.getElementById('kindf'); if (kf) kf.onchange = () => { kindFilter = kf.value; render(); };
   const cl = document.getElementById('clear'); if (cl) cl.onclick = () => { search = ''; kindFilter = 'all'; render(); };
+  document.querySelectorAll('#app .bar').forEach(x => x.onclick = () => { const items = [...document.querySelectorAll('#app .item')]; if (!items.length) return; const t = Date.parse(x.dataset.day); const best = items.reduce((p, c) => Math.abs(Date.parse(c.dataset.day) - t) < Math.abs(Date.parse(p.dataset.day) - t) ? c : p); best.scrollIntoView({ block: 'center' }); best.classList.add('mark'); setTimeout(() => best.classList.remove('mark'), 1200); });
   const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
-  document.querySelectorAll('#app [data-ver]').forEach(x => x.onclick = () => { picked[b.id] = { ...(picked[b.id] || {}), to: Number(x.dataset.ver), from: null }; render(); });
-  const hf = document.getElementById('h-from'), ht = document.getElementById('h-to');
-  if (hf) hf.onchange = () => { picked[b.id] = { ...(picked[b.id] || {}), from: Number(hf.value) }; render(); };
-  if (ht) ht.onchange = () => { picked[b.id] = { ...(picked[b.id] || {}), to: Number(ht.value), from: null }; render(); };
-  document.querySelectorAll('#app [data-only]').forEach(x => x.onclick = () => { picked[b.id] = { ...(picked[b.id] || {}), only: x.dataset.only === '1' }; render(); });
   document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(b, Number(x.dataset.revert)));
 }
 
 function render() {
   const r = route();
-  const body = r.screen === 'record' ? recordScreen(byId(r.id)) : (r.screen === 'series' || r.screen === 'feed') ? stubScreen(r) : listScreen();
+  const body = r.screen === 'record' ? recordScreen(byId(r.id)) : (r.screen === 'series' || r.screen === 'feed' || r.screen === 'person') ? stubScreen(r) : listScreen();
   document.getElementById('app').innerHTML = body;
   document.getElementById('note').textContent = `Prototype · market data bindings · ${r.screen} · ${scenario} data · ${state} · acting as ${actor} · mock list, writes change it in memory`;
   const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');

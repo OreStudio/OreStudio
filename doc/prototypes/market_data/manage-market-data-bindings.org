@@ -38,7 +38,7 @@ It is throwaway, with no service and no build step. Open the
 | Record page | Breadcrumb, the source name as the title, the lead line, the access mark and the status, *Edit* and *Delete* (drawn only when allowed), the tabs *Details* and *History*, and the Last changed line at the end of Details |
 | Add and Edit | One dialog over the page. Add is titled "Add binding" and states the reason new record in a note. Edit is titled "Edit <key>", asks for a change reason and a commentary, and offers *Non-material update* only when no field changed |
 | Delete | A dialog that names the binding, says what is lost and that its history stays, and asks for a reason |
-| History | The shared panel: the timeline, a comparison with *From*, *To*, *All fields* and *Only changes*, *Hide system activity*, and *Revert to this version* with its dialog |
+| History | The shared timeline: a chart of the events over time above a rail of one-line entries, newest first, with the details collapsed, the current-version emblem, *Hide system activity*, and *Revert* on older versions with its dialog |
 | An oresmd URL | A link to the series page in a new tab when the party has the series, plain text when it does not, and an *Inspect* button that opens the read only view. The same dialog shell serves it |
 
 Every dialog has one shell: a title with a close mark, a body, and a footer with
@@ -61,8 +61,8 @@ Switch with the bottom bar, or the query parameters.
 
 Open a binding, then *Edit*, and change *Enabled*: the reasons offered change, and
 Save waits for a commentary. Save closes the dialog and the page shows the new
-version. Open *History*: the new version is at the top and the comparison shows
-the removed and the added line. Pick an older version and *Revert to this version*.
+version. Open *History*: the new version is at the top of the rail, with the emblem, and
+its details show the removed and the added line. *Revert* an older version.
 On the list, *Add* a binding: pick the Reuters EUR/USD source to see the refusal
 that names the Bloomberg feed already writing that series, then pick another and
 add it. The new binding has no series page until it has a tick, so its URL is

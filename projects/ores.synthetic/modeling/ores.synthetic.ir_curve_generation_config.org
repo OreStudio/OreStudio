@@ -419,6 +419,22 @@ work. Mirrors =fx_spot_generation_config.folder_id= exactly.
 std::nullopt
 #+end_src
 
+** asset_class_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "interest_rates"
+:END:
+
+The asset class the feed belongs to (soft FK to =asset_class_code.code=):
+Every IR curve feed is =interest_rates=. A screen filters the feeds by it. The catalogue
+=ores.refdata.asset_class_catalogue= declares the codes.
+
+#+begin_src cpp :name generator
+std::string("interest_rates")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -463,6 +479,7 @@ std::nullopt
 |----------------------------------+--------------------------------------------------|
 | process_type                     | ores_synthetic_validate_yield_curve_process_type_fn |
 | fixed_leg_payment_frequency_code | ores_refdata_validate_payment_frequency_fn      |
+| asset_class_code                 | ores_refdata_validate_asset_class_code_fn       |
 
 * Validation function
 :PROPERTIES:

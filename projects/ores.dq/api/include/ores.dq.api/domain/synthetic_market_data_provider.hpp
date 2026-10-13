@@ -35,7 +35,7 @@ namespace ores::dq::domain {
  * @brief Market Data Provider artefacts - the simulated providers staged for the system_core bundle
  *
  * Market Data Provider artefacts: one row per simulated market data provider
- * (Bloomberg, Refinitiv, the exchanges, a broker, and the generic provider),
+ * (Bloomberg, Refinitiv, the exchanges, a broker, and the ORE examples),
  * staged for the system_core bundle and published into
  * ores_synthetic_market_data_providers_tbl in the system tenant. Every
  * provider is simulated; see the synthetic catalogue's own model for the
@@ -58,7 +58,7 @@ struct synthetic_market_data_provider final {
     std::string name;
 
     /**
-     * @brief data_vendor, exchange, broker or generic.
+     * @brief data_vendor, exchange, broker or reference.
      */
     std::string kind;
 

@@ -103,7 +103,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date, vintage_series_uri
+        price_source, vintage_source, vintage_date, vintage_series_uri, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -122,7 +122,7 @@ begin
         true, false, c.currency_code, c.index_family, '', 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly',
-        'fixed', '', '', ''
+        'fixed', '', '', '', 'ore'
     from (values
         -- currency, index_family, theta (mean/initial level) -- same 20 currencies and levels
         -- as the matching Bloomberg curves, but uniform kappa/sigma (v_kappa/v_sigma

@@ -210,6 +210,10 @@ begin
     having count(*) = count(p.provider_code)
        and count(distinct p.provider_code) = 1;
 
+    if v_config_id is null and v_provider_code is null then
+        raise exception 'Dataset % cannot be published: its feeds must all name the same provider.', v_dataset_name;
+    end if;
+
     if v_config_id is null then
         v_config_id := gen_random_uuid();
         -- scope='party', binding_mode='bound': publish-from-dq always

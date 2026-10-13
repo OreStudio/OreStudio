@@ -34,8 +34,8 @@ namespace ores::synthetic::messaging {
 /**
  * @brief One folder of the feed hierarchy, with what runs under it.
  *
- * A collection folder also carries what the collection says: its scope, the
- * provider it stands for, and whether it is bound or sandboxed.
+ * A collection folder also carries what the collection says: the provider it
+ * stands for, and whether it is bound or sandboxed.
  */
 struct feed_folder {
     /** @brief The folder's id. */
@@ -46,9 +46,7 @@ struct feed_folder {
     std::string name;
     /** @brief What the folder is: root, collection, asset_class or instrument_type. */
     std::string kind;
-    /** @brief For a collection, who consumes its data: system, tenant or party; empty otherwise. */
-    std::string scope;
-    /** @brief For a collection, the provider it stands for; empty when none. */
+    /** @brief For a collection, the provider it stands for; empty for any other folder. */
     std::string provider_code;
     /** @brief For a collection, bound or sandboxed; empty otherwise. */
     std::string binding_mode;
@@ -58,6 +56,8 @@ struct feed_folder {
     int ir_feeds = 0;
     /** @brief How many of those feeds are running now. */
     int running_feeds = 0;
+    /** @brief How many of those feeds are enabled, start on their own, and are not running now. */
+    int idle_auto_feeds = 0;
     /** @brief Whether the folder has folders under it. */
     bool has_children = false;
 };
@@ -109,6 +109,20 @@ struct folder_feed {
     std::string folder_id;
     /** @brief Whether the feed is enabled. */
     bool enabled = false;
+    /** @brief The provider the feed's collection stands for. */
+    std::string provider_code;
+    /** @brief The asset class of the feed: fx or interest_rates. */
+    std::string asset_class_code;
+    /** @brief What the feed prices: a currency pair such as EUR/USD, or a currency such as USD. */
+    std::string underlying;
+    /** @brief The process that generates the feed's ticks, as the feed stores it. */
+    std::string engine;
+    /** @brief How many ticks the feed makes in an hour. */
+    int ticks_per_hour = 0;
+    /** @brief Whether the feed starts on its own when the service starts. */
+    bool auto_start = false;
+    /** @brief Whether the feed runs now. */
+    bool running = false;
 };
 
 /**
@@ -125,11 +139,20 @@ struct list_folder_feeds_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    /** @brief The folder whose feeds are wanted; empty for the feeds of every folder. */
+    /** @brief The folder whose feeds are wanted, with those of the folders under it; empty for the
+     * feeds of every folder. */
     std::string folder_id;
+    /** @brief Only the feeds of this provider; empty for every provider. */
+    std::string provider_code;
+    /** @brief Only the feeds that are enabled, start on their own, and are not running now. */
+    bool should_run = false;
     /** @brief Words that must all appear in the feed's label, source name or URI; empty for no
      * search. */
     std::string search;
+    /** @brief Which feeds: all, started or stopped; empty means all. */
+    std::string state;
+    /** @brief Only the feeds of this asset class code; empty for every class. */
+    std::string asset_class;
     /** @brief How many feeds to skip. */
     int offset = 0;
     /** @brief How many feeds to return at most. */

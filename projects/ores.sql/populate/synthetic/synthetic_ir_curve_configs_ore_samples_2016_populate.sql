@@ -97,7 +97,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date, vintage_series_uri
+        price_source, vintage_source, vintage_date, vintage_series_uri, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -115,7 +115,7 @@ begin
         true, true, c.currency_code, c.index_family, c.tenor, 'VASICEK',
         0.4, c.theta, 0.006, c.theta,
         60, 'Quarterly',
-        c.price_source, c.vintage_source, c.vintage_date, c.vintage_series_uri
+        c.price_source, c.vintage_source, c.vintage_date, c.vintage_series_uri, 'ore'
     from (values
         -- currency, index_family, tenor, theta (representative pre-cessation level),
         -- retirement note, price_source, vintage_source, vintage_date,

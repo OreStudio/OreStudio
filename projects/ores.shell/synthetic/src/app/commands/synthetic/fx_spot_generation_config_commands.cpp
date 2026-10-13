@@ -144,7 +144,7 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         },
         "add <config_id> <base_currency_code> <quote_currency_code> <source_name> <oresmd_uri> "
         "<price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start> "
-        "<vintage_source> <vintage_date> <folder_id> <reason> <commentary>");
+        "<vintage_source> <vintage_date> <folder_id> <asset_class_code> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,8 +153,8 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         },
         "set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> "
         "<oresmd_uri> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> "
-        "<auto_start> <vintage_source> <vintage_date> <folder_id> <reason> <commentary> [--version "
-        "<n>]");
+        "<auto_start> <vintage_source> <vintage_date> <folder_id> <asset_class_code> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -164,7 +164,7 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         "put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code> "
         "<source_name> <oresmd_uri> <price_source> <gmm_initial_price> <ticks_per_hour> "
         "<process_type> <enabled> <auto_start> <vintage_source> <vintage_date> <folder_id> "
-        "<reason> <commentary>");
+        "<asset_class_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -358,8 +358,8 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 14 + 2) {
-            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -382,6 +382,8 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
         read_token(req.change.write.vintage_source, parsed->positionals[next++], "vintage_source");
         read_token(req.change.write.vintage_date, parsed->positionals[next++], "vintage_date");
         read_token(req.change.write.folder_id, parsed->positionals[next++], "folder_id");
+        read_token(
+            req.change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -424,8 +426,8 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -448,6 +450,8 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
         read_token(req.change.write.vintage_source, parsed->positionals[next++], "vintage_source");
         read_token(req.change.write.vintage_date, parsed->positionals[next++], "vintage_date");
         read_token(req.change.write.folder_id, parsed->positionals[next++], "folder_id");
+        read_token(
+            req.change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -502,8 +506,8 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 15 + 2) {
-            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 16 + 2) {
+            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -528,6 +532,8 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
             read_token(change.write.vintage_source, parsed->positionals[next++], "vintage_source");
             read_token(change.write.vintage_date, parsed->positionals[next++], "vintage_date");
             read_token(change.write.folder_id, parsed->positionals[next++], "folder_id");
+            read_token(
+                change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

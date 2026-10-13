@@ -30,6 +30,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.synthetic.api/feeds/feed_filter.hpp"
 #include "ores.synthetic.api/feeds/feed_overview.hpp"
 #include "ores.synthetic.api/messaging/feed_overview_protocol.hpp"
 #include <algorithm>
@@ -38,6 +39,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace ores::synthetic::service {
@@ -47,19 +49,6 @@ inline auto& feed_overview_handler_lg() {
     static auto instance =
         ores::logging::make_logger("ores.synthetic.service.feed_overview_handler");
     return instance;
-}
-
-/// A text as an escape string literal: a quote and a backslash are doubled, so the
-/// text means the same whatever the server's setting of standard_conforming_strings.
-inline std::string sql_literal(const std::string& text) {
-    std::string out = "E'";
-    for (const char c : text) {
-        if (c == '\'' || c == '\\')
-            out.push_back(c);
-        out.push_back(c);
-    }
-    out.push_back('\'');
-    return out;
 }
 
 inline std::string text_of(const std::optional<std::string>& value) {
@@ -164,14 +153,20 @@ public:
             reply(nats_, msg, resp);
             return;
         }
-        if (!req->folder_id.empty() && !ores::synthetic::feed::is_folder_id(req->folder_id)) {
-            resp.message = "The folder id is not a UUID.";
+        const ores::synthetic::feed::feed_filter filter{.folder_id = req->folder_id,
+                                                        .provider_code = req->provider_code,
+                                                        .asset_class = req->asset_class,
+                                                        .search = req->search,
+                                                        .state = req->state,
+                                                        .should_run = req->should_run};
+        if (const auto problem = ores::synthetic::feed::filter_problem(filter); !problem.empty()) {
+            resp.message = problem;
             reply(nats_, msg, resp);
             return;
         }
 
         try {
-            feeds_page(*ctx, *req, resp);
+            feeds_page(*ctx, filter, req->offset, req->limit, resp);
             resp.success = true;
         } catch (const std::exception& e) {
             resp.message = e.what();
@@ -185,53 +180,32 @@ private:
     using rows_t = std::vector<std::vector<std::optional<std::string>>>;
 
     /**
-     * A page of the feeds of one folder, or of every folder when none is named,
-     * narrowed to those whose label, source name and URI hold every search word.
-     * Both kinds are read in one query, ordered by label, so a person pages
-     * through one list. The folder id is a checked UUID and each word is an
-     * escaped literal, so nothing the caller sends is run as SQL.
+     * A page of the feeds the filter matches, in label order, and how many match in
+     * all. Both kinds are read in one query, so a person pages through one list. Every
+     * part of the filter is checked or escaped by the filter itself, so nothing the
+     * caller sends is run as SQL.
      */
     void feeds_page(const ores::database::context& ctx,
-                    const ores::synthetic::messaging::list_folder_feeds_request& req,
+                    const ores::synthetic::feed::feed_filter& filter,
+                    int offset,
+                    int limit,
                     ores::synthetic::messaging::list_folder_feeds_response& resp) const {
-        std::string where = "folder_id is not null";
-        if (!req.folder_id.empty())
-            where = "folder_id = " + sql_literal(req.folder_id) + "::uuid";
-        for (const auto& word : ores::synthetic::feed::search_terms(req.search)) {
-            std::string escaped;
-            for (const char c : word) {
-                if (c == '\\' || c == '%' || c == '_')
-                    escaped.push_back('\\');
-                escaped.push_back(c);
-            }
-            where += " and (label || ' ' || source_name || ' ' || oresmd_uri) ilike " +
-                     sql_literal("%" + escaped + "%");
-        }
-        const std::string feeds = R"sql(
-            select id::text as id, 'fx_spot' as kind,
-                   base_currency_code || '/' || quote_currency_code as label,
-                   source_name, oresmd_uri, folder_id, enabled
-            from ores_synthetic_fx_spot_generation_configs_tbl
-            where valid_to = ores_utility_infinity_timestamp_fn()
-            union all
-            select id::text, 'ir_curve',
-                   currency_code || ' ' || upper(index_family) ||
-                       coalesce(' ' || nullif(tenor, ''), ''),
-                   source_name, '', folder_id, enabled
-            from ores_synthetic_ir_curve_generation_configs_tbl
-            where valid_to = ores_utility_infinity_timestamp_fn())sql";
-        const auto limit = std::clamp(req.limit, 1, 200);
-        const auto offset = std::max(req.offset, 0);
+        const auto running = ctrl_->list();
+        const std::unordered_set<std::string> running_names(running.begin(), running.end());
+        const auto feeds = ores::synthetic::feed::feeds_query();
+        const auto where = ores::synthetic::feed::where_clause(filter, running);
 
-        const auto counted = query(
-            ctx, "select count(*) from (" + feeds + ") f where " + where);
+        const auto counted = query(ctx, "select count(*) from (" + feeds + ") f where " + where);
         resp.total = counted.empty() ? 0 : number_of(counted.front().front());
 
         const auto rows = query(ctx,
                                 "select id, kind, label, source_name, oresmd_uri, "
-                                "coalesce(folder_id::text, ''), enabled::text from (" + feeds +
-                                    ") f where " + where + " order by label, id limit " +
-                                    std::to_string(limit) + " offset " + std::to_string(offset));
+                                "coalesce(folder_id::text, ''), enabled::text, auto_start::text, "
+                                "asset_class_code, ticks_per_hour::text, engine, underlying, "
+                                "provider_code from (" + feeds + ") f where " + where +
+                                    " order by label, id limit " +
+                                    std::to_string(std::clamp(limit, 1, 200)) + " offset " +
+                                    std::to_string(std::max(offset, 0)));
         resp.feeds.reserve(rows.size());
         for (const auto& r : rows) {
             ores::synthetic::messaging::folder_feed f;
@@ -242,6 +216,13 @@ private:
             f.oresmd_uri = text_of(r[4]);
             f.folder_id = text_of(r[5]);
             f.enabled = text_of(r[6]) == "true";
+            f.auto_start = text_of(r[7]) == "true";
+            f.asset_class_code = text_of(r[8]);
+            f.ticks_per_hour = number_of(r[9]);
+            f.engine = text_of(r[10]);
+            f.underlying = text_of(r[11]);
+            f.provider_code = text_of(r[12]);
+            f.running = running_names.contains(f.source_name);
             resp.feeds.push_back(std::move(f));
         }
     }
@@ -256,8 +237,7 @@ private:
     folders(const ores::database::context& ctx) const {
         const auto rows = query(ctx, R"sql(
             select f.id::text, coalesce(f.parent_id::text, ''), f.name, f.kind,
-                   coalesce(c.scope, ''), coalesce(c.provider_code, ''),
-                   coalesce(c.binding_mode, '')
+                   coalesce(c.provider_code, ''), coalesce(c.binding_mode, '')
             from ores_synthetic_folders_tbl f
             left join ores_synthetic_market_data_generation_configs_tbl c
               on c.id = f.collection_id
@@ -271,16 +251,15 @@ private:
             f.parent_id = text_of(r[1]);
             f.name = text_of(r[2]);
             f.kind = text_of(r[3]);
-            f.scope = text_of(r[4]);
-            f.provider_code = text_of(r[5]);
-            f.binding_mode = text_of(r[6]);
+            f.provider_code = text_of(r[4]);
+            f.binding_mode = text_of(r[5]);
             out.push_back(std::move(f));
         }
         return out;
     }
 
     /// Which of a folder's counts a row of the grouped queries adds to.
-    enum class tally { fx, ir, running };
+    enum class tally { fx, ir, running, auto_start, auto_running };
 
     /**
      * The feeds each folder holds itself, and how many of them run.
@@ -310,6 +289,12 @@ private:
                 case tally::running:
                     count.running_feeds += n;
                     break;
+                case tally::auto_start:
+                    count.idle_auto_feeds += n;
+                    break;
+                case tally::auto_running:
+                    count.idle_auto_feeds -= n;
+                    break;
                 }
             }
         };
@@ -322,11 +307,21 @@ private:
             where valid_to = ores_utility_infinity_timestamp_fn() and folder_id is not null
             group by folder_id)sql"), tally::ir);
 
+        for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
+                                  "ores_synthetic_ir_curve_generation_configs_tbl"}) {
+            add(query(ctx,
+                      std::string("select folder_id::text, count(*) from ") + table +
+                          " where valid_to = ores_utility_infinity_timestamp_fn()"
+                          " and folder_id is not null and enabled and auto_start"
+                          " group by folder_id"),
+                tally::auto_start);
+        }
+
         const auto running = ctrl_->list();
         if (!running.empty()) {
             std::string names;
             for (const auto& name : running)
-                names += (names.empty() ? "" : ", ") + sql_literal(name);
+                names += (names.empty() ? "" : ", ") + ores::synthetic::feed::sql_literal(name);
             for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
                                       "ores_synthetic_ir_curve_generation_configs_tbl"}) {
                 add(query(ctx,
@@ -335,6 +330,12 @@ private:
                               " and folder_id is not null and source_name in (" + names +
                               ") group by folder_id"),
                     tally::running);
+                add(query(ctx,
+                          std::string("select folder_id::text, count(*) from ") + table +
+                              " where valid_to = ores_utility_infinity_timestamp_fn()"
+                              " and folder_id is not null and enabled and auto_start"
+                              " and source_name in (" + names + ") group by folder_id"),
+                    tally::auto_running);
             }
         }
 

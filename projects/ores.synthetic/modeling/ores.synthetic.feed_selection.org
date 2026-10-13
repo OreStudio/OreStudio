@@ -1,0 +1,303 @@
+:PROPERTIES:
+:ID: 0270159B-73F3-4AC6-93A2-82EB16A82F82
+:END:
+#+title: ores.synthetic.feed_selection
+#+description: Codegen operation model for starting and stopping the feeds a person picked, or the feeds a filter matches.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: feed_selection
+#+namespace: ores::synthetic::messaging
+#+brief: Start or stop a set of feeds named by ids, or by the filter of the feed table.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+The write behind the feed table's Start and Stop. A person picks feeds one by one, or
+asks for every feed the table's filter matches, less those left out. The request carries
+the filter and the ids, not the feeds: the service finds the feeds, so a set of
+thousands costs one small request. The service starts or stops each feed as the folder
+verbs do and reports what it did.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** start_selected_feeds_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.start_selected_feeds
+:response: start_selected_feeds_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Start the picked feeds, or the feeds a filter matches.
+ */
+#+end_src
+
+*** folder_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The folder whose feeds are wanted, with those of the folders under it; empty for the feeds of every folder. Used when no feed ids are named. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Only the feeds of this provider; empty for every provider. Used when no feed ids are named. */
+#+end_src
+
+*** should_run
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Only the feeds that are enabled, start on their own, and are not running now. Used when no feed ids are named. */
+#+end_src
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Words that must all appear in the feed's label, source name or URI. Used when no feed ids are named. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Which feeds: all, started or stopped; empty means all. Used when no feed ids are named. */
+#+end_src
+
+*** asset_class
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Only the feeds of this asset class code; empty for every class. Used when no feed ids are named. */
+#+end_src
+
+*** feed_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The feeds a person picked one by one. When it is not empty, exactly these feeds are meant and the filter is ignored. */
+#+end_src
+
+*** excluded_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The feeds of the filter a person left out. Used when no feed ids are named. */
+#+end_src
+
+** start_selected_feeds_response
+#+begin_src cpp :name comment
+/**
+ * @brief What a start of selected feeds did.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Whether the request ran. */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What happened in words, or why it did not run. */
+#+end_src
+
+*** started
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds started. */
+#+end_src
+
+*** already_running
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds already ran. */
+#+end_src
+
+*** skipped
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds could not start: disabled, or another running feed holds the series. */
+#+end_src
+
+*** stopped
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds stopped. */
+#+end_src
+
+
+** stop_selected_feeds_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.stop_selected_feeds
+:response: stop_selected_feeds_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Stop the picked feeds, or the feeds a filter matches.
+ */
+#+end_src
+
+*** folder_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The folder whose feeds are wanted, with those of the folders under it; empty for the feeds of every folder. Used when no feed ids are named. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Only the feeds of this provider; empty for every provider. Used when no feed ids are named. */
+#+end_src
+
+*** should_run
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Only the feeds that are enabled, start on their own, and are not running now. Used when no feed ids are named. */
+#+end_src
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Words that must all appear in the feed's label, source name or URI. Used when no feed ids are named. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Which feeds: all, started or stopped; empty means all. Used when no feed ids are named. */
+#+end_src
+
+*** asset_class
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Only the feeds of this asset class code; empty for every class. Used when no feed ids are named. */
+#+end_src
+
+*** feed_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The feeds a person picked one by one. When it is not empty, exactly these feeds are meant and the filter is ignored. */
+#+end_src
+
+*** excluded_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The feeds of the filter a person left out. Used when no feed ids are named. */
+#+end_src
+
+** stop_selected_feeds_response
+#+begin_src cpp :name comment
+/**
+ * @brief What a stop of selected feeds did.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Whether the request ran. */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What happened in words, or why it did not run. */
+#+end_src
+
+*** started
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds started. */
+#+end_src
+
+*** already_running
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds already ran. */
+#+end_src
+
+*** skipped
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds could not start: disabled, or another running feed holds the series. */
+#+end_src
+
+*** stopped
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds stopped. */
+#+end_src
+

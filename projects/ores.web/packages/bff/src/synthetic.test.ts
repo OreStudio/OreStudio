@@ -941,12 +941,12 @@ describe('synthetic operations', () => {
             parent_id: '',
             name: 'Synthetic',
             kind: 'root',
-            scope: '',
             provider_code: '',
             binding_mode: '',
             fx_feeds: 26,
             ir_feeds: 33,
             running_feeds: 20,
+            idle_auto_feeds: 4,
             has_children: true,
         };
         const { server, sessionId, calls } = buildTestServer({
@@ -994,6 +994,13 @@ describe('synthetic operations', () => {
             oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
             folder_id: 'f1',
             enabled: true,
+            provider_code: 'bloomberg',
+            asset_class_code: 'fx',
+            underlying: 'EUR/USD',
+            engine: 'geometric',
+            ticks_per_hour: 1800,
+            auto_start: true,
+            running: true,
         };
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.list_folder_feeds': {
@@ -1007,16 +1014,39 @@ describe('synthetic operations', () => {
             server,
             sessionId,
             'GET',
-            '/api/synthetic/folder-feeds?folder=f1&search=usd&offset=60&limit=30',
+            '/api/synthetic/folder-feeds?folder=f1&provider=bloomberg&assetClass=fx&state=started&search=usd&offset=60&limit=30',
         );
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ total: 26, feeds: [feed] });
         expect(calls[0]?.body).toEqual({
             folder_id: 'f1',
+            provider_code: 'bloomberg',
+            asset_class: 'fx',
+            state: 'started',
+            should_run: false,
             search: 'usd',
             offset: 60,
             limit: 30,
         });
+    });
+
+    it('asks for the feeds that should run and do not', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.list_folder_feeds': {
+                success: true,
+                message: '',
+                total: 0,
+                feeds: [],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/folder-feeds?shouldRun=true',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({ should_run: true });
     });
 
     it('asks for the first page of every folder when nothing is named', async () => {
@@ -1030,12 +1060,21 @@ describe('synthetic operations', () => {
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/folder-feeds');
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.body).toEqual({ folder_id: '', search: '', offset: 0, limit: 60 });
+        expect(calls[0]?.body).toEqual({
+            folder_id: '',
+            provider_code: '',
+            asset_class: '',
+            state: '',
+            should_run: false,
+            search: '',
+            offset: 0,
+            limit: 60,
+        });
     });
 
     it('refuses a feed page that asks for too many or for an unknown parameter', async () => {
         const { server, sessionId, calls } = buildTestServer({});
-        for (const query of ['limit=500', 'limit=0', 'offset=-1', 'depth=2']) {
+        for (const query of ['limit=500', 'limit=0', 'offset=-1', 'depth=2', 'state=running']) {
             const response = await send(
                 server,
                 sessionId,
@@ -1043,6 +1082,90 @@ describe('synthetic operations', () => {
                 `/api/synthetic/folder-feeds?${query}`,
             );
             expect(response.statusCode, query).toBe(400);
+        }
+        expect(calls).toEqual([]);
+    });
+
+    it('starts the picked feeds through the service', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.start_selected_feeds': {
+                success: true,
+                message: '2 started, 0 already running, 1 skipped',
+                started: 2,
+                already_running: 0,
+                skipped: 1,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/feed-selection/start',
+            { feedIds: ['a', 'b', 'c'] },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            message: '2 started, 0 already running, 1 skipped',
+            started: 2,
+            alreadyRunning: 0,
+            skipped: 1,
+        });
+        expect(calls[0]?.body).toEqual({
+            folder_id: '',
+            provider_code: '',
+            asset_class: '',
+            state: '',
+            should_run: false,
+            search: '',
+            feed_ids: ['a', 'b', 'c'],
+            excluded_ids: [],
+        });
+    });
+
+    it('stops the feeds a filter matches, less those left out', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.stop_selected_feeds': {
+                success: true,
+                message: '9 stopped',
+                stopped: 9,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/feed-selection/stop',
+            { provider: 'bloomberg', state: 'started', excludedIds: ['x'] },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ message: '9 stopped', stopped: 9 });
+        expect(calls[0]?.body).toEqual({
+            folder_id: '',
+            provider_code: 'bloomberg',
+            asset_class: '',
+            state: 'started',
+            should_run: false,
+            search: '',
+            feed_ids: [],
+            excluded_ids: ['x'],
+        });
+    });
+
+    it('refuses a selection with a state it does not know or too many ids', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        for (const body of [
+            { state: 'running' },
+            { feedIds: Array.from({ length: 2001 }, (_, i) => `id${i}`) },
+            { unknown: true },
+        ]) {
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/synthetic/feed-selection/start',
+                body,
+            );
+            expect(response.statusCode).toBe(400);
         }
         expect(calls).toEqual([]);
     });

@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- Market Data Provider artefacts: one row per simulated market data provider (Bloomberg, Refinitiv, the exchanges, a broker, and the generic provider), staged for the system_core bundle and published into ores_synthetic_market_data_providers_tbl in the system tenant. Every provider is simulated; see the synthetic catalogue's own model for the synthetic mark. - Artefact Table
+-- Market Data Provider artefacts: one row per simulated market data provider (Bloomberg, Refinitiv, the exchanges, a broker, and the ORE examples), staged for the system_core bundle and published into ores_synthetic_market_data_providers_tbl in the system tenant. Every provider is simulated; see the synthetic catalogue's own model for the synthetic mark. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_synthetic_market_data_providers_artefact_tbl" (

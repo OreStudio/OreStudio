@@ -2,27 +2,27 @@
 :ID: EF5CF958-03A0-45D1-AB2D-7DE9C35D8869
 :END:
 #+title: ores.synthetic.market_data_provider
-#+description: Reference data table of the simulated market data providers a synthetic feed can stand for: data vendors such as Bloomberg and Refinitiv, exchanges such as CME and LSE, brokers, and a generic provider for feeds that stand for none.
+#+description: Reference data table of the simulated market data providers a synthetic feed can stand for: data vendors such as Bloomberg and Refinitiv, exchanges such as CME and LSE, brokers, and reference sets such as the ORE examples.
 #+type: ores.codegen.entity
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: market_data_provider
 #+entity_plural: market_data_providers
 #+entity_title: Market Data Provider
-#+brief: Simulated market data provider a synthetic collection stands for: a vendor, an exchange, a broker, or generic.
+#+brief: Simulated market data provider a synthetic collection stands for: a vendor, an exchange, a broker, or a reference set.
 #+created: 2026-10-11
 #+updated: 2026-10-11
 
 A catalogue of the providers whose market data the synthetic feeds simulate.
 A system-scope collection names the provider it stands for, so the installation
 can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it
-as that provider's data. The provider is optional: a collection that stands for
-no provider names none, or names =generic=.
+as that provider's data. Every collection names its provider, so every feed has
+one. A reference set such as the ORE examples is a provider of its own.
 
-Every provider here is simulated. Screens show it with the synthetic mark, as
-"Bloomberg (synthetic)", and every source name a provider's feed publishes on
-starts =synthetic.<provider code>.=, so a simulated feed is never read as the
-real one. A real provider integration, when one comes, belongs in market data
+Every provider here is simulated, and the synthetic screens show it without a
+mark, because everything on them is synthetic. Every source name a provider's feed
+publishes on starts =synthetic.<provider code>.=, so a simulated feed is never read
+as the real one. A real provider integration, when one comes, belongs in market data
 and not in this catalogue.
 
 Scoped to =ores.synthetic= (not =ores.refdata=) because only synthetic
@@ -50,7 +50,7 @@ precedent. Managed by the system tenant.
 Unique provider code: lower case letters, digits, underscores and hyphens,
 starting with a letter. It is the provider segment of a source name.
 
-Examples: 'generic', 'bloomberg', 'refinitiv', 'cme'.
+Examples: 'ore', 'bloomberg', 'refinitiv', 'cme'.
 
 #+begin_src cpp :name generator
 std::string("provider")
@@ -77,7 +77,7 @@ std::string(faker::company::companyName())
 :nullable: false
 :END:
 
-What sort of provider it is: =data_vendor=, =exchange=, =broker= or =generic=.
+What sort of provider it is: =data_vendor=, =exchange=, =broker= or =reference=.
 
 #+begin_src cpp :name generator
 std::string("data_vendor")
@@ -90,7 +90,8 @@ std::string("data_vendor")
 :nullable: false
 :END:
 
-What the provider publishes, in a sentence.
+What the provider's feeds simulate, in a sentence or two: the market the provider
+stands for and what a person gets by running its feeds.
 
 #+begin_src cpp :name generator
 std::string(faker::lorem::sentence())
@@ -122,7 +123,7 @@ faker::number::integer(1, 100)
 | expression                                                          |
 |---------------------------------------------------------------------|
 | "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
-| "kind" in ('data_vendor', 'exchange', 'broker', 'generic')           |
+| "kind" in ('data_vendor', 'exchange', 'broker', 'reference')         |
 | "name" <> ''                                                        |
 
 ** Extra drops
@@ -220,7 +221,7 @@ policy still decides which system rows a tenant sees and who may write them.
 |---------------+---------------+-----------------+-----------+--------+-------------+---------------------------|
 | code          | Code          | codeEdit        | line_edit | true   | true        | Enter provider code       |
 | name          | Name          | nameEdit        | line_edit |        | true        | Enter name                |
-| kind          | Kind          | kindEdit        | line_edit |        | true        | data_vendor, exchange, broker or generic |
+| kind          | Kind          | kindEdit        | line_edit |        | true        | data_vendor, exchange, broker or reference |
 | description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description       |
 | display_order | Display Order | displayOrderEdit | spin_box |        | true        |                           |
 

@@ -155,7 +155,7 @@ begin
         auto_start,
         base_currency_code, quote_currency_code,
         gmm_initial_price, ticks_per_hour, process_type,
-        price_source, vintage_source, vintage_date
+        price_source, vintage_source, vintage_date, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -166,7 +166,7 @@ begin
         '2016 ORE Samples synthetic FX spot generator: 2-component geometric Gaussian mixture calibrated to plausible real FX volatility.',
         true, true, p.base, p.quote,
         0, 1800, 'geometric',
-        'vintage', 'fed.h10.2016-02-05', '2016-02-05'
+        'vintage', 'fed.h10.2016-02-05', '2016-02-05', 'ore'
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
         ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'),

@@ -73,6 +73,7 @@ struct ir_curve_generation_config_entity {
     std::string fixed_leg_payment_frequency_code = "Annual";
     std::string source_name;
     std::optional<std::string> folder_id;
+    std::string asset_class_code = "interest_rates";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

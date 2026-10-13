@@ -23,8 +23,7 @@
  *
  * Registers the synthetic.market_data_providers dataset and stages the
  * simulated market data providers a synthetic collection can stand for: the
- * main data vendors, exchanges and brokers, and the generic provider for a
- * system collection that stands for none in particular. The dataset is a
+ * main data vendors, exchanges and brokers, and the ORE examples. The dataset is a
  * member of the system_core bundle, so the system provisioning step publishes
  * it into the system tenant through
  * ores_synthetic_publish_market_data_providers_from_dq_fn. Every provider is
@@ -48,7 +47,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic Market Data Providers',
-        'The simulated market data providers the synthetic feeds stand for: Bloomberg, Refinitiv (LSEG), ICE, CME, LSE, Eurex, Tradeweb, and a generic provider.',
+        'The simulated market data providers the synthetic feeds stand for: Bloomberg, Refinitiv (LSEG), ICE, CME, LSE, Eurex, Tradeweb, and the ORE examples.',
         'ORESTUDIO',
         'Market data providers for the synthetic feeds',
         current_date,
@@ -78,29 +77,29 @@ begin
     insert into ores_dq_synthetic_market_data_providers_artefact_tbl (
         dataset_id, tenant_id, code, version, name, kind, description, display_order
     ) values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'generic', 0, 'Generic', 'generic',
-         'A provider that stands for no vendor or venue in particular, for system feeds that simulate the market as a whole.',
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ore', 0, 'ORE', 'reference',
+         'Simulates the market data that ships with the ORE examples, as of 5 February 2016: the FX spots and IBOR-era rates. Use it to run the ORE example portfolios against ticks that move.',
          1),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bloomberg', 0, 'Bloomberg', 'data_vendor',
-         'Data vendor publishing quotes across asset classes: FX, rates, credit, equities and commodities.',
+         'Simulates Bloomberg composite quotes: FX spots and overnight and swap rates for the major currencies.',
          2),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'refinitiv', 0, 'Refinitiv (LSEG)', 'data_vendor',
-         'Data vendor publishing quotes across asset classes, including FX spot and the WM/Refinitiv benchmark rates.',
+         'Simulates Refinitiv composite FX quotes, the WM/Refinitiv benchmark rates and money-market rates.',
          3),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ice', 0, 'ICE Data Services', 'data_vendor',
-         'Data vendor publishing evaluated prices, reference data and index data, with the ICE exchanges behind it.',
+         'Simulates ICE evaluated prices and benchmark rates, and the curves they imply.',
          4),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cme', 0, 'CME Group', 'exchange',
-         'Exchange group listing interest rate, FX, equity index and commodity futures and options.',
+         'Simulates CME interest rate, FX and equity index futures, and the SOFR-linked curves they imply.',
          5),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'lse', 0, 'London Stock Exchange', 'exchange',
-         'Exchange listing equities, exchange traded funds and bonds.',
+         'Simulates London Stock Exchange equity, exchange traded fund and bond quotes.',
          6),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'eurex', 0, 'Eurex', 'exchange',
-         'Exchange listing European interest rate, equity index and equity derivatives.',
+         'Simulates Eurex European interest rate, equity index and equity derivative quotes.',
          7),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'tradeweb', 0, 'Tradeweb', 'broker',
-         'Electronic trading venue for rates, credit and money markets, publishing dealer composite prices.',
+         'Simulates Tradeweb dealer composite prices for rates, credit and money markets.',
          8);
 end $$;
 

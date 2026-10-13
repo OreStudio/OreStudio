@@ -67,7 +67,7 @@ insert into ores_synthetic_market_data_generation_configs_tbl (
     change_reason_code, change_commentary
 )
 select i.system_collection, ores_utility_system_tenant_id_fn(), 0, p.id, 'system',
-       'sandboxed', 'visibility_test_system', 'test', false, null::uuid, 'generic',
+       'sandboxed', 'visibility_test_system', 'test', false, null::uuid, 'ore',
        current_user, current_user, 'system.test', 'visibility test'
 from t_ids i, t_system_party p
 union all
@@ -108,7 +108,7 @@ insert into ores_synthetic_market_data_providers_tbl (
     code, tenant_id, version, name, kind, description, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
-    'visibility_probe', ores_utility_system_tenant_id_fn(), 0, 'Visibility probe', 'generic',
+    'visibility_probe', ores_utility_system_tenant_id_fn(), 0, 'Visibility probe', 'reference',
     'A provider the visibility test holds in the system tenant.', 999,
     current_user, current_user, 'system.test', 'visibility test'
 );
@@ -125,7 +125,7 @@ delete from ores_synthetic_market_data_providers_tbl where code = 'visibility_pr
 insert into ores_synthetic_market_data_providers_tbl (
     code, tenant_id, version, name, kind, description, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
-) select 'visibility_intruder', ores_utility_system_tenant_id_fn(), 0, 'Intruder', 'generic',
+) select 'visibility_intruder', ores_utility_system_tenant_id_fn(), 0, 'Intruder', 'reference',
     'A provider a tenant must not write into the catalogue.', 1000,
     current_user, current_user, 'system.test', 'visibility test'
 where exists(select 1 from t_other);

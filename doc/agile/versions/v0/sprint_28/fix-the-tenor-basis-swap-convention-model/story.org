@@ -8,7 +8,7 @@
 #+filetags: :msvc:c1202:refdata:codegen:dod:sprint_28:v0:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,11 +21,11 @@ The tenor basis swap convention carries its identity, legs, coupon treatment, ma
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | The story and its three tasks are scaffolded and wired into sprint 28. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Merge the scaffold PR, then pick up the investigation task.            |
 | Last touched  | 2026-10-14                               |
 
 * Acceptance
@@ -41,6 +41,7 @@ The tenor basis swap convention carries its identity, legs, coupon treatment, ma
 | [[id:28A38AAC-2B2D-4690-95C8-B2795ADE3B3B][Investigate the configuration document protocol's translation unit]] | BACKLOG | | | Find out why configuration_document_protocol.hpp produces such a large MSVC translation unit, and why the earlier per-entity protocol split does not reduce it. |
 | [[id:1AF6032A-F53E-4E56-8AD1-4CFA20020DFB][Remodel the tenor basis swap convention onto field groups]] | BACKLOG | | | Split the 24 flat members of tenor_basis_swap_convention into identity, two alternative leg forms, coupon treatment, market-data annex and change audit field groups, so no reflected literal is wide and no row carries the leg form it is not. |
 | [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][Split the configuration document protocol by document family]] | BACKLOG | | | Split configuration_document_protocol.hpp and its handler so each translation unit reaches one document family, and restore the Windows MSVC build without a compiler-flag workaround. |
+| [[id:CF2478A6-0C0E-4603-A2F4-28F71E16FE7F][Scaffold the tenor basis swap convention model story]] | STARTED | 2026-10-14 | | Create the story and its three tasks, wire them into sprint 28, and raise the scaffold PR that merges them. |
 
 * Decisions
 

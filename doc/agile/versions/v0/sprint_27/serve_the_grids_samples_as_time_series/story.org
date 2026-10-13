@@ -60,6 +60,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:28C3DC0E-5143-4489-864B-CBDC46AD2B41][Let a table's repository write its own table]] | DONE | 2026-10-13 | 2026-10-13 | The entity-table write check lets a hand-written repository write the table it is named for, so the work ledger and work tenants repositories no longer fail it. |
 | [[id:F80D0975-E69C-4E61-AC89-17318465B90E][Deploy to several hosts at the same time]] | DONE | 2026-10-13 | 2026-10-13 | compass env deploy copies an image with podman image scp, stages each host on its own, and takes several hosts in one command. |
 | [[id:85155A7E-FAB4-4828-BE50-875D84BA3D13][Free the claims a host abandoned]] | DONE | 2026-10-13 | 2026-10-13 | A claim whose reply was lost is returned to the queue when its host asks again, a heartbeat extends only the job the node runs, and the compute service has a larger database pool. |
+| [[id:6885C587-E059-48C8-A7CC-A37A1C615E6A][Prototype the grid's jobs browser]] | BACKLOG | | | Journey and static prototype for the Jobs tab: a paged tree of batches, workunits and results with details and downloads. |
 
 * Findings
 

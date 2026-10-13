@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: D251AAD1-26B2-4080-B84A-D0236AFD4816
+:END:
+#+title: User Journey: Browse the grid's jobs
+#+description: A signed-in person browses the batches, workunits and results of the compute grid that they may see, finds one, reads its details and takes its input or output away.
+#+type: user_journey
+#+level: cross
+#+filetags: 
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A signed-in person browses the batches, workunits and results of the compute grid that they may see, finds one, reads its details and takes its input or output away.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Show me the work the grid ran for me. Let me open a batch, see its jobs and
+their runs, read why one failed, and take its input or output away." The
+person has finished when they have found the record they came for, read its
+details, and downloaded what they needed.
+
+* Actor and trigger
+
+Three actors use this screen, and the session decides what each sees.
+
+- The *operator* is a system administrator in the system party. They see every
+  tenant's batches, workunits and results, and the node each run used.
+- The *tenant administrator* sees every batch of their tenant, across parties.
+- The *party member* sees only the batches of their own party.
+
+The trigger is a question from the Usage tab or the Overview tab: "1268 results
+failed. Which ones?" or "What did my party run today?" The journey starts on the
+Jobs tab of the compute grid screen. It ends on a record page or on a saved
+file. The screen is read-only.
+
+* Steps
+
+1. The person opens the Jobs tab. The system reads the first page of batches
+   that the session may see, newest first, and shows each with its state and
+   its job and failure counts.
+2. The person narrows the list. They type a batch reference or id, choose a
+   state, or (as operator or tenant administrator) choose a party. Each change
+   returns to page one.
+3. The person opens a batch. The system reads one page of its workunits and
+   shows them under the batch. The person may open several batches.
+4. The person opens a workunit. The system reads its results and shows them as
+   leaves of the tree.
+5. The person selects any row. The details panel shows that record's fields.
+   For a result it shows the outcome, the error message, the node and the time
+   received.
+6. The person downloads a workunit's input or a result's output. The system
+   serves the file named by =input_uri= or =output_uri=. The file is large, so
+   the download streams.
+7. The person follows a link from the details: to the job in
+   [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]], or, as operator,
+   to the node in the Machines tab.
+
+No step needs the server to finish work later, so the journey carries no state
+beyond the address: the filters, the open rows and the pages live in the URL.
+
+* Screens and wireframes
+
+One screen. The finder bar, the tree and the details panel are panels of the
+Jobs tab. The tree is the relationship view the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] names: it
+shows how a batch holds workunits and a workunit holds results. The pager is the
+request. Each level pages on the server with First, Previous, Next, Last, a page
+size and Load all, and Load all appears only when the total is 1000 or less.
+Opening a node never reads more than one page of its children.
+
+State is a badge, as the [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX
+Language]] sets it: green for succeeded and closed, red for failed, sky for
+running, blue for queued, and gray only for inactive. The references in the
+details (the node, the job, the party) are links, not text.
+
+The screen shows four states in words: loading ("Reading the batches..."), empty
+("No jobs match. Clear the filters or widen the dates."), error (the server's
+reason and a Retry action) and refused ("Your role cannot read jobs.").
+
+#+caption: Browse the grid's jobs: the finder bar, the tree of batches, workunits and results, and the details panel.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/compute/wireframe_browse_the_grids_jobs.png]]
+
+* Prototype
+
+A static prototype argues the layout: the tree beside the details, the three
+roles, and the four states.
+
+- Source :: =doc/prototypes/compute/browse-the-grids-jobs/=
+- Open :: =index.html=, with =?role=operator|tenant|member= and
+  =?state=loaded|loading|empty|error|refused=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =batch= | The tree's roots: =external_ref=, =status=, =party_id= and the job counts | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
+| =workunit= | The second level: =priority=, =target_redundancy=, =input_uri=, =config_uri= and =canonical_result_id= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
+| =result= | The leaves: =server_state=, =outcome=, =error_message=, =output_uri=, =received_at= and =host_id= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
+| =host= | The node name in a result's details, for the operator | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1, 2 | Read a page of batches | =compute.v1.batches.list= | partial |
+| 2 | Filter batches by state, party or reference | (the list takes an offset and a limit only) | missing |
+| 1 | Count the jobs and failures of each batch | (no count on the batch row) | missing |
+| 3 | Read a page of a batch's workunits | =compute.v1.workunits.list_by_batch_id= | exists |
+| 4 | Read the results of a workunit | =compute.v1.results.list_by_workunit_id= | exists |
+| 5 | Read one record | =compute.v1.batches.get=, =compute.v1.workunits.get=, =compute.v1.results.get= | exists |
+| 5 | Read the node of a result | =compute.v1.hosts.get= | exists |
+| 6 | Download an input or an output | (no route serves the stored file) | missing |
+| 1 to 5 | Reach the reads from the browser | (no BFF route for jobs) | missing |
+
+Each read checks its entity's read code (=compute::batches:read=,
+=compute::workunits:read=, =compute::results:read=) and serves the session's
+tenant. The row-level policy narrows a party member to their own party. The
+Member role holds the batch read in the seed. The workunit and result reads for
+the Member role need the same check as the grid sample read did.
+
+* What is missing
+
+1. *No filters on the batch list.* The list pages by offset and limit. State,
+   party and reference filters need a server-side predicate, or the screen
+   cannot find one batch among thousands.
+2. *No per-batch counts.* The tree row wants the job count and the failure
+   count. Counting them in the browser means reading every workunit. A count
+   on the batch row, or a grouped read, is the missing piece.
+3. *No download route.* =input_uri= and =output_uri= name stored objects. The
+   browser has no route to stream them, and the route must check that the
+   caller may read the owning record first.
+4. *No BFF route.* The web client reads through hand-written BFF routes, as
+   the grid series does. A route for the paged tree is needed.
+5. *Node names for tenants.* A result names its host. A tenant administrator
+   or a party member should probably not see the installation's node names.
+   The owner must decide. Until then, the prototype shows the node to the
+   operator only.
+6. *A run in flight has no node.* As in Follow a job, the node is bound when
+   the run ends. The details say "not yet known".
+
+* Related journeys
+
+- [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]: one job end to end, from the details' job link.
+- [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]: the failed run found here, and how to run it again.
+- [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]: the load that produced these jobs.
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]: the node a run used, for the operator.
+
+* Related knowledge
+
+- [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]
+- [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]]
+- [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]]
+- [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]]
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]]: the checklist this journey follows.

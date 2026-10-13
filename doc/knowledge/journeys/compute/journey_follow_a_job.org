@@ -337,6 +337,7 @@ a compute screen yet.
 * Related journeys
 
 - [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]: the load this job sat in, over a range
+- [[id:D251AAD1-26B2-4080-B84A-D0236AFD4816][Browse the grid's jobs]]: find this job in the tree of batches, workunits and results
 - [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]: a run of this job that failed, and how to run it again
 - [[id:01238DF2-9745-451A-B288-7C0F141E35B6][Plan the grid's capacity]]: the queue this job waited in and what comes behind it
 - [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]]: the app version this job pinned

@@ -70,7 +70,10 @@ std::string feed_binding_repository::sql() {
 }
 
 bool feed_binding_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "source_name",
+        "enabled",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -101,12 +104,22 @@ filter_condition(const std::optional<messaging::feed_bindings_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->party_id)
+        r.push_back(equals("party_id", filter_value(*filter->party_id)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
+    if (filter->party_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->party_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("party_id", std::move(values)));
+    }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"source_name"}, *filter->search));
     return all_of(std::move(r));
 }
 

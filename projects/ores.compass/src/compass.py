@@ -6769,12 +6769,12 @@ def _systemctl_is_active(unit) -> bool:
     return _systemctl_state(unit) == "active"
 
 
-# One build-lock slot, so one environment on this host builds at a time and
-# gets -j6 (6 cores in flight, max, on this 8-core host), leaving headroom for
-# Emacs, the interactive session, and any running fleet. Builds from other
-# environments queue behind it. Another slot could be added the same way if
-# the host ever has more headroom -- nothing else assumes exactly one.
-BUILD_LOCK_SLOTS = (("a", 6),)
+# Two build-lock slots of -j3 each, so two environments on this host build at
+# a time and six cores are in flight at most on this 8-core host, leaving
+# headroom for Emacs, the interactive session, and any running fleet. Builds
+# from further environments queue behind them. The slot name picks the lock
+# file, /tmp/ores-build.lock.<name>; nothing else assumes a slot count.
+BUILD_LOCK_SLOTS = (("a", 3), ("b", 3))
 BUILD_LOCK_POLL_INTERVAL = 1.0
 
 # WS-7 change 2: dash-truncated template drop-in (same mechanism as

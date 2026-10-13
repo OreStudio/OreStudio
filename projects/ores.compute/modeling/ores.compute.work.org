@@ -41,6 +41,7 @@ result. No person types them, and nothing in the shell sends them.
 * Includes
 
 #+begin_src cpp :name includes
+#include <cstdint>
 #include <string>
 #include <string_view>
 #+end_src

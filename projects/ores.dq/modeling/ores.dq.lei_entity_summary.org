@@ -36,6 +36,7 @@ hierarchy would create.
 * Includes
 
 #+begin_src cpp :name includes
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>

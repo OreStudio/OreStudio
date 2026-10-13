@@ -23,6 +23,7 @@ rules.
 * Includes
 
 #+begin_src cpp :name includes
+#include <cstdint>
 #include <string>
 #+end_src
 

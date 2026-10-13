@@ -25,6 +25,7 @@
 #ifndef ORES_DQ_API_MESSAGING_LEI_ENTITY_SUMMARY_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_LEI_ENTITY_SUMMARY_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>

@@ -48,6 +48,7 @@ render_party_country_fields(const repository::party_country_history_row& v) {
                       .value = v.closed_at ?
                                    ores::platform::time::datetime::to_iso8601_utc(*v.closed_at) :
                                    std::string()});
+    fields.push_back({.name = "Closed By", .value = v.closed_by});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.link.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.link.performed_by});

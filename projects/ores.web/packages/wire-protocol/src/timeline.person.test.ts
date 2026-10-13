@@ -40,7 +40,7 @@ vi.mock('./classifications.js', async (importOriginal) => ({
 
 import { readPersonTimeline } from './timeline.js';
 
-function linkVersion(number: number, closedAt = '') {
+function linkVersion(number: number, closedAt = '', closedBy = '') {
     return {
         version: number,
         modifiedBy: 'priya',
@@ -50,6 +50,7 @@ function linkVersion(number: number, closedAt = '') {
             { name: 'Account', value: 'acct-1' },
             { name: 'Role', value: 'role-1' },
             { name: 'Closed At', value: closedAt },
+            { name: 'Closed By', value: closedBy },
             { name: 'Change Reason Code', value: 'system.new_record' },
         ],
         changes: { entries: [] },
@@ -68,7 +69,7 @@ describe('a person’s roles in their timeline', () => {
     it('shows a role given, and a role taken away, by the role’s name', async () => {
         reads.history.mockImplementation(async (_caller: unknown, entity: string) =>
             entity === 'ores.iam.account_role'
-                ? [linkVersion(1), linkVersion(2, '2026-10-05T10:00:00Z')]
+                ? [linkVersion(1), linkVersion(2, '2026-10-05T10:00:00Z', 'tenant_admin')]
                 : [],
         );
 
@@ -76,7 +77,7 @@ describe('a person’s roles in their timeline', () => {
 
         const roles = story.events.filter((e) => e.entityType === 'ores.iam.account_role');
         expect(roles.map((e) => e.kind)).toEqual(['closed', 'changed', 'granted']);
-        expect(roles[0]?.actor).toBe('');
+        expect(roles[0]?.actor).toBe('tenant_admin');
         expect(roles[2]?.actor).toBe('priya');
         expect(roles[2]?.fields.find((f) => f.name === 'Role')?.value).toBe('Auditor');
         expect(story.gaps.map((g) => g.entity)).not.toContain('ores.iam.account_role');

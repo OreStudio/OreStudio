@@ -387,8 +387,11 @@ role_permission_repository::read_all_by_role(const boost::uuids::uuid& role_id) 
                 const bool replaced = !rows.empty() &&
                                       rows.back().link.permission_id == row.link.permission_id &&
                                       rows.back().link.version == row.link.version + 1;
-                if (!replaced)
+                if (!replaced) {
                     row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
                 rows.push_back(std::move(row));
             }
             return rows;

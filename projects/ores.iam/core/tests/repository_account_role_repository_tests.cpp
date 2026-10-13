@@ -156,7 +156,9 @@ TEST_CASE("a_role_taken_away_is_in_the_history_of_the_account_with_the_time_it_e
     ar.account_id = acc.id;
     ar.role_id = r.id;
     repo.write(ar);
-    repo.remove(acc.id, r.id);
+    // The closing is attributed to the actor of the context that makes it.
+    account_role_repository(h.context().with_tenant(h.tenant_id(), h.db_user()))
+        .remove(acc.id, r.id);
 
     CHECK(repo.read_latest(acc.id, r.id).empty());
 
@@ -165,4 +167,5 @@ TEST_CASE("a_role_taken_away_is_in_the_history_of_the_account_with_the_time_it_e
         return row.link.role_id == r.id && row.closed_at.has_value();
     });
     REQUIRE(closed != history.end());
+    CHECK(closed->closed_by == h.db_user());
 }

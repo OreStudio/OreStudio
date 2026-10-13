@@ -46,7 +46,8 @@ namespace ores::iam::repository {
  * A link is closed by ending its validity, not by deleting the row, so a closed
  * link is a row whose end is in the past. @c closed_at is set on a version that
  * ended because the link was closed, and empty on a version that a later
- * version replaced and on a link that is open. The domain type does not carry
+ * version replaced and on a link that is open. @c closed_by names the account
+ * that closed it, and is empty on the same versions. The domain type does not carry
  * it, and it is final, so the history row holds the link beside it. The actor
  * and the time stand flat on the row as well, which is the shape the history
  * builder reads.
@@ -56,6 +57,7 @@ struct account_role_history_row {
     std::string modified_by;
     std::chrono::system_clock::time_point recorded_at;
     std::optional<std::chrono::system_clock::time_point> closed_at;
+    std::string closed_by;
 };
 
 /**

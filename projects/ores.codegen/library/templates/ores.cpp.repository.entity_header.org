@@ -195,6 +195,9 @@ struct {{name_singular}}_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+{{#history}}
+    std::optional<std::string> closed_by;
+{{/history}}
 };
 
 std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);

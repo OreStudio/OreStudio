@@ -260,6 +260,8 @@ const LINK_ID_FIELD = 'ID';
 
 /** The end of a link's validity, empty while the link is open. */
 const CLOSED_AT_FIELD = 'Closed At';
+const CLOSED_BY_FIELD = 'Closed By';
+const CLOSING_FIELDS: ReadonlySet<string> = new Set([CLOSED_AT_FIELD, CLOSED_BY_FIELD]);
 
 /**
  * The entries a link table's history makes.
@@ -269,8 +271,9 @@ const CLOSED_AT_FIELD = 'Closed At';
  * @c ID field. The versions are grouped by that pair, and each link is one row
  * of the stream: its opening, each change, and its closing. A link is closed by
  * ending its validity and not by writing a version, so the closing is read off
- * the field the server states, and it has no author: the store records when a
- * link ended, and not who ended it.
+ * the fields the server states: when the link ended and who ended it. Those two
+ * belong to the closing and not to the version that carries them, so they are
+ * left out of the other entries.
  */
 export function linkEvents(
     entityType: string,
@@ -287,7 +290,14 @@ export function linkEvents(
         links.set(id, [...(links.get(id) ?? []), version]);
     }
     return [...links.entries()].flatMap(([id, own]) => {
-        const events = recordEvents(entityType, id, own);
+        const events = recordEvents(
+            entityType,
+            id,
+            own.map((version) => ({
+                ...version,
+                fields: version.fields.filter((field) => !CLOSING_FIELDS.has(field.name)),
+            })),
+        );
         const closings = own
             .filter((version) => fieldValue(version.fields, CLOSED_AT_FIELD) !== '')
             .map((version): TimelineEvent => ({
@@ -295,14 +305,14 @@ export function linkEvents(
                 entityId: id,
                 kind: 'closed',
                 at: fieldValue(version.fields, CLOSED_AT_FIELD),
-                actor: '',
+                actor: fieldValue(version.fields, CLOSED_BY_FIELD),
                 version: version.version,
                 reasonCode: '',
                 commentary: '',
                 fields: version.fields.filter(
                     (field) =>
                         !TIMELINE_PROVENANCE_FIELDS.has(field.name) &&
-                        field.name !== CLOSED_AT_FIELD,
+                        !CLOSING_FIELDS.has(field.name),
                 ),
             }));
         return [...events, ...closings];

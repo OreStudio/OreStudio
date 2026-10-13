@@ -38,8 +38,8 @@ A person changes the party they act for from the account menu, without signing o
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2638EE09-9D75-4E5D-8E41-30FD6534B46B][Scaffold story: Change party from the account menu]] | STARTED | 2026-10-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:CB4A281A-3D03-40A2-AF97-32D1F7EAB466][Offer the other parties in the account menu]] | BACKLOG | | | Initial task for: Change party from the account menu |
+| [[id:2638EE09-9D75-4E5D-8E41-30FD6534B46B][Scaffold story: Change party from the account menu]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:CB4A281A-3D03-40A2-AF97-32D1F7EAB466][Offer the other parties in the account menu]] | DONE | | 2026-10-13 | Initial task for: Change party from the account menu |
 
 * Decisions
 

@@ -63,8 +63,7 @@ struct document_kind {
     std::string parameter;
 };
 
-std::optional<std::string>
-file_of(const rp::run_document& document, std::string_view parameter) {
+std::optional<std::string> file_of(const rp::run_document& document, std::string_view parameter) {
     for (const auto& f : document.files)
         if (f.parameter == parameter)
             return f.name;
@@ -112,8 +111,8 @@ std::vector<document_kind> document_kinds_of(nats_client& owners) {
     for (const auto code : imported_types) {
         const auto* t = ores::reporting::domain::setup_file_type_of(reply.types, code);
         if (t == nullptr)
-            throw std::invalid_argument(std::format(
-                "No file type names the document of the {} configuration type.", code));
+            throw std::invalid_argument(
+                std::format("No file type names the document of the {} configuration type.", code));
         kinds.push_back({code, t->ore_parameter});
     }
     return kinds;
@@ -301,7 +300,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
 
     const auto kinds = document_kinds_of(owners);
     ore document;
-    document.Setup = run_document_mapper::reverse_setup({run.document.settings, run.document.files});
+    document.Setup =
+        run_document_mapper::reverse_setup({run.document.settings, run.document.files});
     document.Analytics = run_document_mapper::reverse_analytics(run.document.analytics);
     if (!run.document.market_bindings.empty())
         document.Markets =

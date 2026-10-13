@@ -30,9 +30,9 @@
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
-#include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.core/repository/file_type_repository.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/run_document_service.hpp"
 #include <algorithm>
 #include <filesystem>
@@ -70,8 +70,8 @@ constexpr std::string_view imported_types[] = {
 /**
  * @brief The Setup parameter that names the document of a configuration type.
  */
-std::string
-setup_parameter_of(const std::vector<reporting::domain::file_type>& types, std::string_view code) {
+std::string setup_parameter_of(const std::vector<reporting::domain::file_type>& types,
+                               std::string_view code) {
     const auto* t = reporting::domain::setup_file_type_of(types, code);
     if (t == nullptr)
         throw std::invalid_argument(
@@ -79,7 +79,8 @@ setup_parameter_of(const std::vector<reporting::domain::file_type>& types, std::
     return t->ore_parameter;
 }
 
-std::vector<document_kind> document_kinds_of(const std::vector<reporting::domain::file_type>& types) {
+std::vector<document_kind>
+document_kinds_of(const std::vector<reporting::domain::file_type>& types) {
     std::vector<document_kind> kinds;
     for (const auto code : imported_types)
         kinds.push_back({code, setup_parameter_of(types, code)});
@@ -96,8 +97,8 @@ std::vector<reporting::domain::file_type> file_types_of(const context& ctx) {
 /**
  * @brief The name a run document gives one file, empty when it names none.
  */
-std::optional<std::string>
-file_of(const reporting::messaging::run_document& document, std::string_view parameter) {
+std::optional<std::string> file_of(const reporting::messaging::run_document& document,
+                                   std::string_view parameter) {
     for (const auto& f : document.files)
         if (f.parameter == parameter)
             return f.name;

@@ -113,10 +113,9 @@ std::vector<messaging::run_analytic> analytics_of(const ores::database::context&
 // The market bindings of a configuration, in the order the run document writes them.
 std::vector<domain::configuration_market_binding>
 market_bindings_of(const ores::database::context& ctx, const boost::uuids::uuid& configuration_id) {
-    auto bindings =
-        read_where(ctx, configuration_market_binding_repository(), [&](const auto& b) {
-            return b.configuration_id == configuration_id;
-        });
+    auto bindings = read_where(ctx, configuration_market_binding_repository(), [&](const auto& b) {
+        return b.configuration_id == configuration_id;
+    });
     std::ranges::sort(bindings,
                       [](const auto& l, const auto& r) { return l.position < r.position; });
     return bindings;
@@ -248,15 +247,14 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
 
     run_document_inputs in;
     in.risk = risk.front();
-    in.run_date = std::format("{:%F}", std::chrono::floor<std::chrono::days>(
-                                           std::chrono::system_clock::now()));
+    in.run_date = std::format(
+        "{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()));
     in.analytics = analytics_of(ctx_, configuration_id);
     in.market_bindings = market_bindings_of(ctx_, configuration_id);
     for (const auto& b : bindings(report_definition_id))
         in.bound_types.push_back(b.configuration_type_code);
-    in.file_types = read_where(system_scope(ctx_), file_type_repository(), [](const auto&) {
-        return true;
-    });
+    in.file_types =
+        read_where(system_scope(ctx_), file_type_repository(), [](const auto&) { return true; });
     return generate_run_document(in);
 }
 

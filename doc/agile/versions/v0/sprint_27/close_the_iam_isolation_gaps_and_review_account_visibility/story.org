@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 2F18D3B6-3C61-4208-8F74-EE7BB6A4C135
+:END:
+#+title: Story: Close the IAM isolation gaps and review account visibility
+#+description: Two IAM audit tables and three seed profile tables carry a tenant and have no isolation policy, so a session in one tenant can read another tenant's authentication events. The account visibility model built in PR 3124 widens what a tenant reads of the system tenant and what a service reads of a tenant, and was promised a review once its tests passed. This story closes the gaps and records the review as findings.
+#+type: story
+#+level: s2
+#+filetags: :iam:security:rls:sprint_27:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No IAM table that carries a tenant is readable across the tenant boundary unless a model says why, and the account visibility model has been reviewed against a stated list of threats.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- auth_events and run_token_issues enforce tenant isolation, and an event with no tenant is readable only by the system tenant.
+- The seed profile tables state who may read them, in policy or in the ignore file with a reason that matches.
+- Each threat in the account visibility review is a pgTAP or C++ test, or a recorded finding.
+- validation_ignore.txt no longer states a reason that contradicts the table.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F9DB8877-1278-4089-9763-EEE59BFA7AC4][Scaffold story: Close the IAM isolation gaps and review account visibility]] | STARTED | 2026-10-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:23ABA651-A56B-4F97-848E-E25A755DC8E7][Isolate the authentication and run token logs by tenant]] | BACKLOG | | | Initial task for: Close the IAM isolation gaps and review account visibility |
+| [[id:1A47FC97-D907-453E-A163-03F48E7B28E9][Decide who may read the seed profiles]] | BACKLOG | | | The three seed profile tables are the platform's own configuration. Any tenant can read them across the tenant boundary, and the super administrator reads them during setup. They either get a policy that admits the system tenant, or the ignore file says why they have none. |
+| [[id:CB992B78-04D7-4AB3-9A53-49EF208661EF][Review the security of account visibility]] | BACKLOG | | | Review the account visibility model built in PR 3124 against a stated list of threats: the shared rows, the party rule with its service actor and system party clauses, the existence function, the delete rule, the system tenant read on the account repository, the security definer functions, and the lists that now return shared rows. Each threat is a test or a recorded finding. |
+
+* Decisions
+
+* Out of scope
+
+-

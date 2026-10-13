@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
 #+branch: chore/drop-the-generated-timestamps
-#+pr:
+#+pr: 3258
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3258][#3258]] | [codegen] Stop stamping the ER diagrams with a generation time |
 
 * Review
 

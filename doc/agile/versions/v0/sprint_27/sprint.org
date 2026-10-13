@@ -28,15 +28,15 @@ backlog.
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Start          | 2026-10-05                               |
 | End (expected) | 2026-10-12                           |
-| Now            | At close; health review 1 recorded.    |
+| Now            | Nothing.                             |
 | Waiting on     | Nothing.                               |
-| Next           | Write the retrospective and close the sprint. |
-| Release Notes  | Added at end of sprint.                |
+| Next           | Nothing.                               |
+| Release Notes  | [[id:368AA19A-54CC-41EC-926D-EB26E4B018B9][Sprint 27 release notes]] |
 | Last touched   | 2026-10-13                               |
 
 * Stories
@@ -225,9 +225,61 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 
 * Achievements
 
-Milestones worth capturing as they happen, so the release notes at
-sprint close have the evidence to hand. Add a dated =** subheading=
-per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
+** 2026-10-08: a series identity became joinable in the database
+
+[[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] closed on the day it
+opened. Each codec field of a series' oresmd URI is projected into its own
+column, written from the same parse that writes the URI, so the database can
+join and filter a series identity instead of scanning the string.
+
+** 2026-10-10: ores.marketdata gained curves
+
+[[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] closed. A curve is a derived
+series and nothing else; a point carries its provenance, a manual key its
+author, the operator can write and clear a point, and staleness is visible
+when a term structure is drawn.
+
+** 2026-10-11: money became exact and the rates family moved to the instrument table rule
+
+[[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] and
+[[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] both closed.
+Money quantities are exact decimals consistent by role, the ORE boundary
+keeps the document's own spelling, and an economic digest moves a trade's
+external version only when its economics change. The rates family now sits
+on a family header, product fact tables, shared children with role codes,
+and securities keyed by their reference datum.
+
+** 2026-10-11: the grid reached the local network hosts
+
+[[id:0FFD3EF1-9AF8-43BA-899C-C5018F10272E][Run compute nodes on the local network hosts]] closed: three machines
+join an existing environment's grid under Quadlet units, 22 wrappers in all,
+and the grid screen groups every node by machine.
+
+** 2026-10-11: the QA validation runner and the agile tree arrived in ores.web
+
+[[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] and
+[[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] closed. A tester marks each scenario
+step PASS or FAIL with a note and a screenshot, and the sprint, its stories
+and tasks, and the backlog buckets are browsable in one Development module
+that retires the two predecessor views.
+
+** 2026-10-12: an oresmd URL is composed, parsed and edited in the browser
+
+[[id:B2A9B435-07F8-448A-970F-61B92D6C4559][Edit an oresmd URL in a dialog]] closed. The server holds the grammar and
+answers parse, compose and describe-schema; the web shows the accepted editor
+as a modal that a screen calls and that writes the edited URI back. The IR
+and FX synthetic feed screens call it first.
+
+** 2026-10-13: the credit family, the IAM tables and the last record-screen work
+
+[[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]],
+[[id:575E321C-CF36-4E2F-87C9-E29D8C698D3A][Model the hand-written IAM tables]],
+[[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]],
+[[id:3B285F34-0AD5-4E09-A897-0E88FB568130][Plot a surface as a heatmap and slices]] and
+[[id:E4D584FA-E8F6-4945-8B5A-DCA2A4304EBD][Order the term axes of a shape by duration]] closed on the last day. The
+credit family follows the bond pattern, five hand-written IAM tables gained
+models and generation, a party timeline draws its links and contacts, and a
+two-axis surface is drawn as a heatmap and as slices.
 
 * Captures
 
@@ -290,4 +342,52 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+The [[id:368AA19A-54CC-41EC-926D-EB26E4B018B9][sprint 27 release notes]] carry the
+full narrative.
+
+** What went well
+
+- The UX pass landed its largest journey groups: the operations, refdata,
+  synthetic-marketdata and super-administrator journeys run in ores.web, and
+  the record screens gained their party timeline, audit polish and account
+  split.
+- The market data model matured end to end: curves as derived series with
+  provenance and manual keys, a joinable series identity, and an oresmd URL
+  editor that composes, parses and validates an address in the browser.
+- The instrument reworks held their line: the rates family shipped, and the
+  credit family followed the same bond pattern, so the trading model carries
+  typed families instead of polymorphic payloads.
+- The codegen programme kept paying down structural debt: the drift gate now
+  covers the last components, hand-written IAM and DQ tables gained models,
+  and every subject sits on the canonical entity protocol.
+- The close discipline worked: all 42 open stories were split at the close,
+  21 closed at the scope they delivered with a named successor, and no open
+  story or task was left behind.
+- A hotfix line answered every red build, clearing the local-check failures
+  on main and keeping the continuous builds green.
+
+** What didn't work
+
+- The sprint ran nine days against a seven-day window and closed RED on load,
+  PR velocity and focus: 3487 commits against a 1000 ceiling, and 569 merged
+  PRs against a 100-band.
+- The mission covered only part of the sprint. The money-exactness, curve,
+  instrument, codegen, isolation and roughly forty hotfix stories serve no
+  clause of the UX mission.
+- Thirty-one stories were still in flight at the review, across at least
+  seven themes, while eleven other worktrees were active at the same time.
+- Bookkeeping drifted under the load: 18 sprint-table rows disagreed with
+  their story files, and three stories were duplicated in the table.
+
+** Improve next sprint
+
+- Reduce the in-flight story count, and stop carrying the standing
+  infrastructure programme in the same sprint as the UX pass.
+- Split or defer at planning time rather than at the close; the close-time
+  pass cost a whole session.
+- Keep the sprint table in step with the story files as state changes, so the
+  close starts from agreement rather than reconciliation.
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

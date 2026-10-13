@@ -31,7 +31,7 @@ cross-currency swap is indistinguishable from a plain swap after a round trip.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Complete. The two products stay apart through the import and the export. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Raise the PR and merge.                |
 | Last touched | 2026-10-09                               |
@@ -116,6 +116,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Complete. The two products stay apart through the import and the export.
 
 A cross-currency swap keeps its own product type through the import and the
 export. The importer stores =CrossCurrencySwap= where the document used

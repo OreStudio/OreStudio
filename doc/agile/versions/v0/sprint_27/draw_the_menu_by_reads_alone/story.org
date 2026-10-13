@@ -23,7 +23,7 @@ Who sees an area or a card depends on the reads a person holds and on nothing el
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done. |
+| Now          | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-10-11                               |

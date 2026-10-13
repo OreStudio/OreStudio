@@ -33,7 +33,7 @@ column compiles.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Complete. The leg is keyed by the trade and the ordinal, and the codegen defect is fixed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Raise the PR and merge.                |
 | Last touched | 2026-10-09                               |
@@ -153,6 +153,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Complete. The leg is keyed by the trade and the ordinal, and the codegen defect is fixed.
 
 =ores_trading_swap_legs_tbl= is keyed by =(tenant_id, trade_id, leg_number,
 valid_from, valid_to)=. The surrogate =id= is gone from the model, its field

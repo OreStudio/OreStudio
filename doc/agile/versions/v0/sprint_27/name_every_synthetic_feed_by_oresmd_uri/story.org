@@ -31,7 +31,7 @@ The oresmd URI already names every ORE datum: 45 instrument types in 11 asset cl
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Closed. PR 3152 and PR 3182 merged.   |
+| Now          | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | The oresmd URI codec decision (a capture). |
 | Last touched  | 2026-10-12                               |
@@ -75,3 +75,7 @@ The oresmd URI already names every ORE datum: 45 instrument types in 11 asset cl
 * Out of scope
 
 - New feed kinds. This story changes the reference of the existing kinds and keeps the field general. It builds no new kind.
+
+* Result
+
+Closed. PR 3152 and PR 3182 merged.

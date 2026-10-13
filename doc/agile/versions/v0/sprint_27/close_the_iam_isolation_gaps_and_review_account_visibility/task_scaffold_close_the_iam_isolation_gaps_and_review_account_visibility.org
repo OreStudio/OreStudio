@@ -28,7 +28,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:2F18D3B6-3C61-4208-8F74-EE7BB6A4C135][Close the IAM isolation gaps and review account visibility]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-13                               |

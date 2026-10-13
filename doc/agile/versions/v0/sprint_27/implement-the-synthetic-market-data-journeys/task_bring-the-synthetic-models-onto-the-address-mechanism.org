@@ -29,7 +29,7 @@ generated from an org model, and the twin-coverage check covers the component.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Complete. 21 TypeScript modules are committed under =generated/synthetic/=: 9 domain twins and 12 protocol twins, all generated from the models. The four non-entity operation surfaces are operation models now, so no hand-written protocol header remains. The drift gate and the twin gate both cover the component. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-10-09                               |
@@ -170,6 +170,8 @@ regenerated from the tree scan, and the two superseded headers are deleted.
 |   |                 |      |          |       |
 
 * Result
+
+Complete. 21 TypeScript modules are committed under =generated/synthetic/=: 9 domain twins and 12 protocol twins, all generated from the models. The four non-entity operation surfaces are operation models now, so no hand-written protocol header remains. The drift gate and the twin gate both cover the component.
 
 Synthetic speaks TypeScript. 21 generated modules are committed: the 9 domain
 interfaces and the 12 protocol modules, each protocol module the twin of a

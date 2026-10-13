@@ -48,8 +48,9 @@ MONEY_TOKENS = frozenset({
 
 # Columns whose name says money and whose economics do not: a variance strike
 # is volatility, a vol config's strike factor is a multiplier, and a synthetic
-# generator's price is a model parameter. Keyed on the column rather than the
-# file, because excluding the file would hide every later column added to it.
+# generator's price or initial rate is a model parameter. Keyed on the column
+# rather than the file, because excluding the file would hide every later
+# column added to it.
 EXCLUDED_COLUMNS = frozenset({
     "ores.trading.fx_variance_swap_instrument::strike",
     "ores.trading.equity_variance_swap_instrument::strike",
@@ -57,6 +58,7 @@ EXCLUDED_COLUMNS = frozenset({
     "ores.refdata.cds_volatility_config::strike_factor",
     "ores.dq.synthetic_fx_spot_config::gmm_initial_price",
     "ores.synthetic.fx_spot_generation_config::gmm_initial_price",
+    "ores.synthetic.ir_curve_generation_config::initial_rate",
 })
 
 # A token here wins over a money token, so a rate that is really a fraction is

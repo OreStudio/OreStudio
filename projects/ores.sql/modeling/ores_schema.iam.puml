@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T23:20:31.653727Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -166,6 +166,7 @@ package "iam" #E8F4FD {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_to : timestamptz
     }
 
@@ -180,21 +181,29 @@ package "iam" #E8F4FD {
     end note
 
     entity ores_iam_account_roles_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
         * account_id : uuid <<PK, FK>>
         * role_id : uuid <<PK, FK>>
         * valid_from : timestamptz <<PK>>
         --
-        * tenant_id : uuid <<FK>>
-        * assigned_by : text
-        * assigned_at : timestamptz
+        * version : integer
+        * modified_by : text
+        * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_to : timestamptz
     }
 
     note right of ores_iam_account_roles_tbl
-    Many-to-many: accounts to roles.
-    Tracks who assigned the role.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Account Role Table
+    Junction table assigning roles to IAM accounts. An account can hold
+    several roles and a role can be held by several accounts. A role taken
+    away closes the row and deletes nothing, so the history of an account's
+    roles includes the ones it no longer holds.
     end note
 
     entity ores_iam_account_statuses_tbl <<temporal>> #C6F0D8 {
@@ -355,6 +364,30 @@ package "iam" #E8F4FD {
         * error_detail : text
     }
 
+    note right of ores_iam_auth_events_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Auth Event Table
+    One row per authentication event. The rows are append-only, so the model states
+    :current_state:: an event is a fact about an instant, and the bi-temporal pair
+    has no meaning on it.
+    The table is the audit log of who signed in and who failed to. Its tenant_id
+    is an ordinary text column and not the generated kind, because an event can
+    happen before a tenant is known, and it is then the system tenant's. The read in
+    ores.iam.auth_event_operations scopes on that column itself. The model binds
+    no variability profile: readonly-timeseries fixes has_tenant_id to true, and
+    this table states it false for the reason above.
+    The table is internal: its protocol, handler and shell commands are the
+    hand-written operation model's, so only the data layer and the SQL schema are
+    generated here.
+    The table is isolated by tenant like the rest of IAM, by a policy in
+    iam_rls_policies_create.sql. An event that names no tenant is the system
+    tenant's. The hourly and daily continuous aggregates it once had are gone:
+    nothing read them, and TimescaleDB does not build a continuous aggregate over a
+    table with row-level security.
+    end note
+
     entity ores_iam_login_info_tbl  #F7E5FF {
         * account_id : uuid <<PK, FK>>
         --
@@ -430,11 +463,10 @@ package "iam" #E8F4FD {
     reads]] allow-lists it. The other reads need iam::permissions:read.
     end note
 
-    entity ores_iam_role_grant_request_roles_tbl <<junction>> #ECECEC {
+    entity ores_iam_role_grant_request_roles_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * request_id : uuid <<PK, FK>>
         * role_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
           applied_at : timestamptz
@@ -442,6 +474,8 @@ package "iam" #E8F4FD {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -491,21 +525,29 @@ package "iam" #E8F4FD {
     end note
 
     entity ores_iam_role_permissions_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
         * role_id : uuid <<PK, FK>>
         * permission_id : uuid <<PK, FK>>
         * valid_from : timestamptz <<PK>>
         --
-        * tenant_id : uuid <<FK>>
-        * assigned_by : text
-        * assigned_at : timestamptz
+        * version : integer
+        * modified_by : text
+        * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_to : timestamptz
     }
 
     note right of ores_iam_role_permissions_tbl
-    Many-to-many: roles to permissions.
-    Tracks who changed the bundle, when and why, the same as account_roles.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Role Permission Table
+    Junction table granting permissions to IAM roles. A role holds several
+    permissions and a permission is held by several roles. A permission taken
+    away closes the row and deletes nothing, so the history of a role includes
+    the permissions it no longer holds.
     end note
 
     entity ores_iam_roles_tbl <<temporal>> #C6F0D8 {
@@ -613,6 +655,29 @@ package "iam" #E8F4FD {
         * outcome : text
         * reason : text
     }
+
+    note right of ores_iam_run_token_issues_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Run Token Issue Table
+    A row says who asked for a run token, for which grant and which run, and whether
+    the token was issued or refused. The exchange reads it to count the distinct runs
+    a grant has already served, so a grant with a max_runs admits exactly that
+    many runs. The rows are append-only, so the model states :current_state:.
+    The table is an audit log. Its tenant_id is an ordinary text column and not
+    the generated kind. The table is isolated by tenant like the rest of IAM, by a
+    policy in iam_rls_policies_create.sql, and only IAM's own exchange reads and
+    writes it, each row through a session of its own tenant. The model binds no
+    variability profile: readonly-timeseries fixes has_tenant_id to true, and
+    this table states it false for the reason above.
+    No retention policy is set. A grant that names a max_runs is counted from this
+    table, so dropping rows would let a grant serve more runs than its grantor
+    allowed.
+    The table is internal, so only the data layer and the SQL schema are generated.
+    The reads stay hand-written in run_token_issue_log, because they are counts
+    the generated reads do not express.
+    end note
 
     entity ores_iam_seed_profile_parameters_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
@@ -761,9 +826,17 @@ package "iam" #E8F4FD {
     }
 
     note right of ores_iam_session_samples_tbl
-    Session time-series samples: bytes captured at heartbeat frequency.
-    Designed for TimescaleDB hypertable.
-    Partitioned by sample_time.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Session Sample Table
+    One sample of a session's traffic: the bytes it sent and received and the latency
+    of the heartbeat. The rows are append-only, so the model states :current_state:.
+    The table is tenant-scoped. TimescaleDB columnstore compression is not enabled on
+    it, because it is incompatible with row-level security, which the table needs for
+    tenant isolation.
+    The table is internal, so only the data layer and the SQL schema are generated.
+    The wire message that carries samples is ores.iam.session_samples_messages.
     end note
 
     entity ores_iam_sessions_tbl  #F7E5FF {
@@ -921,9 +994,13 @@ package "iam" #E8F4FD {
 ores_iam_accounts_tbl ||--o{ ores_iam_account_contact_informations_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_account_credentials_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_account_parties_tbl : "has"
+ores_iam_accounts_tbl ||--o{ ores_iam_account_roles_tbl : "assigned"
+ores_iam_roles_tbl ||--o{ ores_iam_account_roles_tbl : "granted to"
 ores_iam_role_grant_requests_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
 ores_iam_roles_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_role_grant_requests_tbl : "has"
+ores_iam_roles_tbl ||--o{ ores_iam_role_permissions_tbl : "has"
+ores_iam_permissions_tbl ||--o{ ores_iam_role_permissions_tbl : "included in"
 ores_iam_accounts_tbl ||--o{ ores_iam_run_grants_tbl : "has"
 ores_iam_roles_tbl ||--o{ ores_iam_run_grants_tbl : "has"
 ores_iam_seed_profiles_tbl ||--o{ ores_iam_seed_profile_parameters_tbl : "has"

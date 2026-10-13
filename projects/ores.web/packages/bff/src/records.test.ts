@@ -861,6 +861,12 @@ describe('GET /api/timeline for a party', () => {
         };
         expect(story.events.map((event) => event.kind)).toEqual(['raised']);
         // A link read that worked states no gap, even when the party holds none.
-        expect(story.gaps).toEqual([]);
+        // The only gaps name the removals no read can find, which the stream
+        // states for every part kind.
+        expect(story.gaps.map((gap) => gap.entity)).toEqual([
+            'ores.refdata.party_identifier_removed',
+            'ores.refdata.party_contact_information_removed',
+            'ores.refdata.business_unit_removed',
+        ]);
     });
 });

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T22:47:58.818299Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -146,17 +146,18 @@ package "marketdata" #E3F2FD {
     change_commentary) — tick-level data volumes make these impractical.
     end note
 
-    entity ores_marketdata_market_series_asset_classes_tbl <<junction>> #ECECEC {
+    entity ores_marketdata_market_series_asset_classes_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * market_series_id : uuid <<PK, FK>>
         * asset_class_code : text <<PK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 

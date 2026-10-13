@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T22:47:58.818299Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: compute
-Tables: 13
+Tables: 14
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -170,6 +170,7 @@ package "compute" #EDE7F6 {
         * sampled_at : timestamptz <<PK>>
         --
         * tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
         * total_hosts : integer
         * online_hosts : integer
         * idle_hosts : integer
@@ -385,6 +386,28 @@ package "compute" #EDE7F6 {
     The table is hand-written, not generated. It is a mutable current-state table
     with atomic claim statements, and the policy below admits only a session of the
     system tenant, a shape the entity templates do not offer.
+    end note
+
+    entity ores_compute_work_tenants_tbl  #F7E5FF {
+        * work_tenant_id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * first_seen_at : timestamptz
+    }
+
+    note right of ores_compute_work_tenants_tbl
+    The tenants that have dispatched work to the compute grid. The poller of the
+    grid samples writes one row of counters for each of these tenants, and it
+    cannot list them from the work itself: a tenant's batches are the tenant's
+    and no policy lets the system tenant read them, and the compute service has
+    no read of the tenant roster.
+    The table belongs to the installation. It holds a tenant id and a time, and
+    no business data. The dispatcher adds a tenant the first time it dispatches
+    for it, as the system tenant, and the poller reads the list as the system
+    tenant. The policy admits only a session of the system tenant, as the work
+    ledger's does, so it is not a widening.
+    The table is hand-written, not generated: it is a small installation-owned
+    list, a shape the entity templates do not offer.
     end note
 
     entity ores_compute_workflow_batch_links_tbl  #F7E5FF {

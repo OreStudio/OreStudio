@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/risk_participation_agreement_instruments/risk_participation_agreement_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+risk_participation_agreement_instruments list --limit 1

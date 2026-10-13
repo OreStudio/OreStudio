@@ -110,9 +110,11 @@ cmake --build --preset <preset> [--target <target_name>]
 
 =compass build= ([[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]) wrapping
 =cmake --build --preset=. Locking is =_acquire_build_lock=/
-=BUILD_LOCK_SLOTS= in the same file — one =flock=-based slot
-(=-j6=) under =/tmp/ores-build.lock.a=, shared by every
-worktree on the host. The memory cap comes from
+=BUILD_LOCK_SLOTS= in the same file — two =flock=-based slots
+(each =-j3=) under =/tmp/ores-build.lock.a= and
+=/tmp/ores-build.lock.b=, shared by every worktree on the host, so two
+environments build at once and six cores are in flight at most. The memory
+cap comes from
 =_ensure_build_slice_deployed=/=_build_slice_name= in the same file,
 syncing
 [[proj:projects/ores.compass/src/systemd/app-build-.slice.d/50-limits.conf][=projects/ores.compass/src/systemd/app-build-.slice.d/50-limits.conf=]].

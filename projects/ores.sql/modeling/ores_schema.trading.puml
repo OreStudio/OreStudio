@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T22:47:58.818299Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 105
+Tables: 111
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1331,6 +1331,46 @@ package "trading" #E8F5E9 {
     only the product's own fields, and joins the header by trade_id.
     end note
 
+    entity ores_trading_cds_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+          credit_curve_id : text <<FK>>
+          issuer_id : text <<FK>>
+          recovery_rate : double
+          reference_obligation : text
+          settles_accrual : boolean
+          rebates_accrual : boolean
+          pays_at_default_time : boolean
+          protection_payment_time : text
+          protection_start_date : date
+          upfront_date : date
+          upfront_fee : numeric(38, 12)
+          trade_date : date
+          cash_settlement_days : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_cds_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Default Swap Instrument Table
+    Represents the product facts of a CreditDefaultSwap trade: the credit curve and the issuer the swap
+    names, and the fixed recovery rate when the document states one.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.credit_instrument, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
+    end note
+
     entity ores_trading_commodity_basket_constituents_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -1576,26 +1616,9 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * reference_entity : text
-        * currency : text
-        * notional : numeric(38, 12)
-        * spread : numeric(38, 12)
-        * recovery_rate : double
-        * tenor : text
-        * start_date : date
-        * maturity_date : date
-        * day_count_fraction_code : text
-        * payment_frequency_code : text
-          index_name : text
-          index_series : integer
-          seniority : text
-          restructuring : text
+          start_date : date
+          maturity_date : date
           description : text
-          option_type : text
-          option_expiry_date : date
-          option_strike : numeric(38, 12)
-          linked_asset_code : text
-          tranche_attachment : double
-          tranche_detachment : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1609,22 +1632,56 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Credit Instrument Table
-    Represents the credit product types ORE states. trade_type_code
-    discriminates the exact product, and the optional field blocks are null
-    when the sub-type does not state them: the index block for CDSIndex
-    products, the option block for CDS option products, the tranche block for
-    CBO and SyntheticCDO products, and the linked-asset code for
-    CreditLinkedSwap.
-    The table is a flat instrument sub-type, so it binds
-    :profile: trading-instrument. Two table features justify that binding:
-    the table is tenant-scoped through tenant_id and the tenant isolation
-    policy, its insert
-    trigger stamps party_id from the session variable app.current_party_id
-    rather than taking it from the client. The profile also fixes the identity
-    and audit field groups, the batch read and the generator facet, and leaves
-    the table with no UI surface -- the per-instrument forms were hand-crafted
-    in the removed desktop client and consumed the generated messaging
-    protocol.
+    One row per credit trade, the family's own header. It holds what every
+    product in the family states the same way: the trade it belongs to, the trade
+    type code, the party, the activity that wrote the version, the reference
+    entity, the instrument's start and maturity dates and its description. It
+    holds no product economics.
+    The header is the family's *coverage*: the trade_type_code check that the
+    routed-instrument template generates from ores.trading.trade_type_catalogue
+    lists exactly the six codes the importer writes, and the two codes with no
+    importer, CreditDefaultSwapOption and CBO, stay out until a mapper writes them.
+    It is also the family's *owner*: the delete cascade section below names every
+    table the family writes, so the delete rule closes the legs, the basket and
+    the facts with the header and the family does not outlive it.
+    The products' own fields stay in their fact tables, keyed by the same trade
+    and joined to this row by the trade id. A fact table carries no party_id and
+    no trade_type_code: the header is the family's party boundary and its
+    routing boundary.
+    The dates are the family's *common dates*, the one set of names for the start
+    and the maturity of every credit product. A risk participation agreement's
+    protection start and end are those dates.
+    end note
+
+    entity ores_trading_credit_linked_swap_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * credit_curve_id : text <<FK>>
+          recovery_rate : double
+          settles_accrual : boolean
+          default_payment_time : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_credit_linked_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Linked Swap Instrument Table
+    Represents the product facts of a CreditLinkedSwap trade: the credit curve and the fixed recovery
+    rate. The four payment groups are rows of swap_legs told apart by leg_group.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.credit_instrument, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
     entity ores_trading_entry_channel_types_tbl <<temporal>> #C6F0D8 {
@@ -2461,6 +2518,77 @@ package "trading" #E8F5E9 {
     Variance swaps from Volatility swaps.
     end note
 
+    entity ores_trading_index_cds_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * credit_curve_id : text <<FK>>
+          issuer_id : text <<FK>>
+          settles_accrual : boolean
+          rebates_accrual : boolean
+          pays_at_default_time : boolean
+          protection_payment_time : text
+          protection_start_date : date
+          upfront_date : date
+          upfront_fee : numeric(38, 12)
+          trade_date : date
+          cash_settlement_days : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_index_cds_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Index Credit Default Swap Instrument Table
+    Represents the product facts of an IndexCreditDefaultSwap trade: the credit curve of the index. The
+    names of a bespoke basket are rows of credit_basket_constituents.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.credit_instrument, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
+    end note
+
+    entity ores_trading_index_cds_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+          knock_out : boolean
+          index_term : text
+          strike_type : text
+          trade_date : date
+          front_end_protection_start_date : date
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_index_cds_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Index Credit Default Swap Option Instrument Table
+    Represents an IndexCreditDefaultSwapOption trade. The option wraps an index swap, so the trade also
+    has a row in index_credit_default_swap_instruments for the wrapped swap's own fields. The strike,
+    the option block and the exercise dates are the shared instrument_strikes, option and schedule rows.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.credit_instrument, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
+    end note
+
     entity ores_trading_inflation_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -3170,6 +3298,42 @@ package "trading" #E8F5E9 {
     supports.
     end note
 
+    entity ores_trading_risk_participation_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * credit_curve_id : text <<FK>>
+          issuer_id : text <<FK>>
+          recovery_rate : double
+        * participation_rate : double
+          settles_accrual : boolean
+          naked_option : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_risk_participation_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Risk Participation Agreement Instrument Table
+    Represents the product facts of a RiskParticipationAgreement trade: the participation rate, the credit
+    curve, the issuer, the fixed recovery rate and the two flags. The protection start and end are the
+    header's start and maturity dates. The protection fee is a list of legs in the protection_fee group of
+    swap_legs, and the underlying's legs are in the underlying group. The underlying's option block is
+    the shared option rows, which the agreement owns because it has no option of its own.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.credit_instrument, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
+    end note
+
     entity ores_trading_scripted_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -3564,6 +3728,45 @@ package "trading" #E8F5E9 {
     Bermudan, or American.
     This row is the family's fact table, not its identity. The header,
     ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
+    end note
+
+    entity ores_trading_synthetic_cdo_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * qualifier : text
+        * protection_start_date : date
+        * attachment_point : double
+        * detachment_point : double
+          recovery_rate : double
+          settles_accrual : boolean
+          rebates_accrual : boolean
+          pays_at_default_time : boolean
+          protection_payment_time : text
+          upfront_date : date
+          upfront_fee : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_synthetic_cdo_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Synthetic CDO Instrument Table
+    Represents the product facts of a SyntheticCDO trade: the qualifier, the protection start and the
+    tranche. The tranche points and the recovery rate are continuous quantities, so they are binary
+    floats.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.credit_instrument, holds the trade type code, the party, the
     instrument's start and maturity dates and its description; this table holds
     only the product's own fields, and joins the header by trade_id.
     end note
@@ -4017,8 +4220,12 @@ ores_trading_trades_tbl ||--o{ ores_trading_composite_legs_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_composite_legs_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_credit_basket_constituents_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_basket_constituents_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_cds_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_cds_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_credit_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_credit_linked_swap_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_linked_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_accumulator_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_accumulator_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_asian_option_instruments_tbl : "has"
@@ -4059,6 +4266,10 @@ ores_trading_trades_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : 
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_inflation_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_inflation_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_option_exercise_fees_tbl : "has"
@@ -4081,6 +4292,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "ha
 ores_trading_trade_activities_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_risk_participation_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_risk_participation_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_structure_members_tbl : "has"
@@ -4097,6 +4310,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_swap_legs_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_swap_legs_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_swaption_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_swaption_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_synthetic_cdo_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_synthetic_cdo_instruments_tbl : "has"
 ores_trading_activity_types_tbl ||--o{ ores_trading_trade_activities_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_trade_additional_fields_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_trade_additional_fields_tbl : "has"

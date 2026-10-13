@@ -1573,3 +1573,11 @@ tangled into the runnable script library
 * Synthetic Cdo Instruments
 
 - [[id:B7BC68A9-AD11-5E63-819D-8826AE453D87][How do I run the synthetic_cdo_instruments commands from the shell?]]
+
+* Account Roles
+
+- [[id:81B23CE4-432C-5562-AA74-CA1D0F481F3B][How do I run the account_roles commands from the shell?]]
+
+* Role Permissions
+
+- [[id:E98B87C4-F509-504E-8364-E0B7AA68E8B7][How do I run the role_permissions commands from the shell?]]

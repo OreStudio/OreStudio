@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-13T02:57:06.189900Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-559 tables in 21 groups.
+560 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -275,7 +275,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_configuration_market_bindings_artefact_tbl
   ores_dq_counterparty_aliases_artefact_tbl
   ores_dq_countries_artefact_tbl
-  ores_dq_crm_topology_bundles_artefact_tbl
+  ores_dq_crm_topology_configs_artefact_tbl
   ores_dq_cross_currency_basis_conventions_artefact_tbl
   ores_dq_cross_currency_fix_float_conventions_artefact_tbl
   ores_dq_csas_artefact_tbl
@@ -311,6 +311,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_future_conventions_artefact_tbl
   ores_dq_fx_option_conventions_artefact_tbl
   ores_dq_fx_volatility_configs_artefact_tbl
+  ores_dq_gmm_components_artefact_tbl
   ores_dq_ibor_index_conventions_artefact_tbl
   ores_dq_image_tags_artefact_tbl
   ores_dq_images_artefact_tbl
@@ -321,11 +322,14 @@ entity "dq_staging" as dq_staging {
   ores_dq_intraday_power_curve_configs_artefact_tbl
   ores_dq_intraday_power_load_conventions_artefact_tbl
   ores_dq_ip2country_artefact_tbl
+  ores_dq_ir_curve_generation_configs_artefact_tbl
+  ores_dq_ir_curve_template_entries_artefact_tbl
   ores_dq_lei_bic_artefact_tbl
   ores_dq_lei_entities_artefact_tbl
   ores_dq_lei_relationships_artefact_tbl
   ores_dq_local_jurisdictions_artefact_tbl
-  ores_dq_market_data_observations_artefact_tbl
+  ores_dq_market_data_providers_artefact_tbl
+  ores_dq_market_observations_artefact_tbl
   ores_dq_netting_agreements_artefact_tbl
   ores_dq_netting_set_aliases_artefact_tbl
   ores_dq_netting_sets_artefact_tbl
@@ -353,10 +357,6 @@ entity "dq_staging" as dq_staging {
   ores_dq_swap_index_conventions_artefact_tbl
   ores_dq_swaption_volatility_configs_artefact_tbl
   ores_dq_synthetic_fx_spot_configs_artefact_tbl
-  ores_dq_synthetic_gmm_components_artefact_tbl
-  ores_dq_synthetic_ir_curve_configs_artefact_tbl
-  ores_dq_synthetic_ir_curve_template_entries_artefact_tbl
-  ores_dq_synthetic_market_data_providers_artefact_tbl
   ores_dq_tags_artefact_tbl
   ores_dq_tenor_basis_swap_conventions_artefact_tbl
   ores_dq_tenor_basis_two_swap_conventions_artefact_tbl
@@ -626,12 +626,13 @@ entity "compute" as compute {
   ores_compute_platforms_tbl
   ores_compute_results_tbl
   ores_compute_work_ledger_tbl
+  ores_compute_work_tenants_tbl
   ores_compute_workflow_batch_links_tbl
   ores_compute_workunits_tbl
 }
 note bottom of compute
 Distributed Compute Grid (BOINC)
-13 tables — ores_schema.compute.puml
+14 tables — ores_schema.compute.puml
 end note
 
 entity "workflow" as workflow {

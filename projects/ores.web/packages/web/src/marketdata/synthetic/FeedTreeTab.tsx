@@ -20,7 +20,7 @@
  */
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { api, type FeedFilter, type FeedFolder, type FolderFeed } from '../../api/client.js';
 import { FlagOf } from '../../images/flags.js';
@@ -288,6 +288,22 @@ export function FeedTreeTab(): ReactNode {
     const roots = providerNodes(collections);
     const label = (node: TreeNode): string =>
         node.role === 'provider' ? providerName(node.providerCode ?? '', facts) : node.name;
+    // The tree starts open on its providers and their collections, once, when they first load.
+    const opened = useRef(false);
+    useEffect(() => {
+        if (opened.current || collections.length === 0) {
+            return;
+        }
+        opened.current = true;
+        setExpanded(
+            (current) =>
+                new Set([
+                    ...current,
+                    ...providerNodes(collections).map((node) => node.key),
+                    ...collections.map((collection) => folderKey(collection.id)),
+                ]),
+        );
+    }, [collections]);
     useEffect(() => {
         if (parsed?.kind === 'folder') {
             const chain = folderChain(rows, parsed.id);

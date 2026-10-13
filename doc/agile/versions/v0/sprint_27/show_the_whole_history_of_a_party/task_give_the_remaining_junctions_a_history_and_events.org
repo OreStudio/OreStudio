@@ -8,7 +8,7 @@
 #+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-every-junction-a-history-and-events
-#+pr:
+#+pr: 3243
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3243][#3243]] | [codegen] Give the remaining junctions a history and change events, and let the party page watch its links |
 
 * Review
 

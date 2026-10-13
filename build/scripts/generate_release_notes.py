@@ -29,17 +29,108 @@ from textwrap import dedent
 
 # ── Tag → section mapping (first match wins) ────────────────────────────────
 
-TAG_TO_SECTION = [
-    ({"windows", "msvc", "visibility", "cmake", "vcpkg"}, "Build & Portability"),
-    ({"ore", "trading", "refdata", "fx", "equity", "conventions", "roundtrip",
-      "marketdata", "market_data", "synthetic"}, "Financial Features"),
-    ({"isolation", "sql", "codegen", "workflow", "nats", "iam"}, "Service Architecture"),
-    ({"workspace", "dq", "publish", "compute", "gleif"}, "New Features"),
-    ({"qt", "ui"}, "Qt UI"),
-    ({"documentation", "plantuml", "agile", "site"}, "Documentation & Tooling"),
-    ({"dependencies", "housekeeping"}, "Maintenance"),
+SECTION_ORDER = [
+    "Hotfixes",
+    "Financial Features",
+    "Market Data & Curves",
+    "Security & Tenancy",
+    "Compute & Storage",
+    "Web & Journeys",
+    "Codegen & Tooling",
+    "Data, SQL & Quality",
+    "Build, CI & Testing",
+    "Agile & Documentation",
+    "Other",
 ]
 DEFAULT_SECTION = "Other"
+
+# Each matching tag scores three points for its section; each keyword in the
+# title or goal scores one. Hotfixes win outright; ties go to SECTION_ORDER.
+TAG_SECTIONS = [
+    ({"trading", "instrument", "ore", "refdata", "conventions", "roundtrip",
+      "model", "trade"}, "Financial Features"),
+    ({"marketdata", "market_data", "oresmd", "curves", "series", "feeds",
+      "synthetic", "fx", "equity"}, "Market Data & Curves"),
+    ({"iam", "security", "rls", "isolation", "tenancy", "account", "accounts",
+      "session", "permissions", "auth"}, "Security & Tenancy"),
+    ({"compute", "grid", "storage", "telemetry", "runtime", "bootstrap", "node"},
+     "Compute & Storage"),
+    ({"web", "ux", "journeys", "prototype", "operations", "record", "screens",
+      "menu", "badge", "palette", "inbox"}, "Web & Journeys"),
+    ({"codegen", "clean_standard", "drift", "gate", "checks", "cleanup",
+      "protocol", "subject", "template", "generator", "compass"},
+     "Codegen & Tooling"),
+    ({"sql", "dq", "data", "database", "schema", "pgtap", "artefact"},
+     "Data, SQL & Quality"),
+    ({"ci", "testing", "devops", "build", "vcpkg", "cmake",
+      "windows", "msvc", "visibility"}, "Build, CI & Testing"),
+    ({"agile", "bookkeeping", "docs", "documentation", "knowledge", "sprint",
+      "housekeeping", "dependencies", "workspace"}, "Agile & Documentation"),
+]
+
+KEYWORD_SECTIONS = [
+    ("hotfix", "Hotfixes"),
+    ("market data", "Market Data & Curves"), ("curve", "Market Data & Curves"),
+    ("oresmd", "Market Data & Curves"), ("fixing", "Market Data & Curves"),
+    ("surface", "Market Data & Curves"), ("volatility", "Market Data & Curves"),
+    ("trade", "Financial Features"), ("instrument", "Financial Features"),
+    ("money", "Financial Features"), ("swap", "Financial Features"),
+    ("bond", "Financial Features"), ("convention", "Financial Features"),
+    ("refdata", "Financial Features"), ("counterparty", "Financial Features"),
+    ("party", "Financial Features"), ("portfolio", "Financial Features"),
+    ("pricing", "Financial Features"), ("economic", "Financial Features"),
+    ("tenant", "Security & Tenancy"), ("iam", "Security & Tenancy"),
+    ("security", "Security & Tenancy"), ("permission", "Security & Tenancy"),
+    ("role ", "Security & Tenancy"), ("session", "Security & Tenancy"),
+    ("account", "Security & Tenancy"), ("isolation", "Security & Tenancy"),
+    ("credential", "Security & Tenancy"), ("sign-in", "Security & Tenancy"),
+    ("audit", "Security & Tenancy"), ("identity", "Security & Tenancy"),
+    ("administrator's home", "Web & Journeys"), ("landing page", "Web & Journeys"),
+    ("services screen", "Web & Journeys"), ("trade set", "Financial Features"),
+    ("run's inputs", "Financial Features"), ("series a publish", "Market Data & Curves"),
+    ("compute", "Compute & Storage"), ("grid", "Compute & Storage"),
+    ("node ", "Compute & Storage"), ("storage", "Compute & Storage"),
+    ("telemetry", "Compute & Storage"),
+    ("web", "Web & Journeys"), ("screen", "Web & Journeys"),
+    ("journey", "Web & Journeys"), ("prototype", "Web & Journeys"),
+    ("menu", "Web & Journeys"), ("palette", "Web & Journeys"),
+    ("badge", "Web & Journeys"), ("browser", "Web & Journeys"),
+    ("codegen", "Codegen & Tooling"), ("generator", "Codegen & Tooling"),
+    ("drift", "Codegen & Tooling"), ("gate", "Codegen & Tooling"),
+    ("template", "Codegen & Tooling"), ("protocol", "Codegen & Tooling"),
+    ("subject", "Codegen & Tooling"), ("clean standard", "Codegen & Tooling"),
+    ("compass", "Codegen & Tooling"),
+    ("sql", "Data, SQL & Quality"), ("database", "Data, SQL & Quality"),
+    ("schema", "Data, SQL & Quality"), ("dq", "Data, SQL & Quality"),
+    ("artefact", "Data, SQL & Quality"), ("pgtap", "Data, SQL & Quality"),
+    ("publish", "Data, SQL & Quality"),
+    ("build", "Build, CI & Testing"), ("check", "Build, CI & Testing"),
+    ("test", "Build, CI & Testing"),
+    ("sprint", "Agile & Documentation"), ("agile", "Agile & Documentation"),
+    ("bookkeeping", "Agile & Documentation"), ("runbook", "Agile & Documentation"),
+    ("knowledge", "Agile & Documentation"),
+]
+
+
+def assign_section(tags: set[str], title: str = "", goal: str = "") -> str:
+    if title.strip().lower().startswith("hotfix") or "hotfix" in tags:
+        return "Hotfixes"
+    score: dict[str, int] = {}
+    for tagset, section in TAG_SECTIONS:
+        n = len(tags & tagset)
+        if n:
+            score[section] = score.get(section, 0) + 3 * n
+    text = f"{title} {goal}".lower()
+    for keyword, section in KEYWORD_SECTIONS:
+        if keyword in text:
+            score[section] = score.get(section, 0) + 1
+    if not score:
+        return DEFAULT_SECTION
+    best = max(score.values())
+    for section in SECTION_ORDER:
+        if score.get(section) == best:
+            return section
+    return DEFAULT_SECTION
 
 
 # ── Org-mode parsing ─────────────────────────────────────────────────────────
@@ -174,13 +265,6 @@ def parse_story(story_dir: Path) -> dict:
     }
 
 
-def assign_section(tags: set[str]) -> str:
-    for tag_set, section in TAG_TO_SECTION:
-        if tags & tag_set:
-            return section
-    return DEFAULT_SECTION
-
-
 # ── PR data loading ──────────────────────────────────────────────────────────
 
 def load_pr_summary(pr_dir: Path) -> dict:
@@ -263,6 +347,8 @@ def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
     # ── Categorise stories ───────────────────────────────────────────────
     by_section: dict[str, list[dict]] = {}
     for entry in sprint["stories"]:
+        if entry.get("state") != "DONE":
+            continue
         story = next(
             (s for s in stories if s and
              s.get("title", "").lower() == entry["title"].lower()),
@@ -276,7 +362,8 @@ def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
                 "state": entry["state"],
                 "tags": set(),
             }
-        section = assign_section(story.get("tags", set()))
+        section = assign_section(story.get("tags", set()), entry["title"],
+                                 story.get("goal") or entry["theme"])
         detail = story.get("goal") or entry["theme"]
         detail = re.sub(r"\s+", " ", detail).strip()
         first_sentence = re.split(r"(?<=[.!?])\s", detail)[0] if detail else ""
@@ -285,7 +372,7 @@ def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
             "detail": first_sentence,
         })
 
-    section_order = [s for _, s in TAG_TO_SECTION] + [DEFAULT_SECTION]
+    section_order = SECTION_ORDER
     sections_lines: list[str] = []
     for sec in section_order:
         if sec not in by_section:

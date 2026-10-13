@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: A94636DF-8127-4707-9D14-62C92C0F8BCE
+:END:
+#+title: Task: Open sprint 28
+#+description: Open sprint 28: scaffold, wire, and bump the version.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_28:sprint_28:v0:
+#+owner: marco
+#+branch: feature/mop-up-release-issues
+#+pr: 3272
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:161BBE37-BBAE-46DB-A4E8-FDDE0F064583][Open sprint 28]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 28 exists as an agile artefact, wired into the version manifest and the
+agile index, and the project version carries 0.0.28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State         | DONE |
+| Parent story | [[id:161BBE37-BBAE-46DB-A4E8-FDDE0F064583][Open sprint 28]] |
+| Now           | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+- Sprint 28 is scaffolded under version 0 with its mission, and linked from the
+  version manifest and the agile index.
+- The sprint-open story and task exist and are wired into the sprint.
+- The project version is 0.0.28 in CMakeLists.txt, vcpkg.json, the three
+  workflow package names, the readme badges and the readme and index screenshots.
+- The vcpkg submodule points at the latest master.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Project version | 0.0.28 | =grep "project(OreStudio VERSION" CMakeLists.txt= | =64b3d9fd7d= |
+| Remaining 0.0.27 references | 2: the commits-since badge and the v0.0.27 screenshot | =grep -rn "0\.0\.27" CMakeLists.txt vcpkg.json .github/workflows readme.org index.org= | =64b3d9fd7d= |
+| vcpkg pin | =e456309491= | =git submodule status vcpkg= | =181628a4e0= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3272][#3272]] | [agile] Open sprint 28 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+** Sprint 28 is open (2026-10-13)
+
+Sprint 28 was scaffolded under version 0 with the mission to finish the record
+screens and the journey remainders carried from sprint 27, with fewer stories
+in flight. It links back to sprint 27 and forward from the version manifest and
+the agile index, which now names sprint 28 current and sprint 29 next.
+
+The project version is 0.0.28 across all six carriers: =CMakeLists.txt=,
+=vcpkg.json=, the three workflow package names, the readme badges and the readme
+and index screenshots. The readme now shows the just-released v0.0.27 screenshot,
+and the only 0.0.27 references left are the commits-since badge and that
+screenshot, both intended. The =vcpkg= submodule moved to =e456309491=.
+
+The same branch also refreshed the sprint 27 release notes. The generator gained
+a Hotfixes section and a ten-section scored taxonomy, and it no longer lists
+non-DONE stories under Key Improvements. The sprint 27 entries were regrouped by
+hand: thirty hotfixes together, the twenty-two carried stories removed from the
+improvements, and no catch-all Other bucket. The draft GitHub release for
+v0.0.27 was updated from the corrected notes.
+
+Sprint 28 starts with no stories: pulling carried work back from the product
+backlog is the planning step, not part of opening the sprint.

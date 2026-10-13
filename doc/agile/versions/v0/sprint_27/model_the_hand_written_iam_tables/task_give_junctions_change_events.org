@@ -85,3 +85,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A junction that states =:events: true= announces its changes like any entity.
+
+- Codegen: the junction protocol keeps its event record, the notify trigger and its drop, the event traits header and the service registrar each have a junction section, and the SQL archetypes are withheld from a junction that states no events. Six junctions state it: =account_role=, =role_permission=, =account_party=, =party_country=, =party_currency= and =party_counterparty=. The other fifteen announce nothing yet.
+- A link is closed by an update, so the close is announced as a deletion only when no newer version of the link replaces it. A deferred constraint trigger judges that at the end of the transaction. Checked against the database: an assignment, a replacement and a removal announced =created=, =updated= and =deleted=, once each.
+- The IAM and refdata services compose the new registrars, and the IAM service published =iam.v1.account_roles_events.updated= on NATS.
+- The person page watches the account's role and party links. Giving or taking away a role no longer reloads the page, so Refresh turns gold.
+- Not done: the party page does not watch its links, and the other fifteen junctions state no events.

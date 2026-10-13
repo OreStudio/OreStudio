@@ -106,3 +106,11 @@ def test_party_weights_default_to_the_acme_shape_and_can_be_overridden():
     weights = grid_soak.parse_party_weights(["ACMCOR=4"])
     assert weights["ACCOUK"] == 5.0
     assert weights["ACMCOR"] == 4.0
+
+
+def test_a_weight_that_is_not_a_finite_positive_number_is_refused():
+    import pytest
+
+    for bad in ("X=nan", "X=inf", "X=0", "X=-1", "X=heavy"):
+        with pytest.raises(SystemExit):
+            grid_soak.parse_party_weights([bad])

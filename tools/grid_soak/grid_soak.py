@@ -56,6 +56,7 @@ given, and it must fit every principal.
 """
 
 import argparse
+import math
 import os
 import random
 import signal
@@ -143,8 +144,8 @@ def parse_party_weights(specs):
             weights[code] = float(weight)
         except ValueError:
             raise SystemExit(f"grid_soak: the weight of party {code!r} is not a number: {weight!r}")
-        if weights[code] <= 0:
-            raise SystemExit(f"grid_soak: the weight of party {code!r} must be above zero")
+        if not math.isfinite(weights[code]) or weights[code] <= 0:
+            raise SystemExit(f"grid_soak: the weight of party {code!r} must be a finite number above zero")
     return weights
 
 
@@ -229,9 +230,9 @@ def send_wave(root, args, rng, reference, count):
     pool = args.party_pools.get(tenant_code_of(principal), [])
     if pool:
         ids = [ident for ident, _ in pool]
-        weights = [args.party_weights.get(code, 1.0) for _, code in pool]
+        shares = [args.party_weights.get(code, 1.0) for _, code in pool]
         codes = dict(pool)
-        parts = split_count(rng, count, ids, weights)
+        parts = split_count(rng, count, ids, shares)
     else:
         parts, codes = [(None, count)], {}
     where = ", ".join(f"{codes.get(p, str(p)[:8])} {n}" for p, n in parts if p)

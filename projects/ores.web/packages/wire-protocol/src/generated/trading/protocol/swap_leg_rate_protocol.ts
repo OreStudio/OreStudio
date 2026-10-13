@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface SwapLegRateKey {
     trade_id: string;
@@ -60,6 +61,11 @@ export interface SwapLegRateLookup {
     swap_leg_rate: SwapLegRate | null;
 }
 
+export interface SwapLegRatesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface SwapLegRateEvent {
     event_id: string;
     key: SwapLegRateKey;
@@ -84,6 +90,7 @@ export interface ListSwapLegRatesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SwapLegRatesFilter | null;
     as_of: string | null;
 }
 
@@ -149,6 +156,21 @@ export interface DeleteManySwapLegRatesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdSwapLegRatesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: SwapLegRatesFilter | null;
+}
+
+export interface ListByTradeIdSwapLegRatesResponse {
+    result: Result;
+    swap_leg_rates: SwapLegRate[];
+    total: number;
+}
+
 export interface ListSwapLegRateVersionsRequest {
     key: SwapLegRateKey;
     offset: number;
@@ -180,6 +202,7 @@ export const subjects = {
     put_many_swap_leg_rates_request: 'trading.v1.swap_leg_rates.put_many',
     delete_swap_leg_rate_request: 'trading.v1.swap_leg_rates.delete',
     delete_many_swap_leg_rates_request: 'trading.v1.swap_leg_rates.delete_many',
+    list_by_trade_id_swap_leg_rates_request: 'trading.v1.swap_leg_rates.list_by_trade_id',
     list_swap_leg_rate_versions_request: 'trading.v1.swap_leg_rates_versions.list',
     get_swap_leg_rate_version_request: 'trading.v1.swap_leg_rates_versions.get',
 } as const;
@@ -196,6 +219,7 @@ export const requiresSession = {
     put_many_swap_leg_rates_request: true,
     delete_swap_leg_rate_request: true,
     delete_many_swap_leg_rates_request: true,
+    list_by_trade_id_swap_leg_rates_request: true,
     list_swap_leg_rate_versions_request: true,
     get_swap_leg_rate_version_request: true,
 } as const;

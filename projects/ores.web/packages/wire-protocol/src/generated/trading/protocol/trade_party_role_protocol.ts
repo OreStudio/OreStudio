@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface TradePartyRoleKey {
     trade_id: string;
@@ -54,6 +55,11 @@ export interface TradePartyRoleLookup {
     trade_party_role: TradePartyRole | null;
 }
 
+export interface TradePartyRolesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface TradePartyRoleEvent {
     event_id: string;
     key: TradePartyRoleKey;
@@ -78,6 +84,7 @@ export interface ListTradePartyRolesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradePartyRolesFilter | null;
     as_of: string | null;
 }
 
@@ -143,6 +150,21 @@ export interface DeleteManyTradePartyRolesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdTradePartyRolesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TradePartyRolesFilter | null;
+}
+
+export interface ListByTradeIdTradePartyRolesResponse {
+    result: Result;
+    roles: TradePartyRole[];
+    total: number;
+}
+
 export interface ListTradePartyRoleVersionsRequest {
     key: TradePartyRoleKey;
     offset: number;
@@ -174,6 +196,7 @@ export const subjects = {
     put_many_trade_party_roles_request: 'trading.v1.trade_party_roles.put_many',
     delete_trade_party_role_request: 'trading.v1.trade_party_roles.delete',
     delete_many_trade_party_roles_request: 'trading.v1.trade_party_roles.delete_many',
+    list_by_trade_id_trade_party_roles_request: 'trading.v1.trade_party_roles.list_by_trade_id',
     list_trade_party_role_versions_request: 'trading.v1.trade_party_roles_versions.list',
     get_trade_party_role_version_request: 'trading.v1.trade_party_roles_versions.get',
 } as const;
@@ -190,6 +213,7 @@ export const requiresSession = {
     put_many_trade_party_roles_request: true,
     delete_trade_party_role_request: true,
     delete_many_trade_party_roles_request: true,
+    list_by_trade_id_trade_party_roles_request: true,
     list_trade_party_role_versions_request: true,
     get_trade_party_role_version_request: true,
 } as const;

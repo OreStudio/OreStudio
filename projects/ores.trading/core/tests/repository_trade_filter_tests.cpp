@@ -23,12 +23,16 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.api/generators/trade_additional_field_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
+#include "ores.trading.api/generators/trade_party_role_generator.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
+#include "ores.trading.core/repository/trade_additional_field_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
+#include "ores.trading.core/repository/trade_party_role_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "trade_parent_seed.hpp"
@@ -93,18 +97,40 @@ struct fixture {
         return t.id;
     }
 
-    void write_identifier(const uuid& trade_id, const std::string& type, const std::string& value) {
+    uuid write_activity() {
         auto gen = ores::testing::make_generation_context(h);
         auto activity = ores::trading::generators::generate_synthetic_trade_activity(gen);
         activity.party_id = *ctx.party_id();
         ores::trading::repository::trade_activity_repository().write(ctx, activity);
+        return activity.id;
+    }
 
+    void write_identifier(const uuid& trade_id, const std::string& type, const std::string& value) {
+        auto gen = ores::testing::make_generation_context(h);
         auto id = ores::trading::generators::generate_synthetic_trade_identifier(gen);
         id.trade_id = trade_id;
-        id.trade_activity_id = activity.id;
+        id.trade_activity_id = write_activity();
         id.id_type = type;
         id.id_value = value;
         ores::trading::repository::trade_identifier_repository().write(ctx, id);
+    }
+
+    void write_additional_field(const uuid& trade_id, int sequence, const std::string& name) {
+        auto gen = ores::testing::make_generation_context(h);
+        auto field = ores::trading::generators::generate_synthetic_trade_additional_field(gen);
+        field.trade_id = trade_id;
+        field.trade_activity_id = write_activity();
+        field.sequence_number = sequence;
+        field.name = name;
+        ores::trading::repository::trade_additional_field_repository().write(ctx, field);
+    }
+
+    void write_party_role(const uuid& trade_id) {
+        auto gen = ores::testing::make_generation_context(h);
+        auto role = ores::trading::generators::generate_synthetic_trade_party_role(gen);
+        role.trade_id = trade_id;
+        role.trade_activity_id = write_activity();
+        ores::trading::repository::trade_party_role_repository().write(ctx, role);
     }
 
     uuid write_intra_entity(const std::string& type) {
@@ -274,4 +300,24 @@ TEST_CASE("a child table reads the rows of one trade by its trade id", tags) {
 
     other.trade_id_one_of = std::vector<uuid>{a, b};
     CHECK(repo.read_latest_by_trade_id(f.ctx, key, 0, 100, {}, other).size() == 2);
+}
+
+TEST_CASE("every child of a trade reads by its trade id", tags) {
+    fixture f;
+    const auto a = f.write("Swap", f.counterparty);
+    const auto b = f.write("Swap", f.counterparty);
+    f.write_additional_field(a, 1, "First");
+    f.write_additional_field(a, 2, "Second");
+    f.write_additional_field(b, 1, "Other");
+    f.write_party_role(a);
+    f.write_party_role(b);
+
+    const auto key = boost::uuids::to_string(a);
+    ores::trading::repository::trade_additional_field_repository fields;
+    CHECK(fields.read_latest_by_trade_id(f.ctx, key, 0, 100).size() == 2);
+    CHECK(fields.get_total_trade_additional_field_count_by_trade_id(f.ctx, key) == 2);
+
+    ores::trading::repository::trade_party_role_repository roles;
+    CHECK(roles.read_latest_by_trade_id(f.ctx, key, 0, 100).size() == 1);
+    CHECK(roles.get_total_role_count_by_trade_id(f.ctx, key) == 1);
 }

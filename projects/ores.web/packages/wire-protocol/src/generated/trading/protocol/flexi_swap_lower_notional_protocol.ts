@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface FlexiSwapLowerNotionalKey {
     trade_id: string;
@@ -58,6 +59,11 @@ export interface FlexiSwapLowerNotionalLookup {
     flexi_swap_lower_notional: FlexiSwapLowerNotional | null;
 }
 
+export interface FlexiSwapLowerNotionalsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface FlexiSwapLowerNotionalEvent {
     event_id: string;
     key: FlexiSwapLowerNotionalKey;
@@ -82,6 +88,7 @@ export interface ListFlexiSwapLowerNotionalsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FlexiSwapLowerNotionalsFilter | null;
     as_of: string | null;
 }
 
@@ -147,6 +154,21 @@ export interface DeleteManyFlexiSwapLowerNotionalsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdFlexiSwapLowerNotionalsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: FlexiSwapLowerNotionalsFilter | null;
+}
+
+export interface ListByTradeIdFlexiSwapLowerNotionalsResponse {
+    result: Result;
+    flexi_swap_lower_notionals: FlexiSwapLowerNotional[];
+    total: number;
+}
+
 export interface ListFlexiSwapLowerNotionalVersionsRequest {
     key: FlexiSwapLowerNotionalKey;
     offset: number;
@@ -179,6 +201,8 @@ export const subjects = {
     delete_flexi_swap_lower_notional_request: 'trading.v1.flexi_swap_lower_notionals.delete',
     delete_many_flexi_swap_lower_notionals_request:
         'trading.v1.flexi_swap_lower_notionals.delete_many',
+    list_by_trade_id_flexi_swap_lower_notionals_request:
+        'trading.v1.flexi_swap_lower_notionals.list_by_trade_id',
     list_flexi_swap_lower_notional_versions_request:
         'trading.v1.flexi_swap_lower_notionals_versions.list',
     get_flexi_swap_lower_notional_version_request:
@@ -197,6 +221,7 @@ export const requiresSession = {
     put_many_flexi_swap_lower_notionals_request: true,
     delete_flexi_swap_lower_notional_request: true,
     delete_many_flexi_swap_lower_notionals_request: true,
+    list_by_trade_id_flexi_swap_lower_notionals_request: true,
     list_flexi_swap_lower_notional_versions_request: true,
     get_flexi_swap_lower_notional_version_request: true,
 } as const;

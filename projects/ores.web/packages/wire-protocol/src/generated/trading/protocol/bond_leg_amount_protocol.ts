@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface BondLegAmountKey {
     trade_id: string;
@@ -62,6 +63,11 @@ export interface BondLegAmountLookup {
     bond_leg_amount: BondLegAmount | null;
 }
 
+export interface BondLegAmountsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondLegAmountEvent {
     event_id: string;
     key: BondLegAmountKey;
@@ -86,6 +92,7 @@ export interface ListBondLegAmountsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondLegAmountsFilter | null;
     as_of: string | null;
 }
 
@@ -151,6 +158,21 @@ export interface DeleteManyBondLegAmountsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdBondLegAmountsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BondLegAmountsFilter | null;
+}
+
+export interface ListByTradeIdBondLegAmountsResponse {
+    result: Result;
+    bond_leg_amounts: BondLegAmount[];
+    total: number;
+}
+
 export interface ListBondLegAmountVersionsRequest {
     key: BondLegAmountKey;
     offset: number;
@@ -182,6 +204,7 @@ export const subjects = {
     put_many_bond_leg_amounts_request: 'trading.v1.bond_leg_amounts.put_many',
     delete_bond_leg_amount_request: 'trading.v1.bond_leg_amounts.delete',
     delete_many_bond_leg_amounts_request: 'trading.v1.bond_leg_amounts.delete_many',
+    list_by_trade_id_bond_leg_amounts_request: 'trading.v1.bond_leg_amounts.list_by_trade_id',
     list_bond_leg_amount_versions_request: 'trading.v1.bond_leg_amounts_versions.list',
     get_bond_leg_amount_version_request: 'trading.v1.bond_leg_amounts_versions.get',
 } as const;
@@ -198,6 +221,7 @@ export const requiresSession = {
     put_many_bond_leg_amounts_request: true,
     delete_bond_leg_amount_request: true,
     delete_many_bond_leg_amounts_request: true,
+    list_by_trade_id_bond_leg_amounts_request: true,
     list_bond_leg_amount_versions_request: true,
     get_bond_leg_amount_version_request: true,
 } as const;

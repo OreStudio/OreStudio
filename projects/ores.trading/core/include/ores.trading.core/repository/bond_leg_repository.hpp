@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_leg.hpp"
+#include "ores.trading.api/messaging/bond_leg_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -134,6 +135,30 @@ public:
                                                     const std::string& leg_number,
                                                     std::uint32_t version);
 
+    /**
+     * @brief Reads latest bond legs filtered by trade_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param trade_id The trade_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::bond_leg> read_latest_by_trade_id(
+        context ctx,
+        const std::string& trade_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::bond_legs_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active bond legs filtered by trade_id.
+     */
+    std::uint32_t get_total_bond_leg_count_by_trade_id(
+        context ctx,
+        const std::string& trade_id,
+        const std::optional<messaging::bond_legs_filter>& filter = std::nullopt);
+
 
     /**
      * @brief Whether a list of bond legs can be ordered by a field.
@@ -156,6 +181,7 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
+                const std::optional<messaging::bond_legs_filter>& filter = std::nullopt,
                 const std::optional<std::string>& as_of = std::nullopt);
 
     /**
@@ -163,8 +189,10 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active bond legs
      */
-    std::uint32_t get_total_bond_leg_count(context ctx,
-                                           const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t get_total_bond_leg_count(
+        context ctx,
+        const std::optional<messaging::bond_legs_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a bond leg by closing its temporal validity.

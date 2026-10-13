@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
+#include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -152,6 +153,30 @@ public:
                     const std::string& sequence_number,
                     std::uint32_t version);
 
+    /**
+     * @brief Reads latest instrument schedule dates filtered by trade_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param trade_id The trade_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::instrument_schedule_date> read_latest_by_trade_id(
+        context ctx,
+        const std::string& trade_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::instrument_schedule_dates_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active instrument schedule dates filtered by trade_id.
+     */
+    std::uint32_t get_total_instrument_schedule_date_count_by_trade_id(
+        context ctx,
+        const std::string& trade_id,
+        const std::optional<messaging::instrument_schedule_dates_filter>& filter = std::nullopt);
+
 
     /**
      * @brief Whether a list of instrument schedule dates can be ordered by a field.
@@ -169,12 +194,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::instrument_schedule_date>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {},
-                const std::optional<std::string>& as_of = std::nullopt);
+    std::vector<domain::instrument_schedule_date> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::instrument_schedule_dates_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active instrument schedule dates.
@@ -182,7 +208,9 @@ public:
      * @return Total number of active instrument schedule dates
      */
     std::uint32_t get_total_instrument_schedule_date_count(
-        context ctx, const std::optional<std::string>& as_of = std::nullopt);
+        context ctx,
+        const std::optional<messaging::instrument_schedule_dates_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a instrument schedule date by closing its temporal validity.

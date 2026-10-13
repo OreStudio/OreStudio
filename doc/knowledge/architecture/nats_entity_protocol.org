@@ -652,11 +652,19 @@ portfolio does. A foreign key to another entity serves =direct= only, and a
 =subtree= request on it is refused with =scope_not_supported=.
 
 A scoped read takes the entity's filter record, so a caller can narrow the rows
-of one trade further, and the filter members that name the relation column stay
-valid. A scoped read states =as_of= only when the model declares it with
-=:list_by_as_of: true=. A model declares it when a caller needs the children as
-they stood at an instant, as a record page that shows a past version of its
-parent does. A model that does not declare it serves the current rows only.
+of one trade further. The filter members that name the relation column stay
+valid, and they combine with the scope by AND, so a filter that names another
+trade than the scope gives an empty page with a =total= of 0 and no error.
+
+A scoped read is =list= exactly, so it carries =as_of= when the entity's =list=
+does, and a record page that shows a past version of its parent reads the
+children at that instant. The generator does not emit this yet: a generated
+scoped read serves the current rows only. The task "Carry as_of on a scoped
+read" of the story "Complete the trade list's filters" closes the gap.
+
+=:list_by_as_of: true= does not declare it. That flag adds a window read to the
+repository for the composite history of a parent, and it adds nothing to the
+wire. A model does not declare it for a scoped read.
 
 *** Finding an entity
 

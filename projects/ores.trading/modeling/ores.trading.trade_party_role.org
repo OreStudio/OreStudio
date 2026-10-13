@@ -102,6 +102,7 @@ The counterparty the firm faces is on the anchor, not a role.
 :table:    ores_trading_trades_tbl
 :error_message: Invalid trade_id: %. No active trade found with this id.
 :nullable: false
+:list_by:  true
 :END:
 
 A database foreign key: the anchor is immutable.

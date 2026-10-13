@@ -77,6 +77,10 @@ register_trade_party_role_handlers(ores::nats::service::client& nats,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_trade_party_roles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        list_by_trade_id_trade_party_roles_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_trade_id_trade_party_roles(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_trade_party_role_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_trade_party_role_versions(std::move(msg)); }));

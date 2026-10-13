@@ -131,6 +131,12 @@ messaging::list_bond_leg_amounts_response bond_leg_amount_service::list_bond_leg
                                  {.entity = "bond leg amounts", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -142,9 +148,37 @@ messaging::list_bond_leg_amounts_response bond_leg_amount_service::list_bond_leg
             return response;
         }
     }
-    response.bond_leg_amounts =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_bond_leg_amount_count(ctx_, as_of);
+    response.bond_leg_amounts = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_bond_leg_amount_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_trade_id_bond_leg_amounts_response
+bond_leg_amount_service::list_by_trade_id_bond_leg_amounts(
+    const messaging::list_by_trade_id_bond_leg_amounts_request& request) {
+    messaging::list_by_trade_id_bond_leg_amounts_response response;
+    if (!request.order.field.empty() &&
+        !repository::bond_leg_amount_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "bond leg amounts", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "bond leg amounts"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.trade_id);
+    response.bond_leg_amounts = repo_.read_latest_by_trade_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_bond_leg_amount_count_by_trade_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -428,6 +462,19 @@ bond_leg_amount_service::list_bond_leg_amounts(std::uint32_t offset, std::uint32
 std::uint32_t bond_leg_amount_service::count_bond_leg_amounts() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total bond leg amounts count";
     return repo_.get_total_bond_leg_amount_count(ctx_);
+}
+
+
+std::vector<domain::bond_leg_amount> bond_leg_amount_service::list_bond_leg_amounts_by_trade_id(
+    const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing bond leg amounts by trade_id: " << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
+}
+
+std::uint32_t
+bond_leg_amount_service::count_bond_leg_amounts_by_trade_id(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total bond leg amounts count by trade_id: " << trade_id;
+    return repo_.get_total_bond_leg_amount_count_by_trade_id(ctx_, trade_id);
 }
 
 

@@ -132,6 +132,12 @@ balance_guaranteed_swap_tranche_notional_service::list_balance_guaranteed_swap_t
             {.entity = "balance guaranteed swap tranche notionals", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -143,9 +149,43 @@ balance_guaranteed_swap_tranche_notional_service::list_balance_guaranteed_swap_t
             return response;
         }
     }
-    response.balance_guaranteed_swap_tranche_notionals =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_balance_guaranteed_swap_tranche_notional_count(ctx_, as_of);
+    response.balance_guaranteed_swap_tranche_notionals = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total =
+        repo_.get_total_balance_guaranteed_swap_tranche_notional_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response
+balance_guaranteed_swap_tranche_notional_service::
+    list_by_trade_id_balance_guaranteed_swap_tranche_notionals(
+        const messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request&
+            request) {
+    messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response response;
+    if (!request.order.field.empty() &&
+        !repository::balance_guaranteed_swap_tranche_notional_repository::is_sortable(
+            request.order.field)) {
+        response.result = refuse(
+            outcome_code::order_not_supported,
+            {.entity = "balance guaranteed swap tranche notionals", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported,
+                                 {.entity = "balance guaranteed swap tranche notionals"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.trade_id);
+    response.balance_guaranteed_swap_tranche_notionals = repo_.read_latest_by_trade_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_balance_guaranteed_swap_tranche_notional_count_by_trade_id(
+        ctx_, relation, request.filter);
     return response;
 }
 
@@ -433,6 +473,26 @@ std::uint32_t balance_guaranteed_swap_tranche_notional_service::
     count_balance_guaranteed_swap_tranche_notionals() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total balance guaranteed swap tranche notionals count";
     return repo_.get_total_balance_guaranteed_swap_tranche_notional_count(ctx_);
+}
+
+
+std::vector<domain::balance_guaranteed_swap_tranche_notional>
+balance_guaranteed_swap_tranche_notional_service::
+    list_balance_guaranteed_swap_tranche_notionals_by_trade_id(const std::string& trade_id,
+                                                               std::uint32_t offset,
+                                                               std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing balance guaranteed swap tranche notionals by trade_id: "
+                               << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
+}
+
+std::uint32_t balance_guaranteed_swap_tranche_notional_service::
+    count_balance_guaranteed_swap_tranche_notionals_by_trade_id(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting total balance guaranteed swap tranche notionals count by trade_id: "
+        << trade_id;
+    return repo_.get_total_balance_guaranteed_swap_tranche_notional_count_by_trade_id(ctx_,
+                                                                                      trade_id);
 }
 
 

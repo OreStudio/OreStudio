@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface InstrumentScheduleDateKey {
     trade_id: string;
@@ -63,6 +64,11 @@ export interface InstrumentScheduleDateLookup {
     instrument_schedule_date: InstrumentScheduleDate | null;
 }
 
+export interface InstrumentScheduleDatesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface InstrumentScheduleDateEvent {
     event_id: string;
     key: InstrumentScheduleDateKey;
@@ -87,6 +93,7 @@ export interface ListInstrumentScheduleDatesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InstrumentScheduleDatesFilter | null;
     as_of: string | null;
 }
 
@@ -152,6 +159,21 @@ export interface DeleteManyInstrumentScheduleDatesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdInstrumentScheduleDatesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: InstrumentScheduleDatesFilter | null;
+}
+
+export interface ListByTradeIdInstrumentScheduleDatesResponse {
+    result: Result;
+    instrument_schedule_dates: InstrumentScheduleDate[];
+    total: number;
+}
+
 export interface ListInstrumentScheduleDateVersionsRequest {
     key: InstrumentScheduleDateKey;
     offset: number;
@@ -184,6 +206,8 @@ export const subjects = {
     delete_instrument_schedule_date_request: 'trading.v1.instrument_schedule_dates.delete',
     delete_many_instrument_schedule_dates_request:
         'trading.v1.instrument_schedule_dates.delete_many',
+    list_by_trade_id_instrument_schedule_dates_request:
+        'trading.v1.instrument_schedule_dates.list_by_trade_id',
     list_instrument_schedule_date_versions_request:
         'trading.v1.instrument_schedule_dates_versions.list',
     get_instrument_schedule_date_version_request:
@@ -202,6 +226,7 @@ export const requiresSession = {
     put_many_instrument_schedule_dates_request: true,
     delete_instrument_schedule_date_request: true,
     delete_many_instrument_schedule_dates_request: true,
+    list_by_trade_id_instrument_schedule_dates_request: true,
     list_instrument_schedule_date_versions_request: true,
     get_instrument_schedule_date_version_request: true,
 } as const;

@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface BondLegRateKey {
     trade_id: string;
@@ -81,6 +82,11 @@ export interface BondLegRateLookup {
     bond_leg_rate: BondLegRate | null;
 }
 
+export interface BondLegRatesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondLegRateEvent {
     event_id: string;
     key: BondLegRateKey;
@@ -105,6 +111,7 @@ export interface ListBondLegRatesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondLegRatesFilter | null;
     as_of: string | null;
 }
 
@@ -170,6 +177,21 @@ export interface DeleteManyBondLegRatesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdBondLegRatesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BondLegRatesFilter | null;
+}
+
+export interface ListByTradeIdBondLegRatesResponse {
+    result: Result;
+    bond_leg_rates: BondLegRate[];
+    total: number;
+}
+
 export interface ListBondLegRateVersionsRequest {
     key: BondLegRateKey;
     offset: number;
@@ -201,6 +223,7 @@ export const subjects = {
     put_many_bond_leg_rates_request: 'trading.v1.bond_leg_rates.put_many',
     delete_bond_leg_rate_request: 'trading.v1.bond_leg_rates.delete',
     delete_many_bond_leg_rates_request: 'trading.v1.bond_leg_rates.delete_many',
+    list_by_trade_id_bond_leg_rates_request: 'trading.v1.bond_leg_rates.list_by_trade_id',
     list_bond_leg_rate_versions_request: 'trading.v1.bond_leg_rates_versions.list',
     get_bond_leg_rate_version_request: 'trading.v1.bond_leg_rates_versions.get',
 } as const;
@@ -217,6 +240,7 @@ export const requiresSession = {
     put_many_bond_leg_rates_request: true,
     delete_bond_leg_rate_request: true,
     delete_many_bond_leg_rates_request: true,
+    list_by_trade_id_bond_leg_rates_request: true,
     list_bond_leg_rate_versions_request: true,
     get_bond_leg_rate_version_request: true,
 } as const;

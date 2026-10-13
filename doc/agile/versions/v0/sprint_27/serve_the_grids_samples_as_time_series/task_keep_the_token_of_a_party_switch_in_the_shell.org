@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: feature/shell-adopts-the-party-token
-#+pr:
+#+pr: 3224
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3224][#3224]] | [shell] Keep the token of a party switch |
 
 * Review
 

@@ -37,6 +37,7 @@ After the marketdata service was restarted the newest synthetic tick of AUD/USD 
 
 - The cause is found and written in the task result.
 - The journey says what a person sees when a feed stops and how they bring it back.
+- The investigation is time boxed to one working session. If the cause is not found by then, the task result says what was ruled out and the open question is captured.
 
 * Plan
 

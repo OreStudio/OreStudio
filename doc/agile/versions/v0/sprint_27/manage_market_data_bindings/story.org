@@ -19,14 +19,14 @@ A feed binding says that a party consumes one producer source. Today a binding i
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | STARTED                              |
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | STARTED                                                |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffold PR.                           |
-| Waiting on    | Nothing.                               |
-| Next          | Write the journey, then the prototype. |
-| Last touched  | 2026-10-13                               |
+| Now           | Nothing. The scaffold is done and no task has started. |
+| Waiting on    | Nothing.                                               |
+| Next          | Write the journey, then the prototype.                 |
+| Last touched  | 2026-10-13                                             |
 
 * Acceptance
 

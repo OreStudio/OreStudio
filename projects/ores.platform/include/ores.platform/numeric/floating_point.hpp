@@ -30,7 +30,9 @@ namespace ores::platform::numeric {
  *
  * The portable counterpart of the floating-point overload of
  * @c std::from_chars: the whole of @p text must be one number, and the value
- * is parsed independently of the program's locale.
+ * is parsed independently of the program's locale. Unlike @c from_chars it
+ * accepts a leading plus, because the estate writes signed decimals and
+ * strike labels with one.
  *
  * It exists because libc++ does not implement that overload: on Apple
  * platforms its floating-point @c from_chars is a deleted function, so a call
@@ -47,9 +49,9 @@ namespace ores::platform::numeric {
  * smallest denormal a double has came to fail on macOS alone.
  *
  * @param text The whole number, and nothing else. Leading or trailing
- * whitespace is not part of a number, so it is rejected rather than skipped,
- * and neither is a leading plus sign -- the sign rule is @c std::from_chars',
- * not @c strtod's.
+ * whitespace is not part of a number, so it is rejected rather than skipped.
+ * Both signs are accepted, as the estate's signed decimals are written with
+ * them.
  * @return The value, or @c std::nullopt when @p text is empty, is not a
  * number, holds anything after the number, or is a value the type cannot
  * hold -- one that rounds to zero or to infinity.

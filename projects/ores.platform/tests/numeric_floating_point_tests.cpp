@@ -41,6 +41,7 @@ TEST_CASE("a_complete_number_parses_to_its_value", tags) {
 
     CHECK(parse_double("1.5") == 1.5);
     CHECK(parse_double("-2.5e3") == -2500.0);
+    CHECK(parse_double("+1.5") == 1.5);
     CHECK(parse_double("0") == 0.0);
     CHECK(parse_double("6.02E-2") == 0.0602);
 }
@@ -58,8 +59,6 @@ TEST_CASE("anything_but_the_number_is_refused", tags) {
     CHECK(parse_double("1.5x") == std::nullopt);
     CHECK(parse_double("abc") == std::nullopt);
     CHECK(parse_double("-") == std::nullopt);
-    // A minus is a sign and a plus is not, which is what from_chars takes.
-    CHECK(parse_double("+1.5") == std::nullopt);
     CHECK(parse_double("1.5.2") == std::nullopt);
 }
 

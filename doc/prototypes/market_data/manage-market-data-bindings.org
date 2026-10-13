@@ -21,7 +21,7 @@ The prototype argues what the screen to manage market data bindings shows and
 does before any of it is built. It answers to the journey
 [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]].
 
-It argues the group page's row: a binding is a party's choice to consume one
+It argues the group page's row, and gives each binding the standard history: a binding is a party's choice to consume one
 producer source, so the screen shows what each binding feeds and whether it still
 ticks, and every act that changes a binding says first what it will change. The
 person binds a source only after the screen has said which series it would write
@@ -52,6 +52,23 @@ Switch with the bottom bar, or =?variant=. The default is =a=.
 
 *A* is the working view. *B* makes the one-feed-per-series rule visible. *C* trades
 columns for a detail that stays beside the list.
+
+** The history
+
+A binding is versioned, so the screen has the standard history, in two places.
+
+- The *History* tab of the selected binding, beside *Details*. It is the two-pane
+  history the record screens have: a timeline of the saved versions, newest first,
+  each with its time, who modified it, its change reason and its commentary, and
+  a comparison of any version with the one before, field by field, with *All
+  fields* and *Only changes*. An older version offers *Revert to vN*, which saves
+  a new version.
+- The *History* tab of the screen, beside *Bindings*. It lists every change to
+  every binding, newest first, with who did it, what it was and why, so a person
+  can see who is doing the work. A removed binding stays there as a deletion.
+
+Start and stop are not saved versions, so neither appears in the history.
+Rebind, enable, disable, bind, revert and remove do.
 
 ** The scenarios, the states and the actor
 
@@ -99,6 +116,8 @@ Not yet. Marco has not signed the prototype off. The screen task waits for that.
   only the administrator may remove, and the actor bar lets the two be compared.
 - Whether a vendor binding should be shown at all, as it is in the real scenario,
   or hidden.
+- Whether the history of all bindings is a tab of this screen, as drawn, or the
+  shared timeline of the system.
 - Whether enabling a binding should also start its feed. The prototype enables
   and starts together, and disabling stops ingestion and the feed.
 

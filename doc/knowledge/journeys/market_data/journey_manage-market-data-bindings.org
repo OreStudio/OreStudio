@@ -115,11 +115,18 @@ scenario differs.
 8. *Remove a binding.* The person chooses *Remove* and states a reason. The
    system asks for confirmation and says that the series and its observations
    stay. It deletes the binding and ingestion for the party stops.
-9. *See a binding that has gone quiet.* The person sorts by last tick and reads
+9. *See who changed a binding.* The person opens the *History* tab of a binding.
+   The system lists its saved versions, newest first, with the time, who modified
+   it, the change reason and the commentary, and compares any version with the one
+   before it, field by field. An older version offers *Revert*, which saves a new
+   version. The person can also open *History* beside *Bindings* to read every
+   change to every binding, newest first, and see who is doing the work. Start and
+   stop are not saved versions and are not in the history.
+10. *See a binding that has gone quiet.* The person sorts by last tick and reads
    the bindings that have not ticked within the interval their tick rate
    implies. The system names the likely cause where it knows it: the feed is not
    running, the binding is disabled, or the feed runs and nothing arrives.
-10. *Leave.* The person goes back to the *Market data* area.
+11. *Leave.* The person goes back to the *Market data* area.
 
 *Real data differs at four steps.* In the list a vendor binding shows the kind
 *Vendor* and a note that real feeds are not supported. In the detail there is no
@@ -179,7 +186,10 @@ it lives in the producer factory and is gone after a restart.
 | List the bindings | Read the running sources | =synthetic.v1.feed_configs.list= | exists |
 | List the bindings | Read the last tick of a source | no subject | missing |
 | Read one binding | Read one binding | =marketdata.v1.feed_bindings.get= | exists |
-| Read one binding | List the versions | =marketdata.v1.feed_bindings_versions.list= | exists |
+| See who changed a binding | List the versions of one binding | =marketdata.v1.feed_bindings_versions.list= | exists |
+| See who changed a binding | Read one version | =marketdata.v1.feed_bindings_versions.get= | exists |
+| See who changed a binding | List the versions of every binding | no subject | missing |
+| See who changed a binding | Revert to a version | =marketdata.v1.feed_bindings.put= | exists |
 | Read one binding | List the FX generation configs | =synthetic.v1.fx_spot_generation_configs.list= | exists |
 | Read one binding | List the IR generation configs | =synthetic.v1.ir_curve_generation_configs.list= | exists |
 | Bind a source | List the synthetic sources not yet bound | no subject | missing |
@@ -228,7 +238,11 @@ their messages are in
 8. *No permission that gates start and stop.* The binding permissions are named.
    The producer start and stop subjects have none of their own, so what gates
    them on this screen is not stated.
-9. *Who owns the screen is not decided.* The binding is per party and
+9. *No read for the history of every binding.* The versions list is for one
+   binding. The screen-level history needs the versions of all of them in time
+   order. The candidate is a read over the table's history, or the shared timeline.
+   Until then the screen reads each binding's versions and merges them.
+10. *Who owns the screen is not decided.* The binding is per party and
    provisioning creates it from the system party's config. Whether a market
    data operator or only a system administrator may bind and rebind is a
    decision for the prototype to put to Marco.

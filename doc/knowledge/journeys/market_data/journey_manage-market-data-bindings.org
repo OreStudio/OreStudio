@@ -82,7 +82,8 @@ scenario differs.
    running and the ones quiet.
 2. *Narrow the list.* The person filters by kind and by state: all, running,
    quiet, disabled. A binding with no tick for longer than its tick rate
-   implies is quiet, and a quiet binding stays in the list.
+   implies is quiet, and a quiet binding stays in the list. The threshold is
+   provisional: nothing states how long a feed may be quiet yet.
 3. *Read one binding.* The person selects a row. The system shows the binding,
    its versions, and the producer behind the source: the generation config
    with its folder, tick rate, enabled and auto-start flags, and its binding
@@ -91,7 +92,8 @@ scenario differs.
    synthetic sources the party does not consume yet, each with the series it
    would write. The person picks one. The system says whether another running
    feed already writes that series, and refuses the pick if one does, naming
-   it. The person states a change reason and confirms. The system writes the
+   it. Until a subject answers that before the write, this check is a target,
+   and the system reports the refusal after the write; see /What is missing/. The person states a change reason and confirms. The system writes the
    binding with kind =SYNTHETIC= and enabled, and the ingest loop starts to
    store ticks for the party.
 5. *Rebind a source.* The person chooses *Rebind* on a binding and picks another
@@ -184,7 +186,7 @@ it lives in the producer factory and is gone after a restart.
 | Start or stop | Start or stop one feed | =synthetic.v1.ops.start_feed=, =synthetic.v1.ops.stop_feed= | exists |
 | Start or stop | Start or stop every feed under a folder | =marketdata.v1.ops.start_feeds_under_folder=, =marketdata.v1.ops.stop_feeds_under_folder= | exists |
 | Remove a binding | Delete the binding | =marketdata.v1.feed_bindings.delete= | exists |
-| See a quiet binding | Read the expected tick rate | =synthetic.v1.fx_spot_generation_configs.list= | partial |
+| See a quiet binding | Read the expected tick rate | =synthetic.v1.fx_spot_generation_configs.list=, =synthetic.v1.ir_curve_generation_configs.list= | partial |
 
 Status is one of =exists=, =partial=, or =missing=. The binding operations and
 their messages are in
@@ -222,9 +224,9 @@ their messages are in
    The producer start and stop subjects have none of their own, so what gates
    them on this screen is not stated.
 9. *Who owns the screen is not decided.* The binding is per party and
-    provisioning creates it from the system party's config. Whether a market
-    data operator or only a system administrator may bind and rebind is a
-    decision for the prototype to put to Marco.
+   provisioning creates it from the system party's config. Whether a market
+   data operator or only a system administrator may bind and rebind is a
+   decision for the prototype to put to Marco.
 
 * Related journeys
 

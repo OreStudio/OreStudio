@@ -1,0 +1,248 @@
+:PROPERTIES:
+:ID: D46E4DEF-7431-419B-BA88-476AA7B98D24
+:END:
+#+title: User Journey: Manage market data bindings
+#+description: A person decides which producers of market data a party consumes: sees the bindings, what each feeds and when it last ticked, binds and rebinds a source, enables or disables a binding, and starts or stops the feed behind it, for synthetic data and, shown and not supported, for real data.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person decides which producers of market data a party consumes: sees the bindings, what each feeds and when it last ticked, binds and rebinds a source, enables or disables a binding, and starts or stops the feed behind it, for synthetic data and, shown and not supported, for real data.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to say which producers of market data this party consumes, to see what
+each one feeds and whether it is still ticking, and to change that without
+asking someone to run a script." The journey is done when each binding is
+listed with its source, the series it feeds, whether it is enabled and running
+and when it last ticked, and the person has bound, rebound, enabled, disabled,
+started or stopped what needed it.
+
+* Actor and trigger
+
+The actor is the market data operator: a person who holds
+=marketdata::feed_bindings:read= to look and =marketdata::feed_bindings:write=
+or =marketdata::feed_bindings:delete= to change a binding. The system
+administrator has the same screen for the whole installation, and the
+[[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]]
+journey covers the system administrator's view of what is running. Which actor
+classes own the screen is an open question; see /What is missing/.
+
+The trigger is one of four events. A party is new and has no market data. A
+new synthetic feed exists and the party should consume it. A series has gone
+quiet and the person looks for the binding behind it. A report asks why a value
+is generated, and the person checks that the series comes from a synthetic
+binding and not from a vendor. The journey starts at *Market data*, then
+*Bindings*, and ends when the person leaves the screen.
+
+Three facts shape the screen.
+
+- A binding says that a party consumes one producer source. It does not name
+  the series. A tick names its own datum by its oresmd URI, and the ingest loop
+  stores it, once for each enabled binding of that source, in the party's own
+  series. The series a binding feeds is therefore read from what has been
+  written, and the screen says that it is inferred.
+- A binding says what kind of producer it names: =SYNTHETIC= for a generated
+  feed or =VENDOR= for a real one. The ingest loop stamps the series with it.
+  The default is =VENDOR=.
+- A synthetic feed has a binding mode. A bound feed publishes on the ingested
+  subjects and gets a binding when it runs. A sandboxed feed publishes on
+  subjects the ingest loop does not read and never gets one. At most one running
+  feed may write a series, so two feeds on one pair are never both bound.
+
+Two scenarios run through the journey.
+
+- *Synthetic data* is the supported scenario. A person can follow every step to
+  the end.
+- *Real data* from a vendor is not supported. The journey and the prototype draw
+  a vendor binding so that the design holds it, and they say in words that this
+  product does not connect real feeds. No control creates, rebinds or starts a
+  vendor binding. A vendor binding that already exists can be read, enabled or
+  disabled, and deleted, because those acts do not connect anything.
+
+* Steps
+
+The steps are the synthetic scenario. The last block says where the real data
+scenario differs.
+
+1. *List the bindings.* The person opens *Market data* and then *Bindings*. The
+   system lists the party's bindings: the source name, the kind (synthetic or
+   vendor), the series the source feeds, written as its title and linked to the
+   series page, whether the binding is enabled, whether the feed behind it is
+   running, when it last ticked, and the row's version and who last changed it.
+   A summary above the table counts the bindings, the ones enabled, the ones
+   running and the ones quiet.
+2. *Narrow the list.* The person filters by kind and by state: all, running,
+   quiet, disabled. A binding with no tick for longer than its tick rate
+   implies is quiet, and a quiet binding stays in the list.
+3. *Read one binding.* The person selects a row. The system shows the binding,
+   its versions, and the producer behind the source: the generation config
+   with its folder, tick rate, enabled and auto-start flags, and its binding
+   mode. It shows the series the binding feeds with a link to its page.
+4. *Bind a source.* The person chooses *Bind a source*. The system lists the
+   synthetic sources the party does not consume yet, each with the series it
+   would write. The person picks one. The system says whether another running
+   feed already writes that series, and refuses the pick if one does, naming
+   it. The person states a change reason and confirms. The system writes the
+   binding with kind =SYNTHETIC= and enabled, and the ingest loop starts to
+   store ticks for the party.
+5. *Rebind a source.* The person chooses *Rebind* on a binding and picks another
+   synthetic source. The system shows the series the old and the new source
+   write, and warns when they differ, because the party's series then changes.
+   The person states a reason and confirms. The system writes the new source
+   name against the version it read. Ingestion switches without restarting any
+   producer.
+6. *Enable or disable a binding.* The person changes the enabled flag and states
+   a reason. Disabling suspends ingestion and deletes nothing. It does not stop
+   the producer, so the running state and the binding can disagree, and the row
+   says so.
+7. *Start or stop the feed behind a binding.* The person chooses *Start* or
+   *Stop* on one binding, or on a folder or a collection. The system reports how
+   many feeds started, were already running or were skipped. The folder and
+   collection acts are those of
+   [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]], and
+   the person can follow a link there.
+8. *Remove a binding.* The person chooses *Remove* and states a reason. The
+   system asks for confirmation and says that the series and its observations
+   stay. It deletes the binding and ingestion for the party stops.
+9. *See a binding that has gone quiet.* The person sorts by last tick and reads
+   the bindings that have not ticked within the interval their tick rate
+   implies. The system names the likely cause where it knows it: the feed is not
+   running, the binding is disabled, or the feed runs and nothing arrives.
+10. *Leave.* The person goes back to the *Market data* area.
+
+*Real data differs at four steps.* In the list a vendor binding shows the kind
+*Vendor* and a note that real feeds are not supported. In the detail there is no
+producer behind the source, because no generation config exists, and the page
+says so. *Bind a source* offers no vendor source and says why, in one sentence.
+*Rebind* and *Start* are not offered for a vendor binding. The person can still
+enable, disable and remove it.
+
+* Screens and wireframes
+
+One screen. The summary and the filters sit at the top, the binding table under
+them, and the selected binding with the producer behind it and the series it
+feeds in a panel beside or below the table, with its versions at the bottom. The
+*Bind a source* and *Rebind* acts are a dialog over the screen, so the person
+keeps the list in view while choosing.
+
+#+caption: Market data bindings: the bindings with their kind, series, state and last tick, the filters, the producer behind the selected binding, and the dialog to bind a source, with the vendor case marked as not supported.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_manage-market-data-bindings.png]]
+
+* Prototype
+
+A clickable prototype is built by the task Prototype the market data binding
+journey, under =doc/prototypes/market_data/manage-market-data-bindings/=. It has
+a synthetic scenario that runs from the list to a bound, running feed, and a
+real data scenario that shows a vendor binding and says that real feeds are not
+supported. Marco signs it off before the screen is built. This section is
+filled in with its variants and states when it exists.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =feed_binding= | The binding: the source name, the kind, whether ingestion is enabled, the version and who changed it | [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] |
+| =market_series= | The series a source writes, and whether it is stamped synthetic or vendor | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The ticks written, with their time and source; the nearest answer to the last tick | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =fx_spot_generation_config= | The FX producer behind a source: its pair, folder, tick rate, flags and binding mode | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
+| =ir_curve_generation_config= | The IR producer behind a source: its folder, currency, index family, tenor and tick rate | [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ores.synthetic.ir_curve_generation_config]] |
+| =folder= | The folder a start or a stop names | [[id:5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7][ores.synthetic.folder]] |
+
+The binding is versioned, so it has a history. The running set is not an entity:
+it lives in the producer factory and is gone after a restart.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| List the bindings | List the bindings | =marketdata.v1.feed_bindings.list= | exists |
+| List the bindings | Read the series a source feeds | no subject | missing |
+| List the bindings | Read the running sources | =synthetic.v1.feed_configs.list= | exists |
+| List the bindings | Read the last tick of a source | no subject | missing |
+| Read one binding | Read one binding | =marketdata.v1.feed_bindings.get= | exists |
+| Read one binding | List the versions | =marketdata.v1.feed_bindings_versions.list= | exists |
+| Read one binding | List the FX generation configs | =synthetic.v1.fx_spot_generation_configs.list= | exists |
+| Read one binding | List the IR generation configs | =synthetic.v1.ir_curve_generation_configs.list= | exists |
+| Bind a source | List the synthetic sources not yet bound | no subject | missing |
+| Bind a source | Say which running feed writes a series | no subject | missing |
+| Bind a source | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Bind a source | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
+| Rebind a source | Write the binding with a new source | =marketdata.v1.feed_bindings.put= | exists |
+| Enable or disable | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
+| Start or stop | Start or stop one feed | =synthetic.v1.ops.start_feed=, =synthetic.v1.ops.stop_feed= | exists |
+| Start or stop | Start or stop every feed under a folder | =marketdata.v1.ops.start_feeds_under_folder=, =marketdata.v1.ops.stop_feeds_under_folder= | exists |
+| Remove a binding | Delete the binding | =marketdata.v1.feed_bindings.delete= | exists |
+| See a quiet binding | Read the expected tick rate | =synthetic.v1.fx_spot_generation_configs.list= | partial |
+
+Status is one of =exists=, =partial=, or =missing=. The binding operations and
+their messages are in
+[[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]].
+
+* What is missing
+
+1. *No read for the series a source feeds.* A binding names a source, not a
+   series. The candidate is a read that resolves a source to the series it has
+   written, or a series reference on the binding. Until then the screen shows
+   the series of the source's newest observations and says it is inferred.
+2. *No read for the last tick.* The ingest loop keeps the count and the last
+   tick of each binding in memory, and nothing reads them. The candidate is a
+   read over those statistics, or a stored last-observation time. Until then
+   the screen uses the newest observation of the series as the nearest answer.
+3. *No list of the synthetic sources a party does not consume.* Bind needs the
+   producers that have no binding for the party. The candidate is a read that
+   joins the generation configs to the bindings. Until then the dialog lists
+   every source and marks the bound ones.
+4. *No answer to which feed holds a series.* The feed controller knows which
+   running feed writes a series and refuses a second one, but no subject says
+   so before the person picks. Until then the system reports the refusal after
+   the write.
+5. *No way to tell the kind of a producer from the source name.* The binding
+   carries the kind, but a source with no binding has none. The dialog must
+   not offer a source it cannot classify.
+6. *The synthetic feeds stopped after a service restart.* The newest synthetic
+   tick of AUD/USD stopped advancing after the marketdata service was
+   restarted. The task Find why the synthetic feed went quiet looks for the
+   cause. The screen needs the answer to say why a feed is quiet.
+7. *No threshold for quiet and no alert.* The configs carry a tick rate. Nothing
+   compares it with a last tick, and nothing notifies a person. The screen sorts
+   by last tick and the person judges, until a threshold exists.
+8. *No permission that gates start and stop.* The binding permissions are named.
+   The producer start and stop subjects have none of their own, so what gates
+   them on this screen is not stated.
+9. *Who owns the screen is not decided.* The binding is per party and
+    provisioning creates it from the system party's config. Whether a market
+    data operator or only a system administrator may bind and rebind is a
+    decision for the prototype to put to Marco.
+
+* Related journeys
+
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] — the system administrator's view of
+  what runs, and its start and stop.
+- [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]] — the folder and collection start and stop that
+  step 7 links to.
+- [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] and
+  [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] — to
+  make the source that a binding consumes.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — to read the quotes that a
+  binding delivers.
+
+* Related knowledge
+
+- [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]], which says how a tick finds its owners.
+
+* See also
+
+- The story Manage market data bindings, and its tasks.
+- [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]].

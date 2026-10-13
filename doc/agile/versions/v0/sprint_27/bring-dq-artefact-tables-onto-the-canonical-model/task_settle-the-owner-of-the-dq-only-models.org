@@ -2,7 +2,7 @@
 :ID: 6632B4F0-7005-4A55-BB69-96161952C2EF
 :END:
 #+title: Task: Settle the owner of the DQ-only models
-#+description: Nine artefact models live only in ores.dq: badge_definition, badge_severity, code_domain, coding_scheme, counterparty_alias, netting_set_alias, lei_entity, lei_relationship and synthetic_fx_spot_config. Where DQ owns the data, as with the badges and coding schemes, the ores.dq model is the owning model and stays. Where another component owns the published rows, move the artefact onto that component's model with an Artefact columns section, as the denormalised synthetic feed rows need.
+#+description: Nine artefact models live only in ores.dq: badge_definition, badge_severity, code_domain, coding_scheme, counterparty_alias, netting_set_alias, lei_entity, lei_relationship and synthetic_fx_spot_config. The hand-written lei_bic table belongs with lei_entity and lei_relationship, so it is decided and modelled with them. Where DQ owns the data, as with the badges and coding schemes, the ores.dq model is the owning model and stays. Where another component owns the published rows, move the artefact onto that component's model with an Artefact columns section, as the denormalised synthetic feed rows need.
 #+type: task
 #+level: s1
 #+filetags: :dq:codegen:cleanup:bring-dq-artefact-tables-onto-the-canonical-model:sprint_27:v0:

@@ -2,18 +2,18 @@
 :ID: 64EE4260-1748-40E1-A1AA-4DD687CED92F
 :END:
 #+title: Task: Model the hand-written artefact tables
-#+description: Seven artefact tables are hand-written SQL with no model: crm_topology_bundles, ip2country, lei_bic, market_data_observations, synthetic_gmm_components, synthetic_ir_curve_configs and synthetic_ir_curve_template_entries. Generate each from its owning model, with an Artefact columns section where the staging shape differs from the entity, as the denormalised synthetic feed rows do.
+#+description: Five artefact tables are hand-written SQL with no model: crm_topology_bundles, market_data_observations, synthetic_gmm_components, synthetic_ir_curve_configs and synthetic_ir_curve_template_entries. Generate each from its owning model, with an Artefact columns section where the staging shape differs from the entity. Two more were in scope and moved: lei_bic to the DQ-only task, and ip2country to its own task, because its geo store has no model.
 #+type: task
 #+level: s1
 #+filetags: :dq:codegen:cleanup:bring-dq-artefact-tables-onto-the-canonical-model:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-the-hand-written-artefact-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ None of the seven artefact tables is hand-written SQL.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

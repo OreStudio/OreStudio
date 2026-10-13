@@ -158,7 +158,7 @@ describe('the market data area', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('>Dashboard<');
-        expect(html).toContain('>Feed tree<');
+        expect(html).toContain('>Feeds<');
         expect(html).not.toContain('IR curve feeds');
     });
 

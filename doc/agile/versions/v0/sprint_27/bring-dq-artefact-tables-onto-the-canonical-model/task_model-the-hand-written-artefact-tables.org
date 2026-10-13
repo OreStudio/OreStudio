@@ -100,6 +100,11 @@ via its "Verifies task" field.
 | 1 | The GMM table gets a key index on =base_currency_code= that it did not have | =ores.synthetic.gmm_component.org= | Decline | The template always builds a key index. One extra index on a small staging table costs nothing. |
 | 2 | Renamed tables and indexes reach only a recreated database | the moved tables | Decline | Databases are recreated from the schema; there is no migration path to keep. |
 | 3 | entity-writes, generated-column-refs and er-diagram fail | various | Decline | All three come from main: two compute writers, a reporting index expression and the ER overview. |
+| 4 | PR review: no test for the junction refusal | =test_junction_artefact.py= | Accept | Added =test_checks_on_a_junction_are_refused=. |
+| 5 | PR review: a check table under another header drops its checks without a word | =org_loader.py= | Accept | The loader refuses a table with no =expression= column; a test covers it. |
+| 6 | PR review: the refusal message does not name the archetype | =org_loader.py= | Accept | The message names the junction or the lookup entity. |
+| 7 | PR review: the domain entity path is safe next to the insert helper guard | =org_loader.py= | No change | A note, not a defect. |
+| 8 | PR review: the =external/fed_h10/methodology.txt= change looks unrelated | =methodology.txt= | Decline | It names the renamed staging table, so the rename belongs in it. |
 
 * Result
 

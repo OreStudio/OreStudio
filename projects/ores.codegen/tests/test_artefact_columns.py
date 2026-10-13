@@ -322,8 +322,18 @@ def test_checks_on_a_lookup_entity_are_refused(tmp_path):
         "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
     ) + FLAGS + COLUMNS + ARTEFACT_COLUMNS_WITH_CHECKS
 
-    with pytest.raises(ValueError, match="check expressions"):
+    with pytest.raises(ValueError, match="this lookup entity declares check"):
         _render(tmp_path, body, "sql_schema_artefact_create.mustache", "lookup_checks")
+
+
+def test_a_check_table_under_another_header_is_refused(tmp_path):
+    """Under any other header the checks would be dropped without a word."""
+    wrong_header = ARTEFACT_COLUMNS_WITH_CHECKS.replace(
+        "| expression           |", "| check                |"
+    )
+
+    with pytest.raises(ValueError, match="no 'expression' column"):
+        generate_domain(tmp_path, wrong_header)
 
 
 def test_an_empty_section_is_refused(tmp_path):

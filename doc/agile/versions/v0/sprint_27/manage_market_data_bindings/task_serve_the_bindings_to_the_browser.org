@@ -8,7 +8,7 @@
 #+filetags: :manage_market_data_bindings:sprint_27:v0:
 #+owner: marco
 #+branch: feature/serve-the-bindings-to-the-browser
-#+pr:
+#+pr: 3248
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3248][#3248]] | [web] Serve the bindings to the browser |
 
 * Review
 

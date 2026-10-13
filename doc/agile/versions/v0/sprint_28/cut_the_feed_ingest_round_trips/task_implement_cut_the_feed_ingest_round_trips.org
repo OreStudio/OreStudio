@@ -8,7 +8,7 @@
 #+filetags: :cut_the_feed_ingest_round_trips:sprint_28:v0:
 #+owner: marco
 #+branch: feature/cut-the-feed-ingest-round-trips
-#+pr:
+#+pr: 3280
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3280][#3280]] | [database,nats,compass] Cut the feed ingest round trips |
 
 * Review
 

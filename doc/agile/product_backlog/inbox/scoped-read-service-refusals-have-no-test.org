@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 22F79130-22D8-4E80-8C39-0C47A95D10BD
+:END:
+#+title: The generated service code for a scoped read refuses an unso…
+#+description: The generated service code for a scoped read refuses an unsortable order field, a one-of list over 1000 keys and a subtree scope on a foreign key to another entity. No test reaches those refusals for any of the scoped reads. Test them once in the generator tests, or emit one service test per scoped read. Found in the review of PR 3223.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -250,6 +250,12 @@ do instead
   where {{#junction.has_tenant_id}}tenant_id = old.tenant_id
   and {{/junction.has_tenant_id}}{{junction.left.column}} = old.{{junction.left.column}}
   and {{junction.right.column}} = old.{{junction.right.column}}
+{{#junction.system_tenant_visible}}
+  -- A tenant reads the shared rows of the system tenant, so old can be one.
+  -- The rule runs with the owner's rights, which row-level security does not
+  -- bind, so the rule states the own-tenant limit itself.
+  and tenant_id = ores_iam_current_tenant_id_fn()
+{{/junction.system_tenant_visible}}
   and valid_to = ores_utility_infinity_timestamp_fn();
 {{#junction.sql.rls_tenant_isolation}}
 

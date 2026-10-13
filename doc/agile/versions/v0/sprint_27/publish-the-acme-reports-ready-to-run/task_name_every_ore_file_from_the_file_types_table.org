@@ -8,7 +8,7 @@
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
 #+branch: feature/name-every-ore-file-from-the-file-types-table
-#+pr:
+#+pr: 3241
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3241][#3241]] | [reporting,ore,sql] Name every ORE file from the file types table |
 
 * Review
 

@@ -427,11 +427,11 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(
             "bash",
             "-c",
-            "python3 projects/ores.codegen/src/plantuml_er_parse_sql.py"
+            "projects/ores.codegen/venv/bin/python projects/ores.codegen/src/plantuml_er_parse_sql.py"
             " --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop"
             " --output build/output/codegen/plantuml_er_model.json"
             " --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn --strict"
-            " && python3 projects/ores.codegen/src/plantuml_er_generate.py"
+            " && projects/ores.codegen/venv/bin/python projects/ores.codegen/src/plantuml_er_generate.py"
             " --model build/output/codegen/plantuml_er_model.json"
             " --template projects/ores.codegen/library/templates/plantuml_er.mustache"
             " --index-template projects/ores.codegen/library/templates/plantuml_er_index.mustache"

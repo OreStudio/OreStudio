@@ -45,6 +45,7 @@ The local check gate stops failing on drift that predates any branch.
 | [[id:28360CF0-B1BA-4D50-8EE3-1D1D72DE80CE][Fix the red pgTAP suites]] | DONE | 2026-10-09 | 2026-10-09 | Task for: Clear the local-check failures on main |
 | [[id:28C34FD1-2B79-4D39-BAA6-19046A20CC0E][Carry the book purpose through the publisher]] | DONE | 2026-10-09 | 2026-10-09 | Task for: Clear the local-check failures on main |
 | [[id:FF4E5454-B659-4DA8-AE59-D0CD553FE3A0][Clear the remaining local-check failures on main]] | DONE | | 2026-10-13 | Ten local-check gates fail on main after the provider feed merge, and the macOS and Windows CI builds break on a floating-point from_chars and a direct std::getenv. |
+| [[id:23F137E2-C34F-4DF0-ABCC-A4284F43B0F4][Drop the generation stamp from the ER diagrams]] | DONE | | 2026-10-13 | The ER PlantUML diagrams carry a wall-clock Generated timestamp that changes on every render, so a no-op regeneration rewrites all 22 files. The drift check normalizes the stamp, so no gate fails, but the churn is pure noise. |
 
 * Decisions
 

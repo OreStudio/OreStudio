@@ -97,7 +97,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date, vintage_series_uri
+        price_source, vintage_source, vintage_date, vintage_series_uri, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -109,13 +109,12 @@ begin
         '2016 ORE Samples archetype: a Vasicek short-rate process for ' || c.currency_code
         || '''s discontinued IBOR-era benchmark, ' || c.currency_code || '-' || upper(c.index_family) || '-' || c.tenor || ' -- '
         || c.retirement_note
-        || ' This is the dataset this collection''s own provisioning publishes and'
-        || ' auto-starts by default when the 2016 ORE Samples collection is'
-        || ' selected.',
-        true, true, c.currency_code, c.index_family, c.tenor, 'VASICEK',
+        || ' This is the dataset this collection''s own provisioning publishes. It does'
+        || ' not start on its own: a person starts the reference set on purpose.',
+        true, false, c.currency_code, c.index_family, c.tenor, 'VASICEK',
         0.4, c.theta, 0.006, c.theta,
         60, 'Quarterly',
-        c.price_source, c.vintage_source, c.vintage_date, c.vintage_series_uri
+        c.price_source, c.vintage_source, c.vintage_date, c.vintage_series_uri, 'ore'
     from (values
         -- currency, index_family, tenor, theta (representative pre-cessation level),
         -- retirement note, price_source, vintage_source, vintage_date,

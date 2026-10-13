@@ -48,6 +48,7 @@ export interface FxSpotGenerationConfigWrite {
     vintage_source: string;
     vintage_date: string;
     folder_id: string | null;
+    asset_class_code: string;
 }
 
 export interface FxSpotGenerationConfigChange {

@@ -112,6 +112,15 @@ private:
             throw std::invalid_argument("The host id is not a UUID: " + req.host_id);
         }
         repository::work_ledger_repository ledger;
+        // A host runs one job at a time, so a host that asks for work is free. An entry it
+        // still holds was claimed and never reported, for example when the reply to that
+        // claim was lost, and nobody is working on it. Return it to the queue now: its
+        // heartbeats would otherwise keep it leased for as long as the host lives.
+        if (const auto abandoned = ledger.requeue_held(ctx_, host); abandoned > 0) {
+            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::warn)
+                << abandoned << " job(s) held by host " << req.host_id
+                << " were never reported and went back to the queue";
+        }
         for (int dropped = 0; dropped <= max_dropped; ++dropped) {
             const auto entry = ledger.claim(ctx_, host, req.platform, lease);
             if (!entry) {

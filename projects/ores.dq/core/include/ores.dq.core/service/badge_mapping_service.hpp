@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/badge_mapping.hpp"
 #include "ores.dq.api/messaging/badge_mapping_protocol.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <cstdint>
@@ -43,7 +44,7 @@ namespace ores::dq::service {
  * Provides a higher-level interface for badge mapping operations,
  * wrapping the underlying repository.
  */
-class badge_mapping_service {
+class ORES_DQ_CORE_EXPORT badge_mapping_service {
 private:
     inline static std::string_view logger_name = "ores.dq.service.badge_mapping_service";
 

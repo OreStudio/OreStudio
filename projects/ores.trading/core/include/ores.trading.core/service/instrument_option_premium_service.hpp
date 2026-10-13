@@ -91,6 +91,9 @@ public:
     messaging::delete_many_instrument_option_premiums_response
     delete_many_instrument_option_premiums(
         const messaging::delete_many_instrument_option_premiums_request& request);
+    messaging::list_by_trade_id_instrument_option_premiums_response
+    list_by_trade_id_instrument_option_premiums(
+        const messaging::list_by_trade_id_instrument_option_premiums_request& request);
     messaging::list_instrument_option_premium_versions_response
     list_instrument_option_premium_versions(
         const messaging::list_instrument_option_premium_versions_request& request);
@@ -114,6 +117,26 @@ public:
      * @return Total number of active instrument option premiums.
      */
     std::uint32_t count_option_premiums();
+
+
+    /**
+     * @brief Lists instrument option premiums filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching instrument option premiums for the requested page.
+     */
+    std::vector<domain::instrument_option_premium> list_option_premiums_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active instrument option premiums filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching instrument option premiums.
+     */
+    std::uint32_t count_option_premiums_by_trade_id(const std::string& trade_id);
 
 
     /**

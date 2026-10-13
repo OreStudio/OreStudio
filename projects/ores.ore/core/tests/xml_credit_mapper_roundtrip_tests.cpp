@@ -382,3 +382,90 @@ TEST_CASE("credit_mapper_holds_the_dropped_elements_of_a_credit_linked_swap", ta
     CHECK(std::string(*rt.CreditLinkedSwapData->DefaultPaymentTime) == "atDefault");
     CHECK(static_cast<bool>(rt.CreditLinkedSwapData->SettlesAccrual) == fact.settles_accrual.has_value());
 }
+
+TEST_CASE("credit_mapper_holds_the_required_elements_of_an_agreement", tags) {
+    const auto data = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
+    const auto& fact = fact_of<ores::trading::domain::risk_participation_agreement_instrument>(data);
+
+    CHECK(fact.participation_rate > 0.89);
+    CHECK(fact.participation_rate < 0.91);
+    CHECK(fact.settles_accrual == std::optional<bool>(false));
+
+    // The protection fee is one cashflow leg, the underlying two swap legs.
+    std::size_t fee_legs = 0;
+    std::size_t underlying_legs = 0;
+    for (const auto& leg : data.legs) {
+        REQUIRE(leg.leg_group);
+        fee_legs += *leg.leg_group == "protection_fee" ? 1 : 0;
+        underlying_legs += *leg.leg_group == "underlying" ? 1 : 0;
+    }
+    CHECK(fee_legs == 1);
+    CHECK(underlying_legs == 2);
+
+    const auto rt = credit_instrument_mapper::reverse_rpa(data);
+    REQUIRE(rt.RiskParticipationAgreementData);
+    const auto& d = *rt.RiskParticipationAgreementData;
+    CHECK(d.ParticipationRate > 0.89f);
+    REQUIRE(d.ProtectionFee.LegData.size() == 1);
+    CHECK(d.Underlying.LegData.size() == 2);
+    REQUIRE(d.SettlesAccrual);
+    CHECK(*d.SettlesAccrual == false);
+}
+
+TEST_CASE("credit_mapper_holds_the_digits_of_the_protection_fee", tags) {
+    const auto data = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
+
+    const auto rt = credit_instrument_mapper::reverse_rpa(data);
+    REQUIRE(rt.RiskParticipationAgreementData);
+    const auto& fee = rt.RiskParticipationAgreementData->ProtectionFee.LegData.front();
+    REQUIRE(fee.legDataType);
+    REQUIRE(fee.legDataType->CashflowData);
+    const auto& amounts = fee.legDataType->CashflowData->Cashflow.Amount;
+    REQUIRE(amounts.size() == 1);
+    CHECK(dec(amounts.front().lexical()) == dec("121171.72"));
+    REQUIRE(amounts.front().date);
+    CHECK(std::string(*amounts.front().date) == "2025-04-19");
+}
+
+TEST_CASE("credit_mapper_keeps_the_schedule_of_each_underlying_leg", tags) {
+    const auto data = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
+
+    const auto rt = credit_instrument_mapper::reverse_rpa(data);
+    REQUIRE(rt.RiskParticipationAgreementData);
+    const auto& leg = rt.RiskParticipationAgreementData->Underlying.LegData.front();
+    REQUIRE(leg.ScheduleData);
+    REQUIRE(!leg.ScheduleData->Rules.empty());
+    // The leg runs 2024-04-16 to 2044-04-16, not over the protection period.
+    CHECK(std::string(leg.ScheduleData->Rules.front().StartDate) == "2024-04-16");
+}
+
+TEST_CASE("credit_mapper_holds_the_option_block_of_an_agreement_underlying", tags) {
+    const auto data = load_and_map("Credit_RiskParticipationAgreement_on_CallableSwap.xml");
+
+    REQUIRE(data.options.size() == 1);
+    CHECK(data.options.front().long_short == "Short");
+    CHECK(!data.schedule_dates.empty());
+
+    const auto rt = credit_instrument_mapper::reverse_rpa(data);
+    REQUIRE(rt.RiskParticipationAgreementData);
+    const auto& option = rt.RiskParticipationAgreementData->Underlying.OptionData;
+    REQUIRE(option);
+    CHECK(std::string(option->LongShort) == "Short");
+    REQUIRE(option->exerciseDatesGroup);
+}
+
+TEST_CASE("credit_mapper_numbers_the_agreement_legs_across_both_groups", tags) {
+    const auto data = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
+
+    REQUIRE(data.legs.size() == 3);
+    CHECK(data.legs[0].identity.leg_number == 1);
+    CHECK(*data.legs[0].leg_group == "protection_fee");
+    CHECK(data.legs[1].identity.leg_number == 2);
+    CHECK(*data.legs[1].leg_group == "underlying");
+    CHECK(data.legs[2].identity.leg_number == 3);
+    CHECK(*data.legs[2].leg_group == "underlying");
+
+    // Each underlying leg owns the schedule rows of its own number.
+    for (const auto& row : data.schedules)
+        CHECK((row.owner_number == 2 || row.owner_number == 3));
+}

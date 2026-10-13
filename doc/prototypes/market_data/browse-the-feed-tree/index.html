@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Browse the feed tree prototype — Synthetic feeds</title>
+<title>Browse the feed tree prototype — Synthetic</title>
 <style>
 :root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -13,27 +13,35 @@ h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter
 p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
-.wrap{max-width:1240px;margin:0 auto;display:grid;gap:14px}
+.wrap{max-width:1280px;margin:0 auto;display:grid;gap:14px}
 .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .crumbs{font-size:.8rem;color:var(--ink-faint)}.crumbs b{color:var(--ink-dim);font-weight:500}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px;align-content:start}
-.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.search{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:260px;flex:1}
+.toolbar .grow{margin-left:auto}
+.search{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:240px;flex:1}
+.sel-box{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
 .btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 12px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
-.btn.small{padding:2px 9px;font-size:.78rem}
+.btn.link{background:none;border:none;color:var(--accent);padding:0 4px}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
-.check{display:inline-flex;gap:6px;align-items:center;font-size:.85rem;color:var(--ink-dim)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 16px;color:var(--ink-dim)}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
 table{width:100%;border-collapse:collapse;font-size:.86rem}
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
-th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;white-space:nowrap}
 td.num,th.num{text-align:right;font-family:var(--mono)}
-tr.sel td{background:#1d2633}
+td.chk,th.chk{width:30px}
+tr.row{cursor:pointer}tr.row:hover td{background:#1f1f24}
+tr.picked td{background:#1d2633}
 .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
 .tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.plan{border-style:dashed;color:var(--ink-faint)}
 .notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
-.split{display:grid;grid-template-columns:360px 1fr;gap:14px;align-items:start}
+.alert{border:1px solid #4a3a17;border-radius:var(--radius);padding:10px 12px;background:#221c10;color:var(--warn);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.alert span{flex:1;min-width:260px}
+.pickbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid #2b4466;background:#1d2633;border-radius:var(--radius)}
+.split{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start}
 @media(max-width:900px){.split{grid-template-columns:1fr}}
 .tree{font-size:.88rem;max-height:70vh;overflow:auto}
 .node{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap}
@@ -43,25 +51,20 @@ tr.sel td{background:#1d2633}
 .name{overflow:hidden;text-overflow:ellipsis}
 .roll{margin-left:auto;display:flex;align-items:center;gap:6px;flex:none}
 .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
-.dot.run{background:var(--ok);box-shadow:0 0 6px #3fb95088}.dot.stop{background:#4b4b52}.dot.part{background:linear-gradient(90deg,var(--ok) 50%,#4b4b52 50%)}
-.meter{width:60px;height:6px;border-radius:3px;background:#2d2d33;overflow:hidden;flex:none}.meter i{display:block;height:100%;background:var(--ok)}
+.dot.run{background:var(--ok);box-shadow:0 0 6px #3fb95088}.dot.stop{background:#4b4b52}
+.meter{width:54px;height:6px;border-radius:3px;background:#2d2d33;overflow:hidden;flex:none}.meter i{display:block;height:100%;background:var(--ok)}
 .count{font-family:var(--mono);font-size:.75rem;color:var(--ink-faint)}
-.flags{font-size:.95rem;letter-spacing:-.15em}
-.hero{display:flex;gap:16px;align-items:center}
-.hero .big{font-size:1.5rem;font-weight:700}
+.flags{font-size:.95rem;letter-spacing:-.15em;margin-right:.35rem}
+.hero{display:flex;gap:16px;align-items:center}.hero .big{font-size:1.5rem;font-weight:700}
 .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:.86rem}.kv dt{color:var(--ink-faint)}.kv dd{margin:0}
-.stat{display:flex;gap:18px;flex-wrap:wrap}.stat div{display:grid}.stat b{font-size:1.3rem}.stat span{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
-.cols{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:10px;overflow-x:auto}
-.col{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;display:grid;gap:2px;align-content:start;max-height:66vh;overflow:auto}
-.col h3{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:2px 6px 6px}
-.more{padding:6px;text-align:center;font-size:.8rem;color:var(--accent);cursor:pointer}
+.stat{display:flex;gap:22px;flex-wrap:wrap}.stat div{display:grid}.stat b{font-size:1.3rem}.stat span{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:6px;cursor:pointer;align-content:start}
-.card:hover{border-color:var(--accent)}.card h3{font-size:.95rem}.card.new{border-style:dashed;border-color:#2b4466}
-.card .ic{font-size:1.2rem;color:var(--accent)}
-.toast{position:fixed;right:18px;bottom:80px;z-index:70;background:#0b0e13;border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;max-width:420px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:.86rem}
+.card:hover{border-color:var(--accent)}.card h3{font-size:.95rem}.card .ic{font-size:1.2rem;color:var(--accent)}
+.pager{display:flex;gap:10px;align-items:center;justify-content:flex-end;font-size:.82rem;color:var(--ink-dim);flex-wrap:wrap}
+.toast{position:fixed;right:18px;bottom:80px;z-index:70;background:#0b0e13;border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;max-width:440px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:.86rem;display:grid;gap:4px}
 .dialog-back{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:18px}
-.dialog{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;max-width:520px;display:grid;gap:12px}
+.dialog{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;max-width:540px;display:grid;gap:12px}
 .proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
 .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
@@ -74,37 +77,31 @@ tr.sel td{background:#1d2633}
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  The synthetic feeds area: the web successor of the ores.qt Market Simulator
-  (MarketSimulatorWindow.cpp) and its desktop prototype
-  (../synthetic-market-simulator/). One connected flow of screens.
+  The synthetic feeds, as one screen. Every feed here is synthetic, so no
+  label says so: real market data will have its own card under Market data.
 
-  ?screen=market|synthetic|overview|tree|feed
-    market     Market data, the area: a Synthetic folder card joins Curve
-               evolution, and the FX and IR feed cards move under it.
-    synthetic  Market data › Synthetic: a folder card's page, cards only (Feed
-               overview, Feed tree, FX price feeds, IR curve feeds).
-    overview   Market data › Synthetic › Feed overview: drills down by scope,
-               provider and feed kind in columns, and never lists a feed.
-    tree       Market data › Synthetic › Feed tree: the tree to the feeds, the
-               selected node beside it. Choosing a feed leaves the tree.
-    feed       The feed's existing page (/market-data/fx-feeds/:id or
-               /market-data/ir-feeds/:id), drawn as a stub. Its breadcrumbs run
-               through the tree, and each crumb returns to the tree there.
+  ?screen=market|dashboard|tree|feed
+    market     Market data: one Synthetic card, a screen and not a folder.
+    dashboard  Market data > Synthetic, first tab. Providers, what each
+               simulates, what runs, and the feeds that should run and do not.
+    tree       Market data > Synthetic, second tab. The tree of providers and
+               asset classes beside a paged table of feeds. Rows are picked
+               and one Start or Stop applies to the pick. The server resolves
+               "all matching" from the filter; the page never holds the ids.
+    feed       A feed's page, a stub: it is unchanged. Its breadcrumb runs
+               through the tree.
 
-  The tree follows the story's decision: System feeds by provider, then feed
-  kind; Test feeds by party, then collection. Today the Bloomberg feeds are a
-  party collection; the tree shows the target.
-
-  ?state=mixed|stopped|scale|search switches the mock data:
-    mixed    Bloomberg FX running, Bloomberg IR stopped, a test feed running.
-    stopped  Nothing running.
-    scale    Six providers, about 2,850 feeds, order books planned.
+  ?state=mixed|restart|stopped|scale|search
+    mixed    Bloomberg FX running; the rest stopped.
+    restart  The synthetic service has just restarted: nothing runs, and the
+             dashboard says how many feeds should.
+    stopped  Nothing runs and no feed is meant to.
+    scale    Seven providers and about 2,900 feeds.
     search   The tree's search holds "usd sofr".
 
-  Start and Stop work on the mock: the node's feeds change state, the
-  roll-ups recompute, and the report says started, already running, skipped.
-  Moving between screens keeps the selection and the running set; choosing a
-  state reloads the page with fresh mock data, so both reset.
+  Start and Stop work on the mock: the feeds change state, every roll-up
+  recomputes, and the report says started, already running, skipped.
+  A feed whose series another running feed already publishes is skipped.
 -->
 
 <div class="proto-note" id="note"></div>
@@ -113,8 +110,8 @@ tr.sel td{background:#1d2633}
 
 <script>
 const params = new URLSearchParams(location.search);
-const SCREENS = ['market', 'synthetic', 'overview', 'tree', 'feed', 'fxlist', 'irlist'];
-let screen = SCREENS.includes(params.get('screen')) ? params.get('screen') : 'synthetic';
+const SCREENS = ['market', 'dashboard', 'tree', 'feed'];
+let screen = SCREENS.includes(params.get('screen')) ? params.get('screen') : 'dashboard';
 const state = params.get('state') || 'mixed';
 function set(key, value) {
   const p = new URLSearchParams(location.search);
@@ -123,342 +120,333 @@ function set(key, value) {
 }
 
 const FLAG = {USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',CAD:'🇨🇦',NZD:'🇳🇿',SEK:'🇸🇪',NOK:'🇳🇴',DKK:'🇩🇰',ZAR:'🇿🇦',MXN:'🇲🇽',INR:'🇮🇳',HKD:'🇭🇰',SGD:'🇸🇬',CNH:'🇭🇰',CNY:'🇨🇳',KRW:'🇰🇷',TWD:'🇹🇼',PLN:'🇵🇱',CZK:'🇨🇿',HUF:'🇭🇺',TRY:'🇹🇷',ILS:'🇮🇱',BRL:'🇧🇷',CLP:'🇨🇱',COP:'🇨🇴'};
-const flagsOf = (base, quote) => `<span class="flags">${FLAG[base] || '🏳'}${FLAG[quote] || '🏳'}</span>`;
+const flag = c => FLAG[c] || '🏳';
+const underlying = f => f.quote ? `<span class="flags">${flag(f.base)}${flag(f.quote)}</span>${f.base}/${f.quote}` : `<span class="flags">${flag(f.ccy)}</span>${f.ccy}`;
 
 const BBG_FX = [['EUR','USD',1.1707],['GBP','USD',1.3576],['AUD','USD',.7196],['NZD','USD',.5903],['USD','CAD',1.3609],['USD','CHF',.7822],['USD','DKK',6.3827],['USD','INR',95.32],['USD','JPY',157.68],['USD','MXN',17.3741],['USD','NOK',9.2402],['USD','SEK',9.246],['USD','ZAR',16.6371],['USD','HKD',7.83],['USD','SGD',1.29],['USD','CNH',7.15],['USD','KRW',1440],['USD','TWD',30.5],['USD','PLN',3.65],['USD','CZK',21.2],['USD','HUF',330],['USD','TRY',44],['USD','ILS',3.6],['USD','BRL',5.45],['USD','CLP',940],['USD','COP',4100]];
-const BBG_IR = [['USD','SOFR',.04],['EUR','ESTR',.03],['JPY','TONA',.0025],['GBP','SONIA',.045],['CHF','SARON',.01],['AUD','AONIA',.043],['CAD','CORRA',.035],['CNY','SHIBOR',.018],['HKD','HONIA',.045],['SGD','SORA',.03],['SEK','SWESTR',.025],['NOK','NOWA',.04],['NZD','NZONIA',.04],['KRW','KOFR',.028],['INR','MIBOR',.065],['MXN','TIIE',.1],['ZAR','ZARONIA',.075],['DKK','DESTR',.028],['PLN','POLONIA',.055],['TWD','TAIBOR',.02],['CNH','HIBOR',.018],['CZK','CZEONIA',.035],['HUF','BUBORON',.065],['ILS','TELBORON',.0425],['TRY','TLREF',.38],['BRL','CDI',.14],['CLP','CAMARA',.045],['COP','IBR',.09],['USD','SOFR-FOMC',.04]];
-const ORE_FX = BBG_FX.slice(0, 13).map(([b, q, v]) => [b, q, v * 0.93]);
-const ORE_IR = [['USD','LIBOR-3M',.0062],['EUR','EURIBOR-3M',-.0019],['GBP','LIBOR-6M',.0071],['JPY','LIBOR-6M',.0002]];
+const BBG_IR = [['USD','SOFR'],['EUR','ESTR'],['JPY','TONA'],['GBP','SONIA'],['CHF','SARON'],['AUD','AONIA'],['CAD','CORRA'],['CNY','SHIBOR'],['HKD','HONIA'],['SGD','SORA'],['SEK','SWESTR'],['NOK','NOWA'],['NZD','NZONIA'],['KRW','KOFR'],['INR','MIBOR'],['MXN','TIIE'],['ZAR','ZARONIA'],['DKK','DESTR'],['PLN','POLONIA'],['TWD','TAIBOR'],['CNH','HIBOR'],['CZK','CZEONIA'],['HUF','BUBORON'],['ILS','TELBORON'],['TRY','TLREF'],['BRL','CDI'],['CLP','CAMARA'],['COP','IBR']];
+const ORE_FX = BBG_FX.slice(0, 13);
+const ORE_IR = [['USD','LIBOR-3M'],['EUR','EURIBOR-3M'],['GBP','LIBOR-6M'],['JPY','LIBOR-6M']];
+const ENGINES = ['Cox-Ingersoll-Ross', 'Vasicek', 'Hull-White', 'Black-Karasinski', 'Two-Factor Gaussian'];
+
+const PROVIDERS = [
+  {code: 'ORE', name: 'ORE', kind: 'Reference set', icon: '◫', says: 'Simulates the market data that ships with the ORE examples: the rates and FX of 5 February 2016. Use it to run the ORE example portfolios against ticks that move.'},
+  {code: 'BBG', name: 'Bloomberg', kind: 'Data vendor', icon: '▣', says: 'Simulates Bloomberg’s composite FX spots and overnight and swap rates for the major currencies. Bound: every party bound to it stores its ticks.'},
+  {code: 'REF', name: 'Refinitiv', kind: 'Data vendor', icon: '▣', says: 'Simulates Refinitiv composite FX quotes and money-market rates.', scale: ['R', 420]},
+  {code: 'ICE', name: 'ICE', kind: 'Exchange', icon: '▣', says: 'Simulates ICE benchmark rates and futures-implied curves.', scale: ['I', 380]},
+  {code: 'CME', name: 'CME', kind: 'Exchange', icon: '▣', says: 'Simulates CME FX futures and SOFR-linked curves.', scale: ['C', 610]},
+  {code: 'LSE', name: 'LSE', kind: 'Exchange', icon: '▣', says: 'Simulates London Stock Exchange group FX and rate quotes.', scale: ['L', 290]},
+  {code: 'EUX', name: 'Eurex', kind: 'Exchange', icon: '▣', says: 'Simulates Eurex euro-rate futures and the curves they imply.', scale: ['X', 520]},
+];
+const ASSET_CLASSES = [
+  {code: 'FX', name: 'FX', instrument: 'FX spot', kind: 'fx', icon: '⇄'},
+  {code: 'RATES', name: 'Rates', instrument: 'IR curve', kind: 'ir', icon: '⌒'},
+];
+const acOf = kind => ASSET_CLASSES.find(a => a.kind === kind);
 
 let seq = 0;
-const id = () => `n${++seq}`;
 const uuid = () => 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16));
-
-function fxLeaf(ns, [base, quote, level], running, binding) {
-  return {id: id(), type: 'feed', kind: 'fx', label: `${base}/${quote}`, base, quote, running, binding,
-    source: `synthetic.${ns}.${(base + quote).toLowerCase()}`, uuid: uuid(),
+const FEEDS = [];
+function fx(provider, collection, [base, quote, level], on, i) {
+  FEEDS.push({id: ++seq, uuid: uuid(), kind: 'fx', provider, collection, base, quote, label: `${base}/${quote}`, value: level,
+    source: `synthetic.${(collection || provider).toLowerCase().replace(/ /g, '')}.${(base + quote).toLowerCase()}`,
     series: `oresmd://fx/${base}?type=quote&instrument=fx_spot&quote=rate&ccy=${quote}`,
-    process: 'Geometric, 2-component mixture', cadence: '1,800 an hour',
-    value: level, ticks: running ? 1800 + Math.round(Math.random() * 900) : 0};
+    engine: 'Geometric', every: 2, enabled: i % 17 !== 5, autoStart: provider !== 'ORE', running: on, ticks: on ? 1800 : 0});
 }
-function irLeaf(ns, [ccy, family, rate], running, binding) {
-  return {id: id(), type: 'feed', kind: 'ir', label: `${ccy} ${family}`, ccy, running, binding,
-    source: `synthetic.${ns}.${(ccy + family).toLowerCase().replace(/-/g, '')}`, uuid: uuid(),
+function ir(provider, collection, [ccy, family], on, i) {
+  FEEDS.push({id: ++seq, uuid: uuid(), kind: 'ir', provider, collection, ccy, label: `${ccy} ${family}`, value: .03,
+    source: `synthetic.${(collection || provider).toLowerCase().replace(/ /g, '')}.${(ccy + family).toLowerCase().replace(/-/g, '')}`,
     series: `oresmd://ir/${ccy}?type=quote&instrument=ir_swap&quote=rate&tenor=1D`,
-    process: 'Cox-Ingersoll-Ross', cadence: '60 an hour', value: rate,
-    pillars: family === 'SOFR-FOMC' ? 9 : 7, ticks: running ? 40 + Math.round(Math.random() * 30) : 0};
+    engine: ENGINES[i % ENGINES.length], every: 60, enabled: true, autoStart: provider !== 'ORE', running: on, ticks: on ? 60 : 0});
 }
-const folder = (label, extra, children) => ({id: id(), type: 'folder', label, children, ...extra});
-
-function systemFeeds(scale) {
-  const fxOn = state === 'mixed', irOn = false;
-  const providers = [
-    folder('Bloomberg', {icon: '▣', role: 'provider', providerKind: 'Data vendor', binding: 'bound'}, [
-      folder('FX spot', {icon: '⇄', role: 'kind'}, BBG_FX.map(p => fxLeaf('bloomberg', p, fxOn, 'bound'))),
-      folder('IR curves', {icon: '⌒', role: 'kind'}, BBG_IR.map(p => irLeaf('bloomberg', p, irOn, 'bound'))),
-    ]),
-    folder('Generic', {icon: '▢', role: 'provider', providerKind: 'Generic', binding: 'sandboxed'}, [
-      folder('2016 ORE Samples', {icon: '◫', role: 'collection', note: 'A vintage collection: it starts from the 2016-02-05 H.10 rates.'}, [
-        folder('FX spot', {icon: '⇄', role: 'kind'}, ORE_FX.map(p => fxLeaf('2016oresamples', p, false, 'sandboxed'))),
-        folder('IR curves', {icon: '⌒', role: 'kind'}, ORE_IR.map(p => irLeaf('2016oresamples', p, false, 'sandboxed'))),
-      ]),
-    ]),
-  ];
-  if (scale) {
-    const many = (name, kindName, ns, n, prefix, on) => folder(name, {icon: '▣', role: 'provider', providerKind: kindName, binding: 'sandboxed'}, [
-      folder('FX spot', {icon: '⇄', role: 'kind'}, Array.from({length: n}, (_, i) => fxLeaf(ns, ['USD', prefix + String(i).padStart(3, '0'), 1 + i / 100], on && i % 3 === 0, 'sandboxed'))),
-      folder('IR curves', {icon: '⌒', role: 'kind'}, Array.from({length: Math.round(n / 4)}, (_, i) => irLeaf(ns, ['USD', 'CURVE' + i, .03], false, 'sandboxed'))),
-      folder('Order books', {icon: '≣', role: 'kind', planned: true}, []),
-    ]);
-    providers.push(many('Refinitiv', 'Data vendor', 'refinitiv', 420, 'R', true),
-                   many('ICE', 'Exchange', 'ice', 380, 'I', false),
-                   many('CME', 'Exchange', 'cme', 610, 'C', true),
-                   many('LSE', 'Exchange', 'lse', 290, 'L', false),
-                   many('Eurex', 'Exchange', 'eurex', 520, 'X', false));
+const bbgOn = state === 'mixed';
+BBG_FX.forEach((p, i) => fx('Bloomberg', null, p, bbgOn, i));
+BBG_IR.forEach((p, i) => ir('Bloomberg', null, p, false, i));
+ORE_FX.forEach((p, i) => fx('ORE', '2016 ORE Samples', p, false, i));
+ORE_IR.forEach((p, i) => ir('ORE', '2016 ORE Samples', p, false, i));
+if (state === 'scale') {
+  for (const p of PROVIDERS.filter(p => p.scale)) {
+    const [prefix, n] = p.scale;
+    for (let i = 0; i < n; i++) fx(p.name, null, ['USD', prefix + String(i).padStart(3, '0'), 1 + i / 100], i % 3 === 0, i);
+    for (let i = 0; i < Math.round(n / 4); i++) ir(p.name, null, ['USD', 'CURVE' + i], false, i);
   }
-  return folder('System feeds', {icon: '◉', role: 'root', note: 'The installation’s feeds, one folder per provider. Every tenant binds to them; only the system tenant changes them.'}, providers);
 }
-const testFeeds = () => folder('Test feeds', {icon: '◎', role: 'root', note: 'Feeds a tenant or a party made for itself. They are sandboxed: no binding stores their ticks.'}, [
-  folder('ACME Corporation UK plc', {icon: '♟', role: 'party'}, [
-    folder('EUR/USD stress', {icon: '◫', role: 'collection', binding: 'sandboxed', note: 'A party’s test collection: the EUR/USD and GBP/USD spots at three times their usual vol.'}, [
-      folder('FX spot', {icon: '⇄', role: 'kind'}, [fxLeaf('eurusdstress', ['EUR','USD',1.17], state === 'mixed', 'sandboxed'), fxLeaf('eurusdstress', ['GBP','USD',1.36], false, 'sandboxed')]),
-    ]),
-  ]),
-]);
+for (const f of FEEDS) f.path = [f.provider, ...(f.collection ? [f.collection] : []), acOf(f.kind).name, acOf(f.kind).instrument];
 
-const ROOTS = [systemFeeds(state === 'scale'), testFeeds()];
-const BY_ID = new Map();
-(function index(nodes, parent) {
-  for (const n of nodes) { n.parent = parent; BY_ID.set(n.id, n); if (n.children) index(n.children, n); }
-})(ROOTS, null);
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const fmt = v => Math.abs(v) >= 100 ? v.toFixed(2) : Math.abs(v) >= 1 ? v.toFixed(4) : v.toFixed(5);
+const every = s => s < 60 ? `${s} s` : `${s / 60} min`;
+const providerOf = name => PROVIDERS.find(p => p.name === name);
 
-const leaves = n => n.type === 'feed' ? [n] : (n.children || []).flatMap(leaves);
-function roll(n) {
-  const all = leaves(n);
+/* A folder is a path. Its feeds are the feeds under that path. */
+const KEY = p => p.join('/');
+const underPath = (f, p) => p.every((x, i) => f.path[i] === x);
+function childrenOf(path) {
+  if (path.length === 0) return [...new Set(FEEDS.map(f => f.path[0]))].map(n => [n]);
+  const depth = path.length;
+  return [...new Set(FEEDS.filter(f => underPath(f, path) && f.path.length > depth + 1).map(f => f.path[depth]))].map(n => [...path, n]);
+}
+const iconOf = path => {
+  if (path.length === 1) return providerOf(path[0]).icon;
+  const last = path[path.length - 1];
+  const ac = ASSET_CLASSES.find(a => a.name === last || a.instrument === last);
+  return ac ? ac.icon : '◫';
+};
+function roll(path) {
+  const all = FEEDS.filter(f => underPath(f, path));
   const running = all.filter(f => f.running).length;
   return {total: all.length, running, fx: all.filter(f => f.kind === 'fx').length, ir: all.filter(f => f.kind === 'ir').length,
-          ticks: all.reduce((s, f) => s + f.ticks, 0), state: running === 0 ? 'stop' : running === all.length ? 'run' : 'part'};
+    shouldRun: all.filter(f => f.autoStart && f.enabled && !f.running).length};
 }
-const pathOf = n => { const p = []; for (let x = n; x; x = x.parent) p.unshift(x); return p; };
-const stateWord = r => r.total === 0 ? 'Empty' : r.state === 'run' ? 'Running' : r.state === 'stop' ? 'Stopped' : `${r.running} of ${r.total} running`;
-const stateTag = r => r.total === 0 ? '<span class="tag plan">Empty</span>' : r.state === 'run' ? '<span class="tag ok">Running</span>' : r.state === 'stop' ? '<span class="tag">Stopped</span>' : `<span class="tag warn">${r.running} of ${r.total}</span>`;
-const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-const fmt = v => Math.abs(v) >= 100 ? v.toFixed(2) : Math.abs(v) >= 1 ? v.toFixed(4) : v.toFixed(5);
-const fmtRate = v => (v * 100).toFixed(3) + '%';
-const pageOf = f => f.kind === 'fx' ? `/market-data/fx-feeds/${f.uuid}` : `/market-data/ir-feeds/${f.uuid}`;
+const stateTag = r => r.total === 0 ? '<span class="tag plan">Empty</span>' : r.running === r.total ? '<span class="tag ok">Running</span>' : r.running === 0 ? '<span class="tag">Stopped</span>' : `<span class="tag warn">${r.running} of ${r.total}</span>`;
 
-let selected = params.get('node') ? BY_ID.get(params.get('node')) : ROOTS[0].children[0];
-const expanded = new Set([ROOTS[0].id, ROOTS[1].id, ROOTS[0].children[0].id]);
+let tab = screen === 'tree' ? 'tree' : 'dashboard';
+let selected = params.get('node') ? params.get('node').split('/') : ['Bloomberg'];
+let provider = 'Bloomberg';
+const expanded = new Set(['Bloomberg', 'ORE']);
 let query = state === 'search' ? 'usd sofr' : '';
-let runningOnly = false;
-let toast = '';
+let runState = 'all';
+let assetClass = 'all';
+let page = 0, pageSize = 25;
+let pick = {mode: 'ids', ids: new Set(), excluded: new Set()};
+let toast = [];
 let pending = null;
+let adding = false;
+let openFeed = FEEDS[0];
 
-function matches(f) {
-  if (runningOnly && !f.running) return false;
-  if (!query) return true;
-  const hay = `${f.label} ${f.source} ${pathOf(f).map(p => p.label).join(' ')}`.toLowerCase();
-  return query.toLowerCase().split(/\s+/).every(w => hay.includes(w));
+const resetPick = () => { pick = {mode: 'ids', ids: new Set(), excluded: new Set()}; page = 0; };
+const matchesFilter = f =>
+  (runState === 'all' || (runState === 'started') === f.running) &&
+  (assetClass === 'all' || acOf(f.kind).code === assetClass) &&
+  (!query || query.toLowerCase().split(/\s+/).every(w => `${f.label} ${f.source} ${f.path.join(' ')}`.toLowerCase().includes(w)));
+/* A search reaches every folder; without one the folder chosen limits the table. */
+const scoped = () => FEEDS.filter(f => (query ? true : underPath(f, selected)) && matchesFilter(f));
+const pickedCount = () => pick.mode === 'all' ? scoped().length - pick.excluded.size : pick.ids.size;
+const isPicked = f => pick.mode === 'all' ? !pick.excluded.has(f.id) : pick.ids.has(f.id);
+const pagePick = rows => rows.length > 0 && rows.every(isPicked);
+
+function resolvePick() {
+  return pick.mode === 'all' ? scoped().filter(f => !pick.excluded.has(f.id)) : FEEDS.filter(f => pick.ids.has(f.id));
 }
-const visible = n => n.type === 'feed' ? matches(n) : (n.planned && !query && !runningOnly) || (n.children || []).some(visible);
-
-function ask(node, action) {
-  const r = roll(node);
-  const touched = action === 'start' ? r.total - r.running : r.running;
-  pending = {node, action, r, touched};
+function ask(action, feeds, label) {
+  pending = {action, feeds, label, touched: feeds.filter(f => action === 'start' ? !f.running : f.running).length};
   draw();
 }
 function act() {
-  const {node, action, r} = pending;
-  const all = leaves(node);
-  let changed = 0, already = 0;
-  for (const f of all) {
-    if (action === 'start') { if (f.running) already++; else { f.running = true; f.ticks = 1; changed++; } }
-    else { if (f.running) { f.running = false; changed++; } else already++; }
+  const {action, feeds} = pending;
+  let changed = 0, already = 0, skipped = 0;
+  for (const f of feeds) {
+    if (action === 'start') {
+      if (f.running) { already++; continue; }
+      const held = FEEDS.some(o => o.running && o.series === f.series && o !== f);
+      if (!f.enabled || held) { skipped++; continue; }
+      f.running = true; f.ticks = 1; changed++;
+    } else if (f.running) { f.running = false; changed++; } else already++;
   }
   toast = action === 'start'
-    ? `Started ${changed} feeds under ${node.label}. ${already} already running, 0 skipped. One request named the folder; the server walked the subtree.`
-    : `Stopped ${changed} feeds under ${node.label}. ${already} were not running.`;
+    ? [`Started ${changed.toLocaleString()} feeds. ${already.toLocaleString()} were already running.`, skipped ? `${skipped.toLocaleString()} skipped: the feed is disabled, or another running feed publishes the same series.` : 'None skipped.']
+    : [`Stopped ${changed.toLocaleString()} feeds. ${already.toLocaleString()} were not running.`];
   pending = null;
+  resetPick();
   draw();
-  setTimeout(() => { toast = ''; draw(); }, 5000);
-}
-
-function rollChip(n) {
-  if (n.planned) return '<span class="tag plan">Planned</span>';
-  const r = roll(n);
-  if (n.type === 'feed') return `<span class="dot ${n.running ? 'run' : 'stop'}"></span>`;
-  return `<span class="count">${r.running}/${r.total}</span><span class="meter"><i style="width:${r.total ? 100 * r.running / r.total : 0}%"></i></span>`;
-}
-function icon(n) {
-  if (n.type !== 'feed') return `<span class="ico">${n.icon || '▸'}</span>`;
-  return n.kind === 'fx' ? flagsOf(n.base, n.quote) : `<span class="flags">${FLAG[n.ccy] || '🏳'}</span>`;
-}
-
-function treeRows(nodes, depth) {
-  return nodes.filter(visible).map(n => {
-    const open = expanded.has(n.id) || !!query || runningOnly;
-    const twisty = n.type === 'feed' || n.planned ? '' : open ? '▾' : '▸';
-    const row = `<div class="node ${selected === n ? 'sel' : ''}" data-node="${n.id}" style="padding-left:${6 + depth * 16}px">
-      <span class="twisty" data-twist="${n.id}">${twisty}</span>${icon(n)}<span class="name">${n.label}</span><span class="roll">${rollChip(n)}</span></div>`;
-    return row + (n.children && open ? treeRows(n.children, depth + 1) : '');
-  }).join('');
-}
-
-function actions(n, small, noOpen) {
-  if (n.planned) return '';
-  const r = roll(n), cls = small ? 'btn small' : 'btn';
-  const open = n.type === 'feed' && !noOpen ? ` <a class="${cls}" href="#" data-open="${n.id}">Open</a>` : '';
-  return `<button class="${cls}" data-start="${n.id}" ${r.running === r.total ? 'disabled' : ''}>Start</button>
-          <button class="${cls}" data-stop="${n.id}" ${r.running === 0 ? 'disabled' : ''}>Stop</button>${open}`;
-}
-
-function nodePanel(n) {
-  const r = roll(n);
-  const crumbs = pathOf(n).map(p => p === n ? `<b>${p.label}</b>` : `<a href="#" data-node="${p.id}">${p.label}</a>`).join(' › ');
-  if (n.type === 'feed') return feedPanel(n, crumbs);
-  if (n.planned) return `<div class="panel"><p class="crumbs">${crumbs}</p><h1>${n.label}</h1>
-    <p class="notice">A planned kind. The folder shows where order books will sit, so the tree does not change shape when they arrive.</p></div>`;
-  const kids = (n.children || []).filter(visible);
-  const shown = kids.slice(0, 60);
-  const childRows = shown.map(c => {
-    const cr = roll(c);
-    if (c.type === 'feed') return `<tr data-node="${c.id}"><td>${icon(c)} ${c.label}</td><td class="mono faint">${c.source}</td>
-      <td class="num">${c.kind === 'fx' ? fmt(c.value) : fmtRate(c.value)}</td><td>${c.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}</td>
-      <td class="num">${c.ticks.toLocaleString()}</td><td>${actions(c, true)}</td></tr>`;
-    return `<tr data-node="${c.id}"><td><span class="ico">${c.icon || '▸'}</span> ${c.label}</td><td class="faint">${c.planned ? 'planned' : `${cr.fx} FX · ${cr.ir} IR`}</td>
-      <td class="num">${cr.total.toLocaleString()}</td><td>${c.planned ? '<span class="tag plan">Planned</span>' : stateTag(cr)}</td><td class="num">${cr.ticks.toLocaleString()}</td><td>${actions(c, true)}</td></tr>`;
-  }).join('');
-  const feedHead = kids.length && kids[0].type === 'feed';
-  const more = kids.length > shown.length ? `<p class="faint">Showing ${shown.length} of ${kids.length.toLocaleString()}. The page loads the next 60 on scroll; the search narrows by name or source.</p>` : '';
-  return `<div class="panel"><p class="crumbs">${crumbs}</p>
-    <div class="top"><h1>${n.label}</h1>${n.providerKind ? `<span class="tag">${n.providerKind}</span>` : ''}${n.binding ? `<span class="tag ${n.binding === 'bound' ? 'ok' : ''}">${n.binding === 'bound' ? 'Bound' : 'Sandboxed'}</span>` : ''}${stateTag(r)}</div>
-    ${n.note ? `<p class="muted">${n.note}</p>` : ''}
-    <div class="stat"><div><b>${r.total.toLocaleString()}</b><span>Feeds</span></div><div><b>${r.running.toLocaleString()}</b><span>Running</span></div>
-      <div><b>${r.fx.toLocaleString()}</b><span>FX spots</span></div><div><b>${r.ir.toLocaleString()}</b><span>IR curves</span></div><div><b>${r.ticks.toLocaleString()}</b><span>Ticks this hour</span></div></div>
-    <div class="toolbar">${actions(n)}<span class="faint">Start and Stop act on every feed under ${n.label}, in one request.</span></div>
-    <table><thead><tr><th>${feedHead ? 'Feed' : 'Folder'}</th><th>${feedHead ? 'Source' : 'Holds'}</th><th class="num">${feedHead ? 'Last' : 'Feeds'}</th><th>State</th><th class="num">Ticks</th><th></th></tr></thead><tbody>${childRows}</tbody></table>${more}</div>`;
-}
-
-function feedPanel(f, crumbs) {
-  const hero = f.kind === 'fx'
-    ? `<div class="hero"><span style="font-size:2.2rem">${flagsOf(f.base, f.quote)}</span><div><div class="big">${f.base}/${f.quote}</div><div class="muted">FX spot · ${fmt(f.value)}</div></div></div>`
-    : `<div class="hero"><span style="font-size:2.2rem">${FLAG[f.ccy] || '🏳'}</span><div><div class="big">${f.label}</div><div class="muted">IR curve · ${f.pillars} pillars · short rate ${fmtRate(f.value)}</div></div></div>`;
-  return `<div class="panel"><p class="crumbs">${crumbs}</p>${hero}
-    <div class="toolbar">${f.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}${actions(f)}</div>
-    <dl class="kv"><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${esc(f.series)}</dd>
-      <dt>Process</dt><dd>${f.process}</dd><dt>Cadence</dt><dd>${f.cadence}</dd><dt>Binding</dt><dd>${f.binding === 'bound' ? 'Bound: every bound party stores its ticks' : 'Sandboxed: no binding stores its ticks'}</dd>
-      <dt>Ticks this hour</dt><dd>${f.ticks.toLocaleString()}</dd></dl>
-    <p class="notice">The tree manages runs. The feed’s process, mixture, curve template and history are on its own page:
-      <a href="#" data-open="${f.id}">${pageOf(f)}</a>.</p></div>`;
-}
-
-function go(next, node) {
-  screen = next;
-  if (node) { selected = node; for (const p of pathOf(node)) expanded.add(p.id); }
-  window.scrollTo(0, 0);
-  draw();
+  setTimeout(() => { toast = []; draw(); }, 6000);
 }
 
 const crumbTrail = (...parts) => `<p class="crumbs">${parts.join(' › ')}</p>`;
 const toMarket = '<a href="#" data-go="market">Market data</a>';
-const toSynthetic = '<a href="#" data-go="synthetic">Synthetic</a>';
-const toTree = '<a href="#" data-go="tree">Feed tree</a>';
+const toSynthetic = '<a href="#" data-go="dashboard">Synthetic</a>';
 
 function marketScreen() {
-  const card = (ic, title, body, target, extra = '') => `<div class="card ${extra}" ${target ? `data-go="${target}"` : ''}><span class="ic">${ic}</span><h3>${title}</h3><p class="muted">${body}</p></div>`;
   return `${crumbTrail('<b>Market data</b>')}
     <div class="top"><h1>Market data</h1></div><p class="muted">The prices and curves the platform receives or generates.</p>
-    <div class="cards">${card('◇', 'Synthetic', 'The feeds the platform generates: an overview of what runs, the feed tree, and the FX and IR feeds.', 'synthetic', 'new')}
-      ${card('〜', 'Curve evolution', 'Read a curve or surface over a range of instants, and as it stands now.', '')}</div>
-    <p class="notice">Synthetic is new. The FX price feeds and IR curve feeds cards move under it, beside the feed tree.</p>`;
+    <div class="cards"><div class="card" data-go="dashboard"><span class="ic">◇</span><h3>Synthetic</h3><p class="muted">The feeds the platform generates: what runs by provider, and every feed in a tree you can start and stop.</p></div>
+      <div class="card"><span class="ic">〜</span><h3>Curve evolution</h3><p class="muted">Read a curve or surface over a range of instants, and as it stands now.</p></div></div>
+    <p class="notice">Synthetic is one screen with two tabs. The FX price feeds and IR curve feeds cards are gone: the Feed tree tab lists both. Real market data will get its own card here.</p>`;
 }
 
-function overviewPanel(n) {
-  const r = roll(n);
-  const kids = (n.children || []).filter(c => c.type !== 'feed');
-  const rows = kids.map(c => {
-    const cr = roll(c);
-    return `<tr data-node="${c.id}"><td><span class="ico">${c.icon || '▸'}</span> ${c.label}</td><td class="faint">${c.planned ? 'planned' : `${cr.fx.toLocaleString()} FX · ${cr.ir.toLocaleString()} IR`}</td>
-      <td class="num">${cr.total.toLocaleString()}</td><td>${c.planned ? '<span class="tag plan">Planned</span>' : stateTag(cr)}</td><td class="num">${cr.ticks.toLocaleString()}</td><td>${actions(c, true)}</td></tr>`;
+function tabs() {
+  return `<div class="tabs"><button class="tab ${tab === 'dashboard' ? 'on' : ''}" data-tab="dashboard">Dashboard</button><button class="tab ${tab === 'tree' ? 'on' : ''}" data-tab="tree">Feed tree</button></div>`;
+}
+
+function shouldRunBanner() {
+  const total = roll([]).shouldRun;
+  if (!total) return '';
+  const word = state === 'restart' ? 'The synthetic service restarted and did not start them again.' : 'They are enabled and marked to start automatically.';
+  return `<div class="alert"><span><b>${total.toLocaleString()} feeds should be running and are stopped.</b> ${word}</span>
+    <button class="btn primary" data-startshould="1">Start them</button><button class="btn" data-showstopped="1">Show them in the tree</button></div>`;
+}
+
+function dashboardScreen() {
+  const all = roll([]);
+  const rows = PROVIDERS.filter(p => FEEDS.some(f => f.provider === p.name)).map(p => {
+    const r = roll([p.name]);
+    return `<tr class="row" data-provider="${p.name}" ${provider === p.name ? 'style="background:#1d2633"' : ''}><td><span class="ico">${p.icon}</span> <b>${p.name}</b> <span class="tag">${p.kind}</span></td>
+      <td class="muted" style="max-width:420px">${p.says}</td><td class="faint">${r.fx.toLocaleString()} FX · ${r.ir.toLocaleString()} Rates</td>
+      <td class="num">${r.total.toLocaleString()}</td><td>${stateTag(r)}</td>
+      <td class="num">${r.shouldRun ? `<span class="tag warn">${r.shouldRun.toLocaleString()} stopped</span>` : ''}</td>
+      <td><button class="btn" data-pstart="${p.name}" ${r.running === r.total ? 'disabled' : ''}>Start</button> <button class="btn" data-pstop="${p.name}" ${r.running === 0 ? 'disabled' : ''}>Stop</button></td></tr>`;
   }).join('');
-  const kindTail = n.role === 'kind' && !n.planned
-    ? `<p class="notice">The overview stops at the feed kind. The ${r.total.toLocaleString()} feeds are in the feed tree.</p>` : '';
-  return `<div class="panel">
-    <div class="top"><h1>${n.label}</h1>${n.providerKind ? `<span class="tag">${n.providerKind}</span>` : ''}${n.binding ? `<span class="tag ${n.binding === 'bound' ? 'ok' : ''}">${n.binding === 'bound' ? 'Bound' : 'Sandboxed'}</span>` : ''}${n.planned ? '<span class="tag plan">Planned</span>' : stateTag(r)}</div>
-    ${n.note ? `<p class="muted">${n.note}</p>` : ''}
-    <div class="stat"><div><b>${r.total.toLocaleString()}</b><span>Feeds</span></div><div><b>${r.running.toLocaleString()}</b><span>Running</span></div>
-      <div><b>${r.fx.toLocaleString()}</b><span>FX spots</span></div><div><b>${r.ir.toLocaleString()}</b><span>IR curves</span></div><div><b>${r.ticks.toLocaleString()}</b><span>Ticks this hour</span></div></div>
-    <div class="toolbar">${actions(n)}<button class="btn" data-totree="${n.id}">Open in feed tree</button></div>
-    ${rows ? `<table><thead><tr><th>Folder</th><th>Holds</th><th class="num">Feeds</th><th>State</th><th class="num">Ticks</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : ''}${kindTail}</div>`;
-}
-
-function syntheticScreen() {
-  const card = (ic, title, body, target) => `<div class="card" data-go="${target}"><span class="ic">${ic}</span><h3>${title}</h3><p class="muted">${body}</p></div>`;
+  const p = providerOf(provider);
+  const classes = ASSET_CLASSES.map(a => {
+    const path = [provider];
+    const feeds = FEEDS.filter(f => underPath(f, path) && acOf(f.kind) === a);
+    const run = feeds.filter(f => f.running).length;
+    return feeds.length ? `<tr><td><span class="ico">${a.icon}</span> ${a.name}</td><td>${a.instrument}</td><td class="num">${feeds.length.toLocaleString()}</td>
+      <td>${stateTag({total: feeds.length, running: run})}</td><td><button class="btn link" data-treeclass="${a.code}">Open in the feed tree</button></td></tr>` : '';
+  }).join('');
   return `${crumbTrail(toMarket, '<b>Synthetic</b>')}
-    <div class="top"><h1>Synthetic</h1></div><p class="muted">The feeds the platform generates rather than receives.</p>
-    <div class="cards">${card('▦', 'Feed overview', 'What runs, by scope, provider and kind. Start and stop a provider or a kind.', 'overview')}
-      ${card('⌸', 'Feed tree', 'Every feed by provider and scope. Start and stop any folder, and open a feed.', 'tree')}
-      ${card('⇄', 'FX price feeds', 'The synthetic FX spot feeds and the mixture that generates each.', 'fxlist')}
-      ${card('⌒', 'IR curve feeds', 'The synthetic curve feeds and the process and template of each.', 'irlist')}</div>
-    <p class="notice">A folder card's page holds cards and nothing else (menu structure, The area page), so the overview is a screen of its own.</p>`;
+    <div class="top"><h1>Synthetic</h1><span class="muted">${all.running.toLocaleString()} of ${all.total.toLocaleString()} feeds running</span></div>${tabs()}
+    ${shouldRunBanner()}
+    <div class="panel"><table><thead><tr><th>Provider</th><th>What it simulates</th><th>Holds</th><th class="num">Feeds</th><th>State</th><th class="num">Should run</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="panel"><div class="top"><h1>${p.name}</h1><span class="tag">${p.kind}</span>${stateTag(roll([p.name]))}</div>
+      <table><thead><tr><th>Asset class</th><th>Instrument</th><th class="num">Feeds</th><th>State</th><th></th></tr></thead><tbody>${classes}</tbody></table></div>`;
 }
 
-function overviewScreen() {
-  const chain = pathOf(selected.type === 'feed' ? selected.parent : selected);
-  const levels = [ROOTS, ...chain.filter(n => n.children && n.role !== 'kind').map(n => n.children.filter(c => c.type !== 'feed'))].filter(l => l.length);
-  const cols = levels.map((nodes, i) => {
-    const title = i === 0 ? 'Scope' : chain[i - 1].label;
-    return `<div class="col"><h3>${title}</h3>${nodes.map(n => `<div class="node ${chain.includes(n) ? 'sel' : ''}" data-node="${n.id}"><span class="ico">${n.icon || '▸'}</span><span class="name">${n.label}</span><span class="roll">${rollChip(n)}</span></div>`).join('')}</div>`;
+function treeRows(path, depth) {
+  return childrenOf(path).map(p => {
+    const key = KEY(p), kids = childrenOf(p), open = expanded.has(key) || !!query;
+    if (query && !FEEDS.some(f => underPath(f, p) && matchesFilter(f))) return '';
+    const r = roll(p);
+    const row = `<div class="node ${KEY(selected) === key ? 'sel' : ''}" data-node="${esc(key)}" style="padding-left:${6 + depth * 16}px">
+      <span class="twisty" data-twist="${esc(key)}">${kids.length ? (open ? '▾' : '▸') : ''}</span><span class="ico">${iconOf(p)}</span><span class="name">${p[p.length - 1]}</span>
+      <span class="roll"><span class="count">${r.running.toLocaleString()}/${r.total.toLocaleString()}</span><span class="meter"><i style="width:${r.total ? 100 * r.running / r.total : 0}%"></i></span></span></div>`;
+    return row + (kids.length && open ? treeRows(p, depth + 1) : '');
   }).join('');
-  const total = ROOTS.reduce((s, n) => s + roll(n).total, 0), running = ROOTS.reduce((s, n) => s + roll(n).running, 0);
-  return `${crumbTrail(toMarket, toSynthetic, '<b>Feed overview</b>')}
-    <div class="top"><h1>Feed overview</h1><span class="muted">${running.toLocaleString()} of ${total.toLocaleString()} feeds running</span></div>
-    <div class="cols">${cols}</div>${overviewPanel(chain[chain.length - 1])}`;
+}
+
+function pager(total) {
+  const first = total === 0 ? 0 : page * pageSize + 1, last = Math.min(total, (page + 1) * pageSize);
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  return `<div class="pager"><span>Rows per page</span><select class="sel-box" id="size">${[25, 50, 100, 200].map(n => `<option ${n === pageSize ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    <span>${first.toLocaleString()}–${last.toLocaleString()} of ${total.toLocaleString()}</span>
+    <button class="btn" data-page="first" ${page === 0 ? 'disabled' : ''}>«</button><button class="btn" data-page="prev" ${page === 0 ? 'disabled' : ''}>‹</button>
+    <span>Page ${page + 1} of ${pages.toLocaleString()}</span>
+    <button class="btn" data-page="next" ${page + 1 >= pages ? 'disabled' : ''}>›</button><button class="btn" data-page="last" ${page + 1 >= pages ? 'disabled' : ''}>»</button></div>`;
 }
 
 function treeScreen() {
-  const n = selected;
-  const shown = n.type === 'feed' ? n.parent : n;
+  const rows = scoped();
+  if (page * pageSize >= rows.length) page = 0;
+  const shown = rows.slice(page * pageSize, (page + 1) * pageSize);
+  const n = pickedCount();
+  const pageAll = pagePick(shown);
+  const offer = pick.mode === 'ids' && pageAll && rows.length > shown.length
+    ? `<button class="btn link" data-pickall="1">Select all ${rows.length.toLocaleString()} that match</button>` : '';
+  const allMode = pick.mode === 'all' ? `<span class="muted">Every feed that matches the filter${pick.excluded.size ? `, except ${pick.excluded.size.toLocaleString()}` : ''}. The server finds them.</span>` : '';
+  const bar = n > 0 ? `<div class="pickbar"><b>${n.toLocaleString()} selected</b>${offer}${allMode}
+      <span class="grow" style="margin-left:auto"></span><button class="btn" data-pickstart="1">Start</button><button class="btn" data-pickstop="1">Stop</button><button class="btn link" data-pickclear="1">Clear</button></div>` : '';
+  const body = shown.map(f => `<tr class="row ${isPicked(f) ? 'picked' : ''}" data-feed="${f.id}">
+      <td class="chk"><input type="checkbox" data-pick="${f.id}" ${isPicked(f) ? 'checked' : ''} aria-label="Select ${esc(f.label)}"></td>
+      <td>${f.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}</td><td>${f.enabled ? '<span class="tag ok">Enabled</span>' : '<span class="tag bad">Disabled</span>'}</td>
+      <td>${f.label}${query ? ` <span class="faint">${f.path[0]}</span>` : ''}</td><td>${acOf(f.kind).name}</td><td>${underlying(f)}</td><td>${f.engine}</td>
+      <td class="num">${every(f.every)}</td></tr>`).join('');
+  const head = selected.length ? selected.join(' › ') : 'All feeds';
+  const acOptions = [['all', 'All asset classes'], ...ASSET_CLASSES.map(a => [a.code, a.name])];
   return `${crumbTrail(toMarket, toSynthetic, '<b>Feed tree</b>')}
-    <div class="top"><h1>Feed tree</h1></div>
-    <div class="toolbar"><input class="search" id="q" placeholder="Search feeds by name, source or folder" value="${esc(query).replace(/"/g, '&quot;')}">
-      <label class="check"><input type="checkbox" id="ro" ${runningOnly ? 'checked' : ''}> Running only</label>
-      ${query || runningOnly ? `<span class="tag warn">${ROOTS.flatMap(leaves).filter(matches).length.toLocaleString()} match</span>` : ''}
-      <button class="btn" id="expand">Expand</button><button class="btn" id="collapse">Collapse</button></div>
-    <div class="split"><div class="panel"><div class="tree">${treeRows(ROOTS, 0)}</div></div>${nodePanel(shown)}</div>`;
+    <div class="top"><h1>Synthetic</h1></div>${tabs()}
+    <div class="split"><div class="panel"><div class="tree"><div class="node ${selected.length === 0 ? 'sel' : ''}" data-node=""><span class="ico">◇</span><span class="name">All providers</span></div>${treeRows([], 1)}</div></div>
+    <div class="panel">
+      <div class="toolbar"><input class="search" id="q" placeholder="Search every provider by name, source or folder" value="${esc(query)}">
+        <select class="sel-box" id="state" aria-label="State">${[['all', 'All'], ['started', 'Started'], ['stopped', 'Stopped']].map(([v, l]) => `<option value="${v}" ${v === runState ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <select class="sel-box" id="class" aria-label="Asset class">${acOptions.map(([v, l]) => `<option value="${v}" ${v === assetClass ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <button class="btn primary" id="add">Add feed</button></div>
+      <p class="crumbs">${query ? `<b>${rows.length.toLocaleString()} matches in every provider</b>` : `<b>${head}</b> · ${rows.length.toLocaleString()} feeds`}</p>
+      ${bar}
+      <table><thead><tr><th class="chk"><input type="checkbox" id="pickpage" ${pageAll ? 'checked' : ''} aria-label="Select this page"></th><th>State</th><th>Enabled</th><th>Name</th><th>Asset class</th><th>Underlying</th><th>Engine</th><th class="num">Frequency</th></tr></thead>
+        <tbody>${body || '<tr><td colspan="8" class="faint">No feed matches.</td></tr>'}</tbody></table>
+      ${pager(rows.length)}</div></div>`;
 }
 
 function feedScreen() {
-  const f = selected;
-  const path = pathOf(f);
-  const crumbs = [toMarket, toSynthetic, toTree, ...path.slice(0, -1).map(p => `<a href="#" data-crumb="${p.id}">${p.label}</a>`), `<b>${f.label}</b>`];
-  const hero = f.kind === 'fx'
-    ? `<div class="hero"><span style="font-size:2.2rem">${flagsOf(f.base, f.quote)}</span><div><div class="big">${f.base}/${f.quote}</div><div class="muted">FX spot · ${fmt(f.value)}</div></div></div>`
-    : `<div class="hero"><span style="font-size:2.2rem">${FLAG[f.ccy] || '🏳'}</span><div><div class="big">${f.label}</div><div class="muted">IR curve · ${f.pillars} pillars · short rate ${fmtRate(f.value)}</div></div></div>`;
-  return `${crumbTrail(...crumbs)}${hero}
-    <div class="toolbar">${f.running ? '<span class="tag ok">Running</span>' : '<span class="tag">Stopped</span>'}${actions(f, false, true)}</div>
-    <div class="panel"><p class="notice">The feed’s existing page, ${pageOf(f)}, drawn as a stub. It keeps its tabs (the ${f.kind === 'fx' ? 'mixture and ticks' : 'process, template and ticks'}) and its history.
-      What changes is the breadcrumb: it runs through the tree, so each folder on it returns to the feed tree with that folder chosen.</p>
-      <dl class="kv"><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${esc(f.series)}</dd><dt>Process</dt><dd>${f.process}</dd><dt>Cadence</dt><dd>${f.cadence}</dd></dl></div>`;
-}
-
-function listStub(kind) {
-  const all = ROOTS.flatMap(leaves).filter(f => f.kind === kind);
-  return `${crumbTrail(toMarket, toSynthetic, `<b>${kind === 'fx' ? 'FX price feeds' : 'IR curve feeds'}</b>`)}
-    <div class="top"><h1>${kind === 'fx' ? 'FX price feeds' : 'IR curve feeds'}</h1><span class="muted">${all.length.toLocaleString()} feeds</span></div>
-    <p class="notice">The existing list screen, unchanged but for its place: it now sits under Synthetic, and its breadcrumb says so.</p>`;
+  const f = openFeed;
+  const crumbs = [toMarket, toSynthetic, '<a href="#" data-tab="tree">Feed tree</a>', ...f.path.slice(0, -1).map((p, i) => `<a href="#" data-crumb="${esc(KEY(f.path.slice(0, i + 1)))}">${p}</a>`), `<b>${f.label}</b>`];
+  return `${crumbTrail(...crumbs)}
+    <div class="hero"><span style="font-size:2.2rem">${f.quote ? flag(f.base) + flag(f.quote) : flag(f.ccy)}</span><div><div class="big">${f.label}</div><div class="muted">${acOf(f.kind).name} · ${acOf(f.kind).instrument} · ${f.running ? 'Running' : 'Stopped'}</div></div></div>
+    <div class="panel"><p class="notice">The feed’s page, drawn as a stub. It is unchanged: its tabs (${f.kind === 'fx' ? 'mixture and ticks' : 'process, template and ticks'}), the Simple and Advanced forms and its history. Only its address and breadcrumb change.</p>
+      <dl class="kv"><dt>Provider</dt><dd>${f.provider}</dd><dt>Source</dt><dd class="mono">${f.source}</dd><dt>Series</dt><dd class="mono">${esc(f.series)}</dd><dt>Engine</dt><dd>${f.engine}</dd><dt>Frequency</dt><dd>${every(f.every)}</dd></dl></div>`;
 }
 
 function draw() {
-  document.getElementById('note').textContent =
-    `Prototype · Synthetic feeds · screen ${screen} · state ${state} · mock data · nothing is started`;
-  const body = screen === 'market' ? marketScreen() : screen === 'tree' ? treeScreen() : screen === 'feed' ? feedScreen()
-             : screen === 'fxlist' ? listStub('fx') : screen === 'irlist' ? listStub('ir') : screen === 'overview' ? overviewScreen() : syntheticScreen();
-  const dialog = pending ? `<div class="dialog-back"><div class="dialog"><h1>${pending.action === 'start' ? 'Start' : 'Stop'} ${pending.node.label}?</h1>
-      <p>${pending.action === 'start' ? `Starts ${pending.touched.toLocaleString()} feeds; ${pending.r.running.toLocaleString()} are already running.` : `Stops ${pending.touched.toLocaleString()} running feeds.`}
-      ${pending.node.binding === 'bound' && pending.action === 'stop' ? ' Every party bound to these feeds stops receiving their ticks.' : ''}</p>
-      <p class="faint">One folder-scoped request; the server walks the subtree and reports what it started, what was already running and what it skipped.</p>
+  document.getElementById('note').textContent = `Prototype · Synthetic · screen ${screen} · state ${state} · mock data · nothing is started`;
+  const body = screen === 'market' ? marketScreen() : screen === 'feed' ? feedScreen() : tab === 'tree' ? treeScreen() : dashboardScreen();
+  const dialog = pending ? `<div class="dialog-back"><div class="dialog"><h1>${pending.action === 'start' ? 'Start' : 'Stop'} ${pending.label}?</h1>
+      <p>${pending.action === 'start' ? `Starts ${pending.touched.toLocaleString()} of ${pending.feeds.length.toLocaleString()} feeds. The others already run.` : `Stops ${pending.touched.toLocaleString()} running feeds.`}</p>
+      ${pending.action === 'stop' && pending.feeds.some(f => f.provider === 'Bloomberg') ? '<p>Every party bound to these feeds stops receiving their ticks.</p>' : ''}
+      <p class="faint">One request. It carries the filter and the picked or excluded ids, and the server resolves the feeds, starts them and reports what it started, what already ran and what it skipped.</p>
       <div class="toolbar"><button class="btn primary" id="go">${pending.action === 'start' ? 'Start' : 'Stop'}</button><button class="btn" id="cancel">Cancel</button></div></div></div>` : '';
-  document.getElementById('app').innerHTML = body + dialog + (toast ? `<div class="toast">${toast}</div>` : '');
+  const addDialog = adding ? `<div class="dialog-back"><div class="dialog"><h1>Add a feed</h1>
+      <p class="muted">The feed goes in ${selected.length ? selected.join(' › ') : 'a provider you choose'}. Choose its kind; its own form opens next.</p>
+      <div class="toolbar"><button class="btn primary" data-add="fx">FX spot</button><button class="btn primary" data-add="ir">IR curve</button><button class="btn" id="cancel-add">Cancel</button></div></div></div>` : '';
+  document.getElementById('app').innerHTML = body + dialog + addDialog + (toast.length ? `<div class="toast">${toast.map(t => `<span>${t}</span>`).join('')}</div>` : '');
   wire();
-  bar.querySelectorAll('[data-sc]').forEach(b => b.classList.toggle('on', b.dataset.sc === screen));
+  bar.querySelectorAll('[data-sc]').forEach(b => b.classList.toggle('on', b.dataset.sc === (screen === 'dashboard' || screen === 'tree' ? tab : screen)));
+}
+
+function goTree(path, patch = {}) {
+  screen = 'tree'; tab = 'tree'; selected = path; Object.assign(window, patch);
+  for (let i = 1; i <= path.length; i++) expanded.add(KEY(path.slice(0, i)));
+  query = ''; resetPick(); draw();
 }
 
 function wire() {
   const app = document.getElementById('app');
-  app.querySelectorAll('[data-go]').forEach(e => e.onclick = ev => { ev.preventDefault(); go(e.dataset.go); });
-  app.querySelectorAll('[data-crumb]').forEach(e => e.onclick = ev => { ev.preventDefault(); go('tree', BY_ID.get(e.dataset.crumb)); });
-  app.querySelectorAll('[data-totree]').forEach(e => e.onclick = () => go('tree', BY_ID.get(e.dataset.totree)));
+  app.querySelectorAll('[data-go]').forEach(e => e.onclick = ev => { ev.preventDefault(); screen = 'dashboard'; tab = 'dashboard'; if (e.dataset.go === 'market') screen = 'market'; draw(); });
+  app.querySelectorAll('[data-tab]').forEach(e => e.onclick = ev => { ev.preventDefault(); screen = e.dataset.tab; tab = e.dataset.tab; draw(); });
+  app.querySelectorAll('[data-crumb]').forEach(e => e.onclick = ev => { ev.preventDefault(); goTree(e.dataset.crumb.split('/')); });
+  app.querySelectorAll('[data-provider]').forEach(e => e.onclick = ev => { if (ev.target.closest('button')) return; provider = e.dataset.provider; draw(); });
+  app.querySelectorAll('[data-pstart]').forEach(e => e.onclick = () => ask('start', FEEDS.filter(f => f.provider === e.dataset.pstart), e.dataset.pstart));
+  app.querySelectorAll('[data-pstop]').forEach(e => e.onclick = () => ask('stop', FEEDS.filter(f => f.provider === e.dataset.pstop), e.dataset.pstop));
+  app.querySelectorAll('[data-startshould]').forEach(e => e.onclick = () => ask('start', FEEDS.filter(f => f.autoStart && f.enabled && !f.running), 'the feeds that should run'));
+  app.querySelectorAll('[data-showstopped]').forEach(e => e.onclick = () => { goTree([]); runState = 'stopped'; draw(); });
+  app.querySelectorAll('[data-treeclass]').forEach(e => e.onclick = () => { assetClass = e.dataset.treeclass; goTree([provider]); });
   app.querySelectorAll('[data-twist]').forEach(e => e.onclick = ev => { ev.stopPropagation(); const k = e.dataset.twist; expanded.has(k) ? expanded.delete(k) : expanded.add(k); draw(); });
-  app.querySelectorAll('[data-node]').forEach(e => e.onclick = ev => {
-    if (ev.target.closest('button,[data-twist]')) return;
-    ev.preventDefault();
-    const n = BY_ID.get(e.dataset.node);
-    if (n.type === 'feed') return go('feed', n);
-    selected = n; for (const p of pathOf(n)) expanded.add(p.id); expanded.add(n.id); draw();
+  app.querySelectorAll('[data-node]').forEach(e => e.onclick = () => { selected = e.dataset.node ? e.dataset.node.split('/') : []; query = ''; resetPick(); for (let i = 1; i <= selected.length; i++) expanded.add(KEY(selected.slice(0, i))); draw(); });
+  app.querySelectorAll('[data-feed]').forEach(e => e.onclick = ev => { if (ev.target.closest('input')) return; openFeed = FEEDS.find(f => f.id == e.dataset.feed); screen = 'feed'; draw(); });
+  app.querySelectorAll('[data-pick]').forEach(e => e.onchange = () => {
+    const id = Number(e.dataset.pick);
+    if (pick.mode === 'all') { e.checked ? pick.excluded.delete(id) : pick.excluded.add(id); }
+    else { e.checked ? pick.ids.add(id) : pick.ids.delete(id); }
+    draw();
   });
-  app.querySelectorAll('[data-start]').forEach(e => e.onclick = ev => { ev.stopPropagation(); ask(BY_ID.get(e.dataset.start), 'start'); });
-  app.querySelectorAll('[data-stop]').forEach(e => e.onclick = ev => { ev.stopPropagation(); ask(BY_ID.get(e.dataset.stop), 'stop'); });
-  app.querySelectorAll('[data-open]').forEach(e => e.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); go('feed', BY_ID.get(e.dataset.open)); });
+  const pp = document.getElementById('pickpage');
+  if (pp) pp.onchange = () => {
+    const rows = scoped().slice(page * pageSize, (page + 1) * pageSize);
+    for (const f of rows) {
+      if (pick.mode === 'all') { pp.checked ? pick.excluded.delete(f.id) : pick.excluded.add(f.id); }
+      else { pp.checked ? pick.ids.add(f.id) : pick.ids.delete(f.id); }
+    }
+    draw();
+  };
+  app.querySelectorAll('[data-pickall]').forEach(e => e.onclick = () => { pick = {mode: 'all', ids: new Set(), excluded: new Set()}; draw(); });
+  app.querySelectorAll('[data-pickclear]').forEach(e => e.onclick = () => { resetPick(); draw(); });
+  app.querySelectorAll('[data-pickstart]').forEach(e => e.onclick = () => ask('start', resolvePick(), `${pickedCount().toLocaleString()} feeds`));
+  app.querySelectorAll('[data-pickstop]').forEach(e => e.onclick = () => ask('stop', resolvePick(), `${pickedCount().toLocaleString()} feeds`));
+  app.querySelectorAll('[data-page]').forEach(e => e.onclick = () => {
+    const pages = Math.max(1, Math.ceil(scoped().length / pageSize));
+    page = {first: 0, prev: Math.max(0, page - 1), next: Math.min(pages - 1, page + 1), last: pages - 1}[e.dataset.page]; draw();
+  });
+  const size = document.getElementById('size'); if (size) size.onchange = () => { pageSize = Number(size.value); page = 0; draw(); };
   const q = document.getElementById('q');
-  if (q) q.oninput = () => { query = q.value; draw(); const again = document.getElementById('q'); again.focus(); again.setSelectionRange(again.value.length, again.value.length); };
-  const ro = document.getElementById('ro'); if (ro) ro.onchange = e => { runningOnly = e.target.checked; draw(); };
-  const ex = document.getElementById('expand'); if (ex) ex.onclick = () => { BY_ID.forEach(n => { if (n.children && n.children.length <= 60) expanded.add(n.id); }); draw(); };
-  const co = document.getElementById('collapse'); if (co) co.onclick = () => { expanded.clear(); draw(); };
+  if (q) q.oninput = () => { query = q.value; resetPick(); draw(); const again = document.getElementById('q'); again.focus(); again.setSelectionRange(again.value.length, again.value.length); };
+  const st = document.getElementById('state'); if (st) st.onchange = () => { runState = st.value; resetPick(); draw(); };
+  const cl = document.getElementById('class'); if (cl) cl.onchange = () => { assetClass = cl.value; resetPick(); draw(); };
+  const add = document.getElementById('add'); if (add) add.onclick = () => { adding = true; draw(); };
+  const ca = document.getElementById('cancel-add'); if (ca) ca.onclick = () => { adding = false; draw(); };
+  app.querySelectorAll('[data-add]').forEach(e => e.onclick = () => { adding = false; toast = [`A new ${e.dataset.add === 'fx' ? 'FX spot' : 'IR curve'} feed would open its own form here.`]; draw(); setTimeout(() => { toast = []; draw(); }, 4000); });
   const goBtn = document.getElementById('go'); if (goBtn) goBtn.onclick = act;
   const cancel = document.getElementById('cancel'); if (cancel) cancel.onclick = () => { pending = null; draw(); };
 }
 
 const bar = document.getElementById('bar');
 bar.innerHTML = '<span class="label faint">Screen</span>' +
-  [['market', 'Market data'], ['synthetic', 'Synthetic'], ['overview', 'Feed overview'], ['tree', 'Feed tree']].map(([v, l]) => `<button data-sc="${v}">${l}</button>`).join('') +
+  [['market', 'Market data'], ['dashboard', 'Dashboard'], ['tree', 'Feed tree']].map(([v, l]) => `<button data-sc="${v}">${l}</button>`).join('') +
   '<span class="sep">|</span><span class="label faint">State</span>' +
-  ['mixed', 'stopped', 'scale', 'search'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
-bar.querySelectorAll('[data-sc]').forEach(b => b.onclick = () => go(b.dataset.sc));
+  ['mixed', 'restart', 'stopped', 'scale', 'search'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+bar.querySelectorAll('[data-sc]').forEach(b => b.onclick = () => { screen = b.dataset.sc; tab = screen === 'tree' ? 'tree' : 'dashboard'; draw(); });
 bar.querySelectorAll('[data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
-if (screen === 'feed' && selected.type !== 'feed') selected = leaves(ROOTS[0])[0];
 
+if (state === 'restart' || state === 'stopped') FEEDS.forEach(f => { f.running = false; f.ticks = 0; });
+if (state === 'stopped') FEEDS.forEach(f => { f.autoStart = false; });
 draw();
 </script>
 </body>

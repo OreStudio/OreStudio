@@ -159,18 +159,17 @@ std::nullopt
 ** provider_code
 :PROPERTIES:
 :type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
+:cpp_type: std::string
+:nullable: false
 :END:
 
 The simulated market data provider this collection stands for
-(=market_data_provider.code=), such as =bloomberg=, or =generic= for a
-system collection that stands for no provider in particular. Optional at
-every scope: a party's test collection usually names none. Its feeds'
-source names start =synthetic.<provider_code>.= when it is set.
+(=market_data_provider.code=), such as =bloomberg= or =ore=. Required at every
+scope, so every feed has a provider. Its feeds' source names start
+=synthetic.<provider_code>.=.
 
 #+begin_src cpp :name generator
-std::nullopt
+std::string("bloomberg")
 #+end_src
 
 * SQL
@@ -331,7 +330,7 @@ policy still decides which system rows a tenant sees and who may write them.
 | name        | Name        | nameEdit        | line_edit |        | true        | Enter config name     |
 | description | Description | descriptionEdit | line_edit |        |             | Enter description     |
 | enabled     | Enabled     | enabledCheck    | check_box |        |             |                       |
-| provider_code | Provider  | providerEdit    | line_edit |        |             | A provider code, or empty |
+| provider_code | Provider  | providerEdit    | line_edit |        | true        | A provider code           |
 
 *** Columns
 

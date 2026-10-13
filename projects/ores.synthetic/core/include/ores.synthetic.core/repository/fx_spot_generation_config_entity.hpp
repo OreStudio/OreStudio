@@ -66,6 +66,7 @@ struct fx_spot_generation_config_entity {
     std::string vintage_source;
     std::string vintage_date;
     std::optional<std::string> folder_id;
+    std::string asset_class_code = "fx";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

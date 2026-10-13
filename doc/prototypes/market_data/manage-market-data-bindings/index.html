@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage market data bindings prototype — Market data journeys</title>
+<style>
+
+
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+
+.tag.off{color:#9ca3af;border-color:#374151}
+.crumbs{font-size:.8rem;color:var(--ink-dim);display:flex;gap:6px;flex-wrap:wrap}
+.titlebar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.titlebar h1{font-size:1.3rem}.titlebar .sub{color:var(--ink-dim);margin-top:2px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.danger{color:var(--bad);border-color:#5a2320}.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim);padding:2px 8px}.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.access{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.78rem;color:var(--ink-dim)}
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabbar a{padding:8px 14px;color:var(--ink-dim);border-bottom:2px solid transparent}.tabbar a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.card .body{padding:16px;display:grid;gap:16px 20px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.card .body{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card .foot{border-top:1px solid var(--line-soft);padding:10px 16px;color:var(--ink-faint);font-size:.8rem}
+.dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
+a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
+.listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.listbar select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+tr.rec{cursor:pointer}tr.rec:hover td,tr.rec:focus td{background:#1d1d22;outline:none}
+th.sort{cursor:pointer}
+.pager{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;color:var(--ink-dim);font-size:.85rem;border-top:1px solid var(--line-soft);flex-wrap:wrap}
+.hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+@media(max-width:820px){.hist{grid-template-columns:1fr}}
+.hist ol{margin:0;padding:0;list-style:none;border-right:1px solid var(--line)}
+.hist li{padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer;display:grid;gap:2px}.hist li.on{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
+.hist .cmp{padding:12px;display:grid;gap:10px;align-content:start}
+.diff{font-family:var(--mono);font-size:.82rem}.diff .rm{background:#2a1517;color:#ffb3ad;padding:2px 8px}.diff .ad{background:#10261a;color:#9be9a8;padding:2px 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
+.axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px}
+.tl .item{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.tl .item.mark{background:#1d2530}
+.tl .when{color:var(--ink-faint);font-family:var(--mono);font-size:.8rem}.emblem{color:var(--accent)}
+.tl .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tl .who{font-weight:600}
+.avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
+.tl details summary{cursor:pointer;color:var(--ink-faint);margin-top:4px}.tl .diff{margin-top:6px}
+.dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
+.dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.dlg .dbody{padding:16px;display:grid;gap:14px}.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line-soft)}
+.field select,.field input[type=text],.field textarea{width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 8px}.field textarea{min-height:64px}.field .help{font-size:.78rem;color:var(--ink-faint)}
+.warnbox{border:1px solid #4a3a17;background:#201a0e;color:var(--warn);border-radius:var(--radius);padding:8px 10px}
+.okbox{border:1px solid #1f4d29;background:#0f1d14;color:var(--ok);border-radius:var(--radius);padding:8px 10px}
+.badbox{border:1px solid #5a2320;background:#231211;color:var(--bad);border-radius:var(--radius);padding:8px 10px}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The bindings screen, drawn only as the Record screen standard
+  (doc/knowledge/ui/record_screen_standard.org) draws a record screen, and the
+  oresmd reference as the product ships it. It invents no layout:
+    - the list: breadcrumb, plural title, one sentence, Refresh and Add, search,
+      a filter, the table with the key first, the pager, and the four states;
+    - the record page: breadcrumb, the key as the title, the lead line, the access
+      mark and the actions Edit and Delete (drawn only when allowed), the tabs
+      Details and History, the Last changed line;
+    - Add and Edit are one dialog, Delete and Revert have their own, and the
+      Inspect view of an oresmd URL is the shipped one. All four share one shell.
+    - History is the shared timeline: a chart of events over time above a rail of one-line
+      entries, newest first, details collapsed, the current-version emblem, Hide system
+      activity, and Revert on older versions.
+  What the standards left open is recorded in the design note as decisions.
+
+  Addresses: ?screen=list | record&id=..&tab=details|history | stand-ins:
+  series&uri=.. and feed&src=.. (pages the product already has).
+  Switches in the bottom bar (they reload and reset the mock list):
+    ?scenario=synthetic|real   real adds vendor bindings, which are read only and can be deleted
+    ?state=all|quiet|disabled|empty|error|loading
+    ?actor=viewer|operator|admin   who is using it. Decided: an operator adds and edits, only the administrator deletes
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<div id="layer"></div>
+
+<script>
+const P0 = new URLSearchParams(location.search);
+const scenario = P0.get('scenario') || 'synthetic';
+const state = P0.get('state') || 'all';
+const actor = P0.get('actor') || 'operator';
+const KEEP = ['scenario', 'state', 'actor'];
+const NOW = Date.parse('2026-10-13T10:00:00Z');
+
+// Who may do what, as decided: a viewer reads, an operator adds and edits, and only the
+// system administrator also deletes. An action a person may not take is not drawn.
+const MAY = { viewer: {}, operator: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
+const may = a => !!(MAY[actor] || {})[a];
+const actorName = actor === 'admin' ? 'system administrator' : actor === 'viewer' ? 'a viewer' : 'market data operator';
+
+// The reasons the server offers for an amendment. When a field changed,
+// Non-material update is not offered. When none changed, only it is.
+const REASON_AMEND = [{ name: 'Rectification', note: true }, { name: 'Correction of a data entry error', note: true }, { name: 'Non-material update', note: false }];
+const REASON_DELETE = [{ name: 'Source retired', note: true }, { name: 'Added by mistake', note: false }];
+
+const SOURCES = [
+  { src: 'synthetic.bloomberg.audusd', series: 'AUD/USD spot rate', uri: 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.eurusd', series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.copibr', series: 'USD/COP spot rate', uri: 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=COP', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.nzdusd', series: 'NZD/USD spot rate', uri: 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.eurestr', series: 'EUR overnight curve', uri: 'oresmd://ir/EUR?type=series&instrument=zero&quote=rate', kind: 'IR curve', tph: 60, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.gbpusd', series: 'GBP/USD spot rate', uri: 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.usdjpy', series: 'USD/JPY spot rate', uri: 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.reuters.eurusd', series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Reuters' }
+];
+const sourceOf = s => SOURCES.find(x => x.src === s);
+
+let bindings = [
+  { id: 'b1', src: 'synthetic.bloomberg.audusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
+  { id: 'b2', src: 'synthetic.bloomberg.eurusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 1 },
+  { id: 'b3', src: 'synthetic.bloomberg.copibr', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
+  { id: 'b4', src: 'synthetic.bloomberg.nzdusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
+  { id: 'b5', src: 'synthetic.bloomberg.eurestr', kind: 'SYNTHETIC', enabled: true, running: true, last: 3, ver: 1 }
+];
+if (state === 'quiet') { const b = bindings.find(x => x.src.endsWith('copibr')); b.running = false; b.last = 3600; }
+if (state === 'disabled') { const b = bindings.find(x => x.src.endsWith('nzdusd')); b.enabled = false; b.ver = 2; b.running = false; b.last = 259200; }
+if (state === 'empty') bindings = [];
+if (scenario === 'real') bindings.push(
+  { id: 'v1', src: 'vendor.example.eurusd', kind: 'VENDOR', enabled: true, running: false, last: null, ver: 1, series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD' },
+  { id: 'v2', src: 'vendor.example.usdsofr', kind: 'VENDOR', enabled: false, running: false, last: null, ver: 2, series: 'USD overnight curve', uri: 'oresmd://ir/USD?type=series&instrument=zero&quote=rate', noSeries: true }
+);
+
+// Saved versions, oldest first. Start and stop are the feed's, not the binding's.
+const AT = ['2026-10-06T09:02:00Z', '2026-10-12T17:40:00Z', '2026-10-13T08:15:00Z'];
+const history = {};
+const fieldsOf = b => ({ 'Source name': b.src, 'Enabled': b.enabled ? 'Yes' : 'No', 'Kind': b.kind === 'VENDOR' ? 'Vendor' : 'Synthetic' });
+bindings.forEach(b => {
+  const steps = [{ en: true, by: 'tenant provisioning service', forWho: 'tenant administrator', service: true, reason: 'New record', note: '' },
+    { en: false, by: 'market data operator', reason: 'Rectification', note: 'Paused while the source was checked' },
+    { en: true, by: 'market data operator', reason: 'Rectification', note: 'Source checked, ticks resume' }];
+  history[b.id] = steps.slice(0, b.ver).map((x, i) => ({ v: i + 1, at: AT[i], by: x.by, forWho: x.forWho || x.by, service: !!x.service, reason: x.reason, commentary: x.note, fields: fieldsOf({ ...b, enabled: x.en }) }));
+});
+function pushVersion(b, reason, commentary) {
+  const list = history[b.id] = history[b.id] || [];
+  list.push({ v: list.length + 1, at: new Date(NOW).toISOString(), by: actorName, forWho: actorName, service: false, reason, commentary, fields: fieldsOf(b) });
+}
+let nextId = 100, draft = null, hideSystem = false, search = '', kindFilter = 'all', sortKey = 'src', sortDir = 1;
+
+const isVendor = b => b.kind === 'VENDOR';
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const seriesOf = b => isVendor(b) ? { series: b.series, uri: b.uri } : (sourceOf(b.src) || { series: 'not known', uri: '' });
+const hasSeries = b => !b.noSeries;
+const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
+const rel = iso => { const s = Math.round((NOW - Date.parse(iso)) / 1000); return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' minutes ago' : s < 129600 ? Math.round(s / 3600) + ' hours ago' : Math.round(s / 86400) + ' days ago'; };
+const exact = iso => iso.replace('T', ' ').replace(':00Z', ' UTC');
+const ago = a => a === null ? '<span class="faint">—</span>' : a < 90 ? a + ' seconds ago' : a < 5400 ? Math.round(a / 60) + ' minutes ago' : a < 172800 ? Math.round(a / 3600) + ' hours ago' : Math.round(a / 86400) + ' days ago';
+// Status: the feed's run state, as the feed list reads it. A tag colour carries its meaning only:
+// green healthy, amber caution, gray inactive.
+const isQuiet = b => b.last === null || b.last > 600;
+const statusTag = b => isVendor(b) ? tag('Not supported', 'warn') : !b.enabled ? tag('Disabled', 'off') : isQuiet(b) ? tag('Quiet', 'warn') : b.running ? tag('Running', 'ok') : tag('Stopped', 'off');
+const kindLabel = b => isVendor(b) ? 'Vendor' : 'Synthetic';
+const dash = '<span class="faint">—</span>';
+const heldBy = (series, except) => bindings.find(b => b.id !== except && !isVendor(b) && b.running && seriesOf(b).series === series);
+const byId = id => bindings.find(b => b.id === id);
+
+// Addresses: every link carries its whole address, so it opens in a new tab and copies as a link.
+function q(params) { const p = new URLSearchParams(); KEEP.forEach(k => { const v = new URLSearchParams(location.search).get(k); if (v) p.set(k, v); }); Object.entries(params).forEach(([k, v]) => p.set(k, v)); return '?' + p.toString(); }
+const href = params => esc(q(params));
+const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details', uri: p.get('uri'), src: p.get('src') }; };
+function nav(params) { window.history.pushState({}, '', q(params)); render(); }
+window.onpopstate = () => render();
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-nav]');
+  if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+  e.preventDefault(); window.history.pushState({}, '', a.getAttribute('href')); render();
+});
+
+// The oresmd URL as the product ships it: a link to the series page in a new tab when the
+// party has the series, plain text when it does not, and an Inspect button.
+function uriRef(b) {
+  const s = seriesOf(b), text = esc(s.uri);
+  const link = hasSeries(b) ? `<a class="link mono" style="font-size:.8rem;overflow-wrap:anywhere" target="_blank" rel="noopener" href="${href({ screen: 'series', uri: s.uri })}" title="Opens the series page in a new tab">${text}</a>` : `<span class="mono" style="font-size:.8rem;overflow-wrap:anywhere">${text}</span>`;
+  return `<span style="display:inline-flex;gap:6px;align-items:baseline;flex-wrap:wrap">${link}<button class="btn ghost" data-inspect="${esc(s.uri)}">Inspect</button></span>`;
+}
+
+// In a list cell the series is its title only. The full oresmd URL is too long for a table,
+// so it stays on the record page, with its Inspect button; the title links to the series page,
+// and the URL is its tooltip.
+function seriesLink(b) {
+  const s = seriesOf(b);
+  return hasSeries(b) ? `<a class="link" target="_blank" rel="noopener" href="${href({ screen: 'series', uri: s.uri })}" title="${esc(s.uri)}">${s.series}</a>` : `<span title="${esc(s.uri)}">${s.series}</span>`;
+}
+// Icons beside words, one glyph for one idea.
+const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕' };
+const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
+function crumbs(parts) { return `<div class="crumbs">${parts.map((p, i) => i === parts.length - 1 ? `<span>${p[0]}</span>` : `<a class="link" data-nav href="${p[1]}">${p[0]}</a>`).join('<span>›</span>')}</div>`; }
+const LIST = () => href({ screen: 'list' });
+const base = () => [['Home', LIST()], ['Market data', LIST()], ['Bindings', LIST()]];
+
+function visible() {
+  let rows = bindings.filter(b => (kindFilter === 'all' || (kindFilter === 'synthetic') === !isVendor(b)) && (!search || (b.src + ' ' + seriesOf(b).series).toLowerCase().includes(search.toLowerCase())));
+  const val = b => sortKey === 'series' ? seriesOf(b).series : sortKey === 'kind' ? kindLabel(b) : sortKey === 'enabled' ? (b.enabled ? 'Yes' : 'No') : sortKey === 'last' ? (b.last === null ? 1e12 : b.last) : b.src;
+  return rows.sort((x, y) => (val(x) > val(y) ? 1 : val(x) < val(y) ? -1 : 0) * sortDir);
+}
+function listScreen() {
+  const head = `${crumbs([['Home', LIST()], ['Market data', LIST()], ['Bindings']])}
+  <div class="titlebar"><div><h1>Bindings</h1><div class="sub">The market data producers this party consumes.</div></div>
+    <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? btn('Add', 'add', 'primary', 'data-add') : ''}</div></div>`;
+  if (state === 'loading') return head + '<div class="card"><div class="body"><div class="muted">Loading…</div></div></div>';
+  if (state === 'error') return head + `<div class="badbox">The bindings could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>`;
+  const rows = visible();
+  const note = `<div class="notice">${bindings.length} bindings. The series is inferred from the newest observations, and the last tick is a mock reading of the ingest loop's counter: no read returns either today.</div>`;
+  const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  const tr = b => `<tr class="rec" tabindex="0" data-open="${b.id}"><td><a data-nav class="link mono" href="${href({ screen: 'record', id: b.id })}">${b.src}</a></td><td>${kindLabel(b)}</td>
+    <td>${seriesLink(b)}</td><td>${b.enabled ? 'Yes' : 'No'}</td><td>${statusTag(b)}</td>
+    <td title="${isVendor(b) ? '' : esc(exact(new Date(NOW - b.last * 1000).toISOString().slice(0, 19) + 'Z'))}">${isVendor(b) ? dash : ago(b.last)}</td></tr>`;
+  let body;
+  if (!bindings.length) body = `<div class="card"><div class="body"><div class="muted">There are no bindings yet.${may('add') ? ' ' + btn('Add', 'add', 'primary', 'data-add') : ''}</div></div></div>`;
+  else if (!rows.length) body = `<div class="card"><div class="body"><div class="muted">No bindings match the search. <button class="btn" id="clear">Clear</button></div></div></div>`;
+  else body = `<table><thead><tr>${th('src', 'Source name')}${th('kind', 'Kind')}${th('series', 'Feeds series (inferred)')}${th('enabled', 'Enabled')}<th>Status</th>${th('last', 'Last tick')}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`;
+  const pager = `<div class="pager"><span>${rows.length ? '1–' + rows.length + ' of ' + rows.length : '0 of 0'}</span><span><button class="btn" disabled>« First</button> <button class="btn" disabled>‹ Previous</button> <button class="btn" disabled>Next ›</button> <button class="btn" disabled>Last »</button></span><span>Page size <select><option>15</option><option>25</option><option>50</option></select></span></div>`;
+  return head + note + `<div class="card"><div class="listbar"><input id="search" placeholder="Search" value="${esc(search)}"><select id="kindf"><option value="all">Kind: all</option><option value="synthetic" ${kindFilter === 'synthetic' ? 'selected' : ''}>Synthetic</option><option value="vendor" ${kindFilter === 'vendor' ? 'selected' : ''}>Vendor</option></select></div>${body}${pager}</div>`;
+}
+
+function kv(l, v, wide) { return `<div class="dl ${wide ? 'wide' : ''}"><div class="k">${l}</div><div class="v">${v}</div></div>`; }
+function lastChanged(b) {
+  const x = (history[b.id] || []).slice(-1)[0]; if (!x) return '';
+  const who = x.by === x.forWho ? x.by : `${x.by} for ${x.forWho}`;
+  return `<div class="foot">Last changed: version ${x.v} · ${who} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.commentary ? ' · “' + esc(x.commentary) + '”' : ''}</div>`;
+}
+function detailsTab(b) {
+  const s = seriesOf(b), src = sourceOf(b.src);
+  const feed = isVendor(b) ? dash : `<a class="link" data-nav href="${href({ screen: 'feed', src: b.src })}">${b.src}</a>`;
+  return `${isVendor(b) ? '<div class="warnbox"><b>Real feeds are not supported.</b> This installation does not connect a vendor feed, so this binding is read only: it has no Edit. It can still be deleted, so a stale one does not stay for ever.</div>' : ''}
+  <div class="card"><div class="body">
+    ${kv('Source name', `<span class="mono">${b.src}</span>`)}${kv('Kind', kindLabel(b))}${kv('Enabled', b.enabled ? 'Yes' : 'No')}${kv('Status', statusTag(b))}
+    ${kv('Last tick', isVendor(b) ? dash : ago(b.last))}${kv('Feed', feed)}${kv('Folder', src ? src.folder : dash)}${kv('Ticks per hour', src ? src.tph : dash)}
+    ${kv('Feeds series (inferred)', `${s.series}<div>${uriRef(b)}</div>${hasSeries(b) ? '' : '<div class="faint" style="font-size:.78rem">Nothing has been written to this series yet, so it has no page.</div>'}`, true)}
+  </div>${lastChanged(b)}</div>`;
+}
+
+// History is the shared Timeline of the entity screen specification: a chart of the events over time
+// above a rail of one-line entries, newest first, with the details collapsed.
+const KIND_COLOUR = { Created: '#8b5cf6', Changed: '#58a6ff' };
+const initials = n => n.split(/[\s_]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+function historyTab(b) {
+  const all = (history[b.id] || []).slice().reverse(), cur = all[0];
+  const rows = all.filter(x => !(hideSystem && x.service));
+  const kindOf = x => x.v === 1 ? 'Created' : 'Changed';
+  const prevOf = x => all.find(y => y.v === x.v - 1);
+  const changed = x => { const p = prevOf(x); return Object.keys(x.fields).filter(n => !p || p.fields[n] !== x.fields[n]); };
+  // The chart: one bar for each day, split by kind, every bucket from the first entry to the last.
+  const days = {}; rows.forEach(x => { const d = x.at.slice(0, 10); (days[d] = days[d] || { Created: 0, Changed: 0 })[kindOf(x)]++; });
+  const keys = Object.keys(days).sort(), first = keys[0] ? Date.parse(keys[0]) : 0, last = keys.length ? Date.parse(keys[keys.length - 1]) : 0;
+  const buckets = []; for (let t = first; t <= last; t += 86400000) { const k = new Date(t).toISOString().slice(0, 10); buckets.push([k, days[k] || { Created: 0, Changed: 0 }]); }
+  const max = Math.max(1, ...buckets.map(([, c]) => c.Created + c.Changed));
+  const bar = ([k, c]) => `<div class="bar" data-day="${k}" title="${k}: ${c.Created} created, ${c.Changed} changed">${['Changed', 'Created'].map(t => c[t] ? `<i style="height:${Math.round(c[t] / max * 44)}px;background:${KIND_COLOUR[t]}" title="${t} ${c[t]}"></i>` : '').join('')}</div>`;
+  const legend = ['Created', 'Changed'].map(t => [t, rows.filter(x => kindOf(x) === t).length]).filter(([, n]) => n).map(([t, n]) => `<span><i style="background:${KIND_COLOUR[t]}"></i>${t} ${n}</span>`).join('');
+  const entry = x => {
+    const p = prevOf(x), names = changed(x), isCur = x.v === cur.v;
+    const author = x.service ? `<span class="who">${esc(x.by)}</span>` : `<a class="link who" data-nav href="${href({ screen: 'person', src: x.by })}">${esc(x.by)}</a>`;
+    const diff = names.map(n => p ? `<div class="diff"><b>${n}</b><div class="rm">- ${esc(p.fields[n])}</div><div class="ad">+ ${esc(x.fields[n])}</div></div>` : `<div class="diff"><b>${n}</b> ${esc(x.fields[n])}</div>`).join('');
+    return `<div class="item" id="e${x.v}" data-day="${x.at.slice(0, 10)}"><div class="when">${x.at.slice(11, 19)}${isCur ? ' <span class="emblem" title="Current version">●</span>' : ''}</div>
+      <div><div class="head"><span class="avatar">${initials(x.by)}</span>${tag(kindOf(x), kindOf(x) === 'Created' ? 'ok' : '')}<span class="mono faint">feed_binding ${b.id} v${x.v}</span>${p ? `<span class="faint">${names.join(', ') || 'No changes'}</span>` : ''}<span class="tag warn mono">${esc(x.reason)}</span>${author}${!isCur && may('edit') && !isVendor(b) ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.commentary ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.commentary)}</div>` : ''}
+      ${names.length ? `<details style="margin-left:34px"><summary>Details</summary>${diff}</details>` : '<div class="faint" style="margin-left:34px">No changes</div>'}</div></div>`;
+  };
+  const rail = []; let day = '';
+  rows.forEach(x => { const d = x.at.slice(0, 10); if (d !== day) { day = d; rail.push(`<div class="daydiv">${new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}</div>`); } rail.push(entry(x)); });
+  return `<div class="muted">Every version of this binding, in one stream, newest first. Revert writes an older version's values back as a new version.</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div>
+  <div class="card" style="padding:12px"><div class="chart">${buckets.map(bar).join('')}</div><div class="axis"><span>${keys[0] || ''}</span><span>${keys[keys.length - 1] || ''}</span></div><div class="legend">${legend}</div></div>
+  <div class="tl">${rail.join('')}</div>`;
+}
+
+function accessMark() { return may('edit') ? `<span class="access" title="A market data operator can change it.">✎ Editable</span>` : `<span class="access" title="Your access shows it but does not let you change it.">🔒 Read only</span>`; }
+function recordScreen(b) {
+  const r = route();
+  if (!b) return crumbs([...base().slice(0, 3), ['Not found']]) + '<div class="notice">This binding does not exist.</div>';
+  const s = seriesOf(b), tabHref = t => href({ screen: 'record', id: b.id, tab: t });
+  const editable = may('edit') && !isVendor(b), deletable = may('delete');
+  return `${crumbs([...base(), [esc(b.src)]])}
+  <div class="titlebar"><div><h1>${esc(b.src)}</h1><div class="sub">${s.series} · version ${b.ver} · ${kindLabel(b)}</div></div>
+    <div class="actions">${accessMark()}${statusTag(b)}${editable ? btn('Edit', 'edit', '', 'data-edit') : ''}${deletable ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
+  <div class="tabbar"><a data-nav href="${tabHref('details')}" class="${r.tab === 'details' ? 'on' : ''}">Details</a><a data-nav href="${tabHref('history')}" class="${r.tab === 'history' ? 'on' : ''}">History</a></div>
+  ${r.tab === 'history' ? historyTab(b) : detailsTab(b)}`;
+}
+
+function stubScreen(r) {
+  if (r.screen === 'person') return `${crumbs([['Home', LIST()], ['Organisation', LIST()], ['Staff', LIST()], [esc(r.src || 'Person')]])}<div class="titlebar"><div><h1>${esc(r.src || '')}</h1><div class="sub">Person</div></div></div><div class="notice">This stands in for the person's page, which the product already has. The name of an author on the timeline is a link to it, where the reader may open people.</div>`;
+  if (r.screen === 'series') {
+    const s = SOURCES.find(x => x.uri === r.uri) || bindings.map(seriesOf).find(x => x.uri === r.uri) || { series: 'Series' };
+    return `${crumbs([['Home', LIST()], ['Market data', LIST()], ['Series']])}<div class="titlebar"><div><h1>${s.series}</h1><div class="sub mono">${esc(r.uri || '')}</div></div></div>
+      <div class="notice">This stands in for the series page the product already has: the latest observations as a line and a table, formatted by the pair's convention. It opened in its own tab because an oresmd URL is a real link.</div>`;
+  }
+  return `${crumbs([['Home', LIST()], ['Market data', LIST()], ['Synthetic', LIST()], ['Feed tree', LIST()], [esc(r.src || 'Feed')]])}<div class="titlebar"><div><h1 class="mono">${esc(r.src || '')}</h1><div class="sub">Feed</div></div></div>
+    <div class="notice">This stands in for the feed's record page, which the product already has. Start, Stop and the run state live there, not on the binding.</div>`;
+}
+
+// One dialog shell for every dialog: a title with a close mark, a body, and a footer with
+// Cancel first and the one primary action last.
+function dialog(title, body, footer, onClose) {
+  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
+  const close = () => { if (onClose && !onClose()) return; closeDlg(); };
+  document.getElementById('d-x').onclick = close; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') close(); };
+  const c = document.getElementById('d-cancel'); if (c) c.onclick = close;
+  return close;
+}
+function closeDlg() { document.getElementById('layer').innerHTML = ''; }
+const reasonField = (list, changed) => {
+  const offered = list.filter(x => list === REASON_AMEND ? (changed ? x.name !== 'Non-material update' : x.name === 'Non-material update') : true);
+  return `<div class="field"><label>Change reason</label><select id="f-reason">${offered.map(x => `<option data-note="${x.note ? 1 : 0}">${x.name}</option>`).join('')}</select></div>
+    <div class="field"><label>Commentary</label><textarea id="f-note"></textarea><div class="help" id="f-nh"></div></div>`;
+};
+function ready(saveId) {
+  const reason = document.getElementById('f-reason'), note = document.getElementById('f-note'), nh = document.getElementById('f-nh');
+  const needs = () => reason && reason.selectedOptions[0] && reason.selectedOptions[0].dataset.note === '1';
+  const check = () => { const bad = needs() && !note.value.trim(); nh.textContent = needs() ? 'This reason needs a commentary.' : ''; const s = document.getElementById(saveId); if (s) s.disabled = s.dataset.block === '1' || bad; };
+  if (reason) { reason.onchange = check; note.oninput = check; check(); }
+}
+
+function formDialog(b) {
+  const adding = !b;
+  const typed = { reason: (document.getElementById('f-reason') || {}).value, note: (document.getElementById('f-note') || {}).value };
+  const free = SOURCES.filter(s => !bindings.some(x => x.src === s.src) || (b && s.src === b.src));
+  draft = draft || { src: adding ? (free[0] || {}).src : b.src, enabled: adding ? true : b.enabled };
+  const now = sourceOf(draft.src), old = b ? sourceOf(b.src) : null, held = now ? heldBy(now.series, b ? b.id : null) : null;
+  const changed = adding || draft.src !== b.src || draft.enabled !== b.enabled;
+  const vendorNote = adding && scenario === 'real' ? '<div class="warnbox"><b>Vendor sources are not offered.</b> This product does not connect real feeds, so only synthetic sources can be bound.</div>' : '';
+  const body = `<div class="field"><label>Source name</label><select id="f-src">${free.map(s => `<option value="${s.src}" ${s.src === draft.src ? 'selected' : ''}>${s.src}</option>`).join('')}</select>
+      <div class="help">${adding ? 'The synthetic feed this party will consume. It writes ' + (now ? now.series : 'no series') + '.' : 'Changing the source switches the ingest source without restarting any producer.'}</div></div>
+    <div class="field"><label>Enabled</label><select id="f-en"><option value="1" ${draft.enabled ? 'selected' : ''}>Yes</option><option value="0" ${draft.enabled ? '' : 'selected'}>No</option></select>
+      <div class="help">While it is No, no tick is stored for this party. The feed itself keeps running.</div></div>
+    ${held ? `<div class="badbox">${held.src} already writes ${now.series}. Only one running feed may write a series, so this source cannot be bound while it runs.</div>` : (!adding && old && now && old.series !== now.series ? `<div class="warnbox">The series changes. This party's ${old.series} stops receiving ticks and ${now.series} starts to.</div>` : '')}
+    ${vendorNote}
+    ${adding ? '<div class="notice">A new record is saved with the reason new record.</div>' : reasonField(REASON_AMEND, changed)}`;
+  const close = dialog(adding ? 'Add binding' : 'Edit ' + b.src, body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" data-block="${held || !now ? 1 : 0}" ${held || !now ? 'disabled' : ''}>${adding ? 'Add' : 'Save'}</button>`, () => !(changed && !adding && (draft.src !== b.src || draft.enabled !== b.enabled)) || confirm('You have unsaved changes. Close anyway?') && !(draft = null));
+  const src = document.getElementById('f-src'), en = document.getElementById('f-en');
+  src.onchange = () => { draft.src = src.value; formDialog(b); }; en.onchange = () => { draft.enabled = en.value === '1'; formDialog(b); };
+  if (typed.reason) { const r = document.getElementById('f-reason'); if (r && [...r.options].some(o => o.textContent === typed.reason)) r.value = typed.reason; }
+  if (typed.note) { const n = document.getElementById('f-note'); if (n) n.value = typed.note; }
+  if (!adding) ready('d-save');
+  document.getElementById('d-save').onclick = () => {
+    if (adding) { const nb = { id: 'n' + (nextId++), src: draft.src, kind: 'SYNTHETIC', enabled: draft.enabled, running: draft.enabled, last: 0, ver: 1, noSeries: true }; bindings.push(nb); pushVersion(nb, 'New record', ''); draft = null; closeDlg(); return nav({ screen: 'record', id: nb.id }); }
+    const rebound = draft.src !== b.src, toggled = draft.enabled !== b.enabled;
+    b.src = draft.src; b.enabled = draft.enabled; if (!b.enabled) b.running = false; if (b.enabled && (rebound || toggled)) { b.last = 0; b.running = true; }
+    b.ver++; pushVersion(b, document.getElementById('f-reason').value, document.getElementById('f-note').value); draft = null; closeDlg(); render();
+  };
+}
+function deleteDialog(b) {
+  dialog('Delete ' + b.src + '?', `<div>The binding is deleted and ingestion for this party stops. The series and its observations stay, and so does the binding's history.</div>${reasonField(REASON_DELETE, false)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save">Delete</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => { bindings = bindings.filter(x => x.id !== b.id); closeDlg(); nav({ screen: 'list' }); };
+}
+function revertDialog(b, v) {
+  const old = history[b.id].find(x => x.v === v), oldSrc = old.fields['Source name'], oldOn = old.fields['Enabled'] === 'Yes';
+  const target = sourceOf(oldSrc), taken = bindings.find(x => x.id !== b.id && x.src === oldSrc);
+  const held = target && oldOn ? heldBy(target.series, b.id) : null;
+  const refusal = taken ? `${taken.src} is already bound by another binding, so this version cannot be written back.` : held ? `${held.src} already writes ${target.series}. Only one running feed may write a series, so this version cannot be written back while it runs.` : '';
+  dialog('Revert ' + b.src + '?', `<div>Are you sure you want to revert '${esc(b.src)}' from version ${b.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${refusal ? `<div class="badbox">${refusal}</div>` : ''}${reasonField(REASON_AMEND, true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" data-block="${refusal ? 1 : 0}" ${refusal ? 'disabled' : ''}>Revert</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => {
+    const rebound = oldSrc !== b.src, toggled = oldOn !== b.enabled;
+    b.src = oldSrc; b.enabled = oldOn; if (!b.enabled) b.running = false; else if (rebound || toggled) { b.running = true; b.last = 0; }
+    b.ver++; pushVersion(b, document.getElementById('f-reason').value, document.getElementById('f-note').value || 'Reverted to v' + v); closeDlg(); render();
+  };
+}
+function inspectDialog(uri) {
+  let u; try { u = new URL(uri); } catch (e) { u = null; }
+  const qs = u ? u.searchParams : new URLSearchParams(), inst = qs.get('instrument') || '', path = { fx_spot: 'unit_ccy', zero: 'ccy' }[inst] || 'subject';
+  const rest = [...qs.entries()].filter(([k]) => !['type', 'instrument', 'quote'].includes(k)), title = (SOURCES.find(x => x.uri === uri) || {}).series;
+  const v = (l, t) => `<div class="dl"><div class="k">${l}</div><div class="v mono">${esc(t)}</div></div>`;
+  dialog('oresmd URL', `<div class="card"><div class="body" style="grid-template-columns:repeat(2,minmax(0,1fr))">${title ? v('Series', title) : ''}${v('Kind', qs.get('type') === 'quote' ? 'Quote' : 'Series')}${v('Instrument type', inst)}${v('Quote type', qs.get('quote') || '')}${v('Asset class', u ? u.hostname : '')}${v(path + ' (path)', u ? decodeURIComponent(u.pathname.slice(1)) : '')}${rest.map(([k, x]) => v(k, x)).join('')}</div></div>
+    <div class="dl"><div class="k">URL</div><pre class="mono" style="margin:4px 0 0;overflow-x:auto;background:var(--panel-2);padding:8px;border-radius:6px;font-size:.8rem">${esc(uri)}</pre></div>`,
+    `<button class="btn" id="d-cancel">Close</button><button class="btn" id="d-copy">Copy</button>`);
+  document.getElementById('d-copy').onclick = () => { try { navigator.clipboard.writeText(uri); } catch (e) {} document.getElementById('d-copy').textContent = 'Copied'; };
+}
+
+function wire() {
+  const r = route(), b = byId(r.id);
+  document.querySelectorAll('#app [data-add]').forEach(x => x.onclick = () => { draft = null; formDialog(null); });
+  document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => { draft = null; formDialog(b); });
+  document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(b));
+  document.querySelectorAll('#app [data-inspect]').forEach(x => x.onclick = e => { e.stopPropagation(); inspectDialog(x.dataset.inspect); });
+  document.querySelectorAll('#app [data-open]').forEach(x => { const open = e => { if (e.target.closest('a,button')) return; nav({ screen: 'record', id: x.dataset.open }); }; x.onclick = open; x.onkeydown = e => { if (e.key === 'Enter') open(e); }; });
+  document.querySelectorAll('#app [data-sort]').forEach(x => x.onclick = () => { sortDir = sortKey === x.dataset.sort ? -sortDir : 1; sortKey = x.dataset.sort; render(); });
+  const rf = document.getElementById('refresh'); if (rf) rf.onclick = () => { bindings.forEach(x => { if (x.noSeries && !isVendor(x)) { x.noSeries = false; x.last = 1; } }); render(); };
+  const rt = document.getElementById('retry'); if (rt) rt.onclick = () => { const p = new URLSearchParams(location.search); p.set('state', 'all'); location.search = p.toString(); };
+  const s = document.getElementById('search'); if (s) s.oninput = () => { search = s.value; render(); const n = document.getElementById('search'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  const kf = document.getElementById('kindf'); if (kf) kf.onchange = () => { kindFilter = kf.value; render(); };
+  const cl = document.getElementById('clear'); if (cl) cl.onclick = () => { search = ''; kindFilter = 'all'; render(); };
+  document.querySelectorAll('#app .bar').forEach(x => x.onclick = () => { const items = [...document.querySelectorAll('#app .item')]; if (!items.length) return; const t = Date.parse(x.dataset.day); const best = items.reduce((p, c) => Math.abs(Date.parse(c.dataset.day) - t) < Math.abs(Date.parse(p.dataset.day) - t) ? c : p); best.scrollIntoView({ block: 'center' }); best.classList.add('mark'); setTimeout(() => best.classList.remove('mark'), 1200); });
+  const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
+  document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(b, Number(x.dataset.revert)));
+}
+
+function render() {
+  const r = route();
+  const body = r.screen === 'record' ? recordScreen(byId(r.id)) : (r.screen === 'series' || r.screen === 'feed' || r.screen === 'person') ? stubScreen(r) : listScreen();
+  document.getElementById('app').innerHTML = body;
+  document.getElementById('note').textContent = `Prototype · market data bindings · ${r.screen} · ${scenario} data · ${state} · acting as ${actor} · mock list, writes change it in memory`;
+  const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');
+  document.getElementById('bar').innerHTML = `<span class="label">Data</span>${opt('scenario', ['synthetic', 'real'], scenario)}<span class="sep">|</span><span class="label">State</span>${opt('state', ['all', 'quiet', 'disabled', 'empty', 'error', 'loading'], state)}<span class="sep">|</span><span class="label">Actor</span>${opt('actor', ['viewer', 'operator', 'admin'], actor)}`;
+  document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });
+  wire();
+}
+render();
+</script>
+</body>
+</html>

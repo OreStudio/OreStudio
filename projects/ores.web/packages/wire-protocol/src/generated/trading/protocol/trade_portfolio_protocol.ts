@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface TradePortfolioKey {
     trade_id: string;
@@ -55,6 +56,11 @@ export interface TradePortfolioLookup {
     trade_portfolio: TradePortfolio | null;
 }
 
+export interface TradePortfoliosFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface TradePortfolioEvent {
     event_id: string;
     key: TradePortfolioKey;
@@ -79,6 +85,7 @@ export interface ListTradePortfoliosRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradePortfoliosFilter | null;
     as_of: string | null;
 }
 
@@ -144,6 +151,21 @@ export interface DeleteManyTradePortfoliosResponse {
     result: Result;
 }
 
+export interface ListByTradeIdTradePortfoliosRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TradePortfoliosFilter | null;
+}
+
+export interface ListByTradeIdTradePortfoliosResponse {
+    result: Result;
+    trade_portfolios: TradePortfolio[];
+    total: number;
+}
+
 export interface ListTradePortfolioVersionsRequest {
     key: TradePortfolioKey;
     offset: number;
@@ -175,6 +197,7 @@ export const subjects = {
     put_many_trade_portfolios_request: 'trading.v1.trade_portfolios.put_many',
     delete_trade_portfolio_request: 'trading.v1.trade_portfolios.delete',
     delete_many_trade_portfolios_request: 'trading.v1.trade_portfolios.delete_many',
+    list_by_trade_id_trade_portfolios_request: 'trading.v1.trade_portfolios.list_by_trade_id',
     list_trade_portfolio_versions_request: 'trading.v1.trade_portfolios_versions.list',
     get_trade_portfolio_version_request: 'trading.v1.trade_portfolios_versions.get',
 } as const;
@@ -191,6 +214,7 @@ export const requiresSession = {
     put_many_trade_portfolios_request: true,
     delete_trade_portfolio_request: true,
     delete_many_trade_portfolios_request: true,
+    list_by_trade_id_trade_portfolios_request: true,
     list_trade_portfolio_versions_request: true,
     get_trade_portfolio_version_request: true,
 } as const;

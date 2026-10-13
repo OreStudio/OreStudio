@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface CallableSwapCallDateKey {
     trade_id: string;
@@ -55,6 +56,11 @@ export interface CallableSwapCallDateLookup {
     callable_swap_call_date: CallableSwapCallDate | null;
 }
 
+export interface CallableSwapCallDatesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface CallableSwapCallDateEvent {
     event_id: string;
     key: CallableSwapCallDateKey;
@@ -79,6 +85,7 @@ export interface ListCallableSwapCallDatesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CallableSwapCallDatesFilter | null;
     as_of: string | null;
 }
 
@@ -144,6 +151,21 @@ export interface DeleteManyCallableSwapCallDatesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdCallableSwapCallDatesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CallableSwapCallDatesFilter | null;
+}
+
+export interface ListByTradeIdCallableSwapCallDatesResponse {
+    result: Result;
+    callable_swap_call_dates: CallableSwapCallDate[];
+    total: number;
+}
+
 export interface ListCallableSwapCallDateVersionsRequest {
     key: CallableSwapCallDateKey;
     offset: number;
@@ -175,6 +197,8 @@ export const subjects = {
     put_many_callable_swap_call_dates_request: 'trading.v1.callable_swap_call_dates.put_many',
     delete_callable_swap_call_date_request: 'trading.v1.callable_swap_call_dates.delete',
     delete_many_callable_swap_call_dates_request: 'trading.v1.callable_swap_call_dates.delete_many',
+    list_by_trade_id_callable_swap_call_dates_request:
+        'trading.v1.callable_swap_call_dates.list_by_trade_id',
     list_callable_swap_call_date_versions_request:
         'trading.v1.callable_swap_call_dates_versions.list',
     get_callable_swap_call_date_version_request: 'trading.v1.callable_swap_call_dates_versions.get',
@@ -192,6 +216,7 @@ export const requiresSession = {
     put_many_callable_swap_call_dates_request: true,
     delete_callable_swap_call_date_request: true,
     delete_many_callable_swap_call_dates_request: true,
+    list_by_trade_id_callable_swap_call_dates_request: true,
     list_callable_swap_call_date_versions_request: true,
     get_callable_swap_call_date_version_request: true,
 } as const;

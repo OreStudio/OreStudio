@@ -113,7 +113,7 @@ begin
         auto_start,
         base_currency_code, quote_currency_code,
         gmm_initial_price, ticks_per_hour, process_type,
-        price_source, vintage_source, vintage_date
+        price_source, vintage_source, vintage_date, provider_code
     )
     values
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -124,12 +124,12 @@ begin
      -- the hand-typed gmm_initial_price above is not used at publish time
      -- (see the publish function), the real imported ore.reference/
      -- 2016-02-05 spot is.
-     'vintage', 'ore.reference', '2016-02-05'),
+     'vintage', 'ore.reference', '2016-02-05', 'ore'),
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
      'Synthetic FX Spot: GBP/USD',
      'Default synthetic FX spot generator for the party''s market data configuration.',
      true, true, 'GBP', 'USD', 1.2650, 3600, 'geometric',
-     'vintage', 'ore.reference', '2016-02-05');
+     'vintage', 'ore.reference', '2016-02-05', 'ore');
 
     insert into ores_dq_synthetic_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,

@@ -27,6 +27,7 @@
 
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
+#include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -44,7 +45,7 @@ namespace ores::compute::service {
  * Provides a higher-level interface for app version platform operations,
  * wrapping the underlying repository.
  */
-class app_version_platform_service {
+class ORES_COMPUTE_CORE_EXPORT app_version_platform_service {
 private:
     inline static std::string_view logger_name =
         "ores.compute.service.app_version_platform_service";

@@ -176,6 +176,13 @@ void commodity_basket_constituent_commands::register_commands(cli::Menu& root_me
         "delete-many <trade_id> <sequence_number> <reason> <commentary>");
 
     menu->Insert(
+        "by-trade-id",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_trade_id(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-trade-id <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+
+    menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
@@ -611,6 +618,61 @@ void commodity_basket_constituent_commands::process_delete_many(
 
     auto result = do_auth_request<messaging::delete_many_commodity_basket_constituents_response>(
         out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void commodity_basket_constituent_commands::process_by_trade_id(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-trade-id request.";
+
+    using request_type = messaging::list_by_trade_id_commodity_basket_constituents_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-trade-id." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.trade_id = ores::shell::app::from_token<boost::uuids::uuid>(parsed->positionals[next++],
+                                                                        "trade_id");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result =
+        do_auth_request<messaging::list_by_trade_id_commodity_basket_constituents_response>(
+            out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

@@ -90,6 +90,9 @@ public:
     delete_bond_leg_amortization(const messaging::delete_bond_leg_amortization_request& request);
     messaging::delete_many_bond_leg_amortizations_response delete_many_bond_leg_amortizations(
         const messaging::delete_many_bond_leg_amortizations_request& request);
+    messaging::list_by_trade_id_bond_leg_amortizations_response
+    list_by_trade_id_bond_leg_amortizations(
+        const messaging::list_by_trade_id_bond_leg_amortizations_request& request);
     messaging::list_bond_leg_amortization_versions_response list_bond_leg_amortization_versions(
         const messaging::list_bond_leg_amortization_versions_request& request);
     messaging::get_bond_leg_amortization_version_response get_bond_leg_amortization_version(
@@ -112,6 +115,26 @@ public:
      * @return Total number of active bond leg amortizations.
      */
     std::uint32_t count_bond_leg_amortizations();
+
+
+    /**
+     * @brief Lists bond leg amortizations filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching bond leg amortizations for the requested page.
+     */
+    std::vector<domain::bond_leg_amortization> list_bond_leg_amortizations_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active bond leg amortizations filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching bond leg amortizations.
+     */
+    std::uint32_t count_bond_leg_amortizations_by_trade_id(const std::string& trade_id);
 
 
     /**

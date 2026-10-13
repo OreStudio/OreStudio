@@ -49,6 +49,9 @@ struct risk_participation_agreement_instrument_entity {
     std::string credit_curve_id;
     std::optional<std::string> issuer_id;
     std::optional<double> recovery_rate;
+    double participation_rate = 0.0;
+    std::optional<bool> settles_accrual;
+    std::optional<bool> naked_option;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

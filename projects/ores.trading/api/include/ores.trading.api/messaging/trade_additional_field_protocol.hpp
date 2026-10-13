@@ -63,6 +63,11 @@ struct trade_additional_field_lookup {
     std::optional<ores::trading::domain::trade_additional_field> trade_additional_field;
 };
 
+struct trade_additional_fields_filter {
+    std::optional<boost::uuids::uuid> trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct trade_additional_field_event {
     boost::uuids::uuid event_id;
     trade_additional_field_key key;
@@ -96,6 +101,7 @@ struct list_trade_additional_fields_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<trade_additional_fields_filter> filter;
     std::optional<std::string> as_of;
 };
 
@@ -214,6 +220,31 @@ struct delete_many_trade_additional_fields_request {
 
 struct delete_many_trade_additional_fields_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_trade_id_trade_additional_fields_request {
+    using response_type = struct list_by_trade_id_trade_additional_fields_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.trade_additional_fields.list_by_trade_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid trade_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<trade_additional_fields_filter> filter;
+};
+
+struct list_by_trade_id_trade_additional_fields_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::trade_additional_field> trade_additional_fields;
+    std::uint64_t total;
 };
 
 struct list_trade_additional_field_versions_request {

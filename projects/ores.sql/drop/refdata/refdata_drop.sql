@@ -34,6 +34,7 @@
 
 -- Tenor reference data: resolution junction before conventions/tenors it
 -- references; tenors and conventions before the code lookups they reference.
+\ir ./refdata_tenor_convention_resolutions_notify_trigger_drop.sql
 \ir ./refdata_tenor_convention_resolution_drop.sql
 \ir ./refdata_tenor_conventions_notify_trigger_drop.sql
 \ir ./refdata_tenor_conventions_drop.sql
@@ -253,6 +254,7 @@
 \ir ./refdata_party_counterparties_drop.sql
 
 -- Counterparty business centre junction (drop before counterparties and business centres)
+\ir ./refdata_counterparty_business_centres_notify_trigger_drop.sql
 \ir ./refdata_counterparty_business_centre_drop.sql
 
 -- Party and counterparty tables
@@ -312,6 +314,7 @@
 
 -- Currency-pair-convention-calendar (advance calendar) junction (depends on
 -- currency_pair_conventions and calendars; drop before both)
+\ir ./refdata_currency_pair_convention_calendars_notify_trigger_drop.sql
 \ir ./refdata_currency_pair_convention_calendar_drop.sql
 
 -- Currency pairs (must drop before currencies, currency_pair_classifications, currency_groups)
@@ -319,6 +322,7 @@
 \ir ./refdata_currency_pair_conventions_drop.sql
 \ir ./refdata_currency_pairs_notify_trigger_drop.sql
 \ir ./refdata_currency_pairs_drop.sql
+\ir ./refdata_currency_currency_groups_notify_trigger_drop.sql
 \ir ./refdata_currency_currency_groups_drop.sql
 \ir ./refdata_currency_groups_notify_trigger_drop.sql
 \ir ./refdata_currency_groups_drop.sql
@@ -326,9 +330,11 @@
 \ir ./refdata_currency_pair_classifications_drop.sql
 
 -- Currency-country issuing junction (depends on currencies and countries; drop before both)
+\ir ./refdata_currency_countries_notify_trigger_drop.sql
 \ir ./refdata_currency_country_drop.sql
 
 -- Currency-calendar junction (depends on currencies and calendars; drop before both)
+\ir ./refdata_currency_calendars_notify_trigger_drop.sql
 \ir ./refdata_currency_calendar_drop.sql
 
 -- Currencies

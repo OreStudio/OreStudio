@@ -22,6 +22,7 @@
 
 #include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
+#include "feed_run_control.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -104,12 +105,6 @@ public:
         }
 
         const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
-        start_feeds_under_folder_response resp;
-        resp.success = true;
-        // Every registered kind is always present, whether or not this folder
-        // holds a row of it.
-        for (const auto* k : registry_.all())
-            resp.by_kind.emplace(k->kind, feed_kind_counts{});
 
         // Forwarded so delegated service-to-service lookups (vintage
         // resolution inside the IR producer builder) run in the caller's
@@ -119,46 +114,24 @@ public:
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
 
-        for (const auto& target : registry_.targets(ctx)) {
-            const auto& c = target.row.candidate;
-            auto& counts = resp.by_kind.at(target.row.kind->kind);
+        const auto outcome = start_feeds(
+            registry_,
+            *ctrl_,
+            ctx,
+            bctx,
+            bearer,
+            [&](const feed_start_target& t) {
+                const auto& c = t.row.candidate;
+                return c.folder_id && folder_ids.contains(*c.folder_id);
+            },
+            "folder " + req->folder_id);
 
-            if (!c.folder_id || !folder_ids.contains(*c.folder_id))
-                continue;
-            const auto skip = [&](const std::string& reason) {
-                ++counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping " << c.display_name << " under folder " << req->folder_id << " — "
-                    << reason;
-            };
-            try {
-                auto attempt = registry_.make_feed(target, bctx);
-                if (!attempt.feed) {
-                    skip(attempt.failure);
-                    continue;
-                }
-                std::string conflicting_source_name;
-                if (ctrl_->add(std::move(attempt.feed),
-                               target.binding_mode,
-                               bearer,
-                               &conflicting_source_name))
-                    ++counts.started;
-                else if (conflicting_source_name.empty())
-                    // A concurrent cascade started the same config between
-                    // this loop's checks and the add.
-                    ++counts.already_running;
-                else
-                    skip("already held by running feed '" + conflicting_source_name + "'.");
-            } catch (const std::exception& e) {
-                skip(std::string("failed to start: ") + e.what());
-            }
-        }
-
-        for (const auto& [kind, counts] : resp.by_kind) {
-            resp.started += counts.started;
-            resp.already_running += counts.already_running;
-            resp.skipped += counts.skipped;
-        }
+        start_feeds_under_folder_response resp;
+        resp.success = true;
+        resp.started = outcome.started;
+        resp.already_running = outcome.already_running;
+        resp.skipped = outcome.skipped;
+        resp.by_kind = outcome.by_kind;
         resp.message = std::to_string(resp.started) + " started, " +
                        std::to_string(resp.already_running) + " already running, " +
                        std::to_string(resp.skipped) + " skipped";
@@ -188,21 +161,15 @@ public:
 
         const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
+        const auto outcome = stop_feeds(registry_, *ctrl_, ctx, [&](const feed_kind_row& row) {
+            const auto& c = row.candidate;
+            return c.folder_id && folder_ids.contains(*c.folder_id);
+        });
+
         stop_feeds_under_folder_response resp;
         resp.success = true;
-        for (const auto* k : registry_.all())
-            resp.stopped_by_kind.emplace(k->kind, 0);
-
-        // rows(), not targets(): stopping reads no container.
-        for (const auto& row : registry_.rows(ctx)) {
-            const auto& c = row.candidate;
-            if (!c.folder_id || !folder_ids.contains(*c.folder_id))
-                continue;
-            const auto stopped = static_cast<int>(ctrl_->stop(c.source_name));
-            resp.stopped_by_kind.at(row.kind->kind) += stopped;
-            resp.stopped += stopped;
-        }
-
+        resp.stopped = outcome.stopped;
+        resp.stopped_by_kind = outcome.by_kind;
         resp.message = std::to_string(resp.stopped) + " feed(s) stopped";
         BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
             << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;

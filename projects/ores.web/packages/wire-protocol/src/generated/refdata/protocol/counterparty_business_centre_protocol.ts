@@ -59,6 +59,15 @@ export interface CounterpartyBusinessCentresFilter {
     counterparty_id_one_of: string[] | null;
 }
 
+export interface CounterpartyBusinessCentreEvent {
+    event_id: string;
+    key: CounterpartyBusinessCentreKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListCounterpartyBusinessCentresRequest {
     offset: number;
     limit: number;

@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface BondLegKey {
     trade_id: string;
@@ -69,6 +70,11 @@ export interface BondLegLookup {
     bond_leg: BondLeg | null;
 }
 
+export interface BondLegsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondLegEvent {
     event_id: string;
     key: BondLegKey;
@@ -93,6 +99,7 @@ export interface ListBondLegsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondLegsFilter | null;
     as_of: string | null;
 }
 
@@ -158,6 +165,21 @@ export interface DeleteManyBondLegsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdBondLegsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BondLegsFilter | null;
+}
+
+export interface ListByTradeIdBondLegsResponse {
+    result: Result;
+    bond_legs: BondLeg[];
+    total: number;
+}
+
 export interface ListBondLegVersionsRequest {
     key: BondLegKey;
     offset: number;
@@ -189,6 +211,7 @@ export const subjects = {
     put_many_bond_legs_request: 'trading.v1.bond_legs.put_many',
     delete_bond_leg_request: 'trading.v1.bond_legs.delete',
     delete_many_bond_legs_request: 'trading.v1.bond_legs.delete_many',
+    list_by_trade_id_bond_legs_request: 'trading.v1.bond_legs.list_by_trade_id',
     list_bond_leg_versions_request: 'trading.v1.bond_legs_versions.list',
     get_bond_leg_version_request: 'trading.v1.bond_legs_versions.get',
 } as const;
@@ -205,6 +228,7 @@ export const requiresSession = {
     put_many_bond_legs_request: true,
     delete_bond_leg_request: true,
     delete_many_bond_legs_request: true,
+    list_by_trade_id_bond_legs_request: true,
     list_bond_leg_versions_request: true,
     get_bond_leg_version_request: true,
 } as const;

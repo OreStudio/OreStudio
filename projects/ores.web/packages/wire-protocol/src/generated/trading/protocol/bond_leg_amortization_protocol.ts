@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface BondLegAmortizationKey {
     trade_id: string;
@@ -64,6 +65,11 @@ export interface BondLegAmortizationLookup {
     bond_leg_amortization: BondLegAmortization | null;
 }
 
+export interface BondLegAmortizationsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondLegAmortizationEvent {
     event_id: string;
     key: BondLegAmortizationKey;
@@ -88,6 +94,7 @@ export interface ListBondLegAmortizationsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondLegAmortizationsFilter | null;
     as_of: string | null;
 }
 
@@ -153,6 +160,21 @@ export interface DeleteManyBondLegAmortizationsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdBondLegAmortizationsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BondLegAmortizationsFilter | null;
+}
+
+export interface ListByTradeIdBondLegAmortizationsResponse {
+    result: Result;
+    bond_leg_amortizations: BondLegAmortization[];
+    total: number;
+}
+
 export interface ListBondLegAmortizationVersionsRequest {
     key: BondLegAmortizationKey;
     offset: number;
@@ -184,6 +206,8 @@ export const subjects = {
     put_many_bond_leg_amortizations_request: 'trading.v1.bond_leg_amortizations.put_many',
     delete_bond_leg_amortization_request: 'trading.v1.bond_leg_amortizations.delete',
     delete_many_bond_leg_amortizations_request: 'trading.v1.bond_leg_amortizations.delete_many',
+    list_by_trade_id_bond_leg_amortizations_request:
+        'trading.v1.bond_leg_amortizations.list_by_trade_id',
     list_bond_leg_amortization_versions_request: 'trading.v1.bond_leg_amortizations_versions.list',
     get_bond_leg_amortization_version_request: 'trading.v1.bond_leg_amortizations_versions.get',
 } as const;
@@ -200,6 +224,7 @@ export const requiresSession = {
     put_many_bond_leg_amortizations_request: true,
     delete_bond_leg_amortization_request: true,
     delete_many_bond_leg_amortizations_request: true,
+    list_by_trade_id_bond_leg_amortizations_request: true,
     list_bond_leg_amortization_versions_request: true,
     get_bond_leg_amortization_version_request: true,
 } as const;

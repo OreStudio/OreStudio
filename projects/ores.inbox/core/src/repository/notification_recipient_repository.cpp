@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.inbox.api/domain/notification_recipient.hpp"
 #include "ores.inbox.api/domain/notification_recipient_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/notification_recipient_entity.hpp"
@@ -344,6 +345,50 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_ac
     BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count by account: "
                                << count;
     return count;
+}
+
+std::vector<notification_recipient_history_row>
+notification_recipient_repository::read_all_by_account(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the notification recipients. Account: "
+                               << account_id;
+
+    const auto account_id_str = boost::uuids::to_string(account_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
+                       order_by("notification_id"_c, "valid_from"_c.desc());
+
+    return execute_read_query<notification_recipient_entity, notification_recipient_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<notification_recipient_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                notification_recipient_history_row row;
+                row.link = notification_recipient_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced =
+                    !rows.empty() && rows.back().link.notification_id == row.link.notification_id &&
+                    rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the notification recipients by account.");
 }
 
 void notification_recipient_repository::remove(const boost::uuids::uuid& notification_id,

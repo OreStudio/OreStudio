@@ -90,6 +90,9 @@ public:
         const messaging::delete_callable_swap_call_date_request& request);
     messaging::delete_many_callable_swap_call_dates_response delete_many_callable_swap_call_dates(
         const messaging::delete_many_callable_swap_call_dates_request& request);
+    messaging::list_by_trade_id_callable_swap_call_dates_response
+    list_by_trade_id_callable_swap_call_dates(
+        const messaging::list_by_trade_id_callable_swap_call_dates_request& request);
     messaging::list_callable_swap_call_date_versions_response list_callable_swap_call_date_versions(
         const messaging::list_callable_swap_call_date_versions_request& request);
     messaging::get_callable_swap_call_date_version_response get_callable_swap_call_date_version(
@@ -112,6 +115,26 @@ public:
      * @return Total number of active callable swap call dates.
      */
     std::uint32_t count_callable_swap_call_dates();
+
+
+    /**
+     * @brief Lists callable swap call dates filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching callable swap call dates for the requested page.
+     */
+    std::vector<domain::callable_swap_call_date> list_callable_swap_call_dates_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active callable swap call dates filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching callable swap call dates.
+     */
+    std::uint32_t count_callable_swap_call_dates_by_trade_id(const std::string& trade_id);
 
 
     /**

@@ -46,6 +46,7 @@ create table if not exists "ores_dq_dataset_bundle_members_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, bundle_code, dataset_code, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -145,7 +146,8 @@ create or replace rule ores_dq_dataset_bundle_members_delete_rule as
 on delete to "ores_dq_dataset_bundle_members_tbl"
 do instead
   update "ores_dq_dataset_bundle_members_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and bundle_code = old.bundle_code
   and dataset_code = old.dataset_code

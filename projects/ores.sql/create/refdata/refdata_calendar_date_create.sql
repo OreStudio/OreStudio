@@ -49,6 +49,7 @@ create table if not exists "ores_refdata_calendar_dates_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, calendar_code, date, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -148,7 +149,8 @@ create or replace rule ores_refdata_calendar_dates_delete_rule as
 on delete to "ores_refdata_calendar_dates_tbl"
 do instead
   update "ores_refdata_calendar_dates_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and calendar_code = old.calendar_code
   and date = old.date

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: B1A59B17-C6CB-49B9-9A98-102D323CDDD9
+:END:
+#+title: Task: Give the remaining junctions a history and change events
+#+description: Six junctions state a history and change events. Seventeen state neither, so a screen that shows their links cannot read what they were or hear that one changed. Each states both, and every screen that shows its links watches it.
+#+type: task
+#+level: s1
+#+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
+#+owner: marco
+#+branch: feature/give-every-junction-a-history-and-events
+#+pr: 3243
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- Every junction model states :history: true and :events: true, or says in its model why it does not.
+- The registrars of the new histories and events are composed in their services.
+- The party page goes stale when one of its links changes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3243][#3243]] | [codegen] Give the remaining junctions a history and change events, and let the party page watch its links |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Sixteen more junctions state what their component can serve.
+
+- History and change events: six refdata links, the two dq links and the IAM role grant request role. History only: the refdata calendar date, whose key is a date, and the three inbox links and the marketdata link, whose components compose no change events yet.
+- Neither: the assets image tag, the compute app version platform and the reporting report type configuration type. Their components serve no generic history, and each model says so.
+- The new providers are registered in their components and the new event registrars composed in the dq, iam and refdata services. The notify triggers are in the create and drop scripts.
+- Merging main brought the export macro on service classes, so the thirteen junction service headers and the three inbox ones are regenerated. The two stale IAM entries are dropped from the entity table writes baseline.
+- A flaky role grant applier test, which assumed the first role read was not already held, now picks a role the person lacks.

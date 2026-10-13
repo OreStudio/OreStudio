@@ -80,6 +80,12 @@ std::vector<ores::nats::service::subscription> register_flexi_swap_lower_notiona
                                  h->delete_many_flexi_swap_lower_notionals(std::move(msg));
                              }));
     subs.push_back(
+        nats.queue_subscribe(list_by_trade_id_flexi_swap_lower_notionals_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_trade_id_flexi_swap_lower_notionals(std::move(msg));
+                             }));
+    subs.push_back(
         nats.queue_subscribe(list_flexi_swap_lower_notional_versions_request::nats_subject,
                              queue_group,
                              [h](ores::nats::message msg) {

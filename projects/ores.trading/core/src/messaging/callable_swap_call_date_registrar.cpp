@@ -77,6 +77,12 @@ std::vector<ores::nats::service::subscription> register_callable_swap_call_date_
         delete_many_callable_swap_call_dates_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_callable_swap_call_dates(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_trade_id_callable_swap_call_dates_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_trade_id_callable_swap_call_dates(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(list_callable_swap_call_date_versions_request::nats_subject,
                                         queue_group,
                                         [h](ores::nats::message msg) {

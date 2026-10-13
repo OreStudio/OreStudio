@@ -46,6 +46,8 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include <optional>
+#include <string>
 #include <vector>
 
 namespace ores::ore::domain {
@@ -302,6 +304,26 @@ public:
         std::vector<ores::trading::domain::instrument_schedule> schedules;
         std::vector<ores::trading::domain::instrument_schedule_date> schedule_dates;
     };
+
+    /** The rows of one schedule of one owner in the shared schedule tables. */
+    struct schedule_rows {
+        std::vector<ores::trading::domain::instrument_schedule> schedules;
+        std::vector<ores::trading::domain::instrument_schedule_date> dates;
+    };
+
+    /** A schedule as rows of the shared schedule tables, under its owner. */
+    static schedule_rows map_schedule(const scheduleData& sd,
+                                      const std::string& owner_role,
+                                      int owner_number,
+                                      const std::string& schedule_role);
+
+    /** The schedule of one owner rebuilt from its rows, if the rows hold one. */
+    static std::optional<scheduleData>
+    rebuild_schedule(const std::vector<ores::trading::domain::instrument_schedule>& schedules,
+                     const std::vector<ores::trading::domain::instrument_schedule_date>& dates,
+                     const std::string& owner_role,
+                     int owner_number,
+                     const std::string& schedule_role);
 
     /** The option block of a document as rows of the shared option tables. */
     static option_rows map_option_block(const optionData& od);

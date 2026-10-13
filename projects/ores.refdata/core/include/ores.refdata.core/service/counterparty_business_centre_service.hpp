@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_business_centre.hpp"
 #include "ores.refdata.api/messaging/counterparty_business_centre_protocol.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_business_centre_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -44,7 +45,7 @@ namespace ores::refdata::service {
  * Provides a higher-level interface for counterparty business centre operations,
  * wrapping the underlying repository.
  */
-class counterparty_business_centre_service {
+class ORES_REFDATA_CORE_EXPORT counterparty_business_centre_service {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.service.counterparty_business_centre_service";

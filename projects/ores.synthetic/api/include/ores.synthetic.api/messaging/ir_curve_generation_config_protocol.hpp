@@ -58,6 +58,7 @@ struct ir_curve_generation_config_write {
     std::string fixed_leg_payment_frequency_code;
     std::string source_name;
     std::optional<boost::uuids::uuid> folder_id;
+    std::string asset_class_code;
 };
 
 struct ir_curve_generation_config_change {

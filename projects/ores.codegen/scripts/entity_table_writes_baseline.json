@@ -19,12 +19,6 @@
       "reason": "predates the check"
     },
     {
-      "kind": "cpp",
-      "name": "",
-      "file": "projects/ores.scheduler/core/src/repository/job_instance_repository.cpp",
-      "reason": "predates the check"
-    },
-    {
       "kind": "sql_function",
       "name": "ores_assets_publish_images_from_dq_fn",
       "file": "projects/ores.sql/create/assets/assets_publish_from_dq_create.sql",
@@ -248,12 +242,6 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_iam_account_roles_insert_fn",
-      "file": "projects/ores.sql/create/iam/iam_account_roles_create.sql",
-      "reason": "predates the check"
-    },
-    {
-      "kind": "sql_function",
       "name": "ores_iam_accounts_give_member_fn",
       "file": "projects/ores.sql/create/iam/iam_member_role_create.sql",
       "reason": "predates the check"
@@ -328,12 +316,6 @@
       "kind": "sql_function",
       "name": "ores_iam_role_permissions_assign_fn",
       "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
-      "reason": "predates the check"
-    },
-    {
-      "kind": "sql_function",
-      "name": "ores_iam_role_permissions_insert_fn",
-      "file": "projects/ores.sql/create/iam/iam_role_permissions_create.sql",
       "reason": "predates the check"
     },
     {

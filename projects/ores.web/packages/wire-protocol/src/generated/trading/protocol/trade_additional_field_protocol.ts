@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface TradeAdditionalFieldKey {
     trade_id: string;
@@ -56,6 +57,11 @@ export interface TradeAdditionalFieldLookup {
     trade_additional_field: TradeAdditionalField | null;
 }
 
+export interface TradeAdditionalFieldsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface TradeAdditionalFieldEvent {
     event_id: string;
     key: TradeAdditionalFieldKey;
@@ -80,6 +86,7 @@ export interface ListTradeAdditionalFieldsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeAdditionalFieldsFilter | null;
     as_of: string | null;
 }
 
@@ -145,6 +152,21 @@ export interface DeleteManyTradeAdditionalFieldsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdTradeAdditionalFieldsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TradeAdditionalFieldsFilter | null;
+}
+
+export interface ListByTradeIdTradeAdditionalFieldsResponse {
+    result: Result;
+    trade_additional_fields: TradeAdditionalField[];
+    total: number;
+}
+
 export interface ListTradeAdditionalFieldVersionsRequest {
     key: TradeAdditionalFieldKey;
     offset: number;
@@ -176,6 +198,8 @@ export const subjects = {
     put_many_trade_additional_fields_request: 'trading.v1.trade_additional_fields.put_many',
     delete_trade_additional_field_request: 'trading.v1.trade_additional_fields.delete',
     delete_many_trade_additional_fields_request: 'trading.v1.trade_additional_fields.delete_many',
+    list_by_trade_id_trade_additional_fields_request:
+        'trading.v1.trade_additional_fields.list_by_trade_id',
     list_trade_additional_field_versions_request:
         'trading.v1.trade_additional_fields_versions.list',
     get_trade_additional_field_version_request: 'trading.v1.trade_additional_fields_versions.get',
@@ -193,6 +217,7 @@ export const requiresSession = {
     put_many_trade_additional_fields_request: true,
     delete_trade_additional_field_request: true,
     delete_many_trade_additional_fields_request: true,
+    list_by_trade_id_trade_additional_fields_request: true,
     list_trade_additional_field_versions_request: true,
     get_trade_additional_field_version_request: true,
 } as const;

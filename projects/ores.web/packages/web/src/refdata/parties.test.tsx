@@ -188,6 +188,12 @@ describe('a party page', () => {
         expect(words).not.toContain('Structure');
     });
 
+    it('offers Refresh, because the page reloads only when the person asks', () => {
+        const words = textOf(open(['refdata::parties:read']));
+
+        expect(words).toContain('Refresh');
+    });
+
     it('shows a string on every tab and never the key of one that is missing', () => {
         for (const tab of [
             'details',

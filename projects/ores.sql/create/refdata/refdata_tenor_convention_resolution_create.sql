@@ -71,6 +71,7 @@ create table if not exists "ores_refdata_tenor_convention_resolutions_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, convention_code, tenor_code, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -183,7 +184,8 @@ create or replace rule ores_refdata_tenor_convention_resolutions_delete_rule as
 on delete to "ores_refdata_tenor_convention_resolutions_tbl"
 do instead
   update "ores_refdata_tenor_convention_resolutions_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and convention_code = old.convention_code
   and tenor_code = old.tenor_code

@@ -65,6 +65,11 @@ struct swap_leg_amount_lookup {
     std::optional<ores::trading::domain::swap_leg_amount> swap_leg_amount;
 };
 
+struct swap_leg_amounts_filter {
+    std::optional<boost::uuids::uuid> trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct swap_leg_amount_event {
     boost::uuids::uuid event_id;
     swap_leg_amount_key key;
@@ -98,6 +103,7 @@ struct list_swap_leg_amounts_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<swap_leg_amounts_filter> filter;
     std::optional<std::string> as_of;
 };
 
@@ -215,6 +221,30 @@ struct delete_many_swap_leg_amounts_request {
 
 struct delete_many_swap_leg_amounts_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_trade_id_swap_leg_amounts_request {
+    using response_type = struct list_by_trade_id_swap_leg_amounts_response;
+    static constexpr std::string_view nats_subject = "trading.v1.swap_leg_amounts.list_by_trade_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid trade_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<swap_leg_amounts_filter> filter;
+};
+
+struct list_by_trade_id_swap_leg_amounts_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::swap_leg_amount> swap_leg_amounts;
+    std::uint64_t total;
 };
 
 struct list_swap_leg_amount_versions_request {

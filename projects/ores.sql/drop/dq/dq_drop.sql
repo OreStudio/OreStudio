@@ -162,6 +162,7 @@
 \ir ./dq_data_domains_drop.sql
 
 -- Dataset bundles (members before bundles)
+\ir ./dq_dataset_bundle_members_notify_trigger_drop.sql
 \ir ./dq_dataset_bundle_member_drop.sql
 \ir ./dq_dataset_bundles_notify_trigger_drop.sql
 \ir ./dq_dataset_bundles_drop.sql
@@ -176,6 +177,7 @@
 -- Badge system (mappings before definitions, definitions before severities/domains)
 \ir ./dq_badge_mappings_population_functions_drop.sql
 \ir ./dq_badge_mappings_artefact_drop.sql
+\ir ./dq_badge_mappings_notify_trigger_drop.sql
 \ir ./dq_badge_mappings_drop.sql
 \ir ./dq_badge_definitions_population_functions_drop.sql
 \ir ./dq_badge_definitions_artefact_drop.sql

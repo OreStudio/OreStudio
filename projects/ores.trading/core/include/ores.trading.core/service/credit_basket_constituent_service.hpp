@@ -91,6 +91,9 @@ public:
     messaging::delete_many_credit_basket_constituents_response
     delete_many_credit_basket_constituents(
         const messaging::delete_many_credit_basket_constituents_request& request);
+    messaging::list_by_trade_id_credit_basket_constituents_response
+    list_by_trade_id_credit_basket_constituents(
+        const messaging::list_by_trade_id_credit_basket_constituents_request& request);
     messaging::list_credit_basket_constituent_versions_response
     list_credit_basket_constituent_versions(
         const messaging::list_credit_basket_constituent_versions_request& request);
@@ -114,6 +117,26 @@ public:
      * @return Total number of active credit basket constituents.
      */
     std::uint32_t count_credit_basket_constituents();
+
+
+    /**
+     * @brief Lists credit basket constituents filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching credit basket constituents for the requested page.
+     */
+    std::vector<domain::credit_basket_constituent> list_credit_basket_constituents_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active credit basket constituents filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching credit basket constituents.
+     */
+    std::uint32_t count_credit_basket_constituents_by_trade_id(const std::string& trade_id);
 
 
     /**

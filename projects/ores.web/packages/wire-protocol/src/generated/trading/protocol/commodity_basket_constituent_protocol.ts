@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface CommodityBasketConstituentKey {
     trade_id: string;
@@ -56,6 +57,11 @@ export interface CommodityBasketConstituentLookup {
     commodity_basket_constituent: CommodityBasketConstituent | null;
 }
 
+export interface CommodityBasketConstituentsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface CommodityBasketConstituentEvent {
     event_id: string;
     key: CommodityBasketConstituentKey;
@@ -80,6 +86,7 @@ export interface ListCommodityBasketConstituentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CommodityBasketConstituentsFilter | null;
     as_of: string | null;
 }
 
@@ -145,6 +152,21 @@ export interface DeleteManyCommodityBasketConstituentsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdCommodityBasketConstituentsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CommodityBasketConstituentsFilter | null;
+}
+
+export interface ListByTradeIdCommodityBasketConstituentsResponse {
+    result: Result;
+    commodity_basket_constituents: CommodityBasketConstituent[];
+    total: number;
+}
+
 export interface ListCommodityBasketConstituentVersionsRequest {
     key: CommodityBasketConstituentKey;
     offset: number;
@@ -179,6 +201,8 @@ export const subjects = {
     delete_commodity_basket_constituent_request: 'trading.v1.commodity_basket_constituents.delete',
     delete_many_commodity_basket_constituents_request:
         'trading.v1.commodity_basket_constituents.delete_many',
+    list_by_trade_id_commodity_basket_constituents_request:
+        'trading.v1.commodity_basket_constituents.list_by_trade_id',
     list_commodity_basket_constituent_versions_request:
         'trading.v1.commodity_basket_constituents_versions.list',
     get_commodity_basket_constituent_version_request:
@@ -197,6 +221,7 @@ export const requiresSession = {
     put_many_commodity_basket_constituents_request: true,
     delete_commodity_basket_constituent_request: true,
     delete_many_commodity_basket_constituents_request: true,
+    list_by_trade_id_commodity_basket_constituents_request: true,
     list_commodity_basket_constituent_versions_request: true,
     get_commodity_basket_constituent_version_request: true,
 } as const;

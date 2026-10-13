@@ -25,8 +25,8 @@
 /**
  * @brief One folder of the feed hierarchy, with what runs under it.
  *
- * A collection folder also carries what the collection says: its scope, the
- * provider it stands for, and whether it is bound or sandboxed.
+ * A collection folder also carries what the collection says: the provider it
+ * stands for, and whether it is bound or sandboxed.
  */
 export interface FeedFolder {
     /** @brief The folder's id. */
@@ -37,9 +37,7 @@ export interface FeedFolder {
     name: string;
     /** @brief What the folder is: root, collection, asset_class or instrument_type. */
     kind: string;
-    /** @brief For a collection, who consumes its data: system, tenant or party; empty otherwise. */
-    scope: string;
-    /** @brief For a collection, the provider it stands for; empty when none. */
+    /** @brief For a collection, the provider it stands for; empty for any other folder. */
     provider_code: string;
     /** @brief For a collection, bound or sandboxed; empty otherwise. */
     binding_mode: string;
@@ -49,6 +47,8 @@ export interface FeedFolder {
     ir_feeds: number;
     /** @brief How many of those feeds are running now. */
     running_feeds: number;
+    /** @brief How many of those feeds are enabled, start on their own, and are not running now. */
+    idle_auto_feeds: number;
     /** @brief Whether the folder has folders under it. */
     has_children: boolean;
 }
@@ -91,6 +91,20 @@ export interface FolderFeed {
     folder_id: string;
     /** @brief Whether the feed is enabled. */
     enabled: boolean;
+    /** @brief The provider the feed's collection stands for. */
+    provider_code: string;
+    /** @brief The asset class of the feed: fx or interest_rates. */
+    asset_class_code: string;
+    /** @brief What the feed prices: a currency pair such as EUR/USD, or a currency such as USD. */
+    underlying: string;
+    /** @brief The process that generates the feed's ticks, as the feed stores it. */
+    engine: string;
+    /** @brief How many ticks the feed makes in an hour. */
+    ticks_per_hour: number;
+    /** @brief Whether the feed starts on its own when the service starts. */
+    auto_start: boolean;
+    /** @brief Whether the feed runs now. */
+    running: boolean;
 }
 
 /**
@@ -98,10 +112,18 @@ export interface FolderFeed {
  * every folder that match some words.
  */
 export interface ListFolderFeedsRequest {
-    /** @brief The folder whose feeds are wanted; empty for the feeds of every folder. */
+    /** @brief The folder whose feeds are wanted, with those of the folders under it; empty for the feeds of every folder. */
     folder_id: string;
+    /** @brief Only the feeds of this provider; empty for every provider. */
+    provider_code: string;
+    /** @brief Only the feeds that are enabled, start on their own, and are not running now. */
+    should_run: boolean;
     /** @brief Words that must all appear in the feed's label, source name or URI; empty for no search. */
     search: string;
+    /** @brief Which feeds: all, started or stopped; empty means all. */
+    state: string;
+    /** @brief Only the feeds of this asset class code; empty for every class. */
+    asset_class: string;
     /** @brief How many feeds to skip. */
     offset: number;
     /** @brief How many feeds to return at most. */

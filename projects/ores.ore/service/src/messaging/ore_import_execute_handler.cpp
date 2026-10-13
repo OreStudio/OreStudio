@@ -2946,9 +2946,12 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             put_risk_participation_agreement_instrument_request fact_req;
                             fact_req.change.write.trade_id = fact.trade_id;
                             fact_req.change.write.trade_activity_id = fact.trade_activity_id;
+                            fact_req.change.write.participation_rate = fact.participation_rate;
                             fact_req.change.write.credit_curve_id = fact.credit_curve_id;
                             fact_req.change.write.issuer_id = fact.issuer_id;
+                            fact_req.change.write.settles_accrual = fact.settles_accrual;
                             fact_req.change.write.recovery_rate = fact.recovery_rate;
+                            fact_req.change.write.naked_option = fact.naked_option;
                             auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
                             return fact_resp &&
                                    fact_resp->result.outcome == ores::utility::domain::outcome::ok;
@@ -3048,6 +3051,22 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         w.sequence_number = schedule.sequence_number;
                         w.trade_activity_id = schedule.trade_activity_id;
                         w.schedule_kind = schedule.schedule_kind;
+                        w.start_date = schedule.start_date;
+                        w.end_date = schedule.end_date;
+                        w.adjust_end_date_to_previous_month_end =
+                            schedule.adjust_end_date_to_previous_month_end;
+                        w.tenor = schedule.tenor;
+                        w.calendar = schedule.calendar;
+                        w.convention = schedule.convention;
+                        w.term_convention = schedule.term_convention;
+                        w.rule = schedule.rule;
+                        w.end_of_month = schedule.end_of_month;
+                        w.end_of_month_convention = schedule.end_of_month_convention;
+                        w.first_date = schedule.first_date;
+                        w.last_date = schedule.last_date;
+                        w.remove_first_date = schedule.remove_first_date;
+                        w.remove_last_date = schedule.remove_last_date;
+                        w.include_duplicate_dates = schedule.include_duplicate_dates;
                         auto schedule_resp = nats_call(delegated_nats, schedule_req, instr_error);
                         if (!schedule_resp ||
                             schedule_resp->result.outcome != ores::utility::domain::outcome::ok)

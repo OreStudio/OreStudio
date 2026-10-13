@@ -90,6 +90,9 @@ public:
         const messaging::delete_instrument_schedule_date_request& request);
     messaging::delete_many_instrument_schedule_dates_response delete_many_instrument_schedule_dates(
         const messaging::delete_many_instrument_schedule_dates_request& request);
+    messaging::list_by_trade_id_instrument_schedule_dates_response
+    list_by_trade_id_instrument_schedule_dates(
+        const messaging::list_by_trade_id_instrument_schedule_dates_request& request);
     messaging::list_instrument_schedule_date_versions_response
     list_instrument_schedule_date_versions(
         const messaging::list_instrument_schedule_date_versions_request& request);
@@ -113,6 +116,26 @@ public:
      * @return Total number of active instrument schedule dates.
      */
     std::uint32_t count_instrument_schedule_dates();
+
+
+    /**
+     * @brief Lists instrument schedule dates filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching instrument schedule dates for the requested page.
+     */
+    std::vector<domain::instrument_schedule_date> list_instrument_schedule_dates_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active instrument schedule dates filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching instrument schedule dates.
+     */
+    std::uint32_t count_instrument_schedule_dates_by_trade_id(const std::string& trade_id);
 
 
     /**

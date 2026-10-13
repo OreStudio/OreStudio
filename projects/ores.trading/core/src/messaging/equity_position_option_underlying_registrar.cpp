@@ -91,6 +91,12 @@ std::vector<ores::nats::service::subscription> register_equity_position_option_u
                              [h](ores::nats::message msg) {
                                  h->delete_many_equity_position_option_underlyings(std::move(msg));
                              }));
+    subs.push_back(nats.queue_subscribe(
+        list_by_trade_id_equity_position_option_underlyings_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->list_by_trade_id_equity_position_option_underlyings(std::move(msg));
+        }));
     subs.push_back(
         nats.queue_subscribe(list_equity_position_option_underlying_versions_request::nats_subject,
                              queue_group,

@@ -65,6 +65,15 @@ struct counterparty_business_centres_filter {
     std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
 };
 
+struct counterparty_business_centre_event {
+    boost::uuids::uuid event_id;
+    counterparty_business_centre_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct list_counterparty_business_centres_request {
     using response_type = struct list_counterparty_business_centres_response;
     static constexpr std::string_view nats_subject =

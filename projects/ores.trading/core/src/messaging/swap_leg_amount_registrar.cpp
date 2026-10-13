@@ -77,6 +77,10 @@ register_swap_leg_amount_handlers(ores::nats::service::client& nats,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_swap_leg_amounts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        list_by_trade_id_swap_leg_amounts_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_trade_id_swap_leg_amounts(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_swap_leg_amount_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_swap_leg_amount_versions(std::move(msg)); }));

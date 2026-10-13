@@ -31,6 +31,7 @@
 
 -- Account-party association (dropped before accounts and RBAC)
 \ir ./iam_role_grant_request_functions_drop.sql
+\ir ./iam_role_grant_request_roles_notify_trigger_drop.sql
 \ir ./iam_role_grant_request_role_drop.sql
 \ir ./iam_role_grant_requests_notify_trigger_drop.sql
 \ir ./iam_role_grant_requests_drop.sql

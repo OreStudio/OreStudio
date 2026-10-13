@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 28C3DC0E-5143-4489-864B-CBDC46AD2B41
+:END:
+#+title: Task: Let a table's repository write its own table
+#+description: The entity-table write check lets a hand-written repository write the table it is named for, so the work ledger and work tenants repositories no longer fail it.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/let-a-table-repository-write-its-own-table
+#+pr: 3231
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The local check passes on main, and a write that bypasses a repository is still found.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The check passes with no new baseline entry.
+- A repository that also writes another table, and a file that is not a repository, are still reported.
+
+* Plan
+
+A teammate's local check failed on main. =check_entity_table_writes.py= reported two new writers, =work_ledger_repository.cpp= and =work_tenant_repository.cpp=. Both are the hand-written repositories of installation-owned tables that have no entity model, so no generated repository exists for them. The check could not tell such a repository from code that bypasses one, and its own advice, to move the write into the repository, was already done.
+
+- A hand-written file named =<name>_repository= is the repository of =ores_<component>_<name>_tbl=, with the name singular or plural. The check lets it write that table.
+- A repository that also writes another table, a file that is not a repository, and a repository of another name are still reported.
+- The scheduler's =job_instance_repository.cpp= was in the baseline as a writer that predates the check. It is the repository of its own table, so the check no longer reports it and the stale entry is dropped. The baseline shrinks from 124 to 123.
+- No baseline entry is added for the two new files.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The check on this branch | 123 known writers, no new ones | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_entity_table_writes.py= | branch head |
+| Tests of the exemption | 6 pass | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests/test_check_entity_table_writes.py -q= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3231][#3231]] | [codegen] Let a table's repository write its own table |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The entity-table write check now lets a hand-written table repository write the table it is named for. The two repositories of the compute grid pass without a baseline entry, and the stale scheduler entry is gone. A write that bypasses a repository is still reported, and six tests say so.

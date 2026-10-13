@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_type_configuration_type.hpp"
 #include "ores.reporting.api/messaging/report_type_configuration_type_protocol.hpp"
+#include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
 #include <cstdint>
 #include <optional>
@@ -43,7 +44,7 @@ namespace ores::reporting::service {
  * Provides a higher-level interface for report type configuration type operations,
  * wrapping the underlying repository.
  */
-class report_type_configuration_type_service {
+class ORES_REPORTING_CORE_EXPORT report_type_configuration_type_service {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.service.report_type_configuration_type_service";

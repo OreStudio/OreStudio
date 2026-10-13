@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 7518AC6C-D0A2-4D89-A896-A63605C9A99F
+:END:
+#+title: Start and stop of feeds need only the read permission
+#+description: The folder verbs and the selection verbs check the read of every feed config, though they change what runs.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The folder verbs and the selection verbs (=start_feeds_under_folder=, =stop_feeds_under_folder=, =start_selected_feeds=, =stop_selected_feeds=) check the read of every registered kind's feed configs. They start and stop producers, which changes what the platform publishes. A person who may only read feeds can start and stop them through the service. The web draws the buttons only for a person who may write, so the screen hides what the service allows. Check the write permission of the kinds a request touches, in the one function the verbs share.
+
+* Why
+
+The review of PR #3239 found it. The check matches the folder verbs that came first, so the gap is older than the selection verbs.
+
+* References
+
+- =projects/ores.synthetic/service/src/feed_selection_handler.hpp=, =folder_feed_control_handler.hpp= and =feed_run_control.hpp=
+
+* See also
+
+- [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]]

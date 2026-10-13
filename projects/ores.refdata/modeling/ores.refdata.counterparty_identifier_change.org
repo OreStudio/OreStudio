@@ -271,22 +271,13 @@ the unit test would be refused its modified_by.
     }
 #+end_src
 
-** counterparty_id
-:PROPERTIES:
-:table:         ores_refdata_counterparties_tbl
-:parent_entity: counterparty
-:nullable:      false
-:error_message: Invalid counterparty_id: %. No active counterparty found with this id.
-:list_by_uuid:  true
-:END:
-
 * Insert trigger
 
 ** Validations
 
-| column    | validation_function                       | cardinality_limit_table            | cardinality_limit_column | cardinality_scope_column | cardinality_noun |
-|-----------+--------------------------------------------+--------------------------------------+---------------------------+---------------------------+-------------------|
-| id_scheme | ores_refdata_validate_party_id_scheme_fn | ores_refdata_party_id_schemes_tbl | max_cardinality           | counterparty_id           | identifier       |
+| column | validation_function |
+|--------+---------------------|
+| id_scheme | ores_refdata_validate_party_id_scheme_fn |
 
 * C++
 

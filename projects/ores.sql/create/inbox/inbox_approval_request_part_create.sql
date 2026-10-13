@@ -44,6 +44,7 @@ create table if not exists "ores_inbox_approval_request_parts_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, request_id, part_code, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -165,7 +166,8 @@ create or replace rule ores_inbox_approval_request_parts_delete_rule as
 on delete to "ores_inbox_approval_request_parts_tbl"
 do instead
   update "ores_inbox_approval_request_parts_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and request_id = old.request_id
   and part_code = old.part_code

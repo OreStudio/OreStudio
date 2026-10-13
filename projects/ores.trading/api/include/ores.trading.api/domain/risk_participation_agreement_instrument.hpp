@@ -39,9 +39,12 @@ namespace ores::trading::domain {
 /**
  * @brief Risk participation agreement facts.
  *
- * Represents the product facts of a RiskParticipationAgreement trade: the credit curve, the issuer
- * and the fixed recovery rate. The protection start and end are the header's start and maturity
- * dates.
+ * Represents the product facts of a RiskParticipationAgreement trade: the participation rate, the
+ * credit curve, the issuer, the fixed recovery rate and the two flags. The protection start and end
+ * are the header's start and maturity dates. The protection fee is a list of legs in the
+ * protection_fee group of swap_legs, and the underlying's legs are in the underlying group. The
+ * underlying's option block is the shared option rows, which the agreement owns because it has no
+ * option of its own.
  *
  * This row is the family's fact table, not its identity. The header,
  * ores.trading.credit_instrument, holds the trade type code, the party, the
@@ -88,6 +91,24 @@ struct risk_participation_agreement_instrument final {
      * @brief The fixed recovery rate as a fraction. Null when the document states none.
      */
     std::optional<double> recovery_rate;
+
+    /**
+     * @brief The share of the underlying's loss the agreement participates in, from the required
+     * ParticipationRate element, as a fraction. Continuous, so a binary float.
+     */
+    double participation_rate = 0.0;
+
+    /**
+     * @brief Whether the accrued premium settles on default, from SettlesAccrual. Null when the
+     * document states none.
+     */
+    std::optional<bool> settles_accrual;
+
+    /**
+     * @brief Whether the underlying's option is naked, from the underlying's NakedOption. Null when
+     * the document states none.
+     */
+    std::optional<bool> naked_option;
 
     /**
      * @brief Username of the person who last modified this risk participation agreement instrument.
@@ -145,6 +166,9 @@ inline constexpr std::string_view risk_participation_agreement_instrument_econom
     "credit_curve_id",
     "issuer_id",
     "recovery_rate",
+    "participation_rate",
+    "settles_accrual",
+    "naked_option",
 };
 
 /**

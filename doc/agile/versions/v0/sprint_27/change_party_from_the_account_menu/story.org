@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 985AE050-7D84-4D57-BFBD-B1C89F0D6C0E
+:END:
+#+title: Story: Change party from the account menu
+#+description: A person who works in several parties has to sign out to act for another. The account menu offers the other parties and switches the open session.
+#+type: story
+#+level: s2
+#+filetags: :web:session:parties:sprint_27:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person changes the party they act for from the account menu, without signing out.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- The account menu lists the other parties the person works in, and not the one they act for.
+- Choosing one re-scopes the session and reads every screen again for that party.
+- A person who works in one party sees no list.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2638EE09-9D75-4E5D-8E41-30FD6534B46B][Scaffold story: Change party from the account menu]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:CB4A281A-3D03-40A2-AF97-32D1F7EAB466][Offer the other parties in the account menu]] | DONE | | 2026-10-13 | Initial task for: Change party from the account menu |
+
+* Decisions
+
+* Out of scope
+
+-

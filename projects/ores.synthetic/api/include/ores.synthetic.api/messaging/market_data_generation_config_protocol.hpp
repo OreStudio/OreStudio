@@ -47,7 +47,7 @@ struct market_data_generation_config_write {
     std::string description;
     bool enabled;
     std::optional<boost::uuids::uuid> dataset_id;
-    std::optional<std::string> provider_code;
+    std::string provider_code;
 };
 
 struct market_data_generation_config_change {

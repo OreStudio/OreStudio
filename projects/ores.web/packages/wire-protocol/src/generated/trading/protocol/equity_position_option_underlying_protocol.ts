@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface EquityPositionOptionUnderlyingKey {
     trade_id: string;
@@ -61,6 +62,11 @@ export interface EquityPositionOptionUnderlyingLookup {
     equity_position_option_underlying: EquityPositionOptionUnderlying | null;
 }
 
+export interface EquityPositionOptionUnderlyingsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityPositionOptionUnderlyingEvent {
     event_id: string;
     key: EquityPositionOptionUnderlyingKey;
@@ -85,6 +91,7 @@ export interface ListEquityPositionOptionUnderlyingsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityPositionOptionUnderlyingsFilter | null;
     as_of: string | null;
 }
 
@@ -150,6 +157,21 @@ export interface DeleteManyEquityPositionOptionUnderlyingsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdEquityPositionOptionUnderlyingsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: EquityPositionOptionUnderlyingsFilter | null;
+}
+
+export interface ListByTradeIdEquityPositionOptionUnderlyingsResponse {
+    result: Result;
+    equity_position_option_underlyings: EquityPositionOptionUnderlying[];
+    total: number;
+}
+
 export interface ListEquityPositionOptionUnderlyingVersionsRequest {
     key: EquityPositionOptionUnderlyingKey;
     offset: number;
@@ -188,6 +210,8 @@ export const subjects = {
         'trading.v1.equity_position_option_underlyings.delete',
     delete_many_equity_position_option_underlyings_request:
         'trading.v1.equity_position_option_underlyings.delete_many',
+    list_by_trade_id_equity_position_option_underlyings_request:
+        'trading.v1.equity_position_option_underlyings.list_by_trade_id',
     list_equity_position_option_underlying_versions_request:
         'trading.v1.equity_position_option_underlyings_versions.list',
     get_equity_position_option_underlying_version_request:
@@ -206,6 +230,7 @@ export const requiresSession = {
     put_many_equity_position_option_underlyings_request: true,
     delete_equity_position_option_underlying_request: true,
     delete_many_equity_position_option_underlyings_request: true,
+    list_by_trade_id_equity_position_option_underlyings_request: true,
     list_equity_position_option_underlying_versions_request: true,
     get_equity_position_option_underlying_version_request: true,
 } as const;

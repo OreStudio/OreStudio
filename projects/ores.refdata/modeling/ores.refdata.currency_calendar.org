@@ -27,6 +27,8 @@ spot/settlement date computation can depend on more than one calendar
 
 * Flags
 :PROPERTIES:
+:history: true
+:events: true
 :profile: tenant-scoped-junction
 :END:
 

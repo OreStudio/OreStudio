@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/notification_recipient.hpp"
 #include "ores.inbox.api/messaging/notification_recipient_protocol.hpp"
+#include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/notification_recipient_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -44,7 +45,7 @@ namespace ores::inbox::service {
  * Provides a higher-level interface for notification recipient operations,
  * wrapping the underlying repository.
  */
-class notification_recipient_service {
+class ORES_INBOX_CORE_EXPORT notification_recipient_service {
 private:
     inline static std::string_view logger_name =
         "ores.inbox.service.notification_recipient_service";

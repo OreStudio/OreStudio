@@ -8,12 +8,12 @@
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-each-trade-child-by-trade
-#+pr:
+#+pr: 3223
 #+blocked_on: The spike result and the specification task.
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9AAD348-74D0-4B65-989C-118CCBC2FBF3][Complete the trade list's filters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A9AAD348-74D0-4B65-989C-118CCBC2FBF3][Complete the trade list's filters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -56,7 +56,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Collections with a by-trade read | 24 of 24 | the models with =trade_id= and one more primary key column, listed by a script over =projects/ores.trading/modeling= | this branch |
+| Child-read tests | 10 cases, 31 assertions passed | =ores.trading.core.tests "[list_filter]"= | this branch |
+| Trading core suite | 168 cases, 1159 assertions passed | =ores.trading.core.tests= | this branch |
+| Shell trading suite | 1238 cases, 3498 assertions passed | =ores.shell.trading.tests= | this branch |
 
 * Notes
 
@@ -75,12 +78,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3223][#3223]] | [trading] Read each trade child by trade id |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The generated handler comment names the write permission | the handlers | decline | Template text in all scoped reads. Already filed as the capture "The generated handler for a scoped read comments that it checks the permission a write needs". |
+| 2 | Narrow test coverage, no service-path tests | repository_trade_filter_tests.cpp | decline | The service refusals are template code shared by every scoped read, none of which has a test. Filed as a capture to test them once in the generator. |
+| 3 | A filter that names another trade than the scope | nats_entity_protocol.org | accept | The specification now says the two combine by AND, so the page is empty with a total of 0 and no error. |
+| 4 | Repository headers include the protocol header | repository headers | no change needed | The unscoped read does the same. |
+| 5 | Confirm CI before merge | PR body | no change needed | GitHub runs no check on a pull request in this repository. The local checks are the gate, and the PR body lists what ran. |
 
 * Result
+
+Every table keyed by a trade and one more column now has a by-trade read. A table of that shape is a collection: it has several rows for one trade. There are 24. Two had the read already: =swap_leg=, and the identifiers from the spike. This task added the other 22 by declaring =:list_by: true= on the =trade_id= foreign key. The generator emitted the protocol, handler, service, repository, TypeScript twin and, for four of them, the shell commands and recipes.
+
+A table keyed by the trade alone has one row per trade. The state, the booking and each instrument are read by =get= with the trade id, and a page of them by =get_many=.
+
+The repository tests read the additional fields and the party roles of one trade and none of another, in addition to the identifiers of the spike.
+
+*Not done, and why.* =:list_by_as_of: true= is not declared. It generates a window read for composite history that nothing calls, and it puts no =as_of= on the wire. A scoped read that carries =as_of= is the new task "Carry as_of on a scoped read". The specification text was corrected to say so.
+
+*Found.* The database was stale against the rebased code, which failed nine credit and swap-leg tests until it was recreated. Nothing in this change caused it.

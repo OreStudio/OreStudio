@@ -127,6 +127,12 @@ flexi_swap_lower_notional_service::list_flexi_swap_lower_notionals(
                    {.entity = "flexi swap lower notionals", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -138,9 +144,39 @@ flexi_swap_lower_notional_service::list_flexi_swap_lower_notionals(
             return response;
         }
     }
-    response.flexi_swap_lower_notionals =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_flexi_swap_lower_notional_count(ctx_, as_of);
+    response.flexi_swap_lower_notionals = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_flexi_swap_lower_notional_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_trade_id_flexi_swap_lower_notionals_response
+flexi_swap_lower_notional_service::list_by_trade_id_flexi_swap_lower_notionals(
+    const messaging::list_by_trade_id_flexi_swap_lower_notionals_request& request) {
+    messaging::list_by_trade_id_flexi_swap_lower_notionals_response response;
+    if (!request.order.field.empty() &&
+        !repository::flexi_swap_lower_notional_repository::is_sortable(request.order.field)) {
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "flexi swap lower notionals", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result =
+            refuse(outcome_code::scope_not_supported, {.entity = "flexi swap lower notionals"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.trade_id);
+    response.flexi_swap_lower_notionals = repo_.read_latest_by_trade_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_flexi_swap_lower_notional_count_by_trade_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -407,6 +443,21 @@ flexi_swap_lower_notional_service::list_flexi_swap_lower_notionals(std::uint32_t
 std::uint32_t flexi_swap_lower_notional_service::count_flexi_swap_lower_notionals() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total flexi swap lower notionals count";
     return repo_.get_total_flexi_swap_lower_notional_count(ctx_);
+}
+
+
+std::vector<domain::flexi_swap_lower_notional>
+flexi_swap_lower_notional_service::list_flexi_swap_lower_notionals_by_trade_id(
+    const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing flexi swap lower notionals by trade_id: " << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
+}
+
+std::uint32_t flexi_swap_lower_notional_service::count_flexi_swap_lower_notionals_by_trade_id(
+    const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total flexi swap lower notionals count by trade_id: "
+                               << trade_id;
+    return repo_.get_total_flexi_swap_lower_notional_count_by_trade_id(ctx_, trade_id);
 }
 
 

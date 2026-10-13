@@ -63,6 +63,11 @@ struct instrument_option_payment_date_lookup {
         instrument_option_payment_date;
 };
 
+struct instrument_option_payment_dates_filter {
+    std::optional<boost::uuids::uuid> trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct instrument_option_payment_date_event {
     boost::uuids::uuid event_id;
     instrument_option_payment_date_key key;
@@ -97,6 +102,7 @@ struct list_instrument_option_payment_dates_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<instrument_option_payment_dates_filter> filter;
     std::optional<std::string> as_of;
 };
 
@@ -222,6 +228,31 @@ struct delete_many_instrument_option_payment_dates_request {
 
 struct delete_many_instrument_option_payment_dates_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_trade_id_instrument_option_payment_dates_request {
+    using response_type = struct list_by_trade_id_instrument_option_payment_dates_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.instrument_option_payment_dates.list_by_trade_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid trade_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<instrument_option_payment_dates_filter> filter;
+};
+
+struct list_by_trade_id_instrument_option_payment_dates_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::instrument_option_payment_date> option_payment_dates;
+    std::uint64_t total;
 };
 
 struct list_instrument_option_payment_date_versions_request {

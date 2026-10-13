@@ -37,6 +37,7 @@ struct totals {
     int fx = 0;
     int ir = 0;
     int running = 0;
+    int idle = 0;
 };
 
 }
@@ -55,6 +56,7 @@ children_with_counts(const std::vector<messaging::feed_folder>& folders,
         t.fx += count.fx_feeds;
         t.ir += count.ir_feeds;
         t.running += count.running_feeds;
+        t.idle += count.idle_auto_feeds;
     }
 
     // Sums a folder and everything under it. A folder has one parent and the
@@ -69,6 +71,7 @@ children_with_counts(const std::vector<messaging::feed_folder>& folders,
                 out.fx += t.fx;
                 out.ir += t.ir;
                 out.running += t.running;
+                out.idle += t.idle;
             }
         }
         return out;
@@ -82,6 +85,7 @@ children_with_counts(const std::vector<messaging::feed_folder>& folders,
             child.fx_feeds = t.fx;
             child.ir_feeds = t.ir;
             child.running_feeds = t.running;
+            child.idle_auto_feeds = t.idle;
             child.has_children = below.contains(child.id);
             children.push_back(std::move(child));
         }

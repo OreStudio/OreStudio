@@ -27,7 +27,7 @@ import { MemoryRouter } from 'react-router';
 import type { Account } from '@ores/wire-protocol/browser';
 import type { EnvironmentView } from '@ores/contracts';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { AppShell } from './AppShell.js';
+import { AppShell, partiesToChangeTo } from './AppShell.js';
 import { PublicShell } from './PublicShell.js';
 
 /**
@@ -415,5 +415,29 @@ describe('the application shell', () => {
 
         expect(html).toContain('aria-label="Notifications, 4 unread"');
         expect(html).toContain('>4</span>');
+    });
+});
+
+describe('the parties the account menu offers to change to', () => {
+    const party = (partyId: string) => ({
+        partyId,
+        name: partyId,
+        shortCode: partyId,
+        partyCategory: '',
+        businessCenterCode: '',
+    });
+
+    it('leaves out the party the session acts for', () => {
+        const offered = partiesToChangeTo([party('uk'), party('us'), party('hk')], 'us');
+
+        expect(offered.map((p) => p.partyId)).toEqual(['uk', 'hk']);
+    });
+
+    it('offers nothing to a person who works in one party', () => {
+        expect(partiesToChangeTo([party('uk')], 'uk')).toEqual([]);
+    });
+
+    it('offers every party when the acting party is not known', () => {
+        expect(partiesToChangeTo([party('uk'), party('us')], undefined)).toHaveLength(2);
     });
 });

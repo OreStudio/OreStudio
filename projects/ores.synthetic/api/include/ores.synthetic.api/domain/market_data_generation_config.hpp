@@ -114,11 +114,10 @@ struct market_data_generation_config final {
 
     /**
      * @brief The simulated market data provider this collection stands for
-     * (market_data_provider.code), such as bloomberg, or generic for a system collection that
-     * stands for no provider in particular. Optional at every scope: a party's test collection
-     * usually names none. Its feeds' source names start synthetic.<provider_code>. when it is set.
+     * (market_data_provider.code), such as bloomberg or ore. Required at every scope, so every feed
+     * has a provider. Its feeds' source names start synthetic.<provider_code>..
      */
-    std::optional<std::string> provider_code;
+    std::string provider_code;
 
     /**
      * @brief Username of the person who last modified this market data generation config.

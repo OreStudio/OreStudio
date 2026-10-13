@@ -63,6 +63,7 @@ import {
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
 import { subjects as fxSimpleSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_simple_protocol';
 import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
+import { subjects as feedSelectionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_selection_protocol';
 import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
@@ -238,6 +239,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             vintage_source: z.string().max(200),
             vintage_date: z.string().max(40),
             folder_id: idSchema.nullable(),
+            asset_class_code: code.default('fx'),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
     },
     {
@@ -300,6 +302,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             fixed_leg_payment_frequency_code: z.string().max(100),
             source_name: label,
             folder_id: idSchema.nullable(),
+            asset_class_code: code.default('interest_rates'),
         }) satisfies z.ZodType<IrCurveGenerationConfigWrite>,
     },
     {
@@ -730,6 +733,55 @@ const irShapeSchema = z.object({
         .max(200),
 });
 
+/** What narrows the feed table: all optional, and all checked again by the service. */
+const feedFilterSchema = z.object({
+    folder: z.string().trim().max(100).default(''),
+    provider: z.string().trim().max(64).default(''),
+    assetClass: z.string().trim().max(64).default(''),
+    state: z.enum(['', 'all', 'started', 'stopped']).default(''),
+    shouldRun: z.stringbool().default(false),
+    search: z.string().trim().max(200).default(''),
+});
+
+interface FeedFilter {
+    readonly folder: string;
+    readonly provider: string;
+    readonly assetClass: string;
+    readonly state: string;
+    readonly shouldRun: boolean;
+    readonly search: string;
+}
+
+function wireFilter(filter: FeedFilter): Record<string, unknown> {
+    return {
+        folder_id: filter.folder,
+        provider_code: filter.provider,
+        asset_class: filter.assetClass,
+        state: filter.state,
+        should_run: filter.shouldRun,
+        search: filter.search,
+    };
+}
+
+/** The feeds to start or stop: the picked ones, or the filter's less the left out. */
+const selectionSchema = feedFilterSchema
+    .extend({
+        shouldRun: z.boolean().default(false),
+        feedIds: z.array(z.string().max(40)).max(2000).default([]),
+        excludedIds: z.array(z.string().max(40)).max(2000).default([]),
+    })
+    .strict();
+
+function wireSelection(
+    selection: FeedFilter & { readonly feedIds: string[]; readonly excludedIds: string[] },
+): Record<string, unknown> {
+    return {
+        ...wireFilter(selection),
+        feed_ids: selection.feedIds,
+        excluded_ids: selection.excludedIds,
+    };
+}
+
 /**
  * The synthetic routes: the resources the four synthetic journeys read and
  * write, the previews, and the feed and folder operations.
@@ -785,12 +837,12 @@ export function registerSyntheticRoutes(
                             parent_id: z.string(),
                             name: z.string(),
                             kind: z.string(),
-                            scope: z.string(),
                             provider_code: z.string(),
                             binding_mode: z.string(),
                             fx_feeds: z.int(),
                             ir_feeds: z.int(),
                             running_feeds: z.int(),
+                            idle_auto_feeds: z.int(),
                             has_children: z.boolean(),
                         }),
                     )
@@ -802,16 +854,15 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * A page of the feeds in one folder, or of the feeds of every folder that match
-     * some words. The service pages and counts, so the feed tree never reads them all.
+     * A page of the feeds a filter matches: a folder with the folders under it, a
+     * provider, an asset class, a state, some words. The service pages and counts, so
+     * the feed table never reads them all.
      */
     server.get('/api/synthetic/folder-feeds', async (request) => {
         const session = requireSession(request);
         const query = input(
-            z
-                .object({
-                    folder: z.string().trim().max(100).default(''),
-                    search: z.string().trim().max(200).default(''),
+            feedFilterSchema
+                .extend({
                     offset: z.coerce.number().int().min(0).max(1_000_000).default(0),
                     limit: z.coerce.number().int().min(1).max(200).default(60),
                 })
@@ -821,8 +872,7 @@ export function registerSyntheticRoutes(
         const reply = await session.client.callAuthenticated(
             feedOverviewSubjects.list_folder_feeds_request,
             {
-                folder_id: query.folder,
-                search: query.search,
+                ...wireFilter(query),
                 offset: query.offset,
                 limit: query.limit,
             },
@@ -838,6 +888,13 @@ export function registerSyntheticRoutes(
                             oresmd_uri: z.string(),
                             folder_id: z.string(),
                             enabled: z.boolean(),
+                            provider_code: z.string(),
+                            asset_class_code: z.string(),
+                            underlying: z.string(),
+                            engine: z.string(),
+                            ticks_per_hour: z.int(),
+                            auto_start: z.boolean(),
+                            running: z.boolean(),
                         }),
                     )
                     .default([]),
@@ -845,6 +902,43 @@ export function registerSyntheticRoutes(
         );
         refuseUnless(reply, invalidRequest);
         return { total: reply.total, feeds: reply.feeds };
+    });
+
+    /**
+     * Starts the feeds a person picked, or the feeds a filter matches less those left
+     * out. The request carries the filter and the ids; the service finds the feeds.
+     */
+    server.post('/api/synthetic/feed-selection/start', async (request) => {
+        const session = requireSession(request);
+        const body = input(selectionSchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            feedSelectionSubjects.start_selected_feeds_request,
+            wireSelection(body),
+            operationReplySchema.extend({
+                started: z.int().default(0),
+                already_running: z.int().default(0),
+                skipped: z.int().default(0),
+            }),
+        );
+        refuseUnless(reply, invalidRequest);
+        return {
+            message: reply.message,
+            started: reply.started,
+            alreadyRunning: reply.already_running,
+            skipped: reply.skipped,
+        };
+    });
+
+    server.post('/api/synthetic/feed-selection/stop', async (request) => {
+        const session = requireSession(request);
+        const body = input(selectionSchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            feedSelectionSubjects.stop_selected_feeds_request,
+            wireSelection(body),
+            operationReplySchema.extend({ stopped: z.int().default(0) }),
+        );
+        refuseUnless(reply, invalidRequest);
+        return { message: reply.message, stopped: reply.stopped };
     });
 
     /** The source names of the feeds running now, of every kind the caller may see. */

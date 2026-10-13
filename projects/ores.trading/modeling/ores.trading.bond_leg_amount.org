@@ -152,6 +152,7 @@ states one.
 :target_column: id
 :nullable:      false
 :error_message: Invalid trade_id: %. Trade must exist for tenant.
+:list_by:  true
 :END:
 
 The trade this row belongs to. An instrument is keyed by its trade, so a

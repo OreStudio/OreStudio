@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface CreditBasketConstituentKey {
     trade_id: string;
@@ -60,6 +61,11 @@ export interface CreditBasketConstituentLookup {
     credit_basket_constituent: CreditBasketConstituent | null;
 }
 
+export interface CreditBasketConstituentsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface CreditBasketConstituentEvent {
     event_id: string;
     key: CreditBasketConstituentKey;
@@ -84,6 +90,7 @@ export interface ListCreditBasketConstituentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CreditBasketConstituentsFilter | null;
     as_of: string | null;
 }
 
@@ -149,6 +156,21 @@ export interface DeleteManyCreditBasketConstituentsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdCreditBasketConstituentsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CreditBasketConstituentsFilter | null;
+}
+
+export interface ListByTradeIdCreditBasketConstituentsResponse {
+    result: Result;
+    credit_basket_constituents: CreditBasketConstituent[];
+    total: number;
+}
+
 export interface ListCreditBasketConstituentVersionsRequest {
     key: CreditBasketConstituentKey;
     offset: number;
@@ -181,6 +203,8 @@ export const subjects = {
     delete_credit_basket_constituent_request: 'trading.v1.credit_basket_constituents.delete',
     delete_many_credit_basket_constituents_request:
         'trading.v1.credit_basket_constituents.delete_many',
+    list_by_trade_id_credit_basket_constituents_request:
+        'trading.v1.credit_basket_constituents.list_by_trade_id',
     list_credit_basket_constituent_versions_request:
         'trading.v1.credit_basket_constituents_versions.list',
     get_credit_basket_constituent_version_request:
@@ -199,6 +223,7 @@ export const requiresSession = {
     put_many_credit_basket_constituents_request: true,
     delete_credit_basket_constituent_request: true,
     delete_many_credit_basket_constituents_request: true,
+    list_by_trade_id_credit_basket_constituents_request: true,
     list_credit_basket_constituent_versions_request: true,
     get_credit_basket_constituent_version_request: true,
 } as const;

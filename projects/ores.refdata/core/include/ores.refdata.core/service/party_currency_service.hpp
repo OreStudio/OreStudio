@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.api/messaging/party_currency_protocol.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -44,7 +45,7 @@ namespace ores::refdata::service {
  * Provides a higher-level interface for party currency operations,
  * wrapping the underlying repository.
  */
-class party_currency_service {
+class ORES_REFDATA_CORE_EXPORT party_currency_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.party_currency_service";
 

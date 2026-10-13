@@ -24,8 +24,11 @@
  *
  * Risk Participation Agreement Instrument Table
  *
- * Represents the product facts of a RiskParticipationAgreement trade: the credit curve, the issuer and
- * the fixed recovery rate. The protection start and end are the header's start and maturity dates.
+ * Represents the product facts of a RiskParticipationAgreement trade: the participation rate, the credit
+ * curve, the issuer, the fixed recovery rate and the two flags. The protection start and end are the
+ * header's start and maturity dates. The protection fee is a list of legs in the protection_fee group of
+ * swap_legs, and the underlying's legs are in the underlying group. The underlying's option block is
+ * the shared option rows, which the agreement owns because it has no option of its own.
  *
  * This row is the family's fact table, not its identity. The header,
  * ores.trading.credit_instrument, holds the trade type code, the party, the
@@ -41,6 +44,9 @@ create table if not exists "ores_trading_risk_participation_instruments_tbl" (
     "credit_curve_id" text not null,
     "issuer_id" text null,
     "recovery_rate" double precision null,
+    "participation_rate" double precision not null,
+    "settles_accrual" boolean null,
+    "naked_option" boolean null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -56,6 +62,7 @@ create table if not exists "ores_trading_risk_participation_instruments_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("credit_curve_id" <> ''),
+    check ("participation_rate" >= 0 and "participation_rate" <= 1),
     check ("recovery_rate" is null or ("recovery_rate" >= 0 and "recovery_rate" <= 1))
 );
 

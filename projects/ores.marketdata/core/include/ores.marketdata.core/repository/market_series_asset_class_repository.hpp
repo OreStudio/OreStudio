@@ -31,6 +31,7 @@
 #include "ores.marketdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
@@ -38,6 +39,26 @@
 #include <vector>
 
 namespace ores::marketdata::repository {
+
+/**
+ * @brief One version of a asset class, with the end of its validity.
+ *
+ * A link is closed by ending its validity, not by deleting the row, so a closed
+ * link is a row whose end is in the past. @c closed_at is set on a version that
+ * ended because the link was closed, and empty on a version that a later
+ * version replaced and on a link that is open. @c closed_by names the account
+ * that closed it, and is empty on the same versions. The domain type does not carry
+ * it, and it is final, so the history row holds the link beside it. The actor
+ * and the time stand flat on the row as well, which is the shape the history
+ * builder reads.
+ */
+struct market_series_asset_class_history_row {
+    domain::market_series_asset_class link;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::optional<std::chrono::system_clock::time_point> closed_at;
+    std::string closed_by;
+};
 
 /**
  * @brief Reads and writes asset classes to data storage.
@@ -130,6 +151,16 @@ public:
      * @brief Gets the total count of active asset classes filtered by asset_class_code.
      */
     std::uint32_t get_total_asset_class_count_by_asset_class(const std::string& asset_class_code);
+
+    /**
+     * @brief Reads every version of every asset class of one series.
+     *
+     * Closed links are included. The rows are grouped by asset class
+     * and run newest first within a group, so a caller numbers and diffs the
+     * versions of one link by walking a group.
+     */
+    std::vector<market_series_asset_class_history_row>
+    read_all_by_series(const boost::uuids::uuid& market_series_id);
 
     /**
      * @brief Deletes a asset class by its pair of keys.

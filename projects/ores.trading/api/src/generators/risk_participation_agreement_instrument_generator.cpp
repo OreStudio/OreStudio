@@ -48,6 +48,7 @@ generate_synthetic_risk_participation_agreement_instrument(
     r.trade_id = ctx.generate_uuid();
     r.trade_activity_id = ctx.generate_uuid();
     r.credit_curve_id = std::string("RED:2I65BYEG6");
+    r.participation_rate = 0.9;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

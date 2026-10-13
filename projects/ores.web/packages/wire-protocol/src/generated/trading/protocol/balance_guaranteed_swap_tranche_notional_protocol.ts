@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface BalanceGuaranteedSwapTrancheNotionalKey {
     trade_id: string;
@@ -58,6 +59,11 @@ export interface BalanceGuaranteedSwapTrancheNotionalLookup {
     balance_guaranteed_swap_tranche_notional: BalanceGuaranteedSwapTrancheNotional | null;
 }
 
+export interface BalanceGuaranteedSwapTrancheNotionalsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface BalanceGuaranteedSwapTrancheNotionalEvent {
     event_id: string;
     key: BalanceGuaranteedSwapTrancheNotionalKey;
@@ -82,6 +88,7 @@ export interface ListBalanceGuaranteedSwapTrancheNotionalsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BalanceGuaranteedSwapTrancheNotionalsFilter | null;
     as_of: string | null;
 }
 
@@ -147,6 +154,21 @@ export interface DeleteManyBalanceGuaranteedSwapTrancheNotionalsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdBalanceGuaranteedSwapTrancheNotionalsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BalanceGuaranteedSwapTrancheNotionalsFilter | null;
+}
+
+export interface ListByTradeIdBalanceGuaranteedSwapTrancheNotionalsResponse {
+    result: Result;
+    balance_guaranteed_swap_tranche_notionals: BalanceGuaranteedSwapTrancheNotional[];
+    total: number;
+}
+
 export interface ListBalanceGuaranteedSwapTrancheNotionalVersionsRequest {
     key: BalanceGuaranteedSwapTrancheNotionalKey;
     offset: number;
@@ -185,6 +207,8 @@ export const subjects = {
         'trading.v1.balance_guaranteed_swap_tranche_notionals.delete',
     delete_many_balance_guaranteed_swap_tranche_notionals_request:
         'trading.v1.balance_guaranteed_swap_tranche_notionals.delete_many',
+    list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request:
+        'trading.v1.balance_guaranteed_swap_tranche_notionals.list_by_trade_id',
     list_balance_guaranteed_swap_tranche_notional_versions_request:
         'trading.v1.balance_guaranteed_swap_tranche_notionals_versions.list',
     get_balance_guaranteed_swap_tranche_notional_version_request:
@@ -203,6 +227,7 @@ export const requiresSession = {
     put_many_balance_guaranteed_swap_tranche_notionals_request: true,
     delete_balance_guaranteed_swap_tranche_notional_request: true,
     delete_many_balance_guaranteed_swap_tranche_notionals_request: true,
+    list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request: true,
     list_balance_guaranteed_swap_tranche_notional_versions_request: true,
     get_balance_guaranteed_swap_tranche_notional_version_request: true,
 } as const;

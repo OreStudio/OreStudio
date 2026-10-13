@@ -95,6 +95,9 @@ public:
     messaging::delete_many_equity_position_option_underlyings_response
     delete_many_equity_position_option_underlyings(
         const messaging::delete_many_equity_position_option_underlyings_request& request);
+    messaging::list_by_trade_id_equity_position_option_underlyings_response
+    list_by_trade_id_equity_position_option_underlyings(
+        const messaging::list_by_trade_id_equity_position_option_underlyings_request& request);
     messaging::list_equity_position_option_underlying_versions_response
     list_equity_position_option_underlying_versions(
         const messaging::list_equity_position_option_underlying_versions_request& request);
@@ -119,6 +122,29 @@ public:
      * @return Total number of active equity position option underlyings.
      */
     std::uint32_t count_equity_position_option_underlyings();
+
+
+    /**
+     * @brief Lists equity position option underlyings filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching equity position option underlyings for the requested page.
+     */
+    std::vector<domain::equity_position_option_underlying>
+    list_equity_position_option_underlyings_by_trade_id(const std::string& trade_id,
+                                                        std::uint32_t offset,
+                                                        std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active equity position option underlyings filtered by
+     * trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching equity position option underlyings.
+     */
+    std::uint32_t count_equity_position_option_underlyings_by_trade_id(const std::string& trade_id);
 
 
     /**

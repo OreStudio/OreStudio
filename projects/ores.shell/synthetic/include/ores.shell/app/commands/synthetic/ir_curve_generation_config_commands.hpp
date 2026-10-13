@@ -90,7 +90,7 @@ public:
      * @brief add <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
      * <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date>
      * <vintage_series_uri> <description> <fixed_leg_payment_frequency_code> <source_name>
-     * <folder_id> <reason> <commentary>
+     * <folder_id> <asset_class_code> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -100,7 +100,7 @@ public:
      * @brief set <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
      * <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date>
      * <vintage_series_uri> <description> <fixed_leg_payment_frequency_code> <source_name>
-     * <folder_id> <reason> <commentary> [--version <n>]
+     * <folder_id> <asset_class_code> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -110,7 +110,7 @@ public:
      * @brief put-many --count <n> <id> <config_id> <currency_code> <index_family> <tenor> <role>
      * <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source>
      * <vintage_date> <vintage_series_uri> <description> <fixed_leg_payment_frequency_code>
-     * <source_name> <folder_id> <reason> <commentary>
+     * <source_name> <folder_id> <asset_class_code> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

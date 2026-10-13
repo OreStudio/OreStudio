@@ -286,6 +286,22 @@ follow-up work.
 std::nullopt
 #+end_src
 
+** asset_class_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "fx"
+:END:
+
+The asset class the feed belongs to (soft FK to =asset_class_code.code=):
+Every FX spot feed is =fx=. A screen filters the feeds by it. The catalogue
+=ores.refdata.asset_class_catalogue= declares the codes.
+
+#+begin_src cpp :name generator
+std::string("fx")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -323,6 +339,13 @@ std::nullopt
 :error_message: Invalid folder_id: %. No active folder found with this id.
 :nullable:      true
 :END:
+
+* Insert trigger
+** Validations
+
+| column           | validation_function                       |
+|------------------+-------------------------------------------|
+| asset_class_code | ores_refdata_validate_asset_class_code_fn |
 
 * Validation function
 :PROPERTIES:

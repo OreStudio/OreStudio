@@ -358,14 +358,12 @@ first or the header unit would drop data.
 
 ** Open questions
 
-- *Two sets of option rows on one trade.* The agreement's underlying can be a
-  callable swap, which has its own =instrument_options= rows. The index option
-  writes an option row on the same trade, which the shared table keys by the
-  trade. The design does not yet say how an underlying's option is told apart
-  from the trade's own. Unit 6 settles it: either a group or role column on
-  =instrument_options=, or a rule that a trade holds one of the two. The
-  corpus holds an agreement on a callable swap and an index option, never both
-  on one trade, so the rule is a safe default.
+- *Two sets of option rows on one trade (settled in unit 7).* The agreement's
+  underlying can be a callable swap, which has its own option rows, and the
+  index option writes an option row on the same trade. The agreement has no
+  option of its own and the index option has no underlying, so a trade holds one
+  option block: for an agreement it is the underlying's and for an index option
+  it is the trade's own. No group or role column is needed.
 
 * Decisions
 

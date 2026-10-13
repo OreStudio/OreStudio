@@ -60,6 +60,15 @@ export interface BadgeMappingsFilter {
     code_domain_code_one_of: string[] | null;
 }
 
+export interface BadgeMappingEvent {
+    event_id: string;
+    key: BadgeMappingKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListBadgeMappingsRequest {
     offset: number;
     limit: number;

@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class_json_io.hpp" // IWYU pragma: keep.
@@ -342,6 +343,53 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active asset classes count by asset_class: " << count;
     return count;
+}
+
+std::vector<market_series_asset_class_history_row>
+market_series_asset_class_repository::read_all_by_series(
+    const boost::uuids::uuid& market_series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the asset classes. Series: "
+                               << market_series_id;
+
+    const auto market_series_id_str = boost::uuids::to_string(market_series_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
+                       where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str) |
+                       order_by("asset_class_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<market_series_asset_class_entity,
+                              market_series_asset_class_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<market_series_asset_class_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                market_series_asset_class_history_row row;
+                row.link = market_series_asset_class_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced =
+                    !rows.empty() &&
+                    rows.back().link.asset_class_code == row.link.asset_class_code &&
+                    rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the asset classes by series.");
 }
 
 void market_series_asset_class_repository::remove(const boost::uuids::uuid& market_series_id,

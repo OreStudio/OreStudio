@@ -716,6 +716,12 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_synthetic_place_feed_in_folder_fn",
+      "file": "projects/ores.sql/create/synthetic/synthetic_feed_placement_create.sql",
+      "reason": "places a feed that names no folder in the folder tree the screens list it under, making the missing folders as it goes; the placement must share the inserting transaction, so a before-insert trigger writes the folders rather than a repository call"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_variability_system_settings_set_fn",
       "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
       "reason": "predates the check"

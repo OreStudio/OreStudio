@@ -57,6 +57,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:D66FEF0D-C8BC-46C5-9DB3-F9555BA25718][Keep the token of a party switch in the shell]] | DONE | 2026-10-13 | 2026-10-13 | The shell keeps the token that select-party and switch-party return, so later commands run in the chosen party, and the grid soak spreads its work across the parties of a tenant. |
 | [[id:236153F4-4708-4205-BA5E-2BC938A3ABEA][Spread the soak by party and draw the outcomes]] | DONE | 2026-10-13 | 2026-10-13 | Each soak wave is shared out among the parties of the sender's tenant, and the Usage tab draws a pie of how the finished results ended. |
 | [[id:DD432150-81CD-4D91-AF2E-D0F26A06F912][Let the system party see every party's grid work]] | DONE | 2026-10-13 | 2026-10-13 | A session in the tenant's system party sees the compute work of every party of the tenant, and every other party sees only its own. |
+| [[id:28C3DC0E-5143-4489-864B-CBDC46AD2B41][Let a table's repository write its own table]] | DONE | 2026-10-13 | 2026-10-13 | The entity-table write check lets a hand-written repository write the table it is named for, so the work ledger and work tenants repositories no longer fail it. |
 
 * Findings
 

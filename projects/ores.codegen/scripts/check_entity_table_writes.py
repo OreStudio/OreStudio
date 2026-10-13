@@ -11,7 +11,13 @@ Two kinds of writer are found:
 * A SQL function whose body runs DML against an entity table.
 * A hand-written C++ file whose source contains DML against an entity table.
 
-Two exception classes are honoured:
+Three exception classes are honoured:
+
+* A hand-written repository of a table that has no entity model. The file is named
+  ``<name>_repository`` and every table it writes is ``ores_<component>_<name>_tbl``, or
+  the plural of the name. The repository is where the write belongs, and a table such as
+  the compute work ledger is not an entity, so no generated repository exists for it. A
+  file that writes any other table is still a writer.
 
 * The sanctioned purge, ``ores_iam_purge_*``, which deletes across the
   component tables on purpose.
@@ -101,12 +107,32 @@ def cpp_files():
         yield path
 
 
+def is_own_repository(path: Path, tables: set[str]) -> bool:
+    """Whether a file is the hand-written repository of every table it writes.
+
+    The file is named ``<name>_repository`` and each table is ``ores_<component>_<name>_tbl``,
+    with the name in the singular or the plural. A repository that also writes a table of
+    another name is not exempt, because the write to the other table bypasses its repository.
+    """
+    stem = path.stem
+    if not stem.endswith("_repository"):
+        return False
+    name = stem[: -len("_repository")]
+    if not name:
+        return False
+    for table in tables:
+        if not re.fullmatch(rf"ores_[a-z0-9]+_{re.escape(name)}s?_tbl", table):
+            return False
+    return True
+
+
 def cpp_writers():
     """Every hand-written C++ file that writes an entity table in raw SQL."""
     found = []
     for path in cpp_files():
         text = path.read_text(encoding="utf-8", errors="ignore")
-        if DML.search(text):
+        tables = {m.group(2).lower() for m in DML.finditer(text)}
+        if tables and not is_own_repository(path, tables):
             found.append(
                 {
                     "kind": "cpp",

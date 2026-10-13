@@ -19,12 +19,6 @@
       "reason": "predates the check"
     },
     {
-      "kind": "cpp",
-      "name": "",
-      "file": "projects/ores.scheduler/core/src/repository/job_instance_repository.cpp",
-      "reason": "predates the check"
-    },
-    {
       "kind": "sql_function",
       "name": "ores_assets_publish_images_from_dq_fn",
       "file": "projects/ores.sql/create/assets/assets_publish_from_dq_create.sql",

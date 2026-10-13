@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The seed profile tables state who reads and who writes them, in policy.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F18D3B6-3C61-4208-8F74-EE7BB6A4C135][Close the IAM isolation gaps and review account visibility]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -83,3 +83,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The seed profile tables are isolated by policy, and the ignore file no longer excuses them.
+
+- Every tenant reads the profiles, because a tenant is provisioned from one. Only the system tenant writes them.
+- Before the policy, a tenant session removed every profile. The delete rule runs with the owner's rights, so the policy alone did not stop it. The template now states the system tenant limit in the rule of an entity with system scope.
+- The tenant model is not changed. It is visible to the system tenant and already has its own limit.
+- =iam_seed_profiles_policy_test.sql= has 8 assertions and passes. The test failed before the rule change.

@@ -434,8 +434,10 @@ with check (
 -- -----------------------------------------------------------------------------
 -- The platform's own configuration. The models state :system_scope:, so every
 -- row belongs to the system tenant and every tenant may read it, because a
--- tenant is provisioned from a profile. Only the system tenant writes it. This
--- is the shared-reference shape: one policy per command, because a single
+-- tenant is provisioned from a profile. Only the system tenant writes it, which
+-- a write confined to the session's own tenant states, because the insert
+-- trigger pins every row to the system tenant. This is the shared-reference
+-- shape: one policy per command, because a single
 -- `for all` policy would let a tenant change or remove a profile.
 
 alter table ores_iam_seed_profiles_tbl enable row level security;
@@ -452,20 +454,20 @@ for select using (
 
 create policy seed_profile_insert_policy on ores_iam_seed_profiles_tbl
 for insert with check (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 create policy seed_profile_update_policy on ores_iam_seed_profiles_tbl
 for update using (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 )
 with check (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 create policy seed_profile_delete_policy on ores_iam_seed_profiles_tbl
 for delete using (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 alter table ores_iam_seed_profile_steps_tbl enable row level security;
@@ -482,20 +484,20 @@ for select using (
 
 create policy seed_profile_step_insert_policy on ores_iam_seed_profile_steps_tbl
 for insert with check (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 create policy seed_profile_step_update_policy on ores_iam_seed_profile_steps_tbl
 for update using (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 )
 with check (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 create policy seed_profile_step_delete_policy on ores_iam_seed_profile_steps_tbl
 for delete using (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 alter table ores_iam_seed_profile_parameters_tbl enable row level security;
@@ -512,18 +514,18 @@ for select using (
 
 create policy seed_profile_parameter_insert_policy on ores_iam_seed_profile_parameters_tbl
 for insert with check (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 create policy seed_profile_parameter_update_policy on ores_iam_seed_profile_parameters_tbl
 for update using (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 )
 with check (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 create policy seed_profile_parameter_delete_policy on ores_iam_seed_profile_parameters_tbl
 for delete using (
-    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

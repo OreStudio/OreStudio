@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 3B285F34-0AD5-4E09-A897-0E88FB568130
+:END:
+#+title: Story: Plot a surface as a heatmap and slices
+#+description: A person who reads a two-axis surface on the evolution screen sees only a table of numbers. Draw the grid as a heatmap and as one line for each value of the first axis, from the snapshot the screen already reads.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who reads a surface on the evolution screen sees its shape at once: a heatmap of the first axis against the second, and one line for each value of the first axis across the second. A hole is drawn as empty. The plot needs no server change, because the snapshot already returns the whole grid.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- A surface with two axes shows a heatmap with the first axis down the side and the second across the top, in the order the shape declares them.
+- A hole in the grid is drawn as empty and never as the lowest colour.
+- The person can choose the colour scale: the whole surface, or each column.
+- One line is drawn for each value of the first axis across the second axis, in the declared order, and a hole breaks the line.
+- A shape with one axis keeps the existing chart, and a shape with more than two axes says it is not drawn.
+- The words say slice and not smile, and the screen does not convert risk-reversal or butterfly quotes to strikes.
+- The plot works in English, French and Portuguese.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C6F4E36B-5038-4A6F-8333-1CA2287D4DB0][Build the surface view model]] | DONE | 2026-10-13 | 2026-10-13 | Turn a snapshot into the rows, columns, cells and colour scales of a two-axis plot, in a pure module with tests. |
+| [[id:AAB39952-F685-45AF-9A35-2F731D284222][Draw the surface on the evolution screen]] | BACKLOG | | | Add a surface panel with the heatmap, the slice lines and the colour scale choice to the evolution screen, in three languages. |
+
+* Decisions
+
+- The plot reads the snapshot the screen already holds, so it adds no server call and no wire change.
+- The lines are called slices. The demo surfaces hold ATM, 25RR and 25BF on the strike axis. These are quotes in market convention and not points on a smile, so a line across them is not a smile.
+
+* Out of scope
+
+- The calendar and butterfly arbitrage checks of the surface slices journey. They need new server checks, and they are captured as =check_a_surface_for_calendar_and_butterfly_arbitrage=.
+- A 3D view, which needs a charting library.
+- A conversion of risk-reversal and butterfly quotes to strikes.

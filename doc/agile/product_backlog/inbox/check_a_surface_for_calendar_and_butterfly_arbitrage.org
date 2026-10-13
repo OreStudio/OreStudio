@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 54478DD6-5A3F-47E1-9326-7611EB32428A
+:END:
+#+title: The surface slices journey ends with two checks: calendar ar…
+#+description: The surface slices journey ends with two checks: calendar arbitrage (total variance must not fall as expiry grows at a fixed strike) and butterfly arbitrage (the density implied by each smile must not be negative). No server operation returns total variance along an expiry axis or an implied density, so the screen can only say the checks are absent. Add the two checks as server reads over a surface, and show their result under the surface plot. Needs a decision first on which axis conventions are supported: the demo surfaces hold ATM, 25RR and 25BF, which are not strikes, so the checks need a strike or delta axis or a conversion.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

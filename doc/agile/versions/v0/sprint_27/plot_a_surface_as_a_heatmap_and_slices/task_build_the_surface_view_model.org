@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: C6F4E36B-5038-4A6F-8333-1CA2287D4DB0
+:END:
+#+title: Task: Build the surface view model
+#+description: Turn a snapshot into the rows, columns, cells and colour scales of a two-axis plot, in a pure module with tests.
+#+type: task
+#+level: s1
+#+filetags: :plot_a_surface_as_a_heatmap_and_slices:sprint_27:v0:
+#+owner: marco
+#+branch: feature/plot-a-surface-as-a-heatmap-and-slices
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B285F34-0AD5-4E09-A897-0E88FB568130][Plot a surface as a heatmap and slices]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A snapshot of a two-axis shape becomes a grid of rows, columns and cells with a colour for each value and an empty cell for each hole, ready to draw.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3B285F34-0AD5-4E09-A897-0E88FB568130][Plot a surface as a heatmap and slices]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The rows and columns follow the order the shape declares and the cells hold the snapshot values.
+- A hole is an empty cell, never a value of zero.
+- The colour scale can span the whole surface or each column, and a column or surface of equal values has one colour.
+- A shape with one axis, or more than two, is reported as not drawn.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=market/surfaceView.ts= turns a snapshot with two axes into a surface: the rows, the columns and the cells, with each cell's text, number and shade. =slicesOf= gives one line for each row as runs that a hole ends.
+
+Acceptance met, with 12 tests in =surfaceView.test.ts=:
+- The rows and columns follow the declared order, and the cells hold the snapshot values.
+- A hole, and a value that is no number, is an empty cell with no number and no shade.
+- The shade can span the whole surface or each column. A group of equal values, a column with one value, and a flat surface sit in the middle. A column of only holes has no shade.
+- A shape with one axis, or more than two, is refused as =axes=, and a surface with no node as =empty=.
+
+The module is pure. It draws nothing and adds no server call.

@@ -8,7 +8,7 @@
 #+filetags: :fix-the-tenor-basis-swap-convention-model:sprint_28:v0:
 #+owner: marco
 #+branch: feature/scaffold-the-tenor-basis-swap-convention-model-story
-#+pr:
+#+pr: 3278
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3278][#3278]] | [agile] Scaffold the tenor basis swap convention model story |
 
 * Review
 

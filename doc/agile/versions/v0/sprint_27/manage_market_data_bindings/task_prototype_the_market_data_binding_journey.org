@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 92CF062B-25A9-44B2-9B9B-FDB14E12BEA9
+:END:
+#+title: Task: Prototype the market data binding journey
+#+description: Build a clickable prototype of the binding journey, with a variant for synthetic data and a variant for real data that is marked as not supported, and get it signed off before any screen is built.
+#+type: task
+#+level: s1
+#+filetags: :manage_market_data_bindings:sprint_27:v0:
+#+owner: marco
+#+branch: feature/prototype-the-market-data-binding-journey
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The prototype argues what the binding screen shows and does: the list of bindings, the source and the series behind each, the last tick, the enabled state, bind and rebind, and start and stop. It has a synthetic scenario, which a person can follow to the end, and a real data scenario, which shows how a vendor binding would look and says that real feeds are not supported, so the design holds both and no screen offers to connect a real feed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The prototype lives under doc/prototypes with a design note, has variants, and has states for all, quiet and disabled bindings.
+- A synthetic scenario runs from the list to a bound, running feed.
+- A real data scenario shows a vendor binding and says in words that real feeds are not supported.
+- Marco signs the prototype off before the screen task starts.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

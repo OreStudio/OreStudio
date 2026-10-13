@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 059F5F7F-D4B7-4861-9C77-EA4B7143C22D
+:END:
+#+title: Task: Build the market data binding screen
+#+description: Build the screen the signed-off prototype shows. Its tasks are cut after the prototype is signed off.
+#+type: task
+#+level: s1
+#+filetags: :manage_market_data_bindings:sprint_27:v0:
+#+owner: marco
+#+branch: feature/build-the-market-data-binding-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The screen follows the prototype. It lists the bindings with their source, the series behind each and the last tick, and lets a person bind, rebind, enable, disable, start and stop for synthetic data. Real data stays a shown and unsupported case. The task is split into server and web tasks once the prototype is signed off.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The screen matches the signed-off prototype.
+- A synthetic binding is listed, bound, rebound, enabled, disabled, started and stopped from the screen.
+- A real data binding is shown and marked as not supported, and no control connects a real feed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

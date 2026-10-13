@@ -21,11 +21,11 @@ Every IAM table that holds data has a model, so the drift check covers it and no
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -56,4 +56,16 @@ Every IAM table that holds data has a model, so the drift check covers it and no
 
 * Out of scope
 
--
+- Row-level security on =auth_events= and =run_token_issues=. Modelling them kept their schema as it was, so the finding has its own capture.
+- Change events and a history for the fifteen junctions that state neither.
+- The party page watching its links.
+
+* Result
+
+Every IAM table that holds data has a model, so the drift check covers it and no table is written by hand.
+
+- =account_role= and =role_permission= are junction models with a history. =auth_event=, =run_token_issue= and =session_sample= are hypertable entity models, with the auth event aggregates as SQL paste blocks.
+- The hand-written recorders and counts that the generated reads cannot express remain, under names that say what they are.
+- A junction that states =:events: true= announces its changes. Six junctions state it, and the person page watches the roles and party links of its account instead of reloading itself.
+- A closed link records who closed it, and the timeline shows the closer as the author of the Closed entry.
+- Merged in PR #3212. The IAM, refdata link, shell, pgTAP, codegen and web suites passed, and the drift checks for iam, iam-cpp, shell and refdata were clean. The person page was checked in the browser.

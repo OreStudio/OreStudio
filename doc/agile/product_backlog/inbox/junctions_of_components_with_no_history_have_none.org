@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 20B2648F-FA94-4C4F-928F-BE1EC45AEB4D
+:END:
+#+title: The junctions of assets, compute and reporting have no history
+#+description: Three junctions state neither a history nor change events, because their components serve no generic history: the assets image tag, the compute app version platform and the reporting report type configuration type. A link that is closed there is a row whose end is in the past, with nobody able to read it back. The components need a history dispatch and a registrar, as iam, refdata, dq, inbox and marketdata have, and then each junction can state :history: true. Composing change events in the same components is a second step, since assets, compute, inbox, marketdata and reporting compose none today.
+#+type: capture
+#+level: cross
+#+filetags: :history:junction:codegen:assets:compute:reporting:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

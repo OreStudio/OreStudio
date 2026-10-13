@@ -3660,7 +3660,7 @@ export const en: SourceCatalogue = {
         synthetic: {
             title: 'Synthetic',
             lead: 'The market data the platform generates rather than receives: what runs by provider, and every feed in a tree.',
-            tabs: { dashboard: 'Dashboard', tree: 'Feed tree' },
+            tabs: { dashboard: 'Dashboard', tree: 'Feeds' },
             state: {
                 running: 'Running',
                 stopped: 'Stopped',

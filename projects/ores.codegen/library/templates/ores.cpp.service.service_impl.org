@@ -73,6 +73,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.has_as_of_lookup}}
 #include "ores.database/repository/valid_at.hpp"
 {{/domain_entity.has_as_of_lookup}}
+{{#domain_entity.has_range_filter}}
+#include "ores.database/repository/range_bound.hpp"
+{{/domain_entity.has_range_filter}}
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -241,6 +244,17 @@ messaging::{{response}}
         return response;
     }
 {{/is_one_of}}
+{{#is_range}}
+    if (request.filter && request.filter->{{member}} &&
+        !ores::database::repository::range_bound(
+            *request.filter->{{member}},
+            ores::database::repository::range_end::{{#is_from}}from{{/is_from}}{{#is_to}}to{{/is_to}},
+            {{#is_timestamp}}true{{/is_timestamp}}{{^is_timestamp}}false{{/is_timestamp}})) {
+        response.result = refuse(outcome_code::filter_range_invalid,
+                                 {.field = "{{member}}", .value = *request.filter->{{member}}});
+        return response;
+    }
+{{/is_range}}
 {{/domain_entity.filter_members}}
 {{#domain_entity.has_search}}
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {
@@ -300,6 +314,17 @@ messaging::{{response}}
         return response;
     }
 {{/is_one_of}}
+{{#is_range}}
+    if (request.filter && request.filter->{{member}} &&
+        !ores::database::repository::range_bound(
+            *request.filter->{{member}},
+            ores::database::repository::range_end::{{#is_from}}from{{/is_from}}{{#is_to}}to{{/is_to}},
+            {{#is_timestamp}}true{{/is_timestamp}}{{^is_timestamp}}false{{/is_timestamp}})) {
+        response.result = refuse(outcome_code::filter_range_invalid,
+                                 {.field = "{{member}}", .value = *request.filter->{{member}}});
+        return response;
+    }
+{{/is_range}}
 {{/domain_entity.filter_members}}
 {{#domain_entity.has_search}}
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {

@@ -251,6 +251,20 @@ A read states an as-of instant it cannot parse as a UTC timestamp.
 The as-of time {value} is not a valid instant.
 #+end_src
 
+** filter_range_invalid
+:PROPERTIES:
+:code: filter_range_invalid
+:outcome: invalid
+:producer: request
+:args: field, value
+:END:
+
+A filter states a bound of a range that is neither a date nor a UTC timestamp.
+
+#+begin_src text :name message
+The bound {value} of {field} is not a valid date or time.
+#+end_src
+
 ** scope_not_supported
 :PROPERTIES:
 :code: scope_not_supported

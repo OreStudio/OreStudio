@@ -53,6 +53,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/list_filter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/mapper_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/ores.database.repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/range_bound.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/repository_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/stated_order.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/unit_of_work.hpp"

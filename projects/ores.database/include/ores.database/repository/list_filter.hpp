@@ -20,10 +20,13 @@
 #ifndef ORES_DATABASE_REPOSITORY_LIST_FILTER_HPP
 #define ORES_DATABASE_REPOSITORY_LIST_FILTER_HPP
 
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <concepts>
 #include <cstdint>
+#include <cstdio>
 #include <initializer_list>
 #include <optional>
 #include <sqlgen/postgres.hpp>
@@ -55,6 +58,27 @@ template <std::integral T>
     requires(!std::same_as<T, bool>)
 sqlgen::dynamic::Value filter_value(T v) {
     return {.val = sqlgen::dynamic::Integer{.val = static_cast<std::int64_t>(v)}};
+}
+
+/**
+ * @brief A date is compared as its ISO text, which the database reads as a date.
+ */
+inline sqlgen::dynamic::Value filter_value(const std::chrono::year_month_day& v) {
+    char text[16];
+    std::snprintf(text,
+                  sizeof text,
+                  "%04d-%02u-%02u",
+                  static_cast<int>(v.year()),
+                  static_cast<unsigned>(v.month()),
+                  static_cast<unsigned>(v.day()));
+    return filter_value(std::string(text));
+}
+
+/**
+ * @brief A timestamp is compared as the UTC text the database stores it as.
+ */
+inline sqlgen::dynamic::Value filter_value(const std::chrono::system_clock::time_point& v) {
+    return filter_value(ores::platform::time::datetime::to_db_string(v));
 }
 
 /**
@@ -108,6 +132,24 @@ inline sqlgen::dynamic::Condition either(sqlgen::dynamic::Condition a,
 inline sqlgen::dynamic::Condition equals(const std::string& column, sqlgen::dynamic::Value v) {
     return {.val = sqlgen::dynamic::Condition::Equal{.op1 = detail::column(column),
                                                      .op2 = detail::value(std::move(v))}};
+}
+
+/**
+ * @brief A row matches when its column is not before the value.
+ *
+ * A null column is before nothing and after nothing, so it matches no range.
+ */
+inline sqlgen::dynamic::Condition at_least(const std::string& column, sqlgen::dynamic::Value v) {
+    return {.val = sqlgen::dynamic::Condition::GreaterEqual{.op1 = detail::column(column),
+                                                            .op2 = detail::value(std::move(v))}};
+}
+
+/**
+ * @brief A row matches when its column is not after the value.
+ */
+inline sqlgen::dynamic::Condition at_most(const std::string& column, sqlgen::dynamic::Value v) {
+    return {.val = sqlgen::dynamic::Condition::LesserEqual{.op1 = detail::column(column),
+                                                           .op2 = detail::value(std::move(v))}};
 }
 
 /**

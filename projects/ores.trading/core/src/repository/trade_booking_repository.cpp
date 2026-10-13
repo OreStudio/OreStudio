@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/list_filter.hpp"
+#include "ores.database/repository/range_bound.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -101,11 +102,59 @@ filter_condition(const std::optional<messaging::trade_bookings_filter>& filter) 
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->trade_date)
+        r.push_back(*filter->trade_date ? equals("trade_date", filter_value(**filter->trade_date)) :
+                                          is_null("trade_date"));
+    if (filter->execution_timestamp)
+        r.push_back(*filter->execution_timestamp ?
+                        equals("execution_timestamp", filter_value(**filter->execution_timestamp)) :
+                        is_null("execution_timestamp"));
     if (filter->trade_id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->trade_id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("trade_id", std::move(values)));
+    }
+    if (filter->trade_date_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->trade_date_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("trade_date", std::move(values)));
+    }
+    if (filter->execution_timestamp_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->execution_timestamp_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("execution_timestamp", std::move(values)));
+    }
+    if (filter->trade_date_from) {
+        const auto bound = range_bound(*filter->trade_date_from, range_end::from, false);
+        if (!bound)
+            throw std::invalid_argument("The bound " + *filter->trade_date_from +
+                                        " of trade_date_from is not a valid date or time.");
+        r.push_back(at_least("trade_date", filter_value(*bound)));
+    }
+    if (filter->trade_date_to) {
+        const auto bound = range_bound(*filter->trade_date_to, range_end::to, false);
+        if (!bound)
+            throw std::invalid_argument("The bound " + *filter->trade_date_to +
+                                        " of trade_date_to is not a valid date or time.");
+        r.push_back(at_most("trade_date", filter_value(*bound)));
+    }
+    if (filter->execution_timestamp_from) {
+        const auto bound = range_bound(*filter->execution_timestamp_from, range_end::from, true);
+        if (!bound)
+            throw std::invalid_argument(
+                "The bound " + *filter->execution_timestamp_from +
+                " of execution_timestamp_from is not a valid date or time.");
+        r.push_back(at_least("execution_timestamp", filter_value(*bound)));
+    }
+    if (filter->execution_timestamp_to) {
+        const auto bound = range_bound(*filter->execution_timestamp_to, range_end::to, true);
+        if (!bound)
+            throw std::invalid_argument("The bound " + *filter->execution_timestamp_to +
+                                        " of execution_timestamp_to is not a valid date or time.");
+        r.push_back(at_most("execution_timestamp", filter_value(*bound)));
     }
     return all_of(std::move(r));
 }

@@ -8,7 +8,7 @@
 #+filetags: :synthetic:seeder:datasets:organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
 #+branch: feature/seed-provider-feeds
-#+pr:
+#+pr: 3254
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3254][#3254]] | [synthetic,sql,web] Seed the provider feeds as system collections |
 
 * Review
 

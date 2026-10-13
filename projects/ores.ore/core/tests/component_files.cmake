@@ -55,6 +55,7 @@ set(files
     "xml_composite_scripted_mapper_roundtrip_tests.cpp"
     "xml_conventions_roundtrip_tests.cpp"
     "xml_counterpartyinformation_roundtrip_tests.cpp"
+    "xml_credit_corpus_roundtrip_tests.cpp"
     "xml_credit_golden_roundtrip_tests.cpp"
     "xml_credit_mapper_roundtrip_tests.cpp"
     "xml_creditsimulation_mapper_roundtrip_tests.cpp"

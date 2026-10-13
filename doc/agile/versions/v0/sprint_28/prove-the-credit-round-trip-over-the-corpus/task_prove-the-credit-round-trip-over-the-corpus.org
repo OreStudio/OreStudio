@@ -26,11 +26,11 @@ Every credit trade of Example_Trades comes back as the same family rows, and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6A48161C-53AE-4F60-A7C4-8649C3653414][Prove the credit round trip over the corpus]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -41,9 +41,19 @@ Every credit trade of Example_Trades comes back as the same family rows, and the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Port the rates proof.* The credit proof walks =Example_Trades=, imports each
+   credit document, exports each trade as a document of its own, imports it
+   again and compares the family rows of the two imports. The rows are every
+   table the family writes: the header, the six facts, the basket, the legs and
+   their amounts and rates, the option rows and their children, the schedules and
+   the strikes.
+2. *Pin the corpus.* A document that stops importing drops out of the walk, so
+   the proof pins eight documents and eight trades.
+3. *Close the set of known differences.* The set is empty and fails in both
+   directions: a name that differs fails the suite, and a name listed that stops
+   differing fails it too.
+4. *Show it can fail.* Each trade must render a header row and a leg row, and a
+   control changes one stored field and expects the rendering to change.
 
 * Measurements
 
@@ -57,9 +67,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Credit documents and trades the proof walks | 8 documents, 8 trades | =ctest --preset linux-clang-debug-make -R ores.ore.core.tests= (the case "every credit trade in the corpus comes back as the same family rows") | the PR head |
+| Trades whose family rows change on the round trip | 0 | the same case; the set of known differences is empty | the PR head |
+| ORE core suite | 667 cases, 483,161 assertions, all pass | the same command | the PR head |
 
 * Notes
+
+- The proof passed on its first run, so it carries a control. Each trade has to
+  render a header row and a leg row, and a second case changes the recovery rate
+  of a credit default swap and expects the rendering to change.
+- The proof compares the family rows of two imports. It does not compare the
+  document text, so a spelling the table does not keep, such as =false= for a
+  flag, is not a difference.
+- The treasury lock of an agreement's underlying is not in the corpus, so the
+  proof does not cover it. The unit 7 task records the limit.
+- The proof needs a database only for the rest of the suite; it reads the
+  corpus and the mappers.
 
 * Test Scenarios
 
@@ -82,6 +105,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The proof could pass without comparing anything | xml_credit_corpus_roundtrip_tests.cpp | accept | Each trade must render a header and a leg row, and a control changes one field and expects a different rendering. |
 
 * Result
+
+Every credit trade of =Example_Trades= comes back as the same family rows. The
+proof walks eight documents with eight trades, pins both counts, and keeps a
+closed set of known differences that is empty. A control shows that a changed
+stored field changes the rendering, and each trade must hold a header row and a
+leg row.
+
+Acceptance met: the corpus test pins eight documents and eight trades, the set of
+known differences is empty, and the measurements carry their commands. This is
+the last unit of the credit rework.

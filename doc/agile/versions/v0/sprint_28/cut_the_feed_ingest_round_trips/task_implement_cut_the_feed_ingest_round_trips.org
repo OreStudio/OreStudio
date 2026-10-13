@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :cut_the_feed_ingest_round_trips:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/cut-the-feed-ingest-round-trips
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47945343-4077-428A-8ADA-CF13629395B3][Cut the feed ingest round trips]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Reduce the database round trips the feed ingest pays per stored tick, and prove 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47945343-4077-428A-8ADA-CF13629395B3][Cut the feed ingest round trips]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

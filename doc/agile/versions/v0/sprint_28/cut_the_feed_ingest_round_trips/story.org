@@ -37,8 +37,8 @@ Reduce the database round trips the feed ingest pays per stored tick, and prove 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C0C7E4E3-810D-44A6-A5AD-B2D98CBD4B44][Scaffold story: Cut the feed ingest round trips]] | STARTED | 2026-10-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:47720564-A6F1-4FCD-81A0-495794CB5168][Write the session context in one round trip]] | BACKLOG | | | Initial task for: Cut the feed ingest round trips |
+| [[id:C0C7E4E3-810D-44A6-A5AD-B2D98CBD4B44][Scaffold story: Cut the feed ingest round trips]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:47720564-A6F1-4FCD-81A0-495794CB5168][Write the session context in one round trip]] | STARTED | 2026-10-13 | | Initial task for: Cut the feed ingest round trips |
 
 * Decisions
 

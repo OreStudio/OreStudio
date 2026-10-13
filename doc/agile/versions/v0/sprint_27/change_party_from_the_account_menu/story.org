@@ -21,11 +21,11 @@ A person changes the party they act for from the account menu, without signing o
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-13                               |
 
 * Acceptance
@@ -43,6 +43,13 @@ A person changes the party they act for from the account menu, without signing o
 
 * Decisions
 
+- There is one way to choose a party: the =PartyChoice= widget the sign-in page draws. The account menu opens it in a dialog, and does not carry a list of its own.
+- A switch re-scopes the session and reads every screen again for the new party.
+
 * Out of scope
 
--
+- The Switch button on the Where I work page, which is a second way to change party and is left for a decision.
+
+* Result
+
+A person who works in several parties changes the party they act for from the account menu, without signing out. Merged in PR #3245, and checked in the browser.

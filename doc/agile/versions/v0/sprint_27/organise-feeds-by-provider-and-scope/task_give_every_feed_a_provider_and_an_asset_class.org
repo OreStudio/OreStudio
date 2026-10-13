@@ -94,8 +94,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 Every collection names a provider and every feed has an asset class. The ORE examples are the provider ORE. The feed table read pages and filters on the server by state, provider, asset class, folder and words, and returns what each row needs. One request starts or stops the feeds a filter or a list of ids names.
 
 Checked: the synthetic api suite (77 cases, 12 of them new for the filter), the synthetic core suite (43), the service suite (58, two new for the selection verbs), the shell and DQ suites, four pgTAP tests (publish with the asset class, scope, visibility, providers), and, as the Acme tenant administrator on a fresh database, the reads by provider, asset class, state and words, a start of the feeds that should run (54 started, none skipped, none left), a stop of a pick and a stop of a filter less one, and a refusal of a bad id and a bad state.

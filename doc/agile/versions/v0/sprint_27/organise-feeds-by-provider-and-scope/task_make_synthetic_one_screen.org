@@ -8,7 +8,7 @@
 #+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
 #+branch: feature/synthetic-screen
-#+pr: 3239
+#+pr: 3242
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -82,6 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3242][#3242]] | [agile] Keep one Result heading on the Synthetic tasks |
 | [[https://github.com/OreStudio/OreStudio/pull/3239][#3239]] | [synthetic,web] Make Synthetic one screen with a dashboard and a feed tree |
 
 * Review
@@ -95,8 +96,6 @@ via its "Verifies task" field.
 | 5 | Raw exception text goes to the client | feed_selection_handler.hpp | Fixed | Both new handlers log the cause and answer with a fixed sentence. |
 | 6 | State depends on a snapshot | feed_filter.hpp | Fixed | The header says why a stale answer does no harm. |
 | 7 | The cap message hard-codes 2000 | feed_filter.cpp | Fixed | It is built from the constant. |
-
-* Result
 
 * Result
 

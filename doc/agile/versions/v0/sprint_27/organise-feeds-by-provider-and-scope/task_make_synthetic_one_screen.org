@@ -98,8 +98,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 Synthetic is one screen at =/market-data/synthetic= with a Dashboard and a Feed tree. A feed opens at =/market-data/synthetic/fx/:id= or =/market-data/synthetic/ir/:id=, and its page is unchanged but for its trail. The old screens and their words are gone.
 
 Checked: 1440 web tests and 748 BFF tests, the type check, and the built screen served by the web service.

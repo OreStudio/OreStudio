@@ -45,6 +45,7 @@ Every IAM table that holds data has a model, so the drift check covers it and no
 | [[id:DD0CADA6-5F29-450D-BF25-9E3674EC13B0][Model auth_event]] | DONE | | 2026-10-13 | Generate the authentication audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
 | [[id:9A3B0B97-57CA-4D6A-A077-6CD5BD464937][Model run_token_issue]] | DONE | | 2026-10-13 | Generate the run-token audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
 | [[id:6598DC0C-5369-4EAC-AF3C-128192773747][Model session_sample]] | DONE | | 2026-10-13 | Generate the session telemetry table and move its callers to the generated code. |
+| [[id:75F62B26-0F66-4DD3-BEF2-97F5BBCFEBC7][Give junctions change events]] | STARTED | 2026-10-13 | | A junction states no change event, so a screen that shows its links never hears that one changed. The person page reloads itself after a role is given, which the refresh rules forbid. A junction gets a notify trigger and an event like every other entity, and the screens that show links watch it. |
 
 * Decisions
 

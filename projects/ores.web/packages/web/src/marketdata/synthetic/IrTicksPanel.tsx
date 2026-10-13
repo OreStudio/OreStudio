@@ -21,13 +21,13 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { api, type RecordRow } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { show } from '../refdata/records.js';
-import { Button, Input, Notice, Tag } from '../ui/Primitives.js';
+import { api, type RecordRow } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { show } from '../../refdata/records.js';
+import { Button, Input, Notice, Tag } from '../../ui/Primitives.js';
 import { parameterLines, type ParameterLine } from './irCurve.js';
 import { curvesCsv, curvesOf, pillarsOf, slopeOf } from './irTicks.js';
-import { LineChart } from './LineChart.js';
+import { LineChart } from '../LineChart.js';
 import { instantOf } from './ticks.js';
 import { Stat, clock } from './TicksPanel.js';
 

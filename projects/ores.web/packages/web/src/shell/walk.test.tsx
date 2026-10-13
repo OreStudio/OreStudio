@@ -160,17 +160,10 @@ describe('walking every screen', () => {
             continue;
         }
         const screen = en(card.screenTitleKey ?? card.titleKey);
-        const folder = card.in === undefined ? undefined : cardOf(card.in as CardId);
         const expected =
             card.to === AREA_PAGE[area]
                 ? trail(nameOfArea(AREA_PAGE[area]))
-                : folder === undefined
-                  ? trail(nameOfArea(AREA_PAGE[area]), screen)
-                  : trail(
-                        nameOfArea(AREA_PAGE[area]),
-                        en(folder.screenTitleKey ?? folder.titleKey),
-                        screen,
-                    );
+                : trail(nameOfArea(AREA_PAGE[area]), screen);
 
         it(`gives ${card.to} the trail ${expected}`, () => {
             expect(trailAt(card.to)).toBe(expected);

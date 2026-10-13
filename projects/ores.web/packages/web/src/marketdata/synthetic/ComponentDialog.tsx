@@ -20,8 +20,8 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { Button, Dialog, Field, Input, Notice, Select } from '../../ui/Primitives.js';
 import { problemsOf, type DraftComponent } from './mixture.js';
 import { PROFILES, profileOf, type ProcessType, type Profile } from './processHelp.js';
 

@@ -24,12 +24,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
-import type { RecordRow, SyntheticResourceView } from '../api/client.js';
-import { TranslationProvider } from '../i18n/Provider.js';
-import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
-import { completeFeed, feedWrite, FxFeedPage, FxFeedsPage, syntheticSource } from './fxFeeds.js';
-import { MarketDataPage } from './MarketDataPage.js';
-import { SyntheticPage } from './SyntheticPage.js';
+import type { RecordRow, SyntheticResourceView } from '../../api/client.js';
+import { TranslationProvider } from '../../i18n/Provider.js';
+import { MarketDataPage } from '../MarketDataPage.js';
+import { completeFeed, feedWrite, FxFeedPage, syntheticSource } from './fxFeeds.js';
+import { SyntheticScreen } from './SyntheticScreen.js';
 
 const FEED_ID = '55555555-5555-4555-8555-555555555555';
 
@@ -112,9 +111,8 @@ function render(path: string, seed: (client: QueryClient) => void): string {
                 <MemoryRouter initialEntries={[path]}>
                     <Routes>
                         <Route path="/market-data" element={<MarketDataPage />} />
-                        <Route path="/market-data/synthetic" element={<SyntheticPage />} />
-                        <Route path="/market-data/fx-feeds" element={<FxFeedsPage />} />
-                        <Route path="/market-data/fx-feeds/:id" element={<FxFeedPage />} />
+                        <Route path="/market-data/synthetic" element={<SyntheticScreen />} />
+                        <Route path="/market-data/synthetic/fx/:id" element={<FxFeedPage />} />
                     </Routes>
                 </MemoryRouter>
             </TranslationProvider>
@@ -185,47 +183,33 @@ describe('the feed an engine change writes', () => {
 });
 
 describe('the market data area', () => {
-    it('offers the Synthetic folder to a person who reads the feeds', () => {
+    it('offers the Synthetic screen to a person who reads the feeds', () => {
         const html = render('/market-data', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('href="/market-data/synthetic"');
     });
 
-    it('offers the FX price feeds in the Synthetic folder to a person who reads them', () => {
+    it('draws the Synthetic screen with its dashboard and its feed tree', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('FX price feeds');
-        expect(html).toContain('href="/market-data/synthetic/fx-feeds"');
+        expect(html).toContain('>Dashboard<');
+        expect(html).toContain('>Feed tree<');
+        expect(html).not.toContain('FX price feeds');
     });
 
     it('draws no card for a person who does not', () => {
         const html = render('/market-data', (client) => {
             client.setQueryData(['my-access'], access(['refdata::currencies:read']));
         });
-        expect(html).not.toContain('FX price feeds');
+        expect(html).not.toContain('href="/market-data/synthetic"');
     });
 });
 
 describe('the FX feed screens', () => {
-    it('lists one page of feeds with the pair, the source name and the engine', () => {
-        const html = render('/market-data/fx-feeds', (client) => {
-            client.setQueryData(pageKey({ key: 'fx-feeds' }, FIRST_PAGE), {
-                rows: [feed],
-                total: 1,
-            });
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(html).toContain('EUR/USD');
-        expect(html).toContain('synthetic.eurusd');
-        expect(html).toContain('Geometric');
-        expect(html).toContain('>Add<');
-        expect(html).toContain('Search…');
-    });
-
     it('shows a feed with its fields and the ORE key, and Edit and Delete to a writer', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
@@ -241,7 +225,7 @@ describe('the FX feed screens', () => {
     });
 
     it('offers a reader no change', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['my-access'],
@@ -254,7 +238,7 @@ describe('the FX feed screens', () => {
     });
 
     it('draws the mixture with its weight sum and the distribution it implies', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['records', 'gmm-components', FEED_ID],
@@ -283,7 +267,7 @@ describe('the FX feed screens', () => {
     });
 
     it('asks the plain questions in Simple mode, once the server has read the mixture', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -322,7 +306,7 @@ describe('the FX feed screens', () => {
     });
 
     it('runs the trail of a feed through the feed tree, down to the folder that holds it', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
                 ...feed,
                 folder_id: 'i',
@@ -338,15 +322,14 @@ describe('the FX feed screens', () => {
             );
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('href="/market-data/synthetic/tree"');
-        expect(html).toContain('href="/market-data/synthetic/tree?node=folder%3Ab"');
-        expect(html).toContain('href="/market-data/synthetic/tree?node=folder%3Ai"');
+        expect(html).toContain('href="/market-data/synthetic?tab=tree"');
+        expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;node=folder%3Ab"');
+        expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;node=folder%3Ai"');
         expect(html.indexOf('>Bloomberg<')).toBeLessThan(html.indexOf('>Spot<'));
-        expect(html).not.toContain('href="/market-data/fx-feeds"');
     });
 
     it('says what a feed with no mixture lacks', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'gmm-components', FEED_ID], []);
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -355,41 +338,8 @@ describe('the FX feed screens', () => {
         expect(html).toContain('The mixture needs at least one component.');
     });
 
-    it('marks each feed running or stopped, and offers a writer start and stop for the chosen feeds', () => {
-        const html = render('/market-data/fx-feeds', (client) => {
-            client.setQueryData(pageKey({ key: 'fx-feeds' }, FIRST_PAGE), {
-                rows: [feed, { ...feed, id: 'other', source_name: 'synthetic.gbpusd' }],
-                total: 2,
-            });
-            client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(html).toContain('>Running<');
-        expect(html).toContain('>Stopped<');
-        expect(html).toContain('Choose synthetic.gbpusd');
-        expect(html).toContain('>Start<');
-        expect(html).toContain('>Stop<');
-    });
-
-    it('offers a reader the status but no start or stop', () => {
-        const html = render('/market-data/fx-feeds', (client) => {
-            client.setQueryData(pageKey({ key: 'fx-feeds' }, FIRST_PAGE), {
-                rows: [feed],
-                total: 1,
-            });
-            client.setQueryData(['synthetic-running'], []);
-            client.setQueryData(
-                ['my-access'],
-                access(['synthetic::fx_spot_generation_configs:read']),
-            );
-        });
-        expect(html).toContain('>Stopped<');
-        expect(html).not.toContain('>Start<');
-        expect(html).not.toContain('aria-label="Choose ');
-    });
-
     it('offers Stop on a running feed and Start on a stopped one', () => {
-        const running = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+        const running = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -397,7 +347,7 @@ describe('the FX feed screens', () => {
         expect(running).toContain('>Running<');
         expect(running).toContain('>Stop<');
         expect(running).toContain('EUR/USD · version 3 · Geometric');
-        const stopped = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+        const stopped = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], []);
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -407,7 +357,7 @@ describe('the FX feed screens', () => {
     });
 
     it('plots the last ticks with the last price and the move over them', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=ticks`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
             client.setQueryData(
@@ -451,7 +401,7 @@ describe('the FX feed screens', () => {
     });
 
     it('says a stopped feed must be started to show ticks', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=ticks`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], []);
             client.setQueryData(['feed-ticks', FEED_ID, 200], {
@@ -464,7 +414,7 @@ describe('the FX feed screens', () => {
     });
 
     it('explains the geometric engine and names the profile of each deviation', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['records', 'gmm-components', FEED_ID],
@@ -478,7 +428,7 @@ describe('the FX feed screens', () => {
     });
 
     it('warns that the arithmetic engine can take the price below zero', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
                 ...feed,
                 process_type: 'arithmetic',
@@ -491,7 +441,7 @@ describe('the FX feed screens', () => {
     });
 
     it('offers the engine on the mixture tab and not in the feed form', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -502,7 +452,7 @@ describe('the FX feed screens', () => {
     });
 
     it('reads a mean reverting mixture as κ and σ, with its half-life and band', () => {
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
                 ...feed,
                 process_type: 'ornstein_uhlenbeck',
@@ -535,7 +485,7 @@ describe('the FX feed screens', () => {
             ],
             changes: [],
         });
-        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=history`, (client) => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=history`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['records', 'gmm-components', FEED_ID],

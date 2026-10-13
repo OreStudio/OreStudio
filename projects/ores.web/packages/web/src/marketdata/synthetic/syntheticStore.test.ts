@@ -25,22 +25,34 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * A record screen reads its lists from the store it sits in, and the store
- * decides which service answers. A screen of the Synthetic folder that reads
- * records without the synthetic store asks the reference data service for them,
+ * decides which service answers. A tab of the Synthetic screen that reads
+ * records outside the synthetic store asks the reference data service for them,
  * which has no such resource. A static render never fetches, so the other tests
  * cannot see it; this one reads the source.
  */
-const SCREENS = ['FeedOverviewPage.tsx', 'FeedTreePage.tsx', 'FeedScreens.tsx'];
+function source(name: string): string {
+    return readFileSync(fileURLToPath(new URL(`./${name}`, import.meta.url)), 'utf8');
+}
 
-describe('the screens of the Synthetic folder', () => {
-    for (const name of SCREENS) {
-        it(`${name} reads its records from the synthetic store`, () => {
-            const source = readFileSync(
-                fileURLToPath(new URL(`./${name}`, import.meta.url)),
-                'utf8',
-            );
-            expect(source).toMatch(/useRecords\(|useRecordSource\(/);
-            expect(source).toContain('<RecordStoreProvider store={syntheticStore}>');
+describe('the screens of Synthetic', () => {
+    it('SyntheticScreen holds both tabs inside the synthetic store', () => {
+        const text = source('SyntheticScreen.tsx');
+        expect(text).toContain('<RecordStoreProvider store={syntheticStore}>');
+        expect(text).toContain('<DashboardTab />');
+        expect(text).toContain('<FeedTreeTab />');
+    });
+
+    for (const name of ['DashboardTab.tsx', 'FeedTreeTab.tsx']) {
+        it(`${name} reads records and leaves the store to the screen that holds it`, () => {
+            const text = source(name);
+            expect(text).toMatch(/useRecords\(/);
+            expect(text).not.toContain('RecordStoreProvider');
         });
     }
+
+    it('a feed page reads its records from the synthetic store', () => {
+        const text = source('FeedScreens.tsx');
+        expect(text).toMatch(/useRecords\(|useRecordSource\(/);
+        expect(text).toContain('<RecordStoreProvider store={syntheticStore}>');
+    });
 });

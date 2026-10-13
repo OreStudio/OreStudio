@@ -21,9 +21,8 @@
 
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { api, type RecordRow } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { RecordList, useRecordSource } from '../refdata/RecordList.js';
+import { api, type RecordRow } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
 import {
     RecordDetails,
     RecordDialog,
@@ -34,160 +33,16 @@ import {
     useRecordPermissions,
     useRecordTabs,
     useRecords,
-} from '../refdata/records.js';
-import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
-import { useAreaParts, useAreaRoot } from '../shell/AreaTrail.js';
-import { PATHS } from '../shell/paths.js';
-import { Button, Notice } from '../ui/Primitives.js';
+} from '../../refdata/records.js';
+import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
+import { useAreaRoot } from '../../shell/AreaTrail.js';
+import { PATHS } from '../../shell/paths.js';
+import { Button, Notice } from '../../ui/Primitives.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns, useRunningFeeds } from './feedRuns.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
-import { feedPath, type FeedKind } from './feedKind.js';
+import type { FeedKind } from './feedKind.js';
 import { folderChain, folderKey } from './feedTree.js';
 import { useSyntheticStep } from './syntheticTrail.js';
-
-/**
- * The feeds of the party, for one asset class: one page at a time, searched
- * and sorted on the server, with the choose-and-run controls. Every asset
- * class draws this; the kind states the columns and the fields.
- */
-export function FeedsPage({ kind }: { readonly kind: FeedKind }): ReactNode {
-    return (
-        <RecordStoreProvider store={syntheticStore}>
-            <FeedsList kind={kind} />
-        </RecordStoreProvider>
-    );
-}
-
-function FeedsList({ kind }: { readonly kind: FeedKind }): ReactNode {
-    const { t } = useTranslation();
-    const navigate = useNavigate();
-    const [adding, setAdding] = useState(false);
-    const source = useRecordSource(kind.resource);
-    const check = kind.useCheck();
-    const may = useRecordPermissions(kind.resource);
-    const running = useRunningFeeds();
-    const runs = useFeedRuns();
-    const [chosen, setChosen] = useState<ReadonlyMap<string, string>>(new Map());
-    const choose = (row: RecordRow, on: boolean): void => {
-        const next = new Map(chosen);
-        if (on) {
-            next.set(show(row['id']), show(row['source_name']));
-        } else {
-            next.delete(show(row['id']));
-        }
-        setChosen(next);
-    };
-    const run = (action: 'start' | 'stop'): void => {
-        runs.run(
-            action,
-            [...chosen].map(([id, label]) => ({ id, label })),
-        );
-        setChosen(new Map());
-    };
-    const words = `marketdata.${kind.words}`;
-    const trail = useAreaParts('marketdata', t(`${words}.title`), [useSyntheticStep()]);
-    return (
-        <>
-            {runs.outcome !== undefined && (
-                <Notice tone={runs.outcome.refused.length > 0 ? 'warn' : 'success'}>
-                    <RunOutcomeText outcome={runs.outcome} />
-                </Notice>
-            )}
-            <RecordList
-                source={source}
-                {...(may.write
-                    ? {
-                          actions: (
-                              <>
-                                  <Button
-                                      disabled={chosen.size === 0}
-                                      pending={runs.pending}
-                                      onClick={() => run('start')}
-                                  >
-                                      {t('marketdata.runs.start')}
-                                  </Button>
-                                  <Button
-                                      disabled={chosen.size === 0}
-                                      pending={runs.pending}
-                                      onClick={() => run('stop')}
-                                  >
-                                      {t('marketdata.runs.stop')}
-                                  </Button>
-                              </>
-                          ),
-                      }
-                    : {})}
-                title={t(`${words}.title`)}
-                lead={t(`${words}.lead`)}
-                crumbs={trail}
-                pathOf={(row) => feedPath(kind, show(row['id']))}
-                addLabel={t(`${words}.add`)}
-                onAdd={() => setAdding(true)}
-                columns={[
-                    ...(may.write
-                        ? [
-                              {
-                                  id: 'chosen',
-                                  header: t('marketdata.runs.choose'),
-                                  cell: (row: RecordRow) => (
-                                      <input
-                                          type="checkbox"
-                                          aria-label={t('marketdata.runs.chooseFeed', {
-                                              feed: show(row['source_name']),
-                                          })}
-                                          checked={chosen.has(show(row['id']))}
-                                          onChange={(event) => choose(row, event.target.checked)}
-                                      />
-                                  ),
-                              },
-                          ]
-                        : []),
-                    {
-                        id: 'status',
-                        header: t('marketdata.runs.status'),
-                        cell: (row) => (
-                            <FeedStatus running={running?.has(show(row['source_name']))} />
-                        ),
-                    },
-                    ...kind.columns(t),
-                    {
-                        id: 'enabled',
-                        header: t('refdata.fields.enabled'),
-                        cell: (row) =>
-                            row['enabled'] === true
-                                ? t('refdata.records.yes')
-                                : t('refdata.records.no'),
-                    },
-                    {
-                        id: 'auto_start',
-                        header: t('refdata.fields.auto_start'),
-                        cell: (row) =>
-                            row['auto_start'] === true
-                                ? t('refdata.records.yes')
-                                : t('refdata.records.no'),
-                        hidden: true,
-                    },
-                ]}
-            />
-            {adding && (
-                <RecordDialog
-                    title={t(`${words}.addTitle`)}
-                    resource={kind.resource}
-                    specs={kind.fields}
-                    row={undefined}
-                    given={{ id: crypto.randomUUID(), folder_id: null }}
-                    initial={kind.initial}
-                    complete={kind.complete}
-                    check={check}
-                    onClose={() => setAdding(false)}
-                    onSaved={(write) =>
-                        void navigate(`${feedPath(kind, show(write['id']))}?tab=${kind.afterAdd}`)
-                    }
-                />
-            )}
-        </>
-    );
-}
 
 /**
  * One feed: its fields, the kind's own tabs, and its history. Every asset
@@ -197,7 +52,11 @@ export function FeedPage({ kind }: { readonly kind: FeedKind }): ReactNode {
     const { id } = useParams();
     return (
         <RecordStoreProvider store={syntheticStore}>
-            <RecordGate resource={kind.resource} recordKey={id ?? ''} listPath={feedPath(kind)}>
+            <RecordGate
+                resource={kind.resource}
+                recordKey={id ?? ''}
+                listPath={`${PATHS.synthetic}?tab=tree`}
+            >
                 {(feed) => <FeedBody key={show(feed['id'])} kind={kind} feed={feed} />}
             </RecordGate>
         </RecordStoreProvider>
@@ -264,23 +123,18 @@ function FeedBody({
     return (
         <div className="space-y-4">
             <RecordHeader
-                crumbs={
-                    chain.length === 0
-                        ? [
-                              ...root,
-                              { label: t(`${words}.title`), to: feedPath(kind) },
-                              { label: name },
-                          ]
-                        : [
-                              ...root,
-                              { label: t('marketdata.feedTree.title'), to: PATHS.feedTree },
-                              ...chain.map((row) => ({
-                                  label: row.name,
-                                  to: `${PATHS.feedTree}?node=${encodeURIComponent(folderKey(row.id))}`,
-                              })),
-                              { label: name },
-                          ]
-                }
+                crumbs={[
+                    ...root,
+                    {
+                        label: t('marketdata.synthetic.tabs.tree'),
+                        to: `${PATHS.synthetic}?tab=tree`,
+                    },
+                    ...chain.map((row) => ({
+                        label: row.name,
+                        to: `${PATHS.synthetic}?tab=tree&node=${encodeURIComponent(folderKey(row.id))}`,
+                    })),
+                    { label: name },
+                ]}
                 title={show(feed['source_name'])}
                 recordKey={name}
                 version={feed.version}
@@ -377,7 +231,7 @@ function FeedBody({
                         }
                     }}
                     onClose={() => setRemoving(false)}
-                    onRemoved={() => void navigate(feedPath(kind))}
+                    onRemoved={() => void navigate(`${PATHS.synthetic}?tab=tree`)}
                 />
             )}
         </div>

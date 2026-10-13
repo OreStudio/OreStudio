@@ -21,10 +21,10 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { api } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
+import { api } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
 import { type Gaussian } from './mixture.js';
-import { toast } from '../ui/Toasts.js';
+import { toast } from '../../ui/Toasts.js';
 import { Answer, Presets, differs } from './SimpleControls.js';
 
 /** The questions of the simple view of an FX feed. Every figure is per hour. */

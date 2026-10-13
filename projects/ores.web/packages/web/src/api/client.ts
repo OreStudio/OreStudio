@@ -325,12 +325,12 @@ const feedFolderSchema = z.object({
     parent_id: z.string(),
     name: z.string(),
     kind: z.string(),
-    scope: z.string(),
     provider_code: z.string(),
     binding_mode: z.string(),
     fx_feeds: z.number(),
     ir_feeds: z.number(),
     running_feeds: z.number(),
+    idle_auto_feeds: z.number(),
     has_children: z.boolean(),
 });
 
@@ -345,10 +345,68 @@ const folderFeedSchema = z.object({
     oresmd_uri: z.string(),
     folder_id: z.string(),
     enabled: z.boolean(),
+    provider_code: z.string(),
+    asset_class_code: z.string(),
+    underlying: z.string(),
+    engine: z.string(),
+    ticks_per_hour: z.number(),
+    auto_start: z.boolean(),
+    running: z.boolean(),
 });
 
-/** A feed as the feed tree lists it: enough to name it, open it and tell whether it runs. */
+/** A feed as the feed table lists it: what names it, what it prices and how it runs. */
 export type FolderFeed = z.infer<typeof folderFeedSchema>;
+
+/** What narrows the feeds a screen lists; every part is optional. */
+export interface FeedFilter {
+    /** A folder, with the folders under it. */
+    readonly folder?: string;
+    readonly provider?: string;
+    readonly assetClass?: string;
+    readonly state?: 'all' | 'started' | 'stopped';
+    /** Only the feeds that are enabled, start on their own, and are not running. */
+    readonly shouldRun?: boolean;
+    readonly search?: string;
+}
+
+/** The feeds to start or stop: those picked one by one, or the filter's less those left out. */
+export interface FeedSelection extends FeedFilter {
+    readonly feedIds?: readonly string[];
+    readonly excludedIds?: readonly string[];
+}
+
+function filterQuery(filter: FeedFilter): URLSearchParams {
+    const query = new URLSearchParams();
+    const entries: readonly (readonly [string, string | undefined])[] = [
+        ['folder', filter.folder],
+        ['provider', filter.provider],
+        ['assetClass', filter.assetClass],
+        ['state', filter.state],
+        ['search', filter.search],
+    ];
+    for (const [key, value] of entries) {
+        if (value !== undefined && value !== '') {
+            query.set(key, value);
+        }
+    }
+    if (filter.shouldRun === true) {
+        query.set('shouldRun', 'true');
+    }
+    return query;
+}
+
+function selectionBody(selection: FeedSelection): Record<string, unknown> {
+    return {
+        folder: selection.folder ?? '',
+        provider: selection.provider ?? '',
+        assetClass: selection.assetClass ?? '',
+        state: selection.state ?? '',
+        shouldRun: selection.shouldRun ?? false,
+        search: selection.search ?? '',
+        feedIds: selection.feedIds ?? [],
+        excludedIds: selection.excludedIds ?? [],
+    };
+}
 
 export const api = {
     /**
@@ -1452,28 +1510,16 @@ export const api = {
     },
 
     /**
-     * A page of the feeds in one folder, or of the feeds of every folder that
-     * match some words, with how many match in all. The service pages and counts.
+     * A page of the feeds a filter matches, with how many match in all. The service
+     * pages and counts, so no screen reads the feeds to count them.
      */
-    async folderFeeds(input: {
-        readonly folder?: string;
-        readonly search?: string;
-        readonly offset?: number;
-        readonly limit?: number;
-    }): Promise<{ readonly total: number; readonly feeds: readonly FolderFeed[] }> {
-        const query = new URLSearchParams();
-        if (input.folder !== undefined && input.folder !== '') {
-            query.set('folder', input.folder);
-        }
-        if (input.search !== undefined && input.search !== '') {
-            query.set('search', input.search);
-        }
-        if (input.offset !== undefined) {
-            query.set('offset', String(input.offset));
-        }
-        if (input.limit !== undefined) {
-            query.set('limit', String(input.limit));
-        }
+    async folderFeeds(
+        filter: FeedFilter,
+        page: { readonly offset: number; readonly limit: number },
+    ): Promise<{ readonly total: number; readonly feeds: readonly FolderFeed[] }> {
+        const query = filterQuery(filter);
+        query.set('offset', String(page.offset));
+        query.set('limit', String(page.limit));
         return z.object({ total: z.number(), feeds: z.array(folderFeedSchema) }).parse(
             await request(`/api/synthetic/folder-feeds?${query.toString()}`, {
                 method: 'GET',
@@ -1481,8 +1527,8 @@ export const api = {
         );
     },
 
-    /** Starts every feed under a folder in one request, and says what it did. */
-    async startFolder(id: string): Promise<{
+    /** Starts the picked feeds, or the feeds a filter matches, and says what it did. */
+    async startSelection(selection: FeedSelection): Promise<{
         readonly message: string;
         readonly started: number;
         readonly alreadyRunning: number;
@@ -1496,21 +1542,23 @@ export const api = {
                 skipped: z.number(),
             })
             .parse(
-                await request(`/api/synthetic/folders/${encodeURIComponent(id)}/start`, {
+                await request('/api/synthetic/feed-selection/start', {
                     method: 'POST',
                     headers: JSON_HEADERS,
-                    body: '{}',
+                    body: JSON.stringify(selectionBody(selection)),
                 }),
             );
     },
 
-    /** Stops every running feed under a folder in one request, and says what it did. */
-    async stopFolder(id: string): Promise<{ readonly message: string; readonly stopped: number }> {
+    /** Stops the picked feeds, or the feeds a filter matches, and says what it did. */
+    async stopSelection(
+        selection: FeedSelection,
+    ): Promise<{ readonly message: string; readonly stopped: number }> {
         return z.object({ message: z.string(), stopped: z.number() }).parse(
-            await request(`/api/synthetic/folders/${encodeURIComponent(id)}/stop`, {
+            await request('/api/synthetic/feed-selection/stop', {
                 method: 'POST',
                 headers: JSON_HEADERS,
-                body: '{}',
+                body: JSON.stringify(selectionBody(selection)),
             }),
         );
     },

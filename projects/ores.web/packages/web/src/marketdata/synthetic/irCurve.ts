@@ -19,7 +19,7 @@
  *
  */
 
-import { show } from '../refdata/records.js';
+import { show } from '../../refdata/records.js';
 
 /** The index families a curve can stand for, in the order the Qt editor offers them. */
 export const INDEX_FAMILIES = [

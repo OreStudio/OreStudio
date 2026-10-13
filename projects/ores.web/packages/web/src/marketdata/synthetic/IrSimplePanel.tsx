@@ -21,10 +21,10 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { api } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { Notice } from '../ui/Primitives.js';
-import { toast } from '../ui/Toasts.js';
+import { api } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { Notice } from '../../ui/Primitives.js';
+import { toast } from '../../ui/Toasts.js';
 import { Answer, Presets, differs } from './SimpleControls.js';
 import {
     HALF_LIFE_PRESETS,

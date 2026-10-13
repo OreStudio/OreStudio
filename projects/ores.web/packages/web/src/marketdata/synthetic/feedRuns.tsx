@@ -21,9 +21,9 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { api } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { Tag } from '../ui/Primitives.js';
+import { api } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { Tag } from '../../ui/Primitives.js';
 
 export const RUNNING_KEY = ['synthetic-running'] as const;
 

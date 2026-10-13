@@ -19,7 +19,7 @@
  *
  */
 
-import type { RecordRow } from '../api/client.js';
+import type { RecordRow } from '../../api/client.js';
 
 /**
  * One Gaussian of a feed's mixture as the screen holds it while it is edited.

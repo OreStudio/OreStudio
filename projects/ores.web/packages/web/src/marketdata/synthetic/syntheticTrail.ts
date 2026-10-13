@@ -19,9 +19,9 @@
  *
  */
 
-import { useTranslation } from '../i18n/Provider.js';
-import type { TrailStep } from '../shell/AreaTrail.js';
-import { PATHS } from '../shell/paths.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import type { TrailStep } from '../../shell/AreaTrail.js';
+import { PATHS } from '../../shell/paths.js';
 
 /**
  * The Synthetic folder as a step of a trail. Every screen of the folder, and

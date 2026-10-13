@@ -20,13 +20,13 @@
  */
 
 import type { ReactNode } from 'react';
-import { api } from '../api/client.js';
-import { PATHS } from '../shell/paths.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { OresmdUrl } from '../oresmd/OresmdUrl.js';
-import { show, type FieldSpec, type FieldValues } from '../refdata/records.js';
-import { syntheticStore } from '../refdata/store.js';
-import { FeedPage, FeedsPage } from './FeedScreens.js';
+import { api } from '../../api/client.js';
+import { PATHS } from '../../shell/paths.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
+import { show, type FieldSpec, type FieldValues } from '../../refdata/records.js';
+import { syntheticStore } from '../../refdata/store.js';
+import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
 import { TicksPanel } from './TicksPanel.js';
@@ -234,11 +234,11 @@ function useFeedCheck(): (values: FieldValues) => readonly string[] {
 }
 
 /** The FX price feeds, as the shared feed screens draw them. */
-const FX_FEED_KIND: FeedKind = {
+export const FX_FEED_KIND: FeedKind = {
     resource: FEEDS,
     entity: 'ores.synthetic.fx_spot_generation_config',
     historySubject: 'fx_feed',
-    path: PATHS.fxFeeds,
+    path: PATHS.fxFeed,
     words: 'fxFeeds',
     fields: FEED_FIELDS,
     editFields: FEED_EDIT_FIELDS,
@@ -249,42 +249,6 @@ const FX_FEED_KIND: FeedKind = {
     nameOf: pairOf,
     flag: 'pair',
     detailOf: (feed, t) => t(`refdata.choices.process_type.${show(feed['process_type'])}`),
-    columns: (t) => [
-        {
-            id: 'pair',
-            header: t('marketdata.fxFeeds.pair'),
-            cell: (row) => pairOf(row),
-            mono: true,
-            sort: 'base_currency_code',
-            flag: { source: 'pair', code: (row) => pairOf(row) },
-        },
-        {
-            id: 'source_name',
-            header: t('refdata.fields.source_name'),
-            cell: (row) => show(row['source_name']),
-            mono: true,
-            sort: 'source_name',
-        },
-        {
-            id: 'oresmd_uri',
-            header: t('refdata.fields.oresmd_uri'),
-            cell: (row) => show(row['oresmd_uri']),
-            mono: true,
-            sort: 'oresmd_uri',
-        },
-        {
-            id: 'process_type',
-            header: t('refdata.fields.process_type'),
-            cell: (row) => t(`refdata.choices.process_type.${show(row['process_type'])}`),
-        },
-        {
-            id: 'ticks_per_hour',
-            header: t('refdata.fields.ticks_per_hour'),
-            cell: (row) => show(row['ticks_per_hour']),
-            numeric: true,
-            sort: 'ticks_per_hour',
-        },
-    ],
     extraDetails: (feed, t) => [
         [
             t('refdata.fields.oresmd_uri'),
@@ -332,11 +296,6 @@ const FX_FEED_KIND: FeedKind = {
     ],
     afterAdd: 'behaviour',
 };
-
-/** The FX price feeds of the party: one page at a time, searched and sorted on the server. */
-export function FxFeedsPage(): ReactNode {
-    return <FeedsPage kind={FX_FEED_KIND} />;
-}
 
 /** One feed: its fields, the mixture its process draws from with what it implies, and its history. */
 export function FxFeedPage(): ReactNode {

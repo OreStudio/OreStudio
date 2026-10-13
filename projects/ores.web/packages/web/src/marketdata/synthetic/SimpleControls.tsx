@@ -20,8 +20,8 @@
  */
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { useTranslation } from '../i18n/Provider.js';
-import { Field, Input, cx } from '../ui/Primitives.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { Field, Input, cx } from '../../ui/Primitives.js';
 
 /** A field whose value differs from the saved one, tinted as a changed cell of the table is. */
 export const CHANGED_FIELD = 'border-warn bg-warn/10 text-warn';

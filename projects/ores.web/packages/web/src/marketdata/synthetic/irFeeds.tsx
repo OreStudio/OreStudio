@@ -20,19 +20,19 @@
  */
 
 import type { ReactNode } from 'react';
-import { api, type RecordRow } from '../api/client.js';
-import { PATHS } from '../shell/paths.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { OresmdUrl } from '../oresmd/OresmdUrl.js';
+import { api, type RecordRow } from '../../api/client.js';
+import { PATHS } from '../../shell/paths.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
 import {
     PartsPanel,
     show,
     useRecords,
     type FieldSpec,
     type FieldValues,
-} from '../refdata/records.js';
-import { syntheticStore } from '../refdata/store.js';
-import { FeedPage, FeedsPage } from './FeedScreens.js';
+} from '../../refdata/records.js';
+import { syntheticStore } from '../../refdata/store.js';
+import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { INDEX_FAMILIES, TERM_FAMILIES, completeIrFeed, curveOf, irSeriesUri } from './irCurve.js';
 import { IrTicksPanel, savedParameters } from './IrTicksPanel.js';
@@ -384,11 +384,11 @@ function IrTicksTab({
 }
 
 /** The IR curve feeds, as the shared feed screens draw them. */
-const IR_FEED_KIND: FeedKind = {
+export const IR_FEED_KIND: FeedKind = {
     resource: FEEDS,
     entity: 'ores.synthetic.ir_curve_generation_config',
     historySubject: 'ir_feed',
-    path: PATHS.irFeeds,
+    path: PATHS.irFeed,
     words: 'irFeeds',
     fields: IR_FIELDS,
     editFields: IR_EDIT_FIELDS,
@@ -398,41 +398,6 @@ const IR_FEED_KIND: FeedKind = {
     useCheck: useIrFeedCheck,
     nameOf: curveOf,
     detailOf: (feed, t) => engineName(t, show(feed['process_type'])),
-    columns: (t) => [
-        {
-            id: 'curve',
-            header: t('marketdata.irFeeds.curve'),
-            cell: (row) => curveOf(row),
-            mono: true,
-            sort: 'currency_code',
-            flag: { source: 'currency', code: (row) => show(row['currency_code']) },
-        },
-        {
-            id: 'role',
-            header: t('refdata.fields.role'),
-            cell: (row) => t(`refdata.choices.role.${show(row['role'])}`),
-            sort: 'role',
-        },
-        {
-            id: 'source_name',
-            header: t('refdata.fields.source_name'),
-            cell: (row) => show(row['source_name']),
-            mono: true,
-            sort: 'source_name',
-        },
-        {
-            id: 'process_type',
-            header: t('refdata.fields.process_type'),
-            cell: (row) => engineName(t, show(row['process_type'])),
-        },
-        {
-            id: 'ticks_per_hour',
-            header: t('refdata.fields.ticks_per_hour'),
-            cell: (row) => show(row['ticks_per_hour']),
-            numeric: true,
-            sort: 'ticks_per_hour',
-        },
-    ],
     extraDetails: (feed, t) => [
         [
             t('refdata.fields.oresmd_uri'),
@@ -492,11 +457,6 @@ const IR_FEED_KIND: FeedKind = {
 
 export function irFeedPath(id?: string): string {
     return feedPath(IR_FEED_KIND, id);
-}
-
-/** The IR curve feeds of the party: one page at a time, searched and sorted on the server. */
-export function IrFeedsPage(): ReactNode {
-    return <FeedsPage kind={IR_FEED_KIND} />;
 }
 
 /** One curve feed: its fields, the engine and parameters, the curve template, and its history. */

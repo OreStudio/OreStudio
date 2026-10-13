@@ -19,7 +19,7 @@
  *
  */
 
-import { show } from '../refdata/records.js';
+import { show } from '../../refdata/records.js';
 import type { ParameterLine } from './irCurve.js';
 
 /** The four questions the simple view of an IR feed asks, by the names the service uses. */

@@ -24,12 +24,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
-import type { RecordRow, SyntheticResourceView } from '../api/client.js';
-import { TranslationProvider } from '../i18n/Provider.js';
-import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
-import { IrFeedPage, IrFeedsPage } from './irFeeds.js';
-import { MarketDataPage } from './MarketDataPage.js';
-import { SyntheticPage } from './SyntheticPage.js';
+import type { RecordRow, SyntheticResourceView } from '../../api/client.js';
+import { TranslationProvider } from '../../i18n/Provider.js';
+import { MarketDataPage } from '../MarketDataPage.js';
+import { IrFeedPage } from './irFeeds.js';
+import { SyntheticScreen } from './SyntheticScreen.js';
 
 const FEED_ID = '66666666-6666-4666-8666-666666666666';
 
@@ -137,9 +136,8 @@ function render(path: string, seed: (client: QueryClient) => void): string {
                 <MemoryRouter initialEntries={[path]}>
                     <Routes>
                         <Route path="/market-data" element={<MarketDataPage />} />
-                        <Route path="/market-data/synthetic" element={<SyntheticPage />} />
-                        <Route path="/market-data/ir-feeds" element={<IrFeedsPage />} />
-                        <Route path="/market-data/ir-feeds/:id" element={<IrFeedPage />} />
+                        <Route path="/market-data/synthetic" element={<SyntheticScreen />} />
+                        <Route path="/market-data/synthetic/ir/:id" element={<IrFeedPage />} />
                     </Routes>
                 </MemoryRouter>
             </TranslationProvider>
@@ -148,48 +146,33 @@ function render(path: string, seed: (client: QueryClient) => void): string {
 }
 
 describe('the market data area', () => {
-    it('offers the Synthetic folder to a person who reads the feeds', () => {
+    it('offers the Synthetic screen to a person who reads the feeds', () => {
         const html = render('/market-data', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('href="/market-data/synthetic"');
     });
 
-    it('offers the IR curve feeds in the Synthetic folder to a person who reads them', () => {
+    it('draws the Synthetic screen with its dashboard and its feed tree', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('IR curve feeds');
-        expect(html).toContain('href="/market-data/synthetic/ir-feeds"');
+        expect(html).toContain('>Dashboard<');
+        expect(html).toContain('>Feed tree<');
+        expect(html).not.toContain('IR curve feeds');
     });
 
     it('draws no card for a person who does not', () => {
         const html = render('/market-data', (client) => {
             client.setQueryData(['my-access'], access(['refdata::currencies:read']));
         });
-        expect(html).not.toContain('IR curve feeds');
+        expect(html).not.toContain('href="/market-data/synthetic"');
     });
 });
 
 describe('the IR curve feed screens', () => {
-    it('lists one page of curves with the index, the role and the engine', () => {
-        const html = render('/market-data/ir-feeds', (client) => {
-            client.setQueryData(pageKey({ key: 'ir-curve-feeds' }, FIRST_PAGE), {
-                rows: [feed],
-                total: 1,
-            });
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(html).toContain('EUR EURIBOR 6M');
-        expect(html).toContain('Projection');
-        expect(html).toContain('synthetic.eureuribor6m');
-        expect(html).toContain('Vasicek');
-        expect(html).toContain('New IR curve');
-        expect(html).toContain('Search…');
-    });
-
     it('shows a curve with its fields and the series its pillars land in', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
@@ -206,7 +189,7 @@ describe('the IR curve feed screens', () => {
     });
 
     it('offers a reader no change', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['my-access'],
@@ -218,7 +201,7 @@ describe('the IR curve feed screens', () => {
     });
 
     it('draws the engine and its parameters, each with the saved value or the default', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=process`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=process`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'process-types'], PROCESS_TYPES);
             client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
@@ -258,7 +241,7 @@ describe('the IR curve feed screens', () => {
     });
 
     it('asks the four plain questions in Simple mode, once the server has read the values', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=process`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=process`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'process-types'], PROCESS_TYPES);
             client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
@@ -286,7 +269,7 @@ describe('the IR curve feed screens', () => {
     });
 
     it('offers the defaults of a curve whose parameters were never saved, as unsaved', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=process`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=process`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'process-types'], PROCESS_TYPES);
             client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
@@ -301,7 +284,7 @@ describe('the IR curve feed screens', () => {
     });
 
     it('lists the tenor entries of the curve template, in sequence', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=template`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=template`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
             client.setQueryData(
@@ -346,7 +329,7 @@ describe('the IR curve feed screens', () => {
             end_tenor_code: end,
             instrument_code: 'IRS',
         });
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=ticks`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
             client.setQueryData(
@@ -378,7 +361,7 @@ describe('the IR curve feed screens', () => {
     });
 
     it('says a curve with no tenor entries cannot show its ticks', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=ticks`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
             client.setQueryData(['records', 'ir-template-entries', FEED_ID], []);
@@ -389,7 +372,7 @@ describe('the IR curve feed screens', () => {
     });
 
     it('says a stopped feed must be started to show curves', () => {
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=ticks`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
             client.setQueryData(
@@ -427,7 +410,7 @@ describe('the IR curve feed screens', () => {
             ],
             changes: [],
         });
-        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=history`, (client) => {
+        const html = render(`/market-data/synthetic/ir/${FEED_ID}?tab=history`, (client) => {
             client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
             client.setQueryData(
                 ['records', 'ir-parameter-values', FEED_ID],

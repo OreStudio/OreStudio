@@ -20,10 +20,10 @@
  */
 
 import type { ReactNode } from 'react';
-import type { RecordRow } from '../api/client.js';
-import type { FlagSource } from '../images/flags.js';
-import type { ListColumn } from '../refdata/RecordList.js';
-import type { FieldSpec, FieldValues } from '../refdata/records.js';
+import type { RecordRow } from '../../api/client.js';
+import type { FlagSource } from '../../images/flags.js';
+import type { ListColumn } from '../../refdata/RecordList.js';
+import type { FieldSpec, FieldValues } from '../../refdata/records.js';
 
 /**
  * One kind of row a feed owns, such as the components of an FX feed's mixture
@@ -94,8 +94,6 @@ export interface FeedKind {
     readonly flag?: FlagSource;
     /** What else the key and version line says. */
     readonly detailOf: (feed: RecordRow, t: (key: string) => string) => string;
-    /** The kind's own columns of the list, after the status. */
-    readonly columns: (t: (key: string) => string) => readonly ListColumn<RecordRow>[];
     /** Facts the Details tab adds to the fields. */
     readonly extraDetails: (
         feed: RecordRow,

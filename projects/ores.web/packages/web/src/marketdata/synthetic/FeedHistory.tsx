@@ -28,14 +28,14 @@ import {
     type Timeline as Stream,
     type TimelineEvent,
 } from '@ores/wire-protocol/browser';
-import { api, type RecordRow } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { useHolds } from '../access/holds.js';
-import { actorPathFor } from '../access/PeoplePage.js';
-import { useActorPictures } from '../access/PersonRef.js';
-import { RevertDialog, show, type FieldSpec } from '../refdata/records.js';
-import { Timeline } from '../timeline/Timeline.js';
-import { Button, Notice } from '../ui/Primitives.js';
+import { api, type RecordRow } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { useHolds } from '../../access/holds.js';
+import { actorPathFor } from '../../access/PeoplePage.js';
+import { useActorPictures } from '../../access/PersonRef.js';
+import { RevertDialog, show, type FieldSpec } from '../../refdata/records.js';
+import { Timeline } from '../../timeline/Timeline.js';
+import { Button, Notice } from '../../ui/Primitives.js';
 
 /**
  * One kind of child row a feed owns, such as the components of an FX feed's

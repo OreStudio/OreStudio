@@ -20,8 +20,10 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { api, type FeedFolder } from '../api/client.js';
-import { FOLDERS_KEY } from './folderRuns.js';
+import { api, type FeedFolder } from '../../api/client.js';
+
+/** The key of every read of the folders, so one refresh renews them all. */
+export const FOLDERS_KEY = ['feed-folders'] as const;
 
 /** How often the feed screens ask again, since a feed can start or stop from anywhere. */
 export const EVERY_MS = 5_000;

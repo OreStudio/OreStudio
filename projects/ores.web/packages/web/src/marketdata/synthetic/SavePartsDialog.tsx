@@ -21,11 +21,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { api } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { NEW_RECORD_REASON } from '../refdata/records.js';
-import { ReasonFields, useReason } from '../refdata/shared.js';
-import { Button, Dialog, Notice } from '../ui/Primitives.js';
+import { api } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { NEW_RECORD_REASON } from '../../refdata/records.js';
+import { ReasonFields, useReason } from '../../refdata/shared.js';
+import { Button, Dialog, Notice } from '../../ui/Primitives.js';
 import { RUNNING_KEY } from './feedRuns.js';
 import type { savePlan } from './mixture.js';
 

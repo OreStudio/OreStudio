@@ -21,11 +21,11 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { api, type RecordRow } from '../api/client.js';
-import { useTranslation } from '../i18n/Provider.js';
-import { show } from '../refdata/records.js';
-import { Button, Notice, Select, Tag } from '../ui/Primitives.js';
-import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { api, type RecordRow } from '../../api/client.js';
+import { useTranslation } from '../../i18n/Provider.js';
+import { show } from '../../refdata/records.js';
+import { Button, Notice, Select, Tag } from '../../ui/Primitives.js';
+import { LineChart, SERIES_COLOURS } from '../LineChart.js';
 import { describedAs } from './mixture.js';
 import { processTypeOf } from './processHelp.js';
 import { EMA_PERIOD, emaOf, instantOf, statsOf, ticksCsv, type Tick } from './ticks.js';

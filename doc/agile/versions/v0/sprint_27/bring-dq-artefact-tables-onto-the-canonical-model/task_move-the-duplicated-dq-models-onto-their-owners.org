@@ -8,7 +8,7 @@
 #+filetags: :dq:codegen:cleanup:bring-dq-artefact-tables-onto-the-canonical-model:sprint_27:v0:
 #+owner: marco
 #+branch: feature/move-the-duplicated-dq-models-onto-their-owners
-#+pr:
+#+pr: 3219
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -121,7 +121,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3219][#3219]] | [dq] Move the duplicated DQ models onto their owners |
 
 * Review
 

@@ -50,6 +50,7 @@ The local check gate stops failing on drift that predates any branch.
 | [[id:E2C09A07-0E5B-4FF8-99B5-C702FF05D0E1][Pass the system caller in the feed filter test]] | DONE | | 2026-10-13 | feed_filter_tests.cpp still calls where_clause with two arguments; the function gained a system_caller parameter, so the synthetic api test target does not compile. |
 | [[id:DF3EF651-A3F0-462D-A4AF-354AF499F477][Refuse a leading plus in parse_double]] | DONE | | 2026-10-13 | parse_double accepts a leading plus, but std::from_chars, which it replaced, does not; the manual point service therefore took +0.09 and the marketdata core test failed. |
 | [[id:4E0371EC-F7F3-4FFC-A631-5897E1599E7F][Accept a leading plus in parse_double again]] | DONE | | 2026-10-13 | The estate's decimals are signed, so strike_label::parse reads +25RR through decimal::parse and canonicalises it to 25RR; mirroring from_chars' sign rule in parse_double broke the strike label tests. |
+| [[id:D3D44A23-38F6-49D0-896C-E429B27364FD][Take a manual point value as the estate's number]] | DONE | | 2026-10-13 | The manual point service refuses +0.09 with a private gate, while decimal -- the estate's one definition of a number, used by the key codec -- accepts it, and the service accepts other non-canonical spellings such as 0.090. |
 
 * Decisions
 

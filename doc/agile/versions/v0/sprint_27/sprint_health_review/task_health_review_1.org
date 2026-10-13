@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_27:v0:
 #+owner: marco
 #+branch: feature/sprint-27-health-review-1
-#+pr:
+#+pr: 3271
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3271][#3271]] | [agile] Sprint 27 health review 1 — RED |
 
 * Review
 

@@ -57,8 +57,7 @@ namespace {
 std::optional<feed::ir_curve_refdata_context>
 ir_refdata_context(const ores::database::context& ctx,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg) {
-    return feed::build_ir_curve_refdata_context(
-        ctx, feed::ir_curve_tenor_convention_code(cfg));
+    return feed::build_ir_curve_refdata_context(ctx, feed::ir_curve_tenor_convention_code(cfg));
 }
 
 // The system-tenant owned parameter-definition catalogue: the publish path resolves each value's
@@ -214,8 +213,8 @@ feed_kind make_ir_curve_kind() {
                 }
                 const auto refctx = ir_refdata_context(ctx, cfg);
                 if (!refctx) {
-                    a.error = "Tenor convention not found: " +
-                              feed::ir_curve_tenor_convention_code(cfg);
+                    a.error =
+                        "Tenor convention not found: " + feed::ir_curve_tenor_convention_code(cfg);
                     return a;
                 }
                 const auto resolved =

@@ -407,11 +407,16 @@ hold for a row to match.
   =:filterable: true= also has a =_from= and a =_to= member. A row matches when
   its column is not before =_from= and not after =_to=: both bounds are
   inclusive. A member that is absent sets no bound, so a caller can state one end
-  only. A =_to= given as a date on a timestamp column means the end of that day,
-  so that a person who asks for "up to the 5th" gets the whole of the 5th. The
+  only. Both members carry text, because one member serves a date and a timestamp
+  column. The text is a date, =2026-03-05=, or a UTC timestamp, =2026-03-05T10:00:00Z=,
+  in the form the =as_of= field takes. A date on a timestamp column means a whole
+  day: the start of that day for =_from= and its last microsecond for =_to=, so
+  that a person who asks for "up to the 5th" gets the whole of the 5th. The
   day is a day in UTC, because the store keeps every timestamp in UTC, and a
-  screen that shows another zone converts the date before it sends it. On a
-  column of a date type a =_to= is the date itself, inclusive. A
+  screen that shows another zone converts the date before it sends it. A column
+  of a date type takes a date alone, and the date is the bound itself. A text that
+  is neither, or a date that is not on the calendar, is =invalid= with the code
+  =filter_range_invalid=, which names the member and the text. A
   =_from= later than the =_to= matches no row, as an empty one-of list does. A
   row whose column is null never matches a range. Equals on a date or a
   timestamp stays available, but no screen should use it to find a period.

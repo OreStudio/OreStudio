@@ -79,10 +79,9 @@ TEST_CASE("a_mix_of_kinds_needs_each_permission_once", tags) {
 
     const auto needed = ores::refdata::messaging::required_permissions(lines);
 
-    CHECK(needed ==
-          std::vector<std::string>{"refdata::counterparties:write",
-                                   "refdata::counterparty_identifiers:write",
-                                   "refdata::party_counterparties:delete"});
+    CHECK(needed == std::vector<std::string>{"refdata::counterparties:write",
+                                             "refdata::counterparty_identifiers:write",
+                                             "refdata::party_counterparties:delete"});
 }
 
 TEST_CASE("no_lines_cannot_be_proposed", tags) {

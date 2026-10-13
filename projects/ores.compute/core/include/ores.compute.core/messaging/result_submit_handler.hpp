@@ -96,27 +96,27 @@ public:
                 }
 
                 switch (decide_submit(existing->server_state)) {
-                case submit_action::ignore_inactive:
-                    BOOST_LOG_SEV(result_submit_handler_lg(), info)
-                        << "Ignoring the outcome of retired result " << req->result_id;
-                    reply(nats_,
-                          msg,
-                          submit_result_response{
-                              .success = true,
-                              .message = "The result is inactive; the outcome was ignored."});
-                    return;
-                case submit_action::ignore_final:
-                    BOOST_LOG_SEV(result_submit_handler_lg(), info)
-                        << "Ignoring a second outcome for result " << req->result_id;
-                    reply(nats_,
-                          msg,
-                          submit_result_response{
-                              .success = true,
-                              .message = "The result already has its outcome; this one was "
-                                         "ignored."});
-                    return;
-                case submit_action::accept:
-                    break;
+                    case submit_action::ignore_inactive:
+                        BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                            << "Ignoring the outcome of retired result " << req->result_id;
+                        reply(nats_,
+                              msg,
+                              submit_result_response{
+                                  .success = true,
+                                  .message = "The result is inactive; the outcome was ignored."});
+                        return;
+                    case submit_action::ignore_final:
+                        BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                            << "Ignoring a second outcome for result " << req->result_id;
+                        reply(nats_,
+                              msg,
+                              submit_result_response{
+                                  .success = true,
+                                  .message = "The result already has its outcome; this one was "
+                                             "ignored."});
+                        return;
+                    case submit_action::accept:
+                        break;
                 }
 
                 // A result that a node holds under a lease is finished by that node. A node whose

@@ -63,7 +63,8 @@ void compute_grid_poller::poll_once() {
         try {
             const bool is_system = tenant == system;
             const auto tenant_ctx =
-                is_system ? ctx_ : ores::database::service::tenant_context::with_tenant(ctx_, tenant);
+                is_system ? ctx_ :
+                            ores::database::service::tenant_context::with_tenant(ctx_, tenant);
             for (const auto& party : telemetry_repo.parties_with_work(tenant_ctx)) {
                 // The row of the system tenant's work with no party also counts the hosts,
                 // which belong to the installation.

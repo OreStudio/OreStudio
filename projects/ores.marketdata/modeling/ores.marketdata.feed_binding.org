@@ -65,6 +65,7 @@ Surrogate UUID uniquely identifying this feed binding.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :natural_key: true
+:filterable:  true
 :END:
 
 Party that owns this feed binding.
@@ -80,6 +81,8 @@ ctx.generate_uuid()
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:sortable: true
+:searchable: true
 :END:
 
 The producer, unique within a tenant: the =source= every tick it publishes
@@ -111,6 +114,7 @@ std::string("VENDOR")
 :cpp_type:      bool
 :nullable:      false
 :default_value: true
+:sortable:      true
 :END:
 
 When true the marketdata service maintains an active NATS subscription for this

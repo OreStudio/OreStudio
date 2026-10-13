@@ -28,17 +28,20 @@
  * :current_state:: an event is a fact about an instant, and the bi-temporal pair
  * has no meaning on it.
  *
- * The table is the system's audit log of who signed in and who failed to. It
- * carries no row-level security and no tenant column of the generated kind. Its
- * tenant_id is an ordinary text column, because an event can happen before a
- * tenant is known, and the empty string then says so. The read in
+ * The table is the audit log of who signed in and who failed to. Its tenant_id
+ * is an ordinary text column and not the generated kind, because an event can
+ * happen before a tenant is known, and it is then the system tenant's. The read in
  * ores.iam.auth_event_operations scopes on that column itself.
  *
  * The table is internal: its protocol, handler and shell commands are the
  * hand-written operation model's, so only the data layer and the SQL schema are
- * generated here. The two continuous aggregates and their retention are a
- * paste block in the SQL section, because the generator states the hypertable and
- * the raw table's retention and nothing above them.
+ * generated here.
+ *
+ * The table is isolated by tenant like the rest of IAM, by a policy in
+ * iam_rls_policies_create.sql. An event that names no tenant is the system
+ * tenant's. The hourly and daily continuous aggregates it once had are gone:
+ * nothing read them, and TimescaleDB does not build a continuous aggregate over a
+ * table with row-level security.
  */
 
 create table if not exists "ores_iam_auth_events_tbl" (
@@ -114,72 +117,5 @@ begin
         end;
     else
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
-    end if;
-end $$;
-do $$
-declare
-    current_license text;
-begin
-    if not exists (select 1 from pg_extension where extname = 'timescaledb') then
-        return;
-    end if;
-    select current_setting('timescaledb.license', true) into current_license;
-    if current_license = 'timescale' then
-        execute $sql$
-            create materialized view if not exists ores_iam_auth_events_hourly_vw
-            with (timescaledb.continuous) as
-            select
-                public.time_bucket('1 hour', event_time) as hour,
-                tenant_id,
-                event_type,
-                count(*) as event_count
-            from ores_iam_auth_events_tbl
-            group by hour, tenant_id, event_type
-            with no data
-        $sql$;
-
-        perform public.add_continuous_aggregate_policy(
-            'ores_iam_auth_events_hourly_vw',
-            start_offset => interval '1 day',
-            end_offset => interval '15 minutes',
-            schedule_interval => interval '15 minutes',
-            if_not_exists => true
-        );
-
-        execute $sql$
-            create materialized view if not exists ores_iam_auth_events_daily_vw
-            with (timescaledb.continuous) as
-            select
-                public.time_bucket('1 day', event_time) as day,
-                tenant_id,
-                event_type,
-                count(*) as event_count,
-                count(distinct account_id) filter (
-                    where account_id != '') as unique_accounts
-            from ores_iam_auth_events_tbl
-            group by day, tenant_id, event_type
-            with no data
-        $sql$;
-
-        perform public.add_continuous_aggregate_policy(
-            'ores_iam_auth_events_daily_vw',
-            start_offset => interval '3 days',
-            end_offset => interval '1 hour',
-            schedule_interval => interval '1 hour',
-            if_not_exists => true
-        );
-
-        perform public.add_retention_policy(
-            'ores_iam_auth_events_hourly_vw',
-            drop_after => interval '90 days',
-            if_not_exists => true
-        );
-        perform public.add_retention_policy(
-            'ores_iam_auth_events_daily_vw',
-            drop_after => interval '3 years',
-            if_not_exists => true
-        );
-    else
-        raise notice 'TimescaleDB Apache license - continuous aggregates skipped';
     end if;
 end $$;

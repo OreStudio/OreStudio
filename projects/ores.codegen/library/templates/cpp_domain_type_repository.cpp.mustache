@@ -17,6 +17,9 @@
 {{#domain_entity.has_filter_record}}
 #include "ores.database/repository/list_filter.hpp"
 {{/domain_entity.has_filter_record}}
+{{#domain_entity.has_range_filter}}
+#include "ores.database/repository/range_bound.hpp"
+{{/domain_entity.has_range_filter}}
 #include "ores.logging/boost_severity.hpp"
 {{#system_tenant_visible}}
 #include "ores.database/service/tenant_context.hpp"
@@ -149,6 +152,14 @@ filter_condition(const std::optional<{{domain_entity.filter_type}}>& filter) {
         r.push_back(one_of("{{column}}", std::move(values)));
     }
 {{/is_one_of}}
+{{#is_range}}
+    if (filter->{{member}}) {
+        const auto bound = range_bound(*filter->{{member}}, range_end::{{#is_from}}from{{/is_from}}{{#is_to}}to{{/is_to}}, {{#is_timestamp}}true{{/is_timestamp}}{{^is_timestamp}}false{{/is_timestamp}});
+        if (!bound)
+            throw std::invalid_argument("The bound " + *filter->{{member}} + " of {{member}} is not a valid date or time.");
+        r.push_back({{#is_from}}at_least{{/is_from}}{{#is_to}}at_most{{/is_to}}("{{column}}", filter_value(*bound)));
+    }
+{{/is_range}}
 {{/domain_entity.filter_members}}
 {{#domain_entity.has_search}}
     if (filter->search && !filter->search->empty())

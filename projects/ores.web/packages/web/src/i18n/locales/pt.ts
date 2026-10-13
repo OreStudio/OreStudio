@@ -2169,6 +2169,17 @@ const pt: SourceCatalogue = {
                 derived: 'Derivado',
                 manual: 'Manual',
             },
+            surface: {
+                title: 'Superfície',
+                note: 'A cor mostra onde um valor se situa na sua escala. Cada linha é uma fatia: um {rows} ao longo dos {columns}. As colunas podem conter cotações na convenção de mercado, por isso uma fatia nem sempre é um smile. As colunas estão espaçadas de forma regular, sejam quais forem os seus nomes.',
+                scale: 'Escala de cor',
+                scaleSurface: 'A superfície toda',
+                scaleColumn: 'Cada coluna',
+                slices: 'Fatias',
+                slicesLabel: 'Uma linha por cada linha da grelha, ao longo das colunas',
+                axes: 'Uma forma com {count} eixos não é desenhada como superfície. Só uma forma com dois eixos o é.',
+                empty: 'O objeto não tem nenhum nó, por isso não há superfície para desenhar.',
+            },
             picker: {
                 label: 'Série',
                 placeholder: 'Escolha uma série, ou escreva a sua identidade abaixo',
@@ -2374,6 +2385,12 @@ const pt: SourceCatalogue = {
                 'As moedas em que opera não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
             party_counterparty:
                 'As contrapartes com que pode negociar não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
+            party_identifier_removed:
+                'Um identificador que foi removido não se mostra, porque nenhuma leitura lista os identificadores removidos.',
+            party_contact_information_removed:
+                'Um contacto que foi removido não se mostra, porque nenhuma leitura lista os contactos removidos.',
+            business_unit_removed:
+                'Uma unidade de negócio que foi removida não se mostra, porque nenhuma leitura lista as unidades de negócio removidas.',
             account_party:
                 'As partes em que uma pessoa trabalha não puderam ser lidas, por isso não se mostra quando entra ou sai de uma.',
             account_role:
@@ -3266,6 +3283,9 @@ const pt: SourceCatalogue = {
             removeTitle: 'Remover {code}?',
             needs: 'Falta preencher: {fields}',
             noLinks: 'Nenhum ainda.',
+            fixedHint: 'Definido quando o registo foi criado, e nunca alterado aqui.',
+            notFound: 'Não existe tal registo, ou não o pode ver.',
+            backToList: 'Voltar à lista',
             unlink: 'Retirar {name}',
             linkChoose: 'Escolha um para adicionar…',
             link: 'Adicionar',

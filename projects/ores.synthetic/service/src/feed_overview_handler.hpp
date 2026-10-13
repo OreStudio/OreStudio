@@ -203,8 +203,8 @@ private:
                                 "select id, kind, label, source_name, oresmd_uri, "
                                 "coalesce(folder_id::text, ''), enabled::text, auto_start::text, "
                                 "asset_class_code, ticks_per_hour::text, engine, underlying, "
-                                "provider_code from (" + feeds + ") f where " + where +
-                                    " order by label, id limit " +
+                                "provider_code from (" +
+                                    feeds + ") f where " + where + " order by label, id limit " +
                                     std::to_string(std::clamp(limit, 1, 200)) + " offset " +
                                     std::to_string(std::max(offset, 0)));
         resp.feeds.reserve(rows.size());
@@ -283,32 +283,34 @@ private:
                 auto& count = by_folder[id];
                 count.folder_id = id;
                 switch (which) {
-                case tally::fx:
-                    count.fx_feeds += n;
-                    break;
-                case tally::ir:
-                    count.ir_feeds += n;
-                    break;
-                case tally::running:
-                    count.running_feeds += n;
-                    break;
-                case tally::auto_start:
-                    count.idle_auto_feeds += n;
-                    break;
-                case tally::auto_running:
-                    count.idle_auto_feeds -= n;
-                    break;
+                    case tally::fx:
+                        count.fx_feeds += n;
+                        break;
+                    case tally::ir:
+                        count.ir_feeds += n;
+                        break;
+                    case tally::running:
+                        count.running_feeds += n;
+                        break;
+                    case tally::auto_start:
+                        count.idle_auto_feeds += n;
+                        break;
+                    case tally::auto_running:
+                        count.idle_auto_feeds -= n;
+                        break;
                 }
             }
         };
         add(query(ctx, R"sql(
             select folder_id::text, count(*) from ores_synthetic_fx_spot_generation_configs_tbl
             where valid_to = ores_utility_infinity_timestamp_fn() and folder_id is not null
-            group by folder_id)sql"), tally::fx);
+            group by folder_id)sql"),
+            tally::fx);
         add(query(ctx, R"sql(
             select folder_id::text, count(*) from ores_synthetic_ir_curve_generation_configs_tbl
             where valid_to = ores_utility_infinity_timestamp_fn() and folder_id is not null
-            group by folder_id)sql"), tally::ir);
+            group by folder_id)sql"),
+            tally::ir);
 
         // A system feed is the system tenant's to start, so another tenant does not count it
         // among the feeds that should run.
@@ -337,8 +339,8 @@ private:
                 add(query(ctx,
                           std::string("select folder_id::text, count(*) from ") + table +
                               " where valid_to = ores_utility_infinity_timestamp_fn()"
-                              " and folder_id is not null and source_name in (" + names +
-                              ") group by folder_id"),
+                              " and folder_id is not null and source_name in (" +
+                              names + ") group by folder_id"),
                     tally::running);
                 add(query(ctx,
                           std::string("select folder_id::text, count(*) from ") + table +

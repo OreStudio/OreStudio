@@ -87,6 +87,7 @@ set(files
     "repository_fx_vanilla_option_instrument_repository_tests.cpp"
     "repository_fx_variance_swap_instrument_repository_tests.cpp"
     "repository_rate_instrument_cascade_tests.cpp"
+    "repository_trade_booking_range_tests.cpp"
     "repository_trade_filter_tests.cpp"
     "repository_trade_type_repository_tests.cpp"
     "return_type_eventing_integration_tests.cpp"

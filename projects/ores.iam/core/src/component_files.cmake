@@ -305,6 +305,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/repository/account_type_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/repository/account_type_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/repository/account_type_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/repository/audit_scope.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/repository/auth_event_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/repository/auth_event_log.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/repository/auth_event_mapper.hpp"

@@ -85,7 +85,9 @@ TEST_CASE("token_expiry_is_unknown_for_an_exponent_form", tags) {
 }
 
 TEST_CASE("token_expiry_is_unknown_for_a_run_of_digits_too_long_to_be_a_date", tags) {
-    CHECK(!token_expiry(token_with("eyJleHAiOjk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTl9")).has_value());
+    CHECK(!token_expiry(
+               token_with("eyJleHAiOjk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTl9"))
+               .has_value());
 }
 
 TEST_CASE("token_expiry_reads_a_fractional_date_as_its_whole_seconds", tags) {

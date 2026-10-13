@@ -36,8 +36,7 @@ namespace ores::refdata::messaging {
  * permission check reads the operation, so a value it does not know is refused
  * before the check and never counted as a write.
  */
-ORES_REFDATA_SERVICE_EXPORT std::string
-invalid_lines(const service::counterparty_lines& lines);
+ORES_REFDATA_SERVICE_EXPORT std::string invalid_lines(const service::counterparty_lines& lines);
 
 /**
  * @brief The permissions a caller needs to propose the lines.

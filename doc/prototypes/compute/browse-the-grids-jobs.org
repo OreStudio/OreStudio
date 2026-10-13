@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 1CA8F59E-9E49-4A79-A482-4570B4554DBA
+:END:
+#+title: Browse the grid's jobs prototype
+#+description: The Jobs tab of the compute grid screen: a paged tree of batches, workunits and results beside a details panel, seen as an operator, a tenant administrator and a party member.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:compute:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:browse-the-grids-jobs/][the prototype]]          |
+| Gemini review | [[file:browse-the-grids-jobs/review/][the review]]            |
+| Group         | [[file:index.org][Compute prototypes]]                |
+| Journey       | [[id:D251AAD1-26B2-4080-B84A-D0236AFD4816][Browse the grid's jobs]] |
+
+* Summary
+
+A person who sees "1268 results failed" has no way to ask which ones. The grid
+screen counts work and draws its load, and it lists none of it. This prototype
+adds a Jobs tab: a paged tree of batches, workunits and results, with a details
+panel for the selected record and a link to each stored input and output.
+
+It is throwaway. It reads no service. Open the [[file:browse-the-grids-jobs/][Jobs tab]].
+
+* Detail
+
+** The verdict
+
+Signed off on 2026-10-13. The layout, the three roles, the four states and the
+dashed run-statistics block stand as drawn. The statistics need three tasks:
+the result fields, the wrapper's measurements and the aggregate read.
+
+** What it argues
+
+- A tree is the right shape. A batch holds workunits and a workunit holds
+  results, and the person asks about one level at a time.
+- Every level pages on the server. Opening a batch reads one page of its
+  workunits, never all of them.
+- The same screen serves three roles. The operator sees every party and the node
+  of each run. The tenant administrator sees every party and no node. A party
+  member sees one party and no party filter.
+- The screen shows only fields the entity models hold, under the models' own
+  headers. It computes no count and no state. A closed batch is not a successful
+  batch: the person reads the =outcome= of each result.
+- A workunit's Input URI and a result's Output URI are links to the stored
+  files, so a person can take them away. A result has no input of its own: its
+  Workunit ID link leads to it.
+
+** Variants and states
+
+=?role=operator|tenant|member= and =?state=loaded|loading|empty|error|refused=.
+The bar at the foot of the page switches both.
+
+** What is real and what is not
+
+Every field shown is a field of =batch=, =workunit=, =result= or =host=. The
+=external_ref= values, party codes, storage URIs, host display names and the
+stored =server_state= and =outcome= (all Done and Success) come from the
+development database as it stood on 2026-10-13. The ids, the =app_version_id=,
+the failed and in-flight results and the batches in =processing= are invented.
+
+The dashed /Run statistics/ block is the one exception to the fields-only rule,
+and it says so on the screen. A result shows its start and end time, its input
+and output bytes and its peak memory. A workunit and a batch show the aggregate
+of the results below them (earliest start, latest finish, summed bytes, largest
+peak memory). None of these is stored: the wrapper measures the duration and the
+bytes and sums them per node, and the engine's peak memory is a log line. The
+journey lists the fields as a gap.
+
+No server behind the screen exists yet for the filters, the failed-result read
+or the download route. The journey lists them as gaps.
+
+** The Gemini review
+
+Gemini drew the tab as one screen with one batch open and the workunit
+inspector. It is kept at [[file:browse-the-grids-jobs/review/][the review]]. The agreed design stands. The
+prototype took two things from it and left the rest. An earlier build took three
+more (a red failure count, a /has failures/ filter and tiles), and the
+entity-fields pass removed them: the models hold no count and no failure state.
+
+| Taken | Why |
+|-------+-----|
+| The count in the tree's header (batches and page) | A person reads how much there is before paging. The list's paging total is the server's own figure. |
+| The inspector named for the record, with its id large | The person reads the id first. |
+
+| Left | Why |
+|------+-----|
+| A red failure count on a batch row, and a /has failures/ filter | The batch model holds no count and no failure state. The journey lists the missing read. |
+| Figures in tiles and an /Open job/ button | The tiles repeated fields the list already shows, and the button implied a route. The references are links instead. |
+| The header bar with "5/5 Nodes Online" and an avatar | The shell draws the header. A node count belongs to the operator and has no source on this screen. |
+| The grid's tabs drawn twice | They repeat the same four names. |
+| A /Failed/ batch state | A batch is open, processing, assimilating or closed. Failure belongs to a result's =outcome=. |
+| Two download buttons | The prototype shows the file as a link, which is the file's own address. |
+| One role and one selection only | The prototype must show three roles and the four states. |
+| Tailwind from a CDN and web fonts | A prototype uses no framework and no build step. |
+
+* See also
+
+- [[id:D251AAD1-26B2-4080-B84A-D0236AFD4816][Browse the grid's jobs]] — the journey this prototype answers.
+- [[file:index.org][Compute prototypes]] — the group page.

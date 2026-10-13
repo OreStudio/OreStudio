@@ -186,10 +186,8 @@ std::vector<part_progress> approval_lifecycle::progress_of(const std::string& re
     std::vector<part_progress> progress;
     progress.reserve(all.size());
     for (const auto& p : all) {
-        part_progress entry{.code = p.code,
-                            .name = p.name,
-                            .answer_order = p.answer_order,
-                            .state = "later"};
+        part_progress entry{
+            .code = p.code, .name = p.name, .answer_order = p.answer_order, .state = "later"};
         if (std::ranges::any_of(open, [&](const auto& o) { return o.code == p.code; }))
             entry.state = "waiting";
         // A part with an approval is never open, so an answer below replaces

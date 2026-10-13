@@ -557,6 +557,9 @@ such part is a gap on the answer, stated on the screen in words. A gap is never
 rounded away, and it is never shown as an empty list.
 
 - A gap the screen knows is said in its own words, in every language, once.
+- A part that was removed is closed, and no read lists a closed row. A party's
+  history says so for its identifiers, its contacts and its business units, in
+  its own words, until a read by parent lists them.
 - Any other gap says that part of the history could not be read. It then names the
   record and gives the stream's own reason, so a reader can tell what is missing
   and why. The reason is in English and may name tables, reads and refusals.
@@ -850,6 +853,15 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
   card and the history.
 - The page does not reload by itself. A list does not, a record page does not,
   and the history does not.
+- The query client holds this for every screen. It never reads again because the
+  window gained focus or the network came back (=refetchOnWindowFocus= and
+  =refetchOnReconnect= are off). A screen that must poll says so on its own query,
+  as the notification bell and the dashboards do.
+- A tab of a record page that the person has opened stays drawn and is hidden while
+  another is open. Leaving a tab never unmounts its reads, so coming back to it
+  reads nothing. A tab the person has not opened reads nothing.
+- Refresh reads again only the queries the page shows: the record, its parts, its
+  links and its history. It does not read every record of the app.
 - A save does not reload the page either. The save's own change event makes
   Refresh gold, like any other change, and the person presses Refresh to see the
   saved values. A page that was reloaded by the save would hide that the data
@@ -946,9 +958,11 @@ is entered, and a screen the reader cannot use is not drawn.
 - /Two audiences are two screens./ The whole directory and the people of your own
   parties are two screens, each with its own declaration. A screen does not
   inspect permissions to decide which screen it is.
-- /A form saves through one hook/ (=useRecordEdit=): save, close the form, then read
-  the record again. The form never reloads under the person, and a change that
-  arrives during a save is the save's own.
+- /A form saves through one hook/ (=useRecordEdit=): save, close the form, and mark
+  what the save changed as out of date. The hook reads none of it again, because a
+  save does not reload the page (see Refresh). The person reads again with Refresh,
+  which the save's own change event has turned gold. A read that no screen shows is
+  stale all the same, so the screen that shows it next reads it fresh.
 - /Every failed request names its operation/ (the method and the path, with no
   query), its status, the server's code, and the request id. The banner shows the
   operation and the first eight characters of the id. The BFF puts the same id on
@@ -1003,6 +1017,7 @@ is entered, and a screen the reader cannot use is not drawn.
 | Photos | A history author's photo comes from the directory, so an author the reader cannot name is shown as initials, and the directory is read whole |
 | Proposals | The reporting line is not yet a proposal |
 | Updates | Only the person page has a Refresh that hears changes. The other record pages need the same with their own watches |
+| History | A party's history reads every version of every part and link at once, one read for each row, with no window and no load-older control |
 
 Each deviation is a follow-up. None of them is a reason to copy the shortcut to
 another screen.

@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.core/repository/audit_scope.hpp"
 #include "ores.iam.core/repository/run_token_issue_repository.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -56,14 +57,14 @@ void run_token_issue_log::record(const run_token_issue& issue) {
 }
 
 void run_token_issue_log::record(const std::chrono::system_clock::time_point& issued_at,
-                                        const std::string& tenant_id,
-                                        const std::string& party_id,
-                                        const std::string& grant_id,
-                                        const std::string& run_id,
-                                        const std::string& service,
-                                        const std::string& grantor_account_id,
-                                        const std::string& outcome,
-                                        const std::string& reason) {
+                                 const std::string& tenant_id,
+                                 const std::string& party_id,
+                                 const std::string& grant_id,
+                                 const std::string& run_id,
+                                 const std::string& service,
+                                 const std::string& grantor_account_id,
+                                 const std::string& outcome,
+                                 const std::string& reason) {
 
     BOOST_LOG_SEV(lg(), debug) << "Recording run token issue for grant " << grant_id << " run "
                                << run_id << ": " << outcome;
@@ -82,7 +83,11 @@ void run_token_issue_log::record(const std::chrono::system_clock::time_point& is
     row.outcome = outcome;
     row.reason = reason;
 
-    run_token_issue_repository().write(ctx_, row);
+    // The row is written by a session of its own tenant, which the isolation
+    // policy requires, and an exchange that names no tenant is the platform's.
+    const auto scope = audit_scope_for(ctx_, tenant_id);
+    row.tenant_id = scope.tenant_id;
+    run_token_issue_repository().write(scope.ctx, row);
 }
 
 std::size_t run_token_issue_log::distinct_runs(const std::string& grant_id) const {
@@ -107,8 +112,7 @@ std::size_t run_token_issue_log::distinct_runs(const std::string& grant_id) cons
     }
 }
 
-bool run_token_issue_log::exists(const std::string& grant_id,
-                                        const std::string& run_id) const {
+bool run_token_issue_log::exists(const std::string& grant_id, const std::string& run_id) const {
     const auto rows = execute_parameterized_string_query(
         ctx_,
         "select 1::text from ores_iam_run_token_issues_tbl "

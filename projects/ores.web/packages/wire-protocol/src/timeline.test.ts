@@ -79,6 +79,12 @@ describe('the order of a timeline', () => {
 });
 
 describe('the story of a party', () => {
+    /** The parts whose removal no read can find, so the story always says so. */
+    const REMOVED_PARTS = [
+        'ores.refdata.party_identifier_removed',
+        'ores.refdata.party_contact_information_removed',
+        'ores.refdata.business_unit_removed',
+    ];
     const PARTY = '11111111-1111-4111-8111-111111111111';
     const OTHER = '22222222-2222-4222-8222-222222222222';
     const ok = { outcome: 'ok', code: '', message: '' };
@@ -192,7 +198,7 @@ describe('the story of a party', () => {
         );
 
         expect(asked).toEqual([CONTACT]);
-        expect(story.gaps).toEqual([]);
+        expect(story.gaps.map((g) => g.entity)).toEqual(REMOVED_PARTS);
     });
 
     /** One version of a link, which names the pair as its ID and says when it ended. */
@@ -318,7 +324,10 @@ describe('the story of a party', () => {
             PARTY,
         );
 
-        expect(story.gaps.map((g) => g.entity)).toEqual(['ores.refdata.party_currency']);
+        expect(story.gaps.map((g) => g.entity)).toEqual([
+            'ores.refdata.party_currency',
+            ...REMOVED_PARTS,
+        ]);
     });
 
     it('keeps only the versions that belong to the party asked for', async () => {

@@ -220,7 +220,7 @@ and whether the timeline earns its space.
 
 * The journeys proposed
 
-The five are now written:
+The five are now written, and a sixth browses the tree of jobs:
 
 1. [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]: the load, and how it moved.
 2. [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]: one job end to end, and where its time went.
@@ -229,6 +229,7 @@ The five are now written:
 4. [[id:01238DF2-9745-451A-B288-7C0F141E35B6][Plan the grid's capacity]]: what the nodes have, what a job needs, and
    what is arriving.
 5. [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]]: apps, versions, packages and concurrency.
+6. [[id:D251AAD1-26B2-4080-B84A-D0236AFD4816][Browse the grid's jobs]]: the batches, workunits and results a person may see, with details and downloads.
 
 Five written, one deferred. Not nine: the actor split I first proposed was not
 a security boundary, and expressing it as journeys would have duplicated five

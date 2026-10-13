@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compute prototype — browse the grid's jobs</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Browse the grid's jobs, from
+  doc/knowledge/journeys/compute/journey_browse_the_grids_jobs.org: the Jobs
+  tab of the compute grid screen. A paged tree of batches, workunits and
+  results, a details panel, filters and downloads.
+
+  Switch the role with ?role=operator|tenant|member and the state with
+  ?state=loaded|loading|empty|error|refused. The bar at the foot does both.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

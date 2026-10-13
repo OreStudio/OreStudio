@@ -90,9 +90,9 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::synthetic::domain::binding_mode binding_mode,
                   const std::string& caller_bearer_token) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
-    const auto expected = "oresmd://fx/" + cfg.base_currency_code +
-                          "?type=quote&instrument=fx_spot&quote=rate&ccy=" +
-                          cfg.quote_currency_code;
+    const auto expected =
+        "oresmd://fx/" + cfg.base_currency_code +
+        "?type=quote&instrument=fx_spot&quote=rate&ccy=" + cfg.quote_currency_code;
     if (cfg.oresmd_uri != expected)
         throw std::invalid_argument("make_fx_spot_feed: config '" + cfg.oresmd_uri +
                                     "' is not the quote of the pair " + cfg.base_currency_code +
@@ -169,8 +169,7 @@ fx_spot_feed::fx_spot_feed(
         throw std::invalid_argument("fx_spot_feed: '" + quote_uri_ +
                                     "' names no datum: " + read.error());
     if (read->type() != datum::instrument_type::fx_spot || read->is_series())
-        throw std::invalid_argument("fx_spot_feed: '" + quote_uri_ +
-                                    "' is not an fx_spot quote.");
+        throw std::invalid_argument("fx_spot_feed: '" + quote_uri_ + "' is not an fx_spot quote.");
     quote_uri_ = datum::oresmd_uri_codec::write(*read).value();
     series_uris_ = {datum::oresmd_uri_codec::write(datum::series_of(*read)).value()};
 }
@@ -207,8 +206,8 @@ void fx_spot_feed::start() {
         [this](std::uint64_t n, const std::string& value) {
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
-                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' oresmd_uri='" << quote_uri_
-                    << "' count=" << n << " value=" << value;
+                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' oresmd_uri='"
+                    << quote_uri_ << "' count=" << n << " value=" << value;
             }
         },
         [this](const std::exception& ex) {

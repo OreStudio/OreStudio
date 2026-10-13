@@ -461,14 +461,14 @@ void run_grant_operations_service::log_refusal(const std::string& tenant_id,
                                                std::string_view reason) {
     try {
         repository::run_token_issue_log(ctx_).record(std::chrono::system_clock::now(),
-                                                            tenant_id,
-                                                            "",
-                                                            request.grant_id,
-                                                            request.run_id,
-                                                            service_name,
-                                                            grantor_account_id,
-                                                            std::string(refused_outcome),
-                                                            std::string(reason));
+                                                     tenant_id,
+                                                     "",
+                                                     request.grant_id,
+                                                     request.run_id,
+                                                     service_name,
+                                                     grantor_account_id,
+                                                     std::string(refused_outcome),
+                                                     std::string(reason));
     } catch (const std::exception& e) {
         // The refusal is the answer; a log that cannot be written must not
         // replace it with a failure.
@@ -496,16 +496,15 @@ run_grant_operations_service::issue(const domain::run_grant& grant,
 
     // The row is appended before the token is handed over, so no run token
     // exists that the issue log does not name.
-    repository::run_token_issue_log(ctx_).record(
-        now,
-        grant.tenant_id.to_string(),
-        boost::uuids::to_string(grant.party_id),
-        boost::uuids::to_string(grant.id),
-        run_id,
-        service_name,
-        boost::uuids::to_string(grant.grantor_account_id),
-        std::string(issued_outcome),
-        "");
+    repository::run_token_issue_log(ctx_).record(now,
+                                                 grant.tenant_id.to_string(),
+                                                 boost::uuids::to_string(grant.party_id),
+                                                 boost::uuids::to_string(grant.id),
+                                                 run_id,
+                                                 service_name,
+                                                 boost::uuids::to_string(grant.grantor_account_id),
+                                                 std::string(issued_outcome),
+                                                 "");
 
     BOOST_LOG_SEV(lg(), info) << "Issued a run token for grant " << grant.id << " run " << run_id
                               << " to " << service_name << " as "

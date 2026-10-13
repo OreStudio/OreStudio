@@ -87,7 +87,8 @@ messaging::put_party_counterparty_request put_of(const domain::party_counterpart
     return req;
 }
 
-messaging::delete_party_counterparty_request removal_of(const domain::party_counterparty_change& l) {
+messaging::delete_party_counterparty_request
+removal_of(const domain::party_counterparty_change& l) {
     messaging::delete_party_counterparty_request req;
     req.removal.key = {.party_id = l.party_id, .counterparty_id = l.counterparty_id};
     req.intent = {"system.test", "A gate test"};
@@ -97,7 +98,9 @@ messaging::delete_party_counterparty_request removal_of(const domain::party_coun
 bool linked(const world& w, const domain::party_counterparty_change& l) {
     messaging::get_party_counterparty_request req;
     req.key = {.party_id = l.party_id, .counterparty_id = l.counterparty_id};
-    return party_counterparty_service(w.ctx).get_party_counterparty(req).party_counterparty.has_value();
+    return party_counterparty_service(w.ctx)
+        .get_party_counterparty(req)
+        .party_counterparty.has_value();
 }
 
 }
@@ -120,10 +123,13 @@ TEST_CASE("an_identifier_put_with_no_request_writes_nothing_and_answers_approval
     const auto owner = make_live(w, new_counterparty_line(h));
     const auto line = new_identifier_line(h, owner.id);
 
-    const auto response = counterparty_identifier_service(w.ctx).put_counterparty_identifier(put_of(line));
+    const auto response =
+        counterparty_identifier_service(w.ctx).put_counterparty_identifier(put_of(line));
 
     CHECK(response.result.code == "approval_required");
-    CHECK_FALSE(counterparty_identifier_service(w.ctx).get_counterparty_identifier(line.entity_id).has_value());
+    CHECK_FALSE(counterparty_identifier_service(w.ctx)
+                    .get_counterparty_identifier(line.entity_id)
+                    .has_value());
 }
 
 TEST_CASE("a_link_put_and_a_link_removal_with_no_request_write_nothing", tags) {
@@ -196,7 +202,8 @@ TEST_CASE("a_contact_change_is_written_directly", tags) {
     const auto w = seed_world(h);
     const auto live = make_live(w, new_counterparty_line(h));
     auto gctx = ores::testing::make_generation_context(h);
-    auto contact = ores::refdata::generators::generate_synthetic_counterparty_contact_information(gctx);
+    auto contact =
+        ores::refdata::generators::generate_synthetic_counterparty_contact_information(gctx);
     messaging::put_counterparty_contact_information_request req;
     req.change.write = {.id = fresh(),
                         .counterparty_id = live.id,
@@ -239,7 +246,8 @@ TEST_CASE("a_batch_link_removal_opens_only_for_the_link_the_request_holds", tags
     svc.carry_out_request(boost::uuids::to_string(proposal.request->id));
     const auto batch_of = [&](const boost::uuids::uuid& counterparty) {
         messaging::delete_many_party_counterparties_request batch;
-        batch.removals.push_back({.key = {.party_id = w.party_id, .counterparty_id = counterparty}});
+        batch.removals.push_back(
+            {.key = {.party_id = w.party_id, .counterparty_id = counterparty}});
         batch.intent = {"system.test", "A gate test"};
         return batch;
     };
@@ -268,5 +276,6 @@ TEST_CASE("a_link_line_opens_the_gate_once", tags) {
     party_counterparty_service svc(w.ctx);
     svc.carry_out_request(id);
 
-    CHECK(svc.put_party_counterparty(put_of(lines.links.front())).result.code == "approval_required");
+    CHECK(svc.put_party_counterparty(put_of(lines.links.front())).result.code ==
+          "approval_required");
 }

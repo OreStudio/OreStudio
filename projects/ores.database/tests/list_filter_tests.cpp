@@ -18,9 +18,11 @@
  *
  */
 #include "ores.database/repository/list_filter.hpp"
+#include "ores.database/repository/range_bound.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -37,6 +39,16 @@ const std::string tags("[list_filter]");
 struct widget {
     std::string code;
 };
+
+namespace shapes {
+
+enum class edge { sharp, round };
+
+std::string_view to_string(edge e) {
+    return e == edge::sharp ? "sharp" : "round";
+}
+
+}
 
 std::string where_clause(std::optional<sqlgen::dynamic::Condition> condition) {
     ores::testing::database_helper h;
@@ -107,4 +119,65 @@ TEST_CASE("a filter narrows a query's own condition", tags) {
     CHECK(where_clause(narrowed(own, std::nullopt)) == where_clause(own));
     CHECK(where_clause(narrowed(std::nullopt, filter)) == where_clause(filter));
     CHECK(where_clause(narrowed(own, filter)).find(" AND ") != std::string::npos);
+}
+
+TEST_CASE("an enum value renders as the text its to_string gives", tags) {
+    const auto sql = where_clause(equals("code", filter_value(shapes::edge::round)));
+    CHECK(sql.find("\"code\" = 'round'") != std::string::npos);
+}
+
+TEST_CASE("a date renders as its ISO text", tags) {
+    using namespace std::chrono;
+    const auto sql =
+        where_clause(equals("code", filter_value(year_month_day{year{2026} / March / 5})));
+    CHECK(sql.find("'2026-03-05'") != std::string::npos);
+}
+
+TEST_CASE("a timestamp renders as UTC text", tags) {
+    using namespace std::chrono;
+    const auto tp = sys_days{year{2026} / March / 5} + hours{10};
+    const auto sql = where_clause(equals("code", filter_value(system_clock::time_point{tp})));
+    CHECK(sql.find("'2026-03-05 10:00:00") != std::string::npos);
+}
+
+TEST_CASE("at_least and at_most render inclusive comparisons", tags) {
+    const auto low = where_clause(at_least("code", filter_value(std::string("2026-03-01"))));
+    CHECK(low.find("\"code\" >= '2026-03-01'") != std::string::npos);
+    const auto high = where_clause(at_most("code", filter_value(std::string("2026-03-31"))));
+    CHECK(high.find("\"code\" <= '2026-03-31'") != std::string::npos);
+}
+
+TEST_CASE("a date column takes a date as its bound and nothing else", tags) {
+    CHECK(range_bound("2026-03-05", range_end::from, false) == "2026-03-05");
+    CHECK(range_bound("2026-03-05", range_end::to, false) == "2026-03-05");
+    CHECK(!range_bound("2026-03-05T10:00:00Z", range_end::from, false));
+    CHECK(!range_bound("yesterday", range_end::from, false));
+    CHECK(!range_bound("", range_end::to, false));
+}
+
+TEST_CASE("a date that does not exist is not a bound", tags) {
+    CHECK(!range_bound("2026-02-30", range_end::from, false));
+    CHECK(!range_bound("2026-13-01", range_end::to, true));
+    CHECK(range_bound("2028-02-29", range_end::from, false));
+    CHECK(!range_bound("2027-02-29", range_end::from, false));
+}
+
+TEST_CASE("year 0 is not a date, because the database has none", tags) {
+    CHECK(!range_bound("0000-01-01", range_end::from, false));
+    CHECK(!range_bound("0000-06-15", range_end::to, true));
+    CHECK(!range_bound("0000-01-01T00:00:00Z", range_end::from, true));
+    CHECK(range_bound("0001-01-01", range_end::from, false) == "0001-01-01");
+}
+
+TEST_CASE("a date on a timestamp column spans the whole of that day in UTC", tags) {
+    CHECK(range_bound("2026-03-05", range_end::from, true) == "2026-03-05 00:00:00+00");
+    CHECK(range_bound("2026-03-05", range_end::to, true) == "2026-03-05 23:59:59.999999+00");
+}
+
+TEST_CASE("a UTC timestamp on a timestamp column is the bound itself", tags) {
+    CHECK(range_bound("2026-03-05T10:00:00Z", range_end::from, true) == "2026-03-05T10:00:00Z");
+    CHECK(range_bound("2026-03-05 10:00:00.5+00", range_end::to, true) ==
+          "2026-03-05 10:00:00.5+00");
+    CHECK(!range_bound("2026-03-05T10:00:00+02:00", range_end::to, true));
+    CHECK(!range_bound("2026-03-05 25:00:00Z", range_end::to, true));
 }

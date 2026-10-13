@@ -158,7 +158,11 @@ export function createQueryClient(): QueryClient {
                 retry: (failureCount, error) =>
                     !(error instanceof ApiFailure && error.status < 500) && failureCount < 2,
                 staleTime: 30_000,
-                refetchOnWindowFocus: true,
+                // A screen never reloads by itself. It hears that its data changed,
+                // turns Refresh gold and waits for the reader, so a return to the
+                // window or to the network must not read again either.
+                refetchOnWindowFocus: false,
+                refetchOnReconnect: false,
             },
         },
     });

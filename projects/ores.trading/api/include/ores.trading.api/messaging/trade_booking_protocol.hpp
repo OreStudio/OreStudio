@@ -66,7 +66,15 @@ struct trade_booking_lookup {
 };
 
 struct trade_bookings_filter {
+    std::optional<std::optional<std::chrono::year_month_day>> trade_date;
+    std::optional<std::optional<std::chrono::system_clock::time_point>> execution_timestamp;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+    std::optional<std::vector<std::chrono::year_month_day>> trade_date_one_of;
+    std::optional<std::vector<std::chrono::system_clock::time_point>> execution_timestamp_one_of;
+    std::optional<std::string> trade_date_from;
+    std::optional<std::string> trade_date_to;
+    std::optional<std::string> execution_timestamp_from;
+    std::optional<std::string> execution_timestamp_to;
 };
 
 struct trade_booking_event {

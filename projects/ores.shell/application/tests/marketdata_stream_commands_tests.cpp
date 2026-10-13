@@ -107,9 +107,8 @@ TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", tags) {
     const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, eurusd_uri);
 
     REQUIRE(watch.has_value());
-    CHECK(watch->subjects ==
-          std::vector<std::string>{ores::marketdata::domain::market_tick_subject(
-              tenant_id, party_id, eurusd_uri)});
+    CHECK(watch->subjects == std::vector<std::string>{ores::marketdata::domain::market_tick_subject(
+                                 tenant_id, party_id, eurusd_uri)});
     CHECK_FALSE(watch->series.has_value());
 }
 

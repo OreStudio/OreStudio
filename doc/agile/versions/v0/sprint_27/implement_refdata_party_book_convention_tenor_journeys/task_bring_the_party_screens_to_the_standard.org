@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: B4092844-BBEE-486F-B26F-AF8D99D9A79B
+:END:
+#+title: Task: Bring the party screens to the standard
+#+description: Fix the party list and page against the entity screen specification and the record screen standard: nothing reloads by itself, a save does not reload the page, the part history buttons read by the row id, and the review's list of differences.
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/bring-the-party-screens-to-the-standard
+#+pr: 3253
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The party list and page follow the UX standards for refresh, history and the shared parts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The party page and list never reload without a Refresh or a navigation.
+- A save marks the page stale and does not reload it.
+- The History button of an identifier, a contact and a business unit shows that row's versions.
+- The party timeline states the parts it cannot read.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+- Follow the Refresh section of the entity screen specification. A screen never reloads by itself, and a save does not reload the page. The query client stops the two reads it started on its own, when the window gains focus and when the network returns.
+- Make a write mark what it changed as stale instead of reading it again (=markStale=, an invalidation with no refetch). A read that no screen shows reads fresh when it is next shown. The save's own change event turns Refresh gold.
+- Keep an opened tab of the party page drawn and hidden, so that leaving a tab does not unmount its reads. Move the reads of the parts into the tabs that show them, so a tab nobody opened reads nothing.
+- Draw a tab only for what the reader may read, from the permission the registry names for the resource.
+- Narrow Refresh on the party page to the reads the page shows.
+- Read a part's history by the row's id, which is the key the server takes.
+- State the removed parts as a gap, because no read lists them.
+- Fix the small differences: say why a fixed field never changes, say that a record does not exist instead of going to the list, draw no identifier beside a linked record, and mark a read-only panel.
+- Fix the specification where it contradicted itself about a save.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The page reloaded by itself for four reasons. The query client read again on window focus, with a staleness of 30 seconds. Every write invalidated and read again the records, the history and the timeline. The Refresh button read every records query of the app. A read that the focus or a write refreshed moved the load time forward, so the Refresh button never turned gold. The change stream code was correct.
+- A save now leaves the card as it was until the person presses Refresh. This is what the specification says, and it is a visible change on every record screen that uses the shared dialogs: the people, classification and synthetic screens too. A link panel that adds or removes a link shows the change after Refresh as well.
+- The specification said in two places how a save behaves. The Refresh section wins. The section on what a screen needs now agrees with it.
+- The History button of an identifier, a contact and a business unit sent the identifier value, the contact type and the unit code. The server reads these histories by the row's uuid, so the buttons failed. They send the id.
+- The party's own history is read by its short code, which the server takes. That stays.
+- The removed parts gap is always on a party's history, because the stream cannot tell whether any part was removed. Task "List the parts a party removed" removes it.
+- Left out, each with a task: a type and status filter on the list (it needs the list contract's filter in the BFF and the store), a window for the timeline and fewer reads, and a read by parent for removed parts. The paging of the lookups the link panels use is task "Page the lookups of the party link panels" of the story "Edit a party on a standard entity page".
+- Not done, and not part of this task: since the gate on the counterparty writes, the Add and Remove of the Counterparties tab are refused, and so is the counterparty onboarding write. They need to raise requests, which is the counterparty screen task. The tab still offers them.
+- Not checked in a browser. The tests render from a seeded cache, so the focus behaviour comes from the query client default and its test, not from a run.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3253][#3253]] | [web] Bring the party screens to the standard |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The party list and page no longer reload by themselves, and the differences the review found are fixed, apart from three that have their own tasks.
+
+- The query client never reads again on window focus or when the network returns.
+- A write marks what it changed as stale and reads none of it. The save's change event turns Refresh gold, and Refresh reads only the reads the page shows.
+- An opened tab stays drawn and hidden. A tab the reader may not read is not drawn, and a tab nobody opened reads nothing.
+- The History button of an identifier, a contact and a business unit reads by the row's id.
+- The party timeline states that removed identifiers, contacts and business units are not shown.
+- A fixed field says why it never changes. A missing record says so and offers the list. A linked record shows no identifier. A read-only panel shows the mark.
+- The entity screen specification no longer contradicts itself about a save, and says what the query client and the tabs do.
+
+Evidence: all 1491 web tests passed after the change, and the whole run passed again with the new cases. The new cases cover the query client defaults, =markStale= with a live observer, the tabs drawn for each reader, the kept and hidden tab, the fixed-field line, the linked counterparty without its id, the read-only mark and the missing record. The timeline tests cover the removed parts gap. The web typecheck is clean.
+
+Not done here: the type and status filter, the timeline window, the read for removed parts, and requests for the Counterparties tab. A browser run is not done.

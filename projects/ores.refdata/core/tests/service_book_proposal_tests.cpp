@@ -522,12 +522,14 @@ TEST_CASE("a_requests_deltas_list_each_column_beside_the_live_book", tags) {
     REQUIRE(deltas.size() == 1);
     CHECK(deltas[0].operation == "put");
     CHECK(deltas[0].base_version == live.version);
-    const auto status = std::ranges::find(deltas[0].fields, "book_status", &ores::refdata::service::field_delta::name);
+    const auto status = std::ranges::find(
+        deltas[0].fields, "book_status", &ores::refdata::service::field_delta::name);
     REQUIRE(status != deltas[0].fields.end());
     CHECK(status->changed);
     CHECK(status->before == live.book_status);
     CHECK(status->after == edit.book_status);
-    const auto description = std::ranges::find(deltas[0].fields, "description", &ores::refdata::service::field_delta::name);
+    const auto description = std::ranges::find(
+        deltas[0].fields, "description", &ores::refdata::service::field_delta::name);
     REQUIRE(description != deltas[0].fields.end());
     CHECK_FALSE(description->changed);
 }

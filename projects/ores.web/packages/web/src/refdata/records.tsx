@@ -21,9 +21,15 @@
 
 import { AccessMark } from '../ui/AccessMark.js';
 import { Phrase, PersonRef, slot } from '../access/PersonRef.js';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+    useMutation,
+    useQuery,
+    useQueryClient,
+    type QueryClient,
+    type QueryKey,
+} from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
@@ -192,6 +198,20 @@ function kept(
     return Object.fromEntries((keep ?? []).map((field) => [field, row?.[field] ?? null]));
 }
 
+/**
+ * Marks what a write made out of date, and reads none of it again.
+ *
+ * A screen never reloads under the person, and a save is no exception: the
+ * save's own change event turns Refresh gold, and the person reads again when
+ * they choose. A read nobody is showing is stale all the same, so the screen
+ * that shows it next reads it fresh.
+ */
+export function markStale(queries: QueryClient, keys: readonly QueryKey[]): void {
+    for (const queryKey of keys) {
+        void queries.invalidateQueries({ queryKey, refetchType: 'none' });
+    }
+}
+
 /** The tabs of a record's page, titled from the record screens' words. */
 export function useRecordTabs({
     label,
@@ -247,6 +267,31 @@ export function useRecordPermissions(resource: string): {
         return { write: false, remove: false };
     }
     return { write: holds(entry.writePermission), remove: holds(entry.deletePermission) };
+}
+
+/**
+ * Whether the signed-in person may read the rows of a resource.
+ *
+ * It answers false until the registry and the person's roles are read, so a
+ * tab or a panel that needs the read is drawn once it is known and never
+ * drawn and then taken away.
+ */
+export function useMayRead(): (resource: string) => boolean {
+    const store = useRecordStore();
+    const registry = useRegistry();
+    const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
+    const codes = new Set((access.data?.roles ?? []).flatMap((role) => role.permissionCodes));
+    return (resource) => {
+        const entry = registry.data?.find((candidate) => candidate.key === resource);
+        if (entry?.events === undefined) {
+            return false;
+        }
+        return (
+            codes.has('*') ||
+            codes.has(`${store.name}::*`) ||
+            codes.has(`${store.name}::${entry.events.entity}:read`)
+        );
+    };
 }
 
 /** A record named by an identifier rather than a code; the identifier is never shown. */
@@ -307,7 +352,9 @@ export function FieldInput({
     const label = labelOf(t, spec);
     const help =
         spec.help === undefined
-            ? {}
+            ? disabled && spec.fixed === true
+                ? { hint: t('refdata.records.fixedHint') }
+                : {}
             : {
                   hint:
                       spec.kind.kind === 'choice'
@@ -554,11 +601,8 @@ export function RecordDialog({
             await after?.(write, intent);
             return write;
         },
-        onSuccess: async (write) => {
-            await queries.invalidateQueries({ queryKey: ['records'] });
-            await queries.invalidateQueries({ queryKey: ['history'] });
-            await queries.invalidateQueries({ queryKey: ['timeline'] });
-            await queries.invalidateQueries({ queryKey: ['image-map'] });
+        onSuccess: (write) => {
+            markStale(queries, [['records'], ['history'], ['timeline'], ['image-map']]);
             onSaved?.(write);
             onClose();
         },
@@ -731,6 +775,11 @@ export function RecordDetails({
                         <dd className="mt-0.5 text-sm">
                             <DetailValue spec={spec} value={row[spec.field]} />
                         </dd>
+                        {spec.fixed === true && (
+                            <p className="mt-0.5 text-xs text-ink-faint">
+                                {t('refdata.records.fixedHint')}
+                            </p>
+                        )}
                     </div>
                 ))}
                 {(extra ?? []).map(([label, value, hint]) => (
@@ -942,8 +991,8 @@ export function LinkPanel({
     const linked = new Set(rows.map((row) => show(row[childField])));
     const name = (code: string): string =>
         choices.find((choice) => choice.value === code)?.label ?? code;
-    const refresh = async (): Promise<void> => {
-        await queries.invalidateQueries({ queryKey: ['records', junction] });
+    const refresh = (): void => {
+        markStale(queries, [['records', junction]]);
     };
     const add = useMutation({
         mutationFn: () =>
@@ -953,9 +1002,9 @@ export function LinkPanel({
                 reasonCode: NEW_RECORD_REASON,
                 commentary: '',
             }),
-        onSuccess: async () => {
+        onSuccess: () => {
             setAdding('');
-            await refresh();
+            refresh();
         },
     });
     const remove = useMutation({
@@ -970,7 +1019,10 @@ export function LinkPanel({
 
     return (
         <section className="rounded-md border border-line">
-            <h3 className="border-b border-line px-4 py-2 text-sm font-medium">{title}</h3>
+            <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
+                <h3 className="text-sm font-medium">{title}</h3>
+                {!may.write && <AccessMark canWrite={false} />}
+            </header>
             {links.isError && <Notice tone="error">{links.error.message}</Notice>}
             <ul>
                 {rows.length === 0 && (
@@ -986,7 +1038,9 @@ export function LinkPanel({
                             className="flex items-center gap-2 border-b border-line-subtle px-4 py-1.5 text-sm last:border-b-0"
                         >
                             {flag !== undefined && <FlagOf source={flag} code={child} />}
-                            <span className="font-mono text-xs text-ink-muted">{child}</span>
+                            {!UUID.test(child) && (
+                                <span className="font-mono text-xs text-ink-muted">{child}</span>
+                            )}
                             {pathOf === undefined ? (
                                 <span className="flex-1">{name(child)}</span>
                             ) : (
@@ -1090,8 +1144,7 @@ export function RevertDialog({
                     version: row.version,
                     ...intent,
                 });
-                await queries.invalidateQueries({ queryKey: ['records'] });
-                await queries.invalidateQueries({ queryKey: ['image-map'] });
+                markStale(queries, [['records'], ['image-map']]);
             }}
         />
     );
@@ -1126,9 +1179,8 @@ export function RevertVersionDialog({
                     version: String(version.version),
                 }),
             }),
-        onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['history'] });
-            await queries.invalidateQueries({ queryKey: ['timeline'] });
+        onSuccess: () => {
+            markStale(queries, [['history'], ['timeline']]);
             onClose();
         },
     });
@@ -1238,7 +1290,7 @@ export function RemoveRecordDialog({
             remove={async (intent) => {
                 await before?.(intent);
                 await store.remove(resource, { key: recordKey, version, ...intent });
-                await queries.invalidateQueries({ queryKey: ['records'] });
+                markStale(queries, [['records']]);
             }}
         />
     );
@@ -1326,7 +1378,12 @@ export function RecordGate({
     }
     if (record.isError) {
         return record.error instanceof ApiFailure && record.error.status === 404 ? (
-            <Navigate to={listPath} replace />
+            <div className="space-y-3">
+                <Notice tone="info">{t('refdata.records.notFound')}</Notice>
+                <Link to={listPath} className="text-sm text-accent hover:text-accent-bright">
+                    {t('refdata.records.backToList')}
+                </Link>
+            </div>
         ) : (
             <Notice tone="error">{record.error.message}</Notice>
         );
@@ -1440,7 +1497,6 @@ export function PartsPanel({
     initial,
     lead,
     titles,
-    historyKey,
 }: {
     readonly resource: string;
     readonly entityType: string;
@@ -1460,11 +1516,6 @@ export function PartsPanel({
     readonly lead?: string;
     /** How the dialogs name one part: adding it, opening it, and deleting it. */
     readonly titles: { readonly add: string; readonly one: string; readonly remove: string };
-    /**
-     * The key the server reads a part's versions by, when it is not the part's
-     * identifier. A party's versions are kept under its short code, for one.
-     */
-    readonly historyKey?: (row: RecordRow) => string;
 }): ReactNode {
     const { t } = useTranslation();
     const may = useRecordPermissions(resource);
@@ -1483,6 +1534,11 @@ export function PartsPanel({
     return (
         <section className="space-y-3">
             {lead !== undefined && <p className="text-sm text-ink-muted">{lead}</p>}
+            {!may.write && (
+                <div className="flex justify-end">
+                    <AccessMark canWrite={false} />
+                </div>
+            )}
             {error !== undefined && <Notice tone="error">{error}</Notice>}
             <div className="overflow-x-auto rounded-md border border-line">
                 <table className="w-full text-left text-sm">
@@ -1595,7 +1651,7 @@ export function PartsPanel({
                 <Dialog title={titles.one} onClose={() => setOpen(null)} wide>
                     <HistoryPanel
                         entityType={entityType}
-                        entityId={historyKey === undefined ? open.id : historyKey(open.row)}
+                        entityId={open.id}
                         {...(may.write
                             ? {
                                   onRevert: (version: HistoryVersion) => {

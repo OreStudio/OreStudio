@@ -84,8 +84,7 @@ std::string selection_problem(const feed_filter& filter) {
     const bool narrows = !filter.feed_ids.empty() || !filter.folder_id.empty() ||
                          !filter.provider_code.empty() || !filter.asset_class.empty() ||
                          !filter.search.empty() || !filter.state.empty() || filter.should_run;
-    return narrows ? std::string()
-                   : "Name the feeds or a filter. A state of all means every feed.";
+    return narrows ? std::string() : "Name the feeds or a filter. A state of all means every feed.";
 }
 
 std::string sql_literal(const std::string& text) {
@@ -152,7 +151,8 @@ std::string where_clause(const feed_filter& filter,
     // A feed that should run and does not is a stopped one.
     const auto& state = filter.should_run ? stopped : filter.state;
     if (state == "started")
-        where += running.empty() ? " and false" : " and source_name in (" + name_list(running) + ")";
+        where +=
+            running.empty() ? " and false" : " and source_name in (" + name_list(running) + ")";
     else if (state == "stopped" && !running.empty())
         where += " and source_name not in (" + name_list(running) + ")";
     for (const auto& word : search_terms(filter.search))

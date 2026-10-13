@@ -114,8 +114,8 @@ std::chrono::system_clock::time_point datetime::from_db_string(const std::string
     return parse_utc_timestamp(str, false, "from_db_string");
 }
 
-std::chrono::system_clock::time_point
-datetime::from_utc_format(const std::string& str, const std::string& format) {
+std::chrono::system_clock::time_point datetime::from_utc_format(const std::string& str,
+                                                                const std::string& format) {
     return parse_utc_format(str, format, "from_utc_format", str);
 }
 

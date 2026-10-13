@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: AEB099F9-31E7-4B86-B88E-1CC8D03E03F9
+:END:
+#+title: Security definer functions run as the owner, which row-level…
+#+description: Security definer functions run as the owner, which row-level security does not bind. Of 595 in the schema, 530 keep the default ACL, so any database role can run them, and 29 set no search_path. The IAM ones include ores_iam_reset_system_fn, ores_iam_provision_tenant_fn, ores_iam_create_initial_admin_fn and the publish-from-dq functions. Revoke execute from public and grant by name as ores_iam_account_exists_fn does, set a search_path on each, and add a check that fails for a new function without both.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

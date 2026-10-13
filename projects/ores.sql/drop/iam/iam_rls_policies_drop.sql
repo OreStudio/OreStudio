@@ -29,6 +29,8 @@ drop policy if exists account_contact_informations_tenant_isolation_policy on "o
 -- Account Parties
 drop policy if exists account_parties_tenant_isolation_policy on "ores_iam_account_parties_tbl";
 drop policy if exists role_grant_request_roles_tenant_isolation_policy on "ores_iam_role_grant_request_roles_tbl";
+drop policy if exists auth_events_tenant_isolation_policy on "ores_iam_auth_events_tbl";
+drop policy if exists run_token_issues_tenant_isolation_policy on "ores_iam_run_token_issues_tbl";
 
 -- Tenants
 drop policy if exists tenants_write_policy on "ores_iam_tenants_tbl";
@@ -54,3 +56,17 @@ drop policy if exists roles_tenant_isolation_policy on "ores_iam_roles_tbl";
 
 -- Accounts
 drop policy if exists accounts_tenant_isolation_policy on "ores_iam_accounts_tbl";
+
+-- Seed profiles and their parts
+drop policy if exists seed_profile_select_policy on "ores_iam_seed_profiles_tbl";
+drop policy if exists seed_profile_insert_policy on "ores_iam_seed_profiles_tbl";
+drop policy if exists seed_profile_update_policy on "ores_iam_seed_profiles_tbl";
+drop policy if exists seed_profile_delete_policy on "ores_iam_seed_profiles_tbl";
+drop policy if exists seed_profile_step_select_policy on "ores_iam_seed_profile_steps_tbl";
+drop policy if exists seed_profile_step_insert_policy on "ores_iam_seed_profile_steps_tbl";
+drop policy if exists seed_profile_step_update_policy on "ores_iam_seed_profile_steps_tbl";
+drop policy if exists seed_profile_step_delete_policy on "ores_iam_seed_profile_steps_tbl";
+drop policy if exists seed_profile_parameter_select_policy on "ores_iam_seed_profile_parameters_tbl";
+drop policy if exists seed_profile_parameter_insert_policy on "ores_iam_seed_profile_parameters_tbl";
+drop policy if exists seed_profile_parameter_update_policy on "ores_iam_seed_profile_parameters_tbl";
+drop policy if exists seed_profile_parameter_delete_policy on "ores_iam_seed_profile_parameters_tbl";

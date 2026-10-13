@@ -55,9 +55,9 @@ inline auto& fx_simple_conversion_handler_lg() {
 class fx_simple_conversion_handler {
 public:
     fx_simple_conversion_handler(ores::nats::service::client& nats,
-                                  ores::database::context ctx,
-                                  std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                                  const feed_kind_registry& registry)
+                                 ores::database::context ctx,
+                                 std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                                 const feed_kind_registry& registry)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
@@ -93,13 +93,12 @@ public:
         try {
             namespace feed = ores::synthetic::feed;
             if (req->to_simple) {
-                const auto reading = feed::fx_simple_from_mixture(
-                    {.means = req->gmm_means,
-                     .stdevs = req->gmm_stdevs,
-                     .weights = req->gmm_weights},
-                    req->process_type,
-                    req->initial_price,
-                    req->ticks_per_hour);
+                const auto reading = feed::fx_simple_from_mixture({.means = req->gmm_means,
+                                                                   .stdevs = req->gmm_stdevs,
+                                                                   .weights = req->gmm_weights},
+                                                                  req->process_type,
+                                                                  req->initial_price,
+                                                                  req->ticks_per_hour);
                 resp.has_simple_form = reading.exact;
                 resp.message = reading.reason;
                 resp.trend_pct_per_hour = reading.view.trend_pct_per_hour;

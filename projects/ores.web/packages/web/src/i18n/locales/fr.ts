@@ -2179,6 +2179,17 @@ const fr: SourceCatalogue = {
                 derived: 'Dérivé',
                 manual: 'Manuel',
             },
+            surface: {
+                title: 'Surface',
+                note: 'La couleur montre où une valeur se place dans son échelle. Chaque ligne est une tranche : un {rows} sur les {columns}. Les colonnes peuvent contenir des cotations en convention de marché, une tranche n’est donc pas toujours un smile. Les colonnes sont espacées régulièrement, quel que soit leur nom.',
+                scale: 'Échelle de couleur',
+                scaleSurface: 'Toute la surface',
+                scaleColumn: 'Chaque colonne',
+                slices: 'Tranches',
+                slicesLabel: 'Une ligne pour chaque rangée, sur les colonnes',
+                axes: 'Une forme à {count} axes n’est pas dessinée comme une surface. Seule une forme à deux axes l’est.',
+                empty: 'L’objet ne contient aucun nœud, il n’y a donc pas de surface à dessiner.',
+            },
             picker: {
                 label: 'Série',
                 placeholder: 'Choisissez une série, ou saisissez son identité ci-dessous',
@@ -2384,6 +2395,12 @@ const fr: SourceCatalogue = {
                 'Les devises dans lesquelles elle opère n’ont pas pu être lues, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
             party_counterparty:
                 'Les contreparties avec lesquelles elle peut traiter n’ont pas pu être lues, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
+            party_identifier_removed:
+                'Un identifiant qui a été retiré n’apparaît pas, car aucune lecture ne liste les identifiants retirés.',
+            party_contact_information_removed:
+                'Un contact qui a été retiré n’apparaît pas, car aucune lecture ne liste les contacts retirés.',
+            business_unit_removed:
+                'Une unité d’affaires qui a été retirée n’apparaît pas, car aucune lecture ne liste les unités d’affaires retirées.',
             account_party:
                 'Les parties où une personne travaille n’ont pas pu être lues, donc l’arrivée ou le départ n’apparaît pas.',
             account_role:
@@ -3287,6 +3304,9 @@ const fr: SourceCatalogue = {
             removeTitle: 'Supprimer {code} ?',
             needs: 'Reste à renseigner : {fields}',
             noLinks: 'Aucun pour le moment.',
+            fixedHint: 'Définie à la création de l’enregistrement, et jamais modifiée ici.',
+            notFound: 'Cet enregistrement n’existe pas, ou vous ne pouvez pas le voir.',
+            backToList: 'Retour à la liste',
             unlink: 'Retirer {name}',
             linkChoose: 'Choisir un élément à ajouter…',
             link: 'Ajouter',

@@ -178,5 +178,9 @@ on delete to "ores_iam_seed_profiles_tbl" do instead (
     update "ores_iam_seed_profiles_tbl"
     set valid_to = clock_timestamp()
     where id = OLD.id
+      -- Every row belongs to the system tenant, and only the system tenant
+      -- removes one. The rule runs with the owner's rights, which row-level
+      -- security does not bind, so the rule states the limit itself.
+      and ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

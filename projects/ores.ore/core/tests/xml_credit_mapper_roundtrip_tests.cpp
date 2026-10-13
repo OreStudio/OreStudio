@@ -213,7 +213,8 @@ TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
     CHECK(!r.reference_entity.empty());
     CHECK(r.start_date.has_value());
     CHECK(r.maturity_date.has_value());
-    const auto& fact = fact_of<ores::trading::domain::risk_participation_agreement_instrument>(data);
+    const auto& fact =
+        fact_of<ores::trading::domain::risk_participation_agreement_instrument>(data);
     CHECK(!fact.credit_curve_id.empty());
 
     // Reverse roundtrip
@@ -343,7 +344,8 @@ TEST_CASE("credit_mapper_holds_the_dropped_elements_of_an_index_cds", tags) {
     REQUIRE(rt.IndexCreditDefaultSwapData);
     CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapData->ProtectionStart) ==
           fact.protection_start_date.has_value());
-    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapData->UpfrontFee) == fact.upfront_fee.has_value());
+    CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapData->UpfrontFee) ==
+          fact.upfront_fee.has_value());
     CHECK(static_cast<bool>(rt.IndexCreditDefaultSwapData->SettlesAccrual) ==
           fact.settles_accrual.has_value());
 }
@@ -380,12 +382,14 @@ TEST_CASE("credit_mapper_holds_the_dropped_elements_of_a_credit_linked_swap", ta
     REQUIRE(rt.CreditLinkedSwapData);
     REQUIRE(rt.CreditLinkedSwapData->DefaultPaymentTime);
     CHECK(std::string(*rt.CreditLinkedSwapData->DefaultPaymentTime) == "atDefault");
-    CHECK(static_cast<bool>(rt.CreditLinkedSwapData->SettlesAccrual) == fact.settles_accrual.has_value());
+    CHECK(static_cast<bool>(rt.CreditLinkedSwapData->SettlesAccrual) ==
+          fact.settles_accrual.has_value());
 }
 
 TEST_CASE("credit_mapper_holds_the_required_elements_of_an_agreement", tags) {
     const auto data = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
-    const auto& fact = fact_of<ores::trading::domain::risk_participation_agreement_instrument>(data);
+    const auto& fact =
+        fact_of<ores::trading::domain::risk_participation_agreement_instrument>(data);
 
     CHECK(fact.participation_rate > 0.89);
     CHECK(fact.participation_rate < 0.91);

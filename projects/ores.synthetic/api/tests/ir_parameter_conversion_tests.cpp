@@ -37,10 +37,8 @@ using ores::synthetic::feed::ir_simple_view;
 
 namespace {
 
-const ir_simple_view sample{.start_rate = 0.03,
-                            .long_run_rate = 0.04,
-                            .half_life_years = 2.0,
-                            .yearly_move_bp = 100.0};
+const ir_simple_view sample{
+    .start_rate = 0.03, .long_run_rate = 0.04, .half_life_years = 2.0, .yearly_move_bp = 100.0};
 
 }
 
@@ -69,8 +67,8 @@ TEST_CASE("ir_parameter_conversion gives Two-Factor Gaussian a derived second fa
     CHECK(p.at("kappa_y") == Approx(0.6 * p.at("kappa_x")));
     CHECK(p.at("sigma_y") == Approx(0.5 * p.at("sigma_x")));
     CHECK(p.at("rho") == 0.0);
-    const double total = std::sqrt(p.at("sigma_x") * p.at("sigma_x") +
-                                   p.at("sigma_y") * p.at("sigma_y"));
+    const double total =
+        std::sqrt(p.at("sigma_x") * p.at("sigma_x") + p.at("sigma_y") * p.at("sigma_y"));
     CHECK(total == Approx(0.01));
 }
 
@@ -132,6 +130,5 @@ TEST_CASE("ir_parameter_conversion refuses what no engine can read", tags) {
     CHECK_THROWS_AS(ir_parameters_from_simple("COX_INGERSOLL_ROSS", no_level),
                     std::invalid_argument);
     CHECK_NOTHROW(ir_parameters_from_simple("VASICEK", no_level));
-    CHECK_THROWS_AS(ir_simple_from_parameters("VASICEK", {{"kappa", 0.5}}),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(ir_simple_from_parameters("VASICEK", {{"kappa", 0.5}}), std::invalid_argument);
 }

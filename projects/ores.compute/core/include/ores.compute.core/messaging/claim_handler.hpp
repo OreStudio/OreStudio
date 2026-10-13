@@ -165,8 +165,7 @@ private:
                                                 const boost::uuids::uuid& host,
                                                 const std::string& platform) {
         const auto tenant = boost::uuids::to_string(entry.work_tenant_id);
-        const auto tenant_ctx =
-            ores::database::service::tenant_context::with_tenant(ctx_, tenant);
+        const auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, tenant);
 
         service::result_service result_svc(tenant_ctx);
         auto result = result_svc.get_result(entry.result_id);
@@ -175,8 +174,8 @@ private:
         if (!result || !claimable(result->server_state, entry.attempts)) {
             // Retired, done or gone while it waited. Nothing can run it.
             BOOST_LOG_SEV(claim_handler_lg(), ores::logging::info)
-                << "Dropping ledger entry for result "
-                << boost::uuids::to_string(entry.result_id) << ": it is no longer unsent";
+                << "Dropping ledger entry for result " << boost::uuids::to_string(entry.result_id)
+                << ": it is no longer unsent";
             ledger.remove(ctx_, entry.result_id);
             return std::nullopt;
         }
@@ -215,7 +214,8 @@ private:
             ended.outcome = 3;
             ended.host_id = host;
             ended.received_at = std::chrono::system_clock::now();
-            ended.error_message = "The job has no package for the platform of the node that took it.";
+            ended.error_message =
+                "The job has no package for the platform of the node that took it.";
             ended.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
             ended.change_commentary = ended.error_message;
             ores::service::messaging::stamp(ended, tenant_ctx);

@@ -2156,6 +2156,17 @@ export const en: SourceCatalogue = {
                 derived: 'Derived',
                 manual: 'Manual',
             },
+            surface: {
+                title: 'Surface',
+                note: 'The colour shows where a value sits in its scale. Each line is a slice: one {rows} across the {columns}. The columns can hold quotes in market convention, so a slice is not always a smile. The columns are spaced evenly, whatever their names.',
+                scale: 'Colour scale',
+                scaleSurface: 'The whole surface',
+                scaleColumn: 'Each column',
+                slices: 'Slices',
+                slicesLabel: 'One line for each row, across the columns',
+                axes: 'A shape with {count} axes is not drawn as a surface. Only a shape with two axes is.',
+                empty: 'The object holds no node, so there is no surface to draw.',
+            },
             picker: {
                 label: 'Series',
                 placeholder: 'Choose a series, or type its identity below',
@@ -2355,6 +2366,12 @@ export const en: SourceCatalogue = {
                 'The currencies it works in could not be read, so adding or removing one is not shown.',
             party_counterparty:
                 'The counterparties it may trade with could not be read, so adding or removing one is not shown.',
+            party_identifier_removed:
+                'An identifier that was removed is not shown, because no read lists the identifiers that were removed.',
+            party_contact_information_removed:
+                'A contact that was removed is not shown, because no read lists the contacts that were removed.',
+            business_unit_removed:
+                'A business unit that was removed is not shown, because no read lists the business units that were removed.',
             account_party:
                 'The parties a person works in could not be read, so joining or leaving one is not shown.',
             account_role:
@@ -3240,6 +3257,9 @@ export const en: SourceCatalogue = {
             removeTitle: 'Remove {code}?',
             needs: 'Still to fill in: {fields}',
             noLinks: 'None yet.',
+            fixedHint: 'Set when the record was made, and never changed here.',
+            notFound: 'There is no such record, or you may not see it.',
+            backToList: 'Back to the list',
             unlink: 'Take {name} away',
             linkChoose: 'Choose one to add…',
             link: 'Add',

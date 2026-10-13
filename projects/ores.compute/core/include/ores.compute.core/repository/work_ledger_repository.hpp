@@ -171,9 +171,8 @@ public:
      *
      * Reads only. The reaper ends the result of each and then calls @c remove_expired.
      */
-    std::vector<expired_entry> exhausted(context ctx,
-                                         int max_attempts = max_claim_attempts,
-                                         int limit = 100);
+    std::vector<expired_entry>
+    exhausted(context ctx, int max_attempts = max_claim_attempts, int limit = 100);
 
     /**
      * @brief Remove an entry only if its lease has still ended.

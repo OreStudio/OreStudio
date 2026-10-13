@@ -53,8 +53,8 @@ void lease_reaper::sweep() {
         BOOST_LOG_SEV(lg(), warn) << returned
                                   << " job(s) lost their lease and went back to the queue";
         // The jobs wait again, so idle nodes are told as for new work.
-        const ores::compute::messaging::work_available_event bell{
-            .queued = static_cast<int>(returned)};
+        const ores::compute::messaging::work_available_event bell{.queued =
+                                                                      static_cast<int>(returned)};
         nats_.publish(std::string(ores::compute::messaging::work_available_event::nats_subject),
                       ores::nats::default_wire_codec().encode(bell));
     }
@@ -82,7 +82,7 @@ void lease_reaper::end_exhausted() {
                 ended.outcome = 4;
                 ended.received_at = std::chrono::system_clock::now();
                 ended.error_message = "The lease ended with no reply after " +
-                                     std::to_string(entry.attempts) + " attempts.";
+                                      std::to_string(entry.attempts) + " attempts.";
                 ended.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 ended.change_commentary = ended.error_message;
                 ores::service::messaging::stamp(ended, tenant_ctx);

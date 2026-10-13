@@ -60,6 +60,11 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:28C3DC0E-5143-4489-864B-CBDC46AD2B41][Let a table's repository write its own table]] | DONE | 2026-10-13 | 2026-10-13 | The entity-table write check lets a hand-written repository write the table it is named for, so the work ledger and work tenants repositories no longer fail it. |
 | [[id:F80D0975-E69C-4E61-AC89-17318465B90E][Deploy to several hosts at the same time]] | DONE | 2026-10-13 | 2026-10-13 | compass env deploy copies an image with podman image scp, stages each host on its own, and takes several hosts in one command. |
 | [[id:85155A7E-FAB4-4828-BE50-875D84BA3D13][Free the claims a host abandoned]] | DONE | 2026-10-13 | 2026-10-13 | A claim whose reply was lost is returned to the queue when its host asks again, a heartbeat extends only the job the node runs, and the compute service has a larger database pool. |
+| [[id:6885C587-E059-48C8-A7CC-A37A1C615E6A][Prototype the grid's jobs browser]] | DONE | | 2026-10-13 | Journey and static prototype for the Jobs tab: a paged tree of batches, workunits and results with details and downloads. |
+| [[id:CB30997D-D8FF-45FC-AD6E-BB5070863CE0][Record the run statistics on the result]] | BACKLOG | | | Add started_at, finished_at, input_bytes, output_bytes and peak_memory_bytes to the result, and carry them in the submit message. |
+| [[id:209FA8E5-DA98-46A6-8805-96F79E2372FB][Measure the run statistics in the wrapper]] | BACKLOG | | | The wrapper measures the start and end of the engine run, the input and output bytes, and the engine's peak memory per job, and sends them with the result. |
+| [[id:CE7B06DF-5AD8-4FA3-9FA0-A5AA3E12E096][Aggregate the run statistics per workunit and batch]] | BACKLOG | | | A grouped read returns, for a workunit or a batch, the earliest start, the latest finish, the summed bytes and the largest peak memory of its results. |
+| [[id:45E304A8-CFCA-4855-9FA8-D7C2EFF228AF][Format the grid BFF route]] | DONE | | 2026-10-13 | Prettier flags packages/bff/src/operations.ts on main, which stops the web check before its tests run. |
 
 * Findings
 

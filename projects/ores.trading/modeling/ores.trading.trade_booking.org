@@ -127,6 +127,7 @@ std::nullopt
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:filterable: true
 :END:
 
 The date the trade was agreed. Absent when the source does not state it, as
@@ -141,6 +142,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:filterable: true
 :END:
 
 The time the trade was executed.

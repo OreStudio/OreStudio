@@ -882,6 +882,14 @@ on delete to "{{domain_entity.sql_name_base}}_tbl" do instead (
       -- policy cannot enforce here.
       and tenant_id = ores_iam_current_tenant_id_fn()
 {{/domain_entity.system_tenant_visible}}
+{{^domain_entity.system_tenant_visible}}
+{{#domain_entity.sql.system_scope}}
+      -- Every row belongs to the system tenant, and only the system tenant
+      -- removes one. The rule runs with the owner's rights, which row-level
+      -- security does not bind, so the rule states the limit itself.
+      and ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+{{/domain_entity.sql.system_scope}}
+{{/domain_entity.system_tenant_visible}}
       and valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.foreign_keys}}
 {{#bump_parent_version}}

@@ -397,7 +397,8 @@ TEST_CASE("a_request_that_is_not_approved_cannot_fail_to_apply", tags) {
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
-TEST_CASE("the_progress_of_a_request_says_which_part_answered_which_waits_and_which_is_later", tags) {
+TEST_CASE("the_progress_of_a_request_says_which_part_answered_which_waits_and_which_is_later",
+          tags) {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto controller = seed_account(h);
@@ -436,8 +437,9 @@ TEST_CASE("a_refused_part_is_shown_as_refused", tags) {
         *lifecycle.kind("iam.role_grant"), "Open a book", asker.id, {"controller", "finance"});
     const auto id = boost::uuids::to_string(raised.id);
 
-    REQUIRE(lifecycle.decide(id, raised.version, "refuse", controller.id, "No", "controller")
-                .outcome == "ok");
+    REQUIRE(
+        lifecycle.decide(id, raised.version, "refuse", controller.id, "No", "controller").outcome ==
+        "ok");
 
     const auto progress = lifecycle.progress_of(id);
     REQUIRE(progress.size() == 2);

@@ -112,8 +112,8 @@ public:
      * @return Parsed time point.
      * @throws std::invalid_argument if the string does not match the format.
      */
-    static std::chrono::system_clock::time_point
-    from_utc_format(const std::string& str, const std::string& format);
+    static std::chrono::system_clock::time_point from_utc_format(const std::string& str,
+                                                                 const std::string& format);
 
     /**
      * @brief Formats a time point as a human-readable local-time string.

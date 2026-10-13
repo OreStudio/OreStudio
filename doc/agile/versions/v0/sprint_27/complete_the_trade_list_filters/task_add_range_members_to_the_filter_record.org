@@ -8,12 +8,12 @@
 #+filetags: :complete_the_trade_list_filters:sprint_27:v0:
 #+owner: marco
 #+branch: feature/add-range-members-to-the-filter-record
-#+pr:
+#+pr: 3252
 #+blocked_on: The specification task.
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9AAD348-74D0-4B65-989C-118CCBC2FBF3][Complete the trade list's filters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A9AAD348-74D0-4B65-989C-118CCBC2FBF3][Complete the trade list's filters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -58,7 +58,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Generator tests for the filter members | 14 passed (7 new) | =pytest projects/ores.codegen/tests/test_filter_members.py= | this branch |
+| Codegen suite | 1422 passed | =pytest projects/ores.codegen/tests= | this branch |
+| Database suite | 55 cases, 189 assertions passed | =ores.database.tests= | this branch |
+| Booking range tests | 6 cases, 12 assertions passed | =ores.trading.core.tests "[range]"= | this branch |
 
 * Notes
 
@@ -77,11 +80,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3252][#3252]] | [codegen] Add range members to the filter record |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Year 0000 passes the calendar check | range_bound.hpp | accept | The database has no year 0. A year below 1 is not a date. Added a unit test. |
+| 2 | The range block repeats four times in generated code | the templates | decline | The generated files are never read for logic. A helper in the template is a refactor of every filter block, not of this change. |
+| 3 | The one-of limit of 1000 is repeated | the templates | decline | The limit already repeats in every generated service. A shared constant is its own change. |
+| 4 | Say that an inverted range is empty | nats_entity_protocol.org | no change needed | The specification already says a _from later than the _to matches no row. |
+| 5 | Include order in list_filter.hpp | list_filter.hpp | no change needed | The project puts quoted includes before angle-bracket ones, and clang-format passes. |
 
 * Result
+
+A filterable column that holds a date or a timestamp now has a =_from= and a =_to= member in the filter record. The generator derives them in =filter_members=, the one list the record, the repository condition and the service guard all read, so the three cannot disagree.
+
+*The rule, as built.*
+
+- Both members carry text on the wire, in the form =as_of= takes: a date, or a UTC timestamp.
+- On a date column the bound is the date. On a timestamp column a date means the start of that day for =_from= and its last microsecond for =_to=, in UTC. A UTC timestamp is the bound itself.
+- Both bounds are inclusive, an absent bound sets none, and a null column never matches.
+- A bound that is neither, or a date that is not on the calendar, is refused by the service with the new outcome code =filter_range_invalid=, which names the member and the text. The repository throws =std::invalid_argument= for the same input, as it does for an unsortable field.
+
+*What it needed.* A new outcome code in the outcome catalogue. =at_least= and =at_most= beside the other conditions. =range_bound= in its own header, used by the service to validate and by the repository to build the condition. =filter_value= overloads for a date and a timestamp, so the equals and one-of members of such a column compile.
+
+*Found.* =parse_as_of= accepts a date that is not on the calendar, such as 30 February, because the time library normalises it. A range bound checks the calendar itself. The same leniency still holds for =as_of=, which this task did not change.
+
+*Proved on.* The booking's =trade_date= and =execution_timestamp=, now filterable. The trade summary reads them.

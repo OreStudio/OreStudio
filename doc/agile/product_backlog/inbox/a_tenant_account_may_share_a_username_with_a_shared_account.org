@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3A3E5AE9-6AE9-40B2-9E26-CBA162CE78DE
+:END:
+#+title: A username is unique within a tenant only, so a tenant perso…
+#+description: A username is unique within a tenant only, so a tenant person can share a username with a shared service account of the system tenant. The service actor rule is fixed for that case. Three paths still resolve a username across the tenant and the system tenant: read_any_by_username (history lookup by username picks the newest of the two rows), the account list and the People page. Decide that a tenant refuses a username that names a shared account, and add the check to account creation.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

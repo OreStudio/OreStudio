@@ -78,7 +78,9 @@ async function usageByParty(
     if (usage.keys.some((key) => key !== '')) {
         try {
             const parties = await session.client.listParties();
-            names = new Map(parties.map((party) => [party.id, party.full_name || party.short_code]));
+            names = new Map(
+                parties.map((party) => [party.id, party.full_name || party.short_code]),
+            );
         } catch (error) {
             onNamesFailure(error);
             names = new Map();
@@ -548,7 +550,10 @@ export function registerOperationsRoutes(
             ? await usageByTenant(
                   session,
                   (tenant, error) =>
-                      request.log.warn({ err: error, tenant }, 'The usage of a tenant was not read.'),
+                      request.log.warn(
+                          { err: error, tenant },
+                          'The usage of a tenant was not read.',
+                      ),
                   (listed, total) =>
                       request.log.warn(
                           { listed, total },

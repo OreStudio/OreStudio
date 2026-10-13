@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.core/repository/audit_scope.hpp"
 #include "ores.iam.core/repository/auth_event_entity.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
 #include <boost/lexical_cast.hpp>
@@ -37,13 +38,13 @@ auth_event_log::auth_event_log(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void auth_event_log::insert(const std::string& event_type,
-                                   const std::chrono::system_clock::time_point& event_time,
-                                   const std::string& tenant_id,
-                                   const std::string& account_id,
-                                   const std::string& username,
-                                   const std::string& session_id,
-                                   const std::string& party_id,
-                                   const std::string& error_detail) {
+                            const std::chrono::system_clock::time_point& event_time,
+                            const std::string& tenant_id,
+                            const std::string& account_id,
+                            const std::string& username,
+                            const std::string& session_id,
+                            const std::string& party_id,
+                            const std::string& error_detail) {
 
     BOOST_LOG_SEV(lg(), debug) << "Recording auth event: " << event_type;
 
@@ -60,43 +61,44 @@ void auth_event_log::insert(const std::string& event_type,
     event.party_id = party_id;
     event.error_detail = error_detail;
 
-    auth_event_repository().write(ctx_, event);
+    // The row is written by a session of its own tenant, which the isolation
+    // policy requires, and an event with no tenant is the platform's.
+    const auto scope = audit_scope_for(ctx_, tenant_id);
+    event.tenant_id = scope.tenant_id;
+    auth_event_repository().write(scope.ctx, event);
 
     BOOST_LOG_SEV(lg(), debug) << "Auth event recorded: " << event_type;
 }
 
-void auth_event_log::record_login_success(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& account_id,
-    const std::string& username,
-    const std::string& session_id,
-    const std::string& party_id) {
+void auth_event_log::record_login_success(const std::chrono::system_clock::time_point& event_time,
+                                          const std::string& tenant_id,
+                                          const std::string& account_id,
+                                          const std::string& username,
+                                          const std::string& session_id,
+                                          const std::string& party_id) {
     insert("login_success", event_time, tenant_id, account_id, username, session_id, party_id, "");
 }
 
-void auth_event_log::record_login_failure(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& username,
-    const std::string& error_detail) {
+void auth_event_log::record_login_failure(const std::chrono::system_clock::time_point& event_time,
+                                          const std::string& tenant_id,
+                                          const std::string& username,
+                                          const std::string& error_detail) {
     insert("login_failure", event_time, tenant_id, "", username, "", "", error_detail);
 }
 
 void auth_event_log::record_logout(const std::chrono::system_clock::time_point& event_time,
+                                   const std::string& tenant_id,
+                                   const std::string& account_id,
+                                   const std::string& username,
+                                   const std::string& session_id) {
+    insert("logout", event_time, tenant_id, account_id, username, session_id, "", "");
+}
+
+void auth_event_log::record_token_refresh(const std::chrono::system_clock::time_point& event_time,
                                           const std::string& tenant_id,
                                           const std::string& account_id,
                                           const std::string& username,
                                           const std::string& session_id) {
-    insert("logout", event_time, tenant_id, account_id, username, session_id, "", "");
-}
-
-void auth_event_log::record_token_refresh(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& account_id,
-    const std::string& username,
-    const std::string& session_id) {
     insert("token_refresh", event_time, tenant_id, account_id, username, session_id, "", "");
 }
 
@@ -109,32 +111,29 @@ void auth_event_log::record_max_session_exceeded(
     insert("max_session_exceeded", event_time, tenant_id, account_id, username, session_id, "", "");
 }
 
-void auth_event_log::record_tenant_entered(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& account_id,
-    const std::string& username,
-    const std::string& session_id,
-    const std::string& party_id) {
+void auth_event_log::record_tenant_entered(const std::chrono::system_clock::time_point& event_time,
+                                           const std::string& tenant_id,
+                                           const std::string& account_id,
+                                           const std::string& username,
+                                           const std::string& session_id,
+                                           const std::string& party_id) {
     insert("tenant_entered", event_time, tenant_id, account_id, username, session_id, party_id, "");
 }
 
-void auth_event_log::record_tenant_left(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& account_id,
-    const std::string& username,
-    const std::string& session_id,
-    const std::string& party_id) {
+void auth_event_log::record_tenant_left(const std::chrono::system_clock::time_point& event_time,
+                                        const std::string& tenant_id,
+                                        const std::string& account_id,
+                                        const std::string& username,
+                                        const std::string& session_id,
+                                        const std::string& party_id) {
     insert("tenant_left", event_time, tenant_id, account_id, username, session_id, party_id, "");
 }
 
-void auth_event_log::record_account_locked(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& account_id,
-    const std::string& username,
-    const std::string& error_detail) {
+void auth_event_log::record_account_locked(const std::chrono::system_clock::time_point& event_time,
+                                           const std::string& tenant_id,
+                                           const std::string& account_id,
+                                           const std::string& username,
+                                           const std::string& error_detail) {
     insert("account_locked", event_time, tenant_id, account_id, username, "", "", error_detail);
 }
 
@@ -147,31 +146,29 @@ void auth_event_log::record_account_unlocked(
     insert("account_unlocked", event_time, tenant_id, account_id, username, "", "", error_detail);
 }
 
-void auth_event_log::record_signup_success(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& account_id,
-    const std::string& username) {
+void auth_event_log::record_signup_success(const std::chrono::system_clock::time_point& event_time,
+                                           const std::string& tenant_id,
+                                           const std::string& account_id,
+                                           const std::string& username) {
     insert("signup_success", event_time, tenant_id, account_id, username, "", "", "");
 }
 
-void auth_event_log::record_signup_failure(
-    const std::chrono::system_clock::time_point& event_time,
-    const std::string& tenant_id,
-    const std::string& username,
-    const std::string& error_detail) {
+void auth_event_log::record_signup_failure(const std::chrono::system_clock::time_point& event_time,
+                                           const std::string& tenant_id,
+                                           const std::string& username,
+                                           const std::string& error_detail) {
     insert("signup_failure", event_time, tenant_id, "", username, "", "", error_detail);
 }
 
 std::vector<repository::auth_event_entity>
 auth_event_log::read_events(const context& ctx,
-                                   const std::string& tenant_id,
-                                   const std::string& account_id,
-                                   const std::string& event_type,
-                                   const std::string& from_time,
-                                   const std::string& to_time,
-                                   std::uint32_t limit,
-                                   std::uint32_t offset) {
+                            const std::string& tenant_id,
+                            const std::string& account_id,
+                            const std::string& event_type,
+                            const std::string& from_time,
+                            const std::string& to_time,
+                            std::uint32_t limit,
+                            std::uint32_t offset) {
     /*
      * The filters are optional, and the statement says so itself: an empty
      * parameter does not filter. Building the WHERE clause in C++ would

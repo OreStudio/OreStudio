@@ -394,16 +394,16 @@ std::expected<stream_watch, std::string> marketdata_commands::stream_subjects(
         const auto canonical = marketdata::datum::oresmd_uri_codec::write(*datum);
         if (!canonical)
             return std::unexpected(canonical.error());
-        return stream_watch{{marketdata::domain::market_tick_subject(tenant_id, party_id, *canonical)},
-                            std::nullopt};
+        return stream_watch{
+            {marketdata::domain::market_tick_subject(tenant_id, party_id, *canonical)},
+            std::nullopt};
     }
 
     // A series is not a datum a producer publishes: it only ever names points,
     // each on a subject of its own, so no NATS wildcard covers exactly one
     // series' points. Watch the party's whole tick subtree and keep the ticks
     // whose series matches.
-    return stream_watch{{marketdata::domain::market_tick_subject_all(tenant_id, party_id)},
-                        *datum};
+    return stream_watch{{marketdata::domain::market_tick_subject_all(tenant_id, party_id)}, *datum};
 }
 
 bool marketdata_commands::tick_in_series(const marketdata::messaging::market_tick& tick,

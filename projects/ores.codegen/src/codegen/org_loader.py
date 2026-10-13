@@ -3362,6 +3362,20 @@ def _strip_optional(cpp_type: str) -> str:
     return cpp_type
 
 
+def _temporal_kind(entity: dict[str, Any], name: str) -> str:
+    """Whether a column holds a date or a timestamp, or neither.
+
+    The column's own C++ type decides, because the member a range reads is
+    typed from it. A column the model types as text holds neither.
+    """
+    cpp_type = _strip_optional(_column_cpp_type(entity, name))
+    if cpp_type == "std::chrono::year_month_day":
+        return "date"
+    if cpp_type == "std::chrono::system_clock::time_point":
+        return "timestamp"
+    return ""
+
+
 def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
     """The members of an entity's filter record, and the columns each reads.
 
@@ -3374,6 +3388,9 @@ def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
       own type, so a nullable column's member can ask for null.
     - A one-of member for a single-column primary key, every relation and
       every filterable column, carrying a list of the column's value type.
+    - A lower and an upper bound for each filterable column that holds a date
+      or a timestamp. Both are inclusive and both carry text, because a bound
+      on a timestamp column may be a date, which means a whole day.
     - The searchable columns, read by the one ``search`` member.
 
     Raises:
@@ -3400,6 +3417,15 @@ def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
         members.append({
             "member": f"{name}_one_of", "column": name, "is_one_of": True,
             "cpp_type": f"std::vector<{_strip_optional(_column_cpp_type(entity, name))}>"})
+    for name in filterable:
+        kind = _temporal_kind(entity, name)
+        if not kind:
+            continue
+        for end in ("from", "to"):
+            members.append({
+                "member": f"{name}_{end}", "column": name, "is_range": True,
+                f"is_{end}": True, "is_timestamp": kind == "timestamp",
+                "cpp_type": "std::string"})
     searchable = [_column_name(c) for c in write_record_columns(entity)
                   if c.get("searchable") is True]
     for member in members:

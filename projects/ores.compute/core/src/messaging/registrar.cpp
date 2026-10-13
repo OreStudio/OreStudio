@@ -113,10 +113,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [th](ores::nats::message msg) { th->get_node_series(std::move(msg)); }));
     // A free node asks for its next job. The handler serves it from the work ledger.
     auto claims = std::make_shared<claim_handler>(nats, ctx, outbound_nats);
-    subs.push_back(nats.queue_subscribe(
-        claim_work_request::nats_subject,
-        "ores.compute.service",
-        [claims](ores::nats::message msg) { claims->claim(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(claim_work_request::nats_subject,
+                             "ores.compute.service",
+                             [claims](ores::nats::message msg) { claims->claim(std::move(msg)); }));
     // Node sample publishes are fire-and-forget from wrapper nodes.
     subs.push_back(nats.subscribe(node_sample_message::nats_subject, [th](ores::nats::message msg) {
         th->ingest_node_sample(std::move(msg));

@@ -80,6 +80,7 @@ import {
     type MarketDataProvidersFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_provider_protocol';
 import { subjects as marketdataOperationSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
+import { FEED_BINDINGS_RESOURCE } from './bindings.js';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import {
     NO_ORDER,
@@ -124,11 +125,31 @@ const text = z.string().max(2000);
  * a page asks the server only for what it can answer. `parentField` names the
  * filter that reads the rows of one parent, such as one feed's mixture.
  */
-interface SyntheticResource {
+export interface SyntheticResource {
     readonly key: string;
     readonly entityType: string;
     readonly keyField: 'id' | 'code';
     readonly oneOf: 'id_one_of' | 'code_one_of';
+    /**
+     * The field the server's removal names the row by, when it is not the key field the
+     * browser addresses the row by. The route reads the row and names it by this field,
+     * so a deletion of a row that does not exist is a 404 and not an unconditional no-op.
+     */
+    readonly removalKey?: string;
+    /**
+     * A filter the session adds to every read of the resource, so a row of another party
+     * of the same tenant is never answered. It throws when the session names no party.
+     */
+    readonly scope?: (session: LiveSession) => Readonly<Record<string, unknown>>;
+    /**
+     * Completes a checked write before it is sent: the members the browser never states,
+     * such as the party. It may refuse a write the resource does not allow.
+     */
+    readonly complete?: (
+        session: LiveSession,
+        write: Record<string, unknown>,
+        read: (id: string) => Promise<Record<string, unknown> | undefined>,
+    ) => Promise<Record<string, unknown>>;
     readonly rows: string;
     readonly filter: Readonly<Record<string, null>>;
     readonly subjects: {
@@ -141,7 +162,7 @@ interface SyntheticResource {
     readonly readOnlyBecause?: string;
     readonly systemOwned?: true;
     /** The permission namespace, when the rows belong to another service than the synthetic one. */
-    readonly namespace?: 'refdata';
+    readonly namespace?: 'refdata' | 'marketdata';
     readonly search?: true;
     readonly sortable?: readonly string[];
     readonly parentField?: string;
@@ -440,6 +461,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         readOnlyBecause:
             'These are reference data of the refdata service. A synthetic screen offers their codes and does not write them.',
     })),
+    FEED_BINDINGS_RESOURCE,
 ];
 
 /** The synthetic entity types whose history the history route serves. */
@@ -486,7 +508,7 @@ async function readByKey(
             offset: 0,
             limit: 1,
             order: NO_ORDER,
-            filter: { ...resource.filter, [resource.oneOf]: [key] },
+            filter: { ...resource.filter, ...resource.scope?.(session), [resource.oneOf]: [key] },
             as_of: null,
         },
         z.looseObject({ result: resultSchema }),
@@ -1009,7 +1031,10 @@ export function registerSyntheticRoutes(
         if (query['limit'] === undefined) {
             return {
                 rows: await readAll(session, resource.subjects.list, resource.rows, {
-                    filter: null,
+                    filter:
+                        resource.scope === undefined
+                            ? null
+                            : { ...resource.filter, ...resource.scope(session) },
                     as_of: null,
                 }),
             };
@@ -1027,7 +1052,14 @@ export function registerSyntheticRoutes(
                 offset: page.offset,
                 limit: page.limit,
                 order: { field: page.sort, descending: page.descending },
-                filter: page.search === '' ? null : { ...resource.filter, search: page.search },
+                filter:
+                    page.search === '' && resource.scope === undefined
+                        ? null
+                        : {
+                              ...resource.filter,
+                              ...resource.scope?.(session),
+                              ...(page.search === '' ? {} : { search: page.search }),
+                          },
                 as_of: null,
             },
             z.looseObject({ result: resultSchema, total: z.int().nonnegative().default(0) }),
@@ -1066,13 +1098,31 @@ export function registerSyntheticRoutes(
         const session = requireSession(request);
         const { resource, writes } = writableFor(request, session);
         const body = input(saveBodySchema, request.body);
-        const changes = body.changes.map((change) => ({
-            write: input(writes, change.write),
-            precondition:
-                change.version === null
-                    ? { kind: 'must_not_exist', version: null }
-                    : { kind: 'must_match_version', version: change.version },
-        }));
+        const readRow = async (id: string): Promise<Record<string, unknown> | undefined> => {
+            try {
+                return await readByKey(session, resource, id);
+            } catch (error) {
+                if (error instanceof HttpFailure && error.status === 404) {
+                    return undefined;
+                }
+                throw error;
+            }
+        };
+        const changes = await Promise.all(
+            body.changes.map(async (change) => {
+                const checked = input(writes, change.write);
+                return {
+                    write:
+                        resource.complete === undefined
+                            ? checked
+                            : await resource.complete(session, checked, readRow),
+                    precondition:
+                        change.version === null
+                            ? { kind: 'must_not_exist', version: null }
+                            : { kind: 'must_match_version', version: change.version },
+                };
+            }),
+        );
         refuseRepeatedKeys(
             changes.map((change) => change.write[resource.keyField]),
             'save',
@@ -1094,13 +1144,22 @@ export function registerSyntheticRoutes(
         const session = requireSession(request);
         const { resource } = writableFor(request, session);
         const body = input(removeBodySchema, request.body);
-        const removals = body.removals.map((removal) => ({
-            key: { [resource.keyField]: input(keySchema(resource), removal.key) },
-            precondition:
-                removal.version === null
-                    ? { kind: 'any', version: null }
-                    : { kind: 'must_match_version', version: removal.version },
-        }));
+        const removals = await Promise.all(
+            body.removals.map(async (removal) => {
+                const key = input(keySchema(resource), removal.key);
+                const named =
+                    resource.removalKey === undefined
+                        ? key
+                        : String((await readByKey(session, resource, key))[resource.removalKey]);
+                return {
+                    key: { [resource.removalKey ?? resource.keyField]: named },
+                    precondition:
+                        removal.version === null
+                            ? { kind: 'any', version: null }
+                            : { kind: 'must_match_version', version: removal.version },
+                };
+            }),
+        );
         refuseRepeatedKeys(
             body.removals.map((removal) => removal.key),
             'removal',

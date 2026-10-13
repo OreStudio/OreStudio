@@ -38,7 +38,8 @@ enum class range_end { from, to };
  * @brief Whether the first ten characters of @p text are a date that exists.
  *
  * The parser of an instant normalises a day past the end of its month, so the
- * calendar decides here.
+ * calendar decides here. The database has no year 0, though the time library
+ * has, so a year below 1 is not a date.
  */
 inline bool is_calendar_date(const std::string& text) {
     if (text.size() < 10)
@@ -48,6 +49,8 @@ inline bool is_calendar_date(const std::string& text) {
     };
     try {
         using namespace std::chrono;
+        if (number(0, 4) < 1)
+            return false;
         return year_month_day{year{number(0, 4)},
                               month{static_cast<unsigned>(number(5, 2))},
                               day{static_cast<unsigned>(number(8, 2))}}

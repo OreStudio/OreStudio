@@ -162,6 +162,13 @@ TEST_CASE("a date that does not exist is not a bound", tags) {
     CHECK(!range_bound("2027-02-29", range_end::from, false));
 }
 
+TEST_CASE("year 0 is not a date, because the database has none", tags) {
+    CHECK(!range_bound("0000-01-01", range_end::from, false));
+    CHECK(!range_bound("0000-06-15", range_end::to, true));
+    CHECK(!range_bound("0000-01-01T00:00:00Z", range_end::from, true));
+    CHECK(range_bound("0001-01-01", range_end::from, false) == "0001-01-01");
+}
+
 TEST_CASE("a date on a timestamp column spans the whole of that day in UTC", tags) {
     CHECK(range_bound("2026-03-05", range_end::from, true) == "2026-03-05 00:00:00+00");
     CHECK(range_bound("2026-03-05", range_end::to, true) == "2026-03-05 23:59:59.999999+00");

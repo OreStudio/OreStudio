@@ -86,7 +86,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Year 0000 passes the calendar check | range_bound.hpp | accept | The database has no year 0. A year below 1 is not a date. Added a unit test. |
+| 2 | The range block repeats four times in generated code | the templates | decline | The generated files are never read for logic. A helper in the template is a refactor of every filter block, not of this change. |
+| 3 | The one-of limit of 1000 is repeated | the templates | decline | The limit already repeats in every generated service. A shared constant is its own change. |
+| 4 | Say that an inverted range is empty | nats_entity_protocol.org | no change needed | The specification already says a _from later than the _to matches no row. |
+| 5 | Include order in list_filter.hpp | list_filter.hpp | no change needed | The project puts quoted includes before angle-bracket ones, and clang-format passes. |
 
 * Result
 

@@ -85,3 +85,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A person who may read feeds can no longer start or stop them, and the screen draws the buttons only for a person who holds =synthetic::feeds:run=. The older handlers tell a client only its own mistakes. A feed added by hand shows in the tree under its collection at once.
+
+Checked: the service suite (60 cases, three new), ten pgTAP assertions in the publish test (two new for the placement), 1481 web tests, and a start and a stop by filter and by pick as the Acme tenant administrator on a fresh database.
+
+Not met: nothing in the acceptance. A dedicated role for running feeds, without the write of the configs, is not seeded; only the admin roles hold the permission today.

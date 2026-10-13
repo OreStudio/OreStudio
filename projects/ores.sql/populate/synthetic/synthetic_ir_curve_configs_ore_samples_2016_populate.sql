@@ -109,10 +109,9 @@ begin
         '2016 ORE Samples archetype: a Vasicek short-rate process for ' || c.currency_code
         || '''s discontinued IBOR-era benchmark, ' || c.currency_code || '-' || upper(c.index_family) || '-' || c.tenor || ' -- '
         || c.retirement_note
-        || ' This is the dataset this collection''s own provisioning publishes and'
-        || ' auto-starts by default when the 2016 ORE Samples collection is'
-        || ' selected.',
-        true, true, c.currency_code, c.index_family, c.tenor, 'VASICEK',
+        || ' This is the dataset this collection''s own provisioning publishes. It does'
+        || ' not start on its own: a person starts the reference set on purpose.',
+        true, false, c.currency_code, c.index_family, c.tenor, 'VASICEK',
         0.4, c.theta, 0.006, c.theta,
         60, 'Quarterly',
         c.price_source, c.vintage_source, c.vintage_date, c.vintage_series_uri, 'ore'

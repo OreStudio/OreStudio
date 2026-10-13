@@ -18,6 +18,7 @@
  *
  */
 #include "../src/feed_controller.hpp"
+#include "../src/feed_selection_handler.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -48,6 +49,7 @@
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/messaging/feed_selection_protocol.hpp"
 #include "ores.synthetic.core/repository/folder_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
@@ -94,6 +96,8 @@ const std::string test_audience("ores.synthetic.service");
 // runs against these test subjects unchanged.
 const std::string test_start_subject("ores.test.folder_feed_control.start_folder");
 const std::string test_stop_subject("ores.test.folder_feed_control.stop_folder");
+const std::string test_select_start_subject("ores.test.folder_feed_control.start_selected");
+const std::string test_select_stop_subject("ores.test.folder_feed_control.stop_selected");
 
 // Every seeded row is party-scoped and the JWT carries the same party, so
 // the handler's RLS reads see what the test wrote. The party must exist in
@@ -144,6 +148,8 @@ Resp send_request(ores::nats::service::client& nats,
 
 struct seeded_cascade {
     boost::uuids::uuid root_folder_id;
+    boost::uuids::uuid fx_enabled_id;
+    boost::uuids::uuid ir_id;
 };
 
 // Seeds a root folder with one child collection holding one enabled FX
@@ -247,6 +253,7 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     container.party_id = test_party;
     container.scope = scope::party;
     container.binding_mode = binding_mode::bound;
+    container.provider_code = "bloomberg";
     container.enabled = true;
     container.name = "Cascade Test Container";
     container.modified_by = db_user;
@@ -393,7 +400,7 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
         repo::ir_curve_generation_config_process_parameter_value_repository().write(party_ctx, v);
     }
 
-    return {.root_folder_id = root.id};
+    return {.root_folder_id = root.id, .fx_enabled_id = fx_enabled.id, .ir_id = ir.id};
 }
 
 // The handler under test runs on the NATS worker thread, exactly as the
@@ -408,6 +415,8 @@ struct cascade_fixture {
     ores::synthetic::service::feed_kind_registry registry;
     std::optional<ores::nats::service::subscription> start_sub;
     std::optional<ores::nats::service::subscription> stop_sub;
+    std::optional<ores::nats::service::subscription> select_start_sub;
+    std::optional<ores::nats::service::subscription> select_stop_sub;
 
     cascade_fixture()
         : nats(ores::testing::make_nats_options())
@@ -431,6 +440,18 @@ struct cascade_fixture {
         stop_sub = nats.queue_subscribe(
             test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
+                    nats, ctrl, auth_nats, db.context(), verifier, registry);
+                h.stop(std::move(msg));
+            });
+        select_start_sub = nats.queue_subscribe(
+            test_select_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
+                ores::synthetic::service::feed_selection_handler h(
+                    nats, ctrl, auth_nats, db.context(), verifier, registry);
+                h.start(std::move(msg));
+            });
+        select_stop_sub = nats.queue_subscribe(
+            test_select_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
+                ores::synthetic::service::feed_selection_handler h(
                     nats, ctrl, auth_nats, db.context(), verifier, registry);
                 h.stop(std::move(msg));
             });
@@ -551,4 +572,97 @@ TEST_CASE("folder_cascade_rejects_a_malformed_folder_id", tags) {
             token,
             start_feeds_under_folder_request{.folder_id = "not-a-uuid"});
     CHECK_FALSE(resp.success);
+}
+
+TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", tags) {
+    using ores::synthetic::messaging::start_selected_feeds_request;
+    using ores::synthetic::messaging::start_selected_feeds_response;
+    using ores::synthetic::messaging::stop_selected_feeds_request;
+    using ores::synthetic::messaging::stop_selected_feeds_response;
+
+    cascade_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto seeds = seed_cascade(f.db, test_party);
+    const auto token = mint_token(f.db.tenant_id().to_string(),
+                                  test_party,
+                                  {"synthetic::fx_spot_generation_configs:read",
+                                   "synthetic::ir_curve_generation_configs:read"});
+    const auto folder = boost::uuids::to_string(seeds.root_folder_id);
+
+    // The filter names the folder and the provider of its collection: the same feeds the
+    // folder verb starts, with the same skips.
+    const auto start1 =
+        send_request<start_selected_feeds_request, start_selected_feeds_response>(
+            f.nats,
+            test_select_start_subject,
+            token,
+            start_selected_feeds_request{.folder_id = folder, .provider_code = "bloomberg"});
+    REQUIRE(start1.success);
+    CHECK(start1.started == 2);
+    CHECK(start1.skipped == 2);
+    CHECK(f.ctrl->running_count() == 2);
+
+    // A state of started finds the two that run, and a state of stopped the rest.
+    const auto stopped_all =
+        send_request<stop_selected_feeds_request, stop_selected_feeds_response>(
+            f.nats,
+            test_select_stop_subject,
+            token,
+            stop_selected_feeds_request{.folder_id = folder,
+                                        .state = "started",
+                                        .excluded_ids = {boost::uuids::to_string(seeds.ir_id)}});
+    REQUIRE(stopped_all.success);
+    CHECK(stopped_all.stopped == 1);
+    CHECK(f.ctrl->list(std::string(ores::synthetic::feed::ir_curve_feed_kind)).size() == 1);
+
+    // Named feeds are exactly those: the filter is ignored.
+    const auto picked =
+        send_request<start_selected_feeds_request, start_selected_feeds_response>(
+            f.nats,
+            test_select_start_subject,
+            token,
+            start_selected_feeds_request{.provider_code = "nobody",
+                                         .feed_ids = {boost::uuids::to_string(seeds.fx_enabled_id)}});
+    REQUIRE(picked.success);
+    CHECK(picked.started + picked.skipped + picked.already_running == 1);
+
+    const auto stop_picked =
+        send_request<stop_selected_feeds_request, stop_selected_feeds_response>(
+            f.nats,
+            test_select_stop_subject,
+            token,
+            stop_selected_feeds_request{.feed_ids = {boost::uuids::to_string(seeds.ir_id)}});
+    REQUIRE(stop_picked.success);
+    CHECK(stop_picked.stopped == 1);
+}
+
+TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_may_not_read", tags) {
+    using ores::synthetic::messaging::start_selected_feeds_request;
+    using ores::synthetic::messaging::start_selected_feeds_response;
+
+    cascade_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto token = mint_token(f.db.tenant_id().to_string(),
+                                  test_party,
+                                  {"synthetic::fx_spot_generation_configs:read",
+                                   "synthetic::ir_curve_generation_configs:read"});
+
+    const auto malformed =
+        send_request<start_selected_feeds_request, start_selected_feeds_response>(
+            f.nats,
+            test_select_start_subject,
+            token,
+            start_selected_feeds_request{.folder_id = "x'; drop table t; --"});
+    CHECK_FALSE(malformed.success);
+    CHECK(f.ctrl->running_count() == 0);
+
+    const auto narrow = mint_token(
+        f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
+    const auto reply = f.nats.request_sync(
+        test_select_start_subject,
+        ores::nats::default_wire_codec().encode(start_selected_feeds_request{}),
+        {{std::string(ores::nats::headers::authorization),
+          std::string(ores::nats::headers::bearer_prefix) + narrow}});
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
 }

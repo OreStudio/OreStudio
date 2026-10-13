@@ -766,6 +766,7 @@ function wireFilter(filter: FeedFilter): Record<string, unknown> {
 /** The feeds to start or stop: the picked ones, or the filter's less the left out. */
 const selectionSchema = feedFilterSchema
     .extend({
+        shouldRun: z.boolean().default(false),
         feedIds: z.array(z.string().max(40)).max(2000).default([]),
         excludedIds: z.array(z.string().max(40)).max(2000).default([]),
     })

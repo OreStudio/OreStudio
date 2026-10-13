@@ -1122,6 +1122,21 @@ describe('synthetic operations', () => {
         });
     });
 
+    it('starts the feeds that should run, named by a flag in the body', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.start_selected_feeds': { success: true, message: '', started: 18 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/feed-selection/start',
+            { shouldRun: true },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({ should_run: true, feed_ids: [] });
+    });
+
     it('stops the feeds a filter matches, less those left out', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.stop_selected_feeds': {

@@ -139,14 +139,15 @@ void work_ledger_repository::remove(context ctx, const boost::uuids::uuid& resul
         ctx, sql, {boost::uuids::to_string(result_id)}, lg(), "removing a ledger entry");
 }
 
-std::size_t work_ledger_repository::extend_leases(context ctx,
-                                                  const boost::uuids::uuid& host_id,
-                                                  std::chrono::seconds lease) {
+bool work_ledger_repository::extend_lease(context ctx,
+                                          const boost::uuids::uuid& host_id,
+                                          const boost::uuids::uuid& result_id,
+                                          std::chrono::seconds lease) {
     static const std::string sql = R"(
         WITH extended AS (
             UPDATE ores_compute_work_ledger_tbl
-            SET lease_expires_at = now() + make_interval(secs => $2::int)
-            WHERE host_id = $1::uuid AND state = 'claimed'
+            SET lease_expires_at = now() + make_interval(secs => $3::int)
+            WHERE result_id = $2::uuid AND host_id = $1::uuid AND state = 'claimed'
             RETURNING 1
         )
         SELECT count(*) FROM extended
@@ -154,9 +155,33 @@ std::size_t work_ledger_repository::extend_leases(context ctx,
     const auto rows = execute_parameterized_multi_column_query(
         ctx,
         sql,
-        {boost::uuids::to_string(host_id), std::to_string(lease.count())},
+        {boost::uuids::to_string(host_id),
+         boost::uuids::to_string(result_id),
+         std::to_string(lease.count())},
         lg(),
-        "extending the leases of a host");
+        "extending the lease of a job");
+    return !rows.empty() && !rows.front().empty() && rows.front().front() &&
+           std::stoll(*rows.front().front()) > 0;
+}
+
+std::size_t work_ledger_repository::requeue_held(context ctx,
+                                                 const boost::uuids::uuid& host_id,
+                                                 int max_attempts) {
+    static const std::string sql = R"(
+        WITH returned AS (
+            UPDATE ores_compute_work_ledger_tbl
+            SET state = 'queued', host_id = NULL, claimed_at = NULL, lease_expires_at = NULL
+            WHERE host_id = $1::uuid AND state = 'claimed' AND attempts < $2::int
+            RETURNING 1
+        )
+        SELECT count(*) FROM returned
+    )";
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(host_id), std::to_string(max_attempts)},
+        lg(),
+        "returning the jobs a host abandoned");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return 0;
     return static_cast<std::size_t>(std::stoll(*rows.front().front()));

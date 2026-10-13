@@ -232,6 +232,22 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+*** result_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The result the node is running, or empty when it runs none.
+ *
+ * The service extends the lease of this one job and no other the host holds. A node runs one
+ * job at a time, so a claim the node never reported, such as one whose reply was lost, is not
+ * named here and its lease runs out.
+ */
+#+end_src
+
 ** reap_work_message
 :PROPERTIES:
 :subject: compute.v1.ops.reap_work

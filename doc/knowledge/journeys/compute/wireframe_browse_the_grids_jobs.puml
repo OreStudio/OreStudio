@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - OPERATIONS: COMPUTE GRID - JOBS</b>
+  --
+  {
+    Overview | Machines | Usage | <b>Jobs</b>
+  }
+  --
+  {
+    Find [ batch reference or id   ] | Status [ Any v ] | Party [ Any v ] | [ Search ] | [ Clear ]
+  }
+  --
+  {
+    <b>BATCHES, WORKUNITS AND RESULTS</b> | <b>DETAILS</b>
+    {#
+      External ref / id | Status
+      v soak-1013031448-9-p2 | closed
+      . v d347fc6b | priority 1, redundancy 1
+      . . cd131473 | Done, Success
+      . > a3ae8d1d | priority 1, redundancy 1
+      > soak-1013031448-9-p3 | processing
+    } | {
+      <b>Result</b> | Read only
+      Workunit ID | d347fc6b-... (link)
+      Host ID | timid-hamster-593e583f (link)
+      Server State | Done
+      Outcome | Success
+      Output URI | [ /api/v1/storage/.../output/cd13....tar.gz ]
+      Error Message | none
+      Received At | 2026-10-13 02:27:16
+    }
+  }
+  --
+  { [ First ] | [ Previous ] | Page 1 of 5 | [ Next ] | [ Last ] | Page size [ 25 v ] | [ Load all ] }
+}
+
+@enduml

@@ -13,7 +13,7 @@
 
 The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run.
 
-One prototype answers to this group. Each one is a static page under
+Two prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -27,6 +27,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | Prototype        | What it argues | Open it | Review |
 |------------------+----------------+---------+--------|
 | Compute journeys | A grid read as tables is a grid nobody can read: the five use cases, and every chart compute.org names, drawn from mock series at the size the real screen would give them. | [[file:compute/][prototype]] | none |
+| [[file:browse-the-grids-jobs.org][Browse the grid's jobs]] | A paged tree of batches, workunits and results beside a details panel answers "which ones failed, and why" for each role: the Jobs tab of the compute grid screen. | [[file:browse-the-grids-jobs/][prototype]] | [[file:browse-the-grids-jobs/review/][Gemini review]] |
 
 * Adding a prototype
 

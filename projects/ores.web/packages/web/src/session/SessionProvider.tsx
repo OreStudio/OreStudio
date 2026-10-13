@@ -302,6 +302,10 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
             const session = await api.switchParty(partyId);
             queryClient.setQueryData(SESSION_QUERY_KEY, session);
             setState({ status: 'authenticated', session });
+            // What the screens read is the acting party's, so it is read again.
+            await queryClient.invalidateQueries({
+                predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
+            });
         },
         [queryClient],
     );

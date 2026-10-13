@@ -84,6 +84,8 @@ const fr: SourceCatalogue = {
             refdata: 'Données de référence',
             access: 'Mes accès',
             whereIWork: 'Où je travaille',
+            changeParty: 'Changer de partie',
+            changePartyFailed: 'La partie n’a pas pu être changée.',
             profile: 'Mon profil',
         },
     },

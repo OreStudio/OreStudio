@@ -90,6 +90,8 @@ export const en: SourceCatalogue = {
             refdata: 'Reference data',
             access: 'My access',
             whereIWork: 'Where I work',
+            changeParty: 'Change party',
+            changePartyFailed: 'The party could not be changed.',
             profile: 'My profile',
         },
     },

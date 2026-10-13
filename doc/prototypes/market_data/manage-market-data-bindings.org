@@ -2,7 +2,7 @@
 :ID: BE9424FC-4E1F-4920-A4DD-C69F878A2CDB
 :END:
 #+title: Manage market data bindings prototype
-#+description: The screen to manage market data bindings before it is built: three views of the bindings, a synthetic scenario that runs to a bound feed, and a real data scenario that is drawn and marked as not supported, on a throwaway page of mock data
+#+description: The screen to manage market data bindings before it is built, drawn only as the record screen standard draws a record screen, with a synthetic scenario that runs to an added binding and a real data scenario that is read only, on a throwaway page of mock data
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:
@@ -17,58 +17,35 @@
 
 * Summary
 
-The prototype argues what the screen to manage market data bindings shows and
-does before any of it is built. It answers to the journey
+The prototype draws the bindings screen as the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws every
+record screen, and it draws an oresmd URL as the product ships it. It invents no
+layout and has no variants, because the standard decides the layout. What it
+argues is what the standard leaves open: where the screen lives, whether the
+source name can change, and who may edit and delete. It answers to the journey
 [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]].
-
-It argues the group page's row, and gives each binding the standard history: a binding is a party's choice to consume one
-producer source, so the screen shows what each binding feeds and whether it still
-ticks, and every act that changes a binding says first what it will change. The
-person binds a source only after the screen has said which series it would write
-and whether a running feed already holds that series.
 
 It is throwaway, with no service and no build step. Open the
 [[file:manage-market-data-bindings/][bindings page]].
 
 * Detail
 
-** The question
+** What it draws, from the standard
 
-A binding names a source and a party. It does not name the series the source
-writes, and one running feed at most may write a series. The open question is how
-the screen keeps the series, the state and the last tick in view while the person
-binds, rebinds, enables, disables, starts or stops, and how it holds a real
-vendor binding that this product does not connect.
+| Part | How the standard draws it |
+|------+---------------------------|
+| List | Breadcrumb, the plural as the title, one sentence, *Refresh* and *Add* (drawn only for a person who may add), a search and a filter, the table with the key first, a pager, and the four states: loading, no records, nothing matches and error |
+| Record page | Breadcrumb, the source name as the title, the lead line, the access mark and the status, *Edit* and *Delete* (drawn only when allowed), the tabs *Details* and *History*, and the Last changed line at the end of Details |
+| Add and Edit | One dialog over the page. Add is titled "Add binding" and states the reason new record in a note. Edit is titled "Edit <key>", asks for a change reason and a commentary, and offers *Non-material update* only when no field changed |
+| Delete | A dialog that names the binding, says what is lost and that its history stays, and asks for a reason |
+| History | The shared panel: the timeline, a comparison with *From*, *To*, *All fields* and *Only changes*, *Hide system activity*, and *Revert to this version* with its dialog |
+| An oresmd URL | A link to the series page in a new tab when the party has the series, plain text when it does not, and an *Inspect* button that opens the read only view. The same dialog shell serves it |
 
-** The variants
-
-Switch with the bottom bar, or =?variant=. The default is =a=.
-
-| Variant | Name | The structural argument |
-|---------+------+-------------------------|
-| =A= | table and detail | One row per binding: source, kind, the series it feeds, enabled, running and last tick. The selected binding opens below with its producer, its acts and its versions. |
-| =B= | by series | The bindings grouped by the series they feed. Two running feeds on one series show at once, as an error. A binding's own state sits one level down. |
-| =C= | list beside detail | A compact list that keeps every binding in view while one is open, without the series and kind columns. |
-
-*A* is the working view. *B* makes the one-feed-per-series rule visible. *C* trades
-columns for a detail that stays beside the list.
-
-** The history
-
-A binding is versioned, so the screen has the standard history, in two places.
-
-- The *History* tab of the selected binding, beside *Details*. It is the two-pane
-  history the record screens have: a timeline of the saved versions, newest first,
-  each with its time, who modified it, its change reason and its commentary, and
-  a comparison of any version with the one before, field by field, with *All
-  fields* and *Only changes*. An older version offers *Revert to vN*, which saves
-  a new version.
-- The *History* tab of the screen, beside *Bindings*. It lists every change to
-  every binding, newest first, with who did it, what it was and why, so a person
-  can see who is doing the work. A removed binding stays there as a deletion.
-
-Start and stop are not saved versions, so neither appears in the history.
-Rebind, enable, disable, bind, revert and remove do.
+Every dialog has one shell: a title with a close mark, a body, and a footer with
+*Cancel* first and the one primary action last. A successful write closes the
+dialog and the page shows the new values; there is no toast. An action a person
+may not take is not drawn. Start and stop belong to the feed, so a binding has
+none, and its page links to the feed.
 
 ** The scenarios, the states and the actor
 
@@ -76,27 +53,30 @@ Switch with the bottom bar, or the query parameters.
 
 | Parameter | Values | What it does |
 |-----------+--------+--------------|
-| =scenario= | =synthetic=, =real= | Synthetic is the supported path and can be followed to the end. Real adds two vendor bindings, drawn with the kind Vendor and the running state "not supported". No control binds, rebinds or starts one. A vendor binding can still be enabled or disabled, and removed. |
-| =state= | =all=, =quiet=, =disabled= | Which mock binding is quiet, with a feed that does not run, or disabled. |
-| =actor= | =viewer=, =operator=, =admin= | Who uses the screen. A viewer reads only. The operator binds, rebinds, enables, disables, starts and stops. Only the administrator removes. |
+| =scenario= | =synthetic=, =real= | Synthetic is the supported path and can be followed to the end. Real adds two vendor bindings, drawn with the kind Vendor and the status *Not supported*. A vendor binding is a read only record: no *Edit*, no *Delete*, and one notice says why. *Add* offers no vendor source |
+| =state= | =all=, =quiet=, =disabled=, =empty=, =error=, =loading= | Which mock binding is quiet or disabled, and the list states of the standard |
+| =actor= | =viewer=, =operator=, =admin= | Who uses the screen. A viewer reads only. The operator adds and edits. Only the administrator deletes |
 
 ** Driving it
 
-The acts change the mock list in memory, so a walk-through shows the result.
-*Bind a source* lists the synthetic sources the party does not consume, says which
-series the pick would write, and refuses it, naming the holder, when a running
-feed already writes that series: pick the Reuters EUR/USD source to see it.
-*Rebind* says when the series changes. *Enable*, *Disable*, *Start*, *Stop* and
-*Remove* act at once, and *Remove* asks first and says that the series and its
-observations stay. Changing a query parameter reloads the page and resets the
-list.
+Open a binding, then *Edit*, and change *Enabled*: the reasons offered change, and
+Save waits for a commentary. Save closes the dialog and the page shows the new
+version. Open *History*: the new version is at the top and the comparison shows
+the removed and the added line. Pick an older version and *Revert to this version*.
+On the list, *Add* a binding: pick the Reuters EUR/USD source to see the refusal
+that names the Bloomberg feed already writing that series, then pick another and
+add it. The new binding has no series page until it has a tick, so its URL is
+text; *Refresh* stands for the first tick arriving. Press the series URL: it opens
+the series page stand-in in a new tab. Press *Inspect*: the read only view opens.
 
 ** What is fake
 
 Everything. The bindings, the sources, the series, the producers, the last ticks,
-the versions and the actors are literals. The series column and the last tick
-stand for reads that do not exist yet. The quiet threshold, ten minutes, is
-provisional. There is no server, no session and no build step.
+the versions and the actors are literals. The series column and the last tick stand
+for reads that do not exist yet. The reasons are examples of the server's. The
+quiet threshold, ten minutes, is provisional. The series page and the feed page are
+stand-ins for pages the product already has. There is no server, no session and no
+build step.
 
 ** Where the code lives
 
@@ -108,22 +88,31 @@ with its CSS and its JavaScript inline: no framework, no =prototype.css= and no
 
 Not yet. Marco has not signed the prototype off. The screen task waits for that.
 
-** What it asks Marco
+** What the standards leave open
 
-- Which variant is the working view: the table, the grouping by series, or the
-  list beside the detail.
-- Who may bind and rebind. The prototype proposes that an operator may and that
-  only the administrator may remove, and the actor bar lets the two be compared.
-- Whether a vendor binding should be shown at all, as it is in the real scenario,
-  or hidden.
-- Whether the history of all bindings is a tab of this screen, as drawn, or the
-  shared timeline of the system.
-- Whether enabling a binding should also start its feed. The prototype enables
-  and starts together, and disabling stops ingestion and the feed.
+The standard says a screen that is unsure means its page is not complete, so each
+of these is a question to decide and then write into the standard or the menu.
+
+- *Where the screen lives.* The
+  [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] has no entry for
+  bindings. The prototype puts it in Market data, beside the Synthetic folder, with
+  the trail Home, Market data, Bindings, then the binding. Is that right?
+- *The key is fixed, and rebinding edits it.* The record standard fixes the key
+  after create. A binding's key is its source name and the model rebinds by editing
+  it. The prototype lets Edit change the source, with help under the field. Keep
+  that, with the exception named in the standard? Or a rebind is a delete and an
+  add, and the history goes?
+- *A vendor binding.* The prototype treats it as the standard's read only
+  exception, so it cannot be deleted. Should a stale vendor binding be deletable?
+- *Who may edit and delete.* The prototype proposes that an operator adds and edits
+  and only the administrator deletes. Which roles hold which?
+- *The lead line.* The standard says "<key> · version <n>". The key is the title, so
+  the prototype follows the shipped feed page: the series, the version and the kind.
 
 * See also
 
 - [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]] — the journey this prototype answers to.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules the screen follows.
 - [[file:index.org][Market data prototypes]] — the group page, and the row that records what this
   prototype argues.
 - [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] — the domain record the screen writes.

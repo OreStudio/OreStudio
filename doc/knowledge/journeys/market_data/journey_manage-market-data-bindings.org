@@ -2,7 +2,7 @@
 :ID: D46E4DEF-7431-419B-BA88-476AA7B98D24
 :END:
 #+title: User Journey: Manage market data bindings
-#+description: A person decides which producers of market data a party consumes: sees the bindings, what each feeds and when it last ticked, binds and rebinds a source, enables or disables a binding, and starts or stops the feed behind it, for synthetic data and, shown and not supported, for real data.
+#+description: A person decides which producers of market data a party consumes: sees the bindings, what each feeds and when it last ticked, adds, edits and deletes a binding, and reads who changed it, for synthetic data and, shown and read only, for real data.
 #+type: user_journey
 #+level: cross
 #+filetags: :user_journey:marketdata:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-13
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person decides which producers of market data a party consumes: sees the bindings, what each feeds and when it last ticked, binds and rebinds a source, enables or disables a binding, and starts or stops the feed behind it, for synthetic data and, shown and not supported, for real data.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person decides which producers of market data a party consumes: sees the bindings, what each feeds and when it last ticked, adds, edits and deletes a binding, and reads who changed it, for synthetic data and, shown and read only, for real data.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -23,8 +23,8 @@ each step needs.
 each one feeds and whether it is still ticking, and to change that without
 asking someone to run a script." The journey is done when each binding is
 listed with its source, the series it feeds, whether it is enabled and running
-and when it last ticked, and the person has bound, rebound, enabled, disabled,
-started or stopped what needed it.
+and when it last ticked, and the person has added, edited or deleted the
+bindings that needed it.
 
 * Actor and trigger
 
@@ -64,99 +64,103 @@ Two scenarios run through the journey.
   the end.
 - *Real data* from a vendor is not supported. The journey and the prototype draw
   a vendor binding so that the design holds it, and they say in words that this
-  product does not connect real feeds. No control creates, rebinds or starts a
-  vendor binding. A vendor binding that already exists can be read, enabled or
-  disabled, and deleted, because those acts do not connect anything.
+  product does not connect real feeds. No control adds a vendor binding, and a
+  vendor binding that already exists is a read only record: it has no Edit and
+  no Delete, and the page says why.
 
 * Steps
 
-The steps are the synthetic scenario. The last block says where the real data
-scenario differs.
+The screens are the record screens of the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]: a list, a
+record page with the tabs Details and History, and dialogs for add, edit, delete
+and revert. This journey adds no layout of its own. The steps are the synthetic
+scenario. The last block says where the real data scenario differs.
 
 1. *List the bindings.* The person opens *Market data* and then *Bindings*. The
-   system lists the party's bindings: the source name, the kind (synthetic or
-   vendor), the series the source feeds, written as its title and linked to the
-   series page, whether the binding is enabled, whether the feed behind it is
-   running, when it last ticked, and the row's version and who last changed it.
-   A summary above the table counts the bindings, the ones enabled, the ones
-   running and the ones quiet.
-2. *Narrow the list.* The person filters by kind and by state: all, running,
-   quiet, disabled. A binding with no tick for longer than its tick rate
-   implies is quiet, and a quiet binding stays in the list. The threshold is
-   provisional: nothing states how long a feed may be quiet yet.
-3. *Read one binding.* The person selects a row. The system shows the binding,
-   its versions, and the producer behind the source: the generation config
-   with its folder, tick rate, enabled and auto-start flags, and its binding
-   mode. It shows the series the binding feeds with a link to its page.
-4. *Bind a source.* The person chooses *Bind a source*. The system lists the
-   synthetic sources the party does not consume yet, each with the series it
-   would write. The person picks one. The system says whether another running
-   feed already writes that series, and refuses the pick if one does, naming
-   it. Until a subject answers that before the write, this check is a target,
-   and the system reports the refusal after the write; see /What is missing/. The person states a change reason and confirms. The system writes the
-   binding with kind =SYNTHETIC= and enabled, and the ingest loop starts to
-   store ticks for the party.
-5. *Rebind a source.* The person chooses *Rebind* on a binding and picks another
-   synthetic source. The system shows the series the old and the new source
-   write, and warns when they differ, because the party's series then changes.
-   The person states a reason and confirms. The system writes the new source
-   name against the version it read. Ingestion switches without restarting any
-   producer.
-6. *Enable or disable a binding.* The person changes the enabled flag and states
-   a reason. Disabling suspends ingestion and deletes nothing. It does not stop
-   the producer, so the running state and the binding can disagree, and the row
-   says so.
-7. *Start or stop the feed behind a binding.* The person chooses *Start* or
-   *Stop* on one binding, or on a folder or a collection. The system reports how
-   many feeds started, were already running or were skipped. The folder and
-   collection acts are those of
-   [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]], and
-   the person can follow a link there.
-8. *Remove a binding.* The person chooses *Remove* and states a reason. The
-   system asks for confirmation and says that the series and its observations
-   stay. It deletes the binding and ingestion for the party stops.
-9. *See who changed a binding.* The person opens the *History* tab of a binding.
-   The system lists its saved versions, newest first, with the time, who modified
-   it, the change reason and the commentary, and compares any version with the one
-   before it, field by field. An older version offers *Revert*, which saves a new
-   version. The person can also open *History* beside *Bindings* to read every
-   change to every binding, newest first, and see who is doing the work. Start and
-   stop are not saved versions and are not in the history.
-10. *See a binding that has gone quiet.* The person sorts by last tick and reads
-   the bindings that have not ticked within the interval their tick rate
-   implies. The system names the likely cause where it knows it: the feed is not
-   running, the binding is disabled, or the feed runs and nothing arrives.
-11. *Leave.* The person goes back to the *Market data* area.
+   system lists the party's bindings, with the source name first, then the kind
+   (synthetic or vendor), the series the source feeds, whether the binding is
+   enabled, the status of the feed behind it, and when it last ticked. The series
+   is an oresmd URL drawn as the product draws every reference: a link to the
+   series page in a new tab, and an *Inspect* button for the read only view of
+   its parts.
+2. *Search and filter.* The person searches by source name or series and filters
+   by kind. A search that matches nothing says so and offers to clear it.
+3. *Open a binding.* A click on a row, or Enter, opens the record page on its
+   Details tab. The system shows the source name, the kind, whether it is
+   enabled, the status, the last tick, a link to the feed behind the source, the
+   feed's folder and tick rate, and the series with its oresmd URL. The last line
+   says who last changed the binding, when and why. The header carries the access
+   mark and, for a person who may take them, *Edit* and *Delete*.
+4. *Add a binding.* The person chooses *Add* on the list. The dialog "Add binding"
+   asks for the source, chosen from the synthetic sources the party does not
+   consume, and whether the binding is enabled. It says which series the source
+   would write and refuses the source, naming the feed, when a running feed
+   already writes that series. Until a subject answers that before the write,
+   this check is a target, and the system reports the refusal after the write; see
+   /What is missing/. A new record is saved with the reason new record, so the
+   dialog states it in a note and does not ask. After the write the system opens
+   the new binding's page.
+5. *Edit a binding.* The person chooses *Edit*. The dialog "Edit <source name>"
+   shows the source and the enabled flag. Changing the source rebinds the party
+   to another synthetic source without restarting any producer, and the dialog
+   warns when the series changes. The person picks a change reason from the
+   reasons for an amendment and writes a commentary when the reason needs one. The
+   system writes against the version it read and refuses a binding that changed
+   since. After the write the page shows the new values.
+6. *Open the feed behind a binding.* The person follows the link to the feed. The
+   feed's page holds its run state and its *Start* and *Stop*, as the
+   [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] says. A
+   binding has no start or stop of its own, and starting a folder or a collection
+   is the work of
+   [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]].
+7. *Delete a binding.* The person chooses *Delete*. The dialog names the binding
+   and says what is lost: ingestion for the party stops, the series and its
+   observations stay, and the binding's history stays. The person picks a reason
+   and writes a commentary when it needs one. After the delete the system returns
+   to the list.
+8. *See who changed a binding.* The person opens the *History* tab. It is the
+   shared history panel: the timeline of the versions, newest first, with the
+   number, the time, who modified it and for whom, the reason and the commentary;
+   and a comparison of any two versions with *From*, *To*, *All fields* and *Only
+   changes*, the change shown as a removed and an added line. *Hide system
+   activity* hides the versions that a service wrote. *Revert to this version* is
+   offered on any version but the current one, to a person who may write. Its
+   dialog says that the values of that version are written back as a new version
+   and that no version is lost. Start and stop are the feed's and are not in the
+   binding's history.
+9. *See a binding that has gone quiet.* The status column says *Quiet* for a
+   binding that is enabled and has not ticked within the interval its tick rate
+   implies, and a quiet binding stays in the list. The person sorts by last tick.
+   The threshold is provisional: nothing states how long a feed may be quiet yet.
+10. *Leave.* The person goes back to the *Market data* area.
 
-*Real data differs at four steps.* In the list a vendor binding shows the kind
-*Vendor* and a note that real feeds are not supported. In the detail there is no
-producer behind the source, because no generation config exists, and the page
-says so. *Bind a source* offers no vendor source and says why, in one sentence.
-*Rebind* and *Start* are not offered for a vendor binding. The person can still
-enable, disable and remove it.
+*Real data differs at three steps.* In the list a vendor binding shows the kind
+*Vendor* and the status *Not supported*. Its page is a read only record, so it
+shows no *Edit* and no *Delete*, and one notice on the Details tab says that
+real feeds are not supported. *Add* offers no vendor source and says why, in one
+sentence.
 
 * Screens and wireframes
 
-One screen. The summary and the filters sit at the top, the binding table under
-them, and the selected binding with the producer behind it and the series it
-feeds in a panel beside or below the table, with its versions at the bottom. The
-*Bind a source* and *Rebind* acts are a dialog over the screen, so the person
-keeps the list in view while choosing.
+The list and the record page of the standard, and one dialog for add and edit.
+The wireframe draws the list above the record page of one binding on its Details
+tab, with the edit dialog over it.
 
-#+caption: Market data bindings: the bindings with their kind, series, state and last tick, the filters, the producer behind the selected binding, and the dialog to bind a source, with the vendor case marked as not supported.
+#+caption: Market data bindings: the standard list with the key first, the record page of one binding with its Details and History tabs and the access mark, and the edit dialog.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_manage-market-data-bindings.png]]
 
 * Prototype
 
 A static page at =doc/prototypes/market_data/manage-market-data-bindings/index.html=:
-mock data only, no backend, no build step and no session. It argues that a binding
-is a party's choice to consume one producer source, so the screen says what each
-feeds and whether it ticks, and each act says first what it will change.
+mock data only, no backend, no build step and no session. It draws the bindings
+screen as the record screen standard draws every record screen, and invents no
+layout. It argues what the standard leaves open: where the screen lives, whether
+the source name can change, and who may edit and delete.
 
-- Variants :: a table and detail, b by series, c list beside detail
+- Variants :: none: the standard decides the layout
 - Scenarios :: synthetic, supported and followed to the end; real, drawn and marked as not supported
-- States :: all, quiet, disabled
+- States :: all, quiet, disabled, empty, error, loading
 - Actors :: viewer, operator, admin
 - Note :: [[id:BE9424FC-4E1F-4920-A4DD-C69F878A2CDB][Manage market data bindings prototype]]
 - Source :: =doc/prototypes/market_data/manage-market-data-bindings/index.html=
@@ -188,19 +192,14 @@ it lives in the producer factory and is gone after a restart.
 | Read one binding | Read one binding | =marketdata.v1.feed_bindings.get= | exists |
 | See who changed a binding | List the versions of one binding | =marketdata.v1.feed_bindings_versions.list= | exists |
 | See who changed a binding | Read one version | =marketdata.v1.feed_bindings_versions.get= | exists |
-| See who changed a binding | List the versions of every binding | no subject | missing |
 | See who changed a binding | Revert to a version | =marketdata.v1.feed_bindings.put= | exists |
 | Read one binding | List the FX generation configs | =synthetic.v1.fx_spot_generation_configs.list= | exists |
 | Read one binding | List the IR generation configs | =synthetic.v1.ir_curve_generation_configs.list= | exists |
-| Bind a source | List the synthetic sources not yet bound | no subject | missing |
-| Bind a source | Say which running feed writes a series | no subject | missing |
-| Bind a source | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
-| Bind a source | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
-| Rebind a source | Write the binding with a new source | =marketdata.v1.feed_bindings.put= | exists |
-| Enable or disable | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
-| Start or stop | Start or stop one feed | =synthetic.v1.ops.start_feed=, =synthetic.v1.ops.stop_feed= | exists |
-| Start or stop | Start or stop every feed under a folder | =marketdata.v1.ops.start_feeds_under_folder=, =marketdata.v1.ops.stop_feeds_under_folder= | exists |
-| Remove a binding | Delete the binding | =marketdata.v1.feed_bindings.delete= | exists |
+| Add a binding | List the synthetic sources not yet bound | no subject | missing |
+| Add a binding | Say which running feed writes a series | no subject | missing |
+| Add or edit a binding | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Add or edit a binding | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
+| Delete a binding | Delete the binding | =marketdata.v1.feed_bindings.delete= | exists |
 | See a quiet binding | Read the expected tick rate | =synthetic.v1.fx_spot_generation_configs.list=, =synthetic.v1.ir_curve_generation_configs.list= | partial |
 
 Status is one of =exists=, =partial=, or =missing=. The binding operations and
@@ -235,17 +234,28 @@ their messages are in
 7. *No threshold for quiet and no alert.* The configs carry a tick rate. Nothing
    compares it with a last tick, and nothing notifies a person. The screen sorts
    by last tick and the person judges, until a threshold exists.
-8. *No permission that gates start and stop.* The binding permissions are named.
-   The producer start and stop subjects have none of their own, so what gates
-   them on this screen is not stated.
-9. *No read for the history of every binding.* The versions list is for one
-   binding. The screen-level history needs the versions of all of them in time
-   order. The candidate is a read over the table's history, or the shared timeline.
-   Until then the screen reads each binding's versions and merges them.
-10. *Who owns the screen is not decided.* The binding is per party and
-   provisioning creates it from the system party's config. Whether a market
-   data operator or only a system administrator may bind and rebind is a
-   decision for the prototype to put to Marco.
+8. *The menu has no entry for bindings.* The
+   [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] lists the screens of
+   Market data and has no Bindings. The prototype puts the screen in the Market
+   data area, beside the Synthetic folder, with the trail Home, Market data,
+   Bindings, then the binding. The menu page needs the entry once Marco agrees.
+9. *The standard fixes the key, and rebinding edits it.* The record standard says
+   the key is entered when a record is created and fixed after. A binding's key is
+   its source name, and the model says that editing the source name is how a
+   binding is rebound. The prototype follows the model: Edit offers the source
+   name, with help saying that it switches the ingest source. If the key stays
+   fixed, a rebind is a delete and an add, and the history of the binding is lost
+   with it. This needs a decision, and the standard needs the exception, or the
+   model the change.
+10. *A read only vendor binding cannot be deleted.* The read only exception of the
+    standard shows no Edit and no Delete. A stale vendor binding would then stay
+    forever. The prototype follows the standard. Whether a vendor binding may be
+    deleted is a decision, and the standard would name the exception.
+11. *Who may edit and delete is not decided.* The binding is per party and
+    provisioning creates it from the system party's config. The prototype proposes
+    that a market data operator adds and edits and only the system administrator
+    deletes, and an action a person may not take is not drawn. The actor bar lets
+    the two be compared.
 
 * Related journeys
 

@@ -19,39 +19,40 @@
 
 salt
 {
-  <b>MARKET DATA</b> | Bindings | History | [ Bind a source ]
+  <i>Home > Market data > Bindings</i>
+  <b>Bindings</b> | [ Refresh ] | [ + Add ]
+  The market data producers this party consumes.
   --
-  Bindings 12 | Enabled 11 | Running 10 | Quiet 1
-  --
-  Kind | ^All^ | State | ^All^ | [ Search source ]
-  --
+  {+ Search | ^Kind: all^ }
   {#
-    Source | Kind | Feeds series | Enabled | Running | Last tick
-    synthetic.bloomberg.audusd | Synthetic | AUD/USD spot rate | [X] | Running | 2 s ago
-    synthetic.bloomberg.eurestr | Synthetic | EUR overnight curve | [X] | Running | 2 s ago
-    synthetic.bloomberg.copibr | Synthetic | USD/COP spot rate | [X] | <b>Quiet</b> | 1 h ago
-    synthetic.bloomberg.nzdusd | Synthetic | NZD/USD spot rate | [ ] | Stopped | 3 d ago
-    vendor.example.eurusd | Vendor | EUR/USD spot rate | [X] | Not supported | -
+    Source name | Kind | Feeds series | Enabled | Status | Last tick
+    synthetic.bloomberg.audusd | Synthetic | AUD/USD spot rate | Yes | Running | 2 seconds ago
+    synthetic.bloomberg.copibr | Synthetic | USD/COP spot rate | Yes | Quiet | 1 hour ago
+    vendor.example.eurusd | Vendor | EUR/USD spot rate | Yes | Not supported | -
   }
-  --
-  <b>Selected: synthetic.bloomberg.copibr</b> | Details | History
-  {
-    Producer | FX spot generation config, 1800 ticks an hour, bound, auto-start
-    Series | USD/COP spot rate (inferred from observations)
-    | [ Rebind ] | [ Disable ] | [ Start ] | [ Stop ] | [ Remove ]
+  1-3 of 3 | [ First ] | [ Previous ] | [ Next ] | [ Last ] | Page size 15
+  ==
+  <i>Home > Market data > Bindings > synthetic.bloomberg.audusd</i>
+  <b>synthetic.bloomberg.audusd</b> | Editable | Running | [ Edit ] | [ Delete ]
+  AUD/USD spot rate - version 3 - Synthetic
+  [ Details ] | [ History ]
+  {+
+    Source name | Kind | Enabled | Status
+    synthetic.bloomberg.audusd | Synthetic | Yes | Running
+    Last tick | Feed | Folder | Ticks per hour
+    2 seconds ago | synthetic.bloomberg.audusd | Bloomberg | 1800
+    Feeds series | oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD | [ Inspect ]
+    --
+    Last changed: version 3 - market data operator - 2 hours ago - Rectification
   }
-  --
-  History tab: v3 enabled by market data operator | v2 disabled | v1 created by tenant provisioning
-  ..
-  <i>A vendor binding: real feeds are not supported. Rebind and Start are not offered.</i>
   ..
   {+
-    <b>Bind a source</b>
-    Source | ^synthetic.bloomberg.gbpusd^
-    Would write | GBP/USD spot rate
-    Held by | no other running feed
-    Reason | ^Amend^
-    [ Cancel ] | [ Bind ]
+    <b>Edit synthetic.bloomberg.audusd</b>
+    Source name | ^synthetic.bloomberg.audusd^
+    Enabled | ^Yes^
+    Change reason | ^Rectification^
+    Commentary | "                    "
+    [ Cancel ] | [ Save ]
   }
 }
 

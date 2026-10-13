@@ -6,6 +6,7 @@
 <title>Manage market data bindings prototype — Market data journeys</title>
 <style>
 
+
 :root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 *{box-sizing:border-box}[hidden]{display:none!important}
 html,body{background:var(--bg);color:var(--ink)}
@@ -37,25 +38,39 @@ td.num{text-align:right;font-family:var(--mono)}
 .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
 .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
 .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
-.dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
-.dlg{width:min(560px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:grid;gap:12px}
-.dlg h2{font-size:.95rem;text-transform:none;letter-spacing:0;color:var(--ink)}
-.dlg .field select{min-width:0;width:100%}
-.toast{position:fixed;top:44px;right:16px;z-index:70;background:#10261a;border:1px solid #1f4d29;color:var(--ok);border-radius:var(--radius);padding:8px 12px}
-.series a{color:var(--ink)}.series .uri{display:block;font-size:.72rem;color:var(--ink-faint);overflow-wrap:anywhere}
-.vendor-row td{background:#17141a}
-.sel td:first-child{box-shadow:inset 3px 0 var(--accent)}
-tr.pick{cursor:pointer}tr.pick:hover td{background:#1d1d22}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:4px}
-.tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:6px 12px;color:var(--ink-dim)}
-.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
-.hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+
+.tag.off{color:#9ca3af;border-color:#374151}
+.crumbs{font-size:.8rem;color:var(--ink-dim);display:flex;gap:6px;flex-wrap:wrap}
+.titlebar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.titlebar h1{font-size:1.3rem}.titlebar .sub{color:var(--ink-dim);margin-top:2px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.danger{color:var(--bad);border-color:#5a2320}.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim);padding:2px 8px}.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.access{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.78rem;color:var(--ink-dim)}
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabbar a{padding:8px 14px;color:var(--ink-dim);border-bottom:2px solid transparent}.tabbar a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.card .body{padding:16px;display:grid;gap:16px 20px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.card .body{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card .foot{border-top:1px solid var(--line-soft);padding:10px 16px;color:var(--ink-faint);font-size:.8rem}
+.dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
+a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
+.listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.listbar select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+tr.row{cursor:pointer}tr.row:hover td,tr.row:focus td{background:#1d1d22;outline:none}
+th.sort{cursor:pointer}
+.pager{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;color:var(--ink-dim);font-size:.85rem;border-top:1px solid var(--line-soft);flex-wrap:wrap}
+.hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
 @media(max-width:820px){.hist{grid-template-columns:1fr}}
 .hist ol{margin:0;padding:0;list-style:none;border-right:1px solid var(--line)}
-.hist li{padding:8px 10px;border-bottom:1px solid var(--line-soft);cursor:pointer;display:grid;gap:2px}
-.hist li.on{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
-.hist .cmp{padding:10px;display:grid;gap:8px;align-content:start}
-td.before{background:#241313;color:#ffb3ad}td.after{background:#10261a;color:#9be9a8}
+.hist li{padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer;display:grid;gap:2px}.hist li.on{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
+.hist .cmp{padding:12px;display:grid;gap:10px;align-content:start}
+.diff{font-family:var(--mono);font-size:.82rem}.diff .rm{background:#2a1517;color:#ffb3ad;padding:2px 8px}.diff .ad{background:#10261a;color:#9be9a8;padding:2px 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
+.dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.dlg .dbody{padding:16px;display:grid;gap:14px}.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line-soft)}
+.field select,.field input[type=text],.field textarea{width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 8px}.field textarea{min-height:64px}.field .help{font-size:.78rem;color:var(--ink-faint)}
 .warnbox{border:1px solid #4a3a17;background:#201a0e;color:var(--warn);border-radius:var(--radius);padding:8px 10px}
 .okbox{border:1px solid #1f4d29;background:#0f1d14;color:var(--ok);border-radius:var(--radius);padding:8px 10px}
 .badbox{border:1px solid #5a2320;background:#231211;color:var(--bad);border-radius:var(--radius);padding:8px 10px}
@@ -66,26 +81,26 @@ td.before{background:#241313;color:#ffb3ad}td.after{background:#10261a;color:#9b
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  The screen of "Manage market data bindings"
-  (doc/knowledge/journeys/market_data/journey_manage-market-data-bindings.org):
-  the bindings a party consumes, the series each feeds, whether it runs and when
-  it last ticked, and the acts that change a binding: bind a source, rebind,
-  enable or disable, start or stop, remove.
+  The bindings screen, drawn only as the Record screen standard
+  (doc/knowledge/ui/record_screen_standard.org) draws a record screen, and the
+  oresmd reference as the product ships it. It invents no layout:
+    - the list: breadcrumb, plural title, one sentence, Refresh and Add, search,
+      a filter, the table with the key first, the pager, and the four states;
+    - the record page: breadcrumb, the key as the title, the lead line, the access
+      mark and the actions Edit and Delete (drawn only when allowed), the tabs
+      Details and History, the Last changed line;
+    - Add and Edit are one dialog, Delete and Revert have their own, and the
+      Inspect view of an oresmd URL is the shipped one. All four share one shell.
+    - History is the shared panel: the timeline, a comparison with From and To,
+      All fields and Only changes, Hide system activity, and Revert.
+  What the standard leaves open is listed in the design note as questions.
 
-  Query parameters:
-    ?variant=a|b|c      a table with a detail panel, b the bindings grouped by the
-                        series they feed, c a compact list beside a detail panel
-    ?scenario=synthetic|real
-                        synthetic is the supported path and can be followed to the
-                        end. real adds vendor bindings, which are drawn and marked
-                        as not supported: no control binds, rebinds or starts one.
-    ?state=all|quiet|disabled
-                        which mock bindings are quiet or disabled
-    ?actor=operator|admin|viewer
-                        who is using the screen, which decides the controls. This
-                        is the open question of the journey.
-  The acts change the mock list in memory, so a walk-through shows the result.
-  Changing a query parameter reloads the page and resets the list.
+  Addresses: ?screen=list | record&id=..&tab=details|history | stand-ins:
+  series&uri=.. and feed&src=.. (pages the product already has).
+  Switches in the bottom bar (they reload and reset the mock list):
+    ?scenario=synthetic|real   real adds vendor bindings, which are read only
+    ?state=all|quiet|disabled|empty|error|loading
+    ?actor=viewer|operator|admin   who is using it: this is an open question
 -->
 
 <div class="proto-note" id="note"></div>
@@ -94,290 +109,305 @@ td.before{background:#241313;color:#ffb3ad}td.after{background:#10261a;color:#9b
 <div id="layer"></div>
 
 <script>
-const params = new URLSearchParams(location.search);
-const variant = params.get('variant') || 'a';
-const scenario = params.get('scenario') || 'synthetic';
-const state = params.get('state') || 'all';
-const actor = params.get('actor') || 'operator';
+const P0 = new URLSearchParams(location.search);
+const scenario = P0.get('scenario') || 'synthetic';
+const state = P0.get('state') || 'all';
+const actor = P0.get('actor') || 'operator';
+const KEEP = ['scenario', 'state', 'actor'];
+const NOW = Date.parse('2026-10-13T10:00:00Z');
 
-const REASONS = ['Amend', 'Correct a mistake', 'New market data source', 'Source retired'];
-const PERMS = {
-  bind: 'marketdata::feed_bindings:write', rebind: 'marketdata::feed_bindings:write',
-  toggle: 'marketdata::feed_bindings:write', remove: 'marketdata::feed_bindings:delete',
-  run: 'synthetic start and stop (no permission of its own yet)'
-};
-// Who may do what is the open question. The prototype proposes: a viewer reads,
-// an operator binds, rebinds, enables, disables, starts and stops, and only the
-// system administrator removes.
-const MAY = {
-  viewer: {},
-  operator: {bind: 1, rebind: 1, toggle: 1, run: 1},
-  admin: {bind: 1, rebind: 1, toggle: 1, run: 1, remove: 1}
-};
+// Who may do what is an open question. Proposed: a viewer reads, an operator adds and
+// edits, and the system administrator also deletes. An action a person may not take
+// is not drawn.
+const MAY = { viewer: {}, operator: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
+const may = a => !!(MAY[actor] || {})[a];
 const actorName = actor === 'admin' ? 'system administrator' : actor === 'viewer' ? 'a viewer' : 'market data operator';
-const NOW_LABEL = '2026-10-13 10:00';
-const may = act => !!(MAY[actor] || {})[act];
 
-// Sources a party could consume. seriesUri is what the source writes.
+// The reasons the server offers for an amendment. When a field changed,
+// Non-material update is not offered. When none changed, only it is.
+const REASON_AMEND = [{ name: 'Rectification', note: true }, { name: 'Correction of a data entry error', note: true }, { name: 'Non-material update', note: false }];
+const REASON_DELETE = [{ name: 'Source retired', note: true }, { name: 'Added by mistake', note: false }];
+
 const SOURCES = [
-  {src: 'synthetic.bloomberg.audusd', series: 'AUD/USD spot rate', uri: 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Synthetic / Bloomberg / FX'},
-  {src: 'synthetic.bloomberg.eurusd', series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Synthetic / Bloomberg / FX'},
-  {src: 'synthetic.bloomberg.copibr', series: 'USD/COP spot rate', uri: 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=COP', kind: 'FX spot', tph: 1800, folder: 'Synthetic / Bloomberg / FX'},
-  {src: 'synthetic.bloomberg.nzdusd', series: 'NZD/USD spot rate', uri: 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Synthetic / Bloomberg / FX'},
-  {src: 'synthetic.bloomberg.eurestr', series: 'EUR overnight curve', uri: 'oresmd://ir/EUR?type=series&instrument=zero&quote=rate', kind: 'IR curve', tph: 60, folder: 'Synthetic / Bloomberg / IR'},
-  {src: 'synthetic.bloomberg.gbpusd', series: 'GBP/USD spot rate', uri: 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Synthetic / Bloomberg / FX'},
-  {src: 'synthetic.bloomberg.usdjpy', series: 'USD/JPY spot rate', uri: 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY', kind: 'FX spot', tph: 1800, folder: 'Synthetic / Bloomberg / FX'},
-  {src: 'synthetic.reuters.eurusd', series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Synthetic / Reuters / FX'}
+  { src: 'synthetic.bloomberg.audusd', series: 'AUD/USD spot rate', uri: 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.eurusd', series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.copibr', series: 'USD/COP spot rate', uri: 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=COP', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.nzdusd', series: 'NZD/USD spot rate', uri: 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.eurestr', series: 'EUR overnight curve', uri: 'oresmd://ir/EUR?type=series&instrument=zero&quote=rate', kind: 'IR curve', tph: 60, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.gbpusd', series: 'GBP/USD spot rate', uri: 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.bloomberg.usdjpy', series: 'USD/JPY spot rate', uri: 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY', kind: 'FX spot', tph: 1800, folder: 'Bloomberg' },
+  { src: 'synthetic.reuters.eurusd', series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', kind: 'FX spot', tph: 1800, folder: 'Reuters' }
 ];
 const sourceOf = s => SOURCES.find(x => x.src === s);
 
 let bindings = [
-  {id: 'b1', src: 'synthetic.bloomberg.audusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3, by: 'market data operator'},
-  {id: 'b2', src: 'synthetic.bloomberg.eurusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 1, by: 'tenant provisioning'},
-  {id: 'b3', src: 'synthetic.bloomberg.copibr', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3, by: 'market data operator'},
-  {id: 'b4', src: 'synthetic.bloomberg.nzdusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 2, by: 'tenant provisioning'},
-  {id: 'b5', src: 'synthetic.bloomberg.eurestr', kind: 'SYNTHETIC', enabled: true, running: true, last: 3, ver: 1, by: 'tenant provisioning'}
+  { id: 'b1', src: 'synthetic.bloomberg.audusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
+  { id: 'b2', src: 'synthetic.bloomberg.eurusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 1 },
+  { id: 'b3', src: 'synthetic.bloomberg.copibr', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
+  { id: 'b4', src: 'synthetic.bloomberg.nzdusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 2 },
+  { id: 'b5', src: 'synthetic.bloomberg.eurestr', kind: 'SYNTHETIC', enabled: true, running: true, last: 3, ver: 1 }
 ];
 if (state === 'quiet') { const b = bindings.find(x => x.src.endsWith('copibr')); b.running = false; b.last = 3600; }
 if (state === 'disabled') { const b = bindings.find(x => x.src.endsWith('nzdusd')); b.enabled = false; b.running = false; b.last = 259200; }
-if (scenario === 'real') {
-  bindings.push(
-    {id: 'v1', src: 'vendor.example.eurusd', kind: 'VENDOR', enabled: true, running: false, last: null, ver: 1, by: 'tenant provisioning', series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD'},
-    {id: 'v2', src: 'vendor.example.usdsofr', kind: 'VENDOR', enabled: false, running: false, last: null, ver: 2, by: 'market data operator', series: 'USD overnight curve', uri: 'oresmd://ir/USD?type=series&instrument=zero&quote=rate'}
-  );
-}
-// The history of a binding is its saved versions, newest last in the store. Start
-// and stop are not versions, so they are not here: the history shows saved
-// versions only. Every version says who modified it, why and what it changed.
+if (state === 'empty') bindings = [];
+if (scenario === 'real') bindings.push(
+  { id: 'v1', src: 'vendor.example.eurusd', kind: 'VENDOR', enabled: true, running: false, last: null, ver: 1, series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD' },
+  { id: 'v2', src: 'vendor.example.usdsofr', kind: 'VENDOR', enabled: false, running: false, last: null, ver: 2, series: 'USD overnight curve', uri: 'oresmd://ir/USD?type=series&instrument=zero&quote=rate', noSeries: true }
+);
+
+// Saved versions, oldest first. Start and stop are the feed's, not the binding's.
+const AT = ['2026-10-06T09:02:00Z', '2026-10-12T17:40:00Z', '2026-10-13T08:15:00Z'];
 const history = {};
-const removedLog = [];
-const fieldsOf = b => ({'Source name': b.src, 'Enabled': b.enabled ? 'true' : 'false', 'Kind': b.kind});
-function pushVersion(b, by, reason, commentary, action) {
-  const list = history[b.id] = history[b.id] || [];
-  list.push({v: list.length + 1, at: list.length ? NOW_LABEL : '2026-10-06 09:02', by, reason, commentary, action, fields: fieldsOf(b)});
-}
+const fieldsOf = b => ({ 'Source name': b.src, 'Enabled': b.enabled ? 'Yes' : 'No', 'Kind': b.kind === 'VENDOR' ? 'Vendor' : 'Synthetic' });
 bindings.forEach(b => {
-  const final = {...b};
-  const steps = [{en: true, by: 'tenant provisioning', reason: 'New market data source', note: 'Created with the tenant', action: 'created'}];
-  if (b.ver >= 2) steps.push({en: false, by: 'market data operator', reason: 'Amend', note: 'Paused while the source was checked', action: 'disabled'});
-  if (b.ver >= 3) steps.push({en: true, by: 'market data operator', reason: 'Amend', note: 'Source checked, ticks resume', action: 'enabled'});
-  steps.slice(0, b.ver).forEach((x, i) => {
-    const snap = {...final, enabled: x.en};
-    const list = history[b.id] = history[b.id] || [];
-    list.push({v: i + 1, at: ['2026-10-06 09:02', '2026-10-12 17:40', '2026-10-13 08:15'][i], by: x.by, reason: x.reason, commentary: x.note, action: x.action, fields: fieldsOf(snap)});
-  });
+  const steps = [{ en: true, by: 'tenant provisioning service', forWho: 'tenant administrator', service: true, reason: 'New record', note: '' },
+    { en: false, by: 'market data operator', reason: 'Rectification', note: 'Paused while the source was checked' },
+    { en: true, by: 'market data operator', reason: 'Rectification', note: 'Source checked, ticks resume' }];
+  history[b.id] = steps.slice(0, b.ver).map((x, i) => ({ v: i + 1, at: AT[i], by: x.by, forWho: x.forWho || x.by, service: !!x.service, reason: x.reason, commentary: x.note, fields: fieldsOf({ ...b, enabled: x.en }) }));
 });
-let tab = 'details', view = 'bindings', toVer = null, onlyChanges = true;
-let sel = (scenario === 'real' ? 'vendor.example.eurusd' : 'synthetic.bloomberg.audusd');
-let toast = '';
+function pushVersion(b, reason, commentary) {
+  const list = history[b.id] = history[b.id] || [];
+  list.push({ v: list.length + 1, at: new Date(NOW).toISOString(), by: actorName, forWho: actorName, service: false, reason, commentary, fields: fieldsOf(b) });
+}
+let nextId = 100, draft = null, hideSystem = false, picked = {}, search = '', kindFilter = 'all', sortKey = 'src', sortDir = 1;
 
-const esc = t => t.replace(/&/g, '&amp;');
 const isVendor = b => b.kind === 'VENDOR';
-const seriesOf = b => isVendor(b) ? {series: b.series, uri: b.uri} : (sourceOf(b.src) || {series: 'not known', uri: ''});
-const quiet = b => b.enabled && !isVendor(b) && (b.last === null || b.last > 600);
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const seriesOf = b => isVendor(b) ? { series: b.series, uri: b.uri } : (sourceOf(b.src) || { series: 'not known', uri: '' });
+const hasSeries = b => !b.noSeries;
+const quiet = b => b.enabled && !isVendor(b) && b.running === false ? false : (b.enabled && !isVendor(b) && (b.last === null || b.last > 600));
 const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
-const ageLabel = a => a === null ? '—' : a < 90 ? a + ' s ago' : a < 5400 ? Math.round(a / 60) + ' min ago' : a < 172800 ? Math.round(a / 3600) + ' h ago' : Math.round(a / 86400) + ' d ago';
-const kindTag = b => isVendor(b) ? tag('Vendor', 'warn') : tag('Synthetic', 'ok');
-const enabledTag = b => b.enabled ? tag('yes', 'ok') : tag('no', 'warn');
-const runTag = b => isVendor(b) ? tag('not supported', 'warn') : quiet(b) ? tag('quiet', 'bad') : b.running ? tag('running', 'ok') : tag('stopped', 'bad');
-const seriesCell = b => { const s = seriesOf(b); return `<span class="series"><a href="#" onclick="return false" title="Opens the series page">${s.series}</a><span class="uri mono">${esc(s.uri)}</span></span>`; };
-const heldBy = (series, except) => bindings.find(b => b.src !== except && !isVendor(b) && b.running && seriesOf(b).series === series);
-let nextId = 100;
-const cur = () => bindings.find(b => b.src === sel) || bindings[0];
+const rel = iso => { const s = Math.round((NOW - Date.parse(iso)) / 1000); return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' minutes ago' : s < 129600 ? Math.round(s / 3600) + ' hours ago' : Math.round(s / 86400) + ' days ago'; };
+const exact = iso => iso.replace('T', ' ').replace(':00Z', ' UTC');
+const ago = a => a === null ? '<span class="faint">—</span>' : a < 90 ? a + ' seconds ago' : a < 5400 ? Math.round(a / 60) + ' minutes ago' : a < 172800 ? Math.round(a / 3600) + ' hours ago' : Math.round(a / 86400) + ' days ago';
+// Status: the feed's run state, as the feed list reads it. A tag colour carries its meaning only:
+// green healthy, amber caution, gray inactive.
+const statusTag = b => isVendor(b) ? tag('Not supported', 'warn') : !b.enabled ? tag('Disabled', 'off') : (b.enabled && (b.last === null || b.last > 600)) ? tag('Quiet', 'warn') : b.running ? tag('Running', 'ok') : tag('Stopped', 'off');
+const kindLabel = b => isVendor(b) ? 'Vendor' : 'Synthetic';
+const dash = '<span class="faint">—</span>';
+const heldBy = (series, except) => bindings.find(b => b.id !== except && !isVendor(b) && b.running && seriesOf(b).series === series);
+const byId = id => bindings.find(b => b.id === id);
 
-function btn(label, act, extra, cls) {
-  const ok = may(act);
-  const why = ok ? '' : ` title="${actor === 'viewer' ? 'A viewer reads only' : 'Not offered to this actor: ' + PERMS[act]}"`;
-  return `<button class="btn ${cls || ''}" ${ok && !(extra && extra.off) ? '' : 'disabled'}${why} data-act="${act}" data-src="${extra && extra.src || ''}">${label}</button>`;
-}
-function actionsFor(b) {
-  if (isVendor(b)) {
-    return btn(b.enabled ? 'Disable' : 'Enable', 'toggle', {src: b.src}) + btn('Remove', 'remove', {src: b.src}) +
-      `<button class="btn" disabled title="Real feeds are not supported">Rebind</button><button class="btn" disabled title="Real feeds are not supported">Start</button>`;
-  }
-  return btn('Rebind', 'rebind', {src: b.src}) + btn(b.enabled ? 'Disable' : 'Enable', 'toggle', {src: b.src}) +
-    btn(b.running ? 'Stop' : 'Start', 'run', {src: b.src, off: !b.enabled}) + btn('Remove', 'remove', {src: b.src});
-}
+// Addresses: every link carries its whole address, so it opens in a new tab and copies as a link.
+function q(params) { const p = new URLSearchParams(); KEEP.forEach(k => { const v = new URLSearchParams(location.search).get(k); if (v) p.set(k, v); }); Object.entries(params).forEach(([k, v]) => p.set(k, v)); return '?' + p.toString(); }
+const href = params => esc(q(params));
+const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details', uri: p.get('uri'), src: p.get('src') }; };
+function nav(params) { window.history.pushState({}, '', q(params)); render(); }
+window.onpopstate = () => render();
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-nav]');
+  if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+  e.preventDefault(); window.history.pushState({}, '', a.getAttribute('href')); render();
+});
 
-function header() {
-  const en = bindings.filter(b => b.enabled).length, run = bindings.filter(b => b.running && !quiet(b)).length, q = bindings.filter(quiet).length;
-  return `
-  <div class="top">
-    <h1>ORE Studio — Market data / Bindings</h1>
-    ${q ? tag(q + ' quiet', 'bad') : tag('all ticking', 'ok')}
-    <span style="margin-left:auto" class="faint">Acting as ${actor === 'admin' ? 'system administrator' : actor === 'viewer' ? 'a viewer' : 'market data operator'}</span>
-    ${btn('Bind a source', 'bind', null, 'primary')}
-  </div>
-  <div class="tabs"><button data-view="bindings" class="${view === 'bindings' ? 'on' : ''}">Bindings</button><button data-view="history" class="${view === 'history' ? 'on' : ''}">History</button></div>
-  <div class="panel">
-    <h2>Summary</h2>
-    <div class="row">
-      <div class="field"><label>Bindings</label><div class="value">${bindings.length}</div></div>
-      <div class="field"><label>Enabled</label><div class="value">${en}</div></div>
-      <div class="field"><label>Running</label><div class="value">${run}</div></div>
-      <div class="field"><label>Quiet</label><div class="value">${q}</div></div>
-      <span class="muted">A binding says that this party consumes one producer source. It does not name a series: the series is read from what the source has written.</span>
-    </div>
-  </div>`;
+// The oresmd URL as the product ships it: a link to the series page in a new tab when the
+// party has the series, plain text when it does not, and an Inspect button.
+function uriRef(b) {
+  const s = seriesOf(b), text = esc(s.uri);
+  const link = hasSeries(b) ? `<a class="link mono" style="font-size:.8rem;overflow-wrap:anywhere" target="_blank" rel="noopener" href="${href({ screen: 'series', uri: s.uri })}" title="Opens the series page in a new tab">${text}</a>` : `<span class="mono" style="font-size:.8rem;overflow-wrap:anywhere">${text}</span>`;
+  return `<span style="display:inline-flex;gap:6px;align-items:baseline;flex-wrap:wrap">${link}<button class="btn ghost" data-inspect="${esc(s.uri)}">Inspect</button></span>`;
 }
 
-function rowHtml(b) {
-  return `<tr class="pick ${b.src === sel ? 'sel' : ''} ${isVendor(b) ? 'vendor-row' : ''}" data-pick="${b.src}">
-    <td class="mono">${b.src}</td><td>${kindTag(b)}</td><td>${seriesCell(b)}</td><td>${enabledTag(b)}</td><td>${runTag(b)}</td>
-    <td class="mono">${isVendor(b) ? '—' : ageLabel(b.last)}</td></tr>`;
+// Icons beside words, one glyph for one idea.
+const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕', save: '' };
+const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
+function crumbs(parts) { return `<div class="crumbs">${parts.map((p, i) => i === parts.length - 1 ? `<span>${p[0]}</span>` : `<a class="link" data-nav href="${p[1]}">${p[0]}</a>`).join('<span>›</span>')}</div>`; }
+const LIST = () => href({ screen: 'list' });
+const base = () => [['Home', LIST()], ['Market data', LIST()], ['Bindings', LIST()]];
+
+function visible() {
+  let rows = bindings.filter(b => (kindFilter === 'all' || (kindFilter === 'synthetic') === !isVendor(b)) && (!search || (b.src + ' ' + seriesOf(b).series).toLowerCase().includes(search.toLowerCase())));
+  const val = b => sortKey === 'series' ? seriesOf(b).series : sortKey === 'kind' ? kindLabel(b) : sortKey === 'enabled' ? (b.enabled ? 'Yes' : 'No') : sortKey === 'last' ? (b.last === null ? 1e12 : b.last) : b.src;
+  return rows.sort((x, y) => (val(x) > val(y) ? 1 : val(x) < val(y) ? -1 : 0) * sortDir);
 }
-function table() {
-  return `<div class="panel"><h2>Bindings</h2>
-    <table><thead><tr><th>Source</th><th>Kind</th><th>Feeds series (inferred)</th><th>Enabled</th><th>Running</th><th>Last tick</th></tr></thead>
-    <tbody>${bindings.map(rowHtml).join('')}</tbody></table>
-    <div class="notice">The series column is inferred from the newest observations, and the last tick is a mock reading of the ingest loop's counter: no read returns either today. A quiet binding stays in the list. The threshold for quiet is provisional.</div>
-  </div>`;
+function listScreen() {
+  const head = `${crumbs([['Home', LIST()], ['Market data', LIST()], ['Bindings']])}
+  <div class="titlebar"><div><h1>Bindings</h1><div class="sub">The market data producers this party consumes.</div></div>
+    <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? btn('Add', 'add', 'primary', 'data-add') : ''}</div></div>`;
+  if (state === 'loading') return head + '<div class="card"><div class="body"><div class="muted">Loading…</div></div></div>';
+  if (state === 'error') return head + `<div class="badbox">The bindings could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>`;
+  const rows = visible();
+  const note = `<div class="notice">${bindings.length} bindings. The series is inferred from the newest observations, and the last tick is a mock reading of the ingest loop's counter: no read returns either today.</div>`;
+  const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  const tr = b => `<tr class="row" tabindex="0" data-open="${b.id}"><td><a data-nav class="link mono" href="${href({ screen: 'record', id: b.id })}">${b.src}</a></td><td>${kindLabel(b)}</td>
+    <td><div>${seriesOf(b).series}</div><div>${uriRef(b)}</div></td><td>${b.enabled ? 'Yes' : 'No'}</td><td>${statusTag(b)}</td>
+    <td title="${isVendor(b) ? '' : esc(exact(new Date(NOW - b.last * 1000).toISOString().slice(0, 19) + 'Z'))}">${isVendor(b) ? dash : ago(b.last)}</td></tr>`;
+  let body;
+  if (!bindings.length) body = `<div class="card"><div class="body"><div class="muted">There are no bindings yet.${may('add') ? ' ' + btn('Add', 'add', 'primary', 'data-add') : ''}</div></div></div>`;
+  else if (!rows.length) body = `<div class="card"><div class="body"><div class="muted">No bindings match the search. <button class="btn" id="clear">Clear</button></div></div></div>`;
+  else body = `<table><thead><tr>${th('src', 'Source name')}${th('kind', 'Kind')}${th('series', 'Feeds series (inferred)')}${th('enabled', 'Enabled')}<th>Status</th>${th('last', 'Last tick')}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`;
+  const pager = `<div class="pager"><span>${rows.length ? '1–' + rows.length + ' of ' + rows.length : '0 of 0'}</span><span><button class="btn" disabled>« First</button> <button class="btn" disabled>‹ Previous</button> <button class="btn" disabled>Next ›</button> <button class="btn" disabled>Last »</button></span><span>Page size <select><option>15</option><option>25</option><option>50</option></select></span></div>`;
+  return head + note + `<div class="card"><div class="listbar"><input id="search" placeholder="Search" value="${esc(search)}"><select id="kindf"><option value="all">Kind: all</option><option value="synthetic" ${kindFilter === 'synthetic' ? 'selected' : ''}>Synthetic</option><option value="vendor" ${kindFilter === 'vendor' ? 'selected' : ''}>Vendor</option></select></div>${body}${pager}</div>`;
 }
-function bySeries() {
-  const groups = {};
-  bindings.forEach(b => (groups[seriesOf(b).series] = groups[seriesOf(b).series] || []).push(b));
-  return Object.entries(groups).map(([s, bs]) => `<div class="panel"><h2>${s} · ${bs.length} binding${bs.length > 1 ? 's' : ''}</h2>
-    <table><tbody>${bs.map(b => `<tr class="pick ${b.src === sel ? 'sel' : ''} ${isVendor(b) ? 'vendor-row' : ''}" data-pick="${b.src}"><td class="mono">${b.src}</td><td>${kindTag(b)}</td><td>${enabledTag(b)}</td><td>${runTag(b)}</td><td class="mono">${isVendor(b) ? '—' : ageLabel(b.last)}</td></tr>`).join('')}</tbody></table>
-    ${bs.filter(b => !isVendor(b) && b.running).length > 1 ? '<div class="badbox">Two running synthetic feeds write this series. The server allows one.</div>' : ''}
-  </div>`).join('') + `<div class="notice">Seen from the series, a conflict between two feeds is visible at once. The cost is that a binding's own state sits one level down.</div>`;
+
+function kv(l, v, wide) { return `<div class="dl ${wide ? 'wide' : ''}"><div class="k">${l}</div><div class="v">${v}</div></div>`; }
+function lastChanged(b) {
+  const x = (history[b.id] || []).slice(-1)[0]; if (!x) return '';
+  const who = x.by === x.forWho ? x.by : `${x.by} for ${x.forWho}`;
+  return `<div class="foot">Last changed: version ${x.v} · ${who} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.commentary ? ' · “' + esc(x.commentary) + '”' : ''}</div>`;
 }
-function detail(b) {
-  if (!b) return '<div class="panel"><div class="notice">No binding selected.</div></div>';
-  return `<div class="panel"><div class="tabs"><button data-tab="details" class="${tab === 'details' ? 'on' : ''}">Details</button><button data-tab="history" class="${tab === 'history' ? 'on' : ''}">History</button></div>${tab === 'history' ? historyPanel(b) : detailBody(b)}</div>`;
-}
-function detailBody(b) {
+function detailsTab(b) {
   const s = seriesOf(b), src = sourceOf(b.src);
-  const producer = isVendor(b)
-    ? `<div class="warnbox"><b>Real feeds are not supported.</b> This installation does not connect a vendor feed, so there is no producer behind this source, and the binding can only be read, enabled or disabled, or removed. It is shown so a binding a vendor feed once created is not hidden.</div>`
-    : `<table><tbody>
-        <tr><td>Producer</td><td>${src ? src.kind : 'not known'} generation config</td><td>Binding mode</td><td>bound</td></tr>
-        <tr><td>Folder</td><td class="mono">${src ? src.folder : '—'}</td><td>Ticks per hour</td><td class="num">${src ? src.tph : '—'}</td></tr>
-        <tr><td>Running</td><td>${runTag(b)}</td><td>Last tick</td><td class="mono">${ageLabel(b.last)}</td></tr>
-      </tbody></table>${quiet(b) ? `<div class="badbox">${b.running ? 'The feed is running and no tick arrives.' : 'The feed is not running. Start it to bring the ticks back.'}</div>` : (!b.enabled ? '<div class="warnbox">Disabled: ingestion is suspended. The producer may still run.</div>' : '')}`;
-  return `<h2>Selected binding · ${b.src}</h2>
-    <table><tbody>
-      <tr><td>Kind</td><td>${kindTag(b)}</td><td>Enabled</td><td>${enabledTag(b)}</td></tr>
-      <tr><td>Version</td><td class="mono">${b.ver}</td><td>Last changed by</td><td>${b.by}</td></tr>
-      <tr><td>Feeds series</td><td colspan="3">${seriesCell(b)}</td></tr>
-    </tbody></table>
-    ${producer}
-    <div class="row">${actionsFor(b)}</div>`;
+  const feed = isVendor(b) ? dash : `<a class="link" data-nav href="${href({ screen: 'feed', src: b.src })}">${b.src}</a>`;
+  return `${isVendor(b) ? '<div class="warnbox"><b>Real feeds are not supported.</b> This installation does not connect a vendor feed, so this binding is read only. It is shown so a binding that a vendor feed once created is not hidden.</div>' : ''}
+  <div class="card"><div class="body">
+    ${kv('Source name', `<span class="mono">${b.src}</span>`)}${kv('Kind', kindLabel(b))}${kv('Enabled', b.enabled ? 'Yes' : 'No')}${kv('Status', statusTag(b))}
+    ${kv('Last tick', isVendor(b) ? dash : ago(b.last))}${kv('Feed', feed)}${kv('Folder', src ? src.folder : dash)}${kv('Ticks per hour', src ? src.tph : dash)}
+    ${kv('Feeds series (inferred)', `${s.series}<div>${uriRef(b)}</div>${hasSeries(b) ? '' : '<div class="faint" style="font-size:.78rem">Nothing has been written to this series yet, so it has no page.</div>'}`, true)}
+  </div>${lastChanged(b)}</div>`;
 }
-function historyPanel(b) {
-  const vers = (history[b.id] || []).slice().reverse();
-  const to = vers.find(x => x.v === toVer) || vers[0];
-  const from = vers.find(x => x.v === to.v - 1);
-  const names = Object.keys(to.fields).filter(n => !onlyChanges || !from || from.fields[n] !== to.fields[n]);
-  const items = vers.map(x => `<li class="${x.v === to.v ? 'on' : ''}" data-ver="${x.v}">
-      <span><b>v${x.v}</b> ${x.v === vers[0].v ? tag('current', 'ok') : ''} <span class="mono faint" style="float:right">${x.at}</span></span>
-      <span class="muted">Modified by ${x.by}</span><span>${x.reason}${x.commentary ? ' · ' + x.commentary : ''}</span>
-      ${x.v !== vers[0].v ? `<span><button class="btn" data-revert="${x.v}" ${may('toggle') && !isVendor(b) || may('toggle') && isVendor(b) ? '' : 'disabled'}>Revert to v${x.v}</button></span>` : ''}</li>`).join('');
-  return `<h2>History · ${b.src}</h2><div class="muted">Every saved version of this binding, newest first.</div>
-    <div class="hist"><ol aria-label="Timeline">${items}</ol>
+
+function historyTab(b) {
+  const all = (history[b.id] || []).slice().reverse(), cur = all[0];
+  const list = all.filter(x => x.v === cur.v || !(hideSystem && x.service));
+  const toV = picked[b.id] && list.find(x => x.v === picked[b.id].to) ? picked[b.id].to : cur.v;
+  const to = list.find(x => x.v === toV) || cur;
+  const olderV = all.filter(x => x.v < to.v);
+  const fromV = picked[b.id] && olderV.find(x => x.v === picked[b.id].from) ? picked[b.id].from : to.v - 1;
+  const from = all.find(x => x.v === fromV);
+  const only = picked[b.id] ? picked[b.id].only !== false : true;
+  const names = Object.keys(to.fields).filter(n => !only || !from || from.fields[n] !== to.fields[n]);
+  const items = list.map(x => `<li class="${x.v === to.v ? 'on' : ''}" data-ver="${x.v}"><span><b>v${x.v}</b> ${x.v === cur.v ? tag('current', 'ok') : ''} <span style="float:right;font-size:.78rem;color:var(--ink-faint)" title="${exact(x.at)}">${rel(x.at)}</span></span>
+      <span class="muted">${x.by === x.forWho ? 'Modified by ' + x.by : 'Modified by ' + x.by + ' for ' + x.forWho}</span><span class="mono" style="font-size:.78rem">${esc(x.reason)}</span>${x.commentary ? `<span style="font-style:italic;color:var(--ink-dim)">${esc(x.commentary)}</span>` : ''}</li>`).join('');
+  const diff = n => from && from.fields[n] !== to.fields[n] ? `<div class="diff"><div class="rm">- ${esc(from.fields[n])}</div><div class="ad">+ ${esc(to.fields[n])}</div></div>` : `<div class="diff">${esc(to.fields[n])}</div>`;
+  return `<div class="muted">Every version of this record, newest first.</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div>
+  <section class="hist"><ol aria-label="Timeline">${items}</ol>
     <div class="cmp"><h2>${from ? `Comparing v${from.v} with v${to.v}` : 'Initial version'}</h2>
-      <div class="row"><button class="btn ${onlyChanges ? '' : 'primary'}" data-only="0">All fields</button><button class="btn ${onlyChanges ? 'primary' : ''}" data-only="1">Only changes</button></div>
-      ${names.length ? `<table><thead><tr><th>Field</th><th>${from ? 'Before' : 'Value'}</th>${from ? '<th>After</th>' : ''}</tr></thead><tbody>${names.map(n => from ? `<tr><td>${n}</td><td class="${from.fields[n] !== to.fields[n] ? 'before' : ''} mono">${from.fields[n]}</td><td class="${from.fields[n] !== to.fields[n] ? 'after' : ''} mono">${to.fields[n]}</td></tr>` : `<tr><td>${n}</td><td class="mono">${to.fields[n]}</td></tr>`).join('')}</tbody></table>` : '<div class="notice">No field changes between these versions.</div>'}
-      <div class="notice">The server has no draft version, so the history shows saved versions only. Start and stop are not saved versions, so they do not appear here.</div></div></div>`;
-}
-function logPanel() {
-  const rows = [];
-  bindings.forEach(b => (history[b.id] || []).forEach(x => rows.push({at: x.at, src: b.src, by: x.by, action: x.action, reason: x.reason, note: x.commentary, v: 'v' + x.v})));
-  removedLog.forEach(r => rows.push(r));
-  rows.sort((p, q) => q.at.localeCompare(p.at));
-  const people = [...new Set(rows.map(r => r.by))];
-  return `<div class="panel"><h2>History of all bindings</h2>
-    <div class="muted">Who did what to which binding, newest first. ${people.length} people and services appear: ${people.join(', ')}.</div>
-    <table><thead><tr><th>When</th><th>Binding</th><th>Version</th><th>Who</th><th>What</th><th>Reason</th></tr></thead><tbody>
-    ${rows.map(r => `<tr><td class="mono">${r.at}</td><td class="mono">${r.src}</td><td class="mono">${r.v || '—'}</td><td>${r.by}</td><td>${r.action}${r.note ? ' · <span class="muted">' + r.note + '</span>' : ''}</td><td>${r.reason}</td></tr>`).join('')}
-    </tbody></table>
-    <div class="notice">A removed binding stays in this list as a deletion. A binding's own History tab shows what changed in each of its versions.</div></div>`;
-}
-function split() {
-  return `<div class="grid2"><div class="panel"><h2>Bindings (${bindings.length})</h2><ul>${bindings.map(b => `<li class="pick" data-pick="${b.src}" style="padding:6px 0;border-bottom:1px solid var(--line-soft);${b.src === sel ? 'border-left:3px solid var(--accent);padding-left:8px' : ''}"><span class="mono">${b.src}</span> ${kindTag(b)} ${runTag(b)}<span class="mono faint" style="float:right">${isVendor(b) ? '—' : ageLabel(b.last)}</span></li>`).join('')}</ul>
-    <div class="notice">A compact list keeps every binding in view while one is open, at the cost of the series and the kind columns.</div></div>
-    ${detail(cur())}</div>`;
+      <div class="row"><div class="field" style="min-width:100px"><label>From</label><select id="h-from" ${from ? '' : 'disabled'}>${olderV.map(x => `<option value="${x.v}" ${x.v === fromV ? 'selected' : ''}>v${x.v}</option>`).join('')}</select></div>
+        <div class="field" style="min-width:100px"><label>To</label><select id="h-to">${list.map(x => `<option value="${x.v}" ${x.v === to.v ? 'selected' : ''}>v${x.v}</option>`).join('')}</select></div>
+        <div class="seg"><button data-only="0" class="${only ? '' : 'on'}">All fields</button><button data-only="1" class="${only ? 'on' : ''}">Only changes</button></div>
+        ${to.v !== cur.v && may('edit') ? btn('Revert to this version', 'revert', '', `data-revert="${to.v}"`) : ''}</div>
+      ${names.length ? `<table><thead><tr><th>Field</th><th>${from ? 'Value diff' : 'Value'}</th></tr></thead><tbody>${names.map(n => `<tr><td>${n}</td><td>${diff(n)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No field changes between these versions.</div>'}
+    </div></section>`;
 }
 
-function dialog(html) { document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg">${html}</div></div>`; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') closeDlg(); }; }
+function accessMark() { return may('edit') ? `<span class="access" title="A market data operator can change it.">✎ Editable</span>` : `<span class="access" title="Your access shows it but does not let you change it.">🔒 Read only</span>`; }
+function recordScreen(b) {
+  const r = route();
+  if (!b) return crumbs([...base().slice(0, 3).map((p, i) => i === 2 ? p : p), ['Not found']]) + '<div class="notice">This binding does not exist.</div>';
+  const s = seriesOf(b), tabHref = t => href({ screen: 'record', id: b.id, tab: t });
+  const editable = may('edit') && !isVendor(b), deletable = may('delete') && !isVendor(b);
+  return `${crumbs([...base(), [b.src]])}
+  <div class="titlebar"><div><h1>${b.src}</h1><div class="sub">${s.series} · version ${b.ver} · ${kindLabel(b)}</div></div>
+    <div class="actions">${accessMark()}${statusTag(b)}${editable ? btn('Edit', 'edit', '', 'data-edit') : ''}${deletable ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
+  <div class="tabbar"><a data-nav href="${tabHref('details')}" class="${r.tab === 'details' ? 'on' : ''}">Details</a><a data-nav href="${tabHref('history')}" class="${r.tab === 'history' ? 'on' : ''}">History</a></div>
+  ${r.tab === 'history' ? historyTab(b) : detailsTab(b)}`;
+}
+
+function stubScreen(r) {
+  if (r.screen === 'series') {
+    const s = SOURCES.find(x => x.uri === r.uri) || bindings.map(seriesOf).find(x => x.uri === r.uri) || { series: 'Series' };
+    return `${crumbs([['Home', LIST()], ['Market data', LIST()], ['Series']])}<div class="titlebar"><div><h1>${s.series}</h1><div class="sub mono">${esc(r.uri || '')}</div></div></div>
+      <div class="notice">This stands in for the series page the product already has: the latest observations as a line and a table, formatted by the pair's convention. It opened in its own tab because an oresmd URL is a real link.</div>`;
+  }
+  return `${crumbs([['Home', LIST()], ['Market data', LIST()], ['Synthetic', LIST()], ['Feed tree', LIST()], [esc(r.src || 'Feed')]])}<div class="titlebar"><div><h1 class="mono">${esc(r.src || '')}</h1><div class="sub">Feed</div></div></div>
+    <div class="notice">This stands in for the feed's record page, which the product already has. Start, Stop and the run state live there, not on the binding.</div>`;
+}
+
+// One dialog shell for every dialog: a title with a close mark, a body, and a footer with
+// Cancel first and the one primary action last.
+function dialog(title, body, footer, onClose) {
+  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${title}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
+  const close = () => { if (onClose && !onClose()) return; closeDlg(); };
+  document.getElementById('d-x').onclick = close; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') close(); };
+  const c = document.getElementById('d-cancel'); if (c) c.onclick = close;
+  return close;
+}
 function closeDlg() { document.getElementById('layer').innerHTML = ''; }
-const reasonSelect = () => `<div class="field"><label>Change reason</label><select id="reason">${REASONS.map(r => `<option>${r}</option>`).join('')}</select></div>`;
+const reasonField = (list, changed) => {
+  const offered = list.filter(x => list === REASON_AMEND ? (changed ? x.name !== 'Non-material update' : x.name === 'Non-material update') : true);
+  return `<div class="field"><label>Change reason</label><select id="f-reason">${offered.map(x => `<option data-note="${x.note ? 1 : 0}">${x.name}</option>`).join('')}</select></div>
+    <div class="field"><label>Commentary</label><textarea id="f-note"></textarea><div class="help" id="f-nh"></div></div>`;
+};
+function ready(saveId) {
+  const reason = document.getElementById('f-reason'), note = document.getElementById('f-note'), nh = document.getElementById('f-nh');
+  const needs = () => reason && reason.selectedOptions[0] && reason.selectedOptions[0].dataset.note === '1';
+  const check = () => { const bad = needs() && !note.value.trim(); nh.textContent = needs() ? 'This reason needs a commentary.' : ''; const s = document.getElementById(saveId); if (s) s.disabled = s.dataset.block === '1' || bad; };
+  if (reason) { reason.onchange = check; note.oninput = check; check(); }
+}
 
-function bindDialog() {
-  const free = SOURCES.filter(s => !bindings.some(b => b.src === s.src));
-  const vendorNote = scenario === 'real' ? `<div class="warnbox"><b>Vendor sources are not offered.</b> This product does not connect real feeds, so only synthetic sources can be bound.</div>` : '';
-  dialog(`<h2>Bind a source</h2>
-    <div class="field"><label>Synthetic source</label><select id="src">${free.map(s => `<option value="${s.src}">${s.src}</option>`).join('')}</select></div>
-    <div id="check"></div>${vendorNote}${reasonSelect()}
-    <div class="row" style="justify-content:flex-end"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="go">Bind</button></div>`);
-  const sel2 = document.getElementById('src'), check = document.getElementById('check'), go = document.getElementById('go');
-  const refresh = () => {
-    const s = sourceOf(sel2.value), h = heldBy(s.series, null);
-    check.innerHTML = `<table><tbody><tr><td>Would write</td><td>${s.series}</td></tr><tr><td>Producer</td><td>${s.kind}, ${s.tph} ticks an hour, ${s.folder}</td></tr></tbody></table>` +
-      (h ? `<div class="badbox">${h.src} is already running and writes ${s.series}. Only one running feed may write a series, so this source cannot be bound while it runs. Stop it first.</div>` : `<div class="okbox">No other running feed writes ${s.series}.</div>`);
-    go.disabled = !!h;
+function formDialog(b) {
+  const adding = !b;
+  const free = SOURCES.filter(s => !bindings.some(x => x.src === s.src) || (b && s.src === b.src));
+  draft = draft || { src: adding ? (free[0] || {}).src : b.src, enabled: adding ? true : b.enabled };
+  const now = sourceOf(draft.src), old = b ? sourceOf(b.src) : null, held = now ? heldBy(now.series, b ? b.id : null) : null;
+  const changed = adding || draft.src !== b.src || draft.enabled !== b.enabled;
+  const vendorNote = adding && scenario === 'real' ? '<div class="warnbox"><b>Vendor sources are not offered.</b> This product does not connect real feeds, so only synthetic sources can be bound.</div>' : '';
+  const body = `<div class="field"><label>Source name</label><select id="f-src">${free.map(s => `<option value="${s.src}" ${s.src === draft.src ? 'selected' : ''}>${s.src}</option>`).join('')}</select>
+      <div class="help">${adding ? 'The synthetic feed this party will consume. It writes ' + (now ? now.series : 'no series') + '.' : 'Changing the source switches the ingest source without restarting any producer.'}</div></div>
+    <div class="field"><label>Enabled</label><select id="f-en"><option value="1" ${draft.enabled ? 'selected' : ''}>Yes</option><option value="0" ${draft.enabled ? '' : 'selected'}>No</option></select>
+      <div class="help">While it is No, no tick is stored for this party. The feed itself keeps running.</div></div>
+    ${held ? `<div class="badbox">${held.src} already writes ${now.series}. Only one running feed may write a series, so this source cannot be bound while it runs.</div>` : (!adding && old && now && old.series !== now.series ? `<div class="warnbox">The series changes. This party's ${old.series} stops receiving ticks and ${now.series} starts to.</div>` : '')}
+    ${vendorNote}
+    ${adding ? '<div class="notice">A new record is saved with the reason new record.</div>' : reasonField(REASON_AMEND, changed)}`;
+  const close = dialog(adding ? 'Add binding' : 'Edit ' + b.src, body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" data-block="${held || !now ? 1 : 0}" ${held || !now ? 'disabled' : ''}>${adding ? 'Add' : 'Save'}</button>`, () => !(changed && !adding && (draft.src !== b.src || draft.enabled !== b.enabled)) || confirm('You have unsaved changes. Close anyway?') && !(draft = null));
+  const src = document.getElementById('f-src'), en = document.getElementById('f-en');
+  src.onchange = () => { draft.src = src.value; formDialog(b); }; en.onchange = () => { draft.enabled = en.value === '1'; formDialog(b); };
+  if (!adding) ready('d-save');
+  document.getElementById('d-save').onclick = () => {
+    if (adding) { const nb = { id: 'n' + (nextId++), src: draft.src, kind: 'SYNTHETIC', enabled: draft.enabled, running: true, last: 0, ver: 1, noSeries: true }; bindings.push(nb); pushVersion(nb, 'New record', ''); draft = null; closeDlg(); return nav({ screen: 'record', id: nb.id }); }
+    const rebound = draft.src !== b.src, toggled = draft.enabled !== b.enabled;
+    b.src = draft.src; b.enabled = draft.enabled; if (!b.enabled) b.running = false; if (rebound || (toggled && b.enabled)) { b.last = 0; b.running = true; }
+    b.ver++; pushVersion(b, document.getElementById('f-reason').value, document.getElementById('f-note').value); draft = null; closeDlg(); render();
   };
-  sel2.onchange = refresh; refresh();
-  document.getElementById('cancel').onclick = closeDlg;
-  go.onclick = () => { const nb = {id: 'n' + (nextId++), src: sel2.value, kind: 'SYNTHETIC', enabled: true, running: true, last: 0, ver: 1, by: actorName}; bindings.push(nb); pushVersion(nb, actorName, document.getElementById('reason').value, 'Bound from the screen', 'created'); sel = sel2.value; toast = 'Bound ' + sel2.value + '. It is enabled and running.'; closeDlg(); render(); };
 }
-function rebindDialog(b) {
-  const old = sourceOf(b.src);
-  const opts = SOURCES.filter(s => s.src !== b.src && !bindings.some(x => x.src === s.src));
-  dialog(`<h2>Rebind ${b.src}</h2>
-    <div class="field"><label>New synthetic source</label><select id="src">${opts.map(s => `<option value="${s.src}">${s.src}</option>`).join('')}</select></div>
-    <div id="check"></div>${reasonSelect()}
-    <div class="row" style="justify-content:flex-end"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="go">Rebind</button></div>`);
-  const sel2 = document.getElementById('src'), check = document.getElementById('check'), go = document.getElementById('go');
-  const refresh = () => {
-    const s = sourceOf(sel2.value), h = heldBy(s.series, b.src);
-    check.innerHTML = `<table><tbody><tr><td>Now writes</td><td>${old ? old.series : '—'}</td></tr><tr><td>Would write</td><td>${s.series}</td></tr></tbody></table>` +
-      (old && old.series !== s.series ? `<div class="warnbox">The series changes. This party's ${old.series} stops receiving ticks and ${s.series} starts to.</div>` : '<div class="okbox">The same series: ticks continue without a gap.</div>') +
-      (h ? `<div class="badbox">${h.src} already writes ${s.series}.</div>` : '');
-    go.disabled = !!h;
+function deleteDialog(b) {
+  dialog('Delete ' + b.src + '?', `<div>The binding is deleted and ingestion for this party stops. The series and its observations stay, and so does the binding's history.</div>${reasonField(REASON_DELETE, false)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save">Delete</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => { bindings = bindings.filter(x => x.id !== b.id); closeDlg(); nav({ screen: 'list' }); };
+}
+function revertDialog(b, v) {
+  dialog('Revert ' + b.src + '?', `<div>Are you sure you want to revert '${b.src}' from version ${b.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${reasonField(REASON_AMEND, true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => {
+    const old = history[b.id].find(x => x.v === v); b.src = old.fields['Source name']; b.enabled = old.fields['Enabled'] === 'Yes'; if (!b.enabled) b.running = false; b.ver++;
+    pushVersion(b, document.getElementById('f-reason').value, document.getElementById('f-note').value || 'Reverted to v' + v); picked[b.id] = null; closeDlg(); render();
   };
-  if (!opts.length) { check.innerHTML = '<div class="notice">No other synthetic source is free to bind.</div>'; go.disabled = true; } else { sel2.onchange = refresh; refresh(); }
-  document.getElementById('cancel').onclick = closeDlg;
-  go.onclick = () => { const s = sel2.value; const i = bindings.findIndex(x => x.src === b.src); bindings[i] = {...b, src: s, ver: b.ver + 1, by: actorName, last: 0}; pushVersion(bindings[i], actorName, document.getElementById('reason').value, 'Rebound from ' + b.src, 'rebound'); sel = s; toast = 'Rebound to ' + s + '. No producer was restarted.'; closeDlg(); render(); };
 }
-function removeDialog(b) {
-  dialog(`<h2>Remove ${b.src}</h2>
-    <div class="warnbox">Ingestion for this party stops. The series and its observations stay.${isVendor(b) ? '' : ' The producer is not stopped.'}</div>${reasonSelect()}
-    <div class="row" style="justify-content:flex-end"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="go">Remove</button></div>`);
-  document.getElementById('cancel').onclick = closeDlg;
-  document.getElementById('go').onclick = () => { removedLog.push({at: NOW_LABEL, src: b.src, by: actorName, action: 'removed', reason: document.getElementById('reason').value, note: 'The series and its observations stay', v: ''}); bindings = bindings.filter(x => x.src !== b.src); sel = (bindings[0] || {}).src; toast = 'Removed ' + b.src + '.'; closeDlg(); render(); };
+function inspectDialog(uri) {
+  let u; try { u = new URL(uri); } catch (e) { u = null; }
+  const qs = u ? u.searchParams : new URLSearchParams(), inst = qs.get('instrument') || '', path = { fx_spot: 'unit_ccy', zero: 'ccy' }[inst] || 'subject';
+  const rest = [...qs.entries()].filter(([k]) => !['type', 'instrument', 'quote'].includes(k)), title = (SOURCES.find(x => x.uri === uri) || {}).series;
+  const v = (l, t) => `<div class="dl"><div class="k">${l}</div><div class="v mono">${esc(t)}</div></div>`;
+  dialog('oresmd URL', `<div class="card"><div class="body" style="grid-template-columns:repeat(2,minmax(0,1fr))">${title ? v('Series', title) : ''}${v('Kind', qs.get('type') === 'quote' ? 'Quote' : 'Series')}${v('Instrument type', inst)}${v('Quote type', qs.get('quote') || '')}${v('Asset class', u ? u.hostname : '')}${v(path + ' (path)', u ? decodeURIComponent(u.pathname.slice(1)) : '')}${rest.map(([k, x]) => v(k, x)).join('')}</div></div>
+    <div class="dl"><div class="k">URL</div><pre class="mono" style="margin:4px 0 0;overflow-x:auto;background:var(--panel-2);padding:8px;border-radius:6px;font-size:.8rem">${esc(uri)}</pre></div>`,
+    `<button class="btn" id="d-cancel">Close</button><button class="btn" id="d-copy">Copy</button>`);
+  document.getElementById('d-copy').onclick = () => { try { navigator.clipboard.writeText(uri); } catch (e) {} document.getElementById('d-copy').textContent = 'Copied'; };
 }
-function revertTo(v) {
-  const b = cur(), old = (history[b.id] || []).find(x => x.v === v);
-  if (!b || !old) return;
-  b.enabled = old.fields['Enabled'] === 'true'; if (!b.enabled) b.running = false; b.ver++; b.by = actorName;
-  pushVersion(b, actorName, 'Correct a mistake', 'Reverted to v' + v, 'reverted'); toVer = null; toast = 'Reverted ' + b.src + ' to v' + v + '. A new version was saved.'; render();
-}
-function act(kind, src) {
-  const b = bindings.find(x => x.src === src);
-  if (kind === 'bind') return bindDialog();
-  if (kind === 'rebind') return rebindDialog(b);
-  if (kind === 'remove') return removeDialog(b);
-  if (kind === 'toggle') { b.enabled = !b.enabled; if (!b.enabled) b.running = b.running && false; else if (!isVendor(b)) { b.running = true; b.last = 0; } b.ver++; b.by = actorName; pushVersion(b, actorName, 'Amend', '', b.enabled ? 'enabled' : 'disabled'); toast = (b.enabled ? 'Enabled ' : 'Disabled ') + b.src + '.'; return render(); }
-  if (kind === 'run') { b.running = !b.running; if (b.running) b.last = 0; toast = (b.running ? 'Started the feed behind ' : 'Stopped the feed behind ') + b.src + '.'; return render(); }
+
+function wire() {
+  const r = route(), b = byId(r.id);
+  document.querySelectorAll('#app [data-add]').forEach(x => x.onclick = () => { draft = null; formDialog(null); });
+  document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => { draft = null; formDialog(b); });
+  document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(b));
+  document.querySelectorAll('#app [data-inspect]').forEach(x => x.onclick = e => { e.stopPropagation(); inspectDialog(x.dataset.inspect); });
+  document.querySelectorAll('#app [data-open]').forEach(x => { const open = e => { if (e.target.closest('a,button')) return; nav({ screen: 'record', id: x.dataset.open }); }; x.onclick = open; x.onkeydown = e => { if (e.key === 'Enter') open(e); }; });
+  document.querySelectorAll('#app [data-sort]').forEach(x => x.onclick = () => { sortDir = sortKey === x.dataset.sort ? -sortDir : 1; sortKey = x.dataset.sort; render(); });
+  const rf = document.getElementById('refresh'); if (rf) rf.onclick = () => { bindings.forEach(x => { if (x.noSeries && !isVendor(x)) { x.noSeries = false; x.last = 1; } }); render(); };
+  const rt = document.getElementById('retry'); if (rt) rt.onclick = () => { const p = new URLSearchParams(location.search); p.set('state', 'all'); location.search = p.toString(); };
+  const s = document.getElementById('search'); if (s) s.oninput = () => { search = s.value; render(); const n = document.getElementById('search'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  const kf = document.getElementById('kindf'); if (kf) kf.onchange = () => { kindFilter = kf.value; render(); };
+  const cl = document.getElementById('clear'); if (cl) cl.onclick = () => { search = ''; kindFilter = 'all'; render(); };
+  const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
+  document.querySelectorAll('#app [data-ver]').forEach(x => x.onclick = () => { picked[b.id] = { ...(picked[b.id] || {}), to: Number(x.dataset.ver), from: null }; render(); });
+  const hf = document.getElementById('h-from'), ht = document.getElementById('h-to');
+  if (hf) hf.onchange = () => { picked[b.id] = { ...(picked[b.id] || {}), from: Number(hf.value) }; render(); };
+  if (ht) ht.onchange = () => { picked[b.id] = { ...(picked[b.id] || {}), to: Number(ht.value), from: null }; render(); };
+  document.querySelectorAll('#app [data-only]').forEach(x => x.onclick = () => { picked[b.id] = { ...(picked[b.id] || {}), only: x.dataset.only === '1' }; render(); });
+  document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(b, Number(x.dataset.revert)));
 }
 
 function render() {
-  const body = view === 'history' ? logPanel() : variant === 'b' ? bySeries() + detail(cur()) : variant === 'c' ? split() : table() + detail(cur());
-  document.getElementById('app').innerHTML = header() + body + (toast ? `<div class="toast">${toast}</div>` : '');
-  toast = '';
-  document.getElementById('note').textContent = `Prototype · market data bindings · variant ${variant.toUpperCase()} · ${scenario} data · acting as ${actor} · mock list, acts change it in memory`;
+  const r = route();
+  const body = r.screen === 'record' ? recordScreen(byId(r.id)) : (r.screen === 'series' || r.screen === 'feed') ? stubScreen(r) : listScreen();
+  document.getElementById('app').innerHTML = body;
+  document.getElementById('note').textContent = `Prototype · market data bindings · ${r.screen} · ${scenario} data · ${state} · acting as ${actor} · mock list, writes change it in memory`;
   const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');
-  document.getElementById('bar').innerHTML = `<span class="label">Variant</span>${opt('variant', ['a', 'b', 'c'], variant)}<span class="sep">|</span><span class="label">Data</span>${opt('scenario', ['synthetic', 'real'], scenario)}<span class="sep">|</span><span class="label">State</span>${opt('state', ['all', 'quiet', 'disabled'], state)}<span class="sep">|</span><span class="label">Actor</span>${opt('actor', ['viewer', 'operator', 'admin'], actor)}`;
-  document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => setParam(x.dataset.k, x.dataset.v));
-  document.querySelectorAll('#app [data-pick]').forEach(x => x.onclick = () => { sel = x.dataset.pick; render(); });
-  document.querySelectorAll('#app [data-view]').forEach(x => x.onclick = () => { view = x.dataset.view; render(); });
-  document.querySelectorAll('#app [data-tab]').forEach(x => x.onclick = () => { tab = x.dataset.tab; toVer = null; render(); });
-  document.querySelectorAll('#app [data-ver]').forEach(x => x.onclick = () => { toVer = Number(x.dataset.ver); render(); });
-  document.querySelectorAll('#app [data-only]').forEach(x => x.onclick = () => { onlyChanges = x.dataset.only === '1'; render(); });
-  document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = e => { e.stopPropagation(); revertTo(Number(x.dataset.revert)); });
-  document.querySelectorAll('#app [data-act]').forEach(x => x.onclick = e => { e.stopPropagation(); act(x.dataset.act, x.dataset.src); });
+  document.getElementById('bar').innerHTML = `<span class="label">Data</span>${opt('scenario', ['synthetic', 'real'], scenario)}<span class="sep">|</span><span class="label">State</span>${opt('state', ['all', 'quiet', 'disabled', 'empty', 'error', 'loading'], state)}<span class="sep">|</span><span class="label">Actor</span>${opt('actor', ['viewer', 'operator', 'admin'], actor)}`;
+  document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });
+  wire();
 }
-function setParam(k, v) { const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
 render();
 </script>
 </body>

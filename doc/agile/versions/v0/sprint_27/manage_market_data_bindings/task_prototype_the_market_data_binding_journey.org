@@ -2,7 +2,7 @@
 :ID: 92CF062B-25A9-44B2-9B9B-FDB14E12BEA9
 :END:
 #+title: Task: Prototype the market data binding journey
-#+description: Build a clickable prototype of the binding journey, with a variant for synthetic data and a variant for real data that is marked as not supported, and get it signed off before any screen is built.
+#+description: Build a clickable prototype of the binding journey as a record screen of the standard, with a scenario for synthetic data and a scenario for real data that is shown read only, and get it signed off before any screen is built.
 #+type: task
 #+level: s1
 #+filetags: :manage_market_data_bindings:sprint_27:v0:
@@ -35,7 +35,7 @@ The prototype argues what the binding screen shows and does: the list of binding
 
 * Acceptance
 
-- The prototype lives under doc/prototypes with a design note, has variants, and has states for all, quiet and disabled bindings.
+- The prototype lives under doc/prototypes with a design note. It follows the record screen standard and invents no layout, so it has no layout variants. It has the list states, and states for quiet and disabled bindings.
 - A synthetic scenario runs from the list to a bound, running feed.
 - A real data scenario shows a vendor binding and says in words that real feeds are not supported.
 - Marco signs the prototype off before the screen task starts.

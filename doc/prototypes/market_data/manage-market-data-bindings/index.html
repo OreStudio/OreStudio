@@ -109,7 +109,7 @@ th.sort{cursor:pointer}
   Switches in the bottom bar (they reload and reset the mock list):
     ?scenario=synthetic|real   real adds vendor bindings, which are read only and can be deleted
     ?state=all|quiet|disabled|empty|error|loading
-    ?actor=viewer|operator|admin   who is using it: this is an open question
+    ?actor=viewer|operator|admin   who is using it. Decided: an operator adds and edits, only the administrator deletes
 -->
 
 <div class="proto-note" id="note"></div>
@@ -125,9 +125,8 @@ const actor = P0.get('actor') || 'operator';
 const KEEP = ['scenario', 'state', 'actor'];
 const NOW = Date.parse('2026-10-13T10:00:00Z');
 
-// Who may do what is an open question. Proposed: a viewer reads, an operator adds and
-// edits, and the system administrator also deletes. An action a person may not take
-// is not drawn.
+// Who may do what, as decided: a viewer reads, an operator adds and edits, and only the
+// system administrator also deletes. An action a person may not take is not drawn.
 const MAY = { viewer: {}, operator: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
 const may = a => !!(MAY[actor] || {})[a];
 const actorName = actor === 'admin' ? 'system administrator' : actor === 'viewer' ? 'a viewer' : 'market data operator';
@@ -153,11 +152,11 @@ let bindings = [
   { id: 'b1', src: 'synthetic.bloomberg.audusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
   { id: 'b2', src: 'synthetic.bloomberg.eurusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 1 },
   { id: 'b3', src: 'synthetic.bloomberg.copibr', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
-  { id: 'b4', src: 'synthetic.bloomberg.nzdusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 2 },
+  { id: 'b4', src: 'synthetic.bloomberg.nzdusd', kind: 'SYNTHETIC', enabled: true, running: true, last: 2, ver: 3 },
   { id: 'b5', src: 'synthetic.bloomberg.eurestr', kind: 'SYNTHETIC', enabled: true, running: true, last: 3, ver: 1 }
 ];
 if (state === 'quiet') { const b = bindings.find(x => x.src.endsWith('copibr')); b.running = false; b.last = 3600; }
-if (state === 'disabled') { const b = bindings.find(x => x.src.endsWith('nzdusd')); b.enabled = false; b.running = false; b.last = 259200; }
+if (state === 'disabled') { const b = bindings.find(x => x.src.endsWith('nzdusd')); b.enabled = false; b.ver = 2; b.running = false; b.last = 259200; }
 if (state === 'empty') bindings = [];
 if (scenario === 'real') bindings.push(
   { id: 'v1', src: 'vendor.example.eurusd', kind: 'VENDOR', enabled: true, running: false, last: null, ver: 1, series: 'EUR/USD spot rate', uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD' },
@@ -178,20 +177,20 @@ function pushVersion(b, reason, commentary) {
   const list = history[b.id] = history[b.id] || [];
   list.push({ v: list.length + 1, at: new Date(NOW).toISOString(), by: actorName, forWho: actorName, service: false, reason, commentary, fields: fieldsOf(b) });
 }
-let nextId = 100, draft = null, hideSystem = false, picked = {}, search = '', kindFilter = 'all', sortKey = 'src', sortDir = 1;
+let nextId = 100, draft = null, hideSystem = false, search = '', kindFilter = 'all', sortKey = 'src', sortDir = 1;
 
 const isVendor = b => b.kind === 'VENDOR';
 const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const seriesOf = b => isVendor(b) ? { series: b.series, uri: b.uri } : (sourceOf(b.src) || { series: 'not known', uri: '' });
 const hasSeries = b => !b.noSeries;
-const quiet = b => b.enabled && !isVendor(b) && b.running === false ? false : (b.enabled && !isVendor(b) && (b.last === null || b.last > 600));
 const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
 const rel = iso => { const s = Math.round((NOW - Date.parse(iso)) / 1000); return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' minutes ago' : s < 129600 ? Math.round(s / 3600) + ' hours ago' : Math.round(s / 86400) + ' days ago'; };
 const exact = iso => iso.replace('T', ' ').replace(':00Z', ' UTC');
 const ago = a => a === null ? '<span class="faint">—</span>' : a < 90 ? a + ' seconds ago' : a < 5400 ? Math.round(a / 60) + ' minutes ago' : a < 172800 ? Math.round(a / 3600) + ' hours ago' : Math.round(a / 86400) + ' days ago';
 // Status: the feed's run state, as the feed list reads it. A tag colour carries its meaning only:
 // green healthy, amber caution, gray inactive.
-const statusTag = b => isVendor(b) ? tag('Not supported', 'warn') : !b.enabled ? tag('Disabled', 'off') : (b.enabled && (b.last === null || b.last > 600)) ? tag('Quiet', 'warn') : b.running ? tag('Running', 'ok') : tag('Stopped', 'off');
+const isQuiet = b => b.last === null || b.last > 600;
+const statusTag = b => isVendor(b) ? tag('Not supported', 'warn') : !b.enabled ? tag('Disabled', 'off') : isQuiet(b) ? tag('Quiet', 'warn') : b.running ? tag('Running', 'ok') : tag('Stopped', 'off');
 const kindLabel = b => isVendor(b) ? 'Vendor' : 'Synthetic';
 const dash = '<span class="faint">—</span>';
 const heldBy = (series, except) => bindings.find(b => b.id !== except && !isVendor(b) && b.running && seriesOf(b).series === series);
@@ -225,7 +224,7 @@ function seriesLink(b) {
   return hasSeries(b) ? `<a class="link" target="_blank" rel="noopener" href="${href({ screen: 'series', uri: s.uri })}" title="${esc(s.uri)}">${s.series}</a>` : `<span title="${esc(s.uri)}">${s.series}</span>`;
 }
 // Icons beside words, one glyph for one idea.
-const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕', save: '' };
+const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕' };
 const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
 function crumbs(parts) { return `<div class="crumbs">${parts.map((p, i) => i === parts.length - 1 ? `<span>${p[0]}</span>` : `<a class="link" data-nav href="${p[1]}">${p[0]}</a>`).join('<span>›</span>')}</div>`; }
 const LIST = () => href({ screen: 'list' });
@@ -295,7 +294,7 @@ function historyTab(b) {
     const author = x.service ? `<span class="who">${esc(x.by)}</span>` : `<a class="link who" data-nav href="${href({ screen: 'person', src: x.by })}">${esc(x.by)}</a>`;
     const diff = names.map(n => p ? `<div class="diff"><b>${n}</b><div class="rm">- ${esc(p.fields[n])}</div><div class="ad">+ ${esc(x.fields[n])}</div></div>` : `<div class="diff"><b>${n}</b> ${esc(x.fields[n])}</div>`).join('');
     return `<div class="item" id="e${x.v}" data-day="${x.at.slice(0, 10)}"><div class="when">${x.at.slice(11, 19)}${isCur ? ' <span class="emblem" title="Current version">●</span>' : ''}</div>
-      <div><div class="head"><span class="avatar">${initials(x.by)}</span>${tag(kindOf(x), kindOf(x) === 'Created' ? 'ok' : '')}<span class="mono faint">feed_binding ${b.id} v${x.v}</span>${p ? `<span class="faint">${names.join(', ') || 'No changes'}</span>` : ''}<span class="tag warn mono">${esc(x.reason)}</span>${author}${!isCur && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      <div><div class="head"><span class="avatar">${initials(x.by)}</span>${tag(kindOf(x), kindOf(x) === 'Created' ? 'ok' : '')}<span class="mono faint">feed_binding ${b.id} v${x.v}</span>${p ? `<span class="faint">${names.join(', ') || 'No changes'}</span>` : ''}<span class="tag warn mono">${esc(x.reason)}</span>${author}${!isCur && may('edit') && !isVendor(b) ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
       ${x.commentary ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.commentary)}</div>` : ''}
       ${names.length ? `<details style="margin-left:34px"><summary>Details</summary>${diff}</details>` : '<div class="faint" style="margin-left:34px">No changes</div>'}</div></div>`;
   };
@@ -310,11 +309,11 @@ function historyTab(b) {
 function accessMark() { return may('edit') ? `<span class="access" title="A market data operator can change it.">✎ Editable</span>` : `<span class="access" title="Your access shows it but does not let you change it.">🔒 Read only</span>`; }
 function recordScreen(b) {
   const r = route();
-  if (!b) return crumbs([...base().slice(0, 3).map((p, i) => i === 2 ? p : p), ['Not found']]) + '<div class="notice">This binding does not exist.</div>';
+  if (!b) return crumbs([...base().slice(0, 3), ['Not found']]) + '<div class="notice">This binding does not exist.</div>';
   const s = seriesOf(b), tabHref = t => href({ screen: 'record', id: b.id, tab: t });
   const editable = may('edit') && !isVendor(b), deletable = may('delete');
-  return `${crumbs([...base(), [b.src]])}
-  <div class="titlebar"><div><h1>${b.src}</h1><div class="sub">${s.series} · version ${b.ver} · ${kindLabel(b)}</div></div>
+  return `${crumbs([...base(), [esc(b.src)]])}
+  <div class="titlebar"><div><h1>${esc(b.src)}</h1><div class="sub">${s.series} · version ${b.ver} · ${kindLabel(b)}</div></div>
     <div class="actions">${accessMark()}${statusTag(b)}${editable ? btn('Edit', 'edit', '', 'data-edit') : ''}${deletable ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
   <div class="tabbar"><a data-nav href="${tabHref('details')}" class="${r.tab === 'details' ? 'on' : ''}">Details</a><a data-nav href="${tabHref('history')}" class="${r.tab === 'history' ? 'on' : ''}">History</a></div>
   ${r.tab === 'history' ? historyTab(b) : detailsTab(b)}`;
@@ -334,7 +333,7 @@ function stubScreen(r) {
 // One dialog shell for every dialog: a title with a close mark, a body, and a footer with
 // Cancel first and the one primary action last.
 function dialog(title, body, footer, onClose) {
-  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${title}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
+  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
   const close = () => { if (onClose && !onClose()) return; closeDlg(); };
   document.getElementById('d-x').onclick = close; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') close(); };
   const c = document.getElementById('d-cancel'); if (c) c.onclick = close;
@@ -355,6 +354,7 @@ function ready(saveId) {
 
 function formDialog(b) {
   const adding = !b;
+  const typed = { reason: (document.getElementById('f-reason') || {}).value, note: (document.getElementById('f-note') || {}).value };
   const free = SOURCES.filter(s => !bindings.some(x => x.src === s.src) || (b && s.src === b.src));
   draft = draft || { src: adding ? (free[0] || {}).src : b.src, enabled: adding ? true : b.enabled };
   const now = sourceOf(draft.src), old = b ? sourceOf(b.src) : null, held = now ? heldBy(now.series, b ? b.id : null) : null;
@@ -370,11 +370,13 @@ function formDialog(b) {
   const close = dialog(adding ? 'Add binding' : 'Edit ' + b.src, body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" data-block="${held || !now ? 1 : 0}" ${held || !now ? 'disabled' : ''}>${adding ? 'Add' : 'Save'}</button>`, () => !(changed && !adding && (draft.src !== b.src || draft.enabled !== b.enabled)) || confirm('You have unsaved changes. Close anyway?') && !(draft = null));
   const src = document.getElementById('f-src'), en = document.getElementById('f-en');
   src.onchange = () => { draft.src = src.value; formDialog(b); }; en.onchange = () => { draft.enabled = en.value === '1'; formDialog(b); };
+  if (typed.reason) { const r = document.getElementById('f-reason'); if (r && [...r.options].some(o => o.textContent === typed.reason)) r.value = typed.reason; }
+  if (typed.note) { const n = document.getElementById('f-note'); if (n) n.value = typed.note; }
   if (!adding) ready('d-save');
   document.getElementById('d-save').onclick = () => {
-    if (adding) { const nb = { id: 'n' + (nextId++), src: draft.src, kind: 'SYNTHETIC', enabled: draft.enabled, running: true, last: 0, ver: 1, noSeries: true }; bindings.push(nb); pushVersion(nb, 'New record', ''); draft = null; closeDlg(); return nav({ screen: 'record', id: nb.id }); }
+    if (adding) { const nb = { id: 'n' + (nextId++), src: draft.src, kind: 'SYNTHETIC', enabled: draft.enabled, running: draft.enabled, last: 0, ver: 1, noSeries: true }; bindings.push(nb); pushVersion(nb, 'New record', ''); draft = null; closeDlg(); return nav({ screen: 'record', id: nb.id }); }
     const rebound = draft.src !== b.src, toggled = draft.enabled !== b.enabled;
-    b.src = draft.src; b.enabled = draft.enabled; if (!b.enabled) b.running = false; if (rebound || (toggled && b.enabled)) { b.last = 0; b.running = true; }
+    b.src = draft.src; b.enabled = draft.enabled; if (!b.enabled) b.running = false; if (b.enabled && (rebound || toggled)) { b.last = 0; b.running = true; }
     b.ver++; pushVersion(b, document.getElementById('f-reason').value, document.getElementById('f-note').value); draft = null; closeDlg(); render();
   };
 }
@@ -384,11 +386,16 @@ function deleteDialog(b) {
   document.getElementById('d-save').onclick = () => { bindings = bindings.filter(x => x.id !== b.id); closeDlg(); nav({ screen: 'list' }); };
 }
 function revertDialog(b, v) {
-  dialog('Revert ' + b.src + '?', `<div>Are you sure you want to revert '${b.src}' from version ${b.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${reasonField(REASON_AMEND, true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  const old = history[b.id].find(x => x.v === v), oldSrc = old.fields['Source name'], oldOn = old.fields['Enabled'] === 'Yes';
+  const target = sourceOf(oldSrc), taken = bindings.find(x => x.id !== b.id && x.src === oldSrc);
+  const held = target && oldOn ? heldBy(target.series, b.id) : null;
+  const refusal = taken ? `${taken.src} is already bound by another binding, so this version cannot be written back.` : held ? `${held.src} already writes ${target.series}. Only one running feed may write a series, so this version cannot be written back while it runs.` : '';
+  dialog('Revert ' + b.src + '?', `<div>Are you sure you want to revert '${esc(b.src)}' from version ${b.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${refusal ? `<div class="badbox">${refusal}</div>` : ''}${reasonField(REASON_AMEND, true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" data-block="${refusal ? 1 : 0}" ${refusal ? 'disabled' : ''}>Revert</button>`);
   ready('d-save');
   document.getElementById('d-save').onclick = () => {
-    const old = history[b.id].find(x => x.v === v); b.src = old.fields['Source name']; b.enabled = old.fields['Enabled'] === 'Yes'; if (!b.enabled) b.running = false; b.ver++;
-    pushVersion(b, document.getElementById('f-reason').value, document.getElementById('f-note').value || 'Reverted to v' + v); picked[b.id] = null; closeDlg(); render();
+    const rebound = oldSrc !== b.src, toggled = oldOn !== b.enabled;
+    b.src = oldSrc; b.enabled = oldOn; if (!b.enabled) b.running = false; else if (rebound || toggled) { b.running = true; b.last = 0; }
+    b.ver++; pushVersion(b, document.getElementById('f-reason').value, document.getElementById('f-note').value || 'Reverted to v' + v); closeDlg(); render();
   };
 }
 function inspectDialog(uri) {

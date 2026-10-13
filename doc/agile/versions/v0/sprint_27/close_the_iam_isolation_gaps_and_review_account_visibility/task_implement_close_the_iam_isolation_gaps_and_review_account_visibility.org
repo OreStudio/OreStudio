@@ -26,11 +26,11 @@ No IAM table that carries a tenant is readable across the tenant boundary unless
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F18D3B6-3C61-4208-8F74-EE7BB6A4C135][Close the IAM isolation gaps and review account visibility]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -86,3 +86,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The authentication events and the run token issues are isolated by tenant.
+
+- Both tables enforce a tenant policy. A tenant reads and writes its own rows. An event that names no tenant is the system tenant's.
+- Each writer opens a session of the row's own tenant, so the policy check passes for the row it writes.
+- The hourly and daily event aggregates are gone. Nothing read them, and they never ran without the Timescale licence.
+- The two validation suppressions are gone. =iam_audit_logs_isolation_test.sql= has 12 assertions and passes. The IAM core suite passes with 1105 assertions.

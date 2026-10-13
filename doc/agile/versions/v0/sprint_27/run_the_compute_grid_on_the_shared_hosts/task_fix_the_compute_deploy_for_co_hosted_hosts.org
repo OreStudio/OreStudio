@@ -8,7 +8,7 @@
 #+filetags: :run_the_compute_grid_on_the_shared_hosts:sprint_27:v0:
 #+owner: marco
 #+branch: fix/run-compute-on-shared-hosts
-#+pr:
+#+pr: 3270
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3270][#3270]] | [ores.compass] Isolate each environment's compute state on a shared host |
 
 * Review
 

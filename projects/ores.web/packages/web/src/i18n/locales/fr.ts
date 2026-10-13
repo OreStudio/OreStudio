@@ -2179,6 +2179,17 @@ const fr: SourceCatalogue = {
                 derived: 'Dérivé',
                 manual: 'Manuel',
             },
+            surface: {
+                title: 'Surface',
+                note: 'La couleur montre où une valeur se place dans son échelle. Chaque ligne est une tranche : un {rows} sur les {columns}. Les colonnes peuvent contenir des cotations en convention de marché, une tranche n’est donc pas toujours un smile.',
+                scale: 'Échelle de couleur',
+                scaleSurface: 'Toute la surface',
+                scaleColumn: 'Chaque colonne',
+                slices: 'Tranches',
+                slicesLabel: 'Une ligne pour chaque rangée, sur les colonnes',
+                axes: 'Une forme à {count} axes n’est pas dessinée comme une surface. Seule une forme à deux axes l’est.',
+                empty: 'L’objet ne contient aucun nœud, il n’y a donc pas de surface à dessiner.',
+            },
             picker: {
                 label: 'Série',
                 placeholder: 'Choisissez une série, ou saisissez son identité ci-dessous',

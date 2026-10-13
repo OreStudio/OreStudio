@@ -2169,6 +2169,17 @@ const pt: SourceCatalogue = {
                 derived: 'Derivado',
                 manual: 'Manual',
             },
+            surface: {
+                title: 'Superfície',
+                note: 'A cor mostra onde um valor se situa na sua escala. Cada linha é uma fatia: um {rows} ao longo dos {columns}. As colunas podem conter cotações na convenção de mercado, por isso uma fatia nem sempre é um smile.',
+                scale: 'Escala de cor',
+                scaleSurface: 'A superfície toda',
+                scaleColumn: 'Cada coluna',
+                slices: 'Fatias',
+                slicesLabel: 'Uma linha por cada linha da grelha, ao longo das colunas',
+                axes: 'Uma forma com {count} eixos não é desenhada como superfície. Só uma forma com dois eixos o é.',
+                empty: 'O objeto não tem nenhum nó, por isso não há superfície para desenhar.',
+            },
             picker: {
                 label: 'Série',
                 placeholder: 'Escolha uma série, ou escreva a sua identidade abaixo',

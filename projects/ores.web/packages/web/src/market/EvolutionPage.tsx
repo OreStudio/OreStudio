@@ -57,6 +57,7 @@ import { oresmdQueries } from '../oresmd/queries.js';
 import { titleOrRaw } from '../oresmd/title.js';
 import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { SurfacePanel } from './SurfacePanel.js';
 import { Button, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import {
     canBeShown,
@@ -791,18 +792,21 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
                         <Notice tone="error">{snapshot.error.message}</Notice>
                     ) : (
                         snapshot.data !== undefined && (
-                            <NowPanel
-                                snapshot={snapshot.data}
-                                provenance={showSource}
-                                {...(mayAdjust
-                                    ? {
-                                          adjust: {
-                                              identity: asked.identity,
-                                              onChanged: () => setReads(reads + 1),
-                                          },
-                                      }
-                                    : {})}
-                            />
+                            <>
+                                <NowPanel
+                                    snapshot={snapshot.data}
+                                    provenance={showSource}
+                                    {...(mayAdjust
+                                        ? {
+                                              adjust: {
+                                                  identity: asked.identity,
+                                                  onChanged: () => setReads(reads + 1),
+                                              },
+                                          }
+                                        : {})}
+                                />
+                                <SurfacePanel snapshot={snapshot.data} />
+                            </>
                         )
                     )}
                 </>

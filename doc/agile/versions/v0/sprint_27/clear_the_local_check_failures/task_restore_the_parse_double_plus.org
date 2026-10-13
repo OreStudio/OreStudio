@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/parse-double-restore-plus
-#+pr:
+#+pr: 3265
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3265][#3265]] | [platform] Accept a leading plus in parse_double again |
 
 * Review
 

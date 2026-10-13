@@ -78,6 +78,7 @@ task and name that file in the Command column.
 | Artefact table change | none, other than the folded tier columns and the provider table name | =git diff projects/ores.sql/create/dq/= after regeneration | f6677f1341 |
 | ctest | 93 of 93 passed | =compass check --only ctest= | 667112cd48 |
 | pgTAP | 45 files, 433 tests, PASS | =compass check --only pgtap= | 667112cd48 |
+| pgTAP after rebasing on main | 46 files, 449 tests, PASS; build clean | =compass db recreate=, =compass check --only pgtap=, =compass build= | 823d6e8a44 |
 | Codegen suite | 1,397 passed | =pytest projects/ores.codegen/tests= | this commit |
 | Acme published rows | csas 35, netting_agreements 45, netting_sets 80, report_definitions 78 in the Acme tenant; 8 providers in the system tenant | =compass db sql= on the current-row counts | 667112cd48 |
 | Acme feeds | 55 bindings for each of the 5 parties; ticks arriving | =compass db sql= on feed bindings and observations | 667112cd48 |

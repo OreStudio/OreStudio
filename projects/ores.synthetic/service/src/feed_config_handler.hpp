@@ -115,6 +115,15 @@ public:
             return;
         }
 
+        if (target->container_scope == ores::synthetic::domain::scope::system &&
+            !feed_kind_registry::is_system_caller(req_ctx)) {
+            reply(nats_,
+                  msg,
+                  start_feed_response{.success = false,
+                                      .message = "A system feed starts only in the system tenant."});
+            return;
+        }
+
         start_feed_response resp;
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
@@ -181,6 +190,33 @@ public:
                 return;
             }
             source_name = target->row.candidate.source_name;
+        }
+
+        // Naming no feed stops every feed the service runs, those of other tenants included,
+        // so only the system tenant may ask for it.
+        if (source_name.empty() && !feed_kind_registry::is_system_caller(req_ctx)) {
+            reply(nats_,
+                  msg,
+                  stop_feed_response{.success = false,
+                                     .message = "Name the feed to stop."});
+            return;
+        }
+
+        // A system feed runs once for every tenant, so only the system tenant stops it,
+        // whether the caller names it by its config or by its source.
+        if (!feed_kind_registry::is_system_caller(req_ctx)) {
+            const auto system = registry_.system_containers(req_ctx);
+            for (const auto& row : registry_.rows(req_ctx)) {
+                if (row.candidate.source_name == source_name &&
+                    system.contains(row.candidate.container_id)) {
+                    reply(nats_,
+                          msg,
+                          stop_feed_response{
+                              .success = false,
+                              .message = "A system feed stops only in the system tenant."});
+                    return;
+                }
+            }
         }
 
         const auto stopped = ctrl_->stop(source_name);

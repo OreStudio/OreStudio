@@ -3731,6 +3731,9 @@ const pt: SourceCatalogue = {
                 stoppedCount: '{count} parados',
                 bound: 'Ligado',
                 sandboxed: 'Isolado',
+                system: 'Sistema',
+                systemNote:
+                    'Os feeds da própria instalação. Correm uma vez para todos os inquilinos, e só o inquilino do sistema os inicia e para.',
                 openInTree: 'Abrir na árvore de feeds',
                 assetClass: 'Classe de ativos',
             },

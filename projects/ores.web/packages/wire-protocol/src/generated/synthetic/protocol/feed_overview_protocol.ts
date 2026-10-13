@@ -25,8 +25,8 @@
 /**
  * @brief One folder of the feed hierarchy, with what runs under it.
  *
- * A collection folder also carries what the collection says: the provider it
- * stands for, and whether it is bound or sandboxed.
+ * A collection folder also carries what the collection says: its scope, the provider
+ * it stands for, and whether it is bound or sandboxed.
  */
 export interface FeedFolder {
     /** @brief The folder's id. */
@@ -37,6 +37,8 @@ export interface FeedFolder {
     name: string;
     /** @brief What the folder is: root, collection, asset_class or instrument_type. */
     kind: string;
+    /** @brief For a collection, who it belongs to: system for the installation's, tenant or party; empty otherwise. */
+    scope: string;
     /** @brief For a collection, the provider it stands for; empty for any other folder. */
     provider_code: string;
     /** @brief For a collection, bound or sandboxed; empty otherwise. */

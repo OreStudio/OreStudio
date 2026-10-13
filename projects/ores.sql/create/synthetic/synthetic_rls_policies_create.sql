@@ -253,6 +253,45 @@ for select using (
 -- -----------------------------------------------------------------------------
 -- Folders (dual RLS: tenant + party isolation)
 -- -----------------------------------------------------------------------------
+
+-- Whether a folder belongs to a system collection, so every tenant may read it: the
+-- collection's own folder and those under it, and the root above it. The tree of a system
+-- collection is the installation's, as its feeds are. The function reads the folders as its
+-- definer, because a policy on the folders that reads the folders would never end.
+create or replace function ores_synthetic_is_system_folder_fn(p_folder_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+    with recursive above(id, parent_id, collection_id, depth) as (
+        select f.id, f.parent_id, f.collection_id, 0
+        from ores_synthetic_folders_tbl f
+        where f.id = p_folder_id
+          and f.tenant_id = ores_utility_system_tenant_id_fn()
+          and f.valid_to = ores_utility_infinity_timestamp_fn()
+        union all
+        select f.id, f.parent_id, f.collection_id, above.depth + 1
+        from ores_synthetic_folders_tbl f
+        join above on f.id = above.parent_id
+        where f.valid_to = ores_utility_infinity_timestamp_fn()
+          and above.depth < 8
+    )
+    select exists (
+        select 1 from above a
+        join ores_synthetic_market_data_generation_configs_tbl c on c.id = a.collection_id
+        where c.scope = 'system' and c.valid_to = ores_utility_infinity_timestamp_fn()
+    ) or exists (
+        select 1 from ores_synthetic_folders_tbl child
+        join ores_synthetic_market_data_generation_configs_tbl c on c.id = child.collection_id
+        where child.parent_id = p_folder_id
+          and child.tenant_id = ores_utility_system_tenant_id_fn()
+          and child.valid_to = ores_utility_infinity_timestamp_fn()
+          and c.scope = 'system' and c.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+$$;
+
 alter table ores_synthetic_folders_tbl enable row level security;
 
 drop policy if exists folders_tenant_isolation_policy
@@ -262,6 +301,8 @@ create policy folders_tenant_isolation_policy
 on ores_synthetic_folders_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn()
+        and ores_synthetic_is_system_folder_fn(id))
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -276,6 +317,8 @@ as restrictive
 for select using (
     party_id is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or (tenant_id = ores_utility_system_tenant_id_fn()
+        and ores_synthetic_is_system_folder_fn(id))
 );
 
 alter table ores_synthetic_yield_curve_process_types_tbl enable row level security;

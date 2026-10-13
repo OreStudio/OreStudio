@@ -72,6 +72,7 @@ const ROOT: FeedFolder = {
     parent_id: '',
     name: 'Synthetic',
     kind: 'root',
+    scope: '',
     provider_code: '',
     binding_mode: '',
     fx_feeds: 26,
@@ -95,6 +96,7 @@ function collection(
         parent_id: 'r',
         name,
         kind: 'collection',
+        scope: provider === 'bloomberg' ? 'system' : 'party',
         provider_code: provider,
         binding_mode: 'bound',
         fx_feeds: fx,
@@ -185,6 +187,14 @@ describe('the Synthetic dashboard', () => {
         expect(html).toContain('>Running<');
         expect(html).not.toContain('(synthetic)');
         expect(html).not.toContain('Generic');
+    });
+
+    it("marks the providers whose feeds are the installation's", () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('>System<');
+        expect(html.indexOf('>System<')).toBeLessThan(html.indexOf('Simulates the ORE examples.'));
     });
 
     it('counts the feeds that should run and do not, and offers to start them', () => {

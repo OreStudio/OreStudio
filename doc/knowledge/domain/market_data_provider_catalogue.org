@@ -13,9 +13,9 @@
 
 =market_data_provider= is a reference-data table of the providers whose
 market data the synthetic feeds simulate: data vendors such as Bloomberg and
-Refinitiv, exchanges such as CME and LSE, a broker, and a /generic/ provider.
-It is declared in =ores.synthetic.api/domain/market_data_provider.hpp=, and a
-collection's optional =provider_code= is validated against its =code=.
+Refinitiv, exchanges such as CME and LSE, a broker, and the ORE examples, a
+reference set. It is declared in =ores.synthetic.api/domain/market_data_provider.hpp=,
+and a collection's required =provider_code= is validated against its =code=.
 
 The rows arrive through DQ, as the installation's other reference data does.
 The =synthetic.market_data_providers= dataset stages them in
@@ -44,19 +44,19 @@ simulated provider once and every tenant reads it as that provider's data.
 |--------+---------|
 | =code= | The provider's code, lower case, the provider segment of a source name |
 | =name= | The provider as a person knows it, without the synthetic mark |
-| =kind= | =data_vendor=, =exchange=, =broker= or =generic= |
-| =description= | What the provider publishes, in a sentence |
+| =kind= | =data_vendor=, =exchange=, =broker= or =reference= |
+| =description= | What the provider's feeds simulate, in a sentence or two |
 | =display_order= | The order screens list providers in |
 
 The system tenant manages the rows, as it manages the yield curve process
 types; the catalogue is in =ores.synthetic= because only synthetic generation
 uses it.
 
-** A provider is optional
+** Every collection names a provider
 
-A party's test collection usually stands for no provider and names none. A
-system collection that simulates the market as a whole names =generic=. Only a
-collection that stands for a real provider's data names that provider.
+A collection names the provider it stands for, so every feed has one. The ORE
+examples are a provider of their own, =ore=, of kind =reference=. There is no
+generic provider.
 
 ** The synthetic mark
 
@@ -99,8 +99,9 @@ every party that binds the source.
 
 Feeds come from a synthetic feeds dataset, the one way to set them up: a DQ
 dataset of artefact type =synthetic_feeds=, published by
-=ores_synthetic_publish_feeds_from_dq_fn= into the party the tenant's
-provisioning names. Each FX and IR feed row of the dataset may carry a
+=ores_synthetic_publish_feeds_from_dq_fn=. A publish that names a party makes a
+party collection in that party. A publish that names none, into the system tenant,
+makes a sandboxed system collection held by the system party. Each FX and IR feed row of the dataset may carry a
 =provider_code=. The published feed's source name then starts
 =synthetic.<provider code>.=, and the collection names the provider when
 every feed row names the same one. The feed tables check only the =synthetic.=
@@ -116,6 +117,32 @@ end. A bank reads all its spots from one vendor, so one provider quoting
 every pair is the realistic case. The 13 spots the Federal Reserve H.10
 release quotes start from its 2026-05-05 vintage; the other 13 start at an
 illustrative fixed level, which is not a sourced quote.
+
+** The provider feeds
+
+Three providers have system feeds, in datasets of the =system_core= bundle
+(=projects/ores.sql/populate/synthetic/synthetic_feeds_providers_populate.sql=):
+
+| Provider | Feeds |
+|----------+-------|
+| Refinitiv | Fourteen cross spots between the major non-USD currencies, which Bloomberg leaves to the cross-rates matrix |
+| ICE Data Services | LIBOR curves of USD 1M and 6M, and GBP, CHF and JPY 3M |
+| Tradeweb | Dealer composite curves of EURIBOR 1M and 6M, GBP and JPY LIBOR 1M, and CHF LIBOR 6M |
+
+One series has one running publisher, in the whole service, whatever the binding
+mode, so each dataset names series that Bloomberg and the 2016 ORE Samples do not. A
+feed's series is its currency, its index tenor and its pillar, or its currency
+pair. Bloomberg stays a party collection, bound, because the demo's reports read
+its ticks.
+
+CME, LSE and Eurex have no feeds. They quote futures and equities, which have no
+feed kind yet, and the IR curve config admits term tenors only for the LIBOR and
+EURIBOR families, so a CME Term SOFR curve cannot be stored.
+
+The synthetic service starts the auto-start feeds of the system collections when it
+starts, in the system tenant. Only the system tenant starts and stops a system
+feed. A start or a stop from another tenant skips it, and the feeds that should
+run, for another tenant, leave the system feeds out.
 
 * See also
 

@@ -51,6 +51,13 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.asset_class', 8);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.market_data_providers', 9);
 
+    -- The provider feeds: system collections, one for each provider that has feeds of a
+    -- kind the platform simulates. They publish after the provider catalogue they name,
+    -- into the system tenant under its system party, and run there once.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.refinitiv', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.ice', 11);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.tradeweb', 12);
+
     -- =============================================================================
     -- Base System Bundle Members
     -- =============================================================================

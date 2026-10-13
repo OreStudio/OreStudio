@@ -105,7 +105,7 @@ std::string feeds_query() {
                f.source_name, f.oresmd_uri, f.folder_id, f.enabled, f.auto_start,
                f.asset_class_code, f.ticks_per_hour, f.process_type as engine,
                f.base_currency_code || '/' || f.quote_currency_code as underlying,
-               c.provider_code
+               c.provider_code, c.scope as scope
         from ores_synthetic_fx_spot_generation_configs_tbl f
         join ores_synthetic_market_data_generation_configs_tbl c
           on c.id = f.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
@@ -116,14 +116,16 @@ std::string feeds_query() {
                    coalesce(' ' || nullif(f.tenor, ''), ''),
                f.source_name, '', f.folder_id, f.enabled, f.auto_start,
                f.asset_class_code, f.ticks_per_hour, f.process_type,
-               f.currency_code, c.provider_code
+               f.currency_code, c.provider_code, c.scope
         from ores_synthetic_ir_curve_generation_configs_tbl f
         join ores_synthetic_market_data_generation_configs_tbl c
           on c.id = f.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
         where f.valid_to = ores_utility_infinity_timestamp_fn())sql";
 }
 
-std::string where_clause(const feed_filter& filter, const std::vector<std::string>& running) {
+std::string where_clause(const feed_filter& filter,
+                         const std::vector<std::string>& running,
+                         bool system_caller) {
     static const std::string stopped = "stopped";
     if (!filter.feed_ids.empty())
         return "id::uuid in (" + id_list(filter.feed_ids) + ")";
@@ -140,8 +142,12 @@ std::string where_clause(const feed_filter& filter, const std::vector<std::strin
         where += " and provider_code = " + sql_literal(filter.provider_code);
     if (!filter.asset_class.empty())
         where += " and asset_class_code = " + sql_literal(filter.asset_class);
-    if (filter.should_run)
+    if (filter.should_run) {
         where += " and enabled and auto_start";
+        // A system feed is the system tenant's to start, so it is not one the others should run.
+        if (!system_caller)
+            where += " and scope <> 'system'";
+    }
     // A feed that should run and does not is a stopped one.
     const auto& state = filter.should_run ? stopped : filter.state;
     if (state == "started")

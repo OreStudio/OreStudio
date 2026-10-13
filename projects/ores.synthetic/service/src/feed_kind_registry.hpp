@@ -28,6 +28,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
+#include "ores.synthetic.api/domain/scope.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -104,6 +105,8 @@ struct feed_kind_row final {
 struct feed_start_target final {
     feed_kind_row row;
     domain::binding_mode binding_mode = domain::binding_mode::bound;
+    /** The scope of the container: a system container is the installation's, not a tenant's. */
+    domain::scope container_scope = domain::scope::party;
     bool container_found = false;
     bool container_enabled = false;
 
@@ -247,6 +250,18 @@ public:
 
     /** True when the caller may start and stop feeds. */
     [[nodiscard]] static bool permits_run(const ores::database::context& ctx);
+
+    /**
+     * @brief Whether the caller works in the system tenant.
+     *
+     * A system collection is the installation's: its feeds run once for every tenant, so
+     * only the system tenant starts and stops them.
+     */
+    [[nodiscard]] static bool is_system_caller(const ores::database::context& ctx);
+
+    /** The ids of the system collections the caller sees. */
+    [[nodiscard]] std::set<boost::uuids::uuid>
+    system_containers(const ores::database::context& ctx) const;
 
     /** Every config row of every kind. No container read. */
     [[nodiscard]] std::vector<feed_kind_row> rows(const ores::database::context& ctx) const;

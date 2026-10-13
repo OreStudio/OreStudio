@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 
 namespace ores::synthetic::service {
@@ -49,6 +50,8 @@ struct start_outcome {
 /** What a stop did, in total and by feed kind. */
 struct stop_outcome {
     int stopped = 0;
+    /** Feeds the caller may not stop: a system feed asked for from another tenant. */
+    int refused = 0;
     std::map<std::string, int> by_kind;
 };
 
@@ -83,6 +86,12 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
             BOOST_LOG_SEV(feed_run_control_lg(), warn)
                 << "Skipping " << c.display_name << " under " << scope_label << " — " << reason;
         };
+        // A system feed runs once for every tenant, so only the system tenant starts it.
+        if (target.container_scope == ores::synthetic::domain::scope::system &&
+            !feed_kind_registry::is_system_caller(ctx)) {
+            skip("a system feed starts only in the system tenant.");
+            continue;
+        }
         try {
             auto attempt = registry.make_feed(target, build);
             if (!attempt.feed) {
@@ -119,9 +128,16 @@ inline stop_outcome stop_feeds(const feed_kind_registry& registry,
     stop_outcome out;
     for (const auto* k : registry.all())
         out.by_kind.emplace(k->kind, 0);
+    const auto system = feed_kind_registry::is_system_caller(ctx)
+                            ? std::set<boost::uuids::uuid>{}
+                            : registry.system_containers(ctx);
     for (const auto& row : registry.rows(ctx)) {
         if (!wanted(row))
             continue;
+        if (system.contains(row.candidate.container_id)) {
+            ++out.refused;
+            continue;
+        }
         const auto stopped = static_cast<int>(ctrl.stop(row.candidate.source_name));
         out.by_kind.at(row.kind->kind) += stopped;
         out.stopped += stopped;

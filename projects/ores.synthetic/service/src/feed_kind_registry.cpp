@@ -392,6 +392,19 @@ bool feed_kind_registry::permits_run(const ores::database::context& ctx) {
     return ores::service::messaging::has_permission(ctx, std::string(run_permission));
 }
 
+bool feed_kind_registry::is_system_caller(const ores::database::context& ctx) {
+    return ctx.tenant_id().to_string() == ores::database::service::tenant_context::system_tenant_id;
+}
+
+std::set<boost::uuids::uuid>
+feed_kind_registry::system_containers(const ores::database::context& ctx) const {
+    std::set<boost::uuids::uuid> out;
+    for (const auto& c : deps_.containers(ctx))
+        if (c.scope == domain::scope::system)
+            out.insert(c.id);
+    return out;
+}
+
 std::vector<feed_kind_row> feed_kind_registry::rows(const ores::database::context& ctx) const {
     std::vector<feed_kind_row> out;
     for (const auto& [_, k] : kinds_)
@@ -413,6 +426,7 @@ std::optional<feed_start_target> feed_kind_registry::make_target(
     target.container_found = true;
     target.container_enabled = found->second.enabled;
     target.binding_mode = found->second.binding_mode;
+    target.container_scope = found->second.scope;
     return target;
 }
 

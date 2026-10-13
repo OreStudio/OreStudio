@@ -85,13 +85,13 @@ TEST_CASE("feed_filter doubles a quote and a backslash in a literal", tags) {
 }
 
 TEST_CASE("feed_filter matches every feed when nothing narrows it", tags) {
-    CHECK(where_clause({}, {}) == "true");
+    CHECK(where_clause({}, {}, true) == "true");
 }
 
 TEST_CASE("feed_filter reads a folder with the folders under it", tags) {
     feed_filter f;
     f.folder_id = folder;
-    const auto where = where_clause(f, {});
+    const auto where = where_clause(f, {}, true);
     CHECK_THAT(where, ContainsSubstring("with recursive below"));
     CHECK_THAT(where, ContainsSubstring("E'" + folder + "'::uuid"));
 }
@@ -100,7 +100,7 @@ TEST_CASE("feed_filter narrows by provider and asset class", tags) {
     feed_filter f;
     f.provider_code = "bloomberg";
     f.asset_class = "fx";
-    const auto where = where_clause(f, {});
+    const auto where = where_clause(f, {}, true);
     CHECK_THAT(where, ContainsSubstring("provider_code = E'bloomberg'"));
     CHECK_THAT(where, ContainsSubstring("asset_class_code = E'fx'"));
 }
@@ -108,21 +108,21 @@ TEST_CASE("feed_filter narrows by provider and asset class", tags) {
 TEST_CASE("feed_filter decides started and stopped by the running names", tags) {
     feed_filter f;
     f.state = "started";
-    CHECK_THAT(where_clause(f, {"synthetic.a", "synthetic.b"}),
+    CHECK_THAT(where_clause(f, {"synthetic.a", "synthetic.b"}, true),
                ContainsSubstring("source_name in (E'synthetic.a', E'synthetic.b')"));
-    CHECK_THAT(where_clause(f, {}), ContainsSubstring("and false"));
+    CHECK_THAT(where_clause(f, {}, true), ContainsSubstring("and false"));
     f.state = "stopped";
-    CHECK_THAT(where_clause(f, {"synthetic.a"}),
+    CHECK_THAT(where_clause(f, {"synthetic.a"}, true),
                ContainsSubstring("source_name not in (E'synthetic.a')"));
-    CHECK(where_clause(f, {}) == "true");
+    CHECK(where_clause(f, {}, true) == "true");
     f.state = "all";
-    CHECK(where_clause(f, {"synthetic.a"}) == "true");
+    CHECK(where_clause(f, {"synthetic.a"}, true) == "true");
 }
 
 TEST_CASE("feed_filter searches each word and escapes the pattern", tags) {
     feed_filter f;
     f.search = "usd 100%_x";
-    const auto where = where_clause(f, {});
+    const auto where = where_clause(f, {}, true);
     CHECK_THAT(where, ContainsSubstring("ilike E'%usd%'"));
     CHECK_THAT(where, ContainsSubstring("ilike E'%100\\\\%\\\\_x%'"));
 }
@@ -141,17 +141,17 @@ TEST_CASE("feed_filter names only the picked feeds and ignores the filter", tags
     f.provider_code = "bloomberg";
     f.state = "started";
     f.excluded_ids = {other};
-    CHECK(where_clause(f, {"synthetic.a"}) == "id::uuid in (E'" + folder + "'::uuid)");
+    CHECK(where_clause(f, {"synthetic.a"}, true) == "id::uuid in (E'" + folder + "'::uuid)");
 }
 
 TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and stopped", tags) {
     feed_filter f;
     f.should_run = true;
-    CHECK_THAT(where_clause(f, {"synthetic.a"}), ContainsSubstring("and enabled and auto_start"));
-    CHECK_THAT(where_clause(f, {"synthetic.a"}),
+    CHECK_THAT(where_clause(f, {"synthetic.a"}, true), ContainsSubstring("and enabled and auto_start"));
+    CHECK_THAT(where_clause(f, {"synthetic.a"}, true),
                ContainsSubstring("source_name not in (E'synthetic.a')"));
     f.state = "started";
-    CHECK_THAT(where_clause(f, {"synthetic.a"}),
+    CHECK_THAT(where_clause(f, {"synthetic.a"}, true),
                ContainsSubstring("source_name not in (E'synthetic.a')"));
 }
 
@@ -186,4 +186,13 @@ TEST_CASE("feed_filter names the cap in its message", tags) {
     feed_filter f;
     f.feed_ids.assign(ores::synthetic::feed::most_named_feeds + 1, folder);
     CHECK_THAT(filter_problem(f), ContainsSubstring("2000"));
+}
+
+TEST_CASE("feed_filter leaves the system feeds out of those another tenant should run", tags) {
+    feed_filter f;
+    f.should_run = true;
+    CHECK_THAT(where_clause(f, {}, false), ContainsSubstring("scope <> 'system'"));
+    CHECK_THAT(where_clause(f, {}, true), !ContainsSubstring("scope <> 'system'"));
+    f.should_run = false;
+    CHECK(where_clause(f, {}, false) == "true");
 }

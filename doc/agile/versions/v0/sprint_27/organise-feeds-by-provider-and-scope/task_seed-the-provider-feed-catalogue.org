@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :synthetic:seeder:datasets:organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/seed-provider-feeds
+#+pr: 3254
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -20,28 +20,34 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Each provider that has feeds of a kind the platform can simulate has them, as system feeds: held by the system tenant, run once there, and read by every tenant.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
--
+- Refinitiv, ICE and Tradeweb publish system collections with feeds, with provider-qualified source names
+- A tenant reads the collections, their folders and their feeds, and starts and stops none of them
+- The synthetic service starts the system feeds when it starts
+- The feeds that should run, for a tenant, leave the system feeds out
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The publish function takes no party for a publish into the system tenant: it makes a sandboxed system collection held by the system party. A publish into any other tenant still needs a party.
+- Three datasets, =synthetic.feeds.refinitiv=, =ice= and =tradeweb=, are members of =system_core=, so the system provisioning step publishes them.
+- One series has one running publisher in the whole service, so each dataset names series the others do not. See the provider catalogue page for the series each holds.
+- Row-level security on the folders reads the folders of a system collection, and the system root above it, through a definer function.
+- A feed that belongs to a system collection starts and stops only for a caller in the system tenant: the folder, selection and single-feed verbs skip it, and a stop that names no feed is refused to every other tenant.
+- The folder read carries the scope again, so the dashboard tags a provider whose feeds are the installation's.
 
 * Measurements
 
@@ -80,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3254][#3254]] | [synthetic,sql,web] Seed the provider feeds as system collections |
 
 * Review
 
@@ -89,3 +95,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Refinitiv (14 cross spots), ICE (5 LIBOR curves) and Tradeweb (5 EURIBOR and LIBOR curves) publish as system collections at system provisioning. A tenant sees them in the Synthetic screen under a System tag. The synthetic service starts the 24 feeds when it starts, and a tenant's start or stop of them is skipped.
+
+Checked: the synthetic api suite (80 cases), the synthetic service suite (61), the synthetic core, shell and DQ suites earlier on the same models, four pgTAP files (34 assertions, nine of them new for the system publish and the folder reads), 1483 web tests, and, on a fresh database as the Acme tenant administrator, 96 feeds in the tree, 24 system feeds running after a service restart, a tenant start of Refinitiv skipping 14, and a tenant stop of ICE skipping 5.
+
+Not met: CME has no feeds. It quotes futures, which have no feed kind, and the IR curve config admits term tenors only for LIBOR and EURIBOR, so a CME Term SOFR curve cannot be stored. LSE and Eurex wait for the equity and futures kinds. The system feeds start at the next service start after a first provisioning, or from the system tenant's own screen.

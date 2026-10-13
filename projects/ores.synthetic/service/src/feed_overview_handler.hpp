@@ -193,7 +193,8 @@ private:
         const auto running = ctrl_->list();
         const std::unordered_set<std::string> running_names(running.begin(), running.end());
         const auto feeds = ores::synthetic::feed::feeds_query();
-        const auto where = ores::synthetic::feed::where_clause(filter, running);
+        const auto where = ores::synthetic::feed::where_clause(
+            filter, running, feed_kind_registry::is_system_caller(ctx));
 
         const auto counted = query(ctx, "select count(*) from (" + feeds + ") f where " + where);
         resp.total = counted.empty() ? 0 : number_of(counted.front().front());
@@ -237,7 +238,8 @@ private:
     folders(const ores::database::context& ctx) const {
         const auto rows = query(ctx, R"sql(
             select f.id::text, coalesce(f.parent_id::text, ''), f.name, f.kind,
-                   coalesce(c.provider_code, ''), coalesce(c.binding_mode, '')
+                   coalesce(c.scope, ''), coalesce(c.provider_code, ''),
+                   coalesce(c.binding_mode, '')
             from ores_synthetic_folders_tbl f
             left join ores_synthetic_market_data_generation_configs_tbl c
               on c.id = f.collection_id
@@ -251,8 +253,9 @@ private:
             f.parent_id = text_of(r[1]);
             f.name = text_of(r[2]);
             f.kind = text_of(r[3]);
-            f.provider_code = text_of(r[4]);
-            f.binding_mode = text_of(r[5]);
+            f.scope = text_of(r[4]);
+            f.provider_code = text_of(r[5]);
+            f.binding_mode = text_of(r[6]);
             out.push_back(std::move(f));
         }
         return out;
@@ -309,12 +312,19 @@ private:
             group by folder_id)sql"),
             tally::ir);
 
+        // A system feed is the system tenant's to start, so another tenant does not count it
+        // among the feeds that should run.
+        const std::string runnable =
+            feed_kind_registry::is_system_caller(ctx)
+                ? std::string()
+                : " and config_id not in (select id from ores_synthetic_market_data_generation_configs_tbl"
+                  " where scope = 'system' and valid_to = ores_utility_infinity_timestamp_fn())";
         for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
                                   "ores_synthetic_ir_curve_generation_configs_tbl"}) {
             add(query(ctx,
                       std::string("select folder_id::text, count(*) from ") + table +
                           " where valid_to = ores_utility_infinity_timestamp_fn()"
-                          " and folder_id is not null and enabled and auto_start"
+                          " and folder_id is not null and enabled and auto_start" + runnable +
                           " group by folder_id"),
                 tally::auto_start);
         }
@@ -335,9 +345,8 @@ private:
                 add(query(ctx,
                           std::string("select folder_id::text, count(*) from ") + table +
                               " where valid_to = ores_utility_infinity_timestamp_fn()"
-                              " and folder_id is not null and enabled and auto_start"
-                              " and source_name in (" +
-                              names + ") group by folder_id"),
+                              " and folder_id is not null and enabled and auto_start" + runnable +
+                              " and source_name in (" + names + ") group by folder_id"),
                     tally::auto_running);
             }
         }

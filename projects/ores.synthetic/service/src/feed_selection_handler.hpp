@@ -154,7 +154,9 @@ private:
                         return wanted.contains(row.candidate.feed_config_id);
                     });
                 resp.stopped = outcome.stopped;
-                resp.message = std::to_string(resp.stopped) + " stopped";
+                resp.skipped = outcome.refused;
+                resp.message = std::to_string(resp.stopped) + " stopped, " +
+                               std::to_string(resp.skipped) + " skipped";
             }
             resp.success = true;
             BOOST_LOG_SEV(feed_selection_handler_lg(), info)
@@ -175,7 +177,8 @@ private:
         const auto rows = ores::database::repository::execute_raw_multi_column_query(
             ctx,
             "select id from (" + ores::synthetic::feed::feeds_query() + ") f where " +
-                ores::synthetic::feed::where_clause(filter, running),
+                ores::synthetic::feed::where_clause(
+                    filter, running, feed_kind_registry::is_system_caller(ctx)),
             feed_selection_handler_lg(),
             "Reading the selected feeds");
         std::unordered_set<std::string> out;

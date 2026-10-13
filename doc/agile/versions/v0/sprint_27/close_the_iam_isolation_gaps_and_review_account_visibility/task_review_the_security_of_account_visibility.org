@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F18D3B6-3C61-4208-8F74-EE7BB6A4C135][Close the IAM isolation gaps and review account visibility]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -83,3 +83,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The review of account visibility found two holes, fixed both, and recorded three open findings.
+
+| Threat | Outcome |
+|--------+---------|
+| A tenant writes or closes a shared row, or sees a later system account before its flag is set | Covered by =iam_accounts_shared_visibility_test.sql= from PR #3124. |
+| The delete rule, in the other entities that state =:system_tenant_visible: true= | The entities already carry the own-tenant limit. The junction =app_version_platform= did not, so a tenant closed the shared rows. Fixed in the junction template. =shared_rows_delete_test.sql= covers the apps, versions, links and platforms. |
+| The service actor clause of the party rule | A tenant person that shared a username with a shared service account was taken for the service. Fixed: an account of the session's own tenant decides first. =iam_service_actor_test.sql= covers it. |
+| The system party clause | Reviewed by reading. It admits the people who work in the system party of the session's own tenant, which is the stated design. |
+| =ores_iam_account_exists_fn= | Reviewed by reading. It answers yes or no, takes the tenant from the session, and has a fixed =search_path=. Public execute is revoked and each role is granted by name. |
+| Hand-written reads of the account repository | A history lookup by username picks the newest of a tenant row and a shared row with the same name. Recorded as a finding. |
+| Security definer functions | 530 of 595 keep the default ACL and 29 set no =search_path=. Recorded as a finding. |
+| A tenant creates a service account with rights it does not hold | No test shows it. Recorded as a finding. |
+| Lists that return shared rows | Reviewed by reading. The lists show shared rows as the system tenant's, and the write policies refuse a tenant change. |
+
+The open findings are captures: =security_definer_functions_run_for_any_role_without_a_search_path=, =a_tenant_account_may_share_a_username_with_a_shared_account= and =service_account_creation_rights_have_no_test=.

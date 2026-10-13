@@ -23,7 +23,7 @@ Sends =trigger_report_instance_request= and prints =trigger_report_instance_resp
 The command is shaped like this:
 
 #+begin_example
-report_operations trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>]
+report_operations trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>] [--kind <v>]
 #+end_example
 
 It is addressed at =reporting.v1.ops.trigger_report_instance=.

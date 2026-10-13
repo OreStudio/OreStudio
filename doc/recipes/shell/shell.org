@@ -1066,6 +1066,10 @@ tangled into the runnable script library
 
 - [[id:D74D4948-6B4D-5495-B833-2656AE06D375][How do I run the analytic_types commands from the shell?]]
 
+* Report Instance Kinds
+
+- [[id:D7136D27-93F7-5183-8418-4FCD71EAAFF5][How do I run the report_instance_kinds commands from the shell?]]
+
 * File Types
 
 - [[id:2CEEA23E-4502-53D0-8907-01141D8124C0][How do I run the file_types commands from the shell?]]

@@ -61,6 +61,35 @@ struct ore_storage {
         return ores::storage::net::storage_paths::make_object_path(bucket, import_key(request_id));
     }
 
+    /**
+     * @brief The prefix every package of a report instance is stored under.
+     *
+     * A run stores the packages the compute grid receives under one prefix, so a
+     * reader finds all of them by listing it, whether the run produced one or several.
+     *
+     * @param report_instance_id  UUID of the report instance.
+     * @return                    e.g. "ore/packages/f47ac10b-58cc-4372-a567-0e02b2c3d479/"
+     */
+    static std::string package_prefix(std::string_view report_instance_id) {
+        return ores::storage::api::object_keys::make(service, "packages", report_instance_id) + "/";
+    }
+
+    /**
+     * @brief Object key for the package of a report instance.
+     *
+     * @param report_instance_id  UUID of the report instance.
+     * @return                    e.g. "ore/packages/{id}/ore_package.tar.gz"
+     */
+    static std::string package_key(std::string_view report_instance_id) {
+        return ores::storage::api::object_keys::make(
+            service, "packages", report_instance_id, package_name);
+    }
+
+    /**
+     * @brief The file name of the package a run stores.
+     */
+    static constexpr std::string_view package_name = "ore_package.tar.gz";
+
 private:
     /**
      * @brief The service segment every ORE key starts with.

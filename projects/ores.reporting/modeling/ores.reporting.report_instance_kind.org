@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: 79A42255-AACC-43BA-B876-60D421F6DBD0
+:END:
+#+title: ores.reporting.report_instance_kind
+#+description: Codegen entity model for the reporting =report_instance_kind= table. The kinds of report instance: a production run and a package build.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The kind of a report instance.
+#+entity_singular: report_instance_kind
+#+entity_plural: report_instance_kinds
+#+entity_title: Report Instance Kind
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+Reference data naming the kinds of report instance. A report instance is one
+execution of a report definition, and its kind says what that execution does:
+
+- =production= prepares the engine's input, computes it on the grid and records the
+  results. It is the kind of every instance the scheduler creates.
+- =package= prepares the engine's input and stops. It produces the packages that the
+  compute grid would receive for the report and computes nothing, so a developer can
+  inspect a report's packages and run them in ORE on their own machine.
+
+The kind is a property of the run and not of the definition: one definition has
+instances of both kinds. A =package= instance is a real instance, with its own run
+token scope, storage keys and lifecycle, so the steps that prepare the input work for
+it unchanged. The concurrency policy of a definition counts =production= instances only.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_report_instance_kinds_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code of the kind: production or package.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The human-readable name of the kind.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What a report instance of this kind does, in one line.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the kind appears in a list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_instance_kinds_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: report instance kind
+:entity_plural_words:   report instance kinds
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rk
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| code             | Code             |
+| name             | Name             |
+| modified_by      | Modified By      |
+| version          | Version          |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/report_instance_kind.hpp
+:domain_class:           reporting::domain::report_instance_kind
+:protocol_include:       ores.reporting.api/messaging/report_instance_kind_protocol.hpp
+:collection_name:        report_instance_kinds
+:key_field:              code
+:get_request_class:      reporting::messaging::get_report_instance_kinds_request
+:get_response_class:     reporting::messaging::get_report_instance_kinds_response
+:get_message_type:       get_report_instance_kinds_request
+:save_request_class:     reporting::messaging::save_report_instance_kind_request
+:save_response_class:    reporting::messaging::save_report_instance_kind_response
+:save_message_type:      save_report_instance_kind_request
+:delete_request_class:   reporting::messaging::delete_report_instance_kind_request
+:delete_response_class:  reporting::messaging::delete_report_instance_kind_response
+:delete_message_type:    delete_report_instance_kind_request
+:END:
+
+*** Detail fields
+
+| field            | label            | type      | is_key | is_required | placeholder |
+|------------------+------------------+-----------+--------+-------------+-------------|
+| code             | Code             | line_edit | true   | true        | Enter kind code |
+| name             | Name             | line_edit |        | true        | Enter display name |
+| description      | Description      | line_edit |        | true        | Enter description |
+| display_order    | Order            | spin_edit |        | true        | Enter order |
+
+*** Columns
+
+| enum_name    | field            | header           | type   | width |
+|--------------+------------------+------------------+--------+-------|
+| Code         | code             | Code             | string | 160   |
+| Name         | name             | Name             | string | 200   |
+| Description  | description      | Description      | string | 320   |
+| DisplayOrder | display_order    | Order            | int    | 80    |
+| Version      | version          | Version          | int    | 80    |
+| ModifiedBy   | modified_by      | Modified By      | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

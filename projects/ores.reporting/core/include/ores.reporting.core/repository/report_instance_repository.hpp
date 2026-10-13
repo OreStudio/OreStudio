@@ -141,6 +141,7 @@ public:
     std::optional<domain::report_instance>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Whether a list of report instances can be ordered by a field.
      *

@@ -149,6 +149,19 @@ private:
                      const ores::nats::message& msg) {
         const auto tenant = boost::uuids::to_string(req.tenant_id);
         const auto definition_id = boost::uuids::to_string(req.report_definition_id);
+
+        // A trigger that names no kind is the scheduler's, and creates a production
+        // instance.
+        const auto kind =
+            req.kind.empty() ? std::string(workflow::instance_kind_production) : req.kind;
+        if (!workflow::is_known_instance_kind(kind)) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "unknown_instance_kind";
+            response.result.message =
+                std::format("Report instance kind '{}' is not one of production or package.", kind);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
         // Scoped from the authenticated context, not the base one: the
         // authenticated context carries the actor, roles and visible parties
         // the request resolved to.
@@ -234,6 +247,21 @@ private:
             return;
         }
 
+        // Only the report execution workflow knows the kinds. Any other would run a package
+        // request as a production run, so it is refused.
+        if (kind == workflow::instance_kind_package &&
+            type->workflow_type != workflow::report_execution_workflow_type) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "no_packages_to_build";
+            response.result.message =
+                std::format("Report type '{}' runs the {} workflow, which does not build ORE "
+                            "packages.",
+                            def->report_type,
+                            type->workflow_type);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+
         const auto missing = find_missing_configuration_types(system_ctx, tenant_ctx, *def);
         if (!missing.empty()) {
             std::string names;
@@ -254,7 +282,25 @@ private:
             return;
         }
 
-        const auto in_flight = find_in_flight(tenant, definition_id);
+        // A package that substitutes its input has nothing to build: the archive the
+        // definition names is its package.
+        if (kind == workflow::instance_kind_package &&
+            def->pre_processing != workflow::pre_processing_execute) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "no_packages_to_build";
+            response.result.message =
+                std::format("Report definition {} substitutes its input, so it has no packages "
+                            "to build: the archive it names is its package.",
+                            definition_id);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+
+        // The concurrency policy governs production runs. A package instance neither
+        // waits for one nor holds one up.
+        const auto in_flight = kind == workflow::instance_kind_production ?
+                                   find_in_flight(tenant, definition_id) :
+                                   std::optional<std::string>{};
 
         boost::uuids::uuid initial_state = instance_states_.require("pending");
         bool dispatch = true;
@@ -286,9 +332,11 @@ private:
         // is unique per tenant, so two runs of one definition cannot share a
         // name. The run's start is what distinguishes them.
         inst.name = std::format(
-            "{} {}",
+            "{}{} {}",
             def->name,
+            kind == workflow::instance_kind_package ? " (package)" : "",
             ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now()));
+        inst.kind = kind;
         inst.description = def->description;
         inst.fsm_state_id = initial_state;
         inst.trigger_run_id = req.job_instance_id;
@@ -314,9 +362,10 @@ private:
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");
 
         if (dispatch) {
-            dispatch_workflow(req, *def, type->workflow_type, inst_id_str, rg, msg);
+            dispatch_workflow(req, *def, kind, type->workflow_type, inst_id_str, rg, msg);
         }
 
+        response.report_instance_id = inst_id_str;
         response.result.code = dispatch ? "triggered" : "not_dispatched";
         response.result.message = std::format("Report instance {} created.", inst_id_str);
     }
@@ -369,6 +418,7 @@ private:
 
     void dispatch_workflow(const trigger_report_instance_request& req,
                            const ores::reporting::domain::report_definition& def,
+                           const std::string& kind,
                            const std::string& workflow_type,
                            const std::string& instance_id,
                            boost::uuids::random_generator& rg,
@@ -388,7 +438,8 @@ private:
             .correlation_id = instance_id,
             .pre_processing = def.pre_processing,
             .prepared_input_key = def.prepared_input_key,
-            .post_processing = def.post_processing};
+            .post_processing = def.post_processing,
+            .kind = kind};
         ores::workflow::messaging::start_workflow_message swm{
             .type = workflow_type,
             .tenant_id = boost::uuids::to_string(req.tenant_id),

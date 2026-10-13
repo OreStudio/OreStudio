@@ -291,6 +291,7 @@ std::optional<domain::report_instance> report_instance_repository::read_at_versi
     return entities.front();
 }
 
+
 report_instance_repository::remove_status report_instance_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report instance. " << "id: " << id;

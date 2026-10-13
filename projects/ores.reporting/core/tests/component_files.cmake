@@ -43,6 +43,7 @@ set(files
     "run_document_service_tests.cpp"
     "service_execution_storage_plan_tests.cpp"
     "service_publish_subject_plan_tests.cpp"
+    "service_report_instance_listing_tests.cpp"
     "service_run_document_generator_tests.cpp"
     "service_run_requirements_tests.cpp"
     "service_scheduling_plan_tests.cpp"

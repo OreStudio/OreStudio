@@ -1,0 +1,138 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.reporting.api/generators/report_instance_generator.hpp"
+#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.core/repository/report_instance_repository.hpp"
+#include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+
+// The decision these pin: what a list of report instances shows when the
+// caller states no kind. A package instance is a throwaway a developer makes
+// to get a report's packages off the grid, so it is not one of the runs the
+// list is about; the default view is production and the others are asked for
+// by name.
+
+namespace {
+
+const std::string_view test_suite("ores.reporting.tests");
+const std::string tags("[service][integration]");
+
+// The seeded catalogue codes. A report instance's kind is reference data, so
+// the test names a seeded code rather than writing a row of its own.
+const std::string production_kind("production");
+const std::string package_kind("package");
+
+// Report instance writes are party-scoped: the session-level
+// app.current_party_id GUC must be set before writing.
+ores::database::context
+write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                                   ores::utility::generation::generation_context& ctx) {
+    using ores::refdata::repository::party_repository;
+    party_repository party_repo;
+    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
+}
+
+bool lists(const std::vector<ores::reporting::domain::report_instance>& instances,
+           const boost::uuids::uuid& id) {
+    for (const auto& instance : instances) {
+        if (instance.id == id)
+            return true;
+    }
+    return false;
+}
+
+}
+
+using namespace ores::logging;
+using namespace ores::reporting::generators;
+using ores::reporting::messaging::list_report_instances_request;
+using ores::reporting::messaging::report_instances_filter;
+using ores::reporting::repository::report_instance_repository;
+using ores::reporting::service::report_instance_service;
+using ores::testing::scoped_database_helper;
+
+TEST_CASE("a list shows production instances unless the caller asks for a kind", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+
+    auto production = generate_synthetic_report_instance(ctx);
+    production.change_reason_code = "system.test";
+    production.party_id = *party_ctx.party_id();
+    production.kind = production_kind;
+
+    auto package = generate_synthetic_report_instance(ctx);
+    package.change_reason_code = "system.test";
+    package.party_id = *party_ctx.party_id();
+    package.kind = package_kind;
+
+    REQUIRE(production.id != package.id);
+
+    report_instance_repository repo;
+    repo.write(party_ctx, production);
+    repo.write(party_ctx, package);
+
+    report_instance_service service(party_ctx);
+
+    // 1. The default: the caller states no filter at all, as the shell's plain
+    // list does.
+    list_report_instances_request plain;
+    plain.limit = 1000;
+    const auto defaulted = service.list_report_instances(plain);
+    CHECK(lists(defaulted.instances, production.id));
+    CHECK_FALSE(lists(defaulted.instances, package.id));
+
+    // 2. Asked for by name, the package instance is there and the production
+    // one is not.
+    list_report_instances_request packages;
+    packages.limit = 1000;
+    packages.filter = report_instances_filter{};
+    packages.filter->kind = package_kind;
+    const auto only_packages = service.list_report_instances(packages);
+    CHECK(lists(only_packages.instances, package.id));
+    CHECK_FALSE(lists(only_packages.instances, production.id));
+}

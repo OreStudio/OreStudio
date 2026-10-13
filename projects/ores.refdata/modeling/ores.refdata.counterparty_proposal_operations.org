@@ -1,0 +1,405 @@
+:PROPERTIES:
+:ID: 2FAAB5AD-7521-590B-A24A-1F5DF3C8676C
+:END:
+#+title: ores.refdata.counterparty_proposal_operations
+#+description: Codegen operation model for proposing changes to counterparties -- a preview that runs the real writes and writes nothing, a raise that holds the lines in an approval request, and the reads a decider works from -- rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: counterparty_proposal_operations
+#+namespace: ores::refdata::messaging
+#+brief: Propose and preview changes to counterparties.
+#+filetags: :model:operation:refdata:
+#+created: 2026-10-12
+#+updated: 2026-10-12
+
+The operations a person takes to propose a change to a counterparty instead of
+writing it. A request holds lines of three kinds, each a typed pending row: the
+counterparty itself, its identifiers, and the links that say which of the
+tenant's parties may trade with it. A line is a put or a delete, and carries the
+version the person read. The lines apply in the order of their kinds: the
+counterparties first, then their identifiers, then the links, so a new
+counterparty exists before the rows that name it.
+
+The preview runs the real write for each line in a transaction it never commits
+and answers each line's refusal and the parts the policy names. The raise
+previews, then holds the lines in an approval request.
+
+The handler is hand-written beside this model, because each operation applies
+the rules of the four-eyes framework.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include "ores.refdata.api/domain/counterparty_change.hpp"
+#include "ores.refdata.api/domain/counterparty_identifier_change.hpp"
+#include "ores.refdata.api/domain/party_counterparty_change.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** counterparty_line_outcome
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the real write said about one proposed line.
+ *
+ * The refusal is empty when the write would stand. The columns are the ones the
+ * line changes, and the parts are the ones the policy names for the line alone.
+ */
+#+end_src
+
+*** line_no
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** entity_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief counterparty, counterparty_identifier or party_counterparty.
+ */
+#+end_src
+
+*** operation
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** subject_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The row the line is about: its id, or the party and the counterparty of a link.
+ */
+#+end_src
+
+*** columns
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** refusal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** preview_counterparty_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.preview_counterparty_changes
+:response: preview_counterparty_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Runs each proposed line through the real write and writes nothing.
+ *
+ * A put line needs the permission to write what it names, a delete line the
+ * permission to delete it. The lines are checked in order inside one transaction
+ * that is never committed.
+ */
+#+end_src
+
+*** counterparties
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::counterparty_change>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The proposed writes to counterparties. The request, line number and part of a line are not read: the server numbers the lines and the policy names the parts.
+ */
+#+end_src
+
+*** identifiers
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::counterparty_identifier_change>
+:END:
+
+*** links
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::party_counterparty_change>
+:END:
+
+** preview_counterparty_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<counterparty_line_outcome>
+:END:
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parts the policy needs for the lines together. Empty when no policy row gates them.
+ */
+#+end_src
+
+** raise_counterparty_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.raise_counterparty_changes
+:response: raise_counterparty_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Holds the proposed lines in an approval request.
+ *
+ * Previews first. A refused line, or lines no policy row gates, raise nothing.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the person asks, in their words.
+ */
+#+end_src
+
+*** counterparties
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::counterparty_change>
+:END:
+
+*** identifiers
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::counterparty_identifier_change>
+:END:
+
+*** links
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::party_counterparty_change>
+:END:
+
+** raise_counterparty_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the request as raised, when the outcome is ok. The inbox operations read the request itself.
+ */
+#+end_src
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<counterparty_line_outcome>
+:END:
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** counterparty_field_delta
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One column of a proposed line beside the live row's value.
+ *
+ * The values are text whatever the column's type, because a screen draws them and
+ * does not compute with them. The before is empty when the line creates the row.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** before
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** after
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** changed
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+** counterparty_change_delta
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One line of a request as the decider reads it: the kind of row, the
+ * operation, the row it names, and each column beside the value it replaces.
+ */
+#+end_src
+
+*** line_no
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** entity_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** operation
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** subject_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** base_version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** applied
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+*** fields
+:PROPERTIES:
+:cpp_type: std::vector<counterparty_field_delta>
+:END:
+
+** get_counterparty_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.get_counterparty_changes
+:response: get_counterparty_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the lines a request holds, each beside the row it changes.
+ *
+ * Answered to the person who raised the request, to whoever may decide its kind,
+ * and to whoever may read the tenant's requests. Answered as not found otherwise,
+ * as opening the request is.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_counterparty_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** changes
+:PROPERTIES:
+:cpp_type: std::vector<counterparty_change_delta>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The lines in line order.
+ */
+#+end_src
+
+** recheck_counterparty_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.recheck_counterparty_changes
+:response: recheck_counterparty_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Runs the lines a request holds through the real write again and writes
+ * nothing.
+ *
+ * The live rows may have moved since the request was raised, so the checks a
+ * decider reads are run now. Answered to the same callers as the lines are.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** recheck_counterparty_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<counterparty_line_outcome>
+:END:
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+* See also
+
+- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] -- the design these operations apply.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/raise-preview-and-apply-counterparty-changes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A maker can preview and raise a counterparty change, and an approved request app
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -44,6 +44,12 @@ A maker can preview and raise a counterparty change, and an approved request app
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- One request holds lines of three kinds: the counterparty, its identifiers and the links that let a party trade with it. The lines are numbered across the kinds and apply in the order of the kinds, so a new counterparty exists before the rows that name it. A request has one parts list, one decision and one apply.
+- Treat each kind through a small adapter: the live row a line names, the columns it changes, and the real write that carries it out. The preview, the recheck, the apply and the deltas work on any kind through it.
+- Copy the book's shape for everything else: a preview and a raise that run the real writes in a transaction that is never committed, a recheck, a read of the stored lines beside the live rows, an apply workflow of three steps, and an approval kind that names the workflow and a 24-hour window.
+- Scope the apply to the parties of the request's link lines, through a security-definer function, because a link belongs to a party and the other two kinds belong to the tenant.
+- Move what the two proposal services share, the savepoint statement, the policy question and the refusal text, into one header.
 
 * Measurements
 
@@ -60,6 +66,14 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The first run of the new cases found two faults in the pending models that the previous task generated. A pending line required the row it names to be live, so an identifier could not be held in the same request that creates its counterparty. It also carried the live row's cardinality limit, which would have counted the pending lines of every request and refused a second request for the same counterparty. The derivation now drops a foreign key to a table with a pending change, and keeps only the lookup in a validation. Four Python cases pin this, and the pending models and stacks are regenerated.
+- The junction service template did not export its class, so no other library could link =party_counterparty_service=. The template now exports it, and I regenerated that one service. The other junction services are not regenerated here. They have the same fault until someone needs them.
+- The apply acts for the tenant, and for the parties of the request's link lines when it has any. A request of counterparties and identifiers alone touches nothing a party owns.
+- A direct save of a contact or a business centre is not part of this: only the three kinds above are proposed.
+- The party link's pending table is isolated by tenant only, as the previous task noted. The raise and apply read it as the service. Party-level isolation for pending links is still open and belongs with the gate task.
+- The BFF routes, the wire readers and the screens for counterparty requests are not part of this task. The request page already draws any kind through a descriptor, so the next screen task adds the descriptor and the reads.
+- Not done: a run against the running services and the NATS operations. The handlers have no unit test beyond the mapping cases.
 
 * Test Scenarios
 
@@ -85,3 +99,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A maker can preview and raise a counterparty change, and an approved request applies in one transaction.
+
+- =refdata.v1.ops.preview_counterparty_changes=, =raise_counterparty_changes=, =get_counterparty_changes= and =recheck_counterparty_changes= take lines of three kinds in one message and answer by line, with the parts the policy names for each.
+- =counterparty_proposal_service= previews, raises, rechecks, reads the lines beside the rows as the maker read them, and applies. An apply writes every line or none, marks each applied, and moves a refused request to apply_failed.
+- The kind =refdata.counterparty_change= names =counterparty_apply_workflow=, a three-step workflow with a 24-hour window. The refdata service answers its steps.
+- =ores_refdata_counterparty_change_parties_fn= scopes the apply to the parties of the request's link lines.
+- The derivation of the pending models drops foreign keys to tables with a pending change and the cardinality limits, and the junction service is exported.
+
+Evidence: twenty new cases in =service_counterparty_proposal_tests.cpp= and the mapping cases pass: a preview of each kind, lines numbered across the kinds, a refused line that does not stop the next, columns of a put, a raise, a refused raise, an apply in order and once, an apply refused on a late line that writes nothing and moves the request, a delta after the apply, a recheck against a moved row, and a link delete. The whole =ores.refdata.core.tests= binary passes (408 cases), the workflow core tests pass (46 cases) with the new definition, and the sixteen derivation cases pass. The catalogue drift sweep, handler permission, cmake source, pasted block symbol, populate reference and derived-model checks pass, and the web typecheck is clean.
+
+Not done here: the BFF and the screens, the gate, and a run against the running services.

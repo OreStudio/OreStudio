@@ -25,6 +25,7 @@
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.core/repository/book_change_repository.hpp"
 #include "ores.refdata.core/service/book_service.hpp"
+#include "ores.refdata.service/service/proposal_support.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <algorithm>
@@ -37,6 +38,9 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 namespace db = ores::database::repository;
 using ores::utility::domain::outcome;
+using support::in_transaction;
+using support::policy_parts;
+using support::refusal_of;
 using ores::utility::domain::precondition;
 using ores::utility::domain::precondition_kind;
 
@@ -49,18 +53,6 @@ constexpr auto savepoint = "book_line";
 auto& log() {
     static auto instance = ores::logging::make_logger("ores.refdata.service.book_proposal");
     return instance;
-}
-
-/**
- * @brief Runs a statement on the connection of the context's transaction.
- *
- * The raw command helper opens a connection of its own, so a savepoint it
- * opened would not exist on the one the writes run on.
- */
-void in_transaction(const ores::database::context& ctx, const std::string& sql) {
-    const auto r = (*ctx.active_transaction())->execute(sql);
-    if (!r)
-        throw std::runtime_error(r.error().what());
 }
 
 messaging::book_write to_write(const domain::book_change& l) {
@@ -95,12 +87,6 @@ precondition claim_of(const domain::book_change& l) {
                         static_cast<std::uint32_t>(l.base_version)};
 }
 
-std::string refusal_of(const ores::utility::domain::result& r) {
-    if (r.outcome == outcome::ok)
-        return {};
-    return r.message.empty() ? r.code : r.message;
-}
-
 /**
  * @brief Runs the real write for one line and returns its refusal, if any.
  */
@@ -128,35 +114,6 @@ std::string run_write(book_service& svc,
         return refusal_of(svc.delete_book(req).result);
     }
     return "The operation must be put or delete: " + line.operation;
-}
-
-/**
- * @brief The parts the policy names for an act, read as the caller.
- *
- * The helper opens its own connection and sets the caller's tenant and party
- * on it, so the tenant's own policy rows are read as well as the system's.
- * Every value is a bound parameter: the operation comes from the caller.
- */
-std::vector<std::string> policy_parts(const ores::database::context& ctx,
-                                      const std::string& operation,
-                                      const std::vector<std::string>& cols) {
-    std::string list = "{";
-    for (std::size_t i = 0; i < cols.size(); ++i)
-        list += (i ? ",\"" : "\"") + cols[i] + "\"";
-    list += "}";
-
-    std::vector<std::string> codes;
-    const auto rows = db::execute_parameterized_multi_column_query(
-        ctx,
-        "select p from ores_inbox_policy_parts_fn($1, $2, $3::text[]) as p",
-        {entity_type, operation, list},
-        log(),
-        "Reading the parts the policy names");
-    for (const auto& row : rows) {
-        if (!row.empty() && row[0])
-            codes.push_back(*row[0]);
-    }
-    return codes;
 }
 
 }
@@ -210,7 +167,7 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
             std::string(out.refusal.empty() ? "release savepoint " : "rollback to savepoint ") +
                 savepoint);
 
-        out.part_codes = policy_parts(ctx, line.operation, out.columns);
+        out.part_codes = policy_parts(ctx, entity_type, line.operation, out.columns);
         for (const auto& code : out.part_codes) {
             if (std::ranges::find(result.part_codes, code) == result.part_codes.end())
                 result.part_codes.push_back(code);

@@ -46,6 +46,11 @@ insert into ores_inbox_approval_kinds_tbl (
     (ores_utility_system_tenant_id_fn(), 'refdata.book_change', 0, 'Book change',
      'A person proposes changes to books', 'inbox::approvals:decide_operations',
      false, false, 14, 'book_apply_workflow', 24, 1, 20,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
+    (ores_utility_system_tenant_id_fn(), 'refdata.counterparty_change', 0, 'Counterparty change',
+     'A person proposes changes to counterparties, their identifiers and the parties that may trade with them',
+     'inbox::approvals:decide_operations',
+     false, false, 14, 'counterparty_apply_workflow', 24, 1, 30,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

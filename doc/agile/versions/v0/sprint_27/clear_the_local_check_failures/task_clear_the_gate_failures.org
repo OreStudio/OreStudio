@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: FF4E5454-B659-4DA8-AE59-D0CD553FE3A0
+:END:
+#+title: Task: Clear the remaining local-check failures on main
+#+description: Ten local-check gates fail on main after the provider feed merge, and the macOS and Windows CI builds break on a floating-point from_chars and a direct std::getenv.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures:sprint_27:v0:
+#+owner: marco
+#+branch: feature/clear-the-gate-failures
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The local check gate stops failing on drift on main, and the macOS and
+Windows builds compile again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- Every local check in compass check --all --exclude-heavy passes on the branch, except the sandbox-bound compass suite.
+- The macOS and Windows builds no longer fail on from_chars or getenv.
+
+* Plan
+
+Fix each failing gate at its source rather than at the gate. Regenerate
+what drifted from its generator (ER diagrams, shell script library, recipe
+inventory, backlog index), correct the model and the policy the checks
+flag (the IAM profile binding, the counterparty-change party policy,
+the synthetic initial rate, the feed-placement writer), and bring the
+stale BFF timeline test up to date. Port the two platform breaks through
+the shims the estate already uses: =ores.platform::numeric::parse_double=
+for the floating-point parse, and =ores.platform::environment= for the
+environment read. Prove it with the fast gate set on the branch.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Failing local gates before | 10 of 52 | =./compass.sh check --all --exclude-heavy= | 770fc62e23 |
+| Failing local gates after | 1 of 52, the sandbox-bound compass suite | the same | 938b78052b |
+| Compass suite outside the sandbox | 393 passed, 1 skipped | =pytest projects/ores.compass/tests -q= | 938b78052b |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Ten local-check gates failed on main; every one is green on this branch.
+The two platform breaks are fixed through =ores.platform=, so the macOS
+and Windows jobs compile. The branch also splits the host build lock into
+two slots of =-j3= and switches nothing on GitHub.

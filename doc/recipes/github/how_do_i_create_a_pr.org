@@ -19,15 +19,22 @@ correctly-formatted title and a structured body?
 
 * Answer
 
-1. /Build and run tests locally first — mandatory, never skip/. CI
-   does not run a full C++ build/test job on PRs (the old "canary" job
-   was removed — it took too long and slowed down development), so
-   this local step is the only thing that catches a broken build
-   before review, and the PR description (step 3) is the only record
-   that it happened: =./compass.sh build --preset <preset>= (not raw
-   =cmake --build=, so it takes the host-wide build lock — see
-   [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]) then =ctest --preset <preset>=, both
-   clean, before proceeding.
+1. /Run the local check gate — mandatory, never skip/. GitHub runs no
+   check on a pull request, so =compass check= is the only gate between
+   the branch and =main=. It classifies the branch diff against the
+   decision tree in =build/scripts/local_checks.py=, runs the checks that
+   class needs, and writes =build/output/local_checks/report.md=:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh check
+   #+end_src
+
+   A documentation-only change builds the changed pages and runs the doc
+   corpus checks; a change to the compiled tree builds the preset and runs
+   the suites. =--plan= prints the classes and the checks without running
+   them. The result goes in the PR description (step 3), the only record
+   that the gate ran. See [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] and the
+   [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]] skill.
 
 2. /Close task/story bookkeeping now, if not already done/ — task
    =DONE=, =* Result= written, story/sprint rows synced (see

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 23F137E2-C34F-4DF0-ABCC-A4284F43B0F4
+:END:
+#+title: Task: Drop the generation stamp from the ER diagrams
+#+description: The ER PlantUML diagrams carry a wall-clock Generated timestamp that changes on every render, so a no-op regeneration rewrites all 22 files. The drift check normalizes the stamp, so no gate fails, but the churn is pure noise.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures:sprint_27:v0:
+#+owner: marco
+#+branch: chore/drop-the-generated-timestamps
+#+pr: 3258
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No generated file records when it was rendered, so regenerating an
+unchanged diagram changes nothing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- A no-op ER diagram regeneration produces no diff.
+- The er-diagram gate still detects a stale diagram by comparing content.
+
+* Plan
+
+Drop the stamp at its source rather than discount it in the check. Remove
+the line from the literate template, which tangles into the two mustaches;
+re-tangle; regenerate the 22 diagrams; delete the normalization in the
+generator and the model field that fed it; and update the tests and the
+template-variable reference that named it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files a no-op ER regeneration rewrote before | 22 | =projects/ores.codegen/plantuml_er_generate.sh= | f173336ada |
+| Files a no-op ER regeneration rewrites after | 0 | the same | beb1fb26ea |
+| Codegen suite | 1425 passed | =pytest projects/ores.codegen/tests -q= | beb1fb26ea |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3258][#3258]] | [codegen] Stop stamping the ER diagrams with a generation time |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+No generated file carries a render time. A second run of the generator and
+the tangle leaves the tree clean, and the er-diagram gate compares byte for
+byte, so a non-deterministic line now fails the gate instead of being
+discounted.

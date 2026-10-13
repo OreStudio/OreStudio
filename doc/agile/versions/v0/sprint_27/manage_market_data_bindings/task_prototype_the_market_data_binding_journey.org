@@ -26,11 +26,11 @@ The prototype argues what the binding screen shows and does: the list of binding
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -86,3 +86,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Marco signed the prototype off on 2026-10-13. It draws the bindings screen as the record screen standard draws a record screen, with the history as the shared timeline and an oresmd URL as the product ships it, and it has no layout variants. It has a synthetic scenario that runs to an added binding, and a real data scenario in which a vendor binding is read only and deletable. Marco decided what the standards left open: the screen lives in Market data beside the Synthetic folder, Edit offers the source name, a vendor binding can be deleted, and an operator adds and edits while only the system administrator deletes. The menu structure and the record screen standard now say so. One point stays open: the lead line follows the shipped feed page and not the standard's wording. The task Build the market data binding screen can now be split into server and web tasks.
+

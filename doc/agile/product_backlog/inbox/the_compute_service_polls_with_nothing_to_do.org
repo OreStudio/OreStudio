@@ -57,10 +57,25 @@ is the one loop whose work does not depend on there being anything to do — but
 that is a guess and not a measurement. The three shapes repeating may be a clue:
 if each shape is one loop, then more than one of them is running at that rate.
 
+*Correction, 2026-10-13.* Part of that 5% was not the round trip at all: it was
+writing a line about it. =ores.nats= logged every publish and every request at
+info, so an idle caller writing a request every half second wrote a log line
+every half second, formatted and handed to journald, forever. The publish path
+tried to throttle this by remembering subjects it had already logged — but a
+request/reply inbox is a new subject every time, so the set never held a repeat
+and the throttle never fired. Both are debug now
+(=[ores.nats] Log a NATS message at debug, not info=), which removes one
+contributor. The rest of the CPU is the round trip itself, and the probe below
+is still what says which loop owns it. Anyone measuring this service should
+take the reading after that fix, or they will be measuring the logger.
+
 The next probe is cheap and decisive: name each loop's interval as it starts,
 or watch which subject each shape is addressed to, since an =_INBOX= reply
 subject does not say what was asked. Querying the service's own logs at debug
-level for a few seconds should separate them without a rebuild.
+level for a few seconds should separate them without a rebuild. Checking what
+the service logs at info in an idle minute is worth doing at the same time, as
+that correction shows: a per-message notice at info is invisible in a diff and
+very visible in =top=.
 
 * References
 

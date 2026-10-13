@@ -39,6 +39,7 @@ import {
 } from '@ores/wire-protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import type { LiveSession } from './sessions.js';
+import { FEED_BINDING_ENTITY, assertBindingVisible } from './bindings.js';
 import { SYNTHETIC_HISTORY_TYPES } from './synthetic.js';
 
 const codeSchema = z.string().trim().min(1).max(100);
@@ -342,6 +343,9 @@ export function registerClassificationRoutes(
         }
         if (!HISTORY_TYPES.has(query.data.entityType)) {
             throw notFound(`No history is served for ${query.data.entityType}.`);
+        }
+        if (query.data.entityType === FEED_BINDING_ENTITY) {
+            await assertBindingVisible(session, query.data.entityId);
         }
         return {
             versions: await readEntityHistory(

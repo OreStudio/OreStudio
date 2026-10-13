@@ -362,6 +362,60 @@ describe('deleting a binding', () => {
     });
 });
 
+describe('the history of a binding', () => {
+    const HISTORY = 'marketdata.v1.history.get';
+    const NAME = 'synthetic.bloomberg.audusd';
+    const url = `/api/history?entityType=ores.marketdata.feed_binding&entityId=${NAME}`;
+
+    it('is read for a binding of the session party, which is looked up by its exact name first', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [LIST]: { result: ok, feed_bindings: [binding()], total: 1 },
+            [HISTORY]: {
+                success: true,
+                versions: [{ version: 1, modified_by: 'op', recorded_at: 't1' }],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', url);
+        expect(response.statusCode).toBe(200);
+        expect(calls.map((c) => c.subject)).toEqual([LIST, HISTORY]);
+        expect(calls[0]?.body).toMatchObject({ filter: { party_id: PARTY, search: NAME } });
+    });
+
+    it('is refused as not found for a name the party does not hold, even when another name contains it, and reads no history', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [LIST]: { result: ok, feed_bindings: [binding({ source_name: `${NAME}2` })], total: 1 },
+        });
+        const response = await send(server, sessionId, 'GET', url);
+        expect(response.statusCode).toBe(404);
+        expect(calls.map((c) => c.subject)).toEqual([LIST]);
+    });
+});
+
+describe('a write that names a binding of another party', () => {
+    it('goes out as a new binding of the session party, which the server refuses as a key that exists', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [LIST]: { result: ok, feed_bindings: [], total: 0 },
+            [PUT]: {
+                result: { outcome: 'conflict', code: 'exists', message: 'The key exists.' },
+                feed_bindings: [],
+            },
+        });
+        const response = await send(server, sessionId, 'PUT', '/api/synthetic/feed-bindings', {
+            intent: INTENT,
+            changes: [
+                {
+                    write: { id: ID, source_name: 'synthetic.bloomberg.audusd', enabled: true },
+                    version: null,
+                },
+            ],
+        });
+        expect(response.statusCode).toBe(409);
+        expect(calls.find((c) => c.subject === PUT)?.body).toMatchObject({
+            changes: [{ write: { party_id: PARTY }, precondition: { kind: 'must_not_exist' } }],
+        });
+    });
+});
+
 describe('what each binding has written', () => {
     it('answers the series and last tick of each binding, and empty text for a silent source', async () => {
         const { server, sessionId } = buildTestServer({

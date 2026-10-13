@@ -31,8 +31,8 @@ import {
     subjects as operationSubjects,
     type ListFeedBindingActivityResponse,
 } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
-import { HttpFailure, invalidRequest, notPermitted } from './errors.js';
-import { idSchema } from './refdata-calls.js';
+import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
+import { NO_ORDER, idSchema, refusal, resultSchema } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 import type { SyntheticResource } from './synthetic.js';
 
@@ -77,6 +77,10 @@ async function complete(
     read: (id: string) => Promise<Record<string, unknown> | undefined>,
 ): Promise<Record<string, unknown>> {
     const stated = writes.parse(write);
+    // The read is scoped to the session's party, so an id of another party's binding reads
+    // as no binding and the write goes out as a new one, which the server refuses as a
+    // key that exists. Between this read and the save a row may change; the version of an
+    // edit and the must-not-exist of a create are what the server decides on.
     const existing = await read(stated.id);
     if (existing !== undefined && existing['producer_kind'] !== SYNTHETIC) {
         throw notPermitted(
@@ -118,6 +122,47 @@ export const FEED_BINDINGS_RESOURCE: SyntheticResource = {
     writes,
     complete,
 };
+
+/** The entity type of a binding's history, which only the party that owns the binding may read. */
+export const FEED_BINDING_ENTITY = FEED_BINDINGS_RESOURCE.entityType;
+
+/**
+ * Refuses the history of a binding the session's party does not own.
+ *
+ * The history of a binding is read by its source name, which every party of a tenant may
+ * hold, and the history store is isolated by tenant alone. So the binding is looked up
+ * first, as the session's party and by that exact name, and a name the party does not
+ * hold has no history to show.
+ */
+export async function assertBindingVisible(
+    session: LiveSession,
+    sourceName: string,
+): Promise<void> {
+    const reply = await session.client.callAuthenticated(
+        subjects.list_feed_bindings_request,
+        {
+            offset: 0,
+            limit: 100,
+            order: NO_ORDER,
+            filter: {
+                ...FEED_BINDINGS_RESOURCE.filter,
+                party_id: partyOf(session),
+                search: sourceName,
+            },
+            as_of: null,
+        },
+        z.looseObject({
+            result: resultSchema,
+            feed_bindings: z.array(z.looseObject({ source_name: z.string() })).default([]),
+        }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    if (!reply.feed_bindings.some((found) => found.source_name === sourceName)) {
+        throw notFound('There is no such binding for this party.');
+    }
+}
 
 const activityReply = feedBindingActivityListSchema.extend({
     success: z.boolean().default(false),

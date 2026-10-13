@@ -132,7 +132,8 @@ export interface SyntheticResource {
     readonly oneOf: 'id_one_of' | 'code_one_of';
     /**
      * The field the server's removal names the row by, when it is not the key field the
-     * browser addresses the row by. The route reads the row and names it by this field.
+     * browser addresses the row by. The route reads the row and names it by this field,
+     * so a deletion of a row that does not exist is a 404 and not an unconditional no-op.
      */
     readonly removalKey?: string;
     /**

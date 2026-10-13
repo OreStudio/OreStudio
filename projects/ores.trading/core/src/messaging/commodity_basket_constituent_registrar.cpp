@@ -84,6 +84,12 @@ std::vector<ores::nats::service::subscription> register_commodity_basket_constit
                                  h->delete_many_commodity_basket_constituents(std::move(msg));
                              }));
     subs.push_back(
+        nats.queue_subscribe(list_by_trade_id_commodity_basket_constituents_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_trade_id_commodity_basket_constituents(std::move(msg));
+                             }));
+    subs.push_back(
         nats.queue_subscribe(list_commodity_basket_constituent_versions_request::nats_subject,
                              queue_group,
                              [h](ores::nats::message msg) {

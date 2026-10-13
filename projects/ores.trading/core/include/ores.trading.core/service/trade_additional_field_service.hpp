@@ -90,6 +90,9 @@ public:
     delete_trade_additional_field(const messaging::delete_trade_additional_field_request& request);
     messaging::delete_many_trade_additional_fields_response delete_many_trade_additional_fields(
         const messaging::delete_many_trade_additional_fields_request& request);
+    messaging::list_by_trade_id_trade_additional_fields_response
+    list_by_trade_id_trade_additional_fields(
+        const messaging::list_by_trade_id_trade_additional_fields_request& request);
     messaging::list_trade_additional_field_versions_response list_trade_additional_field_versions(
         const messaging::list_trade_additional_field_versions_request& request);
     messaging::get_trade_additional_field_version_response get_trade_additional_field_version(
@@ -112,6 +115,26 @@ public:
      * @return Total number of active trade additional fields.
      */
     std::uint32_t count_trade_additional_fields();
+
+
+    /**
+     * @brief Lists trade additional fields filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching trade additional fields for the requested page.
+     */
+    std::vector<domain::trade_additional_field> list_trade_additional_fields_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active trade additional fields filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching trade additional fields.
+     */
+    std::uint32_t count_trade_additional_fields_by_trade_id(const std::string& trade_id);
 
 
     /**

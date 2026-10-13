@@ -97,6 +97,10 @@ public:
     messaging::delete_many_balance_guaranteed_swap_tranche_notionals_response
     delete_many_balance_guaranteed_swap_tranche_notionals(
         const messaging::delete_many_balance_guaranteed_swap_tranche_notionals_request& request);
+    messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response
+    list_by_trade_id_balance_guaranteed_swap_tranche_notionals(
+        const messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request&
+            request);
     messaging::list_balance_guaranteed_swap_tranche_notional_versions_response
     list_balance_guaranteed_swap_tranche_notional_versions(
         const messaging::list_balance_guaranteed_swap_tranche_notional_versions_request& request);
@@ -121,6 +125,30 @@ public:
      * @return Total number of active balance guaranteed swap tranche notionals.
      */
     std::uint32_t count_balance_guaranteed_swap_tranche_notionals();
+
+
+    /**
+     * @brief Lists balance guaranteed swap tranche notionals filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching balance guaranteed swap tranche notionals for the requested page.
+     */
+    std::vector<domain::balance_guaranteed_swap_tranche_notional>
+    list_balance_guaranteed_swap_tranche_notionals_by_trade_id(const std::string& trade_id,
+                                                               std::uint32_t offset,
+                                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active balance guaranteed swap tranche notionals filtered by
+     * trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching balance guaranteed swap tranche notionals.
+     */
+    std::uint32_t
+    count_balance_guaranteed_swap_tranche_notionals_by_trade_id(const std::string& trade_id);
 
 
     /**

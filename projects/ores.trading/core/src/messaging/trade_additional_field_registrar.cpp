@@ -77,6 +77,12 @@ std::vector<ores::nats::service::subscription> register_trade_additional_field_h
         delete_many_trade_additional_fields_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_trade_additional_fields(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_trade_id_trade_additional_fields_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_trade_id_trade_additional_fields(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
         list_trade_additional_field_versions_request::nats_subject,
         queue_group,

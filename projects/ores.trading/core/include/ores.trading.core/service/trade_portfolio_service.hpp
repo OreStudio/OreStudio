@@ -89,6 +89,8 @@ public:
     delete_trade_portfolio(const messaging::delete_trade_portfolio_request& request);
     messaging::delete_many_trade_portfolios_response
     delete_many_trade_portfolios(const messaging::delete_many_trade_portfolios_request& request);
+    messaging::list_by_trade_id_trade_portfolios_response list_by_trade_id_trade_portfolios(
+        const messaging::list_by_trade_id_trade_portfolios_request& request);
     messaging::list_trade_portfolio_versions_response
     list_trade_portfolio_versions(const messaging::list_trade_portfolio_versions_request& request);
     messaging::get_trade_portfolio_version_response
@@ -111,6 +113,26 @@ public:
      * @return Total number of active trade portfolios.
      */
     std::uint32_t count_trade_portfolios();
+
+
+    /**
+     * @brief Lists trade portfolios filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching trade portfolios for the requested page.
+     */
+    std::vector<domain::trade_portfolio> list_trade_portfolios_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active trade portfolios filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching trade portfolios.
+     */
+    std::uint32_t count_trade_portfolios_by_trade_id(const std::string& trade_id);
 
 
     /**

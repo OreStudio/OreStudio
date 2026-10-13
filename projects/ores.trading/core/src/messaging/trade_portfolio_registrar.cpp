@@ -77,6 +77,10 @@ register_trade_portfolio_handlers(ores::nats::service::client& nats,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_trade_portfolios(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        list_by_trade_id_trade_portfolios_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_trade_id_trade_portfolios(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_trade_portfolio_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_trade_portfolio_versions(std::move(msg)); }));

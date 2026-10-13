@@ -62,6 +62,11 @@ struct callable_swap_call_date_lookup {
     std::optional<ores::trading::domain::callable_swap_call_date> callable_swap_call_date;
 };
 
+struct callable_swap_call_dates_filter {
+    std::optional<boost::uuids::uuid> trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct callable_swap_call_date_event {
     boost::uuids::uuid event_id;
     callable_swap_call_date_key key;
@@ -95,6 +100,7 @@ struct list_callable_swap_call_dates_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<callable_swap_call_dates_filter> filter;
     std::optional<std::string> as_of;
 };
 
@@ -213,6 +219,31 @@ struct delete_many_callable_swap_call_dates_request {
 
 struct delete_many_callable_swap_call_dates_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_trade_id_callable_swap_call_dates_request {
+    using response_type = struct list_by_trade_id_callable_swap_call_dates_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.callable_swap_call_dates.list_by_trade_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid trade_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<callable_swap_call_dates_filter> filter;
+};
+
+struct list_by_trade_id_callable_swap_call_dates_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::callable_swap_call_date> callable_swap_call_dates;
+    std::uint64_t total;
 };
 
 struct list_callable_swap_call_date_versions_request {

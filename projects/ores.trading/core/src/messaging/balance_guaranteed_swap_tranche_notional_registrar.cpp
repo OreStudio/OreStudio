@@ -93,6 +93,12 @@ register_balance_guaranteed_swap_tranche_notional_handlers(
             h->delete_many_balance_guaranteed_swap_tranche_notionals(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->list_by_trade_id_balance_guaranteed_swap_tranche_notionals(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         list_balance_guaranteed_swap_tranche_notional_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) {

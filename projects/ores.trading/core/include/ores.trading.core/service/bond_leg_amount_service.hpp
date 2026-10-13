@@ -89,6 +89,8 @@ public:
     delete_bond_leg_amount(const messaging::delete_bond_leg_amount_request& request);
     messaging::delete_many_bond_leg_amounts_response
     delete_many_bond_leg_amounts(const messaging::delete_many_bond_leg_amounts_request& request);
+    messaging::list_by_trade_id_bond_leg_amounts_response list_by_trade_id_bond_leg_amounts(
+        const messaging::list_by_trade_id_bond_leg_amounts_request& request);
     messaging::list_bond_leg_amount_versions_response
     list_bond_leg_amount_versions(const messaging::list_bond_leg_amount_versions_request& request);
     messaging::get_bond_leg_amount_version_response
@@ -111,6 +113,26 @@ public:
      * @return Total number of active bond leg amounts.
      */
     std::uint32_t count_bond_leg_amounts();
+
+
+    /**
+     * @brief Lists bond leg amounts filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching bond leg amounts for the requested page.
+     */
+    std::vector<domain::bond_leg_amount> list_bond_leg_amounts_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active bond leg amounts filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching bond leg amounts.
+     */
+    std::uint32_t count_bond_leg_amounts_by_trade_id(const std::string& trade_id);
 
 
     /**

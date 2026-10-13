@@ -134,6 +134,7 @@ ores::utility::decimal::decimal::from_string("0.05").value()
 :target_column: id
 :nullable:      false
 :error_message: Invalid trade_id: %. Trade must exist for tenant.
+:list_by:  true
 :END:
 
 The trade that carries this leg.

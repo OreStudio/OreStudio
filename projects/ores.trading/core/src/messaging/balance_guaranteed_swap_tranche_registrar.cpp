@@ -87,6 +87,12 @@ std::vector<ores::nats::service::subscription> register_balance_guaranteed_swap_
                              [h](ores::nats::message msg) {
                                  h->delete_many_balance_guaranteed_swap_tranches(std::move(msg));
                              }));
+    subs.push_back(nats.queue_subscribe(
+        list_by_trade_id_balance_guaranteed_swap_tranches_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->list_by_trade_id_balance_guaranteed_swap_tranches(std::move(msg));
+        }));
     subs.push_back(
         nats.queue_subscribe(list_balance_guaranteed_swap_tranche_versions_request::nats_subject,
                              queue_group,

@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface SwapLegAmountKey {
     trade_id: string;
@@ -58,6 +59,11 @@ export interface SwapLegAmountLookup {
     swap_leg_amount: SwapLegAmount | null;
 }
 
+export interface SwapLegAmountsFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface SwapLegAmountEvent {
     event_id: string;
     key: SwapLegAmountKey;
@@ -82,6 +88,7 @@ export interface ListSwapLegAmountsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SwapLegAmountsFilter | null;
     as_of: string | null;
 }
 
@@ -147,6 +154,21 @@ export interface DeleteManySwapLegAmountsResponse {
     result: Result;
 }
 
+export interface ListByTradeIdSwapLegAmountsRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: SwapLegAmountsFilter | null;
+}
+
+export interface ListByTradeIdSwapLegAmountsResponse {
+    result: Result;
+    swap_leg_amounts: SwapLegAmount[];
+    total: number;
+}
+
 export interface ListSwapLegAmountVersionsRequest {
     key: SwapLegAmountKey;
     offset: number;
@@ -178,6 +200,7 @@ export const subjects = {
     put_many_swap_leg_amounts_request: 'trading.v1.swap_leg_amounts.put_many',
     delete_swap_leg_amount_request: 'trading.v1.swap_leg_amounts.delete',
     delete_many_swap_leg_amounts_request: 'trading.v1.swap_leg_amounts.delete_many',
+    list_by_trade_id_swap_leg_amounts_request: 'trading.v1.swap_leg_amounts.list_by_trade_id',
     list_swap_leg_amount_versions_request: 'trading.v1.swap_leg_amounts_versions.list',
     get_swap_leg_amount_version_request: 'trading.v1.swap_leg_amounts_versions.get',
 } as const;
@@ -194,6 +217,7 @@ export const requiresSession = {
     put_many_swap_leg_amounts_request: true,
     delete_swap_leg_amount_request: true,
     delete_many_swap_leg_amounts_request: true,
+    list_by_trade_id_swap_leg_amounts_request: true,
     list_swap_leg_amount_versions_request: true,
     get_swap_leg_amount_version_request: true,
 } as const;

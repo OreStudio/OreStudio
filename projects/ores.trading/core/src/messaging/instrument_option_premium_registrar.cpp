@@ -80,6 +80,12 @@ std::vector<ores::nats::service::subscription> register_instrument_option_premiu
                                  h->delete_many_instrument_option_premiums(std::move(msg));
                              }));
     subs.push_back(
+        nats.queue_subscribe(list_by_trade_id_instrument_option_premiums_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_trade_id_instrument_option_premiums(std::move(msg));
+                             }));
+    subs.push_back(
         nats.queue_subscribe(list_instrument_option_premium_versions_request::nats_subject,
                              queue_group,
                              [h](ores::nats::message msg) {

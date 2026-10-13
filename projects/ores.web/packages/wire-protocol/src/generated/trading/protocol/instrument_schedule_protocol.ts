@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface InstrumentScheduleKey {
     trade_id: string;
@@ -76,6 +77,11 @@ export interface InstrumentScheduleLookup {
     instrument_schedule: InstrumentSchedule | null;
 }
 
+export interface InstrumentSchedulesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface InstrumentScheduleEvent {
     event_id: string;
     key: InstrumentScheduleKey;
@@ -100,6 +106,7 @@ export interface ListInstrumentSchedulesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InstrumentSchedulesFilter | null;
     as_of: string | null;
 }
 
@@ -165,6 +172,21 @@ export interface DeleteManyInstrumentSchedulesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdInstrumentSchedulesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: InstrumentSchedulesFilter | null;
+}
+
+export interface ListByTradeIdInstrumentSchedulesResponse {
+    result: Result;
+    instrument_schedules: InstrumentSchedule[];
+    total: number;
+}
+
 export interface ListInstrumentScheduleVersionsRequest {
     key: InstrumentScheduleKey;
     offset: number;
@@ -196,6 +218,8 @@ export const subjects = {
     put_many_instrument_schedules_request: 'trading.v1.instrument_schedules.put_many',
     delete_instrument_schedule_request: 'trading.v1.instrument_schedules.delete',
     delete_many_instrument_schedules_request: 'trading.v1.instrument_schedules.delete_many',
+    list_by_trade_id_instrument_schedules_request:
+        'trading.v1.instrument_schedules.list_by_trade_id',
     list_instrument_schedule_versions_request: 'trading.v1.instrument_schedules_versions.list',
     get_instrument_schedule_version_request: 'trading.v1.instrument_schedules_versions.get',
 } as const;
@@ -212,6 +236,7 @@ export const requiresSession = {
     put_many_instrument_schedules_request: true,
     delete_instrument_schedule_request: true,
     delete_many_instrument_schedules_request: true,
+    list_by_trade_id_instrument_schedules_request: true,
     list_instrument_schedule_versions_request: true,
     get_instrument_schedule_version_request: true,
 } as const;

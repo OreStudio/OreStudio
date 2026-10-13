@@ -25,11 +25,13 @@
 #include "ores.trading.core/repository/trade_portfolio_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_portfolio.hpp"
 #include "ores.trading.api/domain/trade_portfolio_json_io.hpp" // IWYU pragma: keep.
+#include "ores.trading.api/messaging/trade_portfolio_protocol.hpp"
 #include "ores.trading.core/repository/trade_portfolio_entity.hpp"
 #include "ores.trading.core/repository/trade_portfolio_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -42,7 +44,9 @@
 #include <optional>
 #include <set>
 #include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
 #include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
 #include <sqlgen/limit.hpp>
 #include <sqlgen/literals.hpp>
 #include <sqlgen/offset.hpp>
@@ -90,6 +94,26 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
         throw std::invalid_argument("A list of trade portfolios cannot be ordered by " +
                                     order.field + ".");
     return make_order({order.field}, order.descending, {"trade_id", "sequence_number"});
+}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::trade_portfolios_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->trade_id)
+        r.push_back(equals("trade_id", filter_value(*filter->trade_id)));
+    if (filter->trade_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->trade_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("trade_id", std::move(values)));
+    }
+    return all_of(std::move(r));
 }
 
 }
@@ -247,6 +271,49 @@ trade_portfolio_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest_by_trade_id(
+    context ctx,
+    const std::string& trade_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::trade_portfolios_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade portfolios. trade_id: " << trade_id
+                               << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<trade_portfolio_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
+        sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_ordered_read_query<trade_portfolio_entity, domain::trade_portfolio>(
+        ctx,
+        query,
+        list_order(order, {"trade_id", "sequence_number"}, false),
+        filter_condition(filter),
+        [](const auto& entities) { return trade_portfolio_mapper::map(entities); },
+        lg(),
+        "Reading latest trade portfolios by trade_id.");
+}
+
+std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count_by_trade_id(
+    context ctx,
+    const std::string& trade_id,
+    const std::optional<messaging::trade_portfolios_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade portfolios count. trade_id: "
+                               << trade_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<trade_portfolio_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
+
+    return execute_count_query<trade_portfolio_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting trade portfolios by trade_id");
+}
+
 
 trade_portfolio_repository::remove_status
 trade_portfolio_repository::remove(context ctx,
@@ -288,12 +355,13 @@ void trade_portfolio_repository::remove(context ctx,
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
-std::vector<domain::trade_portfolio>
-trade_portfolio_repository::read_latest(context ctx,
-                                        std::uint32_t offset,
-                                        std::uint32_t limit,
-                                        const ores::utility::domain::order& order,
-                                        const std::optional<std::string>& as_of) {
+std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::trade_portfolios_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade portfolios with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
@@ -304,14 +372,16 @@ trade_portfolio_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), std::nullopt),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return trade_portfolio_mapper::map(entities); },
         lg(),
         "Reading latest trade portfolios with pagination.");
 }
 
 std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    context ctx,
+    const std::optional<messaging::trade_portfolios_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade portfolio count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -319,7 +389,11 @@ std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count(
         sqlgen::read<std::vector<trade_portfolio_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<trade_portfolio_entity>(
-        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting trade portfolios");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting trade portfolios");
 }
 
 std::vector<domain::trade_portfolio>

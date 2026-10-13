@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
+#include "ores.trading.api/messaging/callable_swap_call_date_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -132,6 +133,30 @@ public:
                     const std::string& sequence_number,
                     std::uint32_t version);
 
+    /**
+     * @brief Reads latest callable swap call dates filtered by trade_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param trade_id The trade_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::callable_swap_call_date> read_latest_by_trade_id(
+        context ctx,
+        const std::string& trade_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::callable_swap_call_dates_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active callable swap call dates filtered by trade_id.
+     */
+    std::uint32_t get_total_callable_swap_call_date_count_by_trade_id(
+        context ctx,
+        const std::string& trade_id,
+        const std::optional<messaging::callable_swap_call_dates_filter>& filter = std::nullopt);
+
 
     /**
      * @brief Whether a list of callable swap call dates can be ordered by a field.
@@ -149,21 +174,23 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::callable_swap_call_date>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {},
-                const std::optional<std::string>& as_of = std::nullopt);
+    std::vector<domain::callable_swap_call_date> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::callable_swap_call_dates_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active callable swap call dates.
      * @param ctx Repository context with database connection
      * @return Total number of active callable swap call dates
      */
-    std::uint32_t
-    get_total_callable_swap_call_date_count(context ctx,
-                                            const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t get_total_callable_swap_call_date_count(
+        context ctx,
+        const std::optional<messaging::callable_swap_call_dates_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a callable swap call date by closing its temporal validity.

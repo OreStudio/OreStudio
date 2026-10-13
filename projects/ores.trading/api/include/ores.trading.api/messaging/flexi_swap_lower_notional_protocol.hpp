@@ -65,6 +65,11 @@ struct flexi_swap_lower_notional_lookup {
     std::optional<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notional;
 };
 
+struct flexi_swap_lower_notionals_filter {
+    std::optional<boost::uuids::uuid> trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct flexi_swap_lower_notional_event {
     boost::uuids::uuid event_id;
     flexi_swap_lower_notional_key key;
@@ -98,6 +103,7 @@ struct list_flexi_swap_lower_notionals_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<flexi_swap_lower_notionals_filter> filter;
     std::optional<std::string> as_of;
 };
 
@@ -218,6 +224,31 @@ struct delete_many_flexi_swap_lower_notionals_request {
 
 struct delete_many_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_trade_id_flexi_swap_lower_notionals_request {
+    using response_type = struct list_by_trade_id_flexi_swap_lower_notionals_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.flexi_swap_lower_notionals.list_by_trade_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid trade_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<flexi_swap_lower_notionals_filter> filter;
+};
+
+struct list_by_trade_id_flexi_swap_lower_notionals_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notionals;
+    std::uint64_t total;
 };
 
 struct list_flexi_swap_lower_notional_versions_request {

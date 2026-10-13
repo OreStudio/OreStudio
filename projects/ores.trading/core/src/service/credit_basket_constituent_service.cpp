@@ -129,6 +129,12 @@ credit_basket_constituent_service::list_credit_basket_constituents(
                    {.entity = "credit basket constituents", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -140,9 +146,39 @@ credit_basket_constituent_service::list_credit_basket_constituents(
             return response;
         }
     }
-    response.credit_basket_constituents =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_credit_basket_constituent_count(ctx_, as_of);
+    response.credit_basket_constituents = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_credit_basket_constituent_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_trade_id_credit_basket_constituents_response
+credit_basket_constituent_service::list_by_trade_id_credit_basket_constituents(
+    const messaging::list_by_trade_id_credit_basket_constituents_request& request) {
+    messaging::list_by_trade_id_credit_basket_constituents_response response;
+    if (!request.order.field.empty() &&
+        !repository::credit_basket_constituent_repository::is_sortable(request.order.field)) {
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "credit basket constituents", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result =
+            refuse(outcome_code::scope_not_supported, {.entity = "credit basket constituents"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.trade_id);
+    response.credit_basket_constituents = repo_.read_latest_by_trade_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_credit_basket_constituent_count_by_trade_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -409,6 +445,21 @@ credit_basket_constituent_service::list_credit_basket_constituents(std::uint32_t
 std::uint32_t credit_basket_constituent_service::count_credit_basket_constituents() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total credit basket constituents count";
     return repo_.get_total_credit_basket_constituent_count(ctx_);
+}
+
+
+std::vector<domain::credit_basket_constituent>
+credit_basket_constituent_service::list_credit_basket_constituents_by_trade_id(
+    const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing credit basket constituents by trade_id: " << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
+}
+
+std::uint32_t credit_basket_constituent_service::count_credit_basket_constituents_by_trade_id(
+    const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total credit basket constituents count by trade_id: "
+                               << trade_id;
+    return repo_.get_total_credit_basket_constituent_count_by_trade_id(ctx_, trade_id);
 }
 
 

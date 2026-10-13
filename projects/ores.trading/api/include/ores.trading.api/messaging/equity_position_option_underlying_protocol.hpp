@@ -69,6 +69,11 @@ struct equity_position_option_underlying_lookup {
         equity_position_option_underlying;
 };
 
+struct equity_position_option_underlyings_filter {
+    std::optional<boost::uuids::uuid> trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct equity_position_option_underlying_event {
     boost::uuids::uuid event_id;
     equity_position_option_underlying_key key;
@@ -103,6 +108,7 @@ struct list_equity_position_option_underlyings_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<equity_position_option_underlyings_filter> filter;
     std::optional<std::string> as_of;
 };
 
@@ -230,6 +236,32 @@ struct delete_many_equity_position_option_underlyings_request {
 
 struct delete_many_equity_position_option_underlyings_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_trade_id_equity_position_option_underlyings_request {
+    using response_type = struct list_by_trade_id_equity_position_option_underlyings_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_position_option_underlyings.list_by_trade_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid trade_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<equity_position_option_underlyings_filter> filter;
+};
+
+struct list_by_trade_id_equity_position_option_underlyings_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::equity_position_option_underlying>
+        equity_position_option_underlyings;
+    std::uint64_t total;
 };
 
 struct list_equity_position_option_underlying_versions_request {

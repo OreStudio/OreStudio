@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface InstrumentOptionExerciseFeeKey {
     trade_id: string;
@@ -58,6 +59,11 @@ export interface InstrumentOptionExerciseFeeLookup {
     instrument_option_exercise_fee: InstrumentOptionExerciseFee | null;
 }
 
+export interface InstrumentOptionExerciseFeesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface InstrumentOptionExerciseFeeEvent {
     event_id: string;
     key: InstrumentOptionExerciseFeeKey;
@@ -82,6 +88,7 @@ export interface ListInstrumentOptionExerciseFeesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InstrumentOptionExerciseFeesFilter | null;
     as_of: string | null;
 }
 
@@ -147,6 +154,21 @@ export interface DeleteManyInstrumentOptionExerciseFeesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdInstrumentOptionExerciseFeesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: InstrumentOptionExerciseFeesFilter | null;
+}
+
+export interface ListByTradeIdInstrumentOptionExerciseFeesResponse {
+    result: Result;
+    exercise_fees: InstrumentOptionExerciseFee[];
+    total: number;
+}
+
 export interface ListInstrumentOptionExerciseFeeVersionsRequest {
     key: InstrumentOptionExerciseFeeKey;
     offset: number;
@@ -182,6 +204,8 @@ export const subjects = {
         'trading.v1.instrument_option_exercise_fees.delete',
     delete_many_instrument_option_exercise_fees_request:
         'trading.v1.instrument_option_exercise_fees.delete_many',
+    list_by_trade_id_instrument_option_exercise_fees_request:
+        'trading.v1.instrument_option_exercise_fees.list_by_trade_id',
     list_instrument_option_exercise_fee_versions_request:
         'trading.v1.instrument_option_exercise_fees_versions.list',
     get_instrument_option_exercise_fee_version_request:
@@ -200,6 +224,7 @@ export const requiresSession = {
     put_many_instrument_option_exercise_fees_request: true,
     delete_instrument_option_exercise_fee_request: true,
     delete_many_instrument_option_exercise_fees_request: true,
+    list_by_trade_id_instrument_option_exercise_fees_request: true,
     list_instrument_option_exercise_fee_versions_request: true,
     get_instrument_option_exercise_fee_version_request: true,
 } as const;

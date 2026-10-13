@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface InstrumentOptionPaymentDateKey {
     trade_id: string;
@@ -55,6 +56,11 @@ export interface InstrumentOptionPaymentDateLookup {
     instrument_option_payment_date: InstrumentOptionPaymentDate | null;
 }
 
+export interface InstrumentOptionPaymentDatesFilter {
+    trade_id: string | null;
+    trade_id_one_of: string[] | null;
+}
+
 export interface InstrumentOptionPaymentDateEvent {
     event_id: string;
     key: InstrumentOptionPaymentDateKey;
@@ -79,6 +85,7 @@ export interface ListInstrumentOptionPaymentDatesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InstrumentOptionPaymentDatesFilter | null;
     as_of: string | null;
 }
 
@@ -144,6 +151,21 @@ export interface DeleteManyInstrumentOptionPaymentDatesResponse {
     result: Result;
 }
 
+export interface ListByTradeIdInstrumentOptionPaymentDatesRequest {
+    trade_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: InstrumentOptionPaymentDatesFilter | null;
+}
+
+export interface ListByTradeIdInstrumentOptionPaymentDatesResponse {
+    result: Result;
+    option_payment_dates: InstrumentOptionPaymentDate[];
+    total: number;
+}
+
 export interface ListInstrumentOptionPaymentDateVersionsRequest {
     key: InstrumentOptionPaymentDateKey;
     offset: number;
@@ -179,6 +201,8 @@ export const subjects = {
         'trading.v1.instrument_option_payment_dates.delete',
     delete_many_instrument_option_payment_dates_request:
         'trading.v1.instrument_option_payment_dates.delete_many',
+    list_by_trade_id_instrument_option_payment_dates_request:
+        'trading.v1.instrument_option_payment_dates.list_by_trade_id',
     list_instrument_option_payment_date_versions_request:
         'trading.v1.instrument_option_payment_dates_versions.list',
     get_instrument_option_payment_date_version_request:
@@ -197,6 +221,7 @@ export const requiresSession = {
     put_many_instrument_option_payment_dates_request: true,
     delete_instrument_option_payment_date_request: true,
     delete_many_instrument_option_payment_dates_request: true,
+    list_by_trade_id_instrument_option_payment_dates_request: true,
     list_instrument_option_payment_date_versions_request: true,
     get_instrument_option_payment_date_version_request: true,
 } as const;

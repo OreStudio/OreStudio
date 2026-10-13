@@ -146,6 +146,12 @@ instrument_schedule_service::list_instrument_schedules(
                                  {.entity = "instrument schedules", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -157,9 +163,38 @@ instrument_schedule_service::list_instrument_schedules(
             return response;
         }
     }
-    response.instrument_schedules =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_instrument_schedule_count(ctx_, as_of);
+    response.instrument_schedules = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_instrument_schedule_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_trade_id_instrument_schedules_response
+instrument_schedule_service::list_by_trade_id_instrument_schedules(
+    const messaging::list_by_trade_id_instrument_schedules_request& request) {
+    messaging::list_by_trade_id_instrument_schedules_response response;
+    if (!request.order.field.empty() &&
+        !repository::instrument_schedule_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "instrument schedules", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result =
+            refuse(outcome_code::scope_not_supported, {.entity = "instrument schedules"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.trade_id);
+    response.instrument_schedules = repo_.read_latest_by_trade_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_instrument_schedule_count_by_trade_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -447,6 +482,22 @@ instrument_schedule_service::list_instrument_schedules(std::uint32_t offset, std
 std::uint32_t instrument_schedule_service::count_instrument_schedules() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total instrument schedules count";
     return repo_.get_total_instrument_schedule_count(ctx_);
+}
+
+
+std::vector<domain::instrument_schedule>
+instrument_schedule_service::list_instrument_schedules_by_trade_id(const std::string& trade_id,
+                                                                   std::uint32_t offset,
+                                                                   std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing instrument schedules by trade_id: " << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
+}
+
+std::uint32_t
+instrument_schedule_service::count_instrument_schedules_by_trade_id(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument schedules count by trade_id: "
+                               << trade_id;
+    return repo_.get_total_instrument_schedule_count_by_trade_id(ctx_, trade_id);
 }
 
 

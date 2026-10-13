@@ -95,6 +95,9 @@ public:
     messaging::delete_many_instrument_option_exercise_prices_response
     delete_many_instrument_option_exercise_prices(
         const messaging::delete_many_instrument_option_exercise_prices_request& request);
+    messaging::list_by_trade_id_instrument_option_exercise_prices_response
+    list_by_trade_id_instrument_option_exercise_prices(
+        const messaging::list_by_trade_id_instrument_option_exercise_prices_request& request);
     messaging::list_instrument_option_exercise_price_versions_response
     list_instrument_option_exercise_price_versions(
         const messaging::list_instrument_option_exercise_price_versions_request& request);
@@ -119,6 +122,26 @@ public:
      * @return Total number of active instrument option exercise prices.
      */
     std::uint32_t count_exercise_prices();
+
+
+    /**
+     * @brief Lists instrument option exercise prices filtered by trade_id, with pagination.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching instrument option exercise prices for the requested page.
+     */
+    std::vector<domain::instrument_option_exercise_price> list_exercise_prices_by_trade_id(
+        const std::string& trade_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active instrument option exercise prices filtered by trade_id.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @return Total number of matching instrument option exercise prices.
+     */
+    std::uint32_t count_exercise_prices_by_trade_id(const std::string& trade_id);
 
 
     /**

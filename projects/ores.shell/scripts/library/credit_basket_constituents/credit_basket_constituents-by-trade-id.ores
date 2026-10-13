@@ -1,0 +1,6 @@
+# =by-trade-id=
+#
+# GENERATED from doc/recipes/shell/credit_basket_constituents/credit_basket_constituent.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+credit_basket_constituents by-trade-id 00000000-0000-0000-0000-000000000000 --limit 1

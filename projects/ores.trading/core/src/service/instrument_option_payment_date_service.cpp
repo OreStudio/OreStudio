@@ -125,6 +125,12 @@ instrument_option_payment_date_service::list_instrument_option_payment_dates(
                    {.entity = "instrument option payment dates", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -136,9 +142,39 @@ instrument_option_payment_date_service::list_instrument_option_payment_dates(
             return response;
         }
     }
-    response.option_payment_dates =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_option_payment_date_count(ctx_, as_of);
+    response.option_payment_dates = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_option_payment_date_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_trade_id_instrument_option_payment_dates_response
+instrument_option_payment_date_service::list_by_trade_id_instrument_option_payment_dates(
+    const messaging::list_by_trade_id_instrument_option_payment_dates_request& request) {
+    messaging::list_by_trade_id_instrument_option_payment_dates_response response;
+    if (!request.order.field.empty() &&
+        !repository::instrument_option_payment_date_repository::is_sortable(request.order.field)) {
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "instrument option payment dates", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported,
+                                 {.entity = "instrument option payment dates"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.trade_id);
+    response.option_payment_dates = repo_.read_latest_by_trade_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_option_payment_date_count_by_trade_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -408,6 +444,22 @@ instrument_option_payment_date_service::list_option_payment_dates(std::uint32_t 
 std::uint32_t instrument_option_payment_date_service::count_option_payment_dates() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total instrument option payment dates count";
     return repo_.get_total_option_payment_date_count(ctx_);
+}
+
+
+std::vector<domain::instrument_option_payment_date>
+instrument_option_payment_date_service::list_option_payment_dates_by_trade_id(
+    const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing instrument option payment dates by trade_id: "
+                               << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
+}
+
+std::uint32_t instrument_option_payment_date_service::count_option_payment_dates_by_trade_id(
+    const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting total instrument option payment dates count by trade_id: " << trade_id;
+    return repo_.get_total_option_payment_date_count_by_trade_id(ctx_, trade_id);
 }
 
 

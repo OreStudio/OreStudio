@@ -3736,6 +3736,9 @@ const fr: SourceCatalogue = {
                 stoppedCount: '{count} arrêtés',
                 bound: 'Lié',
                 sandboxed: 'Isolé',
+                system: 'Système',
+                systemNote:
+                    "Les flux de l'installation. Ils tournent une fois pour tous les locataires, et seul le locataire système les démarre et les arrête.",
                 openInTree: "Ouvrir dans l'arbre des flux",
                 assetClass: "Classe d'actifs",
             },

@@ -29,6 +29,8 @@ export interface ProviderEntry {
     readonly totals: Totals;
     /** Whether any of its collections is bound, so its ticks reach the parties that subscribe. */
     readonly bound: boolean;
+    /** Whether its collections are the installation's, which the system tenant alone runs. */
+    readonly system: boolean;
 }
 
 /** The providers of the given collections, in the order of their codes. */
@@ -47,6 +49,7 @@ export function providersOf(collections: readonly FeedFolder[]): readonly Provid
             collections: held,
             totals: totalsOf(held),
             bound: held.some((collection) => collection.binding_mode === 'bound'),
+            system: held.some((collection) => collection.scope === 'system'),
         }));
 }
 

@@ -20,6 +20,7 @@
 #include "../src/feed_config_handler.hpp"
 #include "../src/feed_controller.hpp"
 #include "../src/client_message.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "../src/feed_kind_registry.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "../src/simulate_handler.hpp"
@@ -219,10 +220,22 @@ ores::synthetic::service::feed_kind stub_kind(const std::string& permission) {
 // A registry over the stub factory and one in-memory container. The folder
 // subtree is the root plus everything under it, so the stub's in-folder row
 // matches and its out-of-folder row does not.
-std::shared_ptr<ores::synthetic::service::feed_kind_registry>
-make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
+std::map<boost::uuids::uuid, ores::synthetic::domain::market_data_generation_config>&
+stub_containers() {
     static std::map<boost::uuids::uuid, ores::synthetic::domain::market_data_generation_config>
         containers;
+    return containers;
+}
+
+// Moves the one container to another scope, as a system collection would be.
+void set_stub_scope(ores::synthetic::domain::scope scope) {
+    for (auto& [_, c] : stub_containers())
+        c.scope = scope;
+}
+
+std::shared_ptr<ores::synthetic::service::feed_kind_registry>
+make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
+    auto& containers = stub_containers();
     containers.clear();
     ores::synthetic::domain::market_data_generation_config container;
     container.id = uuid_of(stub_container);
@@ -241,6 +254,7 @@ make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
                 },
             .container_by_id =
                 [](const ores::database::context&, const boost::uuids::uuid& id) {
+                    const auto& containers = stub_containers();
                     const auto it = containers.find(id);
                     return it == containers.end() ?
                                std::nullopt :
@@ -251,7 +265,7 @@ make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
             .containers =
                 [](const ores::database::context&) {
                     std::vector<ores::synthetic::domain::market_data_generation_config> out;
-                    for (const auto& [_, c] : containers)
+                    for (const auto& [_, c] : stub_containers())
                         out.push_back(c);
                     return out;
                 }});
@@ -579,4 +593,45 @@ TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else", ta
     CHECK(fixed.find("password") == std::string::npos);
     CHECK_FALSE(fixed.empty());
     CHECK(client_message(std::out_of_range("vector::at")) == fixed);
+}
+
+TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", tags) {
+    stub_fixture f;
+    const auto start = [&] {
+        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
+    };
+    const auto stop = [&] {
+        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
+    };
+
+    // In a party collection the caller's tenant may start and stop the feed.
+    start();
+    REQUIRE(f.ctrl->running_count() == 1);
+
+    // Once the collection is a system collection, a tenant may no longer stop it ...
+    set_stub_scope(ores::synthetic::domain::scope::system);
+    stop();
+    CHECK(f.ctrl->running_count() == 1);
+    f.ctrl->stop();
+    CHECK(f.ctrl->running_count() == 0);
+
+    // ... and may not start it.
+    start();
+    CHECK(f.ctrl->running_count() == 0);
+
+    // Naming no feed would stop every feed the service runs, so a tenant may not ask for it.
+    set_stub_scope(ores::synthetic::domain::scope::party);
+    start();
+    REQUIRE(f.ctrl->running_count() == 1);
+    {
+        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        h.stop(request_message(stop_feed_request{}, f.token));
+    }
+    CHECK(f.ctrl->running_count() == 1);
+
+    // The system tenant itself is not refused.
+    CHECK(feed_kind_registry::is_system_caller(
+        ores::database::service::tenant_context::with_system_tenant(f.ctx)));
 }

@@ -34,8 +34,8 @@ namespace ores::synthetic::messaging {
 /**
  * @brief One folder of the feed hierarchy, with what runs under it.
  *
- * A collection folder also carries what the collection says: the provider it
- * stands for, and whether it is bound or sandboxed.
+ * A collection folder also carries what the collection says: its scope, the provider
+ * it stands for, and whether it is bound or sandboxed.
  */
 struct feed_folder {
     /** @brief The folder's id. */
@@ -46,6 +46,9 @@ struct feed_folder {
     std::string name;
     /** @brief What the folder is: root, collection, asset_class or instrument_type. */
     std::string kind;
+    /** @brief For a collection, who it belongs to: system for the installation's, tenant or party;
+     * empty otherwise. */
+    std::string scope;
     /** @brief For a collection, the provider it stands for; empty for any other folder. */
     std::string provider_code;
     /** @brief For a collection, bound or sandboxed; empty otherwise. */

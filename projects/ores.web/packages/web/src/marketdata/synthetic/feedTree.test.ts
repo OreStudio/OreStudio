@@ -51,6 +51,7 @@ function folder(
         parent_id: 'root',
         name,
         kind,
+        scope: provider === 'ore' ? 'party' : 'system',
         provider_code: provider,
         binding_mode: 'bound',
         fx_feeds: fx,

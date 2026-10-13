@@ -388,6 +388,10 @@ names one, so every feed has a provider. The ORE examples are the provider /ORE/
   this is the first thing the screen says. /Start them/ starts exactly those feeds; /Show
   them in the feed tree/ opens the tree on them.
 - The chosen provider has a panel with its asset classes and a link into the tree.
+- A provider whose feeds are the installation's, a system collection, wears a /System/ tag.
+  Its feeds run once for every tenant, and only the system tenant starts and stops them. A
+  start or a stop from another tenant skips them and says so, and the banner of feeds that
+  should run leaves them out.
 - The server counts. =synthetic.v1.ops.list_feed_folders= returns the children of one
   folder, or the roots, each with the feeds under it at any depth, how many run and how
   many are idle. The screen asks again every five seconds.

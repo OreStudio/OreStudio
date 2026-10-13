@@ -837,6 +837,7 @@ export function registerSyntheticRoutes(
                             parent_id: z.string(),
                             name: z.string(),
                             kind: z.string(),
+                            scope: z.string(),
                             provider_code: z.string(),
                             binding_mode: z.string(),
                             fx_feeds: z.int(),

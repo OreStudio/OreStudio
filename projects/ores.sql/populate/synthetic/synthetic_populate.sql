@@ -46,6 +46,9 @@
 \echo '--- Synthetic Feeds: Bloomberg ---'
 \ir ./synthetic_feeds_bloomberg_populate.sql
 
+\echo '--- Synthetic Feeds: Refinitiv, ICE, CME and Tradeweb ---'
+\ir ./synthetic_feeds_providers_populate.sql
+
 \echo '--- Dataset Dependencies (vintage-mode configs -> their real market data) ---'
 \ir ./synthetic_dataset_dependency_populate.sql
 

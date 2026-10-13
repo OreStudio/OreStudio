@@ -941,6 +941,7 @@ describe('synthetic operations', () => {
             parent_id: '',
             name: 'Synthetic',
             kind: 'root',
+            scope: '',
             provider_code: '',
             binding_mode: '',
             fx_feeds: 26,

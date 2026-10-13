@@ -82,7 +82,7 @@ ORES_SYNTHETIC_API_EXPORT std::string sql_literal(const std::string& text);
  * @brief A query that returns every feed of every kind, one row each.
  *
  * The columns are id, kind, label, source_name, oresmd_uri, folder_id, enabled,
- * auto_start, asset_class_code, ticks_per_hour, engine, underlying and provider_code.
+ * auto_start, asset_class_code, ticks_per_hour, engine, underlying, provider_code and scope.
  * It reads the rows the caller's session sees.
  */
 ORES_SYNTHETIC_API_EXPORT std::string feeds_query();
@@ -91,10 +91,13 @@ ORES_SYNTHETIC_API_EXPORT std::string feeds_query();
  * @brief The condition that picks the filter's feeds out of feeds_query().
  *
  * @p running names the source names of the feeds that run now; a state of started or
- * stopped is decided by them. The filter must pass filter_problem().
+ * stopped is decided by them. @p system_caller says whether the caller works in the system
+ * tenant: only it should run the system feeds, so the feeds that should run leave them out
+ * for every other caller. The filter must pass filter_problem().
  */
 ORES_SYNTHETIC_API_EXPORT std::string where_clause(const feed_filter& filter,
-                                                   const std::vector<std::string>& running);
+                                                   const std::vector<std::string>& running,
+                                                   bool system_caller);
 
 }
 

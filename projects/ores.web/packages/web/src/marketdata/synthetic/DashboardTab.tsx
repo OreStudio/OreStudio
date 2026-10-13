@@ -202,6 +202,17 @@ export function DashboardTab(): ReactNode {
                                         <span className="font-medium">
                                             {providerName(entry.code, facts)}
                                         </span>{' '}
+                                        {entry.system && (
+                                            <span
+                                                title={t(
+                                                    'marketdata.synthetic.dashboard.systemNote',
+                                                )}
+                                            >
+                                                <Tag tone="accent">
+                                                    {t('marketdata.synthetic.dashboard.system')}
+                                                </Tag>
+                                            </span>
+                                        )}{' '}
                                         {facts.has(entry.code) && (
                                             <Tag tone="muted">
                                                 {t(

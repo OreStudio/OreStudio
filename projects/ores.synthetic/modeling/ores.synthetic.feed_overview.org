@@ -34,8 +34,8 @@ Nothing is stored.
 /**
  * @brief One folder of the feed hierarchy, with what runs under it.
  *
- * A collection folder also carries what the collection says: the provider it
- * stands for, and whether it is bound or sandboxed.
+ * A collection folder also carries what the collection says: its scope, the provider
+ * it stands for, and whether it is bound or sandboxed.
  */
 #+end_src
 
@@ -69,6 +69,14 @@ Nothing is stored.
 :END:
 #+begin_src cpp :name comment
 /** @brief What the folder is: root, collection, asset_class or instrument_type. */
+#+end_src
+
+*** scope
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief For a collection, who it belongs to: system for the installation's, tenant or party; empty otherwise. */
 #+end_src
 
 *** provider_code

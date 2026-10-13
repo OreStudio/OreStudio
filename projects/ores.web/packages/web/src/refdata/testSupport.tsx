@@ -41,9 +41,11 @@ export function resourceView(
         readonly versioned?: boolean;
         readonly search?: boolean;
         readonly sortable?: string[];
+        /** The events collection and permission name, when it is not the key with underscores. */
+        readonly name?: string;
     } = {},
 ): RecordResourceView {
-    const name = key.replaceAll('-', '_');
+    const name = options.name ?? key.replaceAll('-', '_');
     return {
         key,
         entityType: `ores.refdata.${name}`,

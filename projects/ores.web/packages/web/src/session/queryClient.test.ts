@@ -48,6 +48,13 @@ describe('the query client the application builds', () => {
         expect(current().map((entry) => entry.message)).toEqual(['the roster did not load']);
     });
 
+    it('never reads again because the window gained focus or the network came back', () => {
+        const options = createQueryClient().getDefaultOptions().queries;
+
+        expect(options?.refetchOnWindowFocus).toBe(false);
+        expect(options?.refetchOnReconnect).toBe(false);
+    });
+
     it('reports a failed mutation', async () => {
         const client = createQueryClient();
         const mutation = client.getMutationCache().build(client, {

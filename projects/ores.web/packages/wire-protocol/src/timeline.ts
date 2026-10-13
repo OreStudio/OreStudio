@@ -626,6 +626,15 @@ export async function readPartyTimeline(
         }),
     );
 
+    // A part that was removed is closed, and no read lists a closed row, so its
+    // versions cannot be found from the party. The stream says so for every kind.
+    for (const part of PARTY_PARTS) {
+        gaps.push({
+            entity: `${part.entityType}_removed`,
+            reason: `No read lists the ${part.name}s that were removed from this party.`,
+        });
+    }
+
     return {
         subject: 'party',
         id: partyId,

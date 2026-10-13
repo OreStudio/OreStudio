@@ -2385,6 +2385,12 @@ const pt: SourceCatalogue = {
                 'As moedas em que opera não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
             party_counterparty:
                 'As contrapartes com que pode negociar não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
+            party_identifier_removed:
+                'Um identificador que foi removido não se mostra, porque nenhuma leitura lista os identificadores removidos.',
+            party_contact_information_removed:
+                'Um contacto que foi removido não se mostra, porque nenhuma leitura lista os contactos removidos.',
+            business_unit_removed:
+                'Uma unidade de negócio que foi removida não se mostra, porque nenhuma leitura lista as unidades de negócio removidas.',
             account_party:
                 'As partes em que uma pessoa trabalha não puderam ser lidas, por isso não se mostra quando entra ou sai de uma.',
             account_role:
@@ -3277,6 +3283,9 @@ const pt: SourceCatalogue = {
             removeTitle: 'Remover {code}?',
             needs: 'Falta preencher: {fields}',
             noLinks: 'Nenhum ainda.',
+            fixedHint: 'Definido quando o registo foi criado, e nunca alterado aqui.',
+            notFound: 'Não existe tal registo, ou não o pode ver.',
+            backToList: 'Voltar à lista',
             unlink: 'Retirar {name}',
             linkChoose: 'Escolha um para adicionar…',
             link: 'Adicionar',

@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/role_grant_request_role.hpp"
 #include "ores.iam.api/messaging/role_grant_request_role_protocol.hpp"
+#include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/role_grant_request_role_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -44,7 +45,7 @@ namespace ores::iam::service {
  * Provides a higher-level interface for role grant request role operations,
  * wrapping the underlying repository.
  */
-class role_grant_request_role_service {
+class ORES_IAM_CORE_EXPORT role_grant_request_role_service {
 private:
     inline static std::string_view logger_name = "ores.iam.service.role_grant_request_role_service";
 

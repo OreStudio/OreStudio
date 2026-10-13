@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/messaging/market_series_asset_class_protocol.hpp"
+#include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -44,7 +45,7 @@ namespace ores::marketdata::service {
  * Provides a higher-level interface for asset class operations,
  * wrapping the underlying repository.
  */
-class market_series_asset_class_service {
+class ORES_MARKETDATA_CORE_EXPORT market_series_asset_class_service {
 private:
     inline static std::string_view logger_name =
         "ores.marketdata.service.market_series_asset_class_service";

@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <cstdint>
@@ -43,7 +44,7 @@ namespace ores::dq::service {
  * Provides a higher-level interface for dataset bundle member operations,
  * wrapping the underlying repository.
  */
-class dataset_bundle_member_service {
+class ORES_DQ_CORE_EXPORT dataset_bundle_member_service {
 private:
     inline static std::string_view logger_name = "ores.dq.service.dataset_bundle_member_service";
 

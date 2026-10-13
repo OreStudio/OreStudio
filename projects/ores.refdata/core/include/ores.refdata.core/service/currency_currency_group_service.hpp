@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_currency_group.hpp"
 #include "ores.refdata.api/messaging/currency_currency_group_protocol.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_currency_group_repository.hpp"
 #include <cstdint>
 #include <optional>
@@ -43,7 +44,7 @@ namespace ores::refdata::service {
  * Provides a higher-level interface for currency group operations,
  * wrapping the underlying repository.
  */
-class currency_currency_group_service {
+class ORES_REFDATA_CORE_EXPORT currency_currency_group_service {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.service.currency_currency_group_service";

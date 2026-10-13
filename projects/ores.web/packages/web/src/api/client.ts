@@ -337,6 +337,19 @@ const feedFolderSchema = z.object({
 /** A folder of the feed hierarchy with the feeds under it and how many run. */
 export type FeedFolder = z.infer<typeof feedFolderSchema>;
 
+const folderFeedSchema = z.object({
+    id: z.string(),
+    kind: z.string(),
+    label: z.string(),
+    source_name: z.string(),
+    oresmd_uri: z.string(),
+    folder_id: z.string(),
+    enabled: z.boolean(),
+});
+
+/** A feed as the feed tree lists it: enough to name it, open it and tell whether it runs. */
+export type FolderFeed = z.infer<typeof folderFeedSchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -1436,6 +1449,36 @@ export const api = {
                     { method: 'GET' },
                 ),
             ).folders;
+    },
+
+    /**
+     * A page of the feeds in one folder, or of the feeds of every folder that
+     * match some words, with how many match in all. The service pages and counts.
+     */
+    async folderFeeds(input: {
+        readonly folder?: string;
+        readonly search?: string;
+        readonly offset?: number;
+        readonly limit?: number;
+    }): Promise<{ readonly total: number; readonly feeds: readonly FolderFeed[] }> {
+        const query = new URLSearchParams();
+        if (input.folder !== undefined && input.folder !== '') {
+            query.set('folder', input.folder);
+        }
+        if (input.search !== undefined && input.search !== '') {
+            query.set('search', input.search);
+        }
+        if (input.offset !== undefined) {
+            query.set('offset', String(input.offset));
+        }
+        if (input.limit !== undefined) {
+            query.set('limit', String(input.limit));
+        }
+        return z.object({ total: z.number(), feeds: z.array(folderFeedSchema) }).parse(
+            await request(`/api/synthetic/folder-feeds?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
     },
 
     /** Starts every feed under a folder in one request, and says what it did. */

@@ -43,6 +43,7 @@ export const PATHS = {
     signIns: '/operations/sign-ins',
     synthetic: '/market-data/synthetic',
     feedOverview: '/market-data/synthetic/overview',
+    feedTree: '/market-data/synthetic/tree',
     fxFeeds: '/market-data/synthetic/fx-feeds',
     irFeeds: '/market-data/synthetic/ir-feeds',
 } as const;

@@ -96,4 +96,37 @@ children_with_counts(const std::vector<messaging::feed_folder>& folders,
     return children;
 }
 
+
+std::vector<std::string> search_terms(const std::string& text) {
+    constexpr std::size_t most_terms = 8;
+    constexpr std::size_t longest_term = 64;
+    std::vector<std::string> terms;
+    std::string word;
+    const auto flush = [&] {
+        if (!word.empty() && terms.size() < most_terms)
+            terms.push_back(word.substr(0, longest_term));
+        word.clear();
+    };
+    for (const unsigned char c : text) {
+        if (std::isspace(c))
+            flush();
+        else
+            word.push_back(static_cast<char>(std::tolower(c)));
+    }
+    flush();
+    return terms;
+}
+
+bool is_folder_id(const std::string& text) {
+    if (text.size() != 36)
+        return false;
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        const unsigned char c = text[i];
+        const bool dash = i == 8 || i == 13 || i == 18 || i == 23;
+        if (dash ? c != '-' : !std::isxdigit(c))
+            return false;
+    }
+    return true;
+}
+
 }

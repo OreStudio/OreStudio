@@ -3637,6 +3637,9 @@ export const en: SourceCatalogue = {
                 feedOverview: 'Feed overview',
                 feedOverviewBody:
                     'What runs, by scope, provider and kind. Start and stop a provider or a kind.',
+                feedTree: 'Feed tree',
+                feedTreeBody:
+                    'Every feed by scope, provider and kind. Start and stop any folder, and open a feed.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3709,11 +3712,25 @@ export const en: SourceCatalogue = {
                 'Started {started} feeds under {name}. {already} already running, {skipped} skipped.',
             stopReport: 'Stopped {stopped} feeds under {name}.',
             requestNote: 'Start and Stop act on every feed under {name}, in one request.',
+            openInTree: 'Open in feed tree',
             kindNote:
                 'The overview stops at the feed kind. The {count} feeds are in the lists, FX price feeds and IR curve feeds.',
             none: 'There are no feeds yet. A synthetic feeds dataset published for your party fills this page.',
             noProviders: 'No provider in this scope.',
             chooseProvider: 'Choose a provider to see its feed kinds.',
+        },
+        feedTree: {
+            title: 'Feed tree',
+            lead: 'Every feed by scope, provider and feed kind. Open a node to see what is under it. The folder that holds feeds lists them a page at a time, and a feed opens on its own page.',
+            search: 'Search feeds',
+            runningOnly: 'Running only',
+            results: 'Feeds matching “{query}”',
+            noFeeds: 'No feeds here.',
+            columns: { feed: 'Feed', source: 'Source', where: 'Where' },
+            open: 'Open',
+            range: '{from} to {to} of {total}',
+            previous: 'Previous',
+            next: 'Next',
         },
         irFeeds: {
             title: 'IR curve feeds',

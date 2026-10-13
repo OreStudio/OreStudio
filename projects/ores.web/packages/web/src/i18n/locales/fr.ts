@@ -3688,6 +3688,9 @@ const fr: SourceCatalogue = {
                 feedOverview: "Vue d'ensemble des flux",
                 feedOverviewBody:
                     'Ce qui tourne, par portée, fournisseur et type. Démarrez et arrêtez un fournisseur ou un type.',
+                feedTree: 'Arbre des flux',
+                feedTreeBody:
+                    'Chaque flux par portée, fournisseur et type. Démarrez et arrêtez n’importe quel dossier, et ouvrez un flux.',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
@@ -3760,6 +3763,7 @@ const fr: SourceCatalogue = {
             startReport:
                 '{started} flux démarrés sous {name}. {already} déjà en marche, {skipped} ignorés.',
             stopReport: '{stopped} flux arrêtés sous {name}.',
+            openInTree: 'Ouvrir dans l’arbre des flux',
             requestNote:
                 'Démarrer et Arrêter agissent sur chaque flux sous {name}, en une seule requête.',
             kindNote:
@@ -3767,6 +3771,19 @@ const fr: SourceCatalogue = {
             none: 'Il n’y a pas encore de flux. Un jeu de flux synthétiques publié pour votre partie remplit cette page.',
             noProviders: 'Aucun fournisseur dans cette portée.',
             chooseProvider: 'Choisissez un fournisseur pour voir ses types de flux.',
+        },
+        feedTree: {
+            title: 'Arbre des flux',
+            lead: 'Chaque flux par portée, fournisseur et type de flux. Ouvrez un nœud pour voir ce qu’il contient. Le dossier qui contient des flux les liste page par page, et un flux s’ouvre sur sa propre page.',
+            search: 'Rechercher des flux',
+            runningOnly: 'En marche seulement',
+            results: 'Flux correspondant à « {query} »',
+            noFeeds: 'Aucun flux ici.',
+            columns: { feed: 'Flux', source: 'Source', where: 'Emplacement' },
+            open: 'Ouvrir',
+            range: '{from} à {to} sur {total}',
+            previous: 'Précédent',
+            next: 'Suivant',
         },
         irFeeds: {
             title: 'Flux de courbes de taux',

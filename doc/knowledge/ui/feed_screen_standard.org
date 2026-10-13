@@ -393,6 +393,31 @@ each column narrows the next. It counts feeds and never lists one.
 - The overview stops at the feed kind. The feeds are in the feed lists, and in the feed
   tree when it is built.
 
+** The feed tree
+
+The feed tree (=marketdata/FeedTreePage.tsx=) reaches every feed. Its roots are the two
+scopes, /System feeds/ and /Test feeds/. Under system feeds come the providers, under
+test feeds the collections, and under a collection come its asset class and instrument
+type folders. The service counts every node, and a node opens a level at a time, so the
+tree never reads the feeds.
+
+- Each node shows the feeds that run under it as a count and a bar. The node chosen has
+  a panel with its figures, Start and Stop, and the nodes under it, as the overview does,
+  and the same question asks before a start or a stop.
+- The folder that holds feeds lists them in its panel a page at a time
+  (=synthetic.v1.ops.list_folder_feeds=): the feed, its source, whether it runs, Start and
+  Stop for the feed, and a link to its page. The feeds are not tree nodes, because a
+  folder can hold thousands.
+- The search box finds feeds by words in their label, source name or URI, wherever they
+  sit, and shows each one with the folders it sits in. The service matches the words.
+- /Running only/ narrows the tree to the nodes with feeds running, and the lists to the
+  running feeds.
+- A node has an address, =?node=scope:system=, =?node=provider:system:bloomberg= or
+  =?node=folder:<id>=, so a link opens the tree on it. The overview's /Open in feed tree/
+  and the folders on a feed's trail use it.
+- A feed's page has the trail Home, Market data, Synthetic, Feed tree, the folders down to
+  the feed, then the feed, whichever screen opened it. Each folder opens the tree on it.
+
 ** History
 
 The History tab is one stream of the feed and every part it holds, drawn as

@@ -226,8 +226,12 @@ TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling", tags
     const auto ctx = owner_context(h, identity);
 
     // A plus is part of the estate's decimal grammar, so the value is taken;
-    // the text is stored as stated, so the plus survives.
-    CHECK(manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "+0.09")).success);
+    // the text is stored as stated, so the plus survives. The point is keyed
+    // before the snapshot's own instant, as every keyed point in this suite is,
+    // or the snapshot reads a cut that predates it.
+    const auto keyed = manual_point_service::key(
+        ctx, key_request(identity, {"1Y", "ATM"}, "+0.09"), instant("2017-09-10T12:00:00Z"));
+    REQUIRE(keyed.success);
     CHECK(snapshot(h, identity).values == std::vector<std::string>{"+0.09"});
 }
 

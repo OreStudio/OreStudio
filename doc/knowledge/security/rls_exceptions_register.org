@@ -39,7 +39,7 @@ States: *Pending* means not done. A state is changed only when the review or the
 | Limits | The policies are restrictive, so the tenant isolation policy still applies and no other tenant's row is reachable. Only the four compute tables change. No other table's party rule changes. A session in any other party reads the same rows as before. |
 | Evidence | PR #3217. A transaction with the session settings of the Acme system party read 285 batches, 18034 workunits, 18034 results and 57 party sample rows. The same with a child party (ACCOUK) read 0 of each. A repository test checks that the system party sums every party and a party sums its own. |
 | Review | Pending |
-| Sign-off | Pending. Requested of the owner on 2026-10-13. The requirement came from the owner, and the approval of the policy as written has not been given. |
+| Sign-off | The owner asked for the rule on 2026-10-13 and instructed the merge of PR #3217 on 2026-10-13, which accepts it for the merge. A separate sign-off after the security review is still pending. |
 
 Open points for the review:
 - The function compares the session's party with the system party by id. It does not look at the session's mode or permissions, so any account that can act in the system party gets the rule. The accounts that can do so are those linked to that party.

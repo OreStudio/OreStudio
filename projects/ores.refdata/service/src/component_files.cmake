@@ -64,6 +64,7 @@ set(files
     "messaging/counterparty_event_registrar.cpp"
     "messaging/counterparty_identifier_change_event_registrar.cpp"
     "messaging/counterparty_identifier_event_registrar.cpp"
+    "messaging/counterparty_proposal_mapping.cpp"
     "messaging/country_event_registrar.cpp"
     "messaging/crm_driver_pair_event_registrar.cpp"
     "messaging/crm_enabled_derived_pair_event_registrar.cpp"
@@ -171,6 +172,7 @@ set(files
     "messaging/zero_convention_event_registrar.cpp"
     "messaging/zero_inflation_index_convention_event_registrar.cpp"
     "service/book_proposal.cpp"
+    "service/counterparty_proposal.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -216,12 +218,15 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/commodity_price_segment_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/commodity_volatility_config_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/contact_type_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_apply_step_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_business_centre_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_change_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_contact_information_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_identifier_change_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_identifier_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_proposal_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/counterparty_proposal_mapping.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/country_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/crm_driver_pair_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/crm_enabled_derived_pair_event_registrar.hpp"
@@ -330,4 +335,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/zero_inflation_index_convention_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/ores.refdata.service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/book_proposal.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/counterparty_proposal.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/proposal_support.hpp"
 )

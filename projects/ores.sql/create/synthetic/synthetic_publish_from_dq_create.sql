@@ -210,6 +210,10 @@ begin
     having count(*) = count(p.provider_code)
        and count(distinct p.provider_code) = 1;
 
+    if v_config_id is null and v_provider_code is null then
+        raise exception 'Dataset % cannot be published: its feeds must all name the same provider.', v_dataset_name;
+    end if;
+
     if v_config_id is null then
         v_config_id := gen_random_uuid();
         -- scope='party', binding_mode='bound': publish-from-dq always
@@ -382,6 +386,7 @@ begin
                 base_currency_code, quote_currency_code,
                 source_name, oresmd_uri, price_source, gmm_initial_price, ticks_per_hour, process_type,
                 enabled, auto_start, vintage_source, vintage_date,
+                asset_class_code,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -413,6 +418,7 @@ begin
                 coalesce(r.enabled, true),
                 coalesce(r.auto_start, false),
                 coalesce(r.vintage_source, ''), coalesce(r.vintage_date, ''),
+                'fx',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             from (select 1) as _dummy
@@ -638,6 +644,7 @@ begin
                 auto_start, description,
                 fixed_leg_payment_frequency_code, source_name,
                 price_source, vintage_source, vintage_date, vintage_series_uri,
+                asset_class_code,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -659,6 +666,7 @@ begin
                     lower(r.currency_code) || lower(r.index_family) ||
                     lower(replace(r.tenor, ' ', '')),
                 r.price_source, r.vintage_source, r.vintage_date, r.vintage_series_uri,
+                'interest_rates',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             from (select 1) as _dummy

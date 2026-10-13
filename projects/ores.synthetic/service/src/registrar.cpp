@@ -20,6 +20,7 @@
 #include "registrar.hpp"
 #include "feed_config_handler.hpp"
 #include "feed_overview_handler.hpp"
+#include "feed_selection_handler.hpp"
 #include "folder_feed_control_handler.hpp"
 #include "fx_mixture_conversion_handler.hpp"
 #include "fx_simple_conversion_handler.hpp"
@@ -27,6 +28,7 @@
 #include "ir_parameter_conversion_handler.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/feed_selection_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "simulate_handler.hpp"
 #include "vintage_validity_handler.hpp"
@@ -144,6 +146,25 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
             feed_overview_handler h(nats, ctrl, ctx, verifier, registry);
             h.list_feeds(std::move(msg));
+        }));
+
+    // Start and stop of the feeds a person picked in the feed table, or the feeds
+    // its filter matches. The read of every kind's feed configs opens them, as it
+    // opens the folder verbs.
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::start_selected_feeds_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_selection_handler h(nats, ctrl, auth_nats, ctx, verifier, registry);
+            h.start(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::stop_selected_feeds_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_selection_handler h(nats, ctrl, auth_nats, ctx, verifier, registry);
+            h.stop(std::move(msg));
         }));
 
     // The simple and the advanced view of an FX feed's mixture: FX only,

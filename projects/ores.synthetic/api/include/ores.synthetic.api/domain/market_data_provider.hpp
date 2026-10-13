@@ -34,18 +34,18 @@ namespace ores::synthetic::domain {
 
 /**
  * @brief Simulated market data provider a synthetic collection stands for: a vendor, an exchange, a
- * broker, or generic.
+ * broker, or a reference set.
  *
  * A catalogue of the providers whose market data the synthetic feeds simulate.
  * A system-scope collection names the provider it stands for, so the installation
  * can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it
- * as that provider's data. The provider is optional: a collection that stands for
- * no provider names none, or names generic.
+ * as that provider's data. Every collection names its provider, so every feed has
+ * one. A reference set such as the ORE examples is a provider of its own.
  *
- * Every provider here is simulated. Screens show it with the synthetic mark, as
- * "Bloomberg (synthetic)", and every source name a provider's feed publishes on
- * starts synthetic.<provider code>., so a simulated feed is never read as the
- * real one. A real provider integration, when one comes, belongs in market data
+ * Every provider here is simulated, and the synthetic screens show it without a
+ * mark, because everything on them is synthetic. Every source name a provider's feed
+ * publishes on starts synthetic.<provider code>., so a simulated feed is never read
+ * as the real one. A real provider integration, when one comes, belongs in market data
  * and not in this catalogue.
  *
  * Scoped to ores.synthetic (not ores.refdata) because only synthetic
@@ -67,7 +67,7 @@ struct market_data_provider final {
      * @brief Unique provider code: lower case letters, digits, underscores and hyphens, starting
      * with a letter. It is the provider segment of a source name.
      *
-     * Examples: 'generic', 'bloomberg', 'refinitiv', 'cme'.
+     * Examples: 'ore', 'bloomberg', 'refinitiv', 'cme'.
      */
     std::string code;
 
@@ -78,12 +78,13 @@ struct market_data_provider final {
     std::string name;
 
     /**
-     * @brief What sort of provider it is: data_vendor, exchange, broker or generic.
+     * @brief What sort of provider it is: data_vendor, exchange, broker or reference.
      */
     std::string kind;
 
     /**
-     * @brief What the provider publishes, in a sentence.
+     * @brief What the provider's feeds simulate, in a sentence or two: the market the provider
+     * stands for and what a person gets by running its feeds.
      */
     std::string description;
 

@@ -60,6 +60,7 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
     fields.push_back(
         {.name = "Folder ID",
          .value = v.folder_id ? boost::uuids::to_string(*v.folder_id) : std::string{}});
+    fields.push_back({.name = "Asset Class Code", .value = v.asset_class_code});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

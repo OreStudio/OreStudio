@@ -49,16 +49,11 @@
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_state_repository.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-// Soft-FK parent seeding (ores_refdata_counterparties_tbl): the parent may live in another
-// component, so its own component names the headers. A system-tenant parent
-// is read rather than generated, so it needs no generator.
-#include "ores.refdata.api/generators/counterparty_generator.hpp"
-#include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -163,14 +158,6 @@ TEST_CASE("write_counterparty_identifier_change_publishes_an_event", tags) {
         request_repo.write(party_ctx, request);
         v.request_id = request.id;
     }
-    // Seed the active counterparty row ores_refdata_counterparties_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto counterparty_id_parent = ores::refdata::generators::generate_synthetic_counterparty(ctx);
-    counterparty_id_parent.change_reason_code = "system.test";
-    ores::refdata::repository::counterparty_repository counterparty_id_repo;
-    counterparty_id_repo.write(party_ctx, counterparty_id_parent);
-    v.counterparty_id = counterparty_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Counterparty Identifier Change: " << v;
 

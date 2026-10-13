@@ -50,7 +50,7 @@ render_market_data_generation_config_fields(const domain::market_data_generation
     fields.push_back(
         {.name = "Dataset ID",
          .value = v.dataset_id ? boost::uuids::to_string(*v.dataset_id) : std::string{}});
-    fields.push_back({.name = "Provider Code", .value = v.provider_code.value_or(std::string{})});
+    fields.push_back({.name = "Provider Code", .value = v.provider_code});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

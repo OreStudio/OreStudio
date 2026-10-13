@@ -207,3 +207,38 @@ def test_the_derived_junction_is_a_read_only_uuid_identified_entity():
     out = derived(JUNCTION % ":gated: true", "party_widget.org")
     assert ":profile:   uuid-identified-lookup" in out
     assert ":client_read_only: true" in out
+
+
+def test_a_lookup_validation_is_kept_and_its_cardinality_limit_is_dropped():
+    out = pc.lookups_only(
+        "\n"
+        "| column | validation_function | cardinality_limit_table | cardinality_scope_column |\n"
+        "|--------+---------------------+-------------------------+--------------------------|\n"
+        "| scheme | validate_scheme_fn  | schemes_tbl             | owner_id                 |\n"
+    )
+    assert "validate_scheme_fn" in out
+    assert "cardinality" not in out
+    assert "schemes_tbl" not in out
+    # The separator is rebuilt for the two columns that are left.
+    assert out.count("\n|-") == 1
+
+
+def test_a_table_that_names_only_a_column_and_a_function_is_left_as_it_is():
+    table = "\n| column | validation_function |\n|--------+---------------------|\n| status | validate_status_fn  |\n"
+    assert pc.lookups_only(table) == table
+
+
+def test_a_foreign_key_to_a_table_with_a_pending_change_is_dropped():
+    body = (
+        "** owner_id\n:PROPERTIES:\n:table: ores_refdata_owners_tbl\n:END:\n\n"
+        "** image_id\n:PROPERTIES:\n:table: ores_assets_images_tbl\n:END:\n"
+    )
+    kept = pc.drop_pending_targets(body, {"ores_refdata_owners_tbl"})
+    assert "owner_id" not in kept
+    assert "image_id" in kept
+
+
+def test_the_tables_with_a_pending_change_are_read_from_the_models_beside_it(tmp_path):
+    (tmp_path / "ores.refdata.widget.org").write_text(ENTITY % ":pending_change: true")
+    (tmp_path / "ores.refdata.other.org").write_text(ENTITY % "")
+    assert pc.pending_tables(tmp_path) == {"ores_refdata_widgets_tbl"}

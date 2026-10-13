@@ -19,9 +19,13 @@
  */
 #include "ores.refdata.service/messaging/book_proposal_registrar.hpp"
 #include "ores.refdata.api/messaging/book_proposal_operations_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_proposal_operations_protocol.hpp"
 #include "ores.refdata.api/workflow/book_apply_workflow.hpp"
+#include "ores.refdata.api/workflow/counterparty_apply_workflow.hpp"
 #include "ores.refdata.service/messaging/book_apply_step_handler.hpp"
 #include "ores.refdata.service/messaging/book_proposal_handler.hpp"
+#include "ores.refdata.service/messaging/counterparty_apply_step_handler.hpp"
+#include "ores.refdata.service/messaging/counterparty_proposal_handler.hpp"
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -50,6 +54,34 @@ std::vector<ores::nats::service::subscription> book_proposal_registrar::register
         nats.queue_subscribe(std::string(workflow::apply_book_changes_subject),
                              queue_group,
                              [steps](ores::nats::message msg) { steps->apply(std::move(msg)); }));
+
+    auto cp_steps = std::make_shared<counterparty_apply_step_handler>(nats, ctx);
+    subs.push_back(nats.queue_subscribe(
+        std::string(workflow::recheck_counterparty_changes_subject),
+        queue_group,
+        [cp_steps](ores::nats::message msg) { cp_steps->recheck(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(workflow::apply_counterparty_changes_subject),
+        queue_group,
+        [cp_steps](ores::nats::message msg) { cp_steps->apply(std::move(msg)); }));
+
+    auto cp = std::make_shared<counterparty_proposal_handler>(nats, ctx, verifier);
+    subs.push_back(
+        nats.queue_subscribe(preview_counterparty_changes_request::nats_subject,
+                             queue_group,
+                             [cp](ores::nats::message msg) { cp->preview(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(raise_counterparty_changes_request::nats_subject,
+                             queue_group,
+                             [cp](ores::nats::message msg) { cp->raise(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_counterparty_changes_request::nats_subject, queue_group, [cp](ores::nats::message msg) {
+            cp->get_changes(std::move(msg));
+        }));
+    subs.push_back(
+        nats.queue_subscribe(recheck_counterparty_changes_request::nats_subject,
+                             queue_group,
+                             [cp](ores::nats::message msg) { cp->recheck(std::move(msg)); }));
 
     auto h = std::make_shared<book_proposal_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(

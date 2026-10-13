@@ -51,6 +51,7 @@ export interface IrCurveGenerationConfigWrite {
     fixed_leg_payment_frequency_code: string;
     source_name: string;
     folder_id: string | null;
+    asset_class_code: string;
 }
 
 export interface IrCurveGenerationConfigChange {

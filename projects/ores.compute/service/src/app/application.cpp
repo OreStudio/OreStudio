@@ -44,6 +44,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <algorithm>
 #include <memory>
 
 namespace ores::compute::service::app {
@@ -143,10 +144,18 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto reaper_ctx = make_context(cfg.database);
     const auto telemetry_interval = cfg.telemetry_interval_seconds;
 
+    // The handlers share this pool: every claim, submit, heartbeat and read of every node and
+    // screen. A pool of two made the claims wait for a connection past the node's timeout when
+    // the grid was busy, so it is larger than the loops' own pools, which each run one query at
+    // a time.
+    constexpr int handler_pool_size = 8;
+    auto handler_database = cfg.database;
+    handler_database.pool_size = std::max(handler_database.pool_size, handler_pool_size);
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
-        make_context(cfg.database),
+        make_context(handler_database),
         "ores.compute.service",
         [&svc_nats](auto& n, auto c, auto v) {
             return ores::compute::messaging::registrar::register_handlers(

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: BE9424FC-4E1F-4920-A4DD-C69F878A2CDB
+:END:
+#+title: Manage market data bindings prototype
+#+description: The screen to manage market data bindings before it is built, drawn only as the record screen standard draws a record screen, with a synthetic scenario that runs to an added binding and a real data scenario that is read only, on a throwaway page of mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:manage-market-data-bindings/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The prototype draws the bindings screen as the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws every
+record screen, and it draws an oresmd URL as the product ships it. It invents no
+layout and has no variants, because the standard decides the layout. What it
+argues is what the standard leaves open: where the screen lives, whether the
+source name can change, and who may edit and delete. It answers to the journey
+[[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]].
+
+It is throwaway, with no service and no build step. Open the
+[[file:manage-market-data-bindings/][bindings page]].
+
+* Detail
+
+** What it draws
+
+The list, the record page, the add, edit, delete and revert dialogs, and the
+access, states and words are those of the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The History
+tab is the timeline of the
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]. An oresmd
+URL is drawn as the product ships it: a link, and an *Inspect* button for the read
+only view. The prototype adds no layout of its own and has no variants. The list
+cell shows the series title and not the full URL, which stays on the record page.
+What it decides where those pages are silent is under /What the standards left
+open/.
+
+** The scenarios, the states and the actor
+
+Switch with the bottom bar, or the query parameters.
+
+| Parameter | Values | What it does |
+|-----------+--------+--------------|
+| =scenario= | =synthetic=, =real= | Synthetic is the supported path and can be followed to the end. Real adds two vendor bindings, drawn with the kind Vendor and the status *Not supported*. A vendor binding is a read only record: no *Edit*, a *Delete* for a person who may delete, and one notice says why. *Add* offers no vendor source |
+| =state= | =all=, =quiet=, =disabled=, =empty=, =error=, =loading= | Which mock binding is quiet or disabled, and the list states of the standard |
+| =actor= | =viewer=, =operator=, =admin= | Who uses the screen. A viewer reads only. The operator adds and edits. Only the administrator deletes |
+
+** Driving it
+
+Open a binding, then *Edit*, and change *Enabled*: the reasons offered change, and
+Save waits for a commentary. Save closes the dialog and the page shows the new
+version. Open *History*: the new version is at the top of the rail, with the emblem, and
+its details show the removed and the added line. *Revert* an older version.
+On the list, *Add* a binding: pick the Reuters EUR/USD source to see the refusal
+that names the Bloomberg feed already writing that series, then pick another and
+add it. The new binding has no series page until it has a tick, so its URL is
+text; *Refresh* stands for the first tick arriving. Press the series URL: it opens
+the series page stand-in in a new tab. Press *Inspect*: the read only view opens.
+
+** What is fake
+
+Everything. The bindings, the sources, the series, the producers, the last ticks,
+the versions and the actors are literals. The series column and the last tick stand
+for reads that do not exist yet. The reasons are examples of the server's. The
+quiet threshold, ten minutes, is provisional. The series page and the feed page are
+stand-ins for pages the product already has. There is no server, no session and no
+build step.
+
+** Where the code lives
+
+=doc/prototypes/market_data/manage-market-data-bindings/=. One file, =index.html=,
+with its CSS and its JavaScript inline: no framework, no =prototype.css= and no
+=prototype.js=. The site build copies the directory as it stands and adds nothing.
+
+** The verdict
+
+Not yet. Marco has not signed the prototype off. The screen task waits for that.
+
+** What the standards left open
+
+The standard says a screen that is unsure means its page is not complete. Marco
+decided each of these on 2026-10-13, and the pages now say so.
+
+- *Where the screen lives.* Market data, beside the Synthetic folder, with the trail
+  Home, Market data, Bindings, then the binding. The
+  [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] has the entry.
+- *The key is fixed, and rebinding edits it.* Edit offers the source name, with help
+  under the field. A binding is the exception, named in the
+  [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]].
+- *A vendor binding.* Read only, with no Edit, and it can be deleted.
+- *Who may edit and delete.* An operator adds and edits, and only the administrator
+  deletes.
+- *The lead line.* The standard says "<key> · version <n>". The key is the title, so
+  the prototype follows the shipped feed page: the series, the version and the kind.
+  This is the one point still open.
+
+* See also
+
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]] — the journey this prototype answers to.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules the screen follows.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this
+  prototype argues.
+- [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] — the domain record the screen writes.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

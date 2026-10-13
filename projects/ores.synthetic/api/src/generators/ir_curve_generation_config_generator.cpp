@@ -65,6 +65,7 @@ generate_synthetic_ir_curve_generation_config(utility::generation::generation_co
     r.fixed_leg_payment_frequency_code = std::string("Annual");
     r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());
     r.folder_id = std::nullopt;
+    r.asset_class_code = std::string("interest_rates");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

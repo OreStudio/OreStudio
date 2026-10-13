@@ -122,11 +122,22 @@ public:
                 // abandoned, and its lease must run out. The ledger is the installation's, so
                 // the extension needs no tenant.
                 if (!req->result_id.empty()) {
-                    repository::work_ledger_repository().extend_lease(
-                        ctx_,
-                        boost::lexical_cast<boost::uuids::uuid>(req->host_id),
-                        boost::lexical_cast<boost::uuids::uuid>(req->result_id),
-                        std::chrono::seconds{300});
+                    // A malformed id must not stop the host record below from updating.
+                    try {
+                        const auto host = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
+                        const auto result = boost::lexical_cast<boost::uuids::uuid>(req->result_id);
+                        if (!repository::work_ledger_repository().extend_lease(
+                                ctx_, host, result, std::chrono::seconds{300})) {
+                            // The host no longer holds the job, for example because a claim of
+                            // it timed out and the entry went back to the queue.
+                            BOOST_LOG_SEV(work_handler_lg(), debug)
+                                << "Host " << req->host_id << " does not hold job " << req->result_id
+                                << "; its lease was not extended";
+                        }
+                    } catch (const boost::bad_lexical_cast&) {
+                        BOOST_LOG_SEV(work_handler_lg(), warn)
+                            << "Heartbeat of host " << req->host_id << " names a malformed job id";
+                    }
                 }
                 service::host_service svc(ctx_);
                 auto existing = svc.get_host(boost::lexical_cast<boost::uuids::uuid>(req->host_id));

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B285F34-0AD5-4E09-A897-0E88FB568130][Plot a surface as a heatmap and slices]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person reading a two-axis object on the evolution screen sees a heatmap and on
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3B285F34-0AD5-4E09-A897-0E88FB568130][Plot a surface as a heatmap and slices]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -87,3 +87,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=market/SurfacePanel.tsx= draws the surface of a snapshot with two axes, below the "now" table on the evolution screen. It reads the snapshot the screen already holds, so it adds no server call.
+
+Acceptance met, with 8 tests in =SurfacePanel.test.tsx=:
+- The heatmap has the first axis down the side and the second across the top, in the declared order. A cell is shaded with the theme's accent in a share that grows with its value.
+- A hole is a dash with no colour, and it breaks a slice line. A lone point before a hole is drawn as a dot.
+- A choice of colour scale offers the whole surface or each column.
+- A shape with one axis draws nothing, and a shape with more than two axes says it is not drawn.
+- The words exist in English, French and Portuguese, and the language parity test passes. The note says a slice is not always a smile.
+
+The slice lines use their own SVG and not =LineChart=, because =LineChart= has no way to draw a hole. The web package is rebuilt so the BFF serves the panel.
+
+Not checked: no one has used the panel in a browser yet, and the colour scale choice is tested only as the options it offers, not as a click that changes the colours.

@@ -21,11 +21,11 @@ A person who reads a surface on the evolution screen sees its shape at once: a h
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-13                               |
 
 * Acceptance
@@ -43,7 +43,7 @@ A person who reads a surface on the evolution screen sees its shape at once: a h
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C6F4E36B-5038-4A6F-8333-1CA2287D4DB0][Build the surface view model]] | DONE | 2026-10-13 | 2026-10-13 | Turn a snapshot into the rows, columns, cells and colour scales of a two-axis plot, in a pure module with tests. |
-| [[id:AAB39952-F685-45AF-9A35-2F731D284222][Draw the surface on the evolution screen]] | BACKLOG | | | Add a surface panel with the heatmap, the slice lines and the colour scale choice to the evolution screen, in three languages. |
+| [[id:AAB39952-F685-45AF-9A35-2F731D284222][Draw the surface on the evolution screen]] | DONE | 2026-10-13 | 2026-10-13 | Add a surface panel with the heatmap, the slice lines and the colour scale choice to the evolution screen, in three languages. |
 
 * Decisions
 
@@ -55,3 +55,7 @@ A person who reads a surface on the evolution screen sees its shape at once: a h
 - The calendar and butterfly arbitrage checks of the surface slices journey. They need new server checks, and they are captured as =check_a_surface_for_calendar_and_butterfly_arbitrage=.
 - A 3D view, which needs a charting library.
 - A conversion of risk-reversal and butterfly quotes to strikes.
+
+* Result
+
+A two-axis object on the evolution screen now shows a heatmap and one slice line for each value of the first axis, below the "now" table. The plot reads the snapshot the screen already holds, so no server call or wire change was needed. The view model has 12 tests and the panel has 8. The web typecheck and the market, access and language tests pass. See the task for what was not checked.

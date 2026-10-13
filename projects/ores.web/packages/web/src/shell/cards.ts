@@ -161,6 +161,18 @@ export const CARDS = {
         screenTitleKey: 'marketdata.feedOverview.title',
         in: 'synthetic',
     },
+    feedTree: {
+        titleKey: 'marketdata.area.screens.feedTree',
+        bodyKey: 'marketdata.area.screens.feedTreeBody',
+        to: PATHS.feedTree,
+        icon: 'database',
+        permission: [
+            'synthetic::fx_spot_generation_configs:read',
+            'synthetic::ir_curve_generation_configs:read',
+        ],
+        screenTitleKey: 'marketdata.feedTree.title',
+        in: 'synthetic',
+    },
     fxFeeds: {
         titleKey: 'marketdata.area.screens.fxFeeds',
         bodyKey: 'marketdata.area.screens.fxFeedsBody',
@@ -321,7 +333,7 @@ export type CardArea = keyof typeof AREA_CARDS;
  * draws them. A folder holds screens, not other folders.
  */
 export const FOLDER_CARDS = {
-    synthetic: ['feedOverview', 'fxFeeds', 'irFeeds'],
+    synthetic: ['feedOverview', 'feedTree', 'fxFeeds', 'irFeeds'],
 } as const satisfies Record<string, readonly CardId[]>;
 
 export type FolderCard = keyof typeof FOLDER_CARDS;

@@ -356,12 +356,11 @@ Operations. They are drawn, and the server serves them, for a person who holds
 
 ** How today's menu differs
 
-The menu, the cards, the addresses and the breadcrumbs follow this page, except for
-the Feed tree. The Synthetic folder holds the Feed overview, FX price feeds and IR
-curve feeds at the addresses above, and the earlier addresses redirect to them. A
-feed's page has the trail of its list, Home, Market data, Synthetic, the list, the
-feed, because the Feed tree its trail should run through is not built. The Feed
-overview does not offer to open a folder in the tree for the same reason.
+The menu, the cards, the addresses and the breadcrumbs follow this page. The Synthetic
+folder holds the Feed overview, the Feed tree, FX price feeds and IR curve feeds at the
+addresses above, and the earlier addresses redirect to them. A feed's page has the trail
+Home, Market data, Synthetic, Feed tree, the folders down to the feed, then the feed; a
+feed that sits in no folder keeps the trail of its list.
 
 ** Not built yet
 
@@ -374,8 +373,8 @@ Market data has no screen for curve surfaces or for feeds of other kinds yet.
 They are added to the Market data area when they have screens; a feed of a new
 kind joins the Synthetic folder.
 
-The Synthetic folder and the Feed overview are built; the Feed tree is designed in the
-[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] and built by the feed browser task of
+The Synthetic folder, the Feed overview and the Feed tree are designed in the
+[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] and built by the feed browser tasks of
 [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]].
 
 ** Changing the menu

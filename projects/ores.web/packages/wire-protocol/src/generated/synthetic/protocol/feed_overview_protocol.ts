@@ -72,8 +72,57 @@ export interface ListFeedFoldersResponse {
     folders: FeedFolder[];
 }
 
+/**
+ * @brief One feed as the feed tree lists it: enough to name it, to open its
+ * page and to tell whether it runs, and nothing of its process.
+ */
+export interface FolderFeed {
+    /** @brief The feed's id. */
+    id: string;
+    /** @brief The feed kind: fx_spot or ir_curve. */
+    kind: string;
+    /** @brief What a person calls the feed: the pair, or the currency and the index. */
+    label: string;
+    /** @brief The source name the feed publishes under. */
+    source_name: string;
+    /** @brief The oresmd URI the feed publishes. */
+    oresmd_uri: string;
+    /** @brief The folder the feed sits in; empty when it sits in none. */
+    folder_id: string;
+    /** @brief Whether the feed is enabled. */
+    enabled: boolean;
+}
+
+/**
+ * @brief Request a page of the feeds that sit in one folder, or of the feeds of
+ * every folder that match some words.
+ */
+export interface ListFolderFeedsRequest {
+    /** @brief The folder whose feeds are wanted; empty for the feeds of every folder. */
+    folder_id: string;
+    /** @brief Words that must all appear in the feed's label, source name or URI; empty for no search. */
+    search: string;
+    /** @brief How many feeds to skip. */
+    offset: number;
+    /** @brief How many feeds to return at most. */
+    limit: number;
+}
+
+/**
+ * @brief A page of feeds, and how many match in all.
+ */
+export interface ListFolderFeedsResponse {
+    success: boolean;
+    message: string;
+    /** @brief How many feeds match, of which the page holds some. */
+    total: number;
+    /** @brief The page of feeds, in label order. */
+    feeds: FolderFeed[];
+}
+
 export const subjects = {
     list_feed_folders_request: 'synthetic.v1.ops.list_feed_folders',
+    list_folder_feeds_request: 'synthetic.v1.ops.list_folder_feeds',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -82,4 +131,5 @@ export const subjects = {
  */
 export const requiresSession = {
     list_feed_folders_request: true,
+    list_folder_feeds_request: true,
 } as const;

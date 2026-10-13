@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: C7A3019A-CCFF-4985-AB7A-71FFF6303499
+:END:
+#+title: The drift checks render every component on every branch
+#+description: component-drift and drift-sweep render 21 and 38 components on every run, 436s of the 785s non-heavy check total, even when only one component moved.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:checks:performance:velocity:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Render only the components a branch touched, and render each component
+once. =component-drift= regenerates all 21 registry components in place
+(239.9s) and =drift-sweep= renders all 38 catalogue components into a
+throw-away root (195.9s). Together they are 436s of the 785s non-heavy
+total, on a branch that usually changes one component.
+
+* Why
+
+Measured with =./compass.sh check --all --exclude-heavy= at 770fc62e23;
+the per-check table is in =build/output/local_checks/report.md=. The two
+checks are the same script in two modes, and the registry's 21 components
+are rendered twice between them. =_touched_files(base)= already exists in
+=check_component_drift.py= for the sweep's comparison, so the same set can
+scope the render, widening to the whole catalogue only when the change
+touches the generator, the templates or =component_registry.py=.
+=component-drift= also gates seven other Prepare checks through
+=after=("component-drift",)=, so its cost delays all of them.
+
+* References
+
+- =check_component_drift.py= =--all= / =--sweep=; =build/scripts/local_checks.py= ids =component-drift= and =drift-sweep=.
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] — the checks and their classes.
+
+* See also
+
+- [[id:56AF7184-BDF7-4F8D-8EF8-C91CCA870639][The site page check republishes from file mtimes, not the branch diff]]
+- [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]]

@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 56AF7184-BDF7-4F8D-8EF8-C91CCA870639
+:END:
+#+title: The site page check republishes from file mtimes, not the branch diff
+#+description: compass site page republishes every page whose source mtime beats its published HTML, so a fresh checkout makes the whole corpus look changed; a cold run published 1487 pages and hit the 900s timeout.
+#+type: capture
+#+level: cross
+#+filetags: :docs:checks:performance:velocity:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Drive =compass site page= from the branch diff instead of from file
+mtimes. =compass site page FILE...= and =--no-index= already exist; the
+check calls it bare, so it rescans the org-id map over 8185 files and
+republishes every page whose source mtime beats its published HTML.
+
+* Why
+
+Measured at 770fc62e23: 114.9s warm, and a cold worktree published 1487
+pages and hit the check's 900s timeout. A fresh checkout gives every source
+a new mtime, so the whole corpus reads as changed whatever the branch
+touched. Passing the branch's changed =.org= files cuts this to seconds,
+and the same diff says whether a page was added or renamed, which decides
+whether the org-id rescan can be skipped with =--no-index=.
+
+* References
+
+- =build/scripts/local_checks.py= id =site-page=.
+- =compass site page --help=.
+
+* See also
+
+- [[id:C7A3019A-CCFF-4985-AB7A-71FFF6303499][The drift checks render every component on every branch]]
+- [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]]

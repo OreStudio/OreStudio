@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: D277D1F9-AD43-4206-83FC-0CF0EB169BD1
+:END:
+#+title: Story: Make the local checks faster
+#+description: The local gate spends most of its time re-rendering components and republishing the whole site on every run, whenever only a fraction of the tree moved.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The local gate stops spending most of its time on work the branch did not
+touch, so it is cheap enough to run per change. The measurements and the
+four proposed changes are in the captures filed with this story: the two
+drift checks at 436s of the 785s non-heavy total, the site page check at
+115-900s, the corpus that fifteen checks each re-parse, and the serial
+heavy tier.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- A one-component branch runs the non-heavy checks well under half the present time.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C77D3262-74F0-4BE2-B1C8-BE715D4BF813][Scaffold story: Make the local checks faster]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:FD9F56F6-FD00-44CD-8393-F863611EF934][Publish only the changed site pages]] | BACKLOG | | | Initial task for: Make the local checks faster |
+
+* Decisions
+
+* Out of scope
+
+-

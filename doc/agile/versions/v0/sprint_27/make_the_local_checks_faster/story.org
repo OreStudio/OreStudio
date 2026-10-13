@@ -44,6 +44,7 @@ heavy tier.
 | [[id:C77D3262-74F0-4BE2-B1C8-BE715D4BF813][Scaffold story: Make the local checks faster]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:FD9F56F6-FD00-44CD-8393-F863611EF934][Publish only the changed site pages]] | DONE | | 2026-10-13 | Initial task for: Make the local checks faster |
 | [[id:D64E454F-BD73-4A8A-BF30-3D28106E770A][Scope the drift check to the models a branch changed]] | DONE | | 2026-10-13 | component-drift regenerates all 21 registry components on every branch, 239.9s of the 785s non-heavy total, even when the branch changed one component's models. |
+| [[id:2E155608-C065-4418-A603-0A82B2E220E6][Scope the drift sweep to the components a branch changed]] | DONE | | 2026-10-13 | drift-sweep renders all 23 catalogue components into a temporary root on every branch, 195.9s of the 785s non-heavy total, though only the components whose models changed can produce the files the sweep judges. |
 
 * Decisions
 

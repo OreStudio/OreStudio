@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 2E155608-C065-4418-A603-0A82B2E220E6
+:END:
+#+title: Task: Scope the drift sweep to the components a branch changed
+#+description: drift-sweep renders all 23 catalogue components into a temporary root on every branch, 195.9s of the 785s non-heavy total, though only the components whose models changed can produce the files the sweep judges.
+#+type: task
+#+level: s1
+#+filetags: :make_the_local_checks_faster:sprint_27:v0:
+#+owner: marco
+#+branch: feature/scope-the-drift-sweep
+#+pr: 3268
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=drift-sweep= renders only the components whose models this branch changed,
+and keeps the whole-catalogue render for a change that can reach every
+component.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- A branch that changed one component's models renders only that component.
+- A branch that changed the generator or a template renders every catalogue component.
+
+* Plan
+
+The sweep judges the files the branch touched, and a touched generated file
+is produced by the component whose models it came from, so the modeling
+directory is the right key -- the same rule =component-drift= uses. Reuse
+=_touched_components= with the catalogue list rather than the registry,
+because the sweep exists for the components the registry does not cover, and
+keep the fallback: the generator, its templates and the registry decide
+every component's output, and a diff with no model in it cannot attribute a
+stray generated file to a component.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =drift-sweep= before | 195.9s, 23 of 23 components | =./compass.sh check --all --exclude-heavy= | 770fc62e23 |
+| Components rendered for one model file | 1 of 23 | =--sweep --base HEAD= with one model touched | 2fcc3b0d58 |
+| Scoped sweep wall time | 0.95s | the same | 2fcc3b0d58 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3268][#3268]] | [build] Render only the components a branch changed in the drift sweep |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The sweep renders the producers of the files it judges: one component for a
+one-model branch, the whole catalogue for a codegen, template or modelless
+change. The comparison and the touched-file rule are unchanged.

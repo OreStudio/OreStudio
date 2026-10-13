@@ -492,15 +492,21 @@ def _sweep(base: str, verbose: bool) -> int:
     on the files the branch touched, because a component's pre-existing drift
     belongs to that component's own clean-up and is not this branch's to fix.
 
+    Only the producers of the files it judges are rendered: a component is
+    selected when the branch changed a file under its modeling directory, and
+    the whole catalogue is rendered when the change reaches the generator, a
+    template or the registry, or changes no model at all.
+
     Renders and compares only. Nothing is written into the repository.
     """
-    components = _catalogue_components()
-    if not components:
+    catalogue = _catalogue_components()
+    if not catalogue:
         print("no catalogue component has a modeling directory", file=sys.stderr)
         return 1
     touched = _touched_files(base)
-    print(f"Sweeping {len(components)} catalogue component(s) against {base[:12]} "
-          f"(renders only, no writes)...")
+    components = _touched_components(touched, catalogue)
+    print(f"Sweeping {len(components)} of {len(catalogue)} catalogue component(s) "
+          f"against {base[:12]} (renders only, no writes)...")
 
     with tempfile.TemporaryDirectory(prefix="ores-codegen-sweep-") as tmpdir:
         tmp_root = Path(tmpdir)

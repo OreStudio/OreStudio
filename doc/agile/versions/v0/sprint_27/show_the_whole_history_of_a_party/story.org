@@ -21,11 +21,11 @@ A party's history shows every change to the party and to everything attached to 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -47,6 +47,20 @@ A party's history shows every change to the party and to everything attached to 
 
 * Decisions
 
+- A history provider reads a row by its own id when the key the model declares is shared by rows of other scopes, such as a contact type every party holds. A composite string is never sent as an address.
+- A link table is a junction model with =:history: true=. Its history is read by the parent, closed links included, and each version names its link as =parent/child= in its =ID= field.
+- A link is closed by ending its validity, and it records who closed it, so a Closed entry names its author like any other.
+- A junction that states =:events: true= announces its changes. A close is announced as a deletion only when no newer version of the link replaces it, and a link closed twice in one transaction is told once.
+- A junction states a history and events only where its component can serve them. Each model that does not says why.
+
 * Out of scope
 
--
+- A history and events for the junctions of the assets, compute and reporting components, which serve no generic history.
+- Change events for the calendar date junction, whose key is a date, and for the inbox and marketdata junctions, whose components compose no events yet.
+
+* Result
+
+A party's whole story is read: its parts, its links and their closings. A person's story shows the roles taken away and the parties left. Both name the account behind a closing.
+
+- Link histories, keyed histories, the remaining junctions and the party page Refresh were delivered in PRs #3163, #3188 and #3243, with the IAM tables modelled in PR #3212.
+- The product owner checked the party and person pages in the browser.

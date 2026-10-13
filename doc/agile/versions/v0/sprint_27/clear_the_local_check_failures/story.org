@@ -48,6 +48,7 @@ The local check gate stops failing on drift that predates any branch.
 | [[id:23F137E2-C34F-4DF0-ABCC-A4284F43B0F4][Drop the generation stamp from the ER diagrams]] | DONE | | 2026-10-13 | The ER PlantUML diagrams carry a wall-clock Generated timestamp that changes on every render, so a no-op regeneration rewrites all 22 files. The drift check normalizes the stamp, so no gate fails, but the churn is pure noise. |
 | [[id:1FC691D4-5DBE-4D98-83CC-07C06488C5C5][Point the integer-bearing models at cstdint]] | DONE | | 2026-10-13 | A release-preset build fails on three generated protocol headers and one domain header that name std::int64_t without including <cstdint>. The debug include graph hid it. |
 | [[id:E2C09A07-0E5B-4FF8-99B5-C702FF05D0E1][Pass the system caller in the feed filter test]] | DONE | | 2026-10-13 | feed_filter_tests.cpp still calls where_clause with two arguments; the function gained a system_caller parameter, so the synthetic api test target does not compile. |
+| [[id:DF3EF651-A3F0-462D-A4AF-354AF499F477][Refuse a leading plus in parse_double]] | DONE | | 2026-10-13 | parse_double accepts a leading plus, but std::from_chars, which it replaced, does not; the manual point service therefore took +0.09 and the marketdata core test failed. |
 
 * Decisions
 

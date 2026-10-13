@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:protocol:codegen:sprint_27:v0:
 #+created: 2026-10-12
-#+updated: 2026-10-12
+#+updated: 2026-10-13
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,28 +15,25 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A person finds a trade by its identifier, state, book, date, counterparty, trade type or enum column from one list, and a trade page reads each child table by trade id. Every read is an ordinary entity read: a filter record, a scoped read, a total and a page.
+A trade page reads each child table by trade id, and the entity protocol states the standard for finding entities with range filter members.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold PR is in review.          |
-| Waiting on    | Nothing.                               |
-| Next          | Settle the open decisions, then spike the enum filter. |
-| Last touched  | 2026-10-12                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
 - A spike proves an enum filter member and a by-trade read on a key column, each with a repository test.
 - Each child table of a trade has a list_by_trade_id read.
-- A read-only trade summary entity lists trades with their current state and booking, and filters by state, book and counterparty.
-- The trade summary searches every identifier of a trade, ignoring case and literally.
-- The filter record has inclusive from and to members for date and timestamp columns, and the trade summary filters by trade date.
-- The entity protocol specification states the standard for finding entities: the read-model entity, the enum filter member, the range members and the by-parent read. It does so before the code tasks build on it, and every rule has an example from the trade list.
-- The review journey and the backlog capture state what exists.
+- The filter record has inclusive from and to members for date and timestamp columns, in the specification, the generator and the TypeScript twin.
+- The entity protocol specification states the standard for finding entities: the read-model entity, the enum filter member, the range members and the by-parent read.
 
 * Tasks
 
@@ -45,11 +42,8 @@ A person finds a trade by its identifier, state, book, date, counterparty, trade
 | [[id:85D77556-ABC0-4B24-B787-68A8F5540A72][Scaffold story: Complete the trade list's filters]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:3BAE1673-D95B-4ED0-9AAC-1D00149B5D25][Spike the enum filter and the by-trade read]] | DONE | 2026-10-12 | 2026-10-12 | Initial task for: Complete the trade list's filters |
 | [[id:8FD0FC2F-6B77-4513-AE34-D7EF28DE6EB6][Read each trade child by trade id]] | DONE | 2026-10-12 | 2026-10-13 | Add list_by_trade_id to the identifiers, party roles, portfolios, additional fields and instrument parts. |
-| [[id:95E127BE-AFC8-4CF6-8DB4-961135A76C19][Add the trade summary entity]] | BACKLOG | | | A read-only entity with list and get that carries the trade, its current state and booking, and the identifiers as one searchable text column. |
 | [[id:8380ADEE-85BD-4A96-A242-164EA07D29CB][Add range members to the filter record]] | DONE | 2026-10-13 | 2026-10-13 | Date and timestamp columns that declare filterable get inclusive from and to members, in the spec, the generator and the TypeScript twin. |
-| [[id:9FE2CBEA-053D-4007-89D0-40936F96233D][Document the trade list filters]] | BACKLOG | | | State in the specification, the review journey and the backlog capture what the trade list now filters. |
 | [[id:94E49E8F-0B06-4D27-AFD7-6BE12FDD638E][Specify the search and filter standard]] | DONE | 2026-10-12 | 2026-10-12 | Write the standard for finding entities into the entity protocol specification: the read-model entity, the enum filter member, the range members and the by-parent reads, so every entity follows one rule. |
-| [[id:7FB8A3F6-DCDF-4E42-B8EC-3EABEB2EC023][Carry as_of on a scoped read]] | BACKLOG | | | A scoped read is list exactly, so it carries as_of when the entity's list does. The generator emits no as_of on a list_by request; this task makes it so. |
 
 * Analysis
 
@@ -94,6 +88,8 @@ The generator takes a filter member's type from the column's C++ type, so an enu
 Equals on a date is useless, and the filter record has no range member. The proposal is =<column>_from= and =<column>_to=, inclusive, on date and timestamp columns that declare =:filterable: true=. A =_to= on a date column includes the whole day. On a timestamp column a =_to= given as a date means the end of that day. This is a specification change, then a generator change, then the TypeScript twin.
 
 * Decisions
+
+The remainder is carried in [[id:F4F4EF12-F013-4429-8863-28344510CED8][Find a trade by its identifiers, state, book and date from one list]].
 
 Settled on 2026-10-12:
 

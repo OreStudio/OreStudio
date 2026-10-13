@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :synthetic:marketdata:web:feeds:sprint_27:v0:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-13
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,29 +15,26 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Today every feed belongs to a party, under that party's one Synthetic folder, and the FX feed screen lists a party's FX feeds flat. That fits a test feed a quant builds, and it does not fit the market a desk reads: Bloomberg, Refinitiv, ICE, CME, LSE and brokers publish what every tenant sees. Make a provider a system concept, let the installation run provider feeds once and let tenants and parties consume them through feed bindings, keep test feeds in a tenant or party, and give feeds one place to browse: a tree by scope, provider and feed kind, with run status rolled up at every node, that stays fast with many thousands of feeds, order books among them. The FX price feed screen becomes the leaf editor for one kind inside that tree.
+Make a provider a system-level record, give every feed a system or test scope, seed the provider catalogue by provider and kind, and browse feeds through one tree by scope, provider and feed kind.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-11                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- A provider is a system-level record: a code, a name, its kind (data vendor, exchange, broker), its logo, and the asset classes it covers; the installation is seeded with the main vendors and exchanges.
-- A feed has a scope: a system feed is owned by the installation under one provider and read by every tenant without being writable by it; a test feed is owned by a tenant or a party, as feeds are today.
-- System feeds are organised provider, then feed kind (FX spot, IR curves, and later surfaces and order books), then folders the provider's data needs; test feeds keep their collections.
-- A tenant or party subscribes to a provider's feeds through feed bindings, from a screen that shows what is available, what it consumes, and since when.
-- Market data has one feed browser: a tree of System feeds by provider and Test feeds, run status rolled up at every node (running, partial, stopped), start and stop at any node by the folder cascade, and the kind's list and feed page for the node chosen.
-- Every read scales: the tree loads one level at a time with counts from the server, every list is paged, searched and sorted on the server, and no screen reads all feeds; the design is checked against tens of thousands of feeds.
-- The feed screen standard states the browser, the two scopes and the subscription, and the FX price feed screen conforms.
-- Every path a feed is known by marks it as synthetic: its source name, its tick subject, its folder path and the provider name a screen shows.
+- A provider is a system-level record with a code, a name, its kind, its logo and its asset classes, seeded with the main vendors and exchanges.
+- A feed has a scope: a system feed is owned by the installation under one provider, and a test feed is owned by a tenant or a party.
+- System feeds are organised provider, then feed kind, then the folders the provider's data needs.
+- Market data has one feed browser: a tree of System feeds by provider and Test feeds with run roll-ups, start and stop at any node, and the kind's list and feed page at its leaves.
+- Every path a feed is known by marks it as synthetic.
 
 * Tasks
 
@@ -45,10 +42,7 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 |------+-------+-------+-----+-------------|
 | [[id:67676632-0008-417E-86E4-8E2490B78337][Model providers and feed scope]] | DONE | 2026-10-11 | 2026-10-11 | A provider as system reference data, seeded with the main vendors and exchanges, and a scope on every feed: a system feed under a provider in the system tenant, or a tenant's or party's test feed. |
 | [[id:2E7C3EE3-2B47-4393-A9B3-8A94D05C8076][Seed the provider feed catalogue]] | DONE | 2026-10-13 | 2026-10-13 | System feeds per provider and kind, organised provider, kind, then the provider's folders, with provider-qualified source names, run once in the system tenant. |
-| [[id:CDA9C6C5-3D37-4736-8C1F-2DE8918696E4][Subscribe a tenant to provider feeds]] | BACKLOG | | | A screen that shows what each provider offers, what a tenant or party consumes and since when, and writes the feed bindings that subscribe and unsubscribe. |
 | [[id:D9D2EE5D-31C3-4B77-AB9B-E836CB585FA0][Build the feed browser]] | DONE | 2026-10-12 | 2026-10-13 | One Market data feed browser: a lazily loaded tree of System feeds by provider and Test feeds with counts and run roll-ups, start and stop at any node, and the kind's list and feed page as its leaves. |
-| [[id:5CFE1A3A-5CCC-4C7D-A399-02A623B907C5][Prove the feeds at scale]] | BACKLOG | | | Generate tens of thousands of feeds, measure the tree, the lists, the running read, the folder cascade and the tick buffers, fix what does not hold, and record the numbers. |
-| [[id:CD538F61-3C81-4522-9508-992432FE093B][State providers and scope in the feed screen standard]] | BACKLOG | | | The feed screen standard gains the browser, the two scopes and the subscription, and the FX price feed screen is brought to it. |
 | [[id:20163E28-2E23-436A-9E6E-AC4D5432C585][Start the feeds after the parties exist]] | DONE | 2026-10-12 | 2026-10-12 | The tenant run starts the market feeds as soon as the bundles are published, in parallel with the LEI import, because the step needs only publish_bundle. The step binds every party the tenant holds, so it binds the system party alone and the legal entities the import creates later get no bindings and store no prices. The step must also need provision_party. |
 | [[id:7566CF46-6627-49A8-AA3F-B8DE653153A4][Prototype the feed tree]] | DONE | 2026-10-12 | 2026-10-12 | A throwaway web prototype of the feed tree screen before the feed browser is built: System feeds by provider and Test feeds, start and stop at any node with running roll-ups, search and scale to thousands of feeds, and leaves that open the existing FX and IR feed pages. It builds on the ores.qt Market Simulator and its desktop prototype. |
 | [[id:E66D68BB-A1E4-47CF-998A-E6DC3D4BF4F3][Read system rows through the services]] | DONE | | 2026-10-12 | A tenant reads the installation's system rows through the synthetic service, which the feed tree and the feed overview need. |
@@ -59,6 +53,8 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 | [[id:2F9298B7-2BE4-493F-9F2E-B91AB9EF55A8][Guard feed runs with a permission, tell the client only its own mistakes, and place a feed added by hand]] | DONE | 2026-10-13 | 2026-10-13 | Closes the follow-ups of the Synthetic screen: a run permission, the raw error text, and the feed with no folder. |
 
 * Decisions
+
+The remainder is carried in [[id:3BAE4AAA-71DC-4583-A1AD-B3F0BB87E82D][Subscribe tenants to provider feeds and prove the browser at scale]].
 
 - *Two scopes, one feed shape.* A system feed and a test feed are the same
   record with the same process and the same screens; the scope decides who

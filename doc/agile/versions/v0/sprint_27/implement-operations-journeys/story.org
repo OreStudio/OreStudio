@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:ux:journeys:operations:sprint_27:v0:
 #+created: 2026-10-04
-#+updated: 2026-10-05
+#+updated: 2026-10-13
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,74 +15,25 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-The five [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations]] journeys run in
-=ores.web= against the real server:
-
-- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] —
-  every service the installation expects, with its instance count, its state
-  and its version; rows never disappear.
-- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the
-  host and work summary, one row per node, and the compute wrappers that
-  report for those nodes.
-- [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] — the
-  server's vitals and one row per stream: messages, bytes and consumers over
-  time.
-- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] —
-  the lines behind a symptom, found by time, level, source, component, tag or
-  session.
-- [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the
-  database]] — the client build, the server build, and the database
-  fingerprint.
-
-This is the ninth group of
-[[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]].
-It reuses the journey runtime the Setup group landed and adds no journey
-entity.
-
-This group starts where no other group does: its design is already settled.
-The five journeys were written and walked against a clickable prototype in
-sprint 26, and the user accepted the walk on 2026-10-04
-([[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations
-journeys]]; branch =prototype/operations-journeys= at =285519db99=, kept as
-the design record and never merged). The walk also found five data-model
-linkages between the accepted screens and the models, and they sit as captures
-in the product backlog's inbox. This story closes them and builds the screens
-from the accepted design.
+The five Operations journeys -- the running services, the compute grid, the message bus, the telemetry logs, and the versions and database -- run as screens in ores.web against the real server.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold, the heartbeat, the roster, the access model, the whole-grid read, the failure fields on the node summary and the database on the login answer are done. |
-| Waiting on    | Nothing.                               |
-| Next          | Build the operations screens.          |
-| Last touched  | 2026-10-07                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- The five journeys run in =ores.web= against the real server, on the journey
-  runtime the Setup group landed, and no journey entity is added.
-- The five data-model linkages are closed or explicitly deferred, and each
-  capture leaves the inbox with its task's evidence.
-- The whole grid is read, not the session tenant's slice, under the permission
-  the journey records, and the shell's grid stats command follows the same
-  read.
-- The services roster keeps every expected instance with its state word —
-  running, stopped or missing — and the heartbeat carries its host, so a
-  wrapper's row can name its node and an instance's row its host.
-- The login answer carries the database row, so the versions panel adds no
-  request.
-- Every gap the five journeys record is either closed with its evidence or
-  stated on the screen, and every Related journeys entry is a link on the
-  screen.
-- The Operations area carries the five screens, the system-administration
-  menu carries the Operations entry and no other menu does, and every screen
-  carries the footer with both builds. The four installation screens carry
-  "Back to operations" navigation and stand in the area alone; the versions
-  screen is offered in every mode, so a tenant administrator and a regular
-  user reach it and no other operations screen.
+- The five journeys run in ores.web against the real server on the journey runtime the Setup group landed, and no journey entity is added.
+- The whole grid is read under the permission the journey records, and the heartbeat carries its host.
+- The services roster keeps every expected instance with its state word, and the login answer carries the database row.
+- The Operations area carries the five screens with the footer, the system-administration menu carries the Operations entry, and the versions screen is offered in every mode.
 
 * Tasks
 
@@ -96,10 +47,6 @@ from the accepted design.
 | [[id:4DC1AFB6-F687-4314-A5B3-C7A786A93F57][Keep the failure fields on the node summary]] | DONE | | 2026-10-07 | Carry the failed task count and the longest task into the node summary, so a node failing every task stops reading as idle. |
 | [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations screens in ores.web]] | DONE | | 2026-10-08 | The five journeys as screens on the journey runtime, against the real server: services, grid, bus, logs and versions, with the Operations area, the BFF routes and the footer. |
 | [[id:1878A3E4-0ACE-4CE6-892D-81DA0BCA8717][State who reaches the operations screens]] | DONE | 2026-10-05 | 2026-10-06 | The documents state who reaches each operations screen: the four installation screens are the system administrator's in the Operations area, and the versions screen is any signed-in person's in every mode. |
-| [[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]] | BACKLOG | | | Every process announces its start and its graceful stop through the shared service lifecycle; telemetry stores the events, so the roster tells stopped from lost and counts restarts. |
-| [[id:2F054957-1C41-4E98-B89E-6DE3D16924F7][Notify super administrators of service restarts]] | BACKLOG | | | Telemetry raises a service-restarted notification to the super administrators when a service starts again, marking a restart whose previous instance never stopped gracefully. |
-| [[id:2F80B0B6-1C58-4157-9FDC-30D5A1D996CF][Close service sessions on shutdown]] | BACKLOG | | | A service that logged in as its service account logs out through iam.v1.auth.logout when it shuts down gracefully, so a restart leaves no open session behind. |
-| [[id:B762A8D2-22A2-4A2B-868A-D173F6715BDD][Show the services in system health]] | BACKLOG | | | The system administrator's home splits System health into sections, one for tenants and one for services; the services section summarises the roster and links to the services screen. |
 
 * Plan
 
@@ -112,6 +59,8 @@ from the accepted design.
 | 5 | Line up the shell side | The grid stats command follows the changed read, and the story records where the shell carries no operations journey. |
 
 * Decisions
+
+The remainder is carried in [[id:C2B93338-407F-44ED-B8FE-E7484390F421][Record service lifecycle events and surface them in system health]].
 
 - *The accepted design is the build's input.* The five journeys were written
   and walked against a clickable prototype in sprint 26, and the user accepted

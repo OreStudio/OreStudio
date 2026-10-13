@@ -23,7 +23,7 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | All fourteen tasks are merged or closed. The rates family sits on its header and fact tables, and the corpus round-trips with equal family rows. |
+| Now          | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-10-11                               |
@@ -173,6 +173,8 @@ decisions are what they are.
   before a table can hold them.
 
 * Result
+
+All fourteen tasks are merged or closed. The rates family sits on its header and fact tables, and the corpus round-trips with equal family rows.
 
 Not closed. An earlier bookkeeping pass closed this story on its tasks' state
 alone, and that is how five of the design's eight staging units went

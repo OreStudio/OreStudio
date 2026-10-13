@@ -28,7 +28,7 @@ The analytics tables for today's market hold no rows, and no dataset publishes t
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-11                               |

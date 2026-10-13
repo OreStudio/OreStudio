@@ -1,0 +1,382 @@
+:PROPERTIES:
+:ID: BFC985E8-836C-45F8-A78B-5ADFE89F2A8D
+:END:
+#+title: Task: Health review 1 — sprint 27 close analysis
+#+description: System 2 health review 1 of sprint 27.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_27:v0:
+#+owner: marco
+#+branch: feature/sprint-27-health-review-1
+#+pr: 3271
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:52D17715-B014-47F9-96B0-19D464058248][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A System 2 health review of sprint 27 at its close: the six dimensions
+measured and challenged, the bookkeeping reconciled, the finished stories
+closed, and one overall verdict with the evidence behind it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:52D17715-B014-47F9-96B0-19D464058248][Sprint health review — System 2 analysis]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-13                             |
+
+* Acceptance
+
+- Every number the review states is a measurement with the command that
+  produced it and the commit it was taken at, or is marked as an estimate
+  with its basis.
+- Every dimension the skill names — goal alignment, sprint load, PR velocity,
+  story and task balance, focus signal and velocity — carries a verdict and
+  the evidence behind it, and the overall verdict follows the skill's RAG
+  rule.
+- The sprint's =* Stories= table agrees with the story files, carries no
+  duplicate row and is not split by blank lines.
+- Every finished story is closed; every story left open names its remainder.
+- The sprint's =* Health Review= table carries the summary row.
+
+* Plan
+
+1. Branch =feature/sprint-27-health-review-1= from =origin/main= and
+   scaffold the review story and its task.
+2. Gather the six dimensions: read the sprint, its stories and its tasks;
+   measure the commit load, the PR velocity and the census; regenerate the
+   four charts.
+3. Challenge every reading with the skill's System 2 questions.
+4. Close the stories the audit marks ready, after reading each one's own
+   Acceptance to reject the false positives.
+5. Reconcile every sprint-table drift, duplicate and split the audit and the
+   reading surface.
+6. Write the Result, add the sprint's summary row, close the story and the
+   task, and raise the PR.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Commits since 2026-10-05 | 3487 | =git log --oneline --since=2026-10-05 origin/main=, counted | =82d59f0116= |
+| Commits per day | 289, 357, 277, 560, 435, 459, 442, 354, 314 | =git log --since=2026-10-05 --date=short --pretty=format:%ad=, grouped by day | =82d59f0116= |
+| Merged PRs in the sprint window (10-05 → 10-12) | 569 | =build/output/sprint_27/sprint_activity.csv=, written by =compass sprint charts= | =82d59f0116= |
+| Merged PRs since 2026-10-05 (through 10-13) | 624 | =gh pr list --state merged --search "merged:>=2026-10-05" --limit 1000= | =82d59f0116= |
+| PR cycle times | median 11.9 h, p90 19.1 h, max 25.8 h (20-PR sample; the collector returned only the first day cluster, so treat as a lower-bound sample) | =build/output/sprint_27/pr_cycle_times.csv= | =82d59f0116= |
+| Stories by state, before the close | 167: 119 DONE, 36 STARTED, 11 BACKLOG, 1 ABANDONED | State histogram over =doc/agile/versions/v0/sprint_27/**/story.org= | =82d59f0116= |
+| Tasks by state | 745: 580 DONE, 131 BACKLOG, 26 STARTED, 8 ABANDONED | State histogram over =doc/agile/versions/v0/sprint_27/**/task_*.org= | =82d59f0116= |
+| Audit findings, before the repairs | 48: 6 stories ready to close, 8 open tasks with merged PRs, 18 table/file drifts, 16 closed documents with prose in =Now= | =./compass.sh sprint audit= | =82d59f0116= |
+| Open PRs at the review | 0 | =gh pr list --state open= | =82d59f0116= |
+
+* Notes
+
+The in-progress task [[id:A31257E3-7495-46CD-B36D-10AA6D55CB09][Move the lookup
+artefact tables onto domain models]] was parked to free this worktree for the
+review. Its uncommitted work sits in =git stash@{0}=, and its branch
+=feature/move-the-lookup-artefact-tables-onto-domain-models= still holds its
+own commit. Restore it with =git checkout
+feature/move-the-lookup-artefact-tables-onto-domain-models && git stash pop=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3271][#3271]] | [agile] Sprint 27 health review 1 — RED |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-10-13 (day 9 of 7)
+
+Sprint 27 was scheduled from 2026-10-05 to 2026-10-12. This review runs on
+2026-10-13, day nine, one day past the planned close. Every number below is a
+measurement at =82d59f0116= plus this branch's own document changes; the
+command that produced each one is in =* Measurements=.
+
+*** Goal alignment
+
+The sprint carries a mission but no separate goal list: "Finish the UX pass:
+land the remaining journey groups in =ores.web=, and bring the record screens
+to the standard." Read as two goals, both advanced and neither closed. The
+sprint's own =* Stories= table mixes Product and Hotfix work in one table, so
+the mapping below is by the mission's two clauses.
+
+| Goal | Coverage | Stories (DONE / STARTED / BACKLOG) | Verdict |
+|------+----------+------------------------------------+---------|
+| Land the remaining journey groups in ores.web | The operations, refdata, synthetic-marketdata and retire-or-reset journeys are all STARTED with real remainders. The membership, audit sign-ins, super-administrator home and menu-by-reads stories are DONE, as are the trade, synthetic and refdata journey documents and their prototypes. | 20 / 5 / 1 | AMBER |
+| Bring the record screens to the standard | The party history, audit sign-ins polish, account avatars, account split and system-account history filter are DONE. The record-screen standard itself, the existing-screens sweep, live updates, the change-event key, the standard party page and list ordering are all STARTED. | 6 / 6 / 0 | AMBER |
+
+Verdict AMBER: each goal advanced; each holds an open remainder. The System 2
+challenge is that the mission covers only part of the sprint. Around a third
+of the table — the money-exactness story, the curve-support story, the rates
+and credit instrument reworks, the cleandown of =ores.scheduler= and
+=ores.synthetic=, the drift-gate and canonical-protocol stories, the
+isolation stories and roughly forty hotfixes — serves no clause of the
+mission. That is not automatically wrong for a sprint that also acts as the
+release vehicle, but it means the mission does not describe what the sprint
+spent its capacity on.
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Commits since 2026-10-05 | 3487 | ≤ 1000 for the sprint | RED |
+| Commits per day | 289, 357, 277, 560, 435, 459, 442, 354, 314 | — | — |
+| Average | ≈ 387 per day over 9 days | ≤ 143 per day (1000 over 7) | RED |
+| Window | day 9 of a planned 7 | 7 days | RED |
+
+The tree carries about three and a half times the commit ceiling. The load is
+not uneven in the way sprint 26's was: there is no idle day and no single
+burst. The rate rises to a peak of 560 on 2026-10-08 and stays between 277
+and 459 on every other day. This is a sustained overrun, not a stall and not a
+spike.
+
+*** PR velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Merged PRs in the window | 569 (10-05 → 10-12) | The sprint's target band is 100–120: about five times it. |
+| Merged PRs through 10-13 | 624 | A further 55 merged on the review day itself. |
+| Merge cycle | median 11.9 h, p90 19.1 h, max 25.8 h | 20-PR sample only; the collector returned one day cluster, so read as an indicator, not a census. |
+| Open PRs | 0 | Nothing sat unmerged at the review. |
+| Long-open WIP | none | No pull request waited more than a day for its merge. |
+
+Verdict RED: velocity is the load's twin. The sprint merged about five times
+the planned PR count, and no WIP piled up — but the cycle sample is a
+mediocre signal: if the true median really is around half a day, it is
+materially slower than sprint 26's median of 0.3 h, and the sample's own cap
+is a defect in the chart collector worth fixing.
+
+*** Story and task balance
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Stories | 167: 119 DONE, 36 STARTED, 11 BACKLOG, 1 ABANDONED | Before this review's close of five stories. |
+| DONE : open | 119 : 48 ≈ 2.5 | The skill's line is 0.5. |
+| Tasks | 745: 580 DONE, 131 BACKLOG, 26 STARTED, 8 ABANDONED | |
+| Undecomposed stories | 6 | BACKLOG with no task files: the work is opaque until decomposed. |
+
+The six undecomposed story folders:
+
+- [[id:A75A9B98-46BD-46CE-8ED1-BA15A1881385][Paint every web badge from the catalogue]]
+- [[id:ABA9D173-E3EC-4F54-8E77-A15249C435F3][Session activity: record the size of every NATS message per server]]
+- [[id:D384CF87-DE48-404E-B787-96E6149C120F][Keep counting failed attempts on a locked account]]
+- [[id:86BB338B-809C-4079-972A-6B5C1BA740D7][Link every reference to its record]]
+- [[id:FB6B7C30-FA9B-4897-817B-06F2298B548A][Move the installation's remaining reads onto its own class]]
+- [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] (DONE, closed with no tasks)
+
+Verdict AMBER: the ratio is comfortably green, but six stories carry no tasks,
+five of them BACKLOG, so no one can see their shape.
+
+*** Focus signal
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| STARTED stories | 36 before this review's close; 31 after | RED: the skill's red line is 6. |
+| Themes | journeys and UX (11), record screens (6), market data and curves (4), instruments and model reworks (4), tenant and IAM isolation (4), cleandown and codegen (4), compute and grid (3), others | Mixed. |
+
+Verdict RED: thirty-one stories remain in flight across at least seven
+themes, and eleven other worktrees hold their own branches at the same time.
+The close-of-five reduced the count by only five. The count is not the whole
+story: several of the STARTED stories are the decade-long infrastructure
+programme (clean standards, drift gate, canonical protocol) that the sprint
+carries every time, so the sprint's focus is diluted by construction rather
+than by accident.
+
+*** Velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Stories closed | 124 of 168 | 74%, counting the five closed by this review and the review story itself. |
+| Tasks closed | 580 of 746 | 78%. |
+| Commits | 3487 | In 9 days. |
+| PRs merged | 569 in window; 624 through 10-13 | |
+| Story transitions | 105 | Reported by =compass sprint charts=. |
+| Window | day 9 of 7 | The sprint overran its planned window by a day. |
+
+Verdict AMBER: throughput stayed high to the last day — 314 commits and 55
+merged PRs on 10-13 alone — but the sprint closes with about a quarter of its
+stories and tasks open, one day past its planned window.
+
+*** The close policy applied at this review
+
+The audit named six stories whose every task is DONE. Each was read against
+its own =* Acceptance= before closing. Five satisfy it and are now DONE. One
+is a false positive.
+
+| Story | Tasks | Decision | Evidence |
+|-------+-------+----------+----------|
+| [[id:A194593B-B37F-4E75-A667-A63CC3E9C042][Align the web palette with the reviewed scheme]] | 4/4 DONE | Closed DONE | PRs #2996, #3012, #3017 merged. |
+| [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] | 13/13 DONE | Closed DONE | PRs #2749, #2975, #3257–#3267 merged. |
+| [[id:57749440-463B-4F2D-99AC-B1348F4507C3][Hide what system accounts did in a history]] | 2/2 DONE | Closed DONE | PRs #3103, #3106 merged. |
+| [[id:DF013F6D-CD7A-4D6A-A73A-B02AF9251B11][Run the compute grid on the shared hosts]] | 1/1 DONE | Closed DONE | PR #3270 merged on 10-13, the review day. |
+| [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Split accounts into open and confidential data]] | 2/2 DONE | Closed DONE | PR #3124 merged. |
+| [[id:86B6BF9C-CEEA-4FCB-8048-7CA94E927584][Seed a relative-time trade population with the market data it needs]] | 1/1 DONE | Left STARTED | Its only task, "describe the story and its open decisions" (PR #3043), writes the story; it does not build the DQ corpus, the relative-date provisioning or the market-data generation the story's Acceptance names. Closing would record undelivered work as delivered. |
+
+Three =Now= cells on the five closed stories held in-progress prose ("The
+toggle is built...", "The branch ... is ready for review", "Design in review
+(PR #3115)"). The prose is superseded by the merges above, so it is dropped
+and =Now= is set to exactly =Nothing.= The split-accounts note named PR #3115;
+the work merged as #3124.
+
+*** Bookkeeping reconciliations
+
+- 18 sprint-table rows carried a State that disagreed with the story file.
+  Each was reconciled to the story file's own State, except where the story
+  was closed above. Thirteen rows were =BACKLOG= in the table against
+  =STARTED= in the file (the DQ artefact tables, the existing-screens sweep,
+  the four-eyes framework, the standard party page, the record-screen
+  updates, the change-event key, the feed organisation, the ACME reports,
+  the trading guards, the grid samples, list ordering, the ER-diagram split,
+  market-data bindings); one row was =BACKLOG= against =DONE= (the IAM
+  isolation gaps); the two =DONE= rows against =STARTED= are two of the five
+  stories closed above.
+- Three duplicate story rows were removed: =3541A81F= (super administrator
+  journeys) appeared twice with opposite states, and =D7A13BC8= (polish the
+  audit sign-ins screen) appeared three times. The richer, DONE row survives.
+- The blank lines that split the =* Stories= table into four fragments were
+  removed, so the table parses as one.
+- The four chart PNGs were generated. The sprint page linked
+  =prs_commits.png=, =line_churn.png=, =pr_cycle.png= and =stories_done.png=,
+  and none existed, so every chart link on the page was broken before this
+  review.
+- The review story row was added to the sprint's =* Stories= table.
+
+*** Deferred: the sprint timeline
+
+The runbook's timeline step is not applied. Only sprints 20 and 21 carry a
+=timeline/= directory; sprints 22 through 26 do not, so the convention is
+retired, and generating buckets from 2026-10-05 to now would add roughly 580
+files to a sprint the current convention keeps timeline-free. The decision is
+recorded here rather than acted on.
+
+*** Audit record
+
+=./compass.sh sprint audit= at =82d59f0116= reported 48 findings before the
+repairs: 6 stories ready to close, 8 open tasks whose pull requests have all
+merged, 18 table/file drifts and 16 closed documents whose =Now= is not
+=Nothing.=. After the repairs the same command reports 26.
+
+- The 18 table/file drifts are reconciled, except the one row this review
+  itself introduced, which is now closed.
+- The six stories the audit called ready are resolved: five closed DONE on
+  merged evidence, one rejected (above).
+- The 8 open tasks whose pull requests have all merged were each read. Every
+  one is genuinely open, and each names its remainder: =37289A3C= (paging,
+  people links, history timeline), =8063C1A9= (four clean-standard items:
+  B06, V08, P03, V04), =15D464C7= (the literate-template pilot is paused
+  after one file), =775FD373= (not started), =A13916C5= (not started, no PR
+  recorded), =48943E90= (not started), =11AE607C= (design agreed, build not
+  started) and =2A5A2501= (not started). The audit's heuristic keys on the
+  =#+pr:= field alone and cannot see that the task is only partly delivered by
+  that PR, so it will keep reporting them until the tasks close.
+- The 16 =Now= prose findings on already closed documents are historical
+  records. This review leaves them, as sprint 26 did before its own close, and
+  records them for the closure pass.
+
+*** Shape completeness (deferred with a measurement)
+
+The runbook's shape pass over every DONE task is measured and deliberately
+deferred to the closure pass, because the volume exceeds what can be resolved
+accurately here. Over the sprint's =task_*.org= files at =82d59f0116=:
+
+| Defect | Count | Note |
+|--------+-------+------|
+| Missing =#+pr:= on a DONE or ABANDONED task | 141 | Only 15 carry a =* PRs= row the value could be copied from; the other 126 need a per-task PR lookup or =none=. |
+| DONE or ABANDONED tasks with an empty =* PRs= table | 136 | Overlaps the above. |
+| Missing =#+branch:= | 57 | 21 of them carry a =* PRs= row, so the branch is one =gh pr view= away. |
+| DONE task whose =Now= is not =Nothing.= | 11 | Close prose; the same class as the 16 documents above. |
+
+Filling these from the task's own =* PRs= table is safe and mechanical, but it
+covers only 15 of 141. Deriving the rest needs a per-task walk of git history
+and =gh=: the =Task-ID:= commit trailer exists but appears in only about a
+third of recent commits, so it cannot be trusted as a complete key. Writing
+=none= for all 126 would assert something false for an unknown share of them.
+The honest move is the measurement above plus the closure pass, not 126
+guesses.
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | AMBER |
+| Sprint load | RED |
+| PR velocity | RED |
+| Story and task balance | AMBER |
+| Focus signal | RED |
+| Velocity | AMBER |
+| *Overall* | *RED* |
+
+Sprint 27 has the same condition as sprint 26: not a stall, a scale problem.
+It ran three and a half times the commit ceiling, about five times the PR
+band, and one day past its window, while keeping its merge cycle short and its
+WIP at zero. Both mission goals advanced and neither closed, thirty-one
+stories remain in flight across at least seven themes, and the mission
+describes only part of what the sprint did. The widest fix available at the
+close is the one this review executed: reconcile the bookkeeping, close what
+is genuinely finished, and carry the rest honestly. The next lever is focus —
+reduce the in-flight count and stop carrying the standing infrastructure
+programme in the same sprint as the UX pass. Sprint load, PR velocity and
+focus signal are RED together, so the overall verdict is RED.
+
+*** The close pass (2026-10-13)
+
+The close split every one of the 42 open stories into the part sprint 27
+delivered and the part it did not.
+
+- 21 stories were reworked and closed DONE. Each had its Goal and Acceptance
+  narrowed to the shipped scope, and its undelivered tasks moved into a new
+  successor story in the product backlog inbox. 20 successors were created;
+  one closed story — Hotfix: the seeded books have no purpose — had no
+  remainder and needed none.
+- 21 stories were carried whole to the inbox. Sixteen had no delivered task
+  at all. Five more had only a scaffolding or story-writing task DONE, which
+  does not satisfy the story's own Acceptance, so they were carried rather
+  than closed: build the retire or reset tenant journey, raise a notification
+  for a scenario waiting for a tester, restore the trading guards the
+  versioned model dropped, seed a relative-time trade population with the
+  market data it needs, and trace a process run and the trade groups it
+  creates.
+- 93 tasks moved with their successors. Each closed story names its successor
+  in its =* Decisions=; each carried story records that it came from sprint 27
+  at close.
+
+After the pass, sprint 27 holds 147 story files (146 DONE, 1 ABANDONED) and
+575 DONE tasks — no open story and no open task. The inbox grew from 326 to
+367 entries. The sprint table reads 146 DONE and 22 ABANDONED: the 21 carries
+plus the abandoned workspaces story. =compass sprint audit= fell from 26
+findings to 16; the 16 are the historical =Now= prose this review already
+recorded. The four charts were regenerated at the close.

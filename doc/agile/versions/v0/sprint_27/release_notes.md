@@ -2,6 +2,8 @@
 
 Sprint 27 ran the UX pass: land the remaining journey groups in ores.web and bring the record screens to the standard. It closed RED. The sprint ran nine days against a seven-day window, carrying 3487 commits against a 1000 ceiling and 569 merged PRs against a 100-band, with 31 stories still in flight at the review. The work still shipped: the operations, refdata, synthetic-marketdata and super-administrator journeys run in ores.web, curves and a joinable series identity landed in ores.marketdata, the rates and credit families moved onto the instrument table rule, and the drift gate and the canonical protocol closed their remaining gaps. At the close every one of the 42 open stories was split: 21 closed at the scope they delivered with a named successor, and 21 moved whole to the product backlog inbox.
 
+![ore_studio-v0.0.27.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.27.png)
+
 ---
 
 
@@ -121,6 +123,9 @@ Sprint 27 ran the UX pass: land the remaining journey groups in ores.web and bri
 -   **Land the role request journey**: The fourth Access journey runs in `ores.web`: the member asks for a role beyond the one registration gave them, and the tenant administrator answers.
 -   **Build the retire or reset tenant journey**: The Tenancy group's second journey: suspend, terminate, deprovision, purge and the party-level reset get their subjects, and the roster's Retire or reset item lights up.
 -   **Bring the record screens to the standard**: The classification, tenant and party screens conform to the record screen standard, and the product owner's review of the people screens is closed.
+
+![ore_studio-v0.0.27-staff.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.27-staff.png)
+
 -   **Complete the pattern language**: The pattern language is complete: the communication, coordination, resilience, load and data pattern groups are written, each pattern naming its established name and its sources, and a design names its patterns as a rule rather than by memory.
 -   **Record trade activities and trade links**: Add trade\_activity with its type, and trade\_link with its type, so every component version names its cause and every relation between trades is typed and directed.
 -   **Model trade structures**: Implement section 11 of the trade shape investigation, so a structure is a group with an identity whose legs reference it, as Trade Structures and Deal Composition requires.
@@ -203,9 +208,15 @@ Sprint 27 ran the UX pass: land the remaining journey groups in ores.web and bri
 -   **Change party from the account menu**: A person changes the party they act for from the account menu, without signing out.
 -   **Make the local checks faster**: The local gate stops spending most of its time on work the branch did not touch, so it is cheap enough to run per change.
 -   **Run the compute grid on the shared hosts**: Every machine on the local network runs this environment's compute nodes beside the environments already there, and each environment's deploy, stop and logs touch only its own state.
+
+![ore_studio-v0.0.27-grid-machines.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.27-grid-machines.png)
+
 -   **Give every prototype its design note**: Every market data prototype has a design note beside it, and the group page links each note instead of carrying the argument in a table cell.
 -   **Write the synthetic market data journeys**: Every synthetic prototype answers to a journey document: the actor, the steps, the wireframe, the entities it composes, a coverage table checked against the synthetic subjects, and the gaps that must close before it is built.
 -   **Implement the synthetic market data journeys in ores.web**: A person authors an FX price feed and an IR curve feed in ores.web, on the subjects the journeys name.
+
+![ore_studio-v0.0.27-synthetic-feeds.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.27-synthetic-feeds.png)
+
 -   **Record system events in a central event log**: Telemetry logs bury the key system events among every log line, and entity change events say a record changed, not that something happened.
 -   **Sprint health review — System 2 analysis**: A System 2 review of sprint 27 at its close.
 

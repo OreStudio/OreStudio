@@ -26,11 +26,11 @@ A feed binding says that a party consumes one producer source. Today a binding i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -85,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The journey [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]] is written in the market data group, with a wireframe and a hub entry. It has ten steps for the supported synthetic scenario and says where the real data scenario differs: a vendor binding is shown, marked as not supported, and offers no bind, rebind or start. It names nine things the server does not give yet. The main ones are a read for the series a source feeds, a read for the last tick, and a list of the sources a party does not consume. The IR generation configs do list now, which the older feeds journey still calls missing. Who may bind and rebind, the market data operator or only the system administrator, is left as a question for the prototype to put to Marco.
+

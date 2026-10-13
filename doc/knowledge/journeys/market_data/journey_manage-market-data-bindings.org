@@ -65,8 +65,8 @@ Two scenarios run through the journey.
 - *Real data* from a vendor is not supported. The journey and the prototype draw
   a vendor binding so that the design holds it, and they say in words that this
   product does not connect real feeds. No control adds a vendor binding, and a
-  vendor binding that already exists is a read only record: it has no Edit and
-  no Delete, and the page says why.
+  vendor binding that already exists is a read only record: it has no Edit, it
+  can be deleted, and the page says why.
 
 * Steps
 
@@ -136,8 +136,8 @@ scenario. The last block says where the real data scenario differs.
 
 *Real data differs at three steps.* In the list a vendor binding shows the kind
 *Vendor* and the status *Not supported*. Its page is a read only record, so it
-shows no *Edit* and no *Delete*, and one notice on the Details tab says that
-real feeds are not supported. *Add* offers no vendor source and says why, in one
+shows no *Edit*, though it shows *Delete* to a person who may delete, and one
+notice on the Details tab says that real feeds are not supported. *Add* offers no vendor source and says why, in one
 sentence.
 
 * Screens and wireframes
@@ -234,28 +234,20 @@ their messages are in
 7. *No threshold for quiet and no alert.* The configs carry a tick rate. Nothing
    compares it with a last tick, and nothing notifies a person. The screen sorts
    by last tick and the person judges, until a threshold exists.
-8. *The menu has no entry for bindings.* The
-   [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] lists the screens of
-   Market data and has no Bindings. The prototype puts the screen in the Market
-   data area, beside the Synthetic folder, with the trail Home, Market data,
-   Bindings, then the binding. The menu page needs the entry once Marco agrees.
-9. *The standard fixes the key, and rebinding edits it.* The record standard says
-   the key is entered when a record is created and fixed after. A binding's key is
-   its source name, and the model says that editing the source name is how a
-   binding is rebound. The prototype follows the model: Edit offers the source
-   name, with help saying that it switches the ingest source. If the key stays
-   fixed, a rebind is a delete and an add, and the history of the binding is lost
-   with it. This needs a decision, and the standard needs the exception, or the
-   model the change.
-10. *A read only vendor binding cannot be deleted.* The read only exception of the
-    standard shows no Edit and no Delete. A stale vendor binding would then stay
-    forever. The prototype follows the standard. Whether a vendor binding may be
-    deleted is a decision, and the standard would name the exception.
-11. *Who may edit and delete is not decided.* The binding is per party and
-    provisioning creates it from the system party's config. The prototype proposes
-    that a market data operator adds and edits and only the system administrator
-    deletes, and an action a person may not take is not drawn. The actor bar lets
-    the two be compared.
+8. *The menu had no entry for bindings.* Decided by Marco on 2026-10-13: the
+   screen is in the Market data area, beside the Synthetic folder, with the trail
+   Home, Market data, Bindings, then the binding. The
+   [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] now says so.
+9. *The standard fixes the key, and rebinding edits it.* Decided by Marco on
+   2026-10-13: Edit offers the source name, with help under the field saying that
+   it switches the ingest source. A binding is the exception to the key rule, and
+   the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] names it.
+10. *A vendor binding.* Decided by Marco on 2026-10-13: it is a read only record
+    with no Edit, and it can be deleted, so a stale one does not stay for ever. The
+    standard names the exception.
+11. *Who may edit and delete.* Decided by Marco on 2026-10-13: a market data
+    operator adds and edits, and only the system administrator deletes. An action a
+    person may not take is not drawn.
 
 * Related journeys
 

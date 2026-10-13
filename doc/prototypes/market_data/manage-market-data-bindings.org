@@ -53,7 +53,7 @@ Switch with the bottom bar, or the query parameters.
 
 | Parameter | Values | What it does |
 |-----------+--------+--------------|
-| =scenario= | =synthetic=, =real= | Synthetic is the supported path and can be followed to the end. Real adds two vendor bindings, drawn with the kind Vendor and the status *Not supported*. A vendor binding is a read only record: no *Edit*, no *Delete*, and one notice says why. *Add* offers no vendor source |
+| =scenario= | =synthetic=, =real= | Synthetic is the supported path and can be followed to the end. Real adds two vendor bindings, drawn with the kind Vendor and the status *Not supported*. A vendor binding is a read only record: no *Edit*, a *Delete* for a person who may delete, and one notice says why. *Add* offers no vendor source |
 | =state= | =all=, =quiet=, =disabled=, =empty=, =error=, =loading= | Which mock binding is quiet or disabled, and the list states of the standard |
 | =actor= | =viewer=, =operator=, =admin= | Who uses the screen. A viewer reads only. The operator adds and edits. Only the administrator deletes |
 
@@ -88,26 +88,23 @@ with its CSS and its JavaScript inline: no framework, no =prototype.css= and no
 
 Not yet. Marco has not signed the prototype off. The screen task waits for that.
 
-** What the standards leave open
+** What the standards left open
 
-The standard says a screen that is unsure means its page is not complete, so each
-of these is a question to decide and then write into the standard or the menu.
+The standard says a screen that is unsure means its page is not complete. Marco
+decided each of these on 2026-10-13, and the pages now say so.
 
-- *Where the screen lives.* The
-  [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] has no entry for
-  bindings. The prototype puts it in Market data, beside the Synthetic folder, with
-  the trail Home, Market data, Bindings, then the binding. Is that right?
-- *The key is fixed, and rebinding edits it.* The record standard fixes the key
-  after create. A binding's key is its source name and the model rebinds by editing
-  it. The prototype lets Edit change the source, with help under the field. Keep
-  that, with the exception named in the standard? Or a rebind is a delete and an
-  add, and the history goes?
-- *A vendor binding.* The prototype treats it as the standard's read only
-  exception, so it cannot be deleted. Should a stale vendor binding be deletable?
-- *Who may edit and delete.* The prototype proposes that an operator adds and edits
-  and only the administrator deletes. Which roles hold which?
+- *Where the screen lives.* Market data, beside the Synthetic folder, with the trail
+  Home, Market data, Bindings, then the binding. The
+  [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] has the entry.
+- *The key is fixed, and rebinding edits it.* Edit offers the source name, with help
+  under the field. A binding is the exception, named in the
+  [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]].
+- *A vendor binding.* Read only, with no Edit, and it can be deleted.
+- *Who may edit and delete.* An operator adds and edits, and only the administrator
+  deletes.
 - *The lead line.* The standard says "<key> · version <n>". The key is the title, so
   the prototype follows the shipped feed page: the series, the version and the kind.
+  This is the one point still open.
 
 * See also
 

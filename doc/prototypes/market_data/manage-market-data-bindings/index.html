@@ -56,7 +56,7 @@ td.num{text-align:right;font-family:var(--mono)}
 a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
 .listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
 .listbar select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
-tr.row{cursor:pointer}tr.row:hover td,tr.row:focus td{background:#1d1d22;outline:none}
+tr.rec{cursor:pointer}tr.rec:hover td,tr.rec:focus td{background:#1d1d22;outline:none}
 th.sort{cursor:pointer}
 .pager{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;color:var(--ink-dim);font-size:.85rem;border-top:1px solid var(--line-soft);flex-wrap:wrap}
 .hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
@@ -98,7 +98,7 @@ th.sort{cursor:pointer}
   Addresses: ?screen=list | record&id=..&tab=details|history | stand-ins:
   series&uri=.. and feed&src=.. (pages the product already has).
   Switches in the bottom bar (they reload and reset the mock list):
-    ?scenario=synthetic|real   real adds vendor bindings, which are read only
+    ?scenario=synthetic|real   real adds vendor bindings, which are read only and can be deleted
     ?state=all|quiet|disabled|empty|error|loading
     ?actor=viewer|operator|admin   who is using it: this is an open question
 -->
@@ -208,6 +208,13 @@ function uriRef(b) {
   return `<span style="display:inline-flex;gap:6px;align-items:baseline;flex-wrap:wrap">${link}<button class="btn ghost" data-inspect="${esc(s.uri)}">Inspect</button></span>`;
 }
 
+// In a list cell the series is its title only. The full oresmd URL is too long for a table,
+// so it stays on the record page, with its Inspect button; the title links to the series page,
+// and the URL is its tooltip.
+function seriesLink(b) {
+  const s = seriesOf(b);
+  return hasSeries(b) ? `<a class="link" target="_blank" rel="noopener" href="${href({ screen: 'series', uri: s.uri })}" title="${esc(s.uri)}">${s.series}</a>` : `<span title="${esc(s.uri)}">${s.series}</span>`;
+}
 // Icons beside words, one glyph for one idea.
 const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕', save: '' };
 const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
@@ -229,8 +236,8 @@ function listScreen() {
   const rows = visible();
   const note = `<div class="notice">${bindings.length} bindings. The series is inferred from the newest observations, and the last tick is a mock reading of the ingest loop's counter: no read returns either today.</div>`;
   const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
-  const tr = b => `<tr class="row" tabindex="0" data-open="${b.id}"><td><a data-nav class="link mono" href="${href({ screen: 'record', id: b.id })}">${b.src}</a></td><td>${kindLabel(b)}</td>
-    <td><div>${seriesOf(b).series}</div><div>${uriRef(b)}</div></td><td>${b.enabled ? 'Yes' : 'No'}</td><td>${statusTag(b)}</td>
+  const tr = b => `<tr class="rec" tabindex="0" data-open="${b.id}"><td><a data-nav class="link mono" href="${href({ screen: 'record', id: b.id })}">${b.src}</a></td><td>${kindLabel(b)}</td>
+    <td>${seriesLink(b)}</td><td>${b.enabled ? 'Yes' : 'No'}</td><td>${statusTag(b)}</td>
     <td title="${isVendor(b) ? '' : esc(exact(new Date(NOW - b.last * 1000).toISOString().slice(0, 19) + 'Z'))}">${isVendor(b) ? dash : ago(b.last)}</td></tr>`;
   let body;
   if (!bindings.length) body = `<div class="card"><div class="body"><div class="muted">There are no bindings yet.${may('add') ? ' ' + btn('Add', 'add', 'primary', 'data-add') : ''}</div></div></div>`;
@@ -249,7 +256,7 @@ function lastChanged(b) {
 function detailsTab(b) {
   const s = seriesOf(b), src = sourceOf(b.src);
   const feed = isVendor(b) ? dash : `<a class="link" data-nav href="${href({ screen: 'feed', src: b.src })}">${b.src}</a>`;
-  return `${isVendor(b) ? '<div class="warnbox"><b>Real feeds are not supported.</b> This installation does not connect a vendor feed, so this binding is read only. It is shown so a binding that a vendor feed once created is not hidden.</div>' : ''}
+  return `${isVendor(b) ? '<div class="warnbox"><b>Real feeds are not supported.</b> This installation does not connect a vendor feed, so this binding is read only: it has no Edit. It can still be deleted, so a stale one does not stay for ever.</div>' : ''}
   <div class="card"><div class="body">
     ${kv('Source name', `<span class="mono">${b.src}</span>`)}${kv('Kind', kindLabel(b))}${kv('Enabled', b.enabled ? 'Yes' : 'No')}${kv('Status', statusTag(b))}
     ${kv('Last tick', isVendor(b) ? dash : ago(b.last))}${kv('Feed', feed)}${kv('Folder', src ? src.folder : dash)}${kv('Ticks per hour', src ? src.tph : dash)}
@@ -287,7 +294,7 @@ function recordScreen(b) {
   const r = route();
   if (!b) return crumbs([...base().slice(0, 3).map((p, i) => i === 2 ? p : p), ['Not found']]) + '<div class="notice">This binding does not exist.</div>';
   const s = seriesOf(b), tabHref = t => href({ screen: 'record', id: b.id, tab: t });
-  const editable = may('edit') && !isVendor(b), deletable = may('delete') && !isVendor(b);
+  const editable = may('edit') && !isVendor(b), deletable = may('delete');
   return `${crumbs([...base(), [b.src]])}
   <div class="titlebar"><div><h1>${b.src}</h1><div class="sub">${s.series} · version ${b.ver} · ${kindLabel(b)}</div></div>
     <div class="actions">${accessMark()}${statusTag(b)}${editable ? btn('Edit', 'edit', '', 'data-edit') : ''}${deletable ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>

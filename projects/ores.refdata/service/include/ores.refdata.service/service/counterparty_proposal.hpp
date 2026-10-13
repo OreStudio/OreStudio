@@ -172,7 +172,9 @@ public:
      *
      * Reads only. A put against a row lists its columns against the row at the
      * version the maker read, so a line that has applied still shows what it
-     * changed.
+     * changed. A link has no columns of its own and no version to read, so its
+     * fields are the two halves, marked changed on a put; a reader should take a
+     * link line as made or removed whole and not read changed on its fields.
      */
     std::vector<counterparty_line_delta> deltas(const std::string& request_id);
 
@@ -181,9 +183,12 @@ public:
      * transaction.
      *
      * Each line goes through the real write, with the request as the reason,
-     * and is marked applied in the same transaction. The first refusal rolls
-     * everything back and moves the request to apply_failed. A failure of the
-     * infrastructure rolls back and returns transient.
+     * and is marked applied in the same transaction. The removals go first, the
+     * rows that name another row before the row they name, and the writes second,
+     * the row named before the rows that name it, so a request can mix both.
+     * The first refusal rolls everything back and moves the request to
+     * apply_failed. A failure of the infrastructure rolls back and returns
+     * transient.
      */
     counterparty_apply apply(const std::string& request_id);
 

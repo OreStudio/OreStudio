@@ -96,7 +96,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Apply and preview run kinds in one order, so a request that removes a counterparty and its link fails | counterparty_proposal.cpp | Accept | Two passes: removals child first, then writes parent first. Line numbers keep the maker's order. A new case covers a mixed request. |
+| 2 | Request id goes into the lock statement as text | counterparty_proposal.cpp, book_proposal.cpp | Accept | =lock_request_sql= parses the id as a uuid and writes the canonical form. Both services use it. |
+| 3 | Preview reports an infrastructure failure as a refused line | counterparty_proposal.cpp, book_proposal.cpp | Accept | The preview rethrows what =is_infrastructure_failure= names. |
+| 4 | The per-kind read limit is unclear | counterparty_proposal.cpp | Accept | Comment added: the limit is on the sum, and the caller checks it. |
+| 5 | Link deltas carry no meaningful changed flag | counterparty_proposal.hpp | Accept | Header text says to read a link line as made or removed whole. |
+| 6 | Stale base version is found late | counterparty_proposal.cpp | Decline | The real write checks the version in the preview, the recheck and the apply. An earlier check would repeat it. |
+| 7 | delta_of and length_error handling | counterparty_proposal.cpp | Decline | Only one throw raises =length_error= there. The comment now says so. No code change is needed. |
 
 * Result
 

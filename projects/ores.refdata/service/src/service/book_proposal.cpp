@@ -155,6 +155,10 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
             out.refusal =
                 run_write(svc, live, line, {line.change_reason_code, line.change_commentary});
         } catch (const std::exception& e) {
+            // A refusal is the database's answer. A lost connection is not an
+            // answer, and reporting it as one would hide it behind a refused line.
+            if (is_infrastructure_failure(e.what()))
+                throw;
             out.refusal = e.what();
         }
         // A failed statement aborts the transaction until the savepoint is
@@ -334,10 +338,7 @@ book_apply book_proposal_service::apply(const std::string& request_id) {
         // Two applies of one request must not both write. The request row is
         // locked for the transaction, and its state is read again under the
         // lock, because the read above was made before it.
-        in_transaction(
-            ctx,
-            "select id from ores_inbox_approval_requests_tbl where id = '" + request_id +
-                "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update");
+        in_transaction(ctx, support::lock_request_sql(request_id));
         const auto locked = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
         if (!locked || locked->state_code != "approved") {
             return {.refusal = "The request is " +

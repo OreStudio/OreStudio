@@ -38,6 +38,7 @@
 #include <cstdint>
 #include <exception>
 #include <stdexcept>
+#include <string_view>
 
 namespace ores::refdata::service {
 
@@ -342,7 +343,9 @@ template <typename Kind>
 std::vector<typename Kind::line> lines_of(const ores::database::context& ctx,
                                           const std::string& request_id) {
     // One more than the most a request may hold, so a request over the limit is
-    // seen as over it and never read as a shorter one.
+    // seen as over it and never read as a shorter one. The limit is on the sum over
+    // the three kinds, which the caller checks, so a request can read up to three
+    // times the limit before that check refuses it.
     auto rows = typename Kind::repo{}.read_latest_by_request_id(
         ctx,
         request_id,
@@ -353,16 +356,24 @@ std::vector<typename Kind::line> lines_of(const ores::database::context& ctx,
 }
 
 /**
- * @brief Runs the lines of one kind through the real write inside the preview's
- * transaction, one savepoint each, and adds the outcomes.
+ * @brief Runs the lines of one kind and one operation through the real write
+ * inside the preview's transaction, one savepoint each, and adds the outcomes.
+ *
+ * A line keeps the number it has among all the lines of the request, which is the
+ * first number of its kind plus its place in the kind, whatever the order the
+ * passes run in.
  */
 template <typename Kind>
 void preview_kind(const ores::database::context& ctx,
                   const std::vector<typename Kind::line>& lines,
-                  int& line_no,
+                  int first_line_no,
+                  std::string_view only,
                   counterparty_preview& result) {
+    int line_no = first_line_no - 1;
     for (const auto& line : lines) {
         ++line_no;
+        if (line.operation != only)
+            continue;
         counterparty_line_outcome out{.line_no = line_no,
                                       .entity_type = Kind::type,
                                       .operation = line.operation,
@@ -381,6 +392,10 @@ void preview_kind(const ores::database::context& ctx,
             out.refusal =
                 Kind::write(ctx, live, line, {line.change_reason_code, line.change_commentary});
         } catch (const std::exception& e) {
+            // A refusal is the database's answer. A lost connection is not an
+            // answer, and reporting it as one would hide it behind a refused line.
+            if (is_infrastructure_failure(e.what()))
+                throw;
             out.refusal = e.what();
         }
         // A failed statement aborts the transaction until the savepoint is rolled
@@ -409,9 +424,12 @@ template <typename Kind>
 bool apply_kind(const ores::database::context& ctx,
                 const std::string& request_id,
                 std::vector<typename Kind::line> stored,
+                std::string_view only,
                 counterparty_apply& out) {
     typename Kind::repo lines;
     for (auto row : stored) {
+        if (row.operation != only)
+            continue;
         // A line applies once, so a rerun after a partial failure that rolled
         // back finds the same lines, and one that completed finds none.
         if (row.applied)
@@ -525,10 +543,20 @@ counterparty_preview counterparty_proposal_service::preview(const counterparty_l
     const auto& ctx = uow.ctx();
 
     counterparty_preview result;
-    int line_no = 0;
-    preview_kind<counterparty_kind>(ctx, lines.counterparties, line_no, result);
-    preview_kind<identifier_kind>(ctx, lines.identifiers, line_no, result);
-    preview_kind<link_kind>(ctx, lines.links, line_no, result);
+    // A request is carried out in two passes. The removals go first, the rows that
+    // name another row before the row they name, so that nothing is removed while
+    // something still points at it. The writes go second, the row named before the
+    // rows that name it, so that nothing is written before the row it points at.
+    // The line numbers do not follow this order: they are the order the maker gave.
+    const int identifiers_at = static_cast<int>(lines.counterparties.size()) + 1;
+    const int links_at = identifiers_at + static_cast<int>(lines.identifiers.size());
+    preview_kind<link_kind>(ctx, lines.links, links_at, "delete", result);
+    preview_kind<identifier_kind>(ctx, lines.identifiers, identifiers_at, "delete", result);
+    preview_kind<counterparty_kind>(ctx, lines.counterparties, 1, "delete", result);
+    preview_kind<counterparty_kind>(ctx, lines.counterparties, 1, "put", result);
+    preview_kind<identifier_kind>(ctx, lines.identifiers, identifiers_at, "put", result);
+    preview_kind<link_kind>(ctx, lines.links, links_at, "put", result);
+    std::ranges::sort(result.lines, {}, &counterparty_line_outcome::line_no);
     sort_parts(result);
     return result;
 }
@@ -567,10 +595,7 @@ counterparty_apply counterparty_proposal_service::apply(const std::string& reque
         // Two applies of one request must not both write. The request row is
         // locked for the transaction, and its state is read again under the lock,
         // because the read above was made before it.
-        in_transaction(
-            ctx,
-            "select id from ores_inbox_approval_requests_tbl where id = '" + request_id +
-                "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update");
+        in_transaction(ctx, support::lock_request_sql(request_id));
         const auto locked = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
         if (!locked || locked->state_code != "approved") {
             return {.refusal = "The request is " +
@@ -585,17 +610,24 @@ counterparty_apply counterparty_proposal_service::apply(const std::string& reque
             throw std::length_error(out.refusal);
         }
 
+        // The same two passes as the preview: removals child first, then writes
+        // parent first.
         const bool refused =
-            apply_kind<counterparty_kind>(ctx, request_id, stored.counterparties, out) ||
-            apply_kind<identifier_kind>(ctx, request_id, stored.identifiers, out) ||
-            apply_kind<link_kind>(ctx, request_id, stored.links, out);
+            apply_kind<link_kind>(ctx, request_id, stored.links, "delete", out) ||
+            apply_kind<identifier_kind>(ctx, request_id, stored.identifiers, "delete", out) ||
+            apply_kind<counterparty_kind>(ctx, request_id, stored.counterparties, "delete", out) ||
+            apply_kind<counterparty_kind>(ctx, request_id, stored.counterparties, "put", out) ||
+            apply_kind<identifier_kind>(ctx, request_id, stored.identifiers, "put", out) ||
+            apply_kind<link_kind>(ctx, request_id, stored.links, "put", out);
         if (!refused) {
             uow.commit();
             out.applied = true;
             return out;
         }
     } catch (const std::length_error& e) {
-        // The request is over the limit: a retry reads the same lines.
+        // The request is over the limit: a retry reads the same lines. Only the
+        // throw above raises this here: apply_kind catches logic_error, but it
+        // never sees that throw.
         out.lines_applied = 0;
         out.refusal = e.what();
     } catch (const std::exception& e) {

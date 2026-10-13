@@ -24,6 +24,8 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -46,6 +48,18 @@ inline void in_transaction(const ores::database::context& ctx, const std::string
     const auto r = (*ctx.active_transaction())->execute(sql);
     if (!r)
         throw std::runtime_error(r.error().what());
+}
+
+/**
+ * @brief The statement that locks a request row for the rest of the transaction.
+ *
+ * The id is parsed as a uuid and written back in its canonical form, so nothing
+ * but a uuid reaches the statement text. A value that is not a uuid throws.
+ */
+inline std::string lock_request_sql(const std::string& request_id) {
+    const auto id = boost::uuids::to_string(boost::uuids::string_generator{}(request_id));
+    return "select id from ores_inbox_approval_requests_tbl where id = '" + id +
+           "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update";
 }
 
 /**

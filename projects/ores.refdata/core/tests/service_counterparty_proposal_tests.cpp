@@ -423,3 +423,35 @@ TEST_CASE("a_delete_line_for_a_live_link_previews_and_names_operations", tags) {
     CHECK(preview.lines[0].operation == "delete");
     CHECK(preview.part_codes == std::vector<std::string>{"operations"});
 }
+
+TEST_CASE("a_request_that_removes_a_counterparty_and_its_link_removes_the_link_first", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    counterparty_proposal_service svc(w.ctx);
+    const auto live = make_live(w, new_counterparty_line(h));
+    messaging::put_party_counterparty_request make;
+    make.change.write = {.party_id = w.party_id, .counterparty_id = live.id};
+    make.change.precondition = creates();
+    make.intent = {"system.test", "A link"};
+    REQUIRE(ores::refdata::service::party_counterparty_service(w.ctx)
+                .put_party_counterparty(make)
+                .result.outcome == ores::utility::domain::outcome::ok);
+    counterparty_lines lines;
+    auto gone = rename(live, live.full_name);
+    gone.operation = "delete";
+    lines.counterparties.push_back(gone);
+    auto removal = new_link_line(h, w.party_id, live.id);
+    removal.operation = "delete";
+    lines.links.push_back(removal);
+
+    const auto preview = svc.preview(lines);
+
+    // The counterparty is line 1 and the link line 2, as the maker gave them,
+    // although the link is removed first.
+    REQUIRE(preview.lines.size() == 2);
+    CHECK(preview.lines[0].line_no == 1);
+    CHECK(preview.lines[0].entity_type == "counterparty");
+    CHECK(preview.lines[1].line_no == 2);
+    CHECK(preview.lines[1].entity_type == "party_counterparty");
+    CHECK_FALSE(preview.refused());
+}

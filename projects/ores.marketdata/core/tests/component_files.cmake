@@ -38,6 +38,7 @@ set(files
     "repository_series_identity_backfill_tests.cpp"
     "series_classification_rule_eventing_integration_tests.cpp"
     "service_corpus_import_tests.cpp"
+    "service_feed_binding_activity_reader_tests.cpp"
     "service_import_party_series_tests.cpp"
     "service_import_service_tests.cpp"
     "service_manual_point_service_tests.cpp"

@@ -2754,6 +2754,94 @@ bindings.
 /** The producer, unique within a tenant; its feed bindings name the consumers. */
 #+end_src
 
+** list_feed_binding_activity_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.list_feed_binding_activity
+:response: list_feed_binding_activity_response
+:END:
+
+Asks, for every feed binding the caller can see, which series its source has written and when the source last ticked, so a screen stops inferring them from the observations.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks what each feed binding of the caller has written.
+ *
+ * The request carries nothing. A party reads only its own bindings and its own
+ * observations, so the answer is the caller's view.
+ */
+#+end_src
+
+** feed_binding_activity
+
+What one binding's source has written: the series of its newest observation and the time of that observation.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The newest observation a binding's source has written.
+ *
+ * A binding names a source and not a series, and a source writes one series, so the
+ * series of the source's newest observation is the series the binding feeds. A
+ * source that has written nothing for the party has neither a series nor a tick,
+ * and both are empty.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The source of the binding, as the binding names it.
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series of the source's newest observation. Empty when the source has written nothing.
+
+*** last_tick_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The observation time of the source's newest observation, as the wire writes a time: YYYY-MM-DD HH:MM:SSZ. Empty when the source has written nothing.
+
+** list_feed_binding_activity_response
+
+What each binding of the caller has written, in the order of the bindings' source names.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The activity of each feed binding of the caller.
+ *
+ * One entry for each binding, whether or not its source has written anything, so a
+ * binding with no tick stays in the answer and the screen can say so.
+ */
+#+end_src
+
+*** activities
+:PROPERTIES:
+:cpp_type: std::vector<feed_binding_activity>
+:END:
+
+One entry for each binding.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reason when the read failed. Empty on success.
+
 * See also
 
 - [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] — the story that models these operations.

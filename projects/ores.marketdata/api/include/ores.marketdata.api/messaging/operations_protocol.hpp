@@ -1225,6 +1225,50 @@ struct market_tick {
     std::string source;
 };
 
+/**
+ * @brief Asks what each feed binding of the caller has written.
+ *
+ * The request carries nothing. A party reads only its own bindings and its own
+ * observations, so the answer is the caller's view.
+ */
+struct list_feed_binding_activity_request {
+    using response_type = struct list_feed_binding_activity_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.list_feed_binding_activity";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The newest observation a binding's source has written.
+ *
+ * A binding names a source and not a series, and a source writes one series, so the
+ * series of the source's newest observation is the series the binding feeds. A
+ * source that has written nothing for the party has neither a series nor a tick,
+ * and both are empty.
+ */
+struct feed_binding_activity {
+    std::string source_name;
+    std::string series_id;
+    std::string last_tick_at;
+};
+
+/**
+ * @brief The activity of each feed binding of the caller.
+ *
+ * One entry for each binding, whether or not its source has written anything, so a
+ * binding with no tick stays in the answer and the screen can say so.
+ */
+struct list_feed_binding_activity_response {
+    std::vector<feed_binding_activity> activities;
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

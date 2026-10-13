@@ -8,7 +8,7 @@
 #+filetags: :manage_market_data_bindings:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-the-series-and-last-tick-of-a-binding
-#+pr:
+#+pr: 3246
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -26,11 +26,11 @@ A binding names a source, not a series, and the ingest loop keeps its tick count
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3246][#3246]] | [marketdata] Read the series and last tick of a binding |
 
 * Review
 
@@ -85,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A new operation, =marketdata.v1.ops.list_feed_binding_activity=, answers for each feed binding of the caller the series of its source's newest observation and the time of that observation, as empty text for a source that has written nothing. Decision: it is its own subject and not a field of the binding list, because the binding list is the generated entity read and the activity comes from a different table. The repository reads the newest observation of a source through the =observations_source= index, one read for each binding. A source writes one series, so the newest observation names the series the binding feeds. The permission is =marketdata::feed_bindings:read=. The BFF contract carries the answer. Checked: the two new Catch2 cases pass, and so do the ten cases of the schema describer, which includes the title cases of the earlier story. The read over the database was not run against the running service, because the BFF route that calls it belongs to the task Serve the bindings to the browser. That task exercises it for real.
+

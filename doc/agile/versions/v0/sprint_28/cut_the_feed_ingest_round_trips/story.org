@@ -21,11 +21,11 @@ Reduce the database round trips the feed ingest pays per stored tick, and prove 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-13                               |
 
 * Acceptance
@@ -38,10 +38,22 @@ Reduce the database round trips the feed ingest pays per stored tick, and prove 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C0C7E4E3-810D-44A6-A5AD-B2D98CBD4B44][Scaffold story: Cut the feed ingest round trips]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:47720564-A6F1-4FCD-81A0-495794CB5168][Write the session context in one round trip]] | STARTED | 2026-10-13 | | Initial task for: Cut the feed ingest round trips |
+| [[id:47720564-A6F1-4FCD-81A0-495794CB5168][Write the session context in one round trip]] | DONE | 2026-10-13 | 2026-10-14 | Initial task for: Cut the feed ingest round trips |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+The session context that every connection acquisition writes is now one
+statement instead of six, and the market data ingest pays about ten
+transactions per stored tick where it paid about fifty. The measurement
+is in the task's Result.
+
+The remaining ingest cost is not in this story. The ingest still opens
+one transaction per tick and stores one row per tick; batching the ticks
+of a single instant into one transaction is captured for later, as is the
+ingest that goes silent when the synthetic producer restarts.

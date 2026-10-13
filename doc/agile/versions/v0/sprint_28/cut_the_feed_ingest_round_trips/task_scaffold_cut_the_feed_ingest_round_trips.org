@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :cut_the_feed_ingest_round_trips:sprint_28:v0:
 #+owner: marco
-#+branch: feature/cut-the-feed-ingest-round-trips
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:

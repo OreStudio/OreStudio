@@ -26,11 +26,11 @@ Reduce the database round trips the feed ingest pays per stored tick, and prove 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47945343-4077-428A-8ADA-CF13629395B3][Cut the feed ingest round trips]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -84,3 +84,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The session context is now one round trip per acquisition instead of six.
+
+Every connection acquisition used to write its session settings one
+statement at a time — TimeZone, the tenant, the party, the visible
+parties, the actor and the service — so a path that acquired a
+connection per message paid six round trips before it did any work. The
+six =set_config= calls are now one =SELECT=, and nothing about the
+settings changed: each is still written on every acquire, because a
+pooled connection keeps whichever context used it last.
+
+Measured on the market data ingest at about 100 ticks a second, against
+the same service built from the commit before the change:
+
+| Measure                     | Before   | After   |
+|-----------------------------+----------+---------|
+| Transactions a second       | 3,258    | 986     |
+| Buffer hits a second        | 33,292   | 19,516  |
+| Stored rows a second        | 95       | 99      |
+| Transactions per stored tick | ~50     | ~9.8    |
+| Buffer hits per stored tick  | ~512    | ~193    |
+
+The tick rate differs between the two runs (about 65 a second before and
+about 101 after), so the per-tick figures are the meaningful comparison;
+the idle floor was about 57 transactions a second.

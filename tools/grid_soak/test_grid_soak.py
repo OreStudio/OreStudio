@@ -78,3 +78,31 @@ def test_a_wave_with_no_party_keeps_the_login_party_and_the_plain_reference():
     script = grid_soak.wave_script("u@t", "pw", "ref", [(None, 9)], "AV", "PKG")
     assert "switch-party" not in script
     assert "compute dispatch-batch ref 9 AV PKG" in script.splitlines()
+
+
+def test_a_heavier_party_takes_more_of_every_wave_on_average():
+    rng = random.Random(5)
+    totals = dict.fromkeys(PARTIES, 0)
+    for _ in range(400):
+        for party, jobs in grid_soak.split_count(rng, 50, PARTIES, [5.0, 3.0, 2.0, 0.5]):
+            totals[party] += jobs
+    ordered = sorted(PARTIES, key=lambda party: -totals[party])
+    assert ordered == ["a", "b", "c", "d"]
+    grand = sum(totals.values())
+    assert totals["a"] / grand > 0.4
+    assert totals["d"] / grand < 0.1
+
+
+def test_a_small_wave_reaches_the_heavy_parties_more_often():
+    rng = random.Random(6)
+    seen = dict.fromkeys(PARTIES, 0)
+    for _ in range(600):
+        for party, _ in grid_soak.split_count(rng, 1, PARTIES, [5.0, 3.0, 2.0, 0.5]):
+            seen[party] += 1
+    assert seen["a"] > seen["b"] > seen["c"] > seen["d"]
+
+
+def test_party_weights_default_to_the_acme_shape_and_can_be_overridden():
+    weights = grid_soak.parse_party_weights(["ACMCOR=4"])
+    assert weights["ACCOUK"] == 5.0
+    assert weights["ACMCOR"] == 4.0

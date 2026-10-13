@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 236153F4-4708-4205-BA5E-2BC938A3ABEA
+:END:
+#+title: Task: Spread the soak by party and draw the outcomes
+#+description: Each soak wave is shared out among the parties of the sender's tenant, and the Usage tab draws a pie of how the finished results ended.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/spread-the-soak-by-party-and-draw-the-outcomes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A soak populates every party of a tenant evenly, and the Usage tab shows the mix of successes and failures.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- Every wave reaches every party of the tenant with a random share, and the shares add up to the wave.
+- The Usage tab draws a pie of the succeeded and failed results of the last 24 hours, for a tenant and for the operator.
+
+* Plan
+
+An earlier soak drew one party for each wave, so 8 waves gave an uneven spread, and the share on the Usage tab is a lifetime figure that the old ACMCOR work dominated. The owner asked for a realistic split: the UK arm biggest, then the regions, then the holding company.
+
+- Each wave is one shell session that adds a batch for each party and dispatches that party's share, so every wave reaches every party.
+- The share of a party follows its weight, nudged by 20% at random for each wave. The default weights for Acme are UK 5, US 3, Hong Kong 2 and the holding company 0.5. =--party-weight CODE=WEIGHT= overrides one.
+- A wave smaller than the number of parties picks its parties by weight, with a job each.
+- The Usage tab draws a second pie of the results that finished in the last 24 hours, green for a success and red for a failure. The group pie and the outcomes pie sit side by side with captions. The same panel serves the operator and a tenant.
+- The owner asked for the existing jobs to be trashed. The compute tables turn a delete into a logical close, so the current rows of batches, workunits and results were closed and the ledger was emptied. The history stays.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Soak tests | 9 pass | =python3 -m pytest tools/grid_soak/test_grid_soak.py -q= | branch head |
+| Web suite | 1461 tests pass | =npx vitest run= in packages/web | branch head |
+| Share of the results by party after an 8 minute soak | UK 49.7%, US 25.9%, Hong Kong 19.6%, ACMCOR 4.9% (286 results) | the result table grouped by party | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every soak wave now reaches all four Acme parties with the shares of a real group, and the Usage tab shows how the finished results ended. The soak showed a second fault, which is not part of this task: about a fifth of the jobs stay in progress after a claim reply is lost. It is recorded in the next task.

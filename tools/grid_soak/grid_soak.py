@@ -128,13 +128,33 @@ def tenant_code_of(principal):
     return principal.partition("@")[2]
 
 
+# How much of a tenant's work each of its parties sends, by party short code. The Acme
+# holding company submits little, its UK arm most, and the US and Hong Kong arms in
+# between, which is the shape of a real group. A party not named here weighs 1.
+DEFAULT_PARTY_WEIGHTS = {"ACCOUK": 5.0, "ACCOUS": 3.0, "ACCOHK": 2.0, "ACMCOR": 0.5}
+
+
+def parse_party_weights(specs):
+    """The weight of each party short code, from CODE=WEIGHT, over the defaults."""
+    weights = dict(DEFAULT_PARTY_WEIGHTS)
+    for spec in specs or []:
+        code, _, weight = spec.partition("=")
+        try:
+            weights[code] = float(weight)
+        except ValueError:
+            raise SystemExit(f"grid_soak: the weight of party {code!r} is not a number: {weight!r}")
+        if weights[code] <= 0:
+            raise SystemExit(f"grid_soak: the weight of party {code!r} must be above zero")
+    return weights
+
+
 def discover_parties(root, tenant_code):
-    """The ids of the parties of a tenant other than its system party, in id order."""
+    """The (id, short code) of the parties of a tenant other than its system party."""
     # The code is a word of letters, digits and underscores, so it is safe in a literal.
     if not tenant_code or not all(c.isalnum() or c == "_" for c in tenant_code):
         return []
     sql = (
-        "select p.id from ores_refdata_parties_tbl p "
+        "select p.id, p.short_code from ores_refdata_parties_tbl p "
         "join ores_iam_tenants_tbl t on t.id = p.tenant_id "
         "and t.valid_to = ores_utility_infinity_timestamp_fn() "
         f"where t.code = '{tenant_code}' and p.party_category <> 'System' "
@@ -150,25 +170,33 @@ def discover_parties(root, tenant_code):
         return []
     parties = []
     for line in done.stdout.splitlines():
+        ident, _, code = line.strip().partition("|")
         try:
-            parties.append(str(uuid.UUID(line.strip())))
+            parties.append((str(uuid.UUID(ident)), code))
         except ValueError:
             continue
     return parties
 
 
-def split_count(rng, count, parties):
+def split_count(rng, count, parties, weights=None):
     """The jobs of a wave shared out among the parties, as (party, jobs) pairs.
 
-    Every party gets a random share, so one wave reaches all of them. A wave with fewer
-    jobs than parties reaches a random subset, with a job each. The shares always add up
-    to the count, and every party in the result has at least one job.
+    Every party gets a share in proportion to its weight, nudged a little at random so
+    no two waves are alike, and one wave reaches all of them. A wave with fewer jobs than
+    parties reaches a subset drawn by weight, with a job each. The shares always add up to
+    the count, and every party in the result has at least one job.
     """
     if count <= 0 or not parties:
         return []
+    base = list(weights) if weights else [1.0] * len(parties)
     if count < len(parties):
-        return [(party, 1) for party in rng.sample(parties, count)]
-    weights = [0.2 + rng.random() for _ in parties]
+        chosen, pool = [], list(range(len(parties)))
+        while len(chosen) < count:
+            pick = rng.choices(pool, [base[i] for i in pool])[0]
+            chosen.append(pick)
+            pool.remove(pick)
+        return [(parties[i], 1) for i in chosen]
+    weights = [w * (0.8 + 0.4 * rng.random()) for w in base]
     total = sum(weights)
     # One job each first, then the rest by weight, with the remainder to the heaviest.
     spare = count - len(parties)
@@ -199,8 +227,14 @@ def send_wave(root, args, rng, reference, count):
     names, weights = args.principals
     principal = rng.choices(names, weights)[0]
     pool = args.party_pools.get(tenant_code_of(principal), [])
-    parts = split_count(rng, count, pool) if pool else [(None, count)]
-    where = ", ".join(f"{n} in {str(p)[:8]}" for p, n in parts if p)
+    if pool:
+        ids = [ident for ident, _ in pool]
+        weights = [args.party_weights.get(code, 1.0) for _, code in pool]
+        codes = dict(pool)
+        parts = split_count(rng, count, ids, weights)
+    else:
+        parts, codes = [(None, count)], {}
+    where = ", ".join(f"{codes.get(p, str(p)[:8])} {n}" for p, n in parts if p)
     print(f"[soak] {reference} sent by {principal}" + (f": {where}" if where else ""), flush=True)
     script = wave_script(
         principal, args.password, reference, parts, args.app_version, args.package
@@ -270,6 +304,9 @@ def build_parser():
     ap.add_argument("--principal", action="append", metavar="NAME[:WEIGHT]",
                     help="Who sends a wave; repeat it. Default: the Acme and Barclays tenant "
                          "administrators and the super administrator, weighted 6, 3 and 1")
+    ap.add_argument("--party-weight", action="append", metavar="CODE=WEIGHT",
+                    help="How much of a wave a party takes, by its short code; repeat it. Default: "
+                         "ACCOUK 5, ACCOUS 3, ACCOHK 2 and ACMCOR 0.5, and 1 for any other party")
     ap.add_argument("--no-spread-parties", action="store_true",
                     help="Keep the party the login opens in, and do not switch")
     ap.add_argument("--password", default=None)
@@ -289,6 +326,7 @@ def main(argv):
     if args.password is None:
         ap.error("no password: set ORES_SHELL_LOGIN_PASSWORD in .env or pass --password")
 
+    args.party_weights = parse_party_weights(args.party_weight)
     args.party_pools = {}
     if not args.no_spread_parties:
         for name in dict.fromkeys(args.principals[0]):

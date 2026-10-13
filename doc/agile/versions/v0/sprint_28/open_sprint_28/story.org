@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.

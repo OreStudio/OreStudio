@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :iam:security:multi_tenancy:web:sprint_27:v0:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-13
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Every tenant can read the open data of an account, such as the name, picture and
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Design in review (PR #3115).           |
-| Waiting on    | Review of the design.                  |
-| Next          | Design the split and the shared-read pattern. |
-| Last touched  | 2026-10-11                               |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-13                             |
 
 * Acceptance
 

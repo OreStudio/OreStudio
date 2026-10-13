@@ -21,12 +21,12 @@ Every machine on the local network runs this environment's compute nodes beside 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The branch fix/run-compute-on-shared-hosts is ready for review. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Review and merge the PR.               |
-| Last touched  | 2026-10-13                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-13                             |
 
 * Acceptance
 

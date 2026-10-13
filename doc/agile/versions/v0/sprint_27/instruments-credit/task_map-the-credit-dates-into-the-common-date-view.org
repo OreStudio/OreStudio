@@ -8,7 +8,7 @@
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
 #+branch: feature/map-the-credit-dates-into-the-common-date-view
-#+pr:
+#+pr: 3247
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3247][#3247]] | [agile] Prove the credit dates in the common-date view |
 
 * Review
 

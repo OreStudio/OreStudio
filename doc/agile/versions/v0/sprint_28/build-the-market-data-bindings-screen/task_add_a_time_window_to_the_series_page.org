@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: CC080B67-F749-493F-8B30-5C01B69D36B7
+:END:
+#+title: Task: Add a time window to the series page
+#+description: The series page reads the latest observations by count. A synthetic feed ticks every two seconds, so the latest 500 cover a few minutes. Offer a window of time.
+#+type: task
+#+level: s1
+#+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
+#+owner: marco
+#+branch: feature/add-a-time-window-to-the-series-page
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The series page asks for the latest 500 observations. A synthetic tick every two seconds fills that in about seventeen minutes, so the chart shows a narrow slice. The observation list filter has no date range today. Add an observed-since filter to the server, send it from the BFF, and offer a window on the page, such as an hour, a day, a month, a year and all, with the count cap kept as the limit on size.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The observation list filter accepts an observed-since time, with a test.
+- The series page offers a window and keeps the count cap.
+- The window shown is said on the page.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

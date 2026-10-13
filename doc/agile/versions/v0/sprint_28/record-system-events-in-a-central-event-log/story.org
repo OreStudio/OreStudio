@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 830F1153-07C3-4C80-82DA-8ACF107DDCE7
+:END:
+#+title: Story: Record system events in a central event log
+#+description: Extend ores.telemetry with a central log of key system events, apart from the logs: a catalogue of event types, a publish API every service calls, a collector that stores them with their subject, an Operations Events screen, and events in each record's History. Feed runs are the first client.
+#+type: story
+#+level: s2
+#+filetags: :telemetry:eventing:operations:synthetic:web:sprint_28:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]], carried unfinished from [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ORE Studio records many things but no key system event in a place a person can find it. Telemetry logs hold every log line, so a feed that started or stopped, a service that came up, or an auto start that started nothing is a line among thousands. Entity change events say that a record changed, not that something happened. Extend telemetry with a central system event log, as Windows Event Log, Kubernetes Events and CloudTrail keep one apart from logging: typed events from a catalogue, published on NATS by any service, stored by the telemetry service in their own table with their own retention, and read by subject, type, source, severity and time.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+- A codegen catalogue declares each event type once: a stable code such as synthetic.feed_started, a category, a severity and a message template, rendered to C++ and TypeScript.
+- Any service publishes an event through one call in the shared service library, with the type, the subject it is about, the actor, the structured data, and the tenant, party and correlation id from its request context, on telemetry subjects apart from the logs.
+- The telemetry service stores events in their own tenant-scoped table with retention per category, and answers queries by subject, type, source, severity and time range.
+- An Operations Events screen lists, filters and follows events live; a record's History stream shows the events about that record as acts.
+- The synthetic service publishes feed started and stopped events with the reason; the BFF keys tick buffers by feed and tenant from them, so the Ticks tab shows the last run safely; a feed's History shows its runs.
+- Services publish their own started and stopping events, and the synthetic auto start publishes what it started and skipped.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A9775142-D61D-4FDD-80F0-65F894103A65][Declare the system event catalogue and the publish API]] | BACKLOG | | | A codegen catalogue of event types and one publish call in the shared service library, on telemetry.v1.events subjects. |
+| [[id:B6F36E7C-27A9-420B-BB3C-BA2635D3163D][Store and query system events in telemetry]] | BACKLOG | | | The telemetry service collects events into their own tenant-scoped table with retention per category, and answers queries by subject, type, source, severity and time. |
+| [[id:B76D8BDC-057A-41BA-B433-F129F96EA679][Show system events in Operations and in History]] | BACKLOG | | | An Operations Events screen that lists, filters and follows events live, and each record's History stream showing the events about it as acts. |
+| [[id:DEE1ACE1-9A9A-47D2-AD53-AE244F231C70][Publish feed runs and keep the last run]] | BACKLOG | | | The synthetic service publishes feed started and stopped events; the BFF keys tick buffers by feed and tenant from them so the Ticks tab shows the last run, and a feed's History shows its runs. |
+| [[id:975C4E1F-1A3E-4D7B-AFC2-BA5AD9CCCAFF][Publish service lifecycle and auto start events]] | BACKLOG | | | Every service publishes its started and stopping events, and the synthetic auto start publishes what it started and skipped. |
+
+* Decisions
+
+- *Extend telemetry, do not add a component.* The telemetry service already
+  owns the =telemetry.v1.>= namespace, its own tables, retention and
+  aggregation, and every service already links its core part. Events become
+  its fourth stored shape beside logs, heartbeats and NATS samples, on their
+  own subjects (=telemetry.v1.events.<category>=) and in their own table, so
+  the logs never hold them and they never wait behind log volume.
+- *Shaped as the established event logs are.* Windows Event Log, Kubernetes
+  Events, the systemd journal's =MESSAGE_ID=, CloudTrail and the Azure
+  Activity Log agree on the shape:
+  1. A store apart from logging, few rows, kept longer, queryable.
+  2. A catalogue of event types: a stable code, a category, a severity
+     (information, warning, error) and a message template. Code finds an event
+     by its type, never by its text.
+  3. A subject: the record the event is about, as an entity type and an id,
+     so a screen shows a record's events beside it.
+  4. Context: the source service and instance, the actor (a person or the
+     system), the tenant and party, the correlation id, the time, and
+     structured data.
+  5. Published on the bus by the producer and stored by one collector, so
+     a screen or a service can also follow events live.
+- *Not the change events, not the audit of sign-ins.* An entity change event
+  says a row changed and drives History versions; a system event says
+  something happened. Sign-ins keep their own audit; a later story may fold
+  them in.
+- *The catalogue is codegen.* One model renders the codes, categories,
+  severities and templates to C++ and TypeScript, as the other catalogues
+  are, so a producer cannot publish a type nobody declared and a screen
+  names every type in every language.
+- *Tenant-scoped rows, installation events under the system tenant.* A feed
+  run belongs to its tenant and party; a service starting belongs to the
+  installation. Row-level security reads them as the other telemetry reads
+  are read.
+- *Feed runs first.* The synthetic service publishes =synthetic.feed_started=
+  and =synthetic.feed_stopped= with the feed's id and the reason: a person,
+  a restart to apply a saved mixture, a stop before a delete, or the auto
+  start. The BFF follows them and keys each tick buffer by the feed and its
+  tenant, which brings back the last run on the Ticks tab without the
+  cross-tenant risk PR 3121's review found in buffers keyed by source name.
+
+* Out of scope
+
+- Replacing the telemetry logs, the heartbeats or the entity change events.
+- Moving the sign-in audit into the event log.
+- Alerting and notification on events; the inbox bell is a later story.
+- Archiving events outside the database.

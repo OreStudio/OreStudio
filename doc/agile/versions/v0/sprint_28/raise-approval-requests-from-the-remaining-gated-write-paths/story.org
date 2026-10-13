@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 4CC34457-ABD1-4473-B877-ACCB6C33BB7B
+:END:
+#+title: Story: Raise approval requests from the remaining gated write paths
+#+description: The party, convention and tenor screens, the ORE import and the shell counterparty commands raise approval requests instead of writing gated data directly.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The party, convention and tenor screens, the ORE import and the shell counterparty commands raise approval requests instead of writing gated data directly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- The party details, instrument convention and tenor resolution screens raise a request for a gated change instead of writing it.
+- The ORE import raises approval requests for the gated books it creates.
+- The shell counterparty identifier commands raise approval requests for gated writes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:40014A64-C176-46E6-B39F-EBA92DDC7967][Move the convention screen onto the review panel]] | BACKLOG | | | Make the instrument convention screen raise a request for every write. |
+| [[id:77613BC7-0180-47E6-8F3D-0BCF447F6818][Move the counterparty screen onto the review panel]] | BACKLOG | | | Build the counterparty as a record screen like the parties screen, where a gated change raises a request and a contact change is written directly. |
+| [[id:0705EF62-7930-4B2C-B003-E578AF0D0A16][Move the party details screen onto the review panel]] | BACKLOG | | | Make the party details screen raise a request for a gated change instead of writing it. |
+| [[id:BE57136B-9C17-4FCB-A4EB-05AA840B11F2][Move the tenor resolution screen onto the review panel]] | BACKLOG | | | Make the tenor resolution screen raise a request for every write. |
+| [[id:DD150215-C89B-4DD7-9822-269ED4773F33][Raise requests from the ORE import for gated books]] | BACKLOG | | | Make the ORE import raise approval requests for the books it creates, because the gate now refuses a direct book write. |
+| [[id:467B87FF-BB28-44A9-A249-FA975EAFCEA8][Raise requests from the shell for gated counterparties]] | BACKLOG | | | Make the shell counterparty identifier commands raise approval requests, because the gate now refuses a direct write. |
+
+* Decisions
+
+* Out of scope
+
+-

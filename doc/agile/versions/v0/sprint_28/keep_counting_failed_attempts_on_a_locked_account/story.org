@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: D384CF87-DE48-404E-B787-96E6149C120F
+:END:
+#+title: Story: Keep counting failed attempts on a locked account
+#+description: A locked account still counts its failed sign-in attempts and records the address of each, so a run of attempts against a locked account shows as an attack.
+#+type: story
+#+level: s2
+#+filetags: :iam:web:sprint_28:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]], carried unfinished from [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When an account is locked for too many failed attempts, the sign-in is refused before the password check, so the failed count stops at 5 and the last attempt address stays at the attempt that locked it. An attack on a locked account then shows only in the authentication event log, and the Failed attempts tab looks quiet. The login record keeps counting while the account is locked, and records the address and time of every attempt. A locked-account attempt gets an event type of its own, so the Events tab can filter for it. The story also decides whether the password is checked on a locked account, so that a correct password on a locked account can be told from a wrong one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+- A refused sign-in on a locked account adds one to the failed count and updates the last attempt address and time.
+- The refusal is recorded as its own authentication event type, and the Events tab filters for it.
+- The Failed attempts tab shows a count above 5 for an account under attack, drawn in red.
+- The decision on checking the password of a locked account is recorded in the story, with the reason.
+- Every =login_failure= event carries the client address and the account identifier.
+- A lock and an unlock are each recorded as an event, with the account and the person who acted.
+- The history of failed attempts survives an unlock: after one, the Events tab still shows every attempt, and a reader can tell which attempts led to the lock.
+- The retention of raw events and of a per-account, per-address aggregate is decided and written in the story, with the reason.
+- Unit tests in ores.iam cover the count, the address and the event type for a locked account.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* What happens to the failed-attempt data today
+
+Found while reviewing the Sign-ins screen. A tenant administrator unlocks an
+account in Rescue access, and the history of the attempts that locked it is
+then hard to study. The data lives in two places.
+
+** The login record: current state, no history
+
+=ores_iam_login_info_tbl= holds one row per account, keyed by =account_id=. It
+has no version, no =valid_from= or =valid_to= and no audit tail. Its header says
+so: it is a current-state table.
+
+| Column | What an unlock does to it |
+|--------+---------------------------|
+| =failed_logins= | Set to 0. The size of the run that locked the account is lost |
+| =locked= | Set to false |
+| =last_attempt_ip= | Not changed by the unlock. Each later attempt overwrites it, so only the newest address survives |
+
+Nothing records that the account was locked, when, by which run of attempts, or
+who unlocked it. The Failed attempts tab reads this table, so after an unlock it
+shows 0 and the attacker's last address.
+
+** The authentication event log: the only history
+
+=ores_iam_auth_events_tbl= keeps one row per event, and an unlock does not touch
+it. Each refused sign-in is a =login_failure= row, and a refusal on a locked
+account is one too. Four limits make it a poor base for studying patterns:
+
+- *No source address.* A =login_failure= row stores the time, the tenant, the
+  username and the message. It has no client address and no session. The
+  address of an attempt exists only in =last_attempt_ip=, and only the newest.
+- *No account identifier.* The row sets =account_id= to the empty string. The
+  Events tab joins on the username, which is not a key: a renamed or deleted
+  account, or a username that matches no account, cannot be tied to its history.
+- *A retention window.* On TimescaleDB with the Community licence, raw events
+  are dropped after 90 days. The hourly aggregate is dropped after 90 days and
+  the daily aggregate after 3 years. Under the Apache licence, no hypertable
+  policy or aggregate is created at all.
+- *Aggregates that cannot answer the question.* Both aggregates group by tenant
+  and event type only. They count events, and the daily one counts distinct
+  accounts. After 90 days nothing says which account or which address a failure
+  came from.
+
+** What follows
+
+A pattern such as many accounts tried from one address, one account tried
+slowly over weeks, or a lock that keeps coming back after each unlock cannot be
+found from this data. The fix has three parts, and they belong to this story
+because they share one cause with the locked-account counting.
+
+- Record the client address and the account identifier on every
+  =login_failure=, including a refusal on a locked account.
+- Record a lock and an unlock as events of their own, with who acted, so a run
+  of attempts reads as one episode between a lock and an unlock.
+- Decide how long the raw events and the per-account aggregates are kept, and
+  keep an aggregate per account and address for longer than the raw rows.
+
+A correction to an earlier statement: unlocking an account that is not locked
+does not fail. =unlock_account= returns success and writes nothing. The
+"Something went wrong." seen on that action was the empty-body defect in the
+BFF, fixed in PR #3082.
+
+* Decisions
+
+- The lock and unlock events are written after the login record is written, in
+  the same service, and a failure to write an event is logged and swallowed.
+  This was chosen so a broken event log can never stop an administrator from
+  unlocking an account. The cost is a known limit: a lock or an unlock can
+  exist with no event. The audit trail can lose an entry. Writing the login
+  record and the event in one transaction would remove the limit, and it is
+  left to the part of this story that changes the login record.
+- The lock and unlock events are recorded in PR #3082: =account_locked= and
+  =account_unlocked=, with the account, and in the detail who acted or the failed
+  attempts that did. An unlock names the attempts it cleared, and leaves the
+  count out when it is 0.
+
+- Where it happens today: =account_operations_service.cpp= refuses a locked
+  account before the password check, so it neither counts the attempt nor
+  records its address. The refusal still reaches the authentication event log as
+  a =login_failure= with the message of the lock.
+- The number of failed attempts that locks an account (five) stays as it is.
+
+* Out of scope
+
+-

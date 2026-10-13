@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: D144E591-5291-433F-B457-AB977DAA2E69
+:END:
+#+title: Story: Sort every list by when it was updated
+#+description: Every list can be ordered by the time of the latest save, so the newest changes come first.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]], carried unfinished from [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who looks for what changed lately orders any list by update time. Today a list sorts only on the columns its model marks sortable, and none marks the update time.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+- Every entity list accepts the update time as a sort field, through the shared audit field group.
+- The web lists show an Updated column that sorts on the server.
+- A sort on a field the entity does not have is still refused.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B9CDFAD7-DCB6-4941-BE6E-55E6CDE9A29A][Scaffold story: Sort every list by when it was updated]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:30829A51-CE1B-4CF1-AF62-5D6A440D881A][Make the update time sortable in the shared audit field group]] | BACKLOG | | | Initial task for: Sort every list by when it was updated |
+
+* Decisions
+
+* Out of scope
+
+-

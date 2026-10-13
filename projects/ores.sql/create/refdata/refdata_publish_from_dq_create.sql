@@ -3889,7 +3889,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  *
  * SECURITY DEFINER function called by the refdata service's NATS
  * handler for the refdata.v1.ops.publish_crm_topology_bundles_from_dq
- * subject. Reads ores_dq_crm_topology_bundles_artefact_tbl (system
+ * subject. Reads ores_dq_crm_topology_configs_artefact_tbl (system
  * tenant) and writes crm_topology_config/crm_driver_pair/
  * crm_enabled_derived_pair rows for the target (tenant, party) --
  * one config per distinct crm_name in the artefact, its driver
@@ -3947,7 +3947,7 @@ begin
 
     for r_crm in
         select distinct crm_name, pivot_currency_code
-        from ores_dq_crm_topology_bundles_artefact_tbl
+        from ores_dq_crm_topology_configs_artefact_tbl
         where dataset_id = p_dataset_id
           and tenant_id = ores_utility_system_tenant_id_fn()
         order by crm_name
@@ -3979,7 +3979,7 @@ begin
 
         for r_pair in
             select base_currency_code, quote_currency_code, row_kind
-            from ores_dq_crm_topology_bundles_artefact_tbl
+            from ores_dq_crm_topology_configs_artefact_tbl
             where dataset_id = p_dataset_id
               and tenant_id = ores_utility_system_tenant_id_fn()
               and crm_name = r_crm.crm_name

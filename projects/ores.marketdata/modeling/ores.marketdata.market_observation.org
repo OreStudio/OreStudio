@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.marketdata.market_observation
@@ -122,6 +123,60 @@ std::to_string(faker::number::decimal<double>(0.0, 100.0))
 
 Source tag identifying the producer channel that published this observation
 (e.g. =synthetic.v1.ops.tick.fx_spot.eur-usd=).
+
+* Artefact columns
+:PROPERTIES:
+:key: oresmd_uri
+:END:
+
+The import names a series by its ORE market data key and datum URI, where the store holds a series id and a party. It carries the observation date, the source's URL and the retrieval time. Publishing resolves the series and writes the party.
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** oresmd_uri
+:PROPERTIES:
+:type: text
+:END:
+
+** key
+:PROPERTIES:
+:type: text
+:END:
+
+** datum_uri
+:PROPERTIES:
+:type: text
+:END:
+
+** observation_date
+:PROPERTIES:
+:type: date
+:END:
+
+** value
+:PROPERTIES:
+:type: numeric
+:END:
+
+** source
+:PROPERTIES:
+:type: text
+:END:
+
+** source_url
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** retrieved_at
+:PROPERTIES:
+:type: timestamp with time zone
+:nullable: true
+:END:
 
 * SQL
 

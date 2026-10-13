@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :dq:codegen:architecture:staging:
 #+created: 2026-10-12
-#+updated: 2026-10-12
+#+updated: 2026-10-13
 
 * Summary
 
@@ -55,7 +55,9 @@ shape, and the two cannot drift.
    store does not: a natural key where the store holds a uuid, a field the
    publisher supplies left out, or a denormalised row that publishes into
    several tables. The first column is the staging key unless =:key:= names
-   another.
+   another. An =expression= table in the section's own body, above the
+   first column, states the staging table's check constraints, as the
+   =** Checks= table of the =* SQL= section does for the entity's.
 3. *Regenerate the SQL schema* for the model:
    =./compass.sh codegen regenerate --component <component> --address ores.sql.schema --entity <entity>=.
    The table lands in =projects/ores.sql/create/dq/dq_<plural>_artefact_create.sql=.
@@ -160,10 +162,13 @@ model of another component, with a DQ C++, shell and TypeScript stack for the
 staging table. The CSAs, netting agreements, netting sets, report definitions
 and market data providers now come from their owning models, by
 [[id:2FC7FD9E-9098-459F-A0A2-C1E63FD710FD][Move the duplicated DQ models onto their owners]].
+Five hand-written tables also moved onto their owning models: the CRM
+topology, the market data observations and the three synthetic feed tables,
+by [[id:64EE4260-1748-40E1-A1AA-4DD687CED92F][Model the hand-written artefact tables]].
 
 | Pattern | Tables | Why it is legacy | Retired by |
 |---------+--------+------------------+------------|
-| Hand-written SQL with no model | =crm_topology_bundles=, =ip2country=, =lei_bic=, =market_data_observations=, =synthetic_gmm_components=, =synthetic_ir_curve_configs=, =synthetic_ir_curve_template_entries= | Nothing generates or checks the table against its entity | [[id:64EE4260-1748-40E1-A1AA-4DD687CED92F][Model the hand-written artefact tables]] |
+| Hand-written SQL with no model | =ip2country=, =lei_bic= | Nothing generates or checks the table against its entity | [[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][Model the geo ip2country store]] for =ip2country=; [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]] for =lei_bic= |
 | The older lookup template, =sql_schema_artefact_create=, from =ores.codegen.lookup_entity= models | =account_types=, =asset_classes=, =asset_measures=, =benchmark_rates=, =business_centres=, =business_processes=, =cashflow_types=, =entity_classifications=, =local_jurisdictions=, =party_relationships=, =party_roles=, =person_roles=, =regulatory_corporate_sectors=, =reporting_regimes=, =supervisory_bodies= | A second template for the same table shape; the lookup entity type is itself being retired | [[id:A31257E3-7495-46CD-B36D-10AA6D55CB09][Move the lookup artefact tables onto domain models]] |
 | Undecided: an =ores.dq= model whose owner is unsettled | =badge_definitions=, =badge_severities=, =code_domains=, =coding_schemes=, =counterparty_aliases=, =netting_set_aliases=, =lei_entities=, =lei_relationships=, =synthetic_fx_spot_configs= | Each needs a decision: DQ is the owner, or the model moves to the component that owns the published rows | [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]] |
 

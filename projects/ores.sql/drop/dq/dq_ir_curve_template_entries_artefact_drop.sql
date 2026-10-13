@@ -17,4 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop table if exists "ores_dq_synthetic_ir_curve_configs_artefact_tbl";
+drop table if exists "ores_dq_ir_curve_template_entries_artefact_tbl";

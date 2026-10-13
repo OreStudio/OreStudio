@@ -151,7 +151,7 @@ begin
         end if;
 
         if exists (
-            select 1 from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
+            select 1 from ores_dq_ir_curve_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
         ) then
             create temp table replaced_ir_configs (id uuid) on commit drop;
@@ -204,7 +204,7 @@ begin
         select provider_code from ores_dq_synthetic_fx_spot_configs_artefact_tbl
         where dataset_id = p_dataset_id
         union all
-        select provider_code from ores_dq_synthetic_ir_curve_configs_artefact_tbl
+        select provider_code from ores_dq_ir_curve_generation_configs_artefact_tbl
         where dataset_id = p_dataset_id
     ) p
     having count(*) = count(p.provider_code)
@@ -444,7 +444,7 @@ begin
             -- calibrated mixture. Falls back to a single unrehearsed
             -- placeholder component if the dataset has none.
             if exists (
-                select 1 from ores_dq_synthetic_gmm_components_artefact_tbl g
+                select 1 from ores_dq_gmm_components_artefact_tbl g
                 where g.dataset_id = p_dataset_id
                   and g.base_currency_code = r.base_currency_code
                   and g.quote_currency_code = r.quote_currency_code
@@ -460,7 +460,7 @@ begin
                   and existing.valid_to = ores_utility_infinity_timestamp_fn()
                   and existing.component_index not in (
                       select g.component_index
-                      from ores_dq_synthetic_gmm_components_artefact_tbl g
+                      from ores_dq_gmm_components_artefact_tbl g
                       where g.dataset_id = p_dataset_id
                         and g.base_currency_code = r.base_currency_code
                         and g.quote_currency_code = r.quote_currency_code
@@ -468,7 +468,7 @@ begin
 
                 for gr in
                     select g.component_index, g.description, g.mean, g.stdev, g.weight
-                    from ores_dq_synthetic_gmm_components_artefact_tbl g
+                    from ores_dq_gmm_components_artefact_tbl g
                     where g.dataset_id = p_dataset_id
                       and g.base_currency_code = r.base_currency_code
                       and g.quote_currency_code = r.quote_currency_code
@@ -556,7 +556,7 @@ begin
     -- =========================================================================
 
     if exists (
-        select 1 from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
+        select 1 from ores_dq_ir_curve_generation_configs_artefact_tbl a
         where a.dataset_id = p_dataset_id
     ) then
         select id into v_ir_asset_class_folder_id
@@ -617,7 +617,7 @@ begin
                 coalesce(a.vintage_date, '') as vintage_date,
                 coalesce(a.vintage_series_uri, '') as vintage_series_uri,
                 a.provider_code
-            from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
+            from ores_dq_ir_curve_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
             order by a.currency_code, a.index_family
         loop
@@ -748,7 +748,7 @@ begin
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
               and existing.sequence_index not in (
                   select e.sequence_index
-                  from ores_dq_synthetic_ir_curve_template_entries_artefact_tbl e
+                  from ores_dq_ir_curve_template_entries_artefact_tbl e
                   where e.dataset_id = p_dataset_id
                     and e.currency_code = r.currency_code
                     and e.index_family = r.index_family
@@ -757,7 +757,7 @@ begin
 
             for er in
                 select e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
-                from ores_dq_synthetic_ir_curve_template_entries_artefact_tbl e
+                from ores_dq_ir_curve_template_entries_artefact_tbl e
                 where e.dataset_id = p_dataset_id
                   and e.currency_code = r.currency_code
                   and e.index_family = r.index_family

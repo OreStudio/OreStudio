@@ -82,7 +82,7 @@ begin
     end if;
 
     if exists (
-        select 1 from ores_dq_synthetic_ir_curve_configs_artefact_tbl
+        select 1 from ores_dq_ir_curve_generation_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
         raise debug 'Synthetic IR curve configs (2016 ORE Samples) artefact already populated for dataset %', v_dataset_id;
@@ -91,7 +91,7 @@ begin
 
     raise debug 'Populating synthetic IR curve configs (2016 ORE Samples) for dataset: synthetic.feeds.ore_samples_2016';
 
-    insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
+    insert into ores_dq_ir_curve_generation_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
         currency_code, index_family, tenor, process_type,
@@ -136,7 +136,7 @@ begin
     -- standard swap-curve ladder out to 30Y. This is how a real 3M/6M
     -- LIBOR/EURIBOR curve was actually constructed (deposit + FRA strip +
     -- swap strip), not an arbitrary abbreviation.
-    insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
+    insert into ores_dq_ir_curve_template_entries_artefact_tbl (
         dataset_id, tenant_id, currency_code, index_family, tenor,
         sequence_index, start_tenor_code, end_tenor_code, instrument_code
     )

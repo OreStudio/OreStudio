@@ -1316,7 +1316,8 @@ def _collect_implementations(root: OrgNode) -> dict[str, list[str]]:
     return out
 
 
-def _artefact_columns(root: OrgNode) -> tuple[list[dict[str, Any]], str]:
+def _artefact_columns(
+        root: OrgNode) -> tuple[list[dict[str, Any]], str, list[str]]:
     """Read the optional ``* Artefact columns`` section.
 
     The section states a staging table's body when that body is not a
@@ -1331,14 +1332,16 @@ def _artefact_columns(root: OrgNode) -> tuple[list[dict[str, Any]], str]:
     staging table's body after its =dataset_id=/=tenant_id= header, in
     the order written. The first entry is the staging table's key, unless
     the section's own =:key:= property names another; that key is what
-    the generated key index is built on.
+    the generated key index is built on. An =expression= table in the
+    section's own body states the staging table's check constraints, as
+    the =** Checks= table of the =* SQL= section does for the entity's.
 
-    Returns the columns and the key column name, both empty when the
-    section is absent.
+    Returns the columns, the key column name and the check expressions,
+    all empty when the section is absent.
     """
     section = _section(root, "Artefact columns")
     if not section:
-        return [], ""
+        return [], "", []
     columns = [_column_node_to_dict(child) for child in section.children]
     if not columns:
         raise ValueError(
@@ -1346,7 +1349,18 @@ def _artefact_columns(root: OrgNode) -> tuple[list[dict[str, Any]], str]:
             "section to get the default projection, or list the staging "
             "columns in order."
         )
-    return columns, section.properties.get("key") or columns[0]["name"]
+    checks = []
+    if section.tables:
+        rows = _parse_org_table_rows(section)
+        if rows and "expression" not in rows[0]:
+            raise ValueError(
+                "The '* Artefact columns' section has a table with no "
+                "'expression' column. A check table names its one column "
+                "'expression'; under any other header its checks would be "
+                "dropped."
+            )
+        checks = [r["expression"] for r in rows if r.get("expression")]
+    return columns, section.properties.get("key") or columns[0]["name"], checks
 
 
 def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
@@ -1571,7 +1585,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
 
     # Artefact columns: the staging table's body when it is not a plain
     # projection of this entity's table. See _artefact_columns.
-    columns_section, key_column = _artefact_columns(doc.root)
+    columns_section, key_column, artefact_checks = _artefact_columns(doc.root)
     if columns_section:
         if de.get("has_artefact_insert_fn"):
             raise ValueError(
@@ -1583,6 +1597,8 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             )
         de["artefact_columns"] = columns_section
         de["artefact_key_column"] = key_column
+        if artefact_checks:
+            de["artefact_checks"] = artefact_checks
 
     # Used by the C++ repository facet to conditionally include the
     # datetime header only when at least one FK opts into the as-of
@@ -2388,10 +2404,17 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
 
     # Artefact columns: the staging table's body when it is not a plain
     # projection of this junction's table. See _artefact_columns.
-    columns_section, key_column = _artefact_columns(doc.root)
+    columns_section, key_column, artefact_checks = _artefact_columns(doc.root)
     if columns_section:
         j["artefact_columns"] = columns_section
         j["artefact_key_column"] = key_column
+        if artefact_checks:
+            raise ValueError(
+                "The '* Artefact columns' section of this junction declares "
+                "check expressions, and only the domain entity artefact "
+                "template renders them. Move the model to ores.codegen.entity, "
+                "or drop the table."
+            )
 
     # A key index is built only on a key column the staging table has. A
     # junction whose dataset is scoped to the party a publish names stages
@@ -5840,7 +5863,7 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
 
     # Artefact columns: the staging table's body when it is not a plain
     # projection of this entity's table. See _artefact_columns.
-    columns_section, key_column = _artefact_columns(doc.root)
+    columns_section, key_column, artefact_checks = _artefact_columns(doc.root)
     if columns_section:
         if e.get("has_artefact_insert_fn"):
             raise ValueError(
@@ -5852,6 +5875,13 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
             )
         e["artefact_columns"] = columns_section
         e["artefact_key_column"] = key_column
+        if artefact_checks:
+            raise ValueError(
+                "The '* Artefact columns' section of this lookup entity declares "
+                "check expressions, and only the domain entity artefact "
+                "template renders them. Move the model to ores.codegen.entity, "
+                "or drop the table."
+            )
 
     return {"entity": e}
 

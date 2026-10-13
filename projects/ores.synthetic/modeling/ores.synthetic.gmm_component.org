@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0F0FB279-A707-4BA5-A1A2-40F46E591EB6
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.gmm_component
 #+description: Codegen entity model for the synthetic gmm_component table; one weighted Gaussian component of an FX spot GMM price process.
@@ -133,6 +134,56 @@ Mixture weight of this component; normalised across the parent's set.
 #+begin_src cpp :name generator
 faker::number::decimal(0.0, 1.0)
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: base_currency_code
+:END:
+
+The import names the currency pair a component belongs to, where the store holds the FX spot config id and the party. Publishing resolves the config in the target party.
+
+** base_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** component_index
+:PROPERTIES:
+:type: integer
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** mean
+:PROPERTIES:
+:type: double precision
+:END:
+
+** stdev
+:PROPERTIES:
+:type: double precision
+:END:
+
+** weight
+:PROPERTIES:
+:type: double precision
+:END:
+
+* Artefact indexes
+
+** pair
+:PROPERTIES:
+:columns: dataset_id, base_currency_code, quote_currency_code
+:END:
 
 * SQL
 

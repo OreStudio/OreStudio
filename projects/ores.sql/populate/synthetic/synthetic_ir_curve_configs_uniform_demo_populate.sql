@@ -88,7 +88,7 @@ begin
     end if;
 
     if exists (
-        select 1 from ores_dq_synthetic_ir_curve_configs_artefact_tbl
+        select 1 from ores_dq_ir_curve_generation_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
         raise debug 'Synthetic IR curve configs (uniform demo) artefact already populated for dataset %', v_dataset_id;
@@ -97,7 +97,7 @@ begin
 
     raise debug 'Populating synthetic IR curve configs (uniform demo) for dataset: synthetic.feeds.uniform_demo';
 
-    insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
+    insert into ores_dq_ir_curve_generation_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
         currency_code, index_family, tenor, process_type,
@@ -149,7 +149,7 @@ begin
         ('TWD', 'taibor',  0.0200)
     ) as c(currency_code, index_family, theta);
 
-    insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
+    insert into ores_dq_ir_curve_template_entries_artefact_tbl (
         dataset_id, tenant_id, currency_code, index_family, tenor,
         sequence_index, start_tenor_code, end_tenor_code, instrument_code
     )

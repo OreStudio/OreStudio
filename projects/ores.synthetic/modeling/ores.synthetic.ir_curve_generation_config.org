@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8B840E8D-2763-4A1F-8BC2-6C9E354DB673
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_generation_config
 #+description: Codegen entity model for the synthetic ir_curve_generation_config table; configuration for generating a synthetic IR curve from a short-rate process.
@@ -434,6 +435,133 @@ Every IR curve feed is =interest_rates=. A screen filters the feeds by it. The c
 #+begin_src cpp :name generator
 std::string("interest_rates")
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id
+:END:
+
+One import row stands for a whole IR curve feed: the curve, its process parameters (kappa, theta, sigma and the initial rate) and its provider. Publishing splits the row across the curve config and the tables it refers to.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** enabled
+:PROPERTIES:
+:type: boolean
+:END:
+
+** auto_start
+:PROPERTIES:
+:type: boolean
+:default: false
+:END:
+
+** currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** index_family
+:PROPERTIES:
+:type: text
+:END:
+
+** tenor
+:PROPERTIES:
+:type: text
+:default: ''
+:END:
+
+** process_type
+:PROPERTIES:
+:type: text
+:END:
+
+** kappa
+:PROPERTIES:
+:type: double precision
+:END:
+
+** theta
+:PROPERTIES:
+:type: double precision
+:END:
+
+** sigma
+:PROPERTIES:
+:type: double precision
+:END:
+
+** initial_rate
+:PROPERTIES:
+:type: double precision
+:END:
+
+** ticks_per_hour
+:PROPERTIES:
+:type: integer
+:END:
+
+** fixed_leg_payment_frequency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** price_source
+:PROPERTIES:
+:type: text
+:default: 'fixed'
+:END:
+
+** vintage_source
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** vintage_date
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** vintage_series_uri
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** provider_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* Artefact indexes
+
+** currency_code
+:PROPERTIES:
+:columns: currency_code
+:END:
 
 * SQL
 

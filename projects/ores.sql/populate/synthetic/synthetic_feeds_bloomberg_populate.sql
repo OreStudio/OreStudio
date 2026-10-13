@@ -168,7 +168,7 @@ begin
         'bloomberg'
     from t_bloomberg_fx p;
 
-    insert into ores_dq_synthetic_gmm_components_artefact_tbl (
+    insert into ores_dq_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,
         component_index, description, mean, stdev, weight
     )
@@ -220,7 +220,7 @@ begin
         ('CLP', 'camara',  0.30, 0.015, 0.0450),
         ('COP', 'ibr',     0.25, 0.018, 0.0900);
 
-    insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
+    insert into ores_dq_ir_curve_generation_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
         currency_code, index_family, tenor, process_type,
@@ -239,7 +239,7 @@ begin
         'fixed', '', '', '', 'bloomberg'
     from t_bloomberg_ir c;
 
-    insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
+    insert into ores_dq_ir_curve_template_entries_artefact_tbl (
         dataset_id, tenant_id, currency_code, index_family, tenor,
         sequence_index, start_tenor_code, end_tenor_code, instrument_code
     )
@@ -259,7 +259,7 @@ begin
 
     -- The USD FOMC-dated short end: one series per meeting-dated OIS pillar,
     -- with the main USD curve's calibration so the two segments move together.
-    insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
+    insert into ores_dq_ir_curve_generation_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
         currency_code, index_family, tenor, process_type,
@@ -279,7 +279,7 @@ begin
         'fixed', '', '', '', 'bloomberg'
     );
 
-    insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
+    insert into ores_dq_ir_curve_template_entries_artefact_tbl (
         dataset_id, tenant_id, currency_code, index_family, tenor,
         sequence_index, start_tenor_code, end_tenor_code, instrument_code
     )

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 42D13718-A760-4D36-B02F-A54E0161E36C
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_template_entry
 #+description: Codegen entity model for the synthetic ir_curve_template_entry table; one (tenor, instrument) entry of an IR Curve Template.
@@ -147,6 +148,56 @@ parent process's =discount_factor()=.
 #+begin_src cpp :name generator
 std::string("IRS")
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: currency_code
+:END:
+
+The import names its curve by currency, index family and tenor, where the store holds the curve config id and the party. Publishing resolves the curve in the target party.
+
+** currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** index_family
+:PROPERTIES:
+:type: text
+:END:
+
+** tenor
+:PROPERTIES:
+:type: text
+:default: ''
+:END:
+
+** sequence_index
+:PROPERTIES:
+:type: integer
+:END:
+
+** start_tenor_code
+:PROPERTIES:
+:type: text
+:END:
+
+** end_tenor_code
+:PROPERTIES:
+:type: text
+:END:
+
+** instrument_code
+:PROPERTIES:
+:type: text
+:END:
+
+* Artefact indexes
+
+** curve
+:PROPERTIES:
+:columns: dataset_id, currency_code, index_family, tenor
+:END:
 
 * SQL
 

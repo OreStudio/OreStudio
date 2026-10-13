@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T23:45:57.598630Z
+' Generated: 2026-10-13T02:28:21.970625Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -807,7 +807,7 @@ package "dq_staging" #F3E5F5 {
     ISO 3166-1 country definitions used for reference data. Countries use alpha-2, alpha-3, and numeric codes per the ISO standard. - Artefact Table
     end note
 
-    entity ores_dq_crm_topology_bundles_artefact_tbl  #F7E5FF {
+    entity ores_dq_crm_topology_configs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
@@ -817,6 +817,10 @@ package "dq_staging" #F3E5F5 {
         * quote_currency_code : text
         * row_kind : text
     }
+
+    note right of ores_dq_crm_topology_configs_artefact_tbl
+    A top-level container that owns the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]]'s pivot currency and the set of [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][CRM]] driver pairs (crm_driver_pair, a separate, config_id-referencing entity) that hang off it. ores.marketdata.service reads the enabled config per (tenant, party) and its enabled driver pairs, feeds them through ores.analytics.quant::topology_builder::build, and keeps one service::rate_engine per (tenant, party) up to date -- see [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. UI metadata is deferred to a later task, as it is for market_series. Scoped to a tenant and a party so each party runs its own, independent CRM -- two parties in the same tenant may have entirely different topologies and never share an engine. - Artefact Table
+    end note
 
     entity ores_dq_cross_currency_basis_conventions_artefact_tbl  #F7E5FF {
         --
@@ -1618,6 +1622,23 @@ package "dq_staging" #F3E5F5 {
     The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension and smile, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
     end note
 
+    entity ores_dq_gmm_components_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * component_index : integer
+          description : text
+        * mean : double
+        * stdev : double
+        * weight : double
+    }
+
+    note right of ores_dq_gmm_components_artefact_tbl
+    A single weighted Gaussian component (mean, standard deviation, weight) of the Gaussian Mixture Model that drives an fx_spot_generation_config's price process. Components belong to a parent FX spot config via fx_spot_config_id; their weights are normalised at generation time. Party- and tenant-scoped. - Artefact Table
+    end note
+
     entity ores_dq_ibor_index_conventions_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1822,6 +1843,54 @@ package "dq_staging" #F3E5F5 {
     Data is imported here first, then promoted to geo_ip2country_tbl.
     end note
 
+    entity ores_dq_ir_curve_generation_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          description : text
+        * enabled : boolean
+        * auto_start : boolean
+        * currency_code : text <<FK>>
+        * index_family : text
+        * tenor : text
+        * process_type : text
+        * kappa : double
+        * theta : double
+        * sigma : double
+        * initial_rate : double
+        * ticks_per_hour : integer
+        * fixed_leg_payment_frequency_code : text
+        * price_source : text
+          vintage_source : text
+          vintage_date : text
+          vintage_series_uri : text
+          provider_code : text
+    }
+
+    note right of ores_dq_ir_curve_generation_configs_artefact_tbl
+    A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise a single currency+index interest-rate curve: which short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/ two_factor_gaussian, per ores.analytics.quant's IYieldCurveProcess engines) and that process's parameters, stored row-based as ir_curve_generation_config_process_parameter_value children joined onto the yield_curve_process_parameter_definition catalogue -- so a new process type or parameter is seed data, not a schema change. The actual instrument grid (which tenors to publish at which role) is held separately as ordered ir_curve_template_entry rows, the same one-config-many-children shape fx_spot_generation_config uses for its gmm_component rows. Scoped to a tenant and a party. - Artefact Table
+    end note
+
+    entity ores_dq_ir_curve_template_entries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_code : text <<FK>>
+        * index_family : text
+        * tenor : text
+        * sequence_index : integer
+        * start_tenor_code : text
+        * end_tenor_code : text
+        * instrument_code : text
+    }
+
+    note right of ores_dq_ir_curve_template_entries_artefact_tbl
+    One row of the raw instrument grid (the "Curve Template") an ir_curve_generation_config publishes: which tenor period, priced as which instrument type (deposit-equivalent, FRA-equivalent, swap-equivalent -- see ores.refdata.instrument_code), in what order. Every entry is modelled as a genuine [start, end) period rather than a single maturity label: start_tenor_code/end_tenor_code are both ordinary tenor references resolved through the same ores::refdata::domain::resolve_end_date machinery (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine zero-duration PERIOD/DAY tenor already in the catalog, resolving directly to the horizon's spot date -- not a null/sentinel hack); interval instruments (FRAs) set it to the period's own front tenor (e.g. '3M' for a 3x6 FRA whose end_tenor_code is '6M'). This symmetric shape is what lets the tenor-collision validator (validate_curve_template in ores.synthetic.api) detect genuine period overlaps via plain windows_overlap(), without a special case for point vs. interval instruments. Entries belong to a parent config via ir_curve_config_id, the same one-config-many-children shape fx_spot_generation_config's gmm_component rows use. Every entry's published rate is derived from the parent config's short-rate process's discount_factor() at the tenor's maturity -- never an independently-noised value -- so the published tick batch is, by construction, a slice of one internally consistent curve. Party- and tenant-scoped. - Artefact Table
+    end note
+
     entity ores_dq_lei_bic_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1908,21 +1977,6 @@ package "dq_staging" #F3E5F5 {
     This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table
     end note
 
-    entity ores_dq_market_data_observations_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * version : integer
-        * oresmd_uri : text
-        * key : text
-        * datum_uri : text
-        * observation_date : date
-        * value : numeric
-        * source : text
-          source_url : text
-          retrieved_at : timestamptz
-    }
-
     entity ores_dq_market_data_providers_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1937,6 +1991,25 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_market_data_providers_artefact_tbl
     A catalogue of the providers whose market data the synthetic feeds simulate. A system-scope collection names the provider it stands for, so the installation can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it as that provider's data. The provider is optional: a collection that stands for no provider names none, or names generic. Every provider here is simulated. Screens show it with the synthetic mark, as "Bloomberg (synthetic)", and every source name a provider's feed publishes on starts synthetic.<provider code>., so a simulated feed is never read as the real one. A real provider integration, when one comes, belongs in market data and not in this catalogue. Scoped to ores.synthetic (not ores.refdata) because only synthetic generation uses it today, following the yield_curve_process_type precedent. Managed by the system tenant. - Artefact Table
+    end note
+
+    entity ores_dq_market_observations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * oresmd_uri : text
+        * key : text
+        * datum_uri : text
+        * observation_date : date
+        * value : numeric
+        * source : text
+          source_url : text
+          retrieved_at : timestamptz
+    }
+
+    note right of ores_dq_market_observations_artefact_tbl
+    A single market data observation: the value of a series at a given observation_datetime and oresmd_uri (the datum's coordinate). observation_datetime is the financial valid-time (UTC); valid_from/valid_to is the transaction time. Corrections replace the previous value via the soft-update trigger. TimescaleDB hypertable partitioned by observation_datetime with 30-day chunks; GIST exclusion and DELETE RULEs are incompatible with hypertables — uniqueness is enforced via partial unique index and the soft-update/soft-delete trigger pair. No audit trail columns (version, modified_by, performed_by, change_reason_code, change_commentary) — tick-level data volumes make these impractical. - Artefact Table
     end note
 
     entity ores_dq_netting_agreements_artefact_tbl  #F7E5FF {
@@ -2444,76 +2517,6 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_synthetic_fx_spot_configs_artefact_tbl
     Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config rows for the synthetic market data bundle. Each row is a complete FX config combining the parent market_data_generation_config fields (name, description, enabled) with the FX spot sub-config fields (currency pair, initial price, tick cadence, process type). - Artefact Table
-    end note
-
-    entity ores_dq_synthetic_gmm_components_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * base_currency_code : text
-        * quote_currency_code : text
-        * component_index : integer
-          description : text
-        * mean : double
-        * stdev : double
-        * weight : double
-    }
-
-    note right of ores_dq_synthetic_gmm_components_artefact_tbl
-    Synthetic GMM Components artefacts - per-pair Gaussian mixture components
-    backing an fx_spot_configs artefact row, keyed by currency pair within the
-    same dataset - Artefact Table
-    end note
-
-    entity ores_dq_synthetic_ir_curve_configs_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * id : uuid
-        * version : integer
-        * name : text
-          description : text
-        * enabled : boolean
-        * auto_start : boolean
-        * currency_code : text <<FK>>
-        * index_family : text
-        * tenor : text
-        * process_type : text
-        * kappa : double
-        * theta : double
-        * sigma : double
-        * initial_rate : double
-        * ticks_per_hour : integer
-        * fixed_leg_payment_frequency_code : text
-        * price_source : text
-          vintage_source : text
-          vintage_date : text
-          vintage_series_uri : text
-          provider_code : text
-    }
-
-    note right of ores_dq_synthetic_ir_curve_configs_artefact_tbl
-    Synthetic IR Curve Config artefacts - denormalized parent+child IR curve
-    generation config rows for the synthetic market data bundle - Artefact Table
-    end note
-
-    entity ores_dq_synthetic_ir_curve_template_entries_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * currency_code : text <<FK>>
-        * index_family : text
-        * tenor : text
-        * sequence_index : integer
-        * start_tenor_code : text
-        * end_tenor_code : text
-        * instrument_code : text
-    }
-
-    note right of ores_dq_synthetic_ir_curve_template_entries_artefact_tbl
-    Synthetic IR Curve Template Entry artefacts - per-currency Curve Template
-    rows backing an ir_curve_configs artefact row, keyed by currency+index
-    within the same dataset - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {

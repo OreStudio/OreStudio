@@ -175,12 +175,12 @@ begin
     end if;
 
     -- Clear existing rows for this dataset (idempotency)
-    delete from ores_dq_market_data_observations_artefact_tbl
+    delete from ores_dq_market_observations_artefact_tbl
     where dataset_id = v_dataset_id;
 
     raise debug 'Populating FX driver rates for dataset: marketdata.fx_driver_rates';
 
-    insert into ores_dq_market_data_observations_artefact_tbl (
+    insert into ores_dq_market_observations_artefact_tbl (
         dataset_id, tenant_id, version,
         oresmd_uri, key, datum_uri, observation_date, value, source,
         source_url, retrieved_at

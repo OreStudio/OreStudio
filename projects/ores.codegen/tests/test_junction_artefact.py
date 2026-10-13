@@ -14,6 +14,8 @@ Run::
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
@@ -179,6 +181,20 @@ def test_a_declared_section_replaces_the_body(tmp_path):
         '    "right_code" text not null\n'
         ");"
     ) in sql
+
+
+def test_checks_on_a_junction_are_refused(tmp_path):
+    """The junction template renders no checks, so it would drop them."""
+    with_checks = ARTEFACT_COLUMNS.replace(
+        "* Artefact columns\n",
+        "* Artefact columns\n\n"
+        "| expression          |\n"
+        "|---------------------|\n"
+        "| \"left_code\" <> ''  |\n",
+    )
+
+    with pytest.raises(ValueError, match="this junction declares check"):
+        generate(tmp_path, with_checks)
 
 
 def test_a_declared_section_drops_the_projected_version(tmp_path):

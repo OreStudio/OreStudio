@@ -33,6 +33,9 @@ create table if not exists "ores_dq_{{domain_entity.entity_plural}}_artefact_tbl
 {{#domain_entity.artefact_columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
 {{/domain_entity.artefact_columns}}
+{{#domain_entity.artefact_checks}}
+    ,check ({{{.}}})
+{{/domain_entity.artefact_checks}}
 );
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_dataset_idx

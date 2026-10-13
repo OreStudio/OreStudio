@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3A0FE17E-A9BD-408A-A401-1B62BE0ACFB4
+:END:
+#+title: The start_market_feeds provisioning step fails with 'NATS re…
+#+description: The start_market_feeds provisioning step fails with 'NATS request timed out' on an Acme provision, although the feeds start. On swift_curie (2026-10-13, branch feature/move-the-duplicated-dq-models-onto-their-owners, which does not touch the feed path) the step on iam.v1.ops.provision_tenant_step was published at 23:58:49 and failed at 00:00:03, 74 seconds later. All five Acme parties then held 55 feed bindings each and ticks kept arriving in ores_marketdata_market_observations_tbl. The request timeout is shorter than the time the step needs to bind and start 275 feeds, so the run records a failed step for work that succeeded. Fix: answer the request before the feeds start, or raise the timeout for this step, or start the feeds per party.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

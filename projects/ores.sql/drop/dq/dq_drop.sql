@@ -44,7 +44,7 @@
 \ir ./dq_synthetic_ir_curve_configs_artefact_drop.sql
 \ir ./dq_synthetic_gmm_components_artefact_drop.sql
 \ir ./dq_synthetic_fx_spot_configs_artefact_drop.sql
-\ir ./dq_synthetic_market_data_providers_artefact_drop.sql
+\ir ./dq_market_data_providers_artefact_drop.sql
 \ir ./dq_market_data_observations_artefact_drop.sql
 \ir ./dq_crm_topology_bundles_artefact_drop.sql
 \ir ./dq_books_artefact_drop.sql

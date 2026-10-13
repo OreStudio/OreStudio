@@ -49,6 +49,5 @@ set(files
     "report_definition_template_operations_commands_tests.cpp"
     "subject_area_commands_tests.cpp"
     "synthetic_fx_spot_config_commands_tests.cpp"
-    "synthetic_market_data_provider_commands_tests.cpp"
     "treatment_dimension_commands_tests.cpp"
 )

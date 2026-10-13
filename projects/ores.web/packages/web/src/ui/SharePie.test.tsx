@@ -49,6 +49,18 @@ describe('pieSlices', () => {
     });
 });
 
+describe('a part that carries its own colour', () => {
+    it('keeps it, and the other parts take the palette in order', () => {
+        const slices = pieSlices(
+            [{ key: 'a', label: 'a', value: 5, swatch: 'text-up' }, item('b', 3)],
+            'Others',
+        );
+
+        expect(slices[0]?.swatch).toBe('text-up');
+        expect(slices[1]?.swatch).not.toBe('text-up');
+    });
+});
+
 describe('pieSlices palette', () => {
     it('folds a sixth part into Others so no named slice shares the Others colour', () => {
         const items = Array.from({ length: 6 }, (_, i) => item(`p${i}`, 10 - i));

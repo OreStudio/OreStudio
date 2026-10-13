@@ -134,8 +134,117 @@ public:
         reply(nats_, msg, resp);
     }
 
+    void list_feeds(ores::nats::message msg) {
+        using namespace ores::logging;
+        using namespace ores::synthetic::messaging;
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::has_permission;
+        using ores::service::messaging::reply;
+
+        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx) {
+            error_reply(nats_, msg, ctx.error());
+            return;
+        }
+        const auto& kinds = registry_.all();
+        const bool may = std::ranges::any_of(
+            kinds, [&](const auto* k) { return has_permission(*ctx, k->config_permission); });
+        if (!may) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        list_folder_feeds_response resp;
+        const auto req = decode<list_folder_feeds_request>(msg);
+        if (!req) {
+            resp.message = "Failed to decode the feed request.";
+            BOOST_LOG_SEV(feed_overview_handler_lg(), warn)
+                << "list_folder_feeds refused: the request did not decode";
+            reply(nats_, msg, resp);
+            return;
+        }
+        if (!req->folder_id.empty() && !ores::synthetic::feed::is_folder_id(req->folder_id)) {
+            resp.message = "The folder id is not a UUID.";
+            reply(nats_, msg, resp);
+            return;
+        }
+
+        try {
+            feeds_page(*ctx, *req, resp);
+            resp.success = true;
+        } catch (const std::exception& e) {
+            resp.message = e.what();
+            BOOST_LOG_SEV(feed_overview_handler_lg(), error)
+                << "list_folder_feeds failed: " << e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
 private:
     using rows_t = std::vector<std::vector<std::optional<std::string>>>;
+
+    /**
+     * A page of the feeds of one folder, or of every folder when none is named,
+     * narrowed to those whose label, source name and URI hold every search word.
+     * Both kinds are read in one query, ordered by label, so a person pages
+     * through one list. The folder id is a checked UUID and each word is an
+     * escaped literal, so nothing the caller sends is run as SQL.
+     */
+    void feeds_page(const ores::database::context& ctx,
+                    const ores::synthetic::messaging::list_folder_feeds_request& req,
+                    ores::synthetic::messaging::list_folder_feeds_response& resp) const {
+        std::string where = "folder_id is not null";
+        if (!req.folder_id.empty())
+            where = "folder_id = " + sql_literal(req.folder_id) + "::uuid";
+        for (const auto& word : ores::synthetic::feed::search_terms(req.search)) {
+            std::string escaped;
+            for (const char c : word) {
+                if (c == '\\' || c == '%' || c == '_')
+                    escaped.push_back('\\');
+                escaped.push_back(c);
+            }
+            where += " and (label || ' ' || source_name || ' ' || oresmd_uri) ilike " +
+                     sql_literal("%" + escaped + "%");
+        }
+        const std::string feeds = R"sql(
+            select id::text as id, 'fx_spot' as kind,
+                   base_currency_code || '/' || quote_currency_code as label,
+                   source_name, oresmd_uri, folder_id, enabled
+            from ores_synthetic_fx_spot_generation_configs_tbl
+            where valid_to = ores_utility_infinity_timestamp_fn()
+            union all
+            select id::text, 'ir_curve',
+                   currency_code || ' ' || upper(index_family) ||
+                       coalesce(' ' || nullif(tenor, ''), ''),
+                   source_name, '', folder_id, enabled
+            from ores_synthetic_ir_curve_generation_configs_tbl
+            where valid_to = ores_utility_infinity_timestamp_fn())sql";
+        const auto limit = std::clamp(req.limit, 1, 200);
+        const auto offset = std::max(req.offset, 0);
+
+        const auto counted = query(
+            ctx, "select count(*) from (" + feeds + ") f where " + where);
+        resp.total = counted.empty() ? 0 : number_of(counted.front().front());
+
+        const auto rows = query(ctx,
+                                "select id, kind, label, source_name, oresmd_uri, "
+                                "coalesce(folder_id::text, ''), enabled::text from (" + feeds +
+                                    ") f where " + where + " order by label, id limit " +
+                                    std::to_string(limit) + " offset " + std::to_string(offset));
+        resp.feeds.reserve(rows.size());
+        for (const auto& r : rows) {
+            ores::synthetic::messaging::folder_feed f;
+            f.id = text_of(r[0]);
+            f.kind = text_of(r[1]);
+            f.label = text_of(r[2]);
+            f.source_name = text_of(r[3]);
+            f.oresmd_uri = text_of(r[4]);
+            f.folder_id = text_of(r[5]);
+            f.enabled = text_of(r[6]) == "true";
+            resp.feeds.push_back(std::move(f));
+        }
+    }
 
     rows_t query(const ores::database::context& ctx, const std::string& sql) const {
         return ores::database::repository::execute_raw_multi_column_query(

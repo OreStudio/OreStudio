@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: DD432150-81CD-4D91-AF2E-D0F26A06F912
+:END:
+#+title: Task: Let the system party see every party's grid work
+#+description: A session in the tenant's system party sees the compute work of every party of the tenant, and every other party sees only its own.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/let-the-system-party-see-every-partys-grid-work
+#+pr: 3217
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant administrator acting in the system party sees the whole tenant on the grid screens, by party, and a party member sees only the party.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- A session in the system party reads the batches, workunits, results and grid samples of every party of its tenant.
+- A session in any other party reads only its own parties' rows.
+
+* Plan
+
+A tenant administrator who signed in as the system party saw the fleet and no jobs, and a person who signed in as Acme Corporation Plc saw the jobs. The party rule hid the other parties' rows from a session in the system party, which is a separate root with no children. The owner's rule is that the system party sees every party of the tenant and each other party sees only its own.
+
+- Add =ores_compute_session_is_system_party_fn()=, which is true when the session's party is the tenant's system party.
+- Add it to the four party policies of the compute tables: batches, workunits, results and grid samples.
+- The rule stays inside one tenant. The security page records it, and the exceptions register lists it as E1 with its reason, its limits, its evidence and the state of its review and sign-off, both still pending.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| A session in the Acme system party reads results and samples | 18034 results, 110 sample rows, results_done 4257 | a transaction with the session settings of that party, run against the dev database as the test user | branch head |
+| A session in a child party (ACCOUK) reads the results | 0 | the same, with the party settings of ACCOUK | branch head |
+| Compute core test suite, with the new system party case | pass | =ctest --preset linux-clang-debug-make -R ores.compute.core.tests -j2= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3217][#3217]] | [compute] Let the system party see every party's grid work |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A session in the tenant's system party now reads the compute work of every party of the tenant, and any other party reads only its own and the parties below it. The change is in the policy and no code. I applied it to the development database by hand, so a new database gets it from the create script. I checked it with the session settings of both parties and in a repository test. I have not checked it in a browser.

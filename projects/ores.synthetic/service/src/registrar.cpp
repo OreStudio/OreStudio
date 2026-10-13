@@ -136,6 +136,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.list(std::move(msg));
         }));
 
+    // A page of the feeds in one folder, or of the feeds that match some words, for
+    // the feed tree. The read of any kind's feed configs opens it.
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::list_folder_feeds_request::nats_subject),
+        queue,
+        [&nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_overview_handler h(nats, ctrl, ctx, verifier, registry);
+            h.list_feeds(std::move(msg));
+        }));
+
     // The simple and the advanced view of an FX feed's mixture: FX only,
     // gated by the FX kind.
     subs.push_back(nats.queue_subscribe(

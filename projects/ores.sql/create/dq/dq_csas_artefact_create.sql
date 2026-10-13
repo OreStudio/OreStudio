@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The credit support annex of a netting set, with the terms ORE reads from a netting set definition. The set is named by code; publishing resolves it in the target tenant. The eligible collateral currencies are a comma separated list in posting order. - Artefact Table
+-- A Credit Support Annex holds the collateral terms of a [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][netting set]]: thresholds, minimum transfer amounts, margining frequencies, the margin period of risk and the eligible collateral. Netting reduces exposure, and collateral mitigates what remains (see [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]]). A CSA has a lifecycle of its own: it is added, changed or switched off without touching the trades in its set. A set has at most one active CSA; an inactive one keeps its terms, as ORE keeps the details of a set whose CSA flag is off. The columns follow ORE's CSADetails one for one, and the eligible collateral currencies are [[id:25090994-3093-470E-BB3F-7832EDCA26A4][rows of their own]]. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_csas_artefact_tbl" (

@@ -321,6 +321,30 @@ describe('the FX feed screens', () => {
         expect(html).not.toContain('>Add</button>');
     });
 
+    it('runs the trail of a feed through the feed tree, down to the folder that holds it', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
+                ...feed,
+                folder_id: 'i',
+            });
+            client.setQueryData(
+                ['records', 'folders'],
+                [
+                    { id: 'r', parent_id: '', name: 'Synthetic', kind: 'root', version: 1 },
+                    { id: 'b', parent_id: 'r', name: 'Bloomberg', kind: 'collection', version: 1 },
+                    { id: 'a', parent_id: 'b', name: 'FX', kind: 'asset_class', version: 1 },
+                    { id: 'i', parent_id: 'a', name: 'Spot', kind: 'instrument_type', version: 1 },
+                ],
+            );
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('href="/market-data/synthetic/tree"');
+        expect(html).toContain('href="/market-data/synthetic/tree?node=folder%3Ab"');
+        expect(html).toContain('href="/market-data/synthetic/tree?node=folder%3Ai"');
+        expect(html.indexOf('>Bloomberg<')).toBeLessThan(html.indexOf('>Spot<'));
+        expect(html).not.toContain('href="/market-data/fx-feeds"');
+    });
+
     it('says what a feed with no mixture lacks', () => {
         const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);

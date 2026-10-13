@@ -112,3 +112,29 @@ TEST_CASE("feed_overview orders the names without regard to case", tags) {
     CHECK(roots[1].name == "beta");
     CHECK(roots[2].name == "Gamma");
 }
+
+TEST_CASE("feed_overview splits a search into lower case words", tags) {
+    using ores::synthetic::feed::search_terms;
+    CHECK(search_terms("  USD   SOFR ") == std::vector<std::string>{"usd", "sofr"});
+    CHECK(search_terms("").empty());
+    CHECK(search_terms("   \t ").empty());
+}
+
+TEST_CASE("feed_overview bounds a search", tags) {
+    using ores::synthetic::feed::search_terms;
+    const auto many = search_terms("a b c d e f g h i j k l");
+    CHECK(many.size() == 8);
+    const auto long_word = search_terms(std::string(200, 'x'));
+    REQUIRE(long_word.size() == 1);
+    CHECK(long_word[0].size() == 64);
+}
+
+TEST_CASE("feed_overview accepts only a UUID as a folder id", tags) {
+    using ores::synthetic::feed::is_folder_id;
+    CHECK(is_folder_id("0a32284a-5f8c-4a99-9539-34923631ded3"));
+    CHECK(is_folder_id("0A32284A-5F8C-4A99-9539-34923631DED3"));
+    CHECK_FALSE(is_folder_id(""));
+    CHECK_FALSE(is_folder_id("not-a-uuid"));
+    CHECK_FALSE(is_folder_id("0a32284a-5f8c-4a99-9539-34923631ded3'; drop table x; --"));
+    CHECK_FALSE(is_folder_id("0a32284a5f8c4a9995393492363ded3xxxxx"));
+}

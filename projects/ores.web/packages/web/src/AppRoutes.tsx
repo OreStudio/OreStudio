@@ -94,6 +94,7 @@ import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage, FxFeedsPage } from './marketdata/fxFeeds.js';
 import { IrFeedPage, IrFeedsPage } from './marketdata/irFeeds.js';
 import { FeedOverviewPage } from './marketdata/FeedOverviewPage.js';
+import { FeedTreePage } from './marketdata/FeedTreePage.js';
 import { SyntheticPage } from './marketdata/SyntheticPage.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
@@ -788,6 +789,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <FeedOverviewPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.feedTree}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FeedTreePage />
                     ),
                     'workspace',
                 )}

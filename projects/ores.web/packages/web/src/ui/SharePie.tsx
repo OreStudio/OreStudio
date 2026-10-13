@@ -32,6 +32,11 @@ export interface PieItem {
     readonly key: string;
     readonly label: string;
     readonly value: number;
+    /**
+     * A colour class that the part carries by its meaning, such as green for a success. A
+     * part without one takes the next colour of the categorical palette.
+     */
+    readonly swatch?: string;
 }
 
 export interface PieSlice extends PieItem {
@@ -71,7 +76,7 @@ export function pieSlices(items: readonly PieItem[], otherLabel: string): readon
     const slices: PieSlice[] = shown.map((part, index) => ({
         ...part,
         fraction: part.value / total,
-        swatch: SWATCHES[index] ?? OTHER_SWATCH,
+        swatch: part.swatch ?? SWATCHES[index] ?? OTHER_SWATCH,
     }));
     if (rest.length > 0) {
         const value = rest.reduce((sum, part) => sum + part.value, 0);
@@ -113,11 +118,14 @@ export function SharePie({
     items,
     otherLabel,
     label,
+    caption,
 }: {
     readonly items: readonly PieItem[];
     readonly otherLabel: string;
     /** What the pie shows, read out by a screen reader. */
     readonly label: string;
+    /** A line drawn above the pie, so a screen with two pies says what each one is. */
+    readonly caption?: string;
 }): ReactNode {
     const slices = pieSlices(items, otherLabel);
     if (slices.length === 0) {
@@ -125,44 +133,56 @@ export function SharePie({
     }
     let from = 0;
     return (
-        <div className="flex flex-wrap items-center gap-6">
-            <svg viewBox="0 0 128 128" role="img" aria-label={label} className="h-40 w-40 shrink-0">
-                {slices.length === 1 ? (
-                    <circle
-                        cx={CENTRE}
-                        cy={CENTRE}
-                        r={RADIUS}
-                        fill="currentColor"
-                        className={slices[0]?.swatch ?? OTHER_SWATCH}
-                    />
-                ) : (
-                    slices.map((slice) => {
-                        const path = slicePath(from, slice.fraction);
-                        from += slice.fraction;
-                        return (
-                            <path
-                                key={slice.key}
-                                d={path}
-                                fill="currentColor"
-                                strokeWidth="1"
-                                className={`stroke-surface-raised ${slice.swatch}`}
-                            />
-                        );
-                    })
-                )}
-            </svg>
-            <ul className="space-y-1 text-sm">
-                {slices.map((slice) => (
-                    <li key={slice.key} className="flex items-center gap-2">
-                        <span
-                            aria-hidden="true"
-                            className={`inline-block h-3 w-3 rounded-sm bg-current ${slice.swatch}`}
+        <figure className="space-y-2">
+            {caption !== undefined && (
+                <figcaption className="text-xs text-ink-faint">{caption}</figcaption>
+            )}
+            <div className="flex flex-wrap items-center gap-6">
+                <svg
+                    viewBox="0 0 128 128"
+                    role="img"
+                    aria-label={label}
+                    className="h-40 w-40 shrink-0"
+                >
+                    {slices.length === 1 ? (
+                        <circle
+                            cx={CENTRE}
+                            cy={CENTRE}
+                            r={RADIUS}
+                            fill="currentColor"
+                            className={slices[0]?.swatch ?? OTHER_SWATCH}
                         />
-                        <span>{slice.label}</span>
-                        <span className="font-mono text-ink-muted">{percent(slice.fraction)}</span>
-                    </li>
-                ))}
-            </ul>
-        </div>
+                    ) : (
+                        slices.map((slice) => {
+                            const path = slicePath(from, slice.fraction);
+                            from += slice.fraction;
+                            return (
+                                <path
+                                    key={slice.key}
+                                    d={path}
+                                    fill="currentColor"
+                                    strokeWidth="1"
+                                    className={`stroke-surface-raised ${slice.swatch}`}
+                                />
+                            );
+                        })
+                    )}
+                </svg>
+                <ul className="space-y-1 text-sm">
+                    {slices.map((slice) => (
+                        <li key={slice.key} className="flex items-center gap-2">
+                            <span
+                                aria-hidden="true"
+                                className={`inline-block h-3 w-3 rounded-sm bg-current ${slice.swatch}`}
+                            />
+                            <span>{slice.label}</span>
+                            <span className="font-mono text-ink-muted">
+                                {percent(slice.fraction)}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </figure>
     );
 }

@@ -8,12 +8,12 @@
 #+subcomponent: api
 #+entity_singular: feed_overview
 #+namespace: ores::synthetic::messaging
-#+brief: A folder's children with the feeds and the running feeds under each.
+#+brief: A folder's children with the feeds and the running feeds under each, and a page of the feeds in a folder.
 #+filetags: :model:operation:synthetic:
 #+created: 2026-10-13
 #+updated: 2026-10-13
 
-The read behind the feed overview and the feed tree. A screen asks for the children of
+The reads behind the feed overview and the feed tree. A screen asks for the children of
 one folder, or for the roots, and gets each child with the feeds under it, split into FX
 spots and IR curves, and how many of them run. The service counts in the database and
 takes the running feeds from the controller, so no screen reads the feeds to count them.
@@ -175,5 +175,151 @@ Nothing is stored.
 :END:
 #+begin_src cpp :name comment
 /** @brief The children, in name order. */
+#+end_src
+
+** folder_feed
+#+begin_src cpp :name comment
+/**
+ * @brief One feed as the feed tree lists it: enough to name it, to open its
+ * page and to tell whether it runs, and nothing of its process.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed's id. */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed kind: fx_spot or ir_curve. */
+#+end_src
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What a person calls the feed: the pair, or the currency and the index. */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The source name the feed publishes under. */
+#+end_src
+
+*** oresmd_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The oresmd URI the feed publishes. */
+#+end_src
+
+*** folder_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The folder the feed sits in; empty when it sits in none. */
+#+end_src
+
+*** enabled
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Whether the feed is enabled. */
+#+end_src
+
+** list_folder_feeds_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.list_folder_feeds
+:response: list_folder_feeds_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request a page of the feeds that sit in one folder, or of the feeds of
+ * every folder that match some words.
+ */
+#+end_src
+
+*** folder_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The folder whose feeds are wanted; empty for the feeds of every folder. */
+#+end_src
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Words that must all appear in the feed's label, source name or URI; empty for no search. */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds to skip. */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 60
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds to return at most. */
+#+end_src
+
+** list_folder_feeds_response
+#+begin_src cpp :name comment
+/**
+ * @brief A page of feeds, and how many match in all.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** total
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds match, of which the page holds some. */
+#+end_src
+
+*** feeds
+:PROPERTIES:
+:cpp_type: std::vector<folder_feed>
+:END:
+#+begin_src cpp :name comment
+/** @brief The page of feeds, in label order. */
 #+end_src
 

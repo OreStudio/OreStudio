@@ -288,10 +288,9 @@ _PROTOCOL_DEPENDENT_FACETS = frozenset({
 # imported through. Where that entity belongs to *another* component, the shim
 # must render no user-facing command unit: the shell names a menu after the
 # entity's plural, so the shim generates the same menu as the entity it stages,
-# and the shell resolves a duplicate by registration order. dq's
-# report_definition shim did exactly that to reporting's report_definitions
-# menu -- the shim registers first, so the whole menu answered from dq,
-# including calls whose arity belongs to the real owner.
+# and the shell resolves a duplicate by registration order: whichever menu
+# registers first answers every call, including calls whose arity belongs to
+# the real owner.
 #
 # The profile alone is not the condition. Three further dq models bind it
 # (lei_entity, lei_relationship, synthetic_fx_spot_config) and dq is their only

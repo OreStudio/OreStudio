@@ -218,6 +218,12 @@ commits, so it marks the service as a rehearsal and the gate lets those writes t
 The service's own in-process save and remove methods take no request, so a gated entity
 refuses them: the protocol operations are the only way to write.
 
+A gated junction has the same gate on its put, its batch put, its delete and its batch
+delete. A link has no columns of its own, so the service asks the policy with none, and a
+policy row that names no column covers the link. The line the request holds names the
+link by its two halves. The policy names the junction by the name of its model, for
+example =party_counterparty=.
+
 A hand-written handler, such as a composite write, reaches the store through the same
 service, so it meets the same check. A write that does not use the service does not meet
 it. The SQL that publishes a dataset into the tables is one such write. Whether the

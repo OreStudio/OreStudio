@@ -26,7 +26,7 @@ parent_counterparty_id for group structures.
 :hierarchy_name_field:  full_name
 :generate_touch_function: true
 :profile:   self-referencing-hierarchy
-:pending_change: true
+:gated:     true
 :END:
 
 * Columns

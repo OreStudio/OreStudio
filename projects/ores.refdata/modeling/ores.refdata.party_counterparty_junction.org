@@ -27,7 +27,7 @@ party-level visibility.
 :profile: tenant-scoped-junction
 :history: true
 :events: true
-:pending_change: true
+:gated:     true
 :END:
 
 * Left

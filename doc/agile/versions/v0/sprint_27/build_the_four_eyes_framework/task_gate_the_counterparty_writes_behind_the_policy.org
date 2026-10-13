@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/gate-the-counterparty-writes-behind-the-policy
+#+pr: 3240
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Only an approved request can make a gated counterparty change.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -43,6 +43,12 @@ Only an approved request can make a gated counterparty change.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Turn the gate on in the models: the counterparty, the identifier and the party link move from =:pending_change:= to =:gated:=, and the generated services ask the policy as the book's does.
+- Give the junction service the same gate. The templates had none. A link has no columns, so the service asks the policy with none. The line the request holds names the link by its two halves.
+- Name the link's policy rows after the model, =party_counterparty=, because the generated service uses the model's name.
+- Let the proposal service open the gate: the preview is a rehearsal, and the apply names its request.
+- Write the live rows of the test fixtures through the repositories, which sit below the gate.
 
 * Measurements
 
@@ -60,6 +66,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- The counterparty and the identifier have no delete policy row, so a removal of either is free. The link has a put and a delete row. The book has the same gap. Adding delete rows would gate the removal of a counterparty, and it needs a decision.
+- The shell commands for counterparty identifiers, and any other client that writes the three over NATS, now get =approval_required=. The raise operations are the way in. I did not check the ORE import for counterparty writes.
+- The contact information and the business centres of a counterparty have no policy row and are written directly, as the acceptance asks.
+- The other junction services are not regenerated, so they have no gate until a model sets =:gated:=.
+- Not done: a run against the running services with the web.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -75,12 +87,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3240][#3240]] | [refdata] Gate the counterparty writes behind the approval policy |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Gate order differs between put and delete | party_counterparty_service.cpp | Decline | The delete gate runs before the store reads the link. The checks before it read the request alone, so an unapproved caller learns nothing about the link. The version conflict comes from the store after the gate. |
+| 2 | Batch delete never matches a line with a base version; add a test | delete_many_party_counterparties | Accept in part | The premise does not hold for a link: a link line always states version 0, so a batch matches the line for the link it names. A new case shows a batch opens for the held link and is refused for another. |
+| 3 | holds_line reads the request lines on every write | party_counterparty_service.cpp | Decline | Same as the book, review comment 1 of the book gate: no one has measured it, and a cache needs care because the applier marks lines applied in the same pass. |
+| 4 | Check that a line is consumed | holds_line | Accept | The apply marks a line applied in its transaction. A new case applies a request and shows the same put is then refused. |
+| 5 | The version cast to int can wrap | gate_put | Decline | A wrapped value is negative, and a stored line never holds a negative version. It cannot match. |
+| 6 | Track the shell regression | PR | Accept | New backlog task: Raise requests from the shell for gated counterparties. |
 
 * Result
+
+A put or a removal of a counterparty, an identifier or a party link is refused with =approval_required= unless it carries out a line of an approved request.
+
+- The three models are gated. The generated services ask =ores_inbox_gate_fn=, and the counterparty proposal service opens the gate: the preview is a rehearsal and the apply names its request.
+- The junction service templates have the gate for the put, the batch put, the delete and the batch delete.
+- The link's policy rows use the model's name, =party_counterparty=.
+- A contact change is written directly.
+
+Evidence: the whole =ores.refdata.core.tests= binary passes (416 cases), with nine new cases in =service_counterparty_gate_tests.cpp=. They cover a refused counterparty put, identifier put, link put and link removal, a request that is not approved, an approved request that opens only the lines it holds, a link put under an approved request, a batch link removal that opens only for the held link, a line that opens the gate once, and a direct contact change. The catalogue drift sweep, derived-model, handler permission, cmake source, pasted block symbol, populate reference and test reachability checks pass.
+
+Not done here: the callers named in Notes, and a run against the live services.

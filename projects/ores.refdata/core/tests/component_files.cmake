@@ -171,6 +171,7 @@ set(files
     "service_book_proposal_as_service_tests.cpp"
     "service_book_proposal_tests.cpp"
     "service_calendar_materialisation_service_tests.cpp"
+    "service_counterparty_gate_tests.cpp"
     "service_counterparty_proposal_tests.cpp"
     "sub_periods_coupon_type_eventing_integration_tests.cpp"
     "swap_convention_eventing_integration_tests.cpp"

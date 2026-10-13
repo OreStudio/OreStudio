@@ -31,6 +31,7 @@
 #include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
+#include "ores.service/messaging/approval_gate.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
@@ -99,6 +100,35 @@ public:
     messaging::get_counterparty_identifier_version_response get_counterparty_identifier_version(
         const messaging::get_counterparty_identifier_version_request& request);
     /**@}*/
+
+    /**
+     * @brief Lets this service's writes carry out an approved request.
+     *
+     * The approval policy gates the writes of this entity. A write passes only
+     * when it carries out a line that an approved request holds, so the
+     * applier names the request here before it writes. The pass is set in
+     * process: no field of a request a client sends can set it.
+     */
+    void carry_out_request(std::string request_id);
+
+    /**
+     * @brief Marks this service's writes as a rehearsal.
+     *
+     * A preview runs the real writes in a transaction it never commits. The
+     * gate lets a rehearsal through, because nothing it writes lasts.
+     */
+    void rehearse();
+
+    /**
+     * @brief The columns a proposed write changes, by the names the approval
+     * policy uses.
+     *
+     * The live row is read by the same key the real write reads, so the answer
+     * is the one the gate gives. A write that creates a row changes every
+     * column.
+     */
+    std::vector<std::string>
+    changed_columns(const messaging::counterparty_identifier_write& proposed);
 
     /**
      * @brief Lists counterparty identifiers with pagination support.
@@ -309,6 +339,33 @@ private:
     prepare_change(const messaging::counterparty_identifier_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::counterparty_identifier& out);
+
+    ores::service::messaging::write_pass pass_;
+
+    /**
+     * @brief Asks the approval policy whether a put may be written.
+     *
+     * @return nullopt when the write may go ahead, otherwise the refusal.
+     */
+    std::optional<ores::utility::domain::result>
+    gate_put(const std::vector<domain::counterparty_identifier>& current,
+             const domain::counterparty_identifier& next,
+             const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Asks the approval policy whether a removal may be written.
+     *
+     * @return nullopt when the removal may go ahead, otherwise the refusal.
+     */
+    std::optional<ores::utility::domain::result>
+    gate_delete(const std::vector<domain::counterparty_identifier>& live,
+                std::optional<std::uint32_t> expected);
+
+    /**
+     * @brief True when the request named by the pass holds an unapplied line
+     * for exactly this operation, row and version.
+     */
+    bool holds_line(const std::string& operation, const boost::uuids::uuid& id, int base_version);
 };
 
 }

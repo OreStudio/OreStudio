@@ -25,7 +25,9 @@
 #include "ores.refdata.core/service/counterparty_service.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.core/repository/counterparty_change_repository.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
+#include "ores.service/messaging/approval_gate.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -35,6 +37,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -112,6 +115,45 @@ domain::counterparty to_domain(const messaging::counterparty_write& write) {
     return v;
 }
 
+
+/**
+ * @brief The columns a write changes, by the names the approval policy uses.
+ *
+ * A write that creates a row changes every column.
+ */
+std::vector<std::string> columns_changed(const std::vector<domain::counterparty>& live,
+                                         const domain::counterparty& next) {
+    const bool created = live.empty();
+    std::vector<std::string> names;
+    // The key names the row and is not a column a policy decides.
+    const auto note = [&](std::string_view name, bool changed) {
+        if (changed && name != "id")
+            names.emplace_back(name);
+    };
+    note("id", created || live.front().id != next.id);
+    note("short_code", created || live.front().short_code != next.short_code);
+    note("full_name", created || live.front().full_name != next.full_name);
+    note("transliterated_name",
+         created || live.front().transliterated_name != next.transliterated_name);
+    note("party_type", created || live.front().party_type != next.party_type);
+    note("parent_counterparty_id",
+         created || live.front().parent_counterparty_id != next.parent_counterparty_id);
+    note("status", created || live.front().status != next.status);
+    note("image_id", created || live.front().image_id != next.image_id);
+    return names;
+}
+
+/**
+ * @brief Refuses a direct write to a gated entity.
+ *
+ * The in-process save and remove methods take no request, so no approved
+ * request could open the gate for them. They are refused, and the protocol
+ * operations are the only way to write.
+ */
+[[noreturn]] void refuse_direct_write() {
+    throw std::logic_error(ores::database::domain::describe(outcome_code::approval_required,
+                                                            {.entity = "counterparty"}));
+}
 
 }
 
@@ -239,6 +281,10 @@ counterparty_service::delete_counterparty(const messaging::delete_counterparty_r
         }
         expected = request.removal.precondition.version;
     }
+    if (const auto refused = gate_delete(read_one(repo_, ctx_, request.removal.key), expected)) {
+        response.result = *refused;
+        return response;
+    }
     const auto named = read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "counterparty"});
@@ -288,6 +334,14 @@ messaging::delete_many_counterparties_response counterparty_service::delete_many
     }
     if (request.removals.empty())
         return response;
+    // A batch carries no versions, so an approved line that claims one never
+    // matches here. The applier removes one row at a time, with its version.
+    for (const auto& removal : request.removals) {
+        if (const auto refused = gate_delete(read_one(repo_, ctx_, removal.key), std::nullopt)) {
+            response.result = *refused;
+            return response;
+        }
+    }
     // A removal names its row by the key a caller holds, and the repository
     // takes the storage key, so the two are joined once here rather than at
     // each column's conversion. A name that matches no row is skipped: the
@@ -369,6 +423,10 @@ counterparty_service::prepare_change(const messaging::counterparty_change& chang
     ores::utility::domain::result result;
     out = to_domain(change.write);
     const auto current = read_one(repo_, ctx_, key_from(out));
+    // The gate comes before the claim is checked, so an unapproved caller
+    // learns nothing about the row from a conflict.
+    if (const auto refused = gate_put(current, out, change.precondition))
+        return *refused;
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -407,6 +465,87 @@ counterparty_service::prepare_change(const messaging::counterparty_change& chang
     return result;
 }
 
+void counterparty_service::carry_out_request(std::string request_id) {
+    pass_ = {.request_id = std::move(request_id), .rehearsal = false};
+}
+
+void counterparty_service::rehearse() {
+    pass_.rehearsal = true;
+}
+
+std::vector<std::string>
+counterparty_service::changed_columns(const messaging::counterparty_write& proposed) {
+    const auto next = to_domain(proposed);
+    return columns_changed(read_one(repo_, ctx_, key_from(next)), next);
+}
+
+bool counterparty_service::holds_line(const std::string& operation,
+                                      const boost::uuids::uuid& id,
+                                      int base_version) {
+    if (pass_.request_id.empty())
+        return false;
+    // One more than the most a request may hold, so a request over the limit
+    // is seen as over it and never read as a shorter one.
+    constexpr std::uint32_t max_request_lines = 1000;
+    const auto lines = repository::counterparty_change_repository{}.read_latest_by_request_id(
+        ctx_, pass_.request_id, 0, max_request_lines + 1);
+    return std::ranges::any_of(lines, [&](const auto& l) {
+        return !l.applied && l.operation == operation && l.entity_id == id &&
+               l.base_version == base_version;
+    });
+}
+
+std::optional<ores::utility::domain::result>
+counterparty_service::gate_put(const std::vector<domain::counterparty>& current,
+                               const domain::counterparty& next,
+                               const ores::utility::domain::precondition& claim) {
+    using ores::service::messaging::gate_verdict;
+    using ores::utility::domain::precondition_kind;
+    if (pass_.rehearsal)
+        return std::nullopt;
+    switch (ores::service::messaging::gate_verdict_of(
+        ctx_, "counterparty", "put", columns_changed(current, next), pass_.request_id)) {
+        case gate_verdict::free:
+            return std::nullopt;
+        case gate_verdict::approved: {
+            // The line holds the version the maker read. A write with no claim
+            // names no line, so it never matches.
+            int base_version = -1;
+            if (claim.kind == precondition_kind::must_not_exist)
+                base_version = 0;
+            else if (claim.kind == precondition_kind::must_match_version && claim.version)
+                base_version = static_cast<int>(*claim.version);
+            if (holds_line("put", next.id, base_version))
+                return std::nullopt;
+            break;
+        }
+        case gate_verdict::required:
+            break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "counterparty"});
+}
+
+std::optional<ores::utility::domain::result>
+counterparty_service::gate_delete(const std::vector<domain::counterparty>& live,
+                                  std::optional<std::uint32_t> expected) {
+    using ores::service::messaging::gate_verdict;
+    // A row that is not there has nothing to protect: the removal answers
+    // that it is missing.
+    if (pass_.rehearsal || live.empty())
+        return std::nullopt;
+    switch (ores::service::messaging::gate_verdict_of(
+        ctx_, "counterparty", "delete", {}, pass_.request_id)) {
+        case gate_verdict::free:
+            return std::nullopt;
+        case gate_verdict::approved:
+            if (holds_line("delete", live.front().id, static_cast<int>(expected.value_or(0))))
+                return std::nullopt;
+            break;
+        case gate_verdict::required:
+            break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "counterparty"});
+}
 
 std::vector<domain::counterparty> counterparty_service::list_counterparties(std::uint32_t offset,
                                                                             std::uint32_t limit) {
@@ -472,6 +611,7 @@ counterparty_service::get_counterparties(const std::vector<std::string>& ids) {
 }
 
 void counterparty_service::save_counterparty(const domain::counterparty& v) {
+    refuse_direct_write();
     if (v.id.is_nil())
         throw std::invalid_argument("Counterparty id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving counterparty. " << "id: " << v.id;
@@ -483,6 +623,7 @@ void counterparty_service::save_counterparty(const domain::counterparty& v) {
 
 void counterparty_service::save_counterparties(
     const std::vector<domain::counterparty>& counterparties) {
+    refuse_direct_write();
     for (const auto& e : counterparties) {
         if (e.id.is_nil())
             throw std::invalid_argument("Counterparty id cannot be empty.");
@@ -496,18 +637,21 @@ void counterparty_service::save_counterparties(
 }
 
 void counterparty_service::delete_counterparty(const boost::uuids::uuid& id) {
+    refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
 void counterparty_service::remove_counterparty(const boost::uuids::uuid& id) {
+    refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
 void counterparty_service::delete_counterparties(const std::vector<std::string>& ids) {
+    refuse_direct_write();
     repo_.remove(ctx_, ids);
 }
 

@@ -208,7 +208,9 @@ TEST_CASE("write_counterparty_identifier_publishes_an_event", tags) {
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_counterparty_identifier(v.id);
+        // The approval gate refuses the service's in-process remove, so the
+        // round trip removes through the repository.
+        repo.remove(crud_ctx, boost::uuids::to_string(v.id));
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.

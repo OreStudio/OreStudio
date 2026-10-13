@@ -2156,6 +2156,17 @@ export const en: SourceCatalogue = {
                 derived: 'Derived',
                 manual: 'Manual',
             },
+            surface: {
+                title: 'Surface',
+                note: 'The colour shows where a value sits in its scale. Each line is a slice: one {rows} across the {columns}. The columns can hold quotes in market convention, so a slice is not always a smile. The columns are spaced evenly, whatever their names.',
+                scale: 'Colour scale',
+                scaleSurface: 'The whole surface',
+                scaleColumn: 'Each column',
+                slices: 'Slices',
+                slicesLabel: 'One line for each row, across the columns',
+                axes: 'A shape with {count} axes is not drawn as a surface. Only a shape with two axes is.',
+                empty: 'The object holds no node, so there is no surface to draw.',
+            },
             picker: {
                 label: 'Series',
                 placeholder: 'Choose a series, or type its identity below',

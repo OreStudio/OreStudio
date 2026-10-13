@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 1CA8F59E-9E49-4A79-A482-4570B4554DBA
+:END:
+#+title: Browse the grid's jobs prototype
+#+description: The Jobs tab of the compute grid screen: a paged tree of batches, workunits and results beside a details panel, seen as an operator, a tenant administrator and a party member.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:compute:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:browse-the-grids-jobs/][the prototype]]          |
+| Gemini review | [[file:browse-the-grids-jobs/review/][the review]]            |
+| Group         | [[file:index.org][Compute prototypes]]                |
+| Journey       | [[id:D251AAD1-26B2-4080-B84A-D0236AFD4816][Browse the grid's jobs]] |
+
+* Summary
+
+A person who sees "1268 results failed" has no way to ask which ones. The grid
+screen counts work and draws its load, and it lists none of it. This prototype
+adds a Jobs tab: a paged tree of batches, workunits and results, with a details
+panel for the selected record and a link to each stored input and output.
+
+It is throwaway. It reads no service. Open the [[file:browse-the-grids-jobs/][Jobs tab]].
+
+* Detail
+
+** What it argues
+
+- A tree is the right shape. A batch holds workunits and a workunit holds
+  results, and the person asks about one level at a time.
+- Every level pages on the server. Opening a batch reads one page of its
+  workunits, never all of them.
+- The same screen serves three roles. The operator sees every party and the node
+  of each run. The tenant administrator sees every party and no node. A party
+  member sees one party and no party filter.
+- A closed batch is not a successful batch. The row states the failure count in
+  red and the filter offers /has failures/.
+- Inputs and outputs are links to the stored files, so a person can take them
+  away.
+
+** Variants and states
+
+=?role=operator|tenant|member= and =?state=loaded|loading|empty|error|refused=.
+The bar at the foot of the page switches both.
+
+** What is real and what is not
+
+The batch references, party codes, job counts, storage paths, host names and the
+stored state and outcome codes come from the development database as it stood on
+2026-10-13. The ids are generated, and the failed and in-flight runs are
+invented, because the stored results are all done and successful.
+
+No server behind the screen exists yet for the filters, the per-batch counts or
+the download route. The journey lists them as gaps.
+
+** The Gemini review
+
+Gemini drew the tab as one screen with one batch open and the workunit
+inspector. It is kept at [[file:browse-the-grids-jobs/review/][the review]]. The agreed design stands. The prototype took
+five things from it and left the rest.
+
+| Taken | Why |
+|-------+-----|
+| The count in the tree's header (batches and page) | A person reads how much there is before paging. |
+| The failure count in red on a batch row | It is a true status, so red is allowed, and it answers "which batch failed". |
+| A /has failures/ filter | The question that started the screen is "which ones failed". |
+| The inspector named for the record, with its id large and the figures in tiles | The person reads the id first, and the tiles separate the facts. |
+| The action pinned to the foot of the inspector, as one primary button | The action stays in reach when the details are long. |
+
+| Left | Why |
+|------+-----|
+| The header bar with "5/5 Nodes Online" and an avatar | The shell draws the header. A node count belongs to the operator and has no source on this screen. |
+| The grid's tabs drawn twice | They repeat the same four names. |
+| A /Failed/ batch state | A batch is open or closed. Failure belongs to its runs, so the filter says /has failures/ instead. |
+| Two download buttons | The prototype shows the file as a link, which is the file's own address. |
+| One role and one selection only | The prototype must show three roles and the four states. |
+| Tailwind from a CDN and web fonts | A prototype uses no framework and no build step. |
+
+* See also
+
+- [[id:D251AAD1-26B2-4080-B84A-D0236AFD4816][Browse the grid's jobs]] — the journey this prototype answers.
+- [[file:index.org][Compute prototypes]] — the group page.

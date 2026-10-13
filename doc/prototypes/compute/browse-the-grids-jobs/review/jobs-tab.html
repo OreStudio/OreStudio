@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs tab &mdash; Gemini review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0d10; color: #f3f4f6; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-hidden">
+<div style="background:#312e81;color:#e0e7ff;padding:.5rem 1rem;font:500 13px/1.6 Inter,system-ui,sans-serif;text-align:center">Gemini review &middot; a generated alternative to the agreed prototype &middot; mock data, nothing is stored &middot; <a href="../index.html" style="color:#fff;text-decoration:underline">the agreed prototype &rarr;</a></div>
+
+    <!-- Top Navigation -->
+    <header class="bg-[#12151c] border-b border-[#1f2430] px-6 py-2.5 flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+                <span class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    ORE Studio
+                </span>
+                <span class="text-[#4b5563]">/</span>
+                <div class="flex items-center space-x-2 bg-[#181c25] px-2.5 py-1 rounded border border-[#262c3a]">
+                    <span class="text-xs font-medium text-gray-200">Compute Grid</span>
+                </div>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 text-xs">
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Overview</a>
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Machines</a>
+                <a href="#" class="px-2.5 py-1 rounded text-gray-400 hover:text-white hover:bg-[#181c25]">Usage</a>
+                <a href="#" class="px-2.5 py-1 rounded text-white bg-[#181c25] font-medium border border-[#262c3a]">Jobs</a>
+            </nav>
+        </div>
+        <div class="flex items-center space-x-3 text-xs text-gray-400 font-mono">
+            <span class="text-emerald-400">● 5/5 Nodes Online</span>
+            <div class="w-6 h-6 rounded-full bg-[#262c3a] flex items-center justify-center text-xs font-semibold text-gray-200 font-sans">SA</div>
+        </div>
+    </header>
+
+    <!-- Subheader / Tabs -->
+    <div class="px-6 border-b border-[#1f2430] bg-[#0e1015] flex space-x-6 text-xs font-medium shrink-0">
+        <button class="py-3 text-gray-400 hover:text-gray-200 transition-colors">Overview</button>
+        <button class="py-3 text-gray-400 hover:text-gray-200 transition-colors">Machines</button>
+        <button class="py-3 text-gray-400 hover:text-gray-200 transition-colors">Usage</button>
+        <button class="py-3 text-indigo-400 border-b-2 border-indigo-500 font-semibold">Jobs</button>
+    </div>
+
+    <!-- Main Workspace Area -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6 flex flex-col space-y-4 overflow-hidden">
+        
+        <!-- Filter Toolbar -->
+        <div class="bg-[#12151c] border border-[#1f2430] p-3 rounded-lg flex flex-wrap items-center gap-3 shrink-0">
+            <div class="flex-1 min-w-[200px]">
+                <input type="text" placeholder="Find batch reference or ID..." class="w-full bg-[#0b0d10] border border-[#262c3a] rounded px-3 py-1.5 text-xs text-white placeholder-gray-500 font-mono focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="w-36">
+                <select class="w-full bg-[#0b0d10] border border-[#262c3a] rounded px-2.5 py-1.5 text-xs text-gray-300 font-mono focus:outline-none">
+                    <option>State: Any</option>
+                    <option>Closed</option>
+                    <option>Open</option>
+                    <option>Failed</option>
+                </select>
+            </div>
+            <div class="w-36">
+                <select class="w-full bg-[#0b0d10] border border-[#262c3a] rounded px-2.5 py-1.5 text-xs text-gray-300 font-mono focus:outline-none">
+                    <option>Party: Any</option>
+                    <option>ACMCOR</option>
+                    <option>ACCOUK</option>
+                    <option>ACCOUS</option>
+                    <option>ACCOHK</option>
+                </select>
+            </div>
+            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-medium transition-colors font-mono">Search</button>
+            <button class="bg-[#181c25] hover:bg-[#262c3a] text-gray-400 px-3 py-1.5 rounded text-xs font-medium border border-[#262c3a] transition-colors font-mono">Clear</button>
+        </div>
+
+        <!-- Split View: Batch Explorer Tree (8 cols) & Details Panel (4 cols) -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden">
+            
+            <!-- Left: Batch & Workunits Tree View (8 cols) -->
+            <div class="lg:col-span-8 bg-[#12151c] border border-[#1f2430] rounded-xl flex flex-col overflow-hidden shadow-2xl">
+                <div class="px-4 py-3 bg-[#0e1015] border-b border-[#1f2430] flex items-center justify-between text-xs font-mono">
+                    <span class="text-gray-300 font-semibold">Batches, workunits and results</span>
+                    <span class="text-gray-500">Showing page 1 of 3 (24 total)</span>
+                </div>
+
+                <!-- Tree View Body -->
+                <div class="flex-1 overflow-y-auto p-2 font-mono text-xs space-y-1">
+                    
+                    <!-- Expanded Batch 1 -->
+                    <div class="bg-[#181c25] border border-[#262c3a] rounded-lg p-2.5">
+                        <div class="flex items-center justify-between text-white font-medium cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-400 text-[10px]">▼</span>
+                                <span>soak-1013031448-9-p4</span>
+                                <span class="text-gray-500">· ACMCOR</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-[11px]">
+                                <span class="text-gray-400">2 jobs, 0 failed</span>
+                                <span class="bg-emerald-950/60 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900/50 text-[10px]">closed</span>
+                            </div>
+                        </div>
+
+                        <!-- Nested Workunits -->
+                        <div class="ml-5 pl-3 border-l border-[#262c3a] mt-2 space-y-1.5 pt-1">
+                            <!-- Workunit 1 -->
+                            <div class="flex items-center justify-between text-gray-300 hover:text-white py-1 px-2 rounded hover:bg-[#202532] cursor-pointer">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 text-[10px]">▼</span>
+                                    <span>90ebce18</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-[10px]">
+                                    <span class="text-gray-500">1 run</span>
+                                    <span class="bg-emerald-950/60 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-900/50">succeeded</span>
+                                </div>
+                            </div>
+                            <div class="ml-6 text-gray-400 py-0.5 px-2 text-[11px] flex justify-between items-center">
+                                <span>9f5b7d78</span>
+                                <span class="text-emerald-400 text-[10px]">succeeded</span>
+                            </div>
+
+                            <!-- Workunit 2 (Selected) -->
+                            <div class="flex items-center justify-between bg-indigo-950/40 text-indigo-200 border border-indigo-900/50 py-1 px-2 rounded cursor-pointer">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-indigo-400 text-[10px]">▼</span>
+                                    <span class="font-bold">25dde4e5</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-[10px]">
+                                    <span class="text-gray-400">1 run</span>
+                                    <span class="bg-emerald-950/60 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-900/50">succeeded</span>
+                                </div>
+                            </div>
+                            <div class="ml-6 text-gray-400 py-0.5 px-2 text-[11px] flex justify-between items-center">
+                                <span>116cbb02</span>
+                                <span class="text-emerald-400 text-[10px]">succeeded</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Collapsed Batches -->
+                    <div class="p-2.5 rounded border border-[#1f2430] bg-[#0b0d10] hover:bg-[#181c25] transition-colors cursor-pointer flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-gray-300">
+                            <span class="text-gray-600 text-[10px]">►</span>
+                            <span>soak-1013031448-9-p3</span>
+                            <span class="text-gray-500">· ACCOUK</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px]">
+                            <span class="text-gray-500">31 jobs, 0 failed</span>
+                            <span class="bg-indigo-950/60 text-indigo-400 px-2 py-0.5 rounded border border-indigo-900/50 text-[10px]">open</span>
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded border border-[#1f2430] bg-[#0b0d10] hover:bg-[#181c25] transition-colors cursor-pointer flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-gray-300">
+                            <span class="text-gray-600 text-[10px]">►</span>
+                            <span>soak-1013031448-9-p2</span>
+                            <span class="text-gray-500">· ACCOUS</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px]">
+                            <span class="text-gray-500">8 jobs, 0 failed</span>
+                            <span class="bg-emerald-950/60 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900/50 text-[10px]">closed</span>
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded border border-[#1f2430] bg-[#0b0d10] hover:bg-[#181c25] transition-colors cursor-pointer flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-gray-300">
+                            <span class="text-gray-600 text-[10px]">►</span>
+                            <span>soak-1013031448-7-p3</span>
+                            <span class="text-gray-500">· ACCOUK</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px]">
+                            <span class="text-rose-400 font-bold">35 jobs, 2 failed</span>
+                            <span class="bg-emerald-950/60 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900/50 text-[10px]">closed</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="px-4 py-2.5 bg-[#0e1015] border-t border-[#1f2430] flex items-center justify-between text-xs font-mono">
+                    <div class="flex items-center space-x-1">
+                        <button class="bg-[#181c25] px-2.5 py-1 rounded text-gray-400 border border-[#262c3a]">First</button>
+                        <button class="bg-[#181c25] px-2.5 py-1 rounded text-gray-400 border border-[#262c3a]">Previous</button>
+                        <button class="bg-[#181c25] px-2.5 py-1 rounded text-white border border-[#262c3a]">Next</button>
+                        <button class="bg-[#181c25] px-2.5 py-1 rounded text-gray-400 border border-[#262c3a]">Last</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-400">Page 1 of 3</span>
+                        <select class="bg-[#0b0d10] border border-[#262c3a] rounded px-2 py-1 text-white text-xs">
+                            <option>10 per page</option>
+                            <option>25 per page</option>
+                        </select>
+                        <button class="bg-[#181c25] px-2.5 py-1 rounded text-gray-300 border border-[#262c3a]">Load all</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Workunit Details / Inspector Panel (4 cols) -->
+            <div class="lg:col-span-4 bg-[#12151c] border border-[#1f2430] rounded-xl p-5 flex flex-col justify-between shadow-2xl">
+                <div class="space-y-5">
+                    <div class="flex items-center justify-between pb-3 border-b border-[#1f2430]">
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-white font-mono">Workunit Details</h2>
+                        <span class="text-[10px] font-mono text-gray-400 bg-[#0b0d10] px-2 py-0.5 rounded border border-[#262c3a]">Read only</span>
+                    </div>
+
+                    <div class="space-y-4 text-xs font-mono">
+                        <div>
+                            <span class="text-gray-500 uppercase text-[10px] block">Workunit ID</span>
+                            <span class="text-base font-bold text-white">25dde4e5</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-[#0b0d10] p-2.5 rounded border border-[#1f2430]">
+                                <span class="text-gray-500 text-[10px] block">Priority</span>
+                                <span class="text-sm font-bold text-white">1</span>
+                            </div>
+                            <div class="bg-[#0b0d10] p-2.5 rounded border border-[#1f2430]">
+                                <span class="text-gray-500 text-[10px] block">Target Redundancy</span>
+                                <span class="text-sm font-bold text-white">1</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500 uppercase text-[10px] block mb-1">Input Artifact</span>
+                            <div class="bg-[#0b0d10] p-2.5 rounded border border-[#1f2430] text-[11px] text-indigo-300 break-all select-all font-mono">
+                                /api/v1/storage/ores/compute/input/20a2cf64-d9dc-0284-6a05-7b7d625c6e41.tar.gz
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <span class="text-gray-500 uppercase text-[10px] block">Config</span>
+                                <span class="text-gray-300">none</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 uppercase text-[10px] block">Parent Batch</span>
+                                <a href="#" class="text-indigo-400 hover:underline">soak-1013031448-9-p4</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inspector Actions Footer -->
+                <div class="pt-5 border-t border-[#1f2430] space-y-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="bg-[#181c25] hover:bg-[#262c3a] text-gray-200 py-2 rounded text-xs font-medium border border-[#262c3a] transition-colors font-mono">
+                            Download input
+                        </button>
+                        <button class="bg-[#181c25] hover:bg-[#262c3a] text-gray-200 py-2 rounded text-xs font-medium border border-[#262c3a] transition-colors font-mono">
+                            Download output
+                        </button>
+                    </div>
+                    <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded text-xs font-medium transition-colors shadow-sm font-mono">
+                        Open Job Monitor →
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>

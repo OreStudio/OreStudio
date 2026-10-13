@@ -120,7 +120,7 @@
     function filtered() {
         return batches.filter(function (b) {
             return (!ui.text || b.ref.indexOf(ui.text) >= 0 || b.id === ui.text) &&
-                (!ui.state || b.state === ui.state) &&
+                (!ui.state || (ui.state === 'failures' ? b.failed > 0 : b.state === ui.state)) &&
                 (role === 'member' ? b.party === 'ACCOUK' : !ui.party || b.party === ui.party);
         });
     }
@@ -137,7 +137,7 @@
         bar.appendChild(el('span', '', 'Page ' + (page + 1) + ' of ' + (last + 1) + ', ' + total + ' in all'));
         var sel = el('select');
         PAGE_SIZES.forEach(function (n) {
-            var o = el('option', '', String(n));
+            var o = el('option', '', n + ' per page');
             o.selected = n === size;
             sel.appendChild(o);
         });
@@ -151,13 +151,13 @@
         return bar;
     }
 
-    function row(cls, label, state, count, id, twist) {
+    function row(cls, label, state, count, id, twist, failedCount) {
         var r = el('li', 'row' + (ui.selected === id ? ' sel' : ''));
         var n = el('span', 'name');
         n.appendChild(el('span', 'twist', twist || ''));
         n.appendChild(document.createTextNode(label));
         r.appendChild(n);
-        r.appendChild(el('span', 'count', count || ''));
+        r.appendChild(el('span', 'count' + (failedCount ? ' has-failed' : ''), count || ''));
         r.appendChild(state ? badge(state) : el('span'));
         r.dataset.id = id;
         return r;
@@ -166,13 +166,15 @@
     function tree() {
         var list = filtered();
         var panel = el('div', 'panel');
-        panel.appendChild(el('h2', '', 'Batches, workunits and results'));
+        var head = el('h2', 'with-count', 'Batches, workunits and results');
+        head.appendChild(el('span', 'faint', list.length + ' batch' + (list.length === 1 ? '' : 'es') + ', page ' + (ui.page + 1) + ' of ' + Math.max(1, Math.ceil(list.length / ui.size))));
+        panel.appendChild(head);
         var ul = el('ul', 'tree');
         var start = ui.page * ui.size;
         list.slice(start, start + ui.size).forEach(function (b) {
             var open = !!ui.open[b.id];
             var r = row('', b.ref + (role === 'member' ? '' : '  · ' + b.party), b.state,
-                b.jobs + ' jobs, ' + b.failed + ' failed', b.id, open ? '▾' : '▸');
+                b.jobs + ' jobs, ' + b.failed + ' failed', b.id, open ? '▾' : '▸', b.failed);
             r.onclick = function () { ui.open[b.id] = !open; ui.selected = b.id; render(); };
             ul.appendChild(r);
             if (!open) { return; }
@@ -197,7 +199,7 @@
                 }
             });
             ul.appendChild(l1);
-            ul.appendChild(pager(wus.length, wp, wsize, function (p) { ui.wuPage[b.id] = p; render(); }, function () {}, true));
+            if (wus.length > wsize) { ul.appendChild(pager(wus.length, wp, wsize, function (p) { ui.wuPage[b.id] = p; render(); }, function () {}, true)); }
         });
         panel.appendChild(ul);
         panel.appendChild(pager(list.length, ui.page, ui.size,
@@ -223,20 +225,31 @@
     }
 
     function details() {
-        var panel = el('div', 'panel');
-        panel.appendChild(el('h2', '', 'Details'));
-        var d = el('div', 'details');
+        var panel = el('div', 'panel detail-panel');
         var hit = ui.selected && find(ui.selected);
+        var title = !hit ? 'Details' : hit.kind === 'batch' ? 'Batch details' : hit.kind === 'workunit' ? 'Workunit details' : 'Result details';
+        var head = el('h2', 'with-count', title);
+        if (hit) { head.appendChild(el('span', 'access', 'Read only')); }
+        panel.appendChild(head);
+        var d = el('div', 'details');
         if (!hit) {
             d.appendChild(el('p', 'dim', 'Select a batch, a workunit or a result to read its details.'));
             panel.appendChild(d);
             return panel;
         }
-        var head = el('div');
-        head.appendChild(el('strong', '', hit.kind === 'batch' ? hit.b.ref : hit.kind === 'workunit' ? hit.wu.label : hit.res.label));
-        head.appendChild(document.createTextNode(' '));
-        head.appendChild(el('span', 'access', 'Read only'));
-        d.appendChild(head);
+        var rec = hit.kind === 'batch' ? hit.b : hit.kind === 'workunit' ? hit.wu : hit.res;
+        d.appendChild(el('div', 'kicker', hit.kind === 'batch' ? 'Reference' : hit.kind === 'workunit' ? 'Workunit id' : 'Result id'));
+        d.appendChild(el('div', 'big mono', hit.kind === 'batch' ? hit.b.ref : rec.id));
+        function tiles(pairs) {
+            var g = el('div', 'tiles');
+            pairs.forEach(function (p) {
+                var t = el('div', 'tile');
+                t.appendChild(el('span', 'kicker', p[0]));
+                t.appendChild(el('strong', '', p[1]));
+                g.appendChild(t);
+            });
+            d.appendChild(g);
+        }
         var dl = el('dl');
         function add(k, v, link) {
             dl.appendChild(el('dt', '', k));
@@ -249,30 +262,26 @@
             dl.appendChild(el('dt', '', k));
             var dd = el('dd');
             if (!uri) { dd.textContent = 'none'; dl.appendChild(dd); return; }
-            var a = el('a', 'mono', uri.split('/').pop());
+            var a = el('a', 'mono path', uri);
             a.href = uri;
             a.download = uri.split('/').pop();
-            a.title = uri;
             a.onclick = function (e) { e.preventDefault(); toast('Would download ' + uri); };
             dd.appendChild(a);
             dl.appendChild(dd);
         }
         if (hit.kind === 'batch') {
+            tiles([['Jobs', String(hit.b.jobs)], ['Failed', String(hit.b.failed)]]);
             add('State', hit.b.state);
             if (ROLES[role].parties) { add('Party', hit.b.party, true); }
-            add('Jobs', String(hit.b.jobs));
-            add('Failed', String(hit.b.failed));
-            addFile('Input', STORAGE + 'input/' + hit.b.id + '.tar.gz');
             add('Closed', hit.b.state === 'closed' ? 'closed does not mean every run succeeded' : 'still open');
         } else if (hit.kind === 'workunit') {
-            add('Priority', String(hit.wu.priority));
-            add('Target redundancy', String(hit.wu.redundancy));
-            addFile('Input', hit.wu.input);
-            add('Config', hit.wu.config || 'none');
+            tiles([['Priority', String(hit.wu.priority)], ['Target redundancy', String(hit.wu.redundancy)]]);
             add('Batch', hit.b.ref, true);
+            add('Config', hit.wu.config || 'none');
+            addFile('Input', hit.wu.input);
         } else {
-            add('State', hit.res.state + ' · server state ' + hit.res.serverState);
-            add('Outcome', hit.res.outcome);
+            tiles([['State', hit.res.state], ['Outcome', hit.res.outcome || '—']]);
+            add('Server state', hit.res.serverState);
             add('Node', ROLES[role].nodes ? (hit.res.node || 'not yet known') : 'hidden for your role', ROLES[role].nodes && !!hit.res.node);
             add('Received', hit.res.received);
             add('Error', hit.res.error);
@@ -280,12 +289,12 @@
             addFile('Output', hit.res.output);
         }
         d.appendChild(dl);
+        panel.appendChild(d);
         var act = el('div', 'actions');
-        var job = el('button', 'btn', 'Open job');
+        var job = el('button', 'btn primary', 'Open job \u2192');
         job.disabled = hit.kind === 'batch';
         act.appendChild(job);
-        d.appendChild(act);
-        panel.appendChild(d);
+        panel.appendChild(act);
         return panel;
     }
 
@@ -296,7 +305,7 @@
         t.onkeydown = function (e) { if (e.key === 'Enter') { ui.text = t.value.trim(); ui.page = 0; render(); } };
         field('Find', t);
         var s = el('select');
-        ['', 'open', 'closed'].forEach(function (v) { var o = el('option', '', v || 'Any'); o.value = v; o.selected = v === ui.state; s.appendChild(o); });
+        [['', 'Any'], ['open', 'open'], ['closed', 'closed'], ['failures', 'has failures']].forEach(function (pair) { var v = pair[0]; var o = el('option', '', pair[1]); o.value = v; o.selected = v === ui.state; s.appendChild(o); });
         s.onchange = function () { ui.state = s.value; ui.page = 0; render(); };
         field('State', s);
         if (ROLES[role].parties) {

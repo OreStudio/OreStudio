@@ -27,7 +27,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | Prototype        | What it argues | Open it | Review |
 |------------------+----------------+---------+--------|
 | Compute journeys | A grid read as tables is a grid nobody can read: the five use cases, and every chart compute.org names, drawn from mock series at the size the real screen would give them. | [[file:compute/][prototype]] | none |
-| Browse the grid's jobs | A paged tree of batches, workunits and results beside a details panel answers "which ones failed, and why" for each role: the Jobs tab of the compute grid screen. | [[file:browse-the-grids-jobs/][prototype]] | none |
+| [[file:browse-the-grids-jobs.org][Browse the grid's jobs]] | A paged tree of batches, workunits and results beside a details panel answers "which ones failed, and why" for each role: the Jobs tab of the compute grid screen. | [[file:browse-the-grids-jobs/][prototype]] | [[file:browse-the-grids-jobs/review/][Gemini review]] |
 
 * Adding a prototype
 

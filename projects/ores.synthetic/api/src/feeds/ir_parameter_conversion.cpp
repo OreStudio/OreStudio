@@ -27,7 +27,13 @@ namespace ores::synthetic::feed {
 
 namespace {
 
-enum class engine { vasicek, cox_ingersoll_ross, hull_white, black_karasinski, two_factor_gaussian };
+enum class engine {
+    vasicek,
+    cox_ingersoll_ross,
+    hull_white,
+    black_karasinski,
+    two_factor_gaussian
+};
 
 constexpr double basis_point = 1e-4;
 
@@ -65,13 +71,12 @@ bool close(double a, double b) {
 }
 
 /// The total move of the two factors as the simple view splits it: √(σ₁² + σ₂²) at ρ of zero.
-const double two_factor_spread =
-    std::sqrt(1.0 + second_volatility_ratio * second_volatility_ratio);
+const double two_factor_spread = std::sqrt(1.0 + second_volatility_ratio * second_volatility_ratio);
 
 }
 
-std::map<std::string, double>
-ir_parameters_from_simple(const std::string& process_type, const ir_simple_view& view) {
+std::map<std::string, double> ir_parameters_from_simple(const std::string& process_type,
+                                                        const ir_simple_view& view) {
     const auto kind = engine_of(process_type);
     if (!(view.half_life_years > 0.0))
         throw std::invalid_argument("The half-life must be longer than zero.");
@@ -89,32 +94,32 @@ ir_parameters_from_simple(const std::string& process_type, const ir_simple_view&
         throw std::invalid_argument("This engine needs a start rate above zero.");
 
     switch (kind) {
-    case engine::vasicek:
-    case engine::hull_white:
-        return {{"kappa", kappa},
-                {"theta", view.long_run_rate},
-                {"sigma", move},
-                {"initial_rate", view.start_rate}};
-    case engine::cox_ingersoll_ross:
-        return {{"kappa", kappa},
-                {"theta", view.long_run_rate},
-                {"sigma", move / std::sqrt(view.long_run_rate)},
-                {"initial_rate", view.start_rate}};
-    case engine::black_karasinski:
-        return {{"kappa", kappa},
-                {"theta", std::log(view.long_run_rate)},
-                {"sigma", move / view.long_run_rate},
-                {"initial_rate", view.start_rate}};
-    case engine::two_factor_gaussian: {
-        const double sigma_x = move / two_factor_spread;
-        return {{"kappa_x", kappa},
-                {"kappa_y", kappa * second_speed_ratio},
-                {"theta", view.long_run_rate},
-                {"sigma_x", sigma_x},
-                {"sigma_y", sigma_x * second_volatility_ratio},
-                {"rho", 0.0},
-                {"initial_rate", view.start_rate}};
-    }
+        case engine::vasicek:
+        case engine::hull_white:
+            return {{"kappa", kappa},
+                    {"theta", view.long_run_rate},
+                    {"sigma", move},
+                    {"initial_rate", view.start_rate}};
+        case engine::cox_ingersoll_ross:
+            return {{"kappa", kappa},
+                    {"theta", view.long_run_rate},
+                    {"sigma", move / std::sqrt(view.long_run_rate)},
+                    {"initial_rate", view.start_rate}};
+        case engine::black_karasinski:
+            return {{"kappa", kappa},
+                    {"theta", std::log(view.long_run_rate)},
+                    {"sigma", move / view.long_run_rate},
+                    {"initial_rate", view.start_rate}};
+        case engine::two_factor_gaussian: {
+            const double sigma_x = move / two_factor_spread;
+            return {{"kappa_x", kappa},
+                    {"kappa_y", kappa * second_speed_ratio},
+                    {"theta", view.long_run_rate},
+                    {"sigma_x", sigma_x},
+                    {"sigma_y", sigma_x * second_volatility_ratio},
+                    {"rho", 0.0},
+                    {"initial_rate", view.start_rate}};
+        }
     }
     throw std::invalid_argument("Unknown process type: " + process_type);
 }
@@ -142,33 +147,33 @@ ir_simple_reading ir_simple_from_parameters(const std::string& process_type,
     view.start_rate = start;
     view.half_life_years = std::log(2.0) / kappa;
     switch (kind) {
-    case engine::vasicek:
-    case engine::hull_white:
-        view.long_run_rate = theta;
-        view.yearly_move_bp = named(parameters, "sigma") / basis_point;
-        break;
-    case engine::cox_ingersoll_ross:
-        if (!(theta > 0.0)) {
-            out.reason = "This engine needs a long-run rate above zero.";
-            return out;
+        case engine::vasicek:
+        case engine::hull_white:
+            view.long_run_rate = theta;
+            view.yearly_move_bp = named(parameters, "sigma") / basis_point;
+            break;
+        case engine::cox_ingersoll_ross:
+            if (!(theta > 0.0)) {
+                out.reason = "This engine needs a long-run rate above zero.";
+                return out;
+            }
+            view.long_run_rate = theta;
+            view.yearly_move_bp = named(parameters, "sigma") * std::sqrt(theta) / basis_point;
+            break;
+        case engine::black_karasinski:
+            view.long_run_rate = std::exp(theta);
+            view.yearly_move_bp = named(parameters, "sigma") * view.long_run_rate / basis_point;
+            break;
+        case engine::two_factor_gaussian: {
+            const double sigma_x = named(parameters, "sigma_x");
+            if (!close(named(parameters, "kappa_y"), kappa * second_speed_ratio) ||
+                !close(named(parameters, "sigma_y"), sigma_x * second_volatility_ratio) ||
+                !close(named(parameters, "rho"), 0.0))
+                out.reason = "The second factor and the correlation are set by hand.";
+            view.long_run_rate = theta;
+            view.yearly_move_bp = sigma_x * two_factor_spread / basis_point;
+            break;
         }
-        view.long_run_rate = theta;
-        view.yearly_move_bp = named(parameters, "sigma") * std::sqrt(theta) / basis_point;
-        break;
-    case engine::black_karasinski:
-        view.long_run_rate = std::exp(theta);
-        view.yearly_move_bp = named(parameters, "sigma") * view.long_run_rate / basis_point;
-        break;
-    case engine::two_factor_gaussian: {
-        const double sigma_x = named(parameters, "sigma_x");
-        if (!close(named(parameters, "kappa_y"), kappa * second_speed_ratio) ||
-            !close(named(parameters, "sigma_y"), sigma_x * second_volatility_ratio) ||
-            !close(named(parameters, "rho"), 0.0))
-            out.reason = "The second factor and the correlation are set by hand.";
-        view.long_run_rate = theta;
-        view.yearly_move_bp = sigma_x * two_factor_spread / basis_point;
-        break;
-    }
     }
     out.view = view;
     out.exact = out.reason.empty();

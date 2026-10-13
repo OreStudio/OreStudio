@@ -61,8 +61,8 @@ inline std::string synthetic_tick_subject_for(std::string_view source_name) {
  * @c % and @c A-F, and @c subject_token_text() gives the text back.
  */
 inline bool is_plain(unsigned char c) {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
-           c == '-' || c == '_';
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' ||
+           c == '_';
 }
 
 inline std::string subject_token(std::string_view text) {
@@ -130,8 +130,9 @@ inline std::string market_tick_subject_all(std::string_view tenant_id, std::stri
  * the datum's canonical oresmd URI as one subject token. Every valid datum has
  * a URI, so every valid quote has a subject, with or without an ORE key.
  */
-inline std::string
-market_tick_subject(std::string_view tenant_id, std::string_view party_id, std::string_view oresmd_uri) {
+inline std::string market_tick_subject(std::string_view tenant_id,
+                                       std::string_view party_id,
+                                       std::string_view oresmd_uri) {
     std::string subject(messaging::market_tick::nats_subject);
     for (const auto part : {tenant_id, party_id})
         subject.append(".").append(part);

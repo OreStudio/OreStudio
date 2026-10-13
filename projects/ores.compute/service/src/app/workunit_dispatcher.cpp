@@ -124,10 +124,9 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
     const auto waiting = ores::compute::repository::work_ledger_repository().waiting(
         ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
     if (waiting + missing > tenant_queue_limit) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Refusing to dispatch workunit " << workunit_id << " for tenant " << tenant_uuid
-            << ": " << waiting << " job(s) already wait and the limit is "
-            << tenant_queue_limit;
+        BOOST_LOG_SEV(lg(), warn) << "Refusing to dispatch workunit " << workunit_id
+                                  << " for tenant " << tenant_uuid << ": " << waiting
+                                  << " job(s) already wait and the limit is " << tenant_queue_limit;
         return;
     }
 

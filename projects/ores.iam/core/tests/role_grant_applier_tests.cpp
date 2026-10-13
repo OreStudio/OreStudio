@@ -31,8 +31,8 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <stdexcept>
 #include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
 
 namespace {
 

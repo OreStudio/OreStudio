@@ -20,8 +20,8 @@
 #include "ores.ore.core/domain/credit_instrument_mapper.hpp"
 #include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.ore.core/domain/ore_code_tables.hpp"
-#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/credit_fact_variant.hpp"
 #include <algorithm>
@@ -116,15 +116,15 @@ std::optional<double> to_double(const xsd::optional<float>& v) {
 
 bool flag_is_true(bool_ v) {
     switch (v) {
-    case bool_::Y:
-    case bool_::YES:
-    case bool_::TRUE_:
-    case bool_::True:
-    case bool_::true_:
-    case bool_::_1:
-        return true;
-    default:
-        return false;
+        case bool_::Y:
+        case bool_::YES:
+        case bool_::TRUE_:
+        case bool_::True:
+        case bool_::true_:
+        case bool_::_1:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -161,8 +161,7 @@ std::optional<std::chrono::year_month_day> to_date(const xsd::optional<date>& v)
     return to_optional_date(std::string(*v));
 }
 
-void set_date(xsd::optional<date>& field,
-              const std::optional<std::chrono::year_month_day>& v) {
+void set_date(xsd::optional<date>& field, const std::optional<std::chrono::year_month_day>& v) {
     if (!v)
         return;
     date value;
@@ -220,7 +219,8 @@ std::optional<bool> to_plain_flag(const xsd::optional<bool>& v) {
 
 void append_option_rows(credit_instrument_data& result, swap_instrument_mapper::option_rows rows) {
     const auto move_into = [](auto& to, auto& from) {
-        to.insert(to.end(), std::make_move_iterator(from.begin()), std::make_move_iterator(from.end()));
+        to.insert(
+            to.end(), std::make_move_iterator(from.begin()), std::make_move_iterator(from.end()));
     };
     move_into(result.options, rows.options);
     move_into(result.option_premiums, rows.premiums);
@@ -601,8 +601,8 @@ credit_instrument_data credit_instrument_mapper::forward_rpa(const trade& t) {
                                swap_instrument_mapper::map_option_block(*d.Underlying.OptionData));
 
         if (d.Underlying.TreasuryLockData)
-            BOOST_LOG_SEV(lg(), warn) << "Treasury lock of the underlying is not stored: "
-                                      << std::string(t.id);
+            BOOST_LOG_SEV(lg(), warn)
+                << "Treasury lock of the underlying is not stored: " << std::string(t.id);
     }
     result.facts = std::move(fact);
     return result;
@@ -664,8 +664,8 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
     set_flag(d.KnockOut, fact.knock_out);
     set_text(d.IndexTerm, fact.index_term);
     if (fact.strike_type)
-        d.StrikeType = *fact.strike_type == "Spread" ? cdsOptionstrikeType::Spread
-                                                     : cdsOptionstrikeType::Price;
+        d.StrikeType = *fact.strike_type == "Spread" ? cdsOptionstrikeType::Spread :
+                                                       cdsOptionstrikeType::Price;
     set_date(d.TradeDate, fact.trade_date);
     set_date(d.FrontEndProtectionStartDate, fact.front_end_protection_start_date);
 
@@ -772,7 +772,8 @@ trade credit_instrument_mapper::reverse_rpa(const credit_instrument_data& data) 
     if (fact.naked_option)
         d.Underlying.NakedOption = *fact.naked_option;
     if (!data.options.empty())
-        d.Underlying.OptionData = swap_instrument_mapper::rebuild_option_block(option_rows_of(data));
+        d.Underlying.OptionData =
+            swap_instrument_mapper::rebuild_option_block(option_rows_of(data));
 
     t.RiskParticipationAgreementData = std::move(d);
     return t;

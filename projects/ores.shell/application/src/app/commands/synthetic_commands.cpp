@@ -349,8 +349,9 @@ exact_match_result exact_feed_match(std::ostream& out,
 
 // Find the config whose id matches the needle within one feed family.
 template <typename Config, typename OresmdUriOf>
-std::optional<resolved_feed>
-feed_by_id(const std::vector<Config>& configs, const std::string& needle, OresmdUriOf oresmd_uri_of) {
+std::optional<resolved_feed> feed_by_id(const std::vector<Config>& configs,
+                                        const std::string& needle,
+                                        OresmdUriOf oresmd_uri_of) {
     for (const auto& c : configs)
         if (boost::uuids::to_string(c.id) == needle)
             return resolved_feed{needle, c.source_name, oresmd_uri_of(c)};

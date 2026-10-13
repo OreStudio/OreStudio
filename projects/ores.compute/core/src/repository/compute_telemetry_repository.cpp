@@ -88,15 +88,13 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
     return result;
 }
 
-domain::grid_sample
-compute_telemetry_repository::compute_grid_stats(context ctx,
-                                                 std::optional<boost::uuids::uuid> party,
-                                                 bool fleet) {
+domain::grid_sample compute_telemetry_repository::compute_grid_stats(
+    context ctx, std::optional<boost::uuids::uuid> party, bool fleet) {
     BOOST_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
     const auto tid = ctx.tenant_id().to_string();
 
-    static const std::string sql =
-        "SELECT * FROM ores_compute_grid_stats_fn($1::uuid, nullif($2::text, '')::uuid, $3::boolean)";
+    static const std::string sql = "SELECT * FROM ores_compute_grid_stats_fn($1::uuid, "
+                                   "nullif($2::text, '')::uuid, $3::boolean)";
 
     const auto rows = execute_parameterized_multi_column_query(
         ctx,
@@ -179,8 +177,9 @@ std::vector<std::optional<boost::uuids::uuid>>
 compute_telemetry_repository::parties_with_work(context ctx) {
     // Each table is read as the session sees it, so the policies decide which parties
     // are listed. A party whose work is all gone is no longer listed and gets no more rows,
-    // so its counts leave the sums from then on, as they would at zero. The empty party is always there, because work with no party is the
-    // work a tenant had before the party scope and the work a service submits.
+    // so its counts leave the sums from then on, as they would at zero. The empty party is always
+    // there, because work with no party is the work a tenant had before the party scope and the
+    // work a service submits.
     static const std::string sql = R"(
         SELECT party_id::text FROM (
             SELECT party_id FROM ores_compute_batches_tbl
@@ -194,8 +193,8 @@ compute_telemetry_repository::parties_with_work(context ctx) {
         ) p
         WHERE party_id IS NOT NULL
     )";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "listing the parties with work");
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {}, lg(), "listing the parties with work");
     std::vector<std::optional<boost::uuids::uuid>> parties;
     parties.emplace_back(std::nullopt);
     for (const auto& row : rows) {

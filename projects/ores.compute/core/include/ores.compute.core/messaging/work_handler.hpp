@@ -131,8 +131,8 @@ public:
                             // The host no longer holds the job, for example because a claim of
                             // it timed out and the entry went back to the queue.
                             BOOST_LOG_SEV(work_handler_lg(), debug)
-                                << "Host " << req->host_id << " does not hold job " << req->result_id
-                                << "; its lease was not extended";
+                                << "Host " << req->host_id << " does not hold job "
+                                << req->result_id << "; its lease was not extended";
                         }
                     } catch (const boost::bad_lexical_cast&) {
                         BOOST_LOG_SEV(work_handler_lg(), warn)

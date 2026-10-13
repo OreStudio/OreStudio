@@ -57,14 +57,14 @@ void run_token_issue_log::record(const run_token_issue& issue) {
 }
 
 void run_token_issue_log::record(const std::chrono::system_clock::time_point& issued_at,
-                                        const std::string& tenant_id,
-                                        const std::string& party_id,
-                                        const std::string& grant_id,
-                                        const std::string& run_id,
-                                        const std::string& service,
-                                        const std::string& grantor_account_id,
-                                        const std::string& outcome,
-                                        const std::string& reason) {
+                                 const std::string& tenant_id,
+                                 const std::string& party_id,
+                                 const std::string& grant_id,
+                                 const std::string& run_id,
+                                 const std::string& service,
+                                 const std::string& grantor_account_id,
+                                 const std::string& outcome,
+                                 const std::string& reason) {
 
     BOOST_LOG_SEV(lg(), debug) << "Recording run token issue for grant " << grant_id << " run "
                                << run_id << ": " << outcome;
@@ -112,8 +112,7 @@ std::size_t run_token_issue_log::distinct_runs(const std::string& grant_id) cons
     }
 }
 
-bool run_token_issue_log::exists(const std::string& grant_id,
-                                        const std::string& run_id) const {
+bool run_token_issue_log::exists(const std::string& grant_id, const std::string& run_id) const {
     const auto rows = execute_parameterized_string_query(
         ctx_,
         "select 1::text from ores_iam_run_token_issues_tbl "

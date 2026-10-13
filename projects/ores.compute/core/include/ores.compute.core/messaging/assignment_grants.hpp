@@ -37,7 +37,7 @@ namespace ores::compute::messaging {
  * gives nothing.
  */
 inline std::optional<ores::security::jwt::storage_grant> grant_for_path(const std::string& path,
-                                                                       std::string op) {
+                                                                        std::string op) {
     std::string bucket;
     std::string key;
     if (!ores::storage::net::storage_paths::split_object_path(path, bucket, key))
@@ -54,10 +54,8 @@ inline std::optional<ores::security::jwt::storage_grant> grant_for_path(const st
  * capability for exactly these three objects. The whole set is refused when any
  * path does not name an object, because a job with a missing grant cannot run.
  */
-inline std::optional<std::vector<ores::security::jwt::storage_grant>>
-storage_grants_for(const std::string& package_uri,
-                   const std::string& input_uri,
-                   const std::string& output_path) {
+inline std::optional<std::vector<ores::security::jwt::storage_grant>> storage_grants_for(
+    const std::string& package_uri, const std::string& input_uri, const std::string& output_path) {
     std::vector<ores::security::jwt::storage_grant> grants;
     const struct {
         const std::string& path;

@@ -119,7 +119,8 @@ private:
                                                         .should_run = req->should_run,
                                                         .feed_ids = req->feed_ids,
                                                         .excluded_ids = req->excluded_ids};
-        if (const auto problem = ores::synthetic::feed::selection_problem(filter); !problem.empty()) {
+        if (const auto problem = ores::synthetic::feed::selection_problem(filter);
+            !problem.empty()) {
             resp.message = problem;
             reply(nats_, msg, resp);
             return;
@@ -132,7 +133,11 @@ private:
                 const auto bearer = ores::nats::service::extract_bearer(msg);
                 const ores::synthetic::feed::feed_build_context build{nats_, auth_nats_, bearer};
                 const auto outcome = start_feeds(
-                    registry_, *ctrl_, *ctx, build, bearer,
+                    registry_,
+                    *ctrl_,
+                    *ctx,
+                    build,
+                    bearer,
                     [&](const feed_start_target& t) {
                         return wanted.contains(t.row.candidate.feed_config_id);
                     },
@@ -144,9 +149,10 @@ private:
                                std::to_string(resp.already_running) + " already running, " +
                                std::to_string(resp.skipped) + " skipped";
             } else {
-                const auto outcome = stop_feeds(registry_, *ctrl_, *ctx, [&](const feed_kind_row& row) {
-                    return wanted.contains(row.candidate.feed_config_id);
-                });
+                const auto outcome =
+                    stop_feeds(registry_, *ctrl_, *ctx, [&](const feed_kind_row& row) {
+                        return wanted.contains(row.candidate.feed_config_id);
+                    });
                 resp.stopped = outcome.stopped;
                 resp.message = std::to_string(resp.stopped) + " stopped";
             }

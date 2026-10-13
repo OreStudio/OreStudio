@@ -25,9 +25,6 @@
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
 #include "ores.inbox.core/messaging/apply_step_handler.hpp"
 #include "ores.inbox.core/messaging/approval_decision_history_provider_registrar.hpp"
-#include "ores.inbox.core/messaging/approval_request_part_history_provider_registrar.hpp"
-#include "ores.inbox.core/messaging/notification_argument_history_provider_registrar.hpp"
-#include "ores.inbox.core/messaging/notification_recipient_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_type_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_type_registrar.hpp"
@@ -39,11 +36,13 @@
 #include "ores.inbox.core/messaging/approval_policy_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_policy_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_history_provider_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_request_part_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_part_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_state_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_state_registrar.hpp"
 #include "ores.inbox.core/messaging/delivery_outcome_type_registrar.hpp"
+#include "ores.inbox.core/messaging/notification_argument_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_argument_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_channel_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_channel_registrar.hpp"
@@ -55,6 +54,7 @@
 #include "ores.inbox.core/messaging/notification_operations_handler.hpp"
 #include "ores.inbox.core/messaging/notification_preference_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_preference_registrar.hpp"
+#include "ores.inbox.core/messaging/notification_recipient_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_recipient_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_registrar.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -164,10 +164,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             remind_expiring_approvals_request::nats_subject,
             queue_group,
             [h](ores::nats::message msg) { h->remind_expiring(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(get_approval_parts_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->get_parts(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_approval_parts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->get_parts(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
             retry_stalled_applies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->retry_stalled_applies(std::move(msg));

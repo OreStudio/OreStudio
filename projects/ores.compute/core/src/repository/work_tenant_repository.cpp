@@ -44,8 +44,8 @@ void work_tenant_repository::note(context ctx, const boost::uuids::uuid& work_te
 std::vector<boost::uuids::uuid> work_tenant_repository::list(context ctx) {
     static const std::string sql =
         "SELECT work_tenant_id::text FROM ores_compute_work_tenants_tbl ORDER BY first_seen_at";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "listing the tenants with work");
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {}, lg(), "listing the tenants with work");
     std::vector<boost::uuids::uuid> tenants;
     for (const auto& row : rows) {
         if (!row.empty() && row.front())

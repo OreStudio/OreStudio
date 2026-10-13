@@ -103,11 +103,22 @@ const std::array<int_binding, 3> int_bindings = {{
  * never stored on it.
  */
 const std::array<std::string_view, 16> file_parameters = {{
-    "curveConfigFile", "conventionsFile", "marketConfigFile", "pricingEnginesFile",
-    "pricingEnginesFileScenario", "portfolioFile", "marketDataFile",
-    "marketDataMappingFile", "fixingDataFile", "fixingDataMappingFile",
-    "calendarAdjustment", "currencyConfiguration", "referenceDataFile",
-    "counterpartyFile", "scriptLibrary", "iborFallbackConfig",
+    "curveConfigFile",
+    "conventionsFile",
+    "marketConfigFile",
+    "pricingEnginesFile",
+    "pricingEnginesFileScenario",
+    "portfolioFile",
+    "marketDataFile",
+    "marketDataMappingFile",
+    "fixingDataFile",
+    "fixingDataMappingFile",
+    "calendarAdjustment",
+    "currencyConfiguration",
+    "referenceDataFile",
+    "counterpartyFile",
+    "scriptLibrary",
+    "iborFallbackConfig",
 }};
 
 /**
@@ -184,8 +195,8 @@ mapped_setup run_document_mapper::map_setup(const ore& v) {
             throw std::runtime_error("run_document_mapper: no column holds Setup parameter '" +
                                      name + "'");
 
-        const auto existing = std::find_if(r.files.begin(), r.files.end(),
-            [&name](const auto& f) { return f.parameter == name; });
+        const auto existing = std::find_if(
+            r.files.begin(), r.files.end(), [&name](const auto& f) { return f.parameter == name; });
         if (existing != r.files.end())
             existing->name = value;
         else

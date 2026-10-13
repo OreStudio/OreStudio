@@ -232,4 +232,3 @@ TEST_CASE("from_utc_format_refuses_text_that_does_not_match_the_format", tags) {
                     std::invalid_argument);
     CHECK_THROWS_AS(datetime::from_utc_format("", "%Y-%b-%d %H:%M:%S"), std::invalid_argument);
 }
-

@@ -114,7 +114,8 @@ public:
      * Each binding is a market role and the configuration set the run asks it
      * for, in the order the document wrote them.
      */
-    static std::vector<reporting::domain::configuration_market_binding> map_market_bindings(const ore& v);
+    static std::vector<reporting::domain::configuration_market_binding>
+    map_market_bindings(const ore& v);
 
     /**
      * @brief Reconstructs a run document's named market bindings.

@@ -25,7 +25,6 @@
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
@@ -224,9 +223,9 @@ TEST_CASE("a second import into the same report definition is refused", tags) {
     const auto definition = make_definition(h, parties);
     const auto files = example_input();
     store::import_run(parties.a_context, definition, "first", files);
-    CHECK_THROWS_WITH(
-        store::import_run(parties.a_context, definition, "second", files),
-        "The report definition already binds a risk report configuration; import into a new definition.");
+    CHECK_THROWS_WITH(store::import_run(parties.a_context, definition, "second", files),
+                      "The report definition already binds a risk report configuration; import "
+                      "into a new definition.");
 }
 
 TEST_CASE("an export from a session with no party reads the definition's party", tags) {

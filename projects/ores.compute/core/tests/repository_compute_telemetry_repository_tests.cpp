@@ -407,7 +407,8 @@ grid_sample party_row(const grid_sample& model,
 
 } // namespace
 
-TEST_CASE("grid_series_sums_the_party_rows_of_an_instant_and_takes_the_fleet_from_the_system", tags) {
+TEST_CASE("grid_series_sums_the_party_rows_of_an_instant_and_takes_the_fleet_from_the_system",
+          tags) {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto model = generate_synthetic_grid_sample(gen);
@@ -798,8 +799,7 @@ TEST_CASE("grid_usage_reads_one_tenant_and_a_system_session_reads_no_other", tag
     const auto system = tenant_id::system();
 
     auto provision_ctx = h.context();
-    const auto third_code =
-        test_database_manager::generate_test_tenant_code("ores.compute.usage");
+    const auto third_code = test_database_manager::generate_test_tenant_code("ores.compute.usage");
     const auto third =
         tenant_id::from_string(test_database_manager::provision_test_tenant(
                                    provision_ctx, third_code, "compute usage third tenant"))
@@ -827,7 +827,8 @@ TEST_CASE("grid_usage_reads_one_tenant_and_a_system_session_reads_no_other", tag
     // The system tenant is a tenant like the others for this read: it reads the
     // system tenant's work and neither of the two tenants above. An operator who
     // needs another tenant's work enters that tenant.
-    const auto as_system = telemetry.grid_usage_by_scope(h.context().with_tenant(system, h.db_user()));
+    const auto as_system =
+        telemetry.grid_usage_by_scope(h.context().with_tenant(system, h.db_user()));
     CHECK(as_system.group_kind == "party");
     CHECK(usage_index_of(as_system, boost::uuids::to_string(own_party)) == -1);
     CHECK(usage_index_of(as_system, boost::uuids::to_string(third_party)) == -1);

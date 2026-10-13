@@ -152,14 +152,13 @@ bool work_ledger_repository::extend_lease(context ctx,
         )
         SELECT count(*) FROM extended
     )";
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx,
-        sql,
-        {boost::uuids::to_string(host_id),
-         boost::uuids::to_string(result_id),
-         std::to_string(lease.count())},
-        lg(),
-        "extending the lease of a job");
+    const auto rows = execute_parameterized_multi_column_query(ctx,
+                                                               sql,
+                                                               {boost::uuids::to_string(host_id),
+                                                                boost::uuids::to_string(result_id),
+                                                                std::to_string(lease.count())},
+                                                               lg(),
+                                                               "extending the lease of a job");
     return !rows.empty() && !rows.front().empty() && rows.front().front() &&
            std::stoll(*rows.front().front()) > 0;
 }
@@ -252,19 +251,19 @@ std::int64_t work_ledger_repository::waiting(context ctx,
         SELECT count(*) FROM ores_compute_work_ledger_tbl
         WHERE work_tenant_id = $1::uuid AND state = 'queued'
     )";
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx,
-        sql,
-        {boost::uuids::to_string(work_tenant_id)},
-        lg(),
-        "counting the jobs a tenant has waiting");
+    const auto rows =
+        execute_parameterized_multi_column_query(ctx,
+                                                 sql,
+                                                 {boost::uuids::to_string(work_tenant_id)},
+                                                 lg(),
+                                                 "counting the jobs a tenant has waiting");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return 0;
     return std::stoll(*rows.front().front());
 }
 
-std::optional<boost::uuids::uuid> work_ledger_repository::holder(
-    context ctx, const boost::uuids::uuid& result_id) {
+std::optional<boost::uuids::uuid>
+work_ledger_repository::holder(context ctx, const boost::uuids::uuid& result_id) {
     static const std::string sql = R"(
         SELECT host_id FROM ores_compute_work_ledger_tbl
         WHERE result_id = $1::uuid AND state = 'claimed'
@@ -279,8 +278,8 @@ std::optional<boost::uuids::uuid> work_ledger_repository::holder(
 std::int64_t work_ledger_repository::count(context ctx, const std::string& state) {
     static const std::string sql =
         "SELECT count(*) FROM ores_compute_work_ledger_tbl WHERE state = $1::text";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {state}, lg(), "counting ledger entries");
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {state}, lg(), "counting ledger entries");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return 0;
     return std::stoll(*rows.front().front());

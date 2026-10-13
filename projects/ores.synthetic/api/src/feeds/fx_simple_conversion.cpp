@@ -120,10 +120,11 @@ fx_simple_reading fx_simple_from_mixture(const fx_mixture& mixture,
         out.view.volatility_pct_per_hour = per_hour_pct(mixture.stdevs.front(), true);
         if (kappa > 0.0)
             out.view.half_life_minutes = std::log(2.0) / kappa * 60.0 / updates;
-        out.exact = mixture.means.size() == 1 && negligible(mixture.means.front(), mixture.stdevs.front()) && kappa > 0.0;
+        out.exact = mixture.means.size() == 1 &&
+                    negligible(mixture.means.front(), mixture.stdevs.front()) && kappa > 0.0;
         if (!out.exact)
-            out.reason = kappa > 0.0 ? "The engine reads one component, and this has more."
-                                     : "The price never returns to its long-run level.";
+            out.reason = kappa > 0.0 ? "The engine reads one component, and this has more." :
+                                       "The price never returns to its long-run level.";
         return out;
     }
 
@@ -140,8 +141,7 @@ fx_simple_reading fx_simple_from_mixture(const fx_mixture& mixture,
             jump += mixture.weights[i];
             ++jumps;
             jump_shaped = jump_shaped && negligible(mixture.means[i], mixture.stdevs[i]) &&
-                          close(mixture.stdevs[i],
-                                jump_volatility_ratio * mixture.stdevs[primary]);
+                          close(mixture.stdevs[i], jump_volatility_ratio * mixture.stdevs[primary]);
         } else {
             jump_shaped = false;
         }

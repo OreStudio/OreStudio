@@ -40,13 +40,9 @@
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
 #include "ores.trading.core/service/composite_instrument_service.hpp"
-#include "ores.trading.core/service/credit_instrument_service.hpp"
 #include "ores.trading.core/service/credit_default_swap_instrument_service.hpp"
-#include "ores.trading.core/service/index_credit_default_swap_instrument_service.hpp"
-#include "ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
-#include "ores.trading.core/service/synthetic_cdo_instrument_service.hpp"
+#include "ores.trading.core/service/credit_instrument_service.hpp"
 #include "ores.trading.core/service/credit_linked_swap_instrument_service.hpp"
-#include "ores.trading.core/service/risk_participation_agreement_instrument_service.hpp"
 #include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
@@ -65,11 +61,15 @@
 #include "ores.trading.core/service/fx_forward_instrument_service.hpp"
 #include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/index_credit_default_swap_instrument_service.hpp"
+#include "ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
 #include "ores.trading.core/service/rate_instrument_service.hpp"
+#include "ores.trading.core/service/risk_participation_agreement_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
+#include "ores.trading.core/service/synthetic_cdo_instrument_service.hpp"
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -284,7 +284,8 @@ void populate_instruments_for_trades(const Ctx& ctx,
         take(fees, batch.instrument_option_exercise_fees);
         auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, credit_ids);
         take(payment_dates, batch.instrument_option_payment_dates);
-        auto exercise_prices = repository::read_option_exercise_prices_by_trade_ids(ctx, credit_ids);
+        auto exercise_prices =
+            repository::read_option_exercise_prices_by_trade_ids(ctx, credit_ids);
         take(exercise_prices, batch.instrument_option_exercise_prices);
     }
     if (!commodity_ids.empty()) {

@@ -21,9 +21,9 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 

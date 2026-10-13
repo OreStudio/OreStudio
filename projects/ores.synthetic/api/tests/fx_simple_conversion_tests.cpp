@@ -124,7 +124,8 @@ TEST_CASE("fx_simple_conversion approximates a mixture set by hand, and says so"
 }
 
 TEST_CASE("fx_simple_conversion has no exact form for a mean-reverting engine with no pull", tags) {
-    const ores::synthetic::feed::fx_mixture still{.means = {0.0}, .stdevs = {0.001}, .weights = {0.0}};
+    const ores::synthetic::feed::fx_mixture still{
+        .means = {0.0}, .stdevs = {0.001}, .weights = {0.0}};
     const auto reading = fx_simple_from_mixture(still, "ornstein_uhlenbeck", 1.0, 3600);
     CHECK_FALSE(reading.exact);
 }

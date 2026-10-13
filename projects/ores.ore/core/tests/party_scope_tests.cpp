@@ -18,8 +18,8 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include "ores.reporting.api/domain/configuration.hpp"
+#include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <map>

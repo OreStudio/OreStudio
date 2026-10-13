@@ -86,9 +86,8 @@ ir_parameters_from_simple(const std::string& process_type, const ir_simple_view&
  * The inverse of ir_parameters_from_simple. Throws std::invalid_argument for
  * an unknown engine or a missing parameter.
  */
-ORES_SYNTHETIC_API_EXPORT ir_simple_reading
-ir_simple_from_parameters(const std::string& process_type,
-                          const std::map<std::string, double>& parameters);
+ORES_SYNTHETIC_API_EXPORT ir_simple_reading ir_simple_from_parameters(
+    const std::string& process_type, const std::map<std::string, double>& parameters);
 
 }
 

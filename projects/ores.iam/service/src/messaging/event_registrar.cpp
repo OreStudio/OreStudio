@@ -21,7 +21,6 @@
 
 // Per-entity generated event-mapping registrars.
 #include "ores.iam.service/messaging/account_contact_information_event_registrar.hpp"
-#include "ores.iam.service/messaging/role_grant_request_role_event_registrar.hpp"
 #include "ores.iam.service/messaging/account_credential_event_registrar.hpp"
 #include "ores.iam.service/messaging/account_event_registrar.hpp"
 #include "ores.iam.service/messaging/account_party_event_registrar.hpp"
@@ -30,6 +29,7 @@
 #include "ores.iam.service/messaging/login_info_event_registrar.hpp"
 #include "ores.iam.service/messaging/permission_event_registrar.hpp"
 #include "ores.iam.service/messaging/role_event_registrar.hpp"
+#include "ores.iam.service/messaging/role_grant_request_role_event_registrar.hpp"
 #include "ores.iam.service/messaging/role_permission_event_registrar.hpp"
 #include "ores.iam.service/messaging/run_grant_event_registrar.hpp"
 #include "ores.iam.service/messaging/seed_profile_event_registrar.hpp"

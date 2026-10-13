@@ -18,14 +18,14 @@
  *
  */
 #include "ores.database/domain/context.hpp"
+#include "ores.history.api/messaging/history_protocol.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/party_country.hpp"
 #include "ores.refdata.api/domain/party_country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/country_generator.hpp"
-#include "ores.history.api/messaging/history_protocol.hpp"
-#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/messaging/party_country_history_provider_registrar.hpp"
 #include "ores.refdata.core/presentation/party_country_history_field_mapper.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
@@ -373,15 +373,16 @@ TEST_CASE("the_party_country_history_provider_numbers_each_link_on_its_own", tag
     ores::history::messaging::get_entity_history_request request;
     request.entity_type = "ores.refdata.party_country";
     request.entity_id = boost::uuids::to_string(party_id);
-    const auto response = registry.dispatch(request, h.context().with_roles({"refdata::party_countries:read"}));
+    const auto response =
+        registry.dispatch(request, h.context().with_roles({"refdata::party_countries:read"}));
     REQUIRE(response.success);
 
     // Only this link's versions: the others of the party are numbered apart.
     std::vector<ores::history::messaging::entity_history_version> own;
     const std::string wanted = boost::uuids::to_string(party_id) + "/" + all[11].alpha2_code;
     for (const auto& version : response.versions) {
-        const auto id = std::ranges::find_if(
-            version.fields, [](const auto& f) { return f.name == "ID"; });
+        const auto id =
+            std::ranges::find_if(version.fields, [](const auto& f) { return f.name == "ID"; });
         if (id != version.fields.end() && id->value == wanted)
             own.push_back(version);
     }
@@ -390,9 +391,9 @@ TEST_CASE("the_party_country_history_provider_numbers_each_link_on_its_own", tag
     CHECK(own[1].version == 1);
 
     const auto closed_at = [](const auto& version) {
-        return std::ranges::find_if(version.fields, [](const auto& f) {
-                   return f.name == "Closed At";
-               })->value;
+        return std::ranges::find_if(version.fields,
+                                    [](const auto& f) { return f.name == "Closed At"; })
+            ->value;
     };
     CHECK_FALSE(closed_at(own[0]).empty());
     CHECK(closed_at(own[1]).empty());

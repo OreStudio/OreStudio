@@ -51,9 +51,8 @@ std::string unique_platform() {
     return "test-" + boost::uuids::to_string(random_uuid());
 }
 
-ledger_entry entry_for(const std::string& platform,
-                       const boost::uuids::uuid& tenant,
-                       int priority = 0) {
+ledger_entry
+entry_for(const std::string& platform, const boost::uuids::uuid& tenant, int priority = 0) {
     return ledger_entry{.result_id = random_uuid(),
                         .work_tenant_id = tenant,
                         .workunit_id = random_uuid(),
@@ -120,8 +119,8 @@ TEST_CASE("claim_takes_nothing_for_a_platform_with_no_waiting_entry", tags) {
     ledger_cleanup cleanup(h);
     cleanup.add(entry_for(unique_platform(), random_uuid()));
 
-    const auto claimed =
-        work_ledger_repository().claim(cleanup.system(), random_uuid(), unique_platform(), seconds(300));
+    const auto claimed = work_ledger_repository().claim(
+        cleanup.system(), random_uuid(), unique_platform(), seconds(300));
 
     CHECK(!claimed.has_value());
 }
@@ -315,7 +314,8 @@ TEST_CASE("waiting_counts_the_queued_entries_of_one_tenant", tags) {
     CHECK(ledger.waiting(cleanup.system(), tenant) == 3);
 
     // A claim takes one of the tenant's entries out of the waiting count.
-    REQUIRE(ledger.claim(cleanup.system(), random_uuid(), other_platform, seconds(300)).has_value());
+    REQUIRE(
+        ledger.claim(cleanup.system(), random_uuid(), other_platform, seconds(300)).has_value());
     CHECK(ledger.waiting(cleanup.system(), tenant) == 2);
 }
 

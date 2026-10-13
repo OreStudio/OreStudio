@@ -168,9 +168,8 @@ public:
      * to the installation, so they are counted only when @p fleet is true, and
      * the row of a tenant's party carries job counters and no host counts.
      */
-    domain::grid_sample compute_grid_stats(context ctx,
-                                           std::optional<boost::uuids::uuid> party,
-                                           bool fleet);
+    domain::grid_sample
+    compute_grid_stats(context ctx, std::optional<boost::uuids::uuid> party, bool fleet);
 
     /**
      * @brief The parties whose work the session's tenant holds.

@@ -172,8 +172,8 @@ public:
                 ores::service::messaging::reply(
                     nats_,
                     msg,
-                    get_book_changes_response{.result = result_of(outcome::missing, "not_found", ""),
-                                              .changes = {}});
+                    get_book_changes_response{
+                        .result = result_of(outcome::missing, "not_found", ""), .changes = {}});
                 return;
             }
             ores::service::messaging::reply(
@@ -181,7 +181,8 @@ public:
                 msg,
                 get_book_changes_response{
                     .result = result_of(outcome::ok, "", ""),
-                    .changes = to_deltas(service::book_proposal_service(*ctx).deltas(req->request_id))});
+                    .changes =
+                        to_deltas(service::book_proposal_service(*ctx).deltas(req->request_id))});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), ores::logging::error)
                 << "Error reading the book changes of " << req->request_id << ": " << e.what();
@@ -189,7 +190,8 @@ public:
                 nats_,
                 msg,
                 get_book_changes_response{
-                    .result = result_of(outcome::failed, "read_failed", "The changes could not be read."),
+                    .result =
+                        result_of(outcome::failed, "read_failed", "The changes could not be read."),
                     .changes = {}});
         }
     }
@@ -213,7 +215,8 @@ public:
                 ores::service::messaging::reply(
                     nats_,
                     msg,
-                    recheck_book_changes_response{.result = result_of(outcome::missing, "not_found", ""),
+                    recheck_book_changes_response{.result =
+                                                      result_of(outcome::missing, "not_found", ""),
                                                   .lines = {},
                                                   .part_codes = {}});
                 return;
@@ -232,7 +235,8 @@ public:
                 nats_,
                 msg,
                 recheck_book_changes_response{
-                    .result = result_of(outcome::failed, "recheck_failed", "The changes could not be checked."),
+                    .result = result_of(
+                        outcome::failed, "recheck_failed", "The changes could not be checked."),
                     .lines = {},
                     .part_codes = {}});
         }
@@ -294,7 +298,8 @@ private:
         const auto me = lifecycle.actor_account_id();
         const auto kind = lifecycle.kind(found->kind_code);
         return (me && found->requested_by == *me) ||
-               (kind && ores::service::messaging::has_permission(ctx, kind->decide_permission_code)) ||
+               (kind &&
+                ores::service::messaging::has_permission(ctx, kind->decide_permission_code)) ||
                ores::service::messaging::has_permission(ctx, "inbox::approval_requests:read");
     }
 

@@ -116,4 +116,3 @@ TEST_CASE("the index tenor is the tenor field of the series, so two index tenors
     CHECK(pillar_series_uri(six_month) != pillar_series_uri(three_month));
     CHECK(pillar_series_uri(six_month) != pillar_series_uri(overnight));
 }
-

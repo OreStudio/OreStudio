@@ -15,35 +15,63 @@
     };
     var STATES = ['loaded', 'loading', 'empty', 'error', 'refused'];
     var PAGE_SIZES = [10, 25, 50];
+    /* Shapes taken from the development database on 2026-10-13: the soak's
+     * batch references and party codes, the storage URIs, the host names, and
+     * the server_state and outcome of the stored results (all done and
+     * success). The failed and in-flight rows are invented, because the stored
+     * data holds none. */
+    var PARTY_OF = { p1: 'ACCOHK', p2: 'ACCOUS', p3: 'ACCOUK', p4: 'ACMCOR' };
     var PARTIES = ['ACCOUK', 'ACCOUS', 'ACCOHK', 'ACMCOR'];
-    var NODES = ['grid-01.example.com', 'grid-02.example.com', 'grid-04.example.com'];
+    var NODES = [
+        'timid-uakari-3eaa5870', 'quiet-hamster-ed10585e', 'idle-xerus-ed485b3f',
+        'timid-hamster-593e583f', 'quiet-yak-bc485725', 'bumbling-tapir-b16f5933',
+        'witty-tapir-d8115deb', 'plucky-pangolin-6d6f5712', 'graceful-xerus-22625e7e',
+        'lively-walrus-b698576f', 'rusty-uakari-eb685c79', 'brave-yak-d562501d'
+    ];
+    var SIZES = { p1: [15, 6, 9, 12], p2: [20, 10, 14, 8], p3: [35, 15, 31, 24], p4: [3, 2, 3, 2] };
+    var STORAGE = '/api/v1/storage/ores/compute/';
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
-    var batches = [];
-    for (var i = 0; i < 37; i++) {
-        var party = PARTIES[i % 4 === 3 ? (i % 8 === 3 ? 3 : 1) : i % 3 === 0 ? 0 : i % 3];
-        var failed = i % 5 === 0 ? 1 + (i % 3) : 0;
-        batches.push({
-            id: 'b' + i,
-            ref: 'batch_2026_10_' + pad(12 - Math.floor(i / 6)) + '_' + String.fromCharCode(97 + (i % 6)),
-            party: party,
-            state: i < 3 ? 'open' : 'closed',
-            jobs: 8 + (i * 7) % 33,
-            failed: i < 3 ? 0 : failed
-        });
+    /* A stable pseudo-uuid, so the same record shows the same id each render. */
+    function uuid(seed) {
+        var x = 0x9e3779b1 ^ seed, out = '';
+        for (var i = 0; i < 32; i++) {
+            x = (Math.imul(x, 1103515245) + 12345) >>> 0;
+            out += ((x >>> 16) & 15).toString(16);
+            if (i === 7 || i === 11 || i === 15 || i === 19) { out += '-'; }
+        }
+        return out;
     }
+
+    var batches = [];
+    var seq = 0;
+    [9, 8, 7, 6, 5, 4].forEach(function (wave) {
+        ['p4', 'p3', 'p2', 'p1'].forEach(function (pk, pi) {
+            var jobs = SIZES[pk][(wave + pi) % 4];
+            var newest = wave === 9;
+            batches.push({
+                id: uuid(++seq),
+                ref: 'soak-1013031448-' + wave + '-' + pk,
+                party: PARTY_OF[pk],
+                state: newest && pk === 'p3' ? 'open' : 'closed',
+                jobs: jobs,
+                failed: wave === 7 && pk === 'p3' ? 2 : wave === 5 && pk === 'p2' ? 1 : 0
+            });
+        });
+    });
 
     function workunitsOf(b) {
         var out = [];
         for (var w = 0; w < b.jobs; w++) {
+            var id = uuid(b.jobs * 977 + w * 31 + b.ref.length + b.ref.charCodeAt(b.ref.length - 3));
             out.push({
-                id: b.id + 'w' + w,
-                label: 'wu ' + pad(w + 1).replace(/^/, '00'),
-                priority: 5,
-                redundancy: w % 4 === 0 ? 2 : 1,
-                input: 's3://ores-inputs/' + b.ref + '/job_' + pad(w + 1) + '.tar.zst',
-                config: 'inline',
+                id: id,
+                label: id.slice(0, 8),
+                priority: 1,
+                redundancy: 1,
+                input: STORAGE + 'input/' + b.id + '.tar.gz',
+                config: '',
                 bad: w < b.failed
             });
         }
@@ -52,18 +80,21 @@
 
     function resultsOf(b, wu) {
         var out = [];
-        for (var r = 0; r < wu.redundancy + (wu.bad ? 1 : 0); r++) {
+        var n = wu.redundancy + (wu.bad ? 1 : 0);
+        for (var r = 0; r < n; r++) {
             var failedRun = wu.bad && r === wu.redundancy;
-            var inFlight = b.state === 'open' && r === 0;
+            var inFlight = b.state === 'open' && r === 0 && wu.id.charCodeAt(0) % 3 === 0;
+            var rid = uuid(wu.id.charCodeAt(2) * 131 + wu.id.charCodeAt(5) * 17 + r + wu.id.length * 7 + wu.id.charCodeAt(9));
             out.push({
-                id: wu.id + 'r' + r,
-                label: 'result ' + (r + 1),
+                id: rid,
+                label: rid.slice(0, 8),
                 state: inFlight ? 'running' : failedRun ? 'failed' : 'succeeded',
-                outcome: inFlight ? '' : failedRun ? 'client error' : 'success',
+                serverState: inFlight ? 'in progress (4)' : 'done (5)',
+                outcome: inFlight ? '' : failedRun ? 'client error (2)' : 'success (1)',
                 error: failedRun ? 'engine exited with code 3: market data snapshot not found' : '',
-                node: inFlight ? '' : NODES[(r + 1) % 3],
-                received: inFlight ? '' : '14:' + pad(2 + r) + ':' + pad(10 + r),
-                output: failedRun ? '' : 's3://ores-outputs/' + b.ref + '/' + wu.id + '_' + (r + 1) + '.parquet'
+                node: inFlight ? '' : NODES[(wu.id.charCodeAt(1) + r) % NODES.length],
+                received: inFlight ? '' : '2026-10-13 02:' + pad(27 + (r % 3)) + ':' + pad(10 + (wu.id.charCodeAt(3) % 49)),
+                output: failedRun || inFlight ? '' : STORAGE + 'output/' + rid + '.tar.gz'
             });
         }
         return out;
@@ -225,10 +256,10 @@
             add('Priority', String(hit.wu.priority));
             add('Target redundancy', String(hit.wu.redundancy));
             add('Input', hit.wu.input);
-            add('Config', hit.wu.config);
+            add('Config', hit.wu.config || 'none');
             add('Batch', hit.b.ref, true);
         } else {
-            add('State', hit.res.state);
+            add('State', hit.res.state + ' · server state ' + hit.res.serverState);
             add('Outcome', hit.res.outcome);
             add('Node', ROLES[role].nodes ? (hit.res.node || 'not yet known') : 'hidden for your role', ROLES[role].nodes && !!hit.res.node);
             add('Received', hit.res.received);

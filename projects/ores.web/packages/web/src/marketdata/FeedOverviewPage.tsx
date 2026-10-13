@@ -25,6 +25,7 @@ import { Link } from 'react-router';
 import { api, type FeedFolder } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useRecords, show } from '../refdata/records.js';
+import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
 import { Button, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
@@ -87,6 +88,14 @@ function StateTag({ totals }: { readonly totals: Totals }): ReactNode {
  * stopped; one request names the folder and the server walks its subtree.
  */
 export function FeedOverviewPage(): ReactNode {
+    return (
+        <RecordStoreProvider store={syntheticStore}>
+            <FeedOverview />
+        </RecordStoreProvider>
+    );
+}
+
+function FeedOverview(): ReactNode {
     const { t } = useTranslation();
     const runs = useFolderRuns();
     const synthetic = useSyntheticStep();

@@ -25,6 +25,7 @@ import { Link, useSearchParams } from 'react-router';
 import { api, type FeedFolder, type FolderFeed } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { show, useRecords } from '../refdata/records.js';
+import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
 import { Button, Input, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
@@ -129,6 +130,14 @@ function StateChip({ totals }: { readonly totals: Totals }): ReactNode {
  * page. The search finds feeds by words in their name, source or URI.
  */
 export function FeedTreePage(): ReactNode {
+    return (
+        <RecordStoreProvider store={syntheticStore}>
+            <FeedTree />
+        </RecordStoreProvider>
+    );
+}
+
+function FeedTree(): ReactNode {
     const { t } = useTranslation();
     const synthetic = useSyntheticStep();
     const label = useLabeller();

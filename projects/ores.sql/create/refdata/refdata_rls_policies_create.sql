@@ -821,3 +821,16 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- A pending line shows the counterparty link it proposes, so it is as visible
+-- as the link. FOR SELECT only: the insert trigger validates the party_id FK,
+-- so WITH CHECK would only block the bulk inserts that place the lines.
+drop policy if exists party_counterparty_changes_party_isolation_policy
+    on ores_refdata_party_counterparty_changes_tbl;
+
+create policy party_counterparty_changes_party_isolation_policy
+on ores_refdata_party_counterparty_changes_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);

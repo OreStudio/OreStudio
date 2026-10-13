@@ -1,0 +1,58 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>MARKET DATA</b> | Bindings | [ Bind a source ]
+  --
+  Bindings 12 | Enabled 11 | Running 10 | Quiet 1
+  --
+  Kind | ^All^ | State | ^All^ | [ Search source ]
+  --
+  {#
+    Source | Kind | Feeds series | Enabled | Running | Last tick
+    synthetic.bloomberg.audusd | Synthetic | AUD/USD spot rate | [X] | Running | 2 s ago
+    synthetic.bloomberg.eurestr | Synthetic | EUR overnight curve | [X] | Running | 2 s ago
+    synthetic.bloomberg.copibr | Synthetic | USD/COP spot rate | [X] | <b>Quiet</b> | 1 h ago
+    synthetic.bloomberg.nzdusd | Synthetic | NZD/USD spot rate | [ ] | Stopped | 3 d ago
+    vendor.example.eurusd | Vendor | EUR/USD spot rate | [X] | Not supported | -
+  }
+  --
+  <b>Selected: synthetic.bloomberg.copibr</b> | v3, changed by market data operator
+  {
+    Producer | FX spot generation config, 1800 ticks an hour, bound, auto-start
+    Series | USD/COP spot rate (inferred from observations)
+    | [ Rebind ] | [ Disable ] | [ Start ] | [ Stop ] | [ Remove ]
+  }
+  --
+  Versions: v3 disabled to enabled | v2 rebound | v1 created
+  ..
+  <i>A vendor binding: real feeds are not supported. Rebind and Start are not offered.</i>
+  ..
+  {+
+    <b>Bind a source</b>
+    Source | ^synthetic.bloomberg.gbpusd^
+    Would write | GBP/USD spot rate
+    Held by | no other running feed
+    Reason | ^Amend^
+    [ Cancel ] | [ Bind ]
+  }
+}
+
+@enduml

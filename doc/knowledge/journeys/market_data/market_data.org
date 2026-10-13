@@ -50,6 +50,7 @@ the provenance is what tells them apart.
 | [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] | quant | The short-rate model, its parameters and the tenor ladder the curve is bootstrapped from |
 | [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]] | trader, operations | The feeds a collection owns, what it covers, and one folder-scoped start |
 | [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]] | system administrator | The short-rate models and their parameters, kept as data rather than code |
+| [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]] | market data operator | The producers a party consumes: the bindings, what each feeds, its last tick, and bind, rebind, enable, start and stop, for synthetic data, with real data shown and not supported |
 
 * Related
 

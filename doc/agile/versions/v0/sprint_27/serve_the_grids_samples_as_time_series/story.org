@@ -56,6 +56,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:0ADD9640-2C5B-4065-8114-3443E9D62EFE][Give a tenant and a party the grid views]] | DONE | 2026-10-12 | 2026-10-13 | The poller writes a sample row for each tenant and party, a tenant or party session reads the series of its own work, and the grid screen opens to a tenant administrator and a party user with the fleet capacity as a summary. |
 | [[id:D66FEF0D-C8BC-46C5-9DB3-F9555BA25718][Keep the token of a party switch in the shell]] | DONE | 2026-10-13 | 2026-10-13 | The shell keeps the token that select-party and switch-party return, so later commands run in the chosen party, and the grid soak spreads its work across the parties of a tenant. |
 | [[id:236153F4-4708-4205-BA5E-2BC938A3ABEA][Spread the soak by party and draw the outcomes]] | DONE | 2026-10-13 | 2026-10-13 | Each soak wave is shared out among the parties of the sender's tenant, and the Usage tab draws a pie of how the finished results ended. |
+| [[id:DD432150-81CD-4D91-AF2E-D0F26A06F912][Let the system party see every party's grid work]] | DONE | 2026-10-13 | 2026-10-13 | A session in the tenant's system party sees the compute work of every party of the tenant, and every other party sees only its own. |
 
 * Findings
 

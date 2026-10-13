@@ -109,6 +109,11 @@ std::expected<node, std::string> locate(ores::database::context ctx,
 /// a plus sign and a hex float are not numbers here, because the text is stored as
 /// it is stated.
 bool is_number(const std::string& text) {
+    // The platform parser takes a leading plus, as the estate's signed
+    // decimals and strike labels do. This gate is stricter than that grammar,
+    // so the rule is stated here rather than inherited.
+    if (!text.empty() && text.front() == '+')
+        return false;
     return ores::platform::numeric::parse_double(text).has_value();
 }
 

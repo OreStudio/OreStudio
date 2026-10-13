@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 4E0371EC-F7F3-4FFC-A631-5897E1599E7F
+:END:
+#+title: Task: Accept a leading plus in parse_double again
+#+description: The estate's decimals are signed, so strike_label::parse reads +25RR through decimal::parse and canonicalises it to 25RR; mirroring from_chars' sign rule in parse_double broke the strike label tests.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/parse-double-restore-plus
+#+pr: 3265
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The estate's signed decimals parse again, so a strike label such as =+25RR=
+canonicalises to =25RR=, while the manual point gate keeps its stricter
+spelling rule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The marketdata api and core suites pass.
+
+* Plan
+
+Find who reads a plus before changing the parser. =value.cpp= calls
+=decimal= "the estate's one definition of a number", and
+=strike_label::parse= reads =+25RR= through it, so the parser is right to
+take a plus and the gate that refuses one is the exception. Put the strict
+rule where the contract lives, not in the shared grammar: =is_number= is a
+spelling gate for text stored as stated, and it can say so in one line.
+Correct the shim's documentation, which claimed =from_chars=' contract
+while the estate's grammar is broader.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Parsings that broke | =+25RR= and =+25= through =decimal::parse= | marketdata api and core suites | prior merge |
+| Parse spellings after | =+1.5= and =+25= are numbers | standalone =parse_double= check | 1d3561b69f |
+| Manual point spellings refused | 6 of 6, =+0.09= among them | the same check | 1d3561b69f |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3265][#3265]] | [platform] Accept a leading plus in parse_double again |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=parse_double= takes either sign again and says so, the shim's test pins it,
+and the manual point gate refuses =+0.09= under its own stated rule. Both
+contracts are verified by a standalone build of the parser.

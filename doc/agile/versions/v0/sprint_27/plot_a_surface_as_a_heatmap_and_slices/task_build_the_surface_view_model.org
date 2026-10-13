@@ -8,7 +8,7 @@
 #+filetags: :plot_a_surface_as_a_heatmap_and_slices:sprint_27:v0:
 #+owner: marco
 #+branch: feature/plot-a-surface-as-a-heatmap-and-slices
-#+pr:
+#+pr: 3255
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3255][#3255]] | [web] Plot a surface as a heatmap and slices |
 
 * Review
 

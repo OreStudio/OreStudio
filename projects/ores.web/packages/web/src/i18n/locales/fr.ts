@@ -2181,7 +2181,7 @@ const fr: SourceCatalogue = {
             },
             surface: {
                 title: 'Surface',
-                note: 'La couleur montre où une valeur se place dans son échelle. Chaque ligne est une tranche : un {rows} sur les {columns}. Les colonnes peuvent contenir des cotations en convention de marché, une tranche n’est donc pas toujours un smile.',
+                note: 'La couleur montre où une valeur se place dans son échelle. Chaque ligne est une tranche : un {rows} sur les {columns}. Les colonnes peuvent contenir des cotations en convention de marché, une tranche n’est donc pas toujours un smile. Les colonnes sont espacées régulièrement, quel que soit leur nom.',
                 scale: 'Échelle de couleur',
                 scaleSurface: 'Toute la surface',
                 scaleColumn: 'Chaque colonne',

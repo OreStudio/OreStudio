@@ -59,12 +59,17 @@ export type SurfaceResult =
     | { readonly ok: true; readonly surface: Surface }
     | { readonly ok: false; readonly reason: SurfaceVerdict };
 
-/** A value as a number, or none when it is empty or not a finite number. */
+/** A decimal number as the server writes one: a sign, digits, a point and an exponent. */
+const DECIMAL = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+
+/** A value as a number, or none when it is empty or not a decimal number. */
 function numberOf(text: string): number | undefined {
-    if (text.trim() === '') {
+    const trimmed = text.trim();
+    // Number() also reads 0x10 and Infinity, which no snapshot value is.
+    if (!DECIMAL.test(trimmed)) {
         return undefined;
     }
-    const value = Number(text);
+    const value = Number(trimmed);
     return Number.isFinite(value) ? value : undefined;
 }
 
@@ -104,6 +109,8 @@ export function surfaceOf(snapshot: CurveSnapshot, scale: SurfaceScale): Surface
     const rowAt = new Map(rows.map((label, index) => [label, index]));
     const columnAt = new Map(columns.map((label, index) => [label, index]));
 
+    // The snapshot returns one value for each node, index for index. A node that
+    // repeats the coordinates of an earlier one replaces it, so the last value stands.
     const texts = rows.map(() => columns.map(() => ''));
     snapshot.nodes.forEach((node, index) => {
         const row = rowAt.get(node.coordinates[0] ?? '');

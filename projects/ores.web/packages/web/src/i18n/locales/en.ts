@@ -2158,7 +2158,7 @@ export const en: SourceCatalogue = {
             },
             surface: {
                 title: 'Surface',
-                note: 'The colour shows where a value sits in its scale. Each line is a slice: one {rows} across the {columns}. The columns can hold quotes in market convention, so a slice is not always a smile.',
+                note: 'The colour shows where a value sits in its scale. Each line is a slice: one {rows} across the {columns}. The columns can hold quotes in market convention, so a slice is not always a smile. The columns are spaced evenly, whatever their names.',
                 scale: 'Colour scale',
                 scaleSurface: 'The whole surface',
                 scaleColumn: 'Each column',

@@ -2171,7 +2171,7 @@ const pt: SourceCatalogue = {
             },
             surface: {
                 title: 'Superfície',
-                note: 'A cor mostra onde um valor se situa na sua escala. Cada linha é uma fatia: um {rows} ao longo dos {columns}. As colunas podem conter cotações na convenção de mercado, por isso uma fatia nem sempre é um smile.',
+                note: 'A cor mostra onde um valor se situa na sua escala. Cada linha é uma fatia: um {rows} ao longo dos {columns}. As colunas podem conter cotações na convenção de mercado, por isso uma fatia nem sempre é um smile. As colunas estão espaçadas de forma regular, sejam quais forem os seus nomes.',
                 scale: 'Escala de cor',
                 scaleSurface: 'A superfície toda',
                 scaleColumn: 'Cada coluna',

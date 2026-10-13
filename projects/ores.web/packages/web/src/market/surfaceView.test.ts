@@ -102,6 +102,34 @@ describe('surfaceOf', () => {
         expect(surface.cells[0]![1]!.shade).toBeUndefined();
     });
 
+    it('reads only a decimal as a number, and not hex or infinity', () => {
+        const odd = snapshotOf(
+            ['a', 'b'],
+            [
+                ['x', 'p'],
+                ['x', 'q'],
+                ['x', 'r'],
+                ['x', 's'],
+                ['x', 't'],
+            ],
+            ['0x10', 'Infinity', '1e-2', ' 0.5 ', '-.5'],
+        );
+        const numbers = drawn(odd, 'surface').cells[0]!.map((cell) => cell.number);
+        expect(numbers).toEqual([undefined, undefined, 0.01, 0.5, -0.5]);
+    });
+
+    it('lets the last of two nodes with the same coordinates stand', () => {
+        const twice = snapshotOf(
+            ['a', 'b'],
+            [
+                ['x', 'p'],
+                ['x', 'p'],
+            ],
+            ['0.1', '0.2'],
+        );
+        expect(drawn(twice, 'surface').cells[0]![0]!.text).toBe('0.2');
+    });
+
     it('shades every cell against the whole surface', () => {
         const surface = drawn(GRID, 'surface');
         // The lowest value is 0.004 and the highest 0.100.

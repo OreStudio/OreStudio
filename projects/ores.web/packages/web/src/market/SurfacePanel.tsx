@@ -167,7 +167,9 @@ function Slices({ surface }: { readonly surface: Surface }): ReactNode {
                                 cy={y(run[0]!.value)}
                                 r={2.5}
                                 fill={colour(index)}
-                            />
+                            >
+                                <title>{slice.label}</title>
+                            </circle>
                         ) : (
                             <polyline
                                 key={`${slice.label}-${run[0]!.column}`}
@@ -175,7 +177,9 @@ function Slices({ surface }: { readonly surface: Surface }): ReactNode {
                                 fill="none"
                                 stroke={colour(index)}
                                 strokeWidth={1.5}
-                            />
+                            >
+                                <title>{slice.label}</title>
+                            </polyline>
                         ),
                     ),
                 )}
@@ -212,9 +216,9 @@ export function SurfacePanel({ snapshot }: { readonly snapshot: CurveSnapshot })
             </header>
             {!result.ok ? (
                 <Notice tone="info">
-                    {t(`market.evolution.surface.${result.reason === 'axes' ? 'axes' : 'empty'}`, {
-                        count: axes,
-                    })}
+                    {result.reason === 'axes'
+                        ? t('market.evolution.surface.axes', { count: axes })
+                        : t('market.evolution.surface.empty')}
                 </Notice>
             ) : (
                 <>

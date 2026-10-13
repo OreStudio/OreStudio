@@ -38,6 +38,7 @@ The menu structure now has a Bindings entry in Market data beside the Synthetic 
 - The Market data area draws a Bindings card for a person who holds the read, and the card opens the list.
 - The addresses and the breadcrumbs follow the menu structure.
 - The words exist in English, French and Portuguese.
+- A French and a Portuguese speaker reads the new words, as the capture of PR 3216 asks for the earlier text.
 
 * Plan
 

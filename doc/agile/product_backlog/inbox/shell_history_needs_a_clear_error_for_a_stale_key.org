@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0ADD8348-9B88-4FEE-B4E3-C6C73751B0C2
+:END:
+#+title: The shell history command needs a clear error for a stale key
+#+description: Ten entities now read their generic history by the row's own id: party and counterparty contacts, party, counterparty and netting set identifiers, business units, portfolios, portfolio rights, CSA eligible currencies and run grants. A caller that passes the old declared key, such as the shell history command with a contact type, gets the dispatcher's failure text, bad lexical cast, which names neither the entity nor the key it expected. The provider should refuse a value that is not a uuid with a message that names the entity and says the history is read by the row id, and the shell command should say which id to pass.
+#+type: capture
+#+level: cross
+#+filetags: :history:shell:codegen:errors:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

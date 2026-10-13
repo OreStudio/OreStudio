@@ -63,7 +63,10 @@ struct feed_binding_lookup {
 };
 
 struct feed_bindings_filter {
+    std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+    std::optional<std::string> search;
 };
 
 struct feed_binding_event {

@@ -52,11 +52,12 @@ A feed binding says that a party consumes one producer source. Today a binding i
 | [[id:628D8369-F667-4254-80A2-2F8AC488616C][Run the series title test in CI]] | BACKLOG | | | The Catch2 case that every series title names only its own fields was built and never run, because the test binary needs the database of the environment. Run it in CI and make sure it is in a job. |
 | [[id:4FD8F422-EB90-4FCA-AB2C-F61051B982E4][Read the series and last tick of a binding]] | DONE | 2026-10-13 | 2026-10-13 | Add a server read that says which series each binding's source writes and when the source last ticked, so the screen stops inferring them. |
 | [[id:8690640A-1195-420B-87D6-8DA324DA820B][Say which sources a party may bind]] | BACKLOG | | | Add server reads for the synthetic sources a party does not consume yet, what each would write, and which running feed already writes a series. |
-| [[id:79085AA9-1F2C-473C-A25B-AB221523EDDE][Serve the bindings to the browser]] | BACKLOG | | | Register the feed binding as a record kind in the BFF, with its write schema and its list, so the shared record parts can read and write it. |
+| [[id:79085AA9-1F2C-473C-A25B-AB221523EDDE][Serve the bindings to the browser]] | DONE | 2026-10-13 | 2026-10-13 | Register the feed binding as a record kind in the BFF, with its write schema and its list, so the shared record parts can read and write it. |
 | [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]] | BACKLOG | | | Draw the list and the record page of the signed-off prototype from the shared record parts: Details, the oresmd links with Inspect, the status and the last tick. |
 | [[id:4518F1B2-BD30-40C3-AD18-095E81E08AB3][Add, edit and delete a binding]] | BACKLOG | | | Add the record dialog for add and edit, and the delete dialog, with the checks the prototype shows: the held series, the series change and the stale version. |
 | [[id:9044BB8A-1D69-4C59-89B6-4CE93DCE34E1][Show a binding's history as the timeline]] | BACKLOG | | | Draw the History tab of a binding as the shared timeline, with the revert dialog and the checks the prototype shows. |
 | [[id:B2E5C70A-E1C1-493D-AA80-789C56B87D8C][Put Bindings in the Market data menu]] | BACKLOG | | | Add the Bindings card to the Market data area with its route, its trail and its words in English, French and Portuguese. |
+| [[id:8B5BF9AD-4A3F-423D-BAE8-76DCB17A68B1][Scope a binding's history to its party]] | BACKLOG | | | The server reads a binding's history by source name and takes the newest row of any party that holds the name, so a party can be shown another party's history. Scope the read to the caller's party. |
 
 ** Build order
 
@@ -69,7 +70,7 @@ A feed binding says that a party consumes one producer source. Today a binding i
 | 5 | Serve the bindings to the browser | 2 |
 | 6 | Build the bindings list and record page | 3 and 5 |
 | 7 | Add, edit and delete a binding | 4 and 6 |
-| 8 | Show a binding's history as the timeline | 6 |
+| 8 | Show a binding's history as the timeline | 6 and 19 |
 | 9 | Put Bindings in the Market data menu | 6 |
 | 10 | Check the bindings screen on the running server | 7, 8 and 9 |
 | 11 | Find why the synthetic feed went quiet | nothing |
@@ -80,6 +81,7 @@ A feed binding says that a party consumes one producer source. Today a binding i
 | 16 | Move the series page state into a pure function | nothing |
 | 17 | Give hints a tooltip with keyboard access | nothing |
 | 18 | Run the series title test in CI | nothing |
+| 19 | Scope a binding's history to its party | nothing |
 
 Tasks 11 to 18 are the snags that the story [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] left. They are small and do not wait for the screen. The French and Portuguese review of that story is a capture, PR 3216.
 

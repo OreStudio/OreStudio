@@ -8,12 +8,12 @@
 #+filetags: :manage_market_data_bindings:sprint_27:v0:
 #+owner: marco
 #+branch: feature/serve-the-bindings-to-the-browser
-#+pr:
+#+pr: 3248
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The record screen standard builds a screen from a record kind declared once: its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3248][#3248]] | [web] Serve the bindings to the browser |
 
 * Review
 
@@ -85,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The feed binding is a record kind of the synthetic routes, =feed-bindings=, with the permission namespace =marketdata=. A page is read for the party of the session, searched by source name and ordered by source name or the enabled flag on the server. A write states only the source name and the enabled flag. The BFF adds the session's party and the synthetic kind, keeps the party and kind of a binding that exists, and refuses a write to a binding that a real feed made, which is read only. A delete names the binding by its source name, which is how the server removes it, and it is allowed for a vendor binding. A new route, =GET /api/bindings/activity=, answers what each binding has written. Two things the review of the earlier task suggested were found true here: the bindings and observations are isolated by tenant alone, so the model now makes the party a filter of the list and the BFF always sets it. The model also makes the source name searchable and sortable. Checked live as System Party: the page, the search, the order, one binding by id, the activity read with real series and tick times, and an add, an edit, a refused stale version and a delete of a throwaway binding. The 13 new BFF tests pass, and the BFF suite passes (762).
+

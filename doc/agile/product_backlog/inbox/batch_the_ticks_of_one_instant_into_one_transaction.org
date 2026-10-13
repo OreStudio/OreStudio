@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 6FDD2D22-B57A-427F-9E8C-124FCFA49EED
+:END:
+#+title: Batch the ticks of one instant into a single transaction
+#+description: The ingest stores one observation per tick, each in its own transaction and round trip, so a burst from every feed at the same instant costs one acquisition each. Buffer the ticks of a timepoint and commit them together, without breaking the rule that a republished tick is already stored.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:ingest:performance:batching:database:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Buffer the ticks a generator produces at one timepoint and store them in a
+single transaction, instead of storing each tick as it arrives in a transaction
+of its own. The repository already has the batch entry point this needs.
+
+A ring buffer is the shape to reach for. The subscription callback is the
+producer: it writes the tick into the ring and returns, doing no database work
+at all. A drain loop is the consumer: it takes up to a batch's worth at a time,
+groups them by the tenant and party each is stored under, and commits each group
+in one transaction. That puts the batch boundary somewhere it can be reasoned
+about, and it decouples the callback from database latency — today a slow commit
+back-pressures the subscription directly.
+
+Two things the ring has to decide, and they are what make this a design rather
+than a queue:
+
+- *What a full ring does.* Blocking the callback stalls the subscription, and
+  dropping loses a tick. Whichever is chosen has to be chosen, and the ring's
+  size then becomes a real capacity figure rather than a tuning knob. A
+  saturated ring is also the only honest back-pressure signal this path would
+  have, so it is worth surfacing rather than hiding.
+- *How a drained cohort is made visible to the republish that must follow it.*
+  See the constraint below; the republish is what defines when a batch is
+  finished, not the commit alone.
+
+* Why
+
+=feed_ingest_loop::persist()= handles one tick at a time: it resolves the
+tenant context, reads the series by URI, and inserts one observation
+(=feed_ingest_loop.cpp:219-269=). Every call acquires a pooled connection, and
+until the session context was collapsed into one round trip an acquisition cost
+six statements; it now costs one, but it is still one acquisition per tick.
+
+That is visible in the numbers. Measured on brave_hopper on 2026-10-13 with the
+ingest at about 100 ticks a second: 986 transactions a second and 19,516 buffer
+hits a second, which is about 10 transactions and about 193 buffer hits per
+stored tick. Only about five of those transactions are work the code visibly
+does; the rest is acquisition overhead, and the buffer hits are largely
+TimescaleDB resolving which chunk an insert belongs to, which happens once per
+statement.
+
+A synthetic producer generates a whole cohort of ticks for the same instant —
+every feed, every pair, one timepoint. Batching turns that cohort into one
+statement: one acquisition, one chunk resolution, one commit. The work per
+stored tick then falls with the batch size rather than staying flat, which is
+the only way the cost stops growing with the number of feeds.
+
+Constraints worth designing against, because they are what makes this more than
+a loop rewrite:
+
+- *Republish waits on the store.* The ingest's documented contract is that a
+  republished tick is already stored, "so the republished stream cannot diverge
+  from the table". A buffer therefore has to flush before the republish for its
+  cohort, which means the republish is how the batch boundary is drawn — or the
+  batch is flushed on a short timer and the republish follows the flush.
+- *A batch spans tenants and parties.* The same tick is stored once per binding,
+  and each binding is a tenant and party, so one cohort is many contexts. The
+  batch has to be per context, not per subject, or it would cross a tenant
+  boundary in one statement.
+- *The first tick in a series creates it.* Series creation is on the same path
+  and writes the series and its asset classes, so the batch has to keep the
+  create-before-insert order for a series it has not seen. The cache and this
+  batching are the same piece of work: with the series resolved once, the batch
+  is inserts only.
+
+The repository side already exists: =market_observation_repository::insert(ctx,
+v)= takes a vector (=market_observation_repository.cpp:173=), so this is an
+ingest-loop change rather than a persistence one.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= — =persist()=
+  at =:219=, the per-tick insert at =:268=, and the doc comment on the
+  republish contract above it.
+- =projects/ores.marketdata/core/src/repository/market_observation_repository.cpp:173=
+  — the batch insert the loop does not use.
+- =ores_marketdata_market_observations_tbl= — the Timescale hypertable the
+  inserts land in, whose chunk resolution is per statement.
+
+* See also
+
+- [[id:4123F26A-4205-4062-B59A-68A13234D7FC][Restarting the synthetic producer stops the market data ingest]]
+- [[id:2A815158-3CF3-41BE-9078-A1F02A6ED227][The compute service spends 5% CPU polling with nothing to do]]

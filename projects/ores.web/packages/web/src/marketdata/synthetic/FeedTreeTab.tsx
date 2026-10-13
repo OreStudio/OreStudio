@@ -291,10 +291,11 @@ export function FeedTreeTab(): ReactNode {
     const roots = providerNodes(collections);
     const label = (node: TreeNode): string =>
         node.role === 'provider' ? providerName(node.providerCode ?? '', facts) : node.name;
-    // The tree starts fully open, once, when the providers and the folders have loaded.
+    // The tree starts fully open, once, when the providers have loaded and the folders have
+    // been asked for, so a tenant with no folders still sees its providers open.
     const opened = useRef(false);
     useEffect(() => {
-        if (opened.current || collections.length === 0 || rows.length === 0) {
+        if (opened.current || collections.length === 0 || folderRows.isLoading) {
             return;
         }
         opened.current = true;

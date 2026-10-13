@@ -428,3 +428,102 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()::text
 );
+
+-- -----------------------------------------------------------------------------
+-- Seed profiles and their parts
+-- -----------------------------------------------------------------------------
+-- The platform's own configuration. The models state :system_scope:, so every
+-- row belongs to the system tenant and every tenant may read it, because a
+-- tenant is provisioned from a profile. Only the system tenant writes it. This
+-- is the shared-reference shape: one policy per command, because a single
+-- `for all` policy would let a tenant change or remove a profile.
+
+alter table ores_iam_seed_profiles_tbl enable row level security;
+
+drop policy if exists seed_profile_select_policy on ores_iam_seed_profiles_tbl;
+drop policy if exists seed_profile_insert_policy on ores_iam_seed_profiles_tbl;
+drop policy if exists seed_profile_update_policy on ores_iam_seed_profiles_tbl;
+drop policy if exists seed_profile_delete_policy on ores_iam_seed_profiles_tbl;
+
+create policy seed_profile_select_policy on ores_iam_seed_profiles_tbl
+for select using (
+    tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_insert_policy on ores_iam_seed_profiles_tbl
+for insert with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_update_policy on ores_iam_seed_profiles_tbl
+for update using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+)
+with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_delete_policy on ores_iam_seed_profiles_tbl
+for delete using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+alter table ores_iam_seed_profile_steps_tbl enable row level security;
+
+drop policy if exists seed_profile_step_select_policy on ores_iam_seed_profile_steps_tbl;
+drop policy if exists seed_profile_step_insert_policy on ores_iam_seed_profile_steps_tbl;
+drop policy if exists seed_profile_step_update_policy on ores_iam_seed_profile_steps_tbl;
+drop policy if exists seed_profile_step_delete_policy on ores_iam_seed_profile_steps_tbl;
+
+create policy seed_profile_step_select_policy on ores_iam_seed_profile_steps_tbl
+for select using (
+    tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_step_insert_policy on ores_iam_seed_profile_steps_tbl
+for insert with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_step_update_policy on ores_iam_seed_profile_steps_tbl
+for update using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+)
+with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_step_delete_policy on ores_iam_seed_profile_steps_tbl
+for delete using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+alter table ores_iam_seed_profile_parameters_tbl enable row level security;
+
+drop policy if exists seed_profile_parameter_select_policy on ores_iam_seed_profile_parameters_tbl;
+drop policy if exists seed_profile_parameter_insert_policy on ores_iam_seed_profile_parameters_tbl;
+drop policy if exists seed_profile_parameter_update_policy on ores_iam_seed_profile_parameters_tbl;
+drop policy if exists seed_profile_parameter_delete_policy on ores_iam_seed_profile_parameters_tbl;
+
+create policy seed_profile_parameter_select_policy on ores_iam_seed_profile_parameters_tbl
+for select using (
+    tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_parameter_insert_policy on ores_iam_seed_profile_parameters_tbl
+for insert with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_parameter_update_policy on ores_iam_seed_profile_parameters_tbl
+for update using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+)
+with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_parameter_delete_policy on ores_iam_seed_profile_parameters_tbl
+for delete using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);

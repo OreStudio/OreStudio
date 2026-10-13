@@ -371,14 +371,6 @@ RLS_001 ores_reporting_parameter_value_domains_tbl
 # tenant runs the report, so a tenant-isolation policy would hide every row.
 RLS_001 ores_reporting_report_type_configuration_types_tbl
 
-# IAM seed profiles and their parts — registered data the platform owns. The
-# models state :system_scope:, so the insert trigger forces tenant_id to the
-# system tenant and a row cannot belong to any other. Tenant isolation would
-# compare every row against a value it is already pinned to.
-RLS_001 ores_iam_seed_profiles_tbl
-RLS_001 ores_iam_seed_profile_parameters_tbl
-RLS_001 ores_iam_seed_profile_steps_tbl
-
 # =============================================================================
 # RLS_002 ignores — tables with party_id that intentionally skip party isolation
 # =============================================================================

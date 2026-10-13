@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/role_grant_request_role.hpp"
 #include "ores.iam.api/domain/role_grant_request_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_grant_request_role_entity.hpp"
@@ -343,6 +344,50 @@ std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_r
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active role grant request roles count by role: " << count;
     return count;
+}
+
+std::vector<role_grant_request_role_history_row>
+role_grant_request_role_repository::read_all_by_request(const boost::uuids::uuid& request_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the role grant request roles. Request: "
+                               << request_id;
+
+    const auto request_id_str = boost::uuids::to_string(request_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<role_grant_request_role_entity>> |
+                       where("tenant_id"_c == tid && "request_id"_c == request_id_str) |
+                       order_by("role_id"_c, "valid_from"_c.desc());
+
+    return execute_read_query<role_grant_request_role_entity, role_grant_request_role_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<role_grant_request_role_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                role_grant_request_role_history_row row;
+                row.link = role_grant_request_role_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().link.role_id == row.link.role_id &&
+                                      rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the role grant request roles by request.");
 }
 
 void role_grant_request_role_repository::remove(const boost::uuids::uuid& request_id,

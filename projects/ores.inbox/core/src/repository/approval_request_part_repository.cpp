@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.inbox.api/domain/approval_request_part.hpp"
 #include "ores.inbox.api/domain/approval_request_part_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_request_part_entity.hpp"
@@ -336,6 +337,50 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active approval request parts count by part: " << count;
     return count;
+}
+
+std::vector<approval_request_part_history_row>
+approval_request_part_repository::read_all_by_request(const boost::uuids::uuid& request_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the approval request parts. Request: "
+                               << request_id;
+
+    const auto request_id_str = boost::uuids::to_string(request_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<approval_request_part_entity>> |
+                       where("tenant_id"_c == tid && "request_id"_c == request_id_str) |
+                       order_by("part_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<approval_request_part_entity, approval_request_part_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<approval_request_part_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                approval_request_part_history_row row;
+                row.link = approval_request_part_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().link.part_code == row.link.part_code &&
+                                      rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the approval request parts by request.");
 }
 
 void approval_request_part_repository::remove(const boost::uuids::uuid& request_id,

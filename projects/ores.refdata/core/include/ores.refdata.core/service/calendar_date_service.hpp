@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/messaging/calendar_date_protocol.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include <cstdint>
 #include <optional>
@@ -43,7 +44,7 @@ namespace ores::refdata::service {
  * Provides a higher-level interface for calendar date operations,
  * wrapping the underlying repository.
  */
-class calendar_date_service {
+class ORES_REFDATA_CORE_EXPORT calendar_date_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.calendar_date_service";
 

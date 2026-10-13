@@ -31,6 +31,7 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -120,6 +121,21 @@ bool holds(ores::testing::scoped_database_helper& h,
                 .empty();
 }
 
+/*
+ * A role the person does not hold yet. Every person is given Member when the
+ * account is made, and the roles are read in no stated order, so the first one
+ * read can be a role the person already holds.
+ */
+boost::uuids::uuid role_not_held(ores::testing::scoped_database_helper& h,
+                                 const ores::iam::domain::account& account) {
+    ores::iam::repository::role_repository roles;
+    for (const auto& role : roles.read_latest(acting(h))) {
+        if (!holds(h, account, role.id))
+            return role.id;
+    }
+    throw std::runtime_error("The person holds every role.");
+}
+
 }
 
 using ores::iam::service::role_grant_applier;
@@ -128,10 +144,7 @@ TEST_CASE("an_approved_role_request_is_granted_once", tags) {
     ores::testing::scoped_database_helper h(true);
     const auto asker = seed_account(h);
     const auto approver = seed_account(h);
-    ores::iam::repository::role_repository roles;
-    const auto all = roles.read_latest(acting(h));
-    REQUIRE_FALSE(all.empty());
-    const auto role_id = all.front().id;
+    const auto role_id = role_not_held(h, asker);
     REQUIRE_FALSE(holds(h, asker, role_id));
 
     approved_request(h, asker, approver, role_id);
@@ -160,8 +173,7 @@ TEST_CASE("a_role_already_held_is_not_granted_again", tags) {
     ores::testing::scoped_database_helper h(true);
     const auto asker = seed_account(h);
     const auto approver = seed_account(h);
-    ores::iam::repository::role_repository roles;
-    const auto role_id = roles.read_latest(acting(h)).front().id;
+    const auto role_id = role_not_held(h, asker);
 
     approved_request(h, asker, approver, role_id);
     role_grant_applier applier(h.context(), nullptr);
@@ -189,8 +201,7 @@ TEST_CASE("a_role_taken_away_after_it_was_applied_is_not_granted_again", tags) {
     ores::testing::scoped_database_helper h(true);
     const auto asker = seed_account(h);
     const auto approver = seed_account(h);
-    ores::iam::repository::role_repository roles;
-    const auto role_id = roles.read_latest(acting(h)).front().id;
+    const auto role_id = role_not_held(h, asker);
 
     approved_request(h, asker, approver, role_id);
     role_grant_applier applier(h.context(), nullptr);

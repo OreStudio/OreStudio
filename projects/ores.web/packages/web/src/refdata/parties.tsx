@@ -22,13 +22,18 @@
 import { useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import type { HistoryVersion, TimelineEvent } from '@ores/wire-protocol/browser';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { RecordRow } from '../api/client.js';
 import { api } from '../api/client.js';
 import { useHolds } from '../access/holds.js';
 import { actorPathFor } from '../access/PeoplePage.js';
 import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
-import { Timeline } from '../timeline/Timeline.js';
+import { timelineEntryKey, Timeline } from '../timeline/Timeline.js';
+import { type WatchedEntity } from '../events/EntityEvents.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
+import { useChangedRows } from './changedRows.js';
 import { Button, Notice } from '../ui/Primitives.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Flag, FlaggedCode } from '../images/flags.js';
@@ -375,6 +380,12 @@ function PartyHistory({
         queryKey: ['timeline', 'party', id],
         queryFn: () => api.timeline('party', id),
     });
+    const newEntries = useChangedRows(
+        'party-history',
+        story.data?.events ?? [],
+        (event) => timelineEntryKey(event),
+        { dataUpdatedAt: story.dataUpdatedAt, isPlaceholder: story.isPlaceholderData },
+    );
     if (story.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
@@ -387,6 +398,7 @@ function PartyHistory({
             actorPath={actorPathFor(holds('iam::accounts:read'))}
             actorPicture={pictureOf}
             isService={isService}
+            marked={newEntries}
             hideUnchanged
             recordName={(event) => {
                 const record = RECORD_KEYS[event.entityType];
@@ -409,6 +421,35 @@ function PartyHistory({
             }
         />
     );
+}
+
+/**
+ * What a party's page shows, for the change news to be heard about it.
+ *
+ * The party and its parts are named by their events collections. A link names
+ * its party in its key, so the page hears only of its own party's links; the
+ * parts are keyed by something else and make the page stale for any party's.
+ */
+function partyWatches(row: RecordRow): readonly WatchedEntity[] {
+    const id = show(row['id']);
+    return [
+        {
+            component: 'refdata',
+            entity: 'parties',
+            record: { short_code: show(row['short_code']) },
+        },
+        { component: 'refdata', entity: 'party_identifiers' },
+        { component: 'refdata', entity: 'party_contact_informations' },
+        { component: 'refdata', entity: 'business_units' },
+        { component: 'refdata', entity: 'party_countries', record: { party_id: id } },
+        { component: 'refdata', entity: 'party_currencies', record: { party_id: id } },
+        { component: 'refdata', entity: 'party_counterparties', record: { party_id: id } },
+    ];
+}
+
+/** The reads that make up a party's page, named by the start of their keys. */
+function partyQueries(id: string): readonly (readonly string[])[] {
+    return [['records'], ['timeline', 'party', id]];
 }
 
 function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
@@ -435,6 +476,16 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const [editing, setEditing] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
     const image = show(row['image_id']);
+    const queries = useQueryClient();
+    // The page never reloads by itself: a change makes Refresh stale, and one
+    // Refresh reads the record, its parts and its history again.
+    const load = useLoadState(partyQueries(id));
+    const news = useEntityChanges(partyWatches(row), load);
+    const refreshPage = (): void => {
+        for (const key of partyQueries(id)) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -448,6 +499,7 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                 recordKey={show(row['short_code'])}
                 version={null}
                 access={null}
+                own={<RefreshButton onClick={refreshPage} load={load} news={news} />}
                 {...(image === '' ? {} : { mark: <Flag src={imageUrl(image)} size="lg" /> })}
             />
             {bar}

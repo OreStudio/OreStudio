@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/approval_request_part.hpp"
 #include "ores.inbox.api/messaging/approval_request_part_protocol.hpp"
+#include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/approval_request_part_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -44,7 +45,7 @@ namespace ores::inbox::service {
  * Provides a higher-level interface for approval request part operations,
  * wrapping the underlying repository.
  */
-class approval_request_part_service {
+class ORES_INBOX_CORE_EXPORT approval_request_part_service {
 private:
     inline static std::string_view logger_name = "ores.inbox.service.approval_request_part_service";
 

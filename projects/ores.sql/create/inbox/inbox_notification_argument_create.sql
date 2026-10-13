@@ -43,6 +43,7 @@ create table if not exists "ores_inbox_notification_arguments_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, notification_id, name, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -153,7 +154,8 @@ create or replace rule ores_inbox_notification_arguments_delete_rule as
 on delete to "ores_inbox_notification_arguments_tbl"
 do instead
   update "ores_inbox_notification_arguments_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and notification_id = old.notification_id
   and name = old.name

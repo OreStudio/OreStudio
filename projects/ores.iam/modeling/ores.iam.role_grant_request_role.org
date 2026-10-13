@@ -24,6 +24,8 @@ applied it.
 
 * Flags
 :PROPERTIES:
+:history: true
+:events: true
 :profile: tenant-scoped-junction
 :END:
 

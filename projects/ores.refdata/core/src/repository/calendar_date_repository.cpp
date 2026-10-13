@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
@@ -324,6 +325,48 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by date: " << count;
     return count;
+}
+
+std::vector<calendar_date_history_row>
+calendar_date_repository::read_all_by_calendar(const std::string& calendar_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the calendar dates. Calendar: "
+                               << calendar_code;
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
+                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code) |
+                       order_by("date"_c, "valid_from"_c.desc());
+
+    return execute_read_query<calendar_date_entity, calendar_date_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<calendar_date_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                calendar_date_history_row row;
+                row.link = calendar_date_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() && rows.back().link.date == row.link.date &&
+                                      rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the calendar dates by calendar.");
 }
 
 void calendar_date_repository::remove(const std::string& calendar_code,

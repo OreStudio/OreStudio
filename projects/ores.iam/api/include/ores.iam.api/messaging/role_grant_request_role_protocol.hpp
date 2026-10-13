@@ -66,6 +66,15 @@ struct role_grant_request_roles_filter {
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
 };
 
+struct role_grant_request_role_event {
+    boost::uuids::uuid event_id;
+    role_grant_request_role_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct list_role_grant_request_roles_request {
     using response_type = struct list_role_grant_request_roles_response;
     static constexpr std::string_view nats_subject = "iam.v1.role_grant_request_roles.list";

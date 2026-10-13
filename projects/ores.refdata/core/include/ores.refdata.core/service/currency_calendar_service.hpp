@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_calendar.hpp"
 #include "ores.refdata.api/messaging/currency_calendar_protocol.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_calendar_repository.hpp"
 #include <cstdint>
 #include <optional>
@@ -43,7 +44,7 @@ namespace ores::refdata::service {
  * Provides a higher-level interface for currency calendar operations,
  * wrapping the underlying repository.
  */
-class currency_calendar_service {
+class ORES_REFDATA_CORE_EXPORT currency_calendar_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.currency_calendar_service";
 

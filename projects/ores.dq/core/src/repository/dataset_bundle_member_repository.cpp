@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_bundle_member_entity.hpp"
@@ -330,6 +331,49 @@ std::uint32_t dataset_bundle_member_repository::get_total_member_count_by_datase
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active dataset bundle members count by dataset: " << count;
     return count;
+}
+
+std::vector<dataset_bundle_member_history_row>
+dataset_bundle_member_repository::read_all_by_bundle(const std::string& bundle_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the dataset bundle members. Bundle: "
+                               << bundle_code;
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
+                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code) |
+                       order_by("dataset_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<dataset_bundle_member_entity, dataset_bundle_member_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<dataset_bundle_member_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                dataset_bundle_member_history_row row;
+                row.link = dataset_bundle_member_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().link.dataset_code == row.link.dataset_code &&
+                                      rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the dataset bundle members by bundle.");
 }
 
 void dataset_bundle_member_repository::remove(const std::string& bundle_code,

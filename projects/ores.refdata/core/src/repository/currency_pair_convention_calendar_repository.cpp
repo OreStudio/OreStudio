@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar_json_io.hpp" // IWYU pragma: keep.
@@ -367,6 +368,50 @@ currency_pair_convention_calendar_repository::get_total_pair_convention_calendar
     BOOST_LOG_SEV(lg(), debug)
         << "Total active currency pair convention calendars count by calendar: " << count;
     return count;
+}
+
+std::vector<currency_pair_convention_calendar_history_row>
+currency_pair_convention_calendar_repository::read_all_by_pair(const std::string& pair_code) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading every version of the currency pair convention calendars. Pair: " << pair_code;
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_pair_convention_calendar_entity>> |
+                       where("tenant_id"_c == tid && "pair_code"_c == pair_code) |
+                       order_by("calendar_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<currency_pair_convention_calendar_entity,
+                              currency_pair_convention_calendar_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<currency_pair_convention_calendar_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                currency_pair_convention_calendar_history_row row;
+                row.link = currency_pair_convention_calendar_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().link.calendar_code == row.link.calendar_code &&
+                                      rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the currency pair convention calendars by pair.");
 }
 
 void currency_pair_convention_calendar_repository::remove(const std::string& pair_code,

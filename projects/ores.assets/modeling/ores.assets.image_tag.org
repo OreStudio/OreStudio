@@ -32,6 +32,8 @@ links, and the row records who made the association and when.
 :profile: tenant-scoped-junction
 :END:
 
+It states neither =:history:= nor =:events:=. Its component serves no generic history and composes no change events yet, so a generated provider or registrar would be dead code.
+
 * Left
 :PROPERTIES:
 :column:        image_id

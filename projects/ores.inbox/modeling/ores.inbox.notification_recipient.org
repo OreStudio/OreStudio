@@ -26,8 +26,11 @@ A row is identified by the notification and the account.
 
 * Flags
 :PROPERTIES:
+:history: true
 :profile: tenant-scoped-junction
 :END:
+
+It states no =:events:=. Its component has no service-side composition point for change events yet, so a generated event registrar would publish nothing.
 
 * Left
 :PROPERTIES:

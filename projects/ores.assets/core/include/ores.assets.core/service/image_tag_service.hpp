@@ -27,6 +27,7 @@
 
 #include "ores.assets.api/domain/image_tag.hpp"
 #include "ores.assets.api/messaging/image_tag_protocol.hpp"
+#include "ores.assets.core/export.hpp"
 #include "ores.assets.core/repository/image_tag_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -44,7 +45,7 @@ namespace ores::assets::service {
  * Provides a higher-level interface for image tag operations,
  * wrapping the underlying repository.
  */
-class image_tag_service {
+class ORES_ASSETS_CORE_EXPORT image_tag_service {
 private:
     inline static std::string_view logger_name = "ores.assets.service.image_tag_service";
 

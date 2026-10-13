@@ -30,8 +30,11 @@ consistent and never requires a live rule evaluation.
 
 * Flags
 :PROPERTIES:
+:history: true
 :profile: tenant-scoped-junction
 :END:
+
+It states no =:events:=. Its key is a date, and the change news names a link by a key the browser reads back as text, which a calendar date does not yet have a form for.
 
 * Left
 :PROPERTIES:

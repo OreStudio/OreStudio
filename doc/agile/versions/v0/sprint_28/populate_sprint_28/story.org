@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 06C289CA-29DF-415B-BC9D-CAF61B94695C
+:END:
+#+title: Story: Populate sprint 28 with the carried stories
+#+description: Move sprint 27's carried stories and their successors from the product backlog inbox into sprint 28, and wire them into the sprint table.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C7E8D49E-0303-4D5A-924D-7B5FB4838B05][Populate sprint 28 with the carried stories]] | BACKLOG | | | Pull the 41 sprint 27 stories back from the inbox into sprint 28. |
+
+* Decisions
+
+* Out of scope
+
+-

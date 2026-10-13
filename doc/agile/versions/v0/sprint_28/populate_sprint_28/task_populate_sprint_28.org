@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: C7E8D49E-0303-4D5A-924D-7B5FB4838B05
+:END:
+#+title: Task: Populate sprint 28 with the carried stories
+#+description: Pull the 41 sprint 27 stories back from the inbox into sprint 28.
+#+type: task
+#+level: s1
+#+filetags: :populate_sprint_28:sprint_28:v0:
+#+owner: marco
+#+branch: feature/populate-sprint-28
+#+pr: 3274
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:06C289CA-29DF-415B-BC9D-CAF61B94695C][Populate sprint 28 with the carried stories]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 28 holds the 41 stories carried from sprint 27 — its 21 unfinished
+stories and the 20 successors their remainders were split into — instead of
+leaving them in the product backlog inbox.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State         | DONE |
+| Parent story | [[id:06C289CA-29DF-415B-BC9D-CAF61B94695C][Populate sprint 28 with the carried stories]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+- Every sprint 27 carry and successor moves out of the inbox into sprint 28,
+  with its ID, tasks and history intact.
+- Each moved story names sprint 28 as its parent and carries the sprint_28 tag.
+- The sprint's =* Stories= table lists every moved story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3274][#3274]] | [agile] Populate sprint 28 with the sprint 27 carries |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+** Sprint 28 populated (2026-10-13)
+
+The 41 stories sprint 27 carried into the product backlog — its 21 unfinished
+stories and the 20 successors their remainders were split into — moved back
+into sprint 28. Each kept its UUID, its task files and its history; each now
+names sprint 28 as its parent sprint and carries the =sprint_28= tag instead of
+the inbox tags. The sprint's =* Stories= table lists all 41.
+
+Thirteen story folders stay in the inbox: ten carried from sprint 26 and three
+older ones. They are out of this sprint's mission, which is the record screens
+and the journey remainders carried from sprint 27.
+
+=compass sprint audit= reports nine findings: one story ready to close and the
+eight open tasks whose pull requests have all merged, all of them the carried
+work sprint 27's review already recorded. They are the planning input.

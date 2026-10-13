@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/map-the-credit-dates-into-the-common-date-view
+#+pr: 3247
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-11
-#+environment:
+#+updated: 2026-10-13
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The blotter reads one date column across the rates and credit families.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
 
 * Acceptance
 
@@ -41,9 +41,14 @@ The blotter reads one date column across the rates and credit families.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Check what unit 5 left.* The credit header's two dates carry =:common_date:=
+   and the generated view lists the credit header beside the rates header.
+   The family's eventing tests are generated and pass in the trading suite.
+2. *Write the probe.* A rolled-back transaction inserts one rates trade and two
+   credit trades, gives the credit swap a booking, and reads the trade, start,
+   expiry and maturity date columns from both families' views in one query.
+3. *Record the limit.* The index option's expiry is its first exercise date,
+   which lives in the shared schedule rows and not in a column the view reads.
 
 * Measurements
 
@@ -57,9 +62,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rows one query reads from both families' views | 3: the credit swap reads trade, start and maturity dates, the agreement reads its protection start and end, the FRA reads its start and maturity | =./compass.sh sql -- -f= the probe =evidence/common_dates_probe.sql= (rolled back); the output is =evidence/common_dates_probe_output.txt= | the PR head |
+| Trading core suite | all pass, including the generated eventing tests of the seven credit entities | =ctest --preset linux-clang-debug-make -R ores.trading.core.tests= | the PR head |
 
 * Notes
+
+- Unit 5 already declared the dates and generated the eventing tests, so this
+  unit adds the proof only.
+- The credit view has no expiry. An index option's expiry is its first exercise
+  date, which is a row of the shared schedule tables, not a column of the option
+  row, so the view leaves =expiry_date= null for the family. A later task can map
+  it when the option child holds one expiry column.
+- The probe gives its rows the =probe= audit name and reads only those, because
+  the suites leave committed credit rows in the database.
 
 * Test Scenarios
 
@@ -76,12 +91,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3247][#3247]] | [agile] Prove the credit dates in the common-date view |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The credit view has no expiry date | the credit header | decline | The expiry is a schedule row, not a column; recorded as a known limit. |
+| 2 | The probe is SQL and not a C++ test | evidence/common_dates_probe.sql | decline | The rates unit proved its view the same way, and the generated view has no C++ reader. |
+| 3 | The updated date and last touched are stale | the task page | accept | Both read 2026-10-13. |
+| 4 | The probe's replica setting is unexplained | evidence/common_dates_probe.sql | accept | A comment says why. |
+| 5 | The commit column reads "the PR head" | the Measurements table | decline | Every task of the project uses that wording until the merge. |
+| 6 | The review table lists a known limit | the Review table | decline | The rows 1 and 2 are the author's own review of the change; the limit also stands in the Notes. |
 
 * Result
+
+The credit header's dates read through the blotter's common-date view beside the
+rates header's. One query over both families' views returns the trade date, start
+date and maturity date of a credit swap, the protection start and end of a risk
+participation agreement, and the start and maturity of a forward rate agreement.
+The credit view has no expiry, because an index option's expiry is a schedule
+row.
+
+Acceptance met: the header's dates carry =:common_date:= and the view lists them;
+a probe reads one date column across a rates and a credit trade; and the family's
+generated eventing tests pass.

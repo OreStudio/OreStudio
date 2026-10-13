@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 1FC691D4-5DBE-4D98-83CC-07C06488C5C5
+:END:
+#+title: Task: Point the integer-bearing models at cstdint
+#+description: A release-preset build fails on three generated protocol headers and one domain header that name std::int64_t without including <cstdint>. The debug include graph hid it.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/release-build-integer-includes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A release-preset build compiles the generated headers that name an
+integer type, instead of failing on the missing standard header.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The release-preset build compiles the four affected headers.
+
+* Plan
+
+Both the domain class template and the operation protocol template take
+their system includes from the model's =includes= block, so a self-contained
+header depends on the model declaring every header its fields need. Audit
+every =projects/*/modeling/*.org= that names an integer =:cpp_type:= and has
+an =includes= block; add =<cstdint>= where it is missing; regenerate the
+affected components. The debug include graph had supplied the type
+transitively, so only the release build saw it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Models naming an integer without =<cstdint>= | 4 | audit over =projects/*/modeling/*.org= | origin/main |
+| Headers regenerated | 4 | =check_component_drift.py --component {compute-cpp,dq,iam}= | 7d815cd6fb |
+| Failing TU after the fix | compiles | =clang++ -fsyntax-only= vs the release =compile_commands.json= | 7d815cd6fb |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The four models declare =<cstdint>= and the regenerated headers carry it,
+clang-format-sorted. The failing translation unit and one consumer of each
+of the other two headers compile under the release flags.

@@ -34,11 +34,13 @@ namespace {
  *
  * The grammar is checked here rather than left to the conversion, so what the
  * parser accepts does not depend on the program's locale, and the C library's
- * extensions -- hexadecimal input, "inf", "nan" -- are not numbers here.
+ * extensions -- hexadecimal input, "inf", "nan", a leading plus sign -- are
+ * not numbers here. The sign rule is std::from_chars', which takes a minus and
+ * not a plus, because this is its portable counterpart.
  */
 bool is_decimal_number(std::string_view text) {
     std::size_t i = 0;
-    if (i < text.size() && (text[i] == '+' || text[i] == '-'))
+    if (i < text.size() && text[i] == '-')
         ++i;
     bool mantissa_digits = false;
     while (i < text.size() && text[i] >= '0' && text[i] <= '9') {

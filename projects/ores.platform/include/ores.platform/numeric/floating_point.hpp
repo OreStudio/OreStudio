@@ -47,7 +47,9 @@ namespace ores::platform::numeric {
  * smallest denormal a double has came to fail on macOS alone.
  *
  * @param text The whole number, and nothing else. Leading or trailing
- * whitespace is not part of a number, so it is rejected rather than skipped.
+ * whitespace is not part of a number, so it is rejected rather than skipped,
+ * and neither is a leading plus sign -- the sign rule is @c std::from_chars',
+ * not @c strtod's.
  * @return The value, or @c std::nullopt when @p text is empty, is not a
  * number, holds anything after the number, or is a value the type cannot
  * hold -- one that rounds to zero or to infinity.

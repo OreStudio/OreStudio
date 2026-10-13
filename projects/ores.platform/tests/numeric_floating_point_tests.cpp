@@ -58,6 +58,8 @@ TEST_CASE("anything_but_the_number_is_refused", tags) {
     CHECK(parse_double("1.5x") == std::nullopt);
     CHECK(parse_double("abc") == std::nullopt);
     CHECK(parse_double("-") == std::nullopt);
+    // A minus is a sign and a plus is not, which is what from_chars takes.
+    CHECK(parse_double("+1.5") == std::nullopt);
     CHECK(parse_double("1.5.2") == std::nullopt);
 }
 

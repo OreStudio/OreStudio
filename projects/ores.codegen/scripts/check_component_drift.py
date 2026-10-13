@@ -432,6 +432,38 @@ def _touched_files(base: str) -> set:
     return touched
 
 
+def _touched_components(touched: set, components: list) -> list:
+    """The components this branch's models belong to.
+
+    A component's models are its source of truth, so a component is selected
+    when the branch changed a file under its modeling directory. The
+    generator, its templates and the registry decide every component's
+    output, so a change under the codegen tree selects them all. A branch
+    that changed no model selects them all too: the check cannot tell which
+    component a stray generated file belongs to, and a wrong guess would hide
+    the drift the check exists to find.
+    """
+    if any(path.startswith("projects/ores.codegen/") for path in touched):
+        return list(components)
+    modelling = [path for path in touched
+                 if "/modeling/" in path and path.endswith(".org")]
+    if not modelling:
+        return list(components)
+    selected = set()
+    for name in components:
+        try:
+            component = get_component(name)
+        except ValueError:
+            continue
+        modelling_dir = getattr(component, "modeling_dir", None)
+        if not modelling_dir:
+            continue
+        prefix = modelling_dir.rstrip("/") + "/"
+        if any(path.startswith(prefix) for path in modelling):
+            selected.add(name)
+    return [name for name in components if name in selected] or list(components)
+
+
 def _resolve_base(explicit: str | None) -> str | None:
     """The commit to compare the branch against, or ``None``.
 
@@ -533,13 +565,20 @@ def main() -> int:
         "test, and fail only on files the branch touched; renders only, never "
         "writes",
     )
+    modes.add_argument(
+        "--changed",
+        action="store_true",
+        help="regenerate only the components whose models the branch changed, "
+        "comparing against --base; every component when the change touches the "
+        "generator, a template or the registry, or changes no model at all",
+    )
     ap.add_argument("--address", default="ores", metavar="ADDRESS")
     ap.add_argument(
         "--base",
         default="",
         metavar="REF",
-        help="with --sweep, the commit to compare the branch against "
-        "(default: the merge base with origin/main)",
+        help="with --sweep or --changed, the commit to compare the branch "
+        "against (default: the merge base with origin/main)",
     )
     ap.add_argument(
         "--dry-run",
@@ -562,7 +601,20 @@ def main() -> int:
             return 1
         return _sweep(base, args.verbose)
 
-    components = list(COMPONENTS_UNDER_TEST) if args.all else [args.component]
+    if args.changed:
+        base = _resolve_base(args.base or None)
+        if base is None:
+            print("cannot find the commit to compare against. Pass "
+                  "--base <ref>, or fetch origin/main so the merge base can "
+                  "be taken.", file=sys.stderr)
+            return 1
+        components = _touched_components(_touched_files(base),
+                                         list(COMPONENTS_UNDER_TEST))
+        print(f"Branch changes {len(components)} of "
+              f"{len(COMPONENTS_UNDER_TEST)} registry component(s) against "
+              f"{base[:12]}: {', '.join(components)}")
+    else:
+        components = list(COMPONENTS_UNDER_TEST) if args.all else [args.component]
 
     if args.dry_run:
         return _dry_run(components, args.address, args.verbose)

@@ -109,6 +109,11 @@ which is the same contract the retired workflows had. And the drift family
 (=component-drift=, =model-drift=, the tangles) compares the regenerated tree
 against =HEAD=, so it needs a committed tree — an uncommitted edit to any file
 reads as drift. Commit before running the modeling or codegen classes.
+=component-drift= regenerates only the registry components whose models this
+branch changed, read from the diff against the base; a change under
+=projects/ores.codegen/= regenerates them all, because the generator and its
+templates decide every component's output. Keeping the rest of the registry
+clean is the hourly validation's job, not this branch's.
 
 * What still runs on GitHub
 

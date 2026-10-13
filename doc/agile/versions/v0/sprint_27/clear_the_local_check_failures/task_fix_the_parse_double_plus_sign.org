@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: DF3EF651-A3F0-462D-A4AF-354AF499F477
+:END:
+#+title: Task: Refuse a leading plus in parse_double
+#+description: parse_double accepts a leading plus, but std::from_chars, which it replaced, does not; the manual point service therefore took +0.09 and the marketdata core test failed.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/parse-double-leading-plus
+#+pr: 3263
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=parse_double= takes a minus and not a plus, as =std::from_chars= does, so
+the manual point service refuses every spelling the contract names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- ores.platform.numeric.tests and ores.marketdata.core.tests pass.
+
+* Plan
+
+Read the service's contract first: =is_number= is a spelling gate, not a
+conversion, so the question is what the grammar accepts and not what a
+conversion would. The shim claims =from_chars=' contract, and =from_chars=
+takes a minus and not a plus, so the grammar check is the defect and not the
+service or its test. Fix it there, where every caller inherits the rule, and
+pin the rule in the shim's own test.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Spellings the service wrongly accepted | 1 of 6 (="+0.09"=) | standalone =parse_double= check | origin/main |
+| Spellings refused after the fix | 6 of 6 | the same | def63fca98 |
+| marketdata core suite before | 92 of 93, this case failed | =ctest= | user's release build |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3263][#3263]] | [platform] Refuse a leading plus in parse_double |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The grammar takes only a minus sign, matching =std::from_chars=, and the
+service refuses all six spellings the test names while still accepting
+=0.09=, =-0.09=, =.5= and rejecting =1e400=. The shim's test pins the sign
+rule.

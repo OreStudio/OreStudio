@@ -8,7 +8,7 @@
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
 #+branch: feature/close-the-risk-participation-agreement-round-trip
-#+pr:
+#+pr: 3238
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3238][#3238]] | [ore,trading,sql] Close the risk participation agreement round trip |
 
 * Review
 

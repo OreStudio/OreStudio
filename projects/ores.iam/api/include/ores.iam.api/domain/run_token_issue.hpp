@@ -43,7 +43,9 @@ namespace ores::iam::domain {
  * The table is an audit log. Its tenant_id is an ordinary text column and not
  * the generated kind. The table is isolated by tenant like the rest of IAM, by a
  * policy in iam_rls_policies_create.sql, and only IAM's own exchange reads and
- * writes it, each row through a session of its own tenant.
+ * writes it, each row through a session of its own tenant. The model binds no
+ * variability profile: readonly-timeseries fixes has_tenant_id to true, and
+ * this table states it false for the reason above.
  *
  * No retention policy is set. A grant that names a max_runs is counted from this
  * table, so dropping rows would let a grant serve more runs than its grantor

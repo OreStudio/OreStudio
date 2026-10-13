@@ -43,7 +43,9 @@ namespace ores::iam::domain {
  * The table is the audit log of who signed in and who failed to. Its tenant_id
  * is an ordinary text column and not the generated kind, because an event can
  * happen before a tenant is known, and it is then the system tenant's. The read in
- * ores.iam.auth_event_operations scopes on that column itself.
+ * ores.iam.auth_event_operations scopes on that column itself. The model binds
+ * no variability profile: readonly-timeseries fixes has_tenant_id to true, and
+ * this table states it false for the reason above.
  *
  * The table is internal: its protocol, handler and shell commands are the
  * hand-written operation model's, so only the data layer and the SQL schema are

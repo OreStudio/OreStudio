@@ -8,7 +8,7 @@
 #+filetags: :populate_sprint_28:sprint_28:v0:
 #+owner: marco
 #+branch: feature/populate-sprint-28
-#+pr:
+#+pr: 3274
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3274][#3274]] | [agile] Populate sprint 28 with the sprint 27 carries |
 
 * Review
 

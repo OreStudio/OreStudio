@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
 #+owner: marco
-#+branch: feature/show-the-whole-history-of-a-party
+#+branch: feature/give-every-junction-a-history-and-events
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -22,8 +22,8 @@
 #include "ores.database/domain/exceptions.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/schema_fingerprint.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cstdlib>
 #include <rfl/json.hpp>
 #include <sstream>
 #include <stdexcept>
@@ -31,6 +31,7 @@
 namespace ores::database {
 
 using namespace ores::logging;
+using ores::platform::environment::environment;
 
 namespace {
 
@@ -96,7 +97,7 @@ void context_factory::verify_schema_fingerprint(const context& ctx, const std::s
      * integration do; without it the mismatch is a warning and the service
      * starts.
      */
-    if (std::getenv("ORES_REQUIRE_SCHEMA_MATCH") != nullptr) {
+    if (environment::get_value("ORES_REQUIRE_SCHEMA_MATCH").has_value()) {
         msg << "REFUSING TO START: ORES_REQUIRE_SCHEMA_MATCH is set.\n" << rule;
         BOOST_LOG_SEV(lg(), error) << "FATAL: " << msg.str();
         throw schema_mismatch_exception(msg.str());

@@ -24,15 +24,13 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
+#include "ores.platform/numeric/floating_point.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <charconv>
-#include <cmath>
 #include <cstddef>
 #include <expected>
 #include <string>
-#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -111,10 +109,7 @@ std::expected<node, std::string> locate(ores::database::context ctx,
 /// a plus sign and a hex float are not numbers here, because the text is stored as
 /// it is stated.
 bool is_number(const std::string& text) {
-    double number = 0;
-    const auto end = text.data() + text.size();
-    const auto [stopped, error] = std::from_chars(text.data(), end, number);
-    return error == std::errc{} && stopped == end && std::isfinite(number);
+    return ores::platform::numeric::parse_double(text).has_value();
 }
 
 }

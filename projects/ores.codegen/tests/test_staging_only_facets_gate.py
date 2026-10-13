@@ -11,10 +11,11 @@ names a menu after the entity's plural, so the shim generates the same menu as
 the entity it stages, and ``cli::Menu::Insert`` accepts the duplicate while
 dispatch answers from whichever menu registered first.
 
-The live case is the dq ``report_definition`` shim. It is registered before
-reporting's own ``report_definitions`` unit in ``repl.cpp``, so the whole menu
-answered from dq: five commands returned dq's internal error and five were
-rejected with an arity that belongs to the real owner.
+No model in the tree triggers the gate now: the dq shims that copied another
+component's entity were moved onto their owners, as the DQ artefact guide
+requires. The gate stays so that such a shim cannot come back silently, and the
+test builds one: a copy of a dq staging shim whose plural is one that refdata
+models.
 
 Two controls keep the gate honest. A dq entity that is not a staging shim keeps
 its shell unit, so the gate cannot pass by dropping the shell facet everywhere.
@@ -23,6 +24,7 @@ And a staging shim that is its entity's *only* owner keeps its unit too --
 command units are the only surface those entities have. Suppressing those would
 trade a collision for a lost capability.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -33,8 +35,9 @@ from codegen.generate import resolve_targets  # noqa: E402
 
 CODEGEN_BASE = REPO_ROOT / "projects/ores.codegen"
 
-# The staging shim that shadows reporting's menu.
-STAGING_ONLY = REPO_ROOT / "projects/ores.dq/modeling/ores.dq.report_definition.org"
+# A dq staging shim, copied with a plural another component also models.
+STAGING_SHIM = REPO_ROOT / "projects/ores.dq/modeling/ores.dq.lei_entity.org"
+RIVAL_PLURAL = "netting_sets"
 
 # A dq entity on the standard stack, used as the positive control.
 NOT_STAGING_ONLY = REPO_ROOT / "projects/ores.dq/modeling/ores.dq.badge_definition.org"
@@ -63,8 +66,18 @@ STAGING_KEEPS = frozenset({
 })
 
 
-def test_a_staging_only_entity_resolves_no_command_unit():
-    units, model_type, _ = resolve_targets(STAGING_ONLY, CODEGEN_BASE)
+def _shim_with_a_rival(tmp_path: Path) -> Path:
+    modeling = tmp_path / "ores.dq" / "modeling"
+    modeling.mkdir(parents=True)
+    model = modeling / STAGING_SHIM.name
+    model.write_text(re.sub(r"(?m)^#\+entity_plural: .*$",
+                            f"#+entity_plural: {RIVAL_PLURAL}",
+                            STAGING_SHIM.read_text()))
+    return model
+
+
+def test_a_staging_only_entity_resolves_no_command_unit(tmp_path):
+    units, model_type, _ = resolve_targets(_shim_with_a_rival(tmp_path), CODEGEN_BASE)
     assert model_type == "domain_entity"
     templates = {u["template"] for u in units}
     assert not (SHELL_TEMPLATES & templates)

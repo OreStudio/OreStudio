@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- A netting set of the party a publish targets. It names its master agreement by number and its counterparty by LEI; publishing resolves both in the target tenant. A set with no agreement holds trades that do not net. - Artefact Table
+-- A netting set is the group of trades with one counterparty whose values offset one another when credit exposure is computed. Every trade names exactly one set, as ORE requires; a trade with nothing to net against sits in a set of its own. See [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] for the analysis. A set opened under a [[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreement]] copies the agreement's counterparty and legal entity, and a pinned key holds the copy to the agreement, so a set cannot be filed under another counterparty's agreement. A set with no agreement holds trades that do not net; its counterparty may be unknown, as it is for a set read from an ORE document, which names none. Every set belongs to a legal entity of the firm, and the entity that imports the document is the one it belongs to. The code is the netting set id ORE uses. The call type and initial margin type are the remaining parts of ORE's netting set details, and the risk weight is ORE's. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_netting_sets_artefact_tbl" (

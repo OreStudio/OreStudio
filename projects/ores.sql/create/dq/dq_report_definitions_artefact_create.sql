@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- Report Definition artefacts - default report templates for the ORE analytics bundle - Artefact Table
+-- The persistent template for a report. Describes what to run, when to run it, how to handle concurrent executions, and how much of the processing pipeline a run executes. Type-specific configuration (e.g. risk parameters) lives in a separate table keyed by report_definition_id. The run configuration is held here rather than in the environment so that a run is reproducible from the database alone. pre_processing and post_processing name, for each substitutable phase, whether the phase runs or is replaced by a prepared substitute. Lifecycle is managed through the report_definition_lifecycle FSM machine. fsm_state_id points to the current state in ores_dq_fsm_states_tbl. scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set by the scheduler service when the definition is activated (state: active). It is cleared when the definition is suspended or archived. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_report_definitions_artefact_tbl" (
@@ -37,7 +37,9 @@ create table if not exists "ores_dq_report_definitions_artefact_tbl" (
     "report_type" text not null,
     "schedule_expression" text not null,
     "concurrency_policy" text not null,
-    "display_order" integer not null
+    "display_order" integer not null,
+    "tier" text not null default 'trading',
+    "applicable_jurisdiction" text null
 );
 
 create index if not exists dq_report_definitions_artefact_dataset_idx

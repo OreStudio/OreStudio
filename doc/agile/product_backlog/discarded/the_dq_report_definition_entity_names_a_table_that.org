@@ -23,6 +23,10 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 -
 
+* Resolution
+
+Resolved by [[id:2FC7FD9E-9098-459F-A0A2-C1E63FD710FD][Move the duplicated DQ models onto their owners]]. That task deletes the =ores.dq= report definition model and its generated stack, so no DQ entity names the missing table. The staging table now comes from =ores.reporting.report_definition=.
+
 * See also
 
 -

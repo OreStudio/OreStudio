@@ -19,7 +19,7 @@ collection's optional =provider_code= is validated against its =code=.
 
 The rows arrive through DQ, as the installation's other reference data does.
 The =synthetic.market_data_providers= dataset stages them in
-=ores_dq_synthetic_market_data_providers_artefact_tbl=
+=ores_dq_market_data_providers_artefact_tbl=
 (=projects/ores.sql/populate/synthetic/synthetic_market_data_providers_artefact_populate.sql=).
 The dataset is a member of the =system_core= bundle, so the system
 provisioning step of a profile such as =acme_demo= publishes it into the

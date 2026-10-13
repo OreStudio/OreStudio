@@ -229,6 +229,7 @@
 \ir ./refdata_party_counterparty_changes_create.sql
 \ir ./refdata_party_counterparty_changes_notify_trigger_create.sql
 \ir ./refdata_book_change_parties_fn_create.sql
+\ir ./refdata_counterparty_change_parties_fn_create.sql
 
 -- ORE conventions (curve-building conventions imported from conventions.xml)
 \ir ./refdata_zero_conventions_create.sql

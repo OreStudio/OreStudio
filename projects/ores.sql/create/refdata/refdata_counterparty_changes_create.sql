@@ -98,19 +98,6 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate parent_counterparty_id (optional soft FK to ores_refdata_counterparties_tbl)
-    if NEW.parent_counterparty_id is not null then
-        if not exists (
-            select 1 from ores_refdata_counterparties_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.parent_counterparty_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid parent_counterparty_id: %. No active counterparty found with this id.', NEW.parent_counterparty_id
-                using errcode = '23503';
-        end if;
-    end if;
-
     -- Validate image_id (optional soft FK to ores_assets_images_tbl)
     if NEW.image_id is not null then
         if not exists (

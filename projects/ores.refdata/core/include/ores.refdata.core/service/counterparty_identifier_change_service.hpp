@@ -31,7 +31,6 @@
 #include "ores.refdata.api/messaging/counterparty_identifier_change_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_change_repository.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>

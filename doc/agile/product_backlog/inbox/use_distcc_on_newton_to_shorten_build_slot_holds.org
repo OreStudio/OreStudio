@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 986BCDE6-1456-4E3F-ABA4-B01AB3AFE399
+:END:
+#+title: Try distcc on host newton (Debian on WSL) to shorten how lon…
+#+description: Try distcc on host newton (Debian on WSL) to shorten how long each build holds a host build slot. Builds queue on the two host slots (/tmp/ores-build.lock.a and .b) across about ten worktrees, and a wait can last an hour while the compile takes minutes. ccache already hits 87.7 percent of compiles, so distcc only helps on misses, which are the costly files after a regenerated header. Conditions: newton needs the same clang as this host (Debian clang 21.1.8); plain distcc ships large preprocessed sources, and pump mode needs the same vcpkg tree and paths on newton; linking, preprocessing and all tests stay local; compass ties a slot to -j6, so a higher -j for the remote part needs new slot accounting so this host is not overloaded. Check the network path from WSL. Measure first: compare slot hold time for one build with and without distcc. Separately, the slot-b lock file names bright_faraday since 2026-10-10 with a dead pid (200392), so check whether the lock is stale before adding tooling.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

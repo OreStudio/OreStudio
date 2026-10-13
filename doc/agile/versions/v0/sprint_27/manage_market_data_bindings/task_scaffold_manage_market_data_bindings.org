@@ -8,7 +8,7 @@
 #+filetags: :manage_market_data_bindings:sprint_27:v0:
 #+owner: marco
 #+branch: feature/manage-market-data-bindings
-#+pr:
+#+pr: 3225
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3225][#3225]] | [agile] Scaffold story: Manage market data bindings |
 
 * Review
 

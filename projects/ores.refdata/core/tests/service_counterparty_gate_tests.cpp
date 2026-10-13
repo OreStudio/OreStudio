@@ -210,11 +210,63 @@ TEST_CASE("a_contact_change_is_written_directly", tags) {
                         .phone = contact.phone,
                         .email = contact.email,
                         .web_page = contact.web_page};
-    req.change.precondition = creates();
+    // A contact is named by its type, which other cases of the shared tenant may
+    // hold already, so the write replaces whatever is there.
+    req.change.precondition = {precondition_kind::any, std::nullopt};
     req.intent = {"system.test", "A contact"};
 
     const auto response = ores::refdata::service::counterparty_contact_information_service(w.ctx)
                               .put_counterparty_contact_information(req);
 
     CHECK(response.result.outcome == outcome::ok);
+}
+
+TEST_CASE("a_batch_link_removal_opens_only_for_the_link_the_request_holds", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    const auto held = make_live(w, new_counterparty_line(h));
+    const auto other = make_live(w, new_counterparty_line(h));
+    link_live(w, w.party_id, held.id);
+    link_live(w, w.party_id, other.id);
+    counterparty_lines lines;
+    auto removal = new_link_line(h, w.party_id, held.id);
+    removal.operation = "delete";
+    lines.links.push_back(removal);
+    const auto proposal = counterparty_proposal_service(w.ctx).raise(lines, "Stop trading");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    party_counterparty_service svc(w.ctx);
+    svc.carry_out_request(boost::uuids::to_string(proposal.request->id));
+    const auto batch_of = [&](const boost::uuids::uuid& counterparty) {
+        messaging::delete_many_party_counterparties_request batch;
+        batch.removals.push_back({.key = {.party_id = w.party_id, .counterparty_id = counterparty}});
+        batch.intent = {"system.test", "A gate test"};
+        return batch;
+    };
+
+    // A link line states no version, so a batch, which carries none, matches it.
+    // The line names one link, and a batch over another is refused.
+    CHECK(svc.delete_many_party_counterparties(batch_of(other.id)).result.code ==
+          "approval_required");
+    CHECK(linked(w, new_link_line(h, w.party_id, other.id)));
+    CHECK(svc.delete_many_party_counterparties(batch_of(held.id)).result.outcome == outcome::ok);
+    CHECK_FALSE(linked(w, removal));
+}
+
+TEST_CASE("a_link_line_opens_the_gate_once", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    const auto live = make_live(w, new_counterparty_line(h));
+    counterparty_lines lines;
+    lines.links.push_back(new_link_line(h, w.party_id, live.id));
+    counterparty_proposal_service proposals(w.ctx);
+    const auto proposal = proposals.raise(lines, "Let it trade");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    REQUIRE(proposals.apply(id).applied);
+    party_counterparty_service svc(w.ctx);
+    svc.carry_out_request(id);
+
+    CHECK(svc.put_party_counterparty(put_of(lines.links.front())).result.code == "approval_required");
 }

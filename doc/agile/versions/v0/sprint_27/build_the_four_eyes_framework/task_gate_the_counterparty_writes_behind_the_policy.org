@@ -93,7 +93,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Gate order differs between put and delete | party_counterparty_service.cpp | Decline | The delete gate runs before the store reads the link. The checks before it read the request alone, so an unapproved caller learns nothing about the link. The version conflict comes from the store after the gate. |
+| 2 | Batch delete never matches a line with a base version; add a test | delete_many_party_counterparties | Accept in part | The premise does not hold for a link: a link line always states version 0, so a batch matches the line for the link it names. A new case shows a batch opens for the held link and is refused for another. |
+| 3 | holds_line reads the request lines on every write | party_counterparty_service.cpp | Decline | Same as the book, review comment 1 of the book gate: no one has measured it, and a cache needs care because the applier marks lines applied in the same pass. |
+| 4 | Check that a line is consumed | holds_line | Accept | The apply marks a line applied in its transaction. A new case applies a request and shows the same put is then refused. |
+| 5 | The version cast to int can wrap | gate_put | Decline | A wrapped value is negative, and a stored line never holds a negative version. It cannot match. |
+| 6 | Track the shell regression | PR | Accept | New backlog task: Raise requests from the shell for gated counterparties. |
 
 * Result
 
@@ -104,6 +109,6 @@ A put or a removal of a counterparty, an identifier or a party link is refused w
 - The link's policy rows use the model's name, =party_counterparty=.
 - A contact change is written directly.
 
-Evidence: the whole =ores.refdata.core.tests= binary passes (416 cases), with seven new cases in =service_counterparty_gate_tests.cpp=. They cover a refused counterparty put, identifier put, link put and link removal, a request that is not approved, an approved request that opens only the lines it holds, a link put under an approved request, and a direct contact change. The catalogue drift sweep, derived-model, handler permission, cmake source, pasted block symbol, populate reference and test reachability checks pass.
+Evidence: the whole =ores.refdata.core.tests= binary passes (416 cases), with nine new cases in =service_counterparty_gate_tests.cpp=. They cover a refused counterparty put, identifier put, link put and link removal, a request that is not approved, an approved request that opens only the lines it holds, a link put under an approved request, a batch link removal that opens only for the held link, a line that opens the gate once, and a direct contact change. The catalogue drift sweep, derived-model, handler permission, cmake source, pasted block symbol, populate reference and test reachability checks pass.
 
 Not done here: the callers named in Notes, and a run against the live services.

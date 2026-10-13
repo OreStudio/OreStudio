@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: fix/format-bff-operations
-#+pr:
+#+pr: 3256
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3256][#3256]] | [web] Format the grid BFF route |
 
 * Review
 

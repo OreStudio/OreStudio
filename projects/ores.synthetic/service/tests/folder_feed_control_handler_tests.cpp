@@ -656,11 +656,17 @@ TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_
     CHECK_FALSE(malformed.success);
     CHECK(f.ctrl->running_count() == 0);
 
+    // A request that names nothing and narrows nothing would run every feed, so it is refused.
+    const auto empty = send_request<start_selected_feeds_request, start_selected_feeds_response>(
+        f.nats, test_select_start_subject, token, start_selected_feeds_request{});
+    CHECK_FALSE(empty.success);
+    CHECK(f.ctrl->running_count() == 0);
+
     const auto narrow = mint_token(
         f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
     const auto reply = f.nats.request_sync(
         test_select_start_subject,
-        ores::nats::default_wire_codec().encode(start_selected_feeds_request{}),
+        ores::nats::default_wire_codec().encode(start_selected_feeds_request{.state = "all"}),
         {{std::string(ores::nats::headers::authorization),
           std::string(ores::nats::headers::bearer_prefix) + narrow}});
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));

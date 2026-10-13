@@ -80,12 +80,14 @@ export function allPicked(selection: Selection, ids: readonly string[]): boolean
 /**
  * The request that starts or stops a selection. A picked set names its feeds and
  * the rest of the filter is not sent, because the ids are the whole answer. An
- * "all matching" set sends the filter and the feeds left out.
+ * "all matching" set sends the filter and the feeds left out. A filter that narrows
+ * nothing says so with a state of all, because the service refuses a request that
+ * names nothing, lest an empty request run every feed.
  */
 export function selectionRequest(selection: Selection, filter: FeedFilter): FeedSelection {
     return selection.mode === 'ids'
         ? { feedIds: [...selection.ids] }
-        : { ...filter, excludedIds: [...selection.excluded] };
+        : { ...filter, state: filter.state ?? 'all', excludedIds: [...selection.excluded] };
 }
 
 /** The most feeds one request may name; the server refuses more. */

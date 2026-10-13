@@ -116,7 +116,7 @@ public:
                 folders(*ctx), direct_counts(*ctx), req->parent_id);
             resp.success = true;
         } catch (const std::exception& e) {
-            resp.message = e.what();
+            resp.message = "The request failed. The service log says why.";
             BOOST_LOG_SEV(feed_overview_handler_lg(), error)
                 << "list_feed_folders failed: " << e.what();
         }
@@ -169,7 +169,7 @@ public:
             feeds_page(*ctx, filter, req->offset, req->limit, resp);
             resp.success = true;
         } catch (const std::exception& e) {
-            resp.message = e.what();
+            resp.message = "The request failed. The service log says why.";
             BOOST_LOG_SEV(feed_overview_handler_lg(), error)
                 << "list_folder_feeds failed: " << e.what();
         }

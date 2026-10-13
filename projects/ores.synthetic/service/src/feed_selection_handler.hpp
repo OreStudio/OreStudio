@@ -119,7 +119,7 @@ private:
                                                         .should_run = req->should_run,
                                                         .feed_ids = req->feed_ids,
                                                         .excluded_ids = req->excluded_ids};
-        if (const auto problem = ores::synthetic::feed::filter_problem(filter); !problem.empty()) {
+        if (const auto problem = ores::synthetic::feed::selection_problem(filter); !problem.empty()) {
             resp.message = problem;
             reply(nats_, msg, resp);
             return;
@@ -154,7 +154,7 @@ private:
             BOOST_LOG_SEV(feed_selection_handler_lg(), info)
                 << msg.subject << " (" << label << ") — " << resp.message;
         } catch (const std::exception& e) {
-            resp.message = e.what();
+            resp.message = "The request failed. The service log says why.";
             BOOST_LOG_SEV(feed_selection_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
         }

@@ -81,6 +81,10 @@ describe('the feeds a person picked', () => {
         });
     });
 
+    it('says on purpose that an unfiltered all-matching set means every feed', () => {
+        expect(selectionRequest(everything, {})).toEqual({ state: 'all', excludedIds: [] });
+    });
+
     it('refuses a picked list longer than a request may name', () => {
         const many = setPicked(
             NOTHING,

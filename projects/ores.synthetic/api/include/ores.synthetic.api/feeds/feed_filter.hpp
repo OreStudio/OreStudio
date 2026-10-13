@@ -31,8 +31,13 @@ namespace ores::synthetic::feed {
  *
  * The same value drives the page a screen shows and the start or stop it applies, so
  * both name the same feeds. When @p feed_ids is not empty, exactly those feeds are
- * meant and the rest of the filter is ignored. Otherwise the feeds are those the
- * filter matches, less @p excluded_ids.
+ * meant: the rest of the filter, @p excluded_ids included, is ignored. Otherwise the
+ * feeds are those the filter matches, less @p excluded_ids.
+ *
+ * An empty text field means no narrowing, and a state of "all" means no narrowing on
+ * purpose. The state is decided by the feeds that run when the query is built; a
+ * start or stop that runs a moment later counts the feeds that already ran and skips
+ * the ones another feed holds, so a stale answer does no harm.
  */
 struct feed_filter {
     /** A folder; its feeds and those of the folders under it. Empty for every folder. */
@@ -53,6 +58,14 @@ struct feed_filter {
 
 /// The most feed ids, picked or left out, one request may name.
 inline constexpr std::size_t most_named_feeds = 2000;
+
+/**
+ * @brief Why the filter cannot start or stop feeds, or empty when it can.
+ *
+ * A start or stop that names no feeds and narrows nothing would run every feed, so it
+ * is refused. A state of "all" says that every feed is meant.
+ */
+ORES_SYNTHETIC_API_EXPORT std::string selection_problem(const feed_filter& filter);
 
 /**
  * @brief Why the filter cannot be used, or empty when it can.

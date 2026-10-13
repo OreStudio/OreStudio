@@ -70,11 +70,22 @@ std::string filter_problem(const feed_filter& filter) {
         filter.state != "stopped")
         return "The state is not all, started or stopped.";
     if (filter.feed_ids.size() > most_named_feeds || filter.excluded_ids.size() > most_named_feeds)
-        return "A request may name at most 2000 feeds. Select by the filter instead.";
+        return "A request may name at most " + std::to_string(most_named_feeds) +
+               " feeds. Select by the filter instead.";
     for (const auto* ids : {&filter.feed_ids, &filter.excluded_ids})
         if (!std::ranges::all_of(*ids, [](const auto& id) { return is_folder_id(id); }))
             return "A feed id is not a UUID.";
     return {};
+}
+
+std::string selection_problem(const feed_filter& filter) {
+    if (auto problem = filter_problem(filter); !problem.empty())
+        return problem;
+    const bool narrows = !filter.feed_ids.empty() || !filter.folder_id.empty() ||
+                         !filter.provider_code.empty() || !filter.asset_class.empty() ||
+                         !filter.search.empty() || !filter.state.empty() || filter.should_run;
+    return narrows ? std::string()
+                   : "Name the feeds or a filter. A state of all means every feed.";
 }
 
 std::string sql_literal(const std::string& text) {

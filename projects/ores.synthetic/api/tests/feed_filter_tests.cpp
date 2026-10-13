@@ -30,6 +30,7 @@ const std::string tags("[feed_filter]");
 using Catch::Matchers::ContainsSubstring;
 using ores::synthetic::feed::feed_filter;
 using ores::synthetic::feed::filter_problem;
+using ores::synthetic::feed::selection_problem;
 using ores::synthetic::feed::sql_literal;
 using ores::synthetic::feed::where_clause;
 
@@ -151,4 +152,32 @@ TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and s
     f.state = "started";
     CHECK_THAT(where_clause(f, {"synthetic.a"}),
                ContainsSubstring("source_name not in (E'synthetic.a')"));
+}
+
+TEST_CASE("feed_filter refuses a selection that names nothing and narrows nothing", tags) {
+    CHECK_FALSE(selection_problem({}).empty());
+    feed_filter f;
+    f.state = "all";
+    CHECK(selection_problem(f).empty());
+    f = {};
+    f.provider_code = "ore";
+    CHECK(selection_problem(f).empty());
+    f = {};
+    f.should_run = true;
+    CHECK(selection_problem(f).empty());
+    f = {};
+    f.feed_ids = {folder};
+    CHECK(selection_problem(f).empty());
+    f = {};
+    f.excluded_ids = {folder};
+    CHECK_FALSE(selection_problem(f).empty());
+    f = {};
+    f.state = "running";
+    CHECK_FALSE(selection_problem(f).empty());
+}
+
+TEST_CASE("feed_filter names the cap in its message", tags) {
+    feed_filter f;
+    f.feed_ids.assign(ores::synthetic::feed::most_named_feeds + 1, folder);
+    CHECK_THAT(filter_problem(f), ContainsSubstring("2000"));
 }

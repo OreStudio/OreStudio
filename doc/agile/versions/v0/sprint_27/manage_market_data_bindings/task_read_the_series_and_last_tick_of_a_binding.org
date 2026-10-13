@@ -8,7 +8,7 @@
 #+filetags: :manage_market_data_bindings:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-the-series-and-last-tick-of-a-binding
-#+pr:
+#+pr: 3246
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3246][#3246]] | [marketdata] Read the series and last tick of a binding |
 
 * Review
 

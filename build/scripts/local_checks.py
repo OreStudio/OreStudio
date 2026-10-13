@@ -296,7 +296,14 @@ CATALOGUE: tuple[Check, ...] = (
     Check(
         id="site-page",
         title="The changed pages build and their links resolve",
-        argv=("./compass.sh", "site", "page"),
+        argv=(
+            "bash",
+            "-c",
+            "changed=$(git diff --name-only --diff-filter=ACMR {base} -- '*.org'; "
+            "git ls-files --others --exclude-standard -- '*.org'); "
+            "if [ -z \"$changed\" ]; then echo 'no changed org pages'; exit 0; fi; "
+            "./compass.sh site page $changed",
+        ),
         classes=("docs",),
         after=("component-drift",),
         phase=PREPARE,

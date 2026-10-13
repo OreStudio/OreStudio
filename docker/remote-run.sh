@@ -15,12 +15,19 @@
 #   $REMOTE_ROOT/build/keys/nats/                     NATS client certs
 #   $REMOTE_ROOT/build/keys/iam-rsa-private.pem       IAM JWT signing key
 #   $REMOTE_ROOT/build/config/nats-<label>.conf       rendered NATS config
-#   $REMOTE_ROOT/compute/compute.env                  compute-node config
-#   $REMOTE_ROOT/compute/keys/                        compute client certs
+#
+# The compute role owns one directory per environment, so several
+# environments can share a compute host without touching each other:
+#   $REMOTE_ROOT/compute/<label>/compute.env          compute-node config
+#   $REMOTE_ROOT/compute/<label>/keys/                compute client certs
+#   $REMOTE_ROOT/compute/<label>/work/replica_<n>/    per-wrapper scratch
+#   $REMOTE_ROOT/compute/<label>/work/packages/       engine package cache
+#   $REMOTE_ROOT/compute/<label>/log/                 wrapper logs
 #
 # ROLE=runtime (default): service-runtime + NATS sidecar containers.
 # ROLE=compute: just the ores.compute.wrapper compute node, connecting
 # outward to the serving environment's NATS core (partial environment).
+# The compute role requires LABEL (the environment) to be passed in.
 #
 # Idempotent: containers are rm -f'd before recreate; re-running picks
 # up a newly transferred image or env without manual cleanup.
@@ -48,7 +55,15 @@ cd "$REMOTE_ROOT"
 echo "  cwd : $(pwd)"
 
 if [[ "$ROLE" == "compute" ]]; then
-    compute_env="$REMOTE_ROOT/compute/compute.env"
+    # One environment per directory under the remote compute root, and the
+    # label arrives from compass env deploy rather than from the host's own
+    # state: a co-hosted environment must not be able to re-point or
+    # replace this one's wrappers by deploying later.
+    label="${LABEL:?LABEL not set — run: compass env deploy <host> --role compute}"
+    container="ores-compute-node-${label}"
+    certs_volume="ores-nats-client-certs-${label}"
+    compute_root="$REMOTE_ROOT/compute/$label"
+    compute_env="$compute_root/compute.env"
     if [[ ! -f "$compute_env" ]]; then
         echo "Error: $compute_env not found — run: compass env deploy <host> --role compute" >&2
         exit 1
@@ -56,11 +71,14 @@ if [[ "$ROLE" == "compute" ]]; then
     # shellcheck disable=SC1091
     source "$compute_env"
 
-    label="${ORES_COMPUTE_LABEL:-ores}"
-    container="ores-compute-node-${label}"
-    certs_volume="ores-nats-client-certs-${label}"
-    keys_dir="$REMOTE_ROOT/compute/keys"
-    work_dir="$REMOTE_ROOT/compute/work"
+    keys_dir="$compute_root/keys"
+    work_dir="$compute_root/work"
+    # One cache for this environment's wrappers on this host, so the first
+    # wrapper to need an engine package downloads it and the others wait on
+    # its lock file. The entries are keyed by app_version_id, which belongs
+    # to the serving environment's database, so a cache shared between
+    # environments could not deduplicate anything.
+    package_dir="$work_dir/packages"
     image="localhost/ores-compute-wrapper:${IMAGE_TAG}"
     # One wrapper per core but one, so the host stays responsive.
     cores="$(nproc)"
@@ -77,8 +95,8 @@ if [[ "$ROLE" == "compute" ]]; then
     # environment's client private key + CA.
     chmod -R u+rwX,go-rwx "$volume_mountpoint"
 
-    mkdir -p "$work_dir"
-    log_dir="$REMOTE_ROOT/compute/log"
+    mkdir -p "$work_dir" "$package_dir"
+    log_dir="$compute_root/log"
     mkdir -p "$log_dir"
 
     # The wrappers run as systemd user services built from Quadlet files, so
@@ -130,7 +148,9 @@ if [[ "$ROLE" == "compute" ]]; then
     for replica in $(seq 1 "$replicas"); do
         # Same derivation as the local services: UUID v5 of "<hostname>:<replica>".
         host_id="$(python3 -c 'import sys,uuid; print(uuid.uuid5(uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8"), sys.argv[1]))' "$node_name:$replica")"
-        replica_dir="$work_dir/$replica"
+        # Named for what it is: the work directory belongs to one wrapper
+        # replica, and a bare number gives a reader nothing to go on.
+        replica_dir="$work_dir/replica_$replica"
         mkdir -p "$replica_dir"
         cat > "$unit_dir/$container-$replica.container" <<UNIT
 [Unit]
@@ -148,7 +168,7 @@ EnvironmentFile=$compute_env
 Volume=$certs_volume:$keys_dir:ro
 Volume=$work_dir:$work_dir:rw
 Volume=$log_dir:/app/log:rw
-Exec=--log-enabled --log-level info --log-to-console --log-directory ../log --log-filename ores.compute.wrapper --log-replica-index $((replica - 1)) --host-id $host_id --tenant-id $tenant_id --work-dir $replica_dir --package-dir $work_dir/packages$extra_args
+Exec=--log-enabled --log-level info --log-to-console --log-directory ../log --log-filename ores.compute.wrapper --log-replica-index $((replica - 1)) --host-id $host_id --tenant-id $tenant_id --work-dir $replica_dir --package-dir $package_dir$extra_args
 
 [Service]
 Restart=always

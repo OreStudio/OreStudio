@@ -8,7 +8,7 @@
 #+filetags: :make_the_local_checks_faster:sprint_27:v0:
 #+owner: marco
 #+branch: feature/make-the-local-checks-faster
-#+pr: 3260
+#+pr: 3269
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3269][#3269]] | [agile] Close the local checks speed story |
 | [[https://github.com/OreStudio/OreStudio/pull/3260][#3260]] | [agile] File the local check timing analysis |
 
 * Review

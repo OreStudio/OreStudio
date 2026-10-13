@@ -35,6 +35,7 @@ import { StateTag, useProviderFacts } from './DashboardTab.js';
 import { frequencyOf } from './frequency.js';
 import {
     ASSET_CLASSES,
+    collectionOf,
     feedPageOf,
     filterOf,
     folderChain,
@@ -345,16 +346,7 @@ export function FeedTreeTab(): ReactNode {
               ? (rows.find((row) => row.id === parsed.id)?.name ?? '')
               : t('marketdata.synthetic.tree.all');
 
-    // The collection the person is looking at: a provider with one, or the one a folder sits in.
-    const chosenCollection =
-        parsed?.kind === 'provider'
-            ? ((): string => {
-                  const ofProvider = collections.filter((one) => one.provider_code === parsed.code);
-                  return ofProvider.length === 1 ? (ofProvider[0]?.id ?? '') : '';
-              })()
-            : parsed?.kind === 'folder'
-              ? (folderChain(rows, parsed.id).find((row) => row.kind === 'collection')?.id ?? '')
-              : '';
+    const chosenCollection = collectionOf(parsed, collections, rows);
 
     const ids = feeds.map((feed) => feed.id);
     const count = pickedCount(picked, total);

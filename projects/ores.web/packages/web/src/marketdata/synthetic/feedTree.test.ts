@@ -22,6 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FeedFolder } from '../../api/client.js';
 import {
+    collectionOf,
     feedPageOf,
     filterOf,
     folderChain,
@@ -136,5 +137,18 @@ describe('the feed tree', () => {
     it('opens a feed on the page of its kind', () => {
         expect(feedPageOf({ kind: 'fx_spot', id: 'x/1' })).toBe('/market-data/synthetic/fx/x%2F1');
         expect(feedPageOf({ kind: 'ir_curve', id: 'y' })).toBe('/market-data/synthetic/ir/y');
+    });
+
+    it('names the collection a person is looking at', () => {
+        const rows = [
+            { id: 'r', parent_id: '', name: 'Synthetic', kind: 'root' },
+            { id: 'b', parent_id: 'r', name: 'Bloomberg', kind: 'collection' },
+            { id: 'a', parent_id: 'b', name: 'FX', kind: 'asset_class' },
+        ];
+        const held = [bloomberg, samples, more];
+        expect(collectionOf(parseKey('provider:ore'), held, rows)).toBe('s');
+        expect(collectionOf(parseKey('provider:bloomberg'), held, rows)).toBe('');
+        expect(collectionOf(parseKey('folder:a'), held, rows)).toBe('b');
+        expect(collectionOf(undefined, held, rows)).toBe('');
     });
 });

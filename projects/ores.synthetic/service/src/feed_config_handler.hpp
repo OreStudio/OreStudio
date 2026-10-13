@@ -135,7 +135,7 @@ public:
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             resp.success = false;
-            resp.message = "The feed failed to start. " + client_message(e);
+            resp.message = client_message(e);
             BOOST_LOG_SEV(feed_config_handler_lg(), error)
                 << msg.subject << " — failed to start: " << e.what();
             reply(nats_, msg, resp);

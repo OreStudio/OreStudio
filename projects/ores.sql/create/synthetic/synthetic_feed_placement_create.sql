@@ -43,6 +43,7 @@ begin
         return NEW;
     end if;
 
+    -- The publish function names the same folders; keep the two in step.
     if tg_table_name = 'ores_synthetic_fx_spot_generation_configs_tbl' then
         v_asset_class_name := 'FX';
         v_instrument_name := 'FX Rates';
@@ -50,6 +51,9 @@ begin
         v_asset_class_name := 'Rates';
         v_instrument_name := 'IR Curves';
     end if;
+
+    -- Two feeds added at once to a new collection must not make its folders twice.
+    perform pg_advisory_xact_lock(hashtextextended(NEW.tenant_id::text || NEW.party_id::text || 'feed-folders', 0));
 
     select name into v_config_name
     from ores_synthetic_market_data_generation_configs_tbl

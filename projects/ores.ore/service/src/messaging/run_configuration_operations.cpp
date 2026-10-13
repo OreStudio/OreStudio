@@ -58,8 +58,7 @@ struct document_kind {
     std::string_view parameter;
 };
 
-std::optional<std::string>
-file_of(const rp::run_document& document, std::string_view parameter) {
+std::optional<std::string> file_of(const rp::run_document& document, std::string_view parameter) {
     for (const auto& f : document.files)
         if (f.parameter == parameter)
             return f.name;
@@ -275,7 +274,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
         call(owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
 
     ore document;
-    document.Setup = run_document_mapper::reverse_setup({run.document.settings, run.document.files});
+    document.Setup =
+        run_document_mapper::reverse_setup({run.document.settings, run.document.files});
     document.Analytics = run_document_mapper::reverse_analytics(run.document.analytics);
     if (!run.document.market_bindings.empty())
         document.Markets =

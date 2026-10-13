@@ -64,8 +64,8 @@ ores::refdata::messaging::book_write write_of(const ores::refdata::domain::book_
             .sandbox_id = l.sandbox_id};
 }
 
-ores::refdata::messaging::put_book_request
-put_of(const ores::refdata::domain::book_change& l, precondition claim) {
+ores::refdata::messaging::put_book_request put_of(const ores::refdata::domain::book_change& l,
+                                                  precondition claim) {
     ores::refdata::messaging::put_book_request req;
     req.change.write = write_of(l);
     req.change.precondition = claim;

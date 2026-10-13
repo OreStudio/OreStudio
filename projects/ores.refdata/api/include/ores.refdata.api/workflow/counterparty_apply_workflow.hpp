@@ -61,7 +61,8 @@ struct counterparty_apply_workflow_request {
  * the infrastructure leaves the request approved and the run stopped, for the
  * engine's retry verb to resume.
  */
-inline void register_counterparty_apply_workflow(ores::workflow::service::workflow_registry& registry) {
+inline void
+register_counterparty_apply_workflow(ores::workflow::service::workflow_registry& registry) {
     using namespace ores::workflow::service;
 
     workflow_definition def;

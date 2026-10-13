@@ -239,7 +239,9 @@ TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", 
     REQUIRE(fx != nullptr);
     CHECK(fx->source_name() == "eur_usd_test");
     CHECK(fx->quote_uri() == "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
-    CHECK(fx->series_uris() == std::vector<std::string>{"oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD"});
+    CHECK(fx->series_uris() ==
+          std::vector<std::string>{
+              "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD"});
     CHECK(fx->role().empty());
     CHECK(fx->publish_count() == 0);
 }
@@ -249,27 +251,27 @@ TEST_CASE("factory::make refuses an fx_spot config whose URI is not the quote of
 
     auto other_pair = make_fx_config();
     other_pair.oresmd_uri = "oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
-    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind),
-                                 make_build_context(),
-                                 fx_spot_feed_build_input{other_pair,
-                                                          {make_component(0.0, 0.1, 1.0)}}),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        factory.make(std::string(fx_spot_feed_kind),
+                     make_build_context(),
+                     fx_spot_feed_build_input{other_pair, {make_component(0.0, 0.1, 1.0)}}),
+        std::invalid_argument);
 
     auto a_series = make_fx_config();
     a_series.oresmd_uri = "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
-    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind),
-                                 make_build_context(),
-                                 fx_spot_feed_build_input{a_series,
-                                                          {make_component(0.0, 0.1, 1.0)}}),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        factory.make(std::string(fx_spot_feed_kind),
+                     make_build_context(),
+                     fx_spot_feed_build_input{a_series, {make_component(0.0, 0.1, 1.0)}}),
+        std::invalid_argument);
 
     auto an_ore_key = make_fx_config();
     an_ore_key.oresmd_uri = "FX/RATE/EUR/USD";
-    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind),
-                                 make_build_context(),
-                                 fx_spot_feed_build_input{an_ore_key,
-                                                          {make_component(0.0, 0.1, 1.0)}}),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        factory.make(std::string(fx_spot_feed_kind),
+                     make_build_context(),
+                     fx_spot_feed_build_input{an_ore_key, {make_component(0.0, 0.1, 1.0)}}),
+        std::invalid_argument);
 }
 
 TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config", tags) {
@@ -304,9 +306,10 @@ TEST_CASE("an ir_curve_feed's series carries the tenor of its index, so two inde
     three_month.config.tenor = "3M";
 
     const auto make = [&](const ir_fixture& f) {
-        return factory.make(std::string(ir_curve_feed_kind),
-                            make_build_context(),
-                            ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx});
+        return factory.make(
+            std::string(ir_curve_feed_kind),
+            make_build_context(),
+            ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx});
     };
     const auto six = make(six_month);
     const auto three = make(three_month);

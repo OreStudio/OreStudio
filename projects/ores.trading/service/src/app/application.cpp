@@ -61,12 +61,8 @@
 #include "ores.trading.service/messaging/composite_leg_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_basket_constituent_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_default_swap_instrument_event_registrar.hpp"
-#include "ores.trading.service/messaging/index_credit_default_swap_instrument_event_registrar.hpp"
-#include "ores.trading.service/messaging/index_credit_default_swap_option_instrument_event_registrar.hpp"
-#include "ores.trading.service/messaging/synthetic_cdo_instrument_event_registrar.hpp"
-#include "ores.trading.service/messaging/credit_linked_swap_instrument_event_registrar.hpp"
-#include "ores.trading.service/messaging/risk_participation_agreement_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/credit_linked_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_barrier_option_instrument_event_registrar.hpp"
@@ -88,6 +84,8 @@
 #include "ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/index_credit_default_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/index_credit_default_swap_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/instrument_option_event_registrar.hpp"
 #include "ores.trading.service/messaging/instrument_option_exercise_fee_event_registrar.hpp"
@@ -101,9 +99,11 @@
 #include "ores.trading.service/messaging/lifecycle_event_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/rate_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/risk_participation_agreement_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/scripted_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/swap_leg_event_registrar.hpp"
 #include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/synthetic_cdo_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_activity_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_additional_field_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_booking_event_registrar.hpp"
@@ -311,11 +311,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto credit_default_swap_instrument_sub =
         ores::trading::service::messaging::register_credit_default_swap_instrument_event_mapping(
             event_source, event_bus, nats);
-    auto index_credit_default_swap_instrument_sub =
-        ores::trading::service::messaging::register_index_credit_default_swap_instrument_event_mapping(
-            event_source, event_bus, nats);
-    auto index_credit_default_swap_option_instrument_sub =
-        ores::trading::service::messaging::register_index_credit_default_swap_option_instrument_event_mapping(
+    auto index_credit_default_swap_instrument_sub = ores::trading::service::messaging::
+        register_index_credit_default_swap_instrument_event_mapping(event_source, event_bus, nats);
+    auto index_credit_default_swap_option_instrument_sub = ores::trading::service::messaging::
+        register_index_credit_default_swap_option_instrument_event_mapping(
             event_source, event_bus, nats);
     auto synthetic_cdo_instrument_sub =
         ores::trading::service::messaging::register_synthetic_cdo_instrument_event_mapping(
@@ -323,8 +322,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto credit_linked_swap_instrument_sub =
         ores::trading::service::messaging::register_credit_linked_swap_instrument_event_mapping(
             event_source, event_bus, nats);
-    auto risk_participation_agreement_instrument_sub =
-        ores::trading::service::messaging::register_risk_participation_agreement_instrument_event_mapping(
+    auto risk_participation_agreement_instrument_sub = ores::trading::service::messaging::
+        register_risk_participation_agreement_instrument_event_mapping(
             event_source, event_bus, nats);
     auto credit_instrument_sub =
         ores::trading::service::messaging::register_credit_instrument_event_mapping(

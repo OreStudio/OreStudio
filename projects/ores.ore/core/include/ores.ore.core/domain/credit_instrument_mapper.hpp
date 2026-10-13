@@ -66,7 +66,8 @@ public:
 
     static trade reverse_cds(const ores::trading::domain::credit_instrument_data& data);
     static trade reverse_index_cds(const ores::trading::domain::credit_instrument_data& data);
-    static trade reverse_index_cds_option(const ores::trading::domain::credit_instrument_data& data);
+    static trade
+    reverse_index_cds_option(const ores::trading::domain::credit_instrument_data& data);
     static trade
     reverse_credit_linked_swap(const ores::trading::domain::credit_instrument_data& data);
     static trade reverse_synthetic_cdo(const ores::trading::domain::credit_instrument_data& data);

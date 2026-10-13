@@ -59,7 +59,8 @@ std::vector<std::string> required_permissions(const service::counterparty_lines&
     need(lines.identifiers,
          "refdata::counterparty_identifiers:write",
          "refdata::counterparty_identifiers:delete");
-    need(lines.links, "refdata::party_counterparties:write", "refdata::party_counterparties:delete");
+    need(
+        lines.links, "refdata::party_counterparties:write", "refdata::party_counterparties:delete");
     return needed;
 }
 

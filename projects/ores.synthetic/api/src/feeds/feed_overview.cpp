@@ -28,9 +28,8 @@ namespace {
 
 /// Names in the order a person reads them: letters without regard to case.
 bool name_before(const std::string& a, const std::string& b) {
-    return std::ranges::lexicographical_compare(a, b, [](unsigned char x, unsigned char y) {
-        return std::tolower(x) < std::tolower(y);
-    });
+    return std::ranges::lexicographical_compare(
+        a, b, [](unsigned char x, unsigned char y) { return std::tolower(x) < std::tolower(y); });
 }
 
 struct totals {

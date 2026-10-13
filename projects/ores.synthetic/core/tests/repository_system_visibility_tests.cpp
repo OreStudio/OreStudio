@@ -74,6 +74,5 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
 
     REQUIRE(by_code.size() == 1);
     CHECK(by_code.front().code == provider.code);
-    CHECK(std::ranges::any_of(
-        all, [&](const auto& row) { return row.code == provider.code; }));
+    CHECK(std::ranges::any_of(all, [&](const auto& row) { return row.code == provider.code; }));
 }

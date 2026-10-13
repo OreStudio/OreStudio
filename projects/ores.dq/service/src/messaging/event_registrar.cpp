@@ -24,9 +24,8 @@
 // there is no channel to map and the codegen gate renders no registrar for
 // them.
 #include "ores.dq.service/messaging/artefact_type_event_registrar.hpp"
-#include "ores.dq.service/messaging/badge_mapping_event_registrar.hpp"
-#include "ores.dq.service/messaging/dataset_bundle_member_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_definition_event_registrar.hpp"
+#include "ores.dq.service/messaging/badge_mapping_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_severity_event_registrar.hpp"
 #include "ores.dq.service/messaging/catalog_event_registrar.hpp"
 #include "ores.dq.service/messaging/change_reason_category_event_registrar.hpp"
@@ -36,6 +35,7 @@
 #include "ores.dq.service/messaging/coding_scheme_event_registrar.hpp"
 #include "ores.dq.service/messaging/data_domain_event_registrar.hpp"
 #include "ores.dq.service/messaging/dataset_bundle_event_registrar.hpp"
+#include "ores.dq.service/messaging/dataset_bundle_member_event_registrar.hpp"
 #include "ores.dq.service/messaging/dataset_event_registrar.hpp"
 #include "ores.dq.service/messaging/fsm_state_event_registrar.hpp"
 #include "ores.dq.service/messaging/fsm_transition_event_registrar.hpp"

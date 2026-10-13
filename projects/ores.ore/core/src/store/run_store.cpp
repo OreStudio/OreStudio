@@ -65,8 +65,8 @@ constexpr document_kind document_kinds[] = {
 /**
  * @brief The name a run document gives one file, empty when it names none.
  */
-std::optional<std::string>
-file_of(const reporting::messaging::run_document& document, std::string_view parameter) {
+std::optional<std::string> file_of(const reporting::messaging::run_document& document,
+                                   std::string_view parameter) {
     for (const auto& f : document.files)
         if (f.parameter == parameter)
             return f.name;

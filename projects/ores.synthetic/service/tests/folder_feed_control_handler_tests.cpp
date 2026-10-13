@@ -591,12 +591,11 @@ TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", tags) 
 
     // The filter names the folder and the provider of its collection: the same feeds the
     // folder verb starts, with the same skips.
-    const auto start1 =
-        send_request<start_selected_feeds_request, start_selected_feeds_response>(
-            f.nats,
-            test_select_start_subject,
-            token,
-            start_selected_feeds_request{.folder_id = folder, .provider_code = "bloomberg"});
+    const auto start1 = send_request<start_selected_feeds_request, start_selected_feeds_response>(
+        f.nats,
+        test_select_start_subject,
+        token,
+        start_selected_feeds_request{.folder_id = folder, .provider_code = "bloomberg"});
     REQUIRE(start1.success);
     CHECK(start1.started == 2);
     CHECK(start1.skipped == 2);
@@ -616,13 +615,12 @@ TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", tags) 
     CHECK(f.ctrl->list(std::string(ores::synthetic::feed::ir_curve_feed_kind)).size() == 1);
 
     // Named feeds are exactly those: the filter is ignored.
-    const auto picked =
-        send_request<start_selected_feeds_request, start_selected_feeds_response>(
-            f.nats,
-            test_select_start_subject,
-            token,
-            start_selected_feeds_request{.provider_code = "nobody",
-                                         .feed_ids = {boost::uuids::to_string(seeds.fx_enabled_id)}});
+    const auto picked = send_request<start_selected_feeds_request, start_selected_feeds_response>(
+        f.nats,
+        test_select_start_subject,
+        token,
+        start_selected_feeds_request{.provider_code = "nobody",
+                                     .feed_ids = {boost::uuids::to_string(seeds.fx_enabled_id)}});
     REQUIRE(picked.success);
     CHECK(picked.started + picked.skipped + picked.already_running == 1);
 
@@ -636,7 +634,8 @@ TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", tags) 
     CHECK(stop_picked.stopped == 1);
 }
 
-TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_may_not_read", tags) {
+TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_may_not_read",
+          tags) {
     using ores::synthetic::messaging::start_selected_feeds_request;
     using ores::synthetic::messaging::start_selected_feeds_response;
 

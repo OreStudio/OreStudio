@@ -51,11 +51,11 @@ TEST_CASE("a_subject_token_gives_its_text_back", tags) {
     using ores::marketdata::domain::subject_token;
     using ores::marketdata::domain::subject_token_text;
     for (const auto& text : {std::string(""),
-                                   std::string("plain-Text_9"),
-                                   std::string("oresmd://fx/EUR?type=quote&ccy=USD"),
-                                   std::string("a.b c*d>e%f"),
-                                   std::string("caf\xc3\xa9"),
-                                   std::string("tab\there\nnewline")}) {
+                             std::string("plain-Text_9"),
+                             std::string("oresmd://fx/EUR?type=quote&ccy=USD"),
+                             std::string("a.b c*d>e%f"),
+                             std::string("caf\xc3\xa9"),
+                             std::string("tab\there\nnewline")}) {
         CAPTURE(text);
         CHECK(subject_token_text(subject_token(text)) == text);
     }

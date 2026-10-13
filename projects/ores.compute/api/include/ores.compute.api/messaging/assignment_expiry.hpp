@@ -127,8 +127,7 @@ inline std::optional<std::chrono::system_clock::time_point> token_expiry(std::st
  * that sees the token has ended must not start the job: every storage request
  * would be refused.
  */
-inline bool assignment_expired(std::string_view token,
-                               std::chrono::system_clock::time_point now) {
+inline bool assignment_expired(std::string_view token, std::chrono::system_clock::time_point now) {
     const auto expiry = token_expiry(token);
     return expiry && *expiry <= now;
 }

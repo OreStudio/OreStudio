@@ -140,13 +140,19 @@ feed_listing two_class_listing() {
     listing.configs.push_back(container);
 
     listing.fx_spot.push_back(
-        fx_config_row(fx_config, config_one, "synthetic.eurusd", "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD", true, true));
-    listing.fx_spot.push_back(fx_config_row("bbbbbbbb-0000-4000-8000-000000000002",
-                                            config_two,
-                                            "synthetic.eurgbp",
-                                            "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=GBP",
-                                            true,
-                                            false));
+        fx_config_row(fx_config,
+                      config_one,
+                      "synthetic.eurusd",
+                      "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD",
+                      true,
+                      true));
+    listing.fx_spot.push_back(
+        fx_config_row("bbbbbbbb-0000-4000-8000-000000000002",
+                      config_two,
+                      "synthetic.eurgbp",
+                      "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=GBP",
+                      true,
+                      false));
     for (int i = 0; i < 3; ++i)
         listing.gmm_components.push_back(gmm_row(fx_config, i));
 
@@ -298,7 +304,8 @@ TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", tags) {
         rfl::json::read<messaging::put_fx_spot_generation_config_request>(rows[0].body);
     REQUIRE(config);
     CHECK(config->change.write.source_name == "synthetic.eurusd");
-    CHECK(config->change.write.oresmd_uri == "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+    CHECK(config->change.write.oresmd_uri ==
+          "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     CHECK(config->change.write.price_source == "fixed");
     CHECK(config->change.write.gmm_initial_price == 1.0812);
     CHECK(config->change.write.ticks_per_hour == 60);

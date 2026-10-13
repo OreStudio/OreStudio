@@ -130,8 +130,9 @@ TEST_CASE("feed_filter searches each word and escapes the pattern", tags) {
 TEST_CASE("feed_filter leaves out the excluded feeds", tags) {
     feed_filter f;
     f.excluded_ids = {folder, other};
-    CHECK_THAT(where_clause(f, {}),
-               ContainsSubstring("id::uuid not in (E'" + folder + "'::uuid, E'" + other + "'::uuid)"));
+    CHECK_THAT(
+        where_clause(f, {}),
+        ContainsSubstring("id::uuid not in (E'" + folder + "'::uuid, E'" + other + "'::uuid)"));
 }
 
 TEST_CASE("feed_filter names only the picked feeds and ignores the filter", tags) {

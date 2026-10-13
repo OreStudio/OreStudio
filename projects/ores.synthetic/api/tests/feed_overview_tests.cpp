@@ -47,7 +47,8 @@ const std::vector<feed_folder> hierarchy{folder("root", "", "Synthetic", "root")
                                          folder("b-ir", "b", "IR", "asset_class"),
                                          folder("g-fx", "g", "FX", "asset_class")};
 
-const std::vector<folder_feed_count> counts{{"b-fx", 2, 0, 1}, {"b-ir", 0, 3, 0}, {"g-fx", 1, 0, 0}};
+const std::vector<folder_feed_count> counts{
+    {"b-fx", 2, 0, 1}, {"b-ir", 0, 3, 0}, {"g-fx", 1, 0, 0}};
 
 }
 
@@ -82,7 +83,8 @@ TEST_CASE("feed_overview says which children have folders of their own", tags) {
 }
 
 TEST_CASE("feed_overview puts the children in name order, then by id", tags) {
-    const std::vector<feed_folder> same{folder("2", "", "Same", "root"), folder("1", "", "Same", "root")};
+    const std::vector<feed_folder> same{folder("2", "", "Same", "root"),
+                                        folder("1", "", "Same", "root")};
     const auto roots = children_with_counts(same, {}, "");
     REQUIRE(roots.size() == 2);
     CHECK(roots[0].id == "1");

@@ -39,7 +39,8 @@ namespace ores::compute::messaging {
  */
 inline std::chrono::milliseconds poll_delay(std::chrono::milliseconds base, double unit) {
     const double factor = 0.75 + 0.5 * std::clamp(unit, 0.0, 1.0);
-    return std::chrono::milliseconds(static_cast<long long>(static_cast<double>(base.count()) * factor));
+    return std::chrono::milliseconds(
+        static_cast<long long>(static_cast<double>(base.count()) * factor));
 }
 
 /**

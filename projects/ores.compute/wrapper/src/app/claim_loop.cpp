@@ -96,8 +96,8 @@ void claim_loop::run() {
     const auto& codec = ores::nats::default_wire_codec();
     int failures = 0;
 
-    BOOST_LOG_SEV(lg(), info) << "Claim loop started for platform " << platform_ << ", polling every "
-                              << poll_interval_.count() << " ms";
+    BOOST_LOG_SEV(lg(), info) << "Claim loop started for platform " << platform_
+                              << ", polling every " << poll_interval_.count() << " ms";
     while (!stopping_) {
         try {
             const claim_work_request request{.host_id = host_id_, .platform = platform_};
@@ -129,8 +129,8 @@ void claim_loop::run() {
                 try {
                     on_job_(job);
                 } catch (const std::exception& e) {
-                    // The handler reports its own outcome. A failure that escapes it is not a failed
-                    // claim, so it does not slow the next ask.
+                    // The handler reports its own outcome. A failure that escapes it is not a
+                    // failed claim, so it does not slow the next ask.
                     BOOST_LOG_SEV(lg(), error)
                         << "The job " << job.result_id << " ended with an error: " << e.what();
                 }

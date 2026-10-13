@@ -67,12 +67,8 @@
 #include "ores.trading.api/messaging/composite_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/credit_basket_constituent_protocol.hpp"
 #include "ores.trading.api/messaging/credit_default_swap_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/credit_linked_swap_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/index_credit_default_swap_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/index_credit_default_swap_option_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/risk_participation_agreement_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/synthetic_cdo_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/credit_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/credit_linked_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -93,6 +89,8 @@
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/index_credit_default_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/index_credit_default_swap_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/inflation_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_exercise_fee_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_exercise_price_protocol.hpp"
@@ -104,11 +102,13 @@
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/rate_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/risk_participation_agreement_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_rate_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/synthetic_cdo_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_booking_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
@@ -2873,8 +2873,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             fact_req.change.write.settles_accrual = fact.settles_accrual;
                             fact_req.change.write.rebates_accrual = fact.rebates_accrual;
                             fact_req.change.write.pays_at_default_time = fact.pays_at_default_time;
-                            fact_req.change.write.protection_payment_time = fact.protection_payment_time;
-                            fact_req.change.write.protection_start_date = fact.protection_start_date;
+                            fact_req.change.write.protection_payment_time =
+                                fact.protection_payment_time;
+                            fact_req.change.write.protection_start_date =
+                                fact.protection_start_date;
                             fact_req.change.write.upfront_date = fact.upfront_date;
                             fact_req.change.write.upfront_fee = fact.upfront_fee;
                             fact_req.change.write.recovery_rate = fact.recovery_rate;
@@ -2883,7 +2885,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
                             return fact_resp &&
                                    fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<FactT, index_credit_default_swap_instrument>) {
+                        } else if constexpr (std::is_same_v<FactT,
+                                                            index_credit_default_swap_instrument>) {
                             put_index_credit_default_swap_instrument_request fact_req;
                             fact_req.change.write.trade_id = fact.trade_id;
                             fact_req.change.write.trade_activity_id = fact.trade_activity_id;
@@ -2892,8 +2895,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             fact_req.change.write.settles_accrual = fact.settles_accrual;
                             fact_req.change.write.rebates_accrual = fact.rebates_accrual;
                             fact_req.change.write.pays_at_default_time = fact.pays_at_default_time;
-                            fact_req.change.write.protection_payment_time = fact.protection_payment_time;
-                            fact_req.change.write.protection_start_date = fact.protection_start_date;
+                            fact_req.change.write.protection_payment_time =
+                                fact.protection_payment_time;
+                            fact_req.change.write.protection_start_date =
+                                fact.protection_start_date;
                             fact_req.change.write.upfront_date = fact.upfront_date;
                             fact_req.change.write.upfront_fee = fact.upfront_fee;
                             fact_req.change.write.trade_date = fact.trade_date;
@@ -2901,7 +2906,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
                             return fact_resp &&
                                    fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<FactT, index_credit_default_swap_option_instrument>) {
+                        } else if constexpr (std::is_same_v<
+                                                 FactT,
+                                                 index_credit_default_swap_option_instrument>) {
                             put_index_credit_default_swap_option_instrument_request fact_req;
                             fact_req.change.write.trade_id = fact.trade_id;
                             fact_req.change.write.trade_activity_id = fact.trade_activity_id;
@@ -2909,7 +2916,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             fact_req.change.write.index_term = fact.index_term;
                             fact_req.change.write.strike_type = fact.strike_type;
                             fact_req.change.write.trade_date = fact.trade_date;
-                            fact_req.change.write.front_end_protection_start_date = fact.front_end_protection_start_date;
+                            fact_req.change.write.front_end_protection_start_date =
+                                fact.front_end_protection_start_date;
                             auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
                             return fact_resp &&
                                    fact_resp->result.outcome == ores::utility::domain::outcome::ok;
@@ -2918,13 +2926,15 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             fact_req.change.write.trade_id = fact.trade_id;
                             fact_req.change.write.trade_activity_id = fact.trade_activity_id;
                             fact_req.change.write.qualifier = fact.qualifier;
-                            fact_req.change.write.protection_start_date = fact.protection_start_date;
+                            fact_req.change.write.protection_start_date =
+                                fact.protection_start_date;
                             fact_req.change.write.upfront_date = fact.upfront_date;
                             fact_req.change.write.upfront_fee = fact.upfront_fee;
                             fact_req.change.write.settles_accrual = fact.settles_accrual;
                             fact_req.change.write.rebates_accrual = fact.rebates_accrual;
                             fact_req.change.write.pays_at_default_time = fact.pays_at_default_time;
-                            fact_req.change.write.protection_payment_time = fact.protection_payment_time;
+                            fact_req.change.write.protection_payment_time =
+                                fact.protection_payment_time;
                             fact_req.change.write.recovery_rate = fact.recovery_rate;
                             fact_req.change.write.attachment_point = fact.attachment_point;
                             fact_req.change.write.detachment_point = fact.detachment_point;
@@ -2942,7 +2952,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
                             return fact_resp &&
                                    fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<FactT, risk_participation_agreement_instrument>) {
+                        } else if constexpr (std::is_same_v<
+                                                 FactT,
+                                                 risk_participation_agreement_instrument>) {
                             put_risk_participation_agreement_instrument_request fact_req;
                             fact_req.change.write.trade_id = fact.trade_id;
                             fact_req.change.write.trade_activity_id = fact.trade_activity_id;

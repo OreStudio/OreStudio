@@ -264,7 +264,8 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         fx.base_currency_code = base;
         fx.quote_currency_code = quote;
         fx.source_name = source_name;
-        fx.oresmd_uri = "oresmd://fx/" + base + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + quote;
+        fx.oresmd_uri =
+            "oresmd://fx/" + base + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + quote;
         fx.price_source = "fixed";
         fx.gmm_initial_price = 1.08;
         fx.ticks_per_hour = 12;

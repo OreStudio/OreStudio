@@ -19,13 +19,13 @@
  */
 #include "ores.trading.core/messaging/credit_basket_constituent_registrar.hpp"
 #include "ores.trading.core/messaging/credit_default_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/credit_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/credit_linked_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/index_credit_default_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/index_credit_default_swap_option_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/synthetic_cdo_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/credit_linked_swap_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/risk_participation_agreement_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/credit_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
+#include "ores.trading.core/messaging/risk_participation_agreement_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/synthetic_cdo_instrument_registrar.hpp"
 
 namespace ores::trading::messaging::detail {
 
@@ -38,15 +38,18 @@ register_credit_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(constituent_subs.begin()),
                 std::make_move_iterator(constituent_subs.end()));
-    auto credit_default_swap_subs = register_credit_default_swap_instrument_handlers(nats, ctx, verifier);
+    auto credit_default_swap_subs =
+        register_credit_default_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(credit_default_swap_subs.begin()),
                 std::make_move_iterator(credit_default_swap_subs.end()));
-    auto index_credit_default_swap_subs = register_index_credit_default_swap_instrument_handlers(nats, ctx, verifier);
+    auto index_credit_default_swap_subs =
+        register_index_credit_default_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(index_credit_default_swap_subs.begin()),
                 std::make_move_iterator(index_credit_default_swap_subs.end()));
-    auto index_credit_default_swap_option_subs = register_index_credit_default_swap_option_instrument_handlers(nats, ctx, verifier);
+    auto index_credit_default_swap_option_subs =
+        register_index_credit_default_swap_option_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(index_credit_default_swap_option_subs.begin()),
                 std::make_move_iterator(index_credit_default_swap_option_subs.end()));
@@ -54,11 +57,13 @@ register_credit_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(synthetic_cdo_subs.begin()),
                 std::make_move_iterator(synthetic_cdo_subs.end()));
-    auto credit_linked_swap_subs = register_credit_linked_swap_instrument_handlers(nats, ctx, verifier);
+    auto credit_linked_swap_subs =
+        register_credit_linked_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(credit_linked_swap_subs.begin()),
                 std::make_move_iterator(credit_linked_swap_subs.end()));
-    auto risk_participation_agreement_subs = register_risk_participation_agreement_instrument_handlers(nats, ctx, verifier);
+    auto risk_participation_agreement_subs =
+        register_risk_participation_agreement_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(risk_participation_agreement_subs.begin()),
                 std::make_move_iterator(risk_participation_agreement_subs.end()));

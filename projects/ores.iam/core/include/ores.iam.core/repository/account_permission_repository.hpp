@@ -40,7 +40,8 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT account_permission_repository {
 private:
-    inline static std::string_view logger_name = "ores.iam.repository.account_permission_repository";
+    inline static std::string_view logger_name =
+        "ores.iam.repository.account_permission_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

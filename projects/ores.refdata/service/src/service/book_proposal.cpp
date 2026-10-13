@@ -294,18 +294,13 @@ std::vector<line_delta> book_proposal_service::deltas(const std::string& request
                          &B::regulatory_book_type,
                          line,
                          &L::regulatory_book_type),
-                delta_of("book_purpose_type",
-                         live,
-                         &B::book_purpose_type,
-                         line,
-                         &L::book_purpose_type),
-                delta_of("ledger_feed_type", live, &B::ledger_feed_type, line, &L::ledger_feed_type),
+                delta_of(
+                    "book_purpose_type", live, &B::book_purpose_type, line, &L::book_purpose_type),
+                delta_of(
+                    "ledger_feed_type", live, &B::ledger_feed_type, line, &L::ledger_feed_type),
                 delta_of("is_sweepable", live, &B::is_sweepable, line, &L::is_sweepable),
-                delta_of("rates_centre_code",
-                         live,
-                         &B::rates_centre_code,
-                         line,
-                         &L::rates_centre_code),
+                delta_of(
+                    "rates_centre_code", live, &B::rates_centre_code, line, &L::rates_centre_code),
                 delta_of("sandbox_id", live, &B::sandbox_id, line, &L::sandbox_id),
             };
         }

@@ -20,12 +20,12 @@
 #ifndef ORES_COMPUTE_WRAPPER_APP_CLAIM_LOOP_HPP
 #define ORES_COMPUTE_WRAPPER_APP_CLAIM_LOOP_HPP
 
-#include <cstdint>
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <cstdint>
 #include <functional>
 #include <mutex>
 #include <string>

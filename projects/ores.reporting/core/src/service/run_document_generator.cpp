@@ -50,8 +50,8 @@ std::string previous_weekday(const std::string& iso_date) {
     if (std::sscanf(iso_date.c_str(), "%d-%u-%u%c", &y, &m, &d, &tail) != 3)
         throw std::invalid_argument(
             std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
-    const std::chrono::year_month_day ymd{std::chrono::year{y}, std::chrono::month{m},
-                                          std::chrono::day{d}};
+    const std::chrono::year_month_day ymd{
+        std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
     if (!ymd.ok())
         throw std::invalid_argument(
             std::format("The run date '{}' is not an ISO 8601 date.", iso_date));

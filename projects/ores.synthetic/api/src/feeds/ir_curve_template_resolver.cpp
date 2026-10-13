@@ -129,8 +129,7 @@ std::string ir_curve_index_tenor(const ores::synthetic::domain::ir_curve_generat
 
 std::string
 ir_curve_tenor_convention_code(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
-    return cfg.tenor == "FOMC" ? std::string("RATES_SPOT_FOMC") :
-                                 std::string("RATES_SPOT_FORWARD");
+    return cfg.tenor == "FOMC" ? std::string("RATES_SPOT_FOMC") : std::string("RATES_SPOT_FORWARD");
 }
 
 std::vector<ir_curve_resolved_entry>

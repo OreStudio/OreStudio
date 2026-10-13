@@ -59,8 +59,8 @@ inline domain::counterparty_change new_counterparty_line(ores::testing::scoped_d
     return line;
 }
 
-inline domain::counterparty_identifier_change new_identifier_line(ores::testing::scoped_database_helper& h,
-                                                           const boost::uuids::uuid& owner) {
+inline domain::counterparty_identifier_change
+new_identifier_line(ores::testing::scoped_database_helper& h, const boost::uuids::uuid& owner) {
     auto gctx = ores::testing::make_generation_context(h);
     auto line = ores::refdata::generators::generate_synthetic_counterparty_identifier_change(gctx);
     line.entity_id = fresh();
@@ -73,8 +73,8 @@ inline domain::counterparty_identifier_change new_identifier_line(ores::testing:
 }
 
 inline domain::party_counterparty_change new_link_line(ores::testing::scoped_database_helper& h,
-                                                const boost::uuids::uuid& party,
-                                                const boost::uuids::uuid& counterparty) {
+                                                       const boost::uuids::uuid& party,
+                                                       const boost::uuids::uuid& counterparty) {
     auto gctx = ores::testing::make_generation_context(h);
     auto line = ores::refdata::generators::generate_synthetic_party_counterparty_change(gctx);
     line.party_id = party;
@@ -119,16 +119,16 @@ inline domain::counterparty make_live(const world& w, const domain::counterparty
 /** Renames a live counterparty as another caller would, from the version it holds. */
 inline void rename_live(const world& w, const boost::uuids::uuid& id, const std::string& name) {
     auto c = *ores::refdata::service::counterparty_service(w.ctx).get_counterparty(id);
-    const auto claim = precondition{precondition_kind::must_match_version,
-                                    static_cast<std::uint32_t>(c.version)};
+    const auto claim =
+        precondition{precondition_kind::must_match_version, static_cast<std::uint32_t>(c.version)};
     c.full_name = name;
     c.change_reason_code = "system.test";
     write_live(w, c, claim);
 }
 
 /** Links a party to a counterparty in the live table, under the gate. */
-inline void link_live(const world& w, const boost::uuids::uuid& party,
-               const boost::uuids::uuid& counterparty) {
+inline void
+link_live(const world& w, const boost::uuids::uuid& party, const boost::uuids::uuid& counterparty) {
     domain::party_counterparty l;
     l.party_id = party;
     l.counterparty_id = counterparty;
@@ -138,7 +138,8 @@ inline void link_live(const world& w, const boost::uuids::uuid& party,
 }
 
 /** The line that rewrites a live counterparty with another full name. */
-inline domain::counterparty_change rename(const domain::counterparty& live, const std::string& name) {
+inline domain::counterparty_change rename(const domain::counterparty& live,
+                                          const std::string& name) {
     domain::counterparty_change line;
     line.entity_id = live.id;
     line.short_code = live.short_code;

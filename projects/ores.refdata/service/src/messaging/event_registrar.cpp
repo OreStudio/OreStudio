@@ -26,12 +26,6 @@
 // that entity's own subjects. This is the one composition point. application.cpp
 // registers no entity mapping and subscribes to no changed event of its own.
 #include "ores.refdata.service/messaging/asset_class_code_event_registrar.hpp"
-#include "ores.refdata.service/messaging/counterparty_business_centre_event_registrar.hpp"
-#include "ores.refdata.service/messaging/currency_calendar_event_registrar.hpp"
-#include "ores.refdata.service/messaging/currency_country_event_registrar.hpp"
-#include "ores.refdata.service/messaging/currency_currency_group_event_registrar.hpp"
-#include "ores.refdata.service/messaging/currency_pair_convention_calendar_event_registrar.hpp"
-#include "ores.refdata.service/messaging/tenor_convention_resolution_event_registrar.hpp"
 #include "ores.refdata.service/messaging/average_ois_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/base_correlation_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/bma_basis_swap_convention_event_registrar.hpp"
@@ -62,6 +56,7 @@
 #include "ores.refdata.service/messaging/commodity_price_segment_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/contact_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/counterparty_business_centre_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_contact_information_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_event_registrar.hpp"
@@ -75,10 +70,14 @@
 #include "ores.refdata.service/messaging/cross_currency_fix_float_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/csa_eligible_currency_event_registrar.hpp"
 #include "ores.refdata.service/messaging/csa_event_registrar.hpp"
+#include "ores.refdata.service/messaging/currency_calendar_event_registrar.hpp"
+#include "ores.refdata.service/messaging/currency_country_event_registrar.hpp"
+#include "ores.refdata.service/messaging/currency_currency_group_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_group_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_market_tier_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_classification_event_registrar.hpp"
+#include "ores.refdata.service/messaging/currency_pair_convention_calendar_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_bootstrap_config_event_registrar.hpp"
@@ -131,10 +130,10 @@
 #include "ores.refdata.service/messaging/ois_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/overnight_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_contact_information_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_counterparty_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_counterparty_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_country_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_currency_event_registrar.hpp"
-#include "ores.refdata.service/messaging/party_counterparty_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_identifier_event_registrar.hpp"
@@ -158,6 +157,7 @@
 #include "ores.refdata.service/messaging/tenor_basis_swap_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_basis_two_swap_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_convention_resolution_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_kind_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_resolution_algorithm_event_registrar.hpp"
@@ -182,12 +182,15 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // event_bus subscription that republishes it to NATS; we take
     // ownership of the subscriptions here so they outlive this call.
     // ----------------------------------------------------------------
-    subs.push_back(register_counterparty_business_centre_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_counterparty_business_centre_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_calendar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_currency_group_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_currency_pair_convention_calendar_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_tenor_convention_resolution_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_currency_pair_convention_calendar_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_tenor_convention_resolution_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_asset_class_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_change_event_mapping(event_source, event_bus, nats));

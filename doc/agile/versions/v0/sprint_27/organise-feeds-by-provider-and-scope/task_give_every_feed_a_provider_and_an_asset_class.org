@@ -8,7 +8,7 @@
 #+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
 #+branch: feature/synthetic-screen
-#+pr:
+#+pr: 3239
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3239][#3239]] | [synthetic,web] Make Synthetic one screen with a dashboard and a feed tree |
 
 * Review
 

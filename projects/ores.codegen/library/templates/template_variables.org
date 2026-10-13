@@ -22,7 +22,6 @@ Variables set by the generator at runtime; not in the model.
 | Variable       | Description                                                   | Example                  |
 |----------------+---------------------------------------------------------------+--------------------------|
 | =date=         | ISO-8601 date of generation.                                  | =2026-06-08=             |
-| =generated_at= | Full ISO-8601 timestamp of generation (UTC).                  | =2026-06-08T14:22:00Z=   |
 | =product=      | Product name, lower-case, used in namespaces and CMake names. | =ores=                   |
 
 * Licensing

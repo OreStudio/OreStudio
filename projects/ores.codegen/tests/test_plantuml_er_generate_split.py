@@ -31,7 +31,6 @@ INDEX_TEMPLATE = (
 )
 
 MODEL = {
-    "generated_at": "2026-10-09T00:00:00Z",
     "packages": [
         {"name": "alpha", "description": "First",
          "tables": [{"name": "ores_a_tbl"}, {"name": "ores_b_tbl"}]},

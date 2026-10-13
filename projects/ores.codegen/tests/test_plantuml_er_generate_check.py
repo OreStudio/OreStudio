@@ -24,9 +24,6 @@ TITLE = "ORES Database Schema"
 # What the one-line template below renders from the model above.
 CURRENT = f"@startuml\n{TITLE}\n@enduml\n"
 TEMPLATE = "@startuml\n{{title}}\n@enduml\n"
-# The real template stamps the render with the time it ran, so the check has
-# to discount that one line or it can never pass. This template reproduces it.
-STAMPED_TEMPLATE = "@startuml\n' Generated: {{generated_at}}\n{{title}}\n@enduml\n"
 
 
 def _run_check(tmp_path: Path, committed: str | None, template: str = TEMPLATE,
@@ -42,22 +39,6 @@ def _run_check(tmp_path: Path, committed: str | None, template: str = TEMPLATE,
     rc = peg.main(["--model", str(model_path), "--template", str(template_path),
                    "--output", str(output), "--check"])
     return rc, output
-
-
-def test_check_ignores_the_generation_stamp(tmp_path):
-    """A fresh render stamps the time it ran, so the stamp never matches."""
-    model = {"title": TITLE, "generated_at": "2026-09-28T12:00:00Z"}
-    committed = f"@startuml\n' Generated: 2020-01-01T00:00:00Z\n{TITLE}\n@enduml\n"
-    rc, _ = _run_check(tmp_path, committed, STAMPED_TEMPLATE, model)
-    assert rc == 0
-
-
-def test_check_fails_when_only_the_body_changed(tmp_path):
-    """Discounting the stamp must not discount the diagram itself."""
-    model = {"title": TITLE, "generated_at": "2026-09-28T12:00:00Z"}
-    committed = f"@startuml\n' Generated: 2026-09-28T12:00:00Z\nDIFFERENT\n@enduml\n"
-    rc, _ = _run_check(tmp_path, committed, STAMPED_TEMPLATE, model)
-    assert rc == 1
 
 
 def test_check_passes_when_the_artefact_matches(tmp_path):

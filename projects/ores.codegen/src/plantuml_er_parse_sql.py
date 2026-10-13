@@ -28,7 +28,6 @@ import json
 import re
 import sys
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -1353,7 +1352,6 @@ class SQLParser:
             pkg['tables'] = sorted(pkg['tables'], key=lambda t: t['name'])
 
         return {
-            'generated_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
             'packages': sorted_packages,
             'relationships': [asdict(r) for r in self.relationships],
             'warnings': [asdict(w) for w in self.warnings]

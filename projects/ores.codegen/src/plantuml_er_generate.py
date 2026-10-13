@@ -30,7 +30,6 @@ Modes:
 import argparse
 import difflib
 import json
-import re
 import sys
 import tempfile
 from pathlib import Path
@@ -79,18 +78,6 @@ def count_differing_lines(current: str, desired: str) -> int:
     return total
 
 
-_GENERATED_AT_RE = re.compile(r"^' Generated: .*$", re.MULTILINE)
-
-
-def without_generated_at(text: str) -> str:
-    """The diagram with its generation stamp blanked out.
-
-    The stamp records when the render ran, so a fresh render never reproduces
-    it. Every other line must match, or the diagram is stale.
-    """
-    return _GENERATED_AT_RE.sub("' Generated: <timestamp>", text)
-
-
 def group_output_path(output_path: Path, package_name: str) -> Path:
     """The file one group's diagram is written to."""
     return output_path.with_name(
@@ -127,7 +114,6 @@ def render_group(model: dict, template: str, package: dict,
                 crossing[far] = home.get(far, 'unknown')
 
     context = {
-        'generated_at': model.get('generated_at'),
         'diagram_title': package['name'],
         'group_table_count': len(package.get('tables', [])),
         'index_file': index_name,
@@ -150,7 +136,6 @@ def render_index(model: dict, template: str, output_path: Path) -> str:
         packages.append(entry)
 
     context = {
-        'generated_at': model.get('generated_at'),
         'source_file': output_path.name,
         'total_tables': sum(len(p.get('tables', []))
                             for p in model.get('packages', [])),
@@ -182,7 +167,7 @@ def check_diagrams(renders: list) -> int:
             rendered = rendered_path.read_text(encoding='utf-8')
 
         committed = output_path.read_text(encoding='utf-8')
-        if without_generated_at(rendered) != without_generated_at(committed):
+        if rendered != committed:
             stale.append((output_path, count_differing_lines(committed, rendered)))
 
     if not stale:

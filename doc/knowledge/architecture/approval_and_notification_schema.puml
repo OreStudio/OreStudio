@@ -16,7 +16,6 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T18:48:50.529117Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 @startuml
 

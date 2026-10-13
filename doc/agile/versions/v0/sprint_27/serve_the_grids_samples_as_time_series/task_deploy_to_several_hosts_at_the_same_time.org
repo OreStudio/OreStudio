@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: feature/deploy-to-several-hosts-at-the-same-time
-#+pr:
+#+pr: 3233
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3233][#3233]] | [compass] Deploy to several hosts at the same time |
 
 * Review
 

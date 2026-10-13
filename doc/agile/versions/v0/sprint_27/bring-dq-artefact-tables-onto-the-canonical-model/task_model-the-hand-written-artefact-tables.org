@@ -8,7 +8,7 @@
 #+filetags: :dq:codegen:cleanup:bring-dq-artefact-tables-onto-the-canonical-model:sprint_27:v0:
 #+owner: marco
 #+branch: feature/model-the-hand-written-artefact-tables
-#+pr:
+#+pr: 3237
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3237][#3237]] | [dq] Generate five hand-written artefact tables from their owning models |
 
 * Review
 

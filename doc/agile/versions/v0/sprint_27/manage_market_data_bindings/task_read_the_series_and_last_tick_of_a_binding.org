@@ -1,13 +1,13 @@
 :PROPERTIES:
-:ID: 059F5F7F-D4B7-4861-9C77-EA4B7143C22D
+:ID: 4FD8F422-EB90-4FCA-AB2C-F61051B982E4
 :END:
-#+title: Task: Build the market data binding screen
-#+description: Build the screen the signed-off prototype shows. Its tasks are cut after the prototype is signed off.
+#+title: Task: Read the series and last tick of a binding
+#+description: Add a server read that says which series each binding's source writes and when the source last ticked, so the screen stops inferring them.
 #+type: task
 #+level: s1
 #+filetags: :manage_market_data_bindings:sprint_27:v0:
 #+owner: marco
-#+branch: feature/build-the-market-data-binding-screen
+#+branch: feature/read-the-series-and-last-tick-of-a-binding
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The screen follows the prototype. It lists the bindings with their source, the series behind each and the last tick, and lets a person bind, rebind, enable, disable, start and stop for synthetic data. Real data stays a shown and unsupported case. The task is split into server and web tasks once the prototype is signed off.
+A binding names a source, not a series, and the ingest loop keeps its tick count and last tick in memory with no read. The bindings list and the record page show the series a source feeds and when it last ticked. Add a read over the binding rows that returns, for each binding, the series its source has written and the time of its newest observation. Decide whether the answer is a field of the list reply or its own subject, and write the decision in the task result.
 
 * Status
 
@@ -35,9 +35,9 @@ The screen follows the prototype. It lists the bindings with their source, the s
 
 * Acceptance
 
-- The screen matches the signed-off prototype.
-- A synthetic binding is listed, bound, rebound, enabled, disabled, started and stopped from the screen.
-- A real data binding is shown and marked as not supported, and no control connects a real feed.
+- A read returns the series and the last tick of each binding, with a test in the marketdata core tests.
+- The generated protocol and the BFF contract carry it.
+- A binding whose source has written nothing returns no series and no tick, and says so.
 
 * Plan
 

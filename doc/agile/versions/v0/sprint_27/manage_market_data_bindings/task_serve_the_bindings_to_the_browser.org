@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 79085AA9-1F2C-473C-A25B-AB221523EDDE
+:END:
+#+title: Task: Serve the bindings to the browser
+#+description: Register the feed binding as a record kind in the BFF, with its write schema and its list, so the shared record parts can read and write it.
+#+type: task
+#+level: s1
+#+filetags: :manage_market_data_bindings:sprint_27:v0:
+#+owner: marco
+#+branch: feature/serve-the-bindings-to-the-browser
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The record screen standard builds a screen from a record kind declared once: its resource, its write schema, its field table and its columns. The BFF has no record kind for feed bindings. Declare it, with the list searched by source name and series and filtered by kind, the fields Edit offers (the source name and the enabled flag), and the write checked at the boundary with a test that a bad row and a read only write are refused.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The BFF answers the feed binding kind, with server search and order, behind the session and the permissions.
+- A write schema refuses a bad row, a vendor source on add, and a write without a change reason.
+- The field table and the column list are declared once beside the screen.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

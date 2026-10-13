@@ -54,11 +54,18 @@ def _version_tag(project_root: Path) -> str:
     return f"{version}-{commit}"
 
 
-def _runtime_services(project_root: Path) -> list:
+def runtime_services(project_root: Path) -> list:
+    """Enabled services that have a compiled binary to put in an image.
+
+    Node services are excluded: they ship a bundle, not a binary, and have
+    no image yet (systemd_generate applies the same split).
+    """
     from systemd_generate import load_service_registry  # noqa: PLC0415
     raw = load_service_registry(project_root)
     return [s["name"] for s in raw
-            if s.get("enabled") and s["name"] != "ores.compute.wrapper"]
+            if s.get("enabled")
+            and s["name"] != "ores.compute.wrapper"
+            and s.get("runtime", "native") != "node"]
 
 
 def build_base(project_root: Path, tag: str | None = None) -> str:
@@ -89,7 +96,7 @@ def build_overlays(project_root: Path, tag: str | None = None,
     if base_tag is None:
         base_tag = tag
     if services is None:
-        services = _runtime_services(project_root)
+        services = runtime_services(project_root)
     print(f"=== Building {len(services)} per-service overlays "
           f"(FROM {IMAGE_BASE}:{base_tag}) ===")
     for svc in services:
@@ -143,7 +150,7 @@ def build_all(project_root: Path, tag: str | None = None) -> str:
         compute_partition, stage_for_build,
     )
     stage_dir = project_root / "build" / "docker-stage"
-    services = _runtime_services(project_root)
+    services = runtime_services(project_root)
     print(f"  Runtime services: {len(services)} (from service registry)")
 
     print("=== Computing library partition (ldd intersection) ===")
@@ -205,7 +212,7 @@ def missing_images(project_root: Path, role: str, tag: str) -> list[str]:
         for img in [f"{IMAGE_BASE}:{tag}"]:
             if not _image_exists(img):
                 missing.append(img)
-        services = _runtime_services(project_root)
+        services = runtime_services(project_root)
         for svc in services:
             img = f"localhost/{svc}:{tag}"
             if not _image_exists(img):
@@ -267,7 +274,7 @@ def run(argv: list[str], project_root: Path) -> int:
     # --base-only: stage + strip + build just the base.
     if args.base_only:
         _run(["bash", "docker/stage-runtime.sh"], project_root)
-        services = _runtime_services(project_root)
+        services = runtime_services(project_root)
         from library_partition import (  # noqa: PLC0415
             compute_partition, stage_for_build,
         )

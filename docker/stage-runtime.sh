@@ -22,7 +22,10 @@ if [[ "${1:-}" == "--service" ]]; then
 fi
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-publish="$root/build/output/linux-clang-debug-make/publish"
+# The environment's own preset, as .env sets it and docker/remote-run.sh
+# reads it: the staged tree has to come from the build the images are made
+# from, so a fixed preset name stages the wrong build or none at all.
+publish="$root/build/output/${ORES_PRESET:-linux-clang-debug-make}/publish"
 stage="$root/build/docker-stage"
 
 if [[ ! -d "$publish/bin" ]]; then

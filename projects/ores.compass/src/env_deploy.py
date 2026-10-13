@@ -175,11 +175,13 @@ def _version_tag(project_root: Path) -> str:
 
 
 def _runtime_services(project_root: Path) -> list:
-    """Return the list of enabled runtime service names from the service
-    registry (the same model consumed by systemd_generate)."""
-    from systemd_generate import load_service_registry  # noqa: PLC0415
-    raw = load_service_registry(project_root)
-    return [s["name"] for s in raw if s.get("enabled") and s["name"] != "ores.compute.wrapper"]
+    """Enabled services that have a container image to transfer.
+
+    Delegates to image_build so the set transferred and the set built
+    cannot drift apart.
+    """
+    import image_build  # noqa: PLC0415
+    return image_build.runtime_services(project_root)
 
 
 # --- Profile generation ---------------------------------------------------
@@ -445,7 +447,8 @@ def _preflight(project_root, profile_path, role, env):
         if not nats_conf.is_file():
             raise RuntimeError(
                 f"{nats_conf} not found — run: compass nats init")
-        publish = project_root / "build" / "output" / "linux-clang-debug-make" / "publish"
+        preset = env.get("ORES_PRESET", "linux-clang-debug-make")
+        publish = project_root / "build" / "output" / preset / "publish"
         if not publish.is_dir():
             raise RuntimeError(
                 f"{publish} not found — run: compass build first")

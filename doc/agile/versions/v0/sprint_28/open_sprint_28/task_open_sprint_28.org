@@ -92,8 +92,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 ** Sprint 28 is open (2026-10-13)
 
 Sprint 28 was scaffolded under version 0 with the mission to finish the record

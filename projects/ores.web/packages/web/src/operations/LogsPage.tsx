@@ -48,7 +48,7 @@ import type { LogsView } from '@ores/wire-protocol/browser';
 import { api, type LogsRange } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
-import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
+import { GapPanel, type ScreenGap } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 
@@ -412,7 +412,6 @@ export function LogsPage(): ReactNode {
                                     {t('operations.logs.readAt', { at: readAt })}
                                 </span>
                             )}
-                            <OperationsBack />
                         </div>
                     }
                 />

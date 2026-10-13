@@ -1555,7 +1555,6 @@ const fr: SourceCatalogue = {
         },
     },
     operations: {
-        back: 'Retour aux opérations',
         instance: {
             olderBuild: 'version plus ancienne',
             state: {
@@ -1651,7 +1650,6 @@ const fr: SourceCatalogue = {
             title: 'Grille de calcul',
             description:
                 'Le résumé des hôtes et du travail de l’installation, une ligne par machine, portant l’exécutant qui se signale pour elle.',
-            updated: 'Mis à jour à {at}',
             units: {
                 gib: '{value} Gio',
                 mib: '{value} Mio',

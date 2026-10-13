@@ -33,7 +33,7 @@ import type { ReactNode } from 'react';
 import type { SessionView } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { Detail, PageHeader } from '../ui/Primitives.js';
-import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
+import { GapPanel, type ScreenGap } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 
@@ -85,7 +85,6 @@ export function VersionsPage({
                 <PageHeader
                     title={t('operations.versions.title')}
                     description={t('operations.versions.description')}
-                    actions={<OperationsBack />}
                 />
             </div>
 

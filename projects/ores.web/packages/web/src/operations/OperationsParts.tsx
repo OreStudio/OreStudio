@@ -20,20 +20,18 @@
  */
 
 /*
- * The parts the operations screens share: the way back to the operations area,
- * the state of one service instance, and the panel that records what a screen
- * cannot show yet.
+ * The parts the operations screens share: the state of one service instance
+ * and the panel that records what a screen cannot show yet.
  *
  * The screens are an area like Tenants or Rescue, not a set of tabs: a person
- * enters the area, opens one journey, and comes back. The header carries the
- * one action that belongs to every journey screen, as the tenant detail
- * carries its way back to the roster.
+ * enters the area, opens one journey, and comes back along the breadcrumb the
+ * header carries.
  */
 
 import type { ReactNode } from 'react';
 import type { ServiceRosterSlot } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
-import { LinkButton, Tag } from '../ui/Primitives.js';
+import { Tag } from '../ui/Primitives.js';
 
 /**
  * The window within which a heartbeat keeps an instance running, in minutes.
@@ -44,16 +42,6 @@ import { LinkButton, Tag } from '../ui/Primitives.js';
  * restates it here. The reply should carry it, and then this copy can go.
  */
 export const SERVICE_RUNNING_WINDOW_MINUTES = 2;
-
-/** The way back to the operations area, for a screen's header actions. */
-export function OperationsBack(): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <LinkButton to="/operations" variant="secondary">
-            {t('operations.back')}
-        </LinkButton>
-    );
-}
 
 /**
  * The states a roster slot can be in, as the roster read emits them: an

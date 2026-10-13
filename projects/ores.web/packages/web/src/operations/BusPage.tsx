@@ -44,7 +44,7 @@ import { api, type BusRange } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
-import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
+import { GapPanel, type ScreenGap } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 
@@ -307,7 +307,6 @@ export function BusPage(): ReactNode {
                             <Button variant="secondary" onClick={applyRange}>
                                 {t('operations.bus.range.apply')}
                             </Button>
-                            <OperationsBack />
                         </div>
                     }
                 />

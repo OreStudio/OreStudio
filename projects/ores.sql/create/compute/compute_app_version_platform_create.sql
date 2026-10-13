@@ -153,4 +153,8 @@ do instead
   where tenant_id = old.tenant_id
   and app_version_id = old.app_version_id
   and platform_id = old.platform_id
+  -- A tenant reads the shared rows of the system tenant, so old can be one.
+  -- The rule runs with the owner's rights, which row-level security does not
+  -- bind, so the rule states the own-tenant limit itself.
+  and tenant_id = ores_iam_current_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn();

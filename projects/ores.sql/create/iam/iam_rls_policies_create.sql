@@ -113,25 +113,35 @@ returns uuid[] as $$
       and a.valid_to = ores_utility_infinity_timestamp_fn();
 $$ language sql stable security definer set search_path = public, pg_temp;
 
--- Whether the session's actor is a service account: a shared one of the system
--- tenant, or one of the session's own tenant. A service acting inside a tenant works in no party, and it needs the
--- people of the tenant to do its work: the run grant exchange reads the
--- grantor, the role grant applier reads the account it grants to. The party rule
--- is a rule about people, so it passes a service actor.
+-- Whether the session's actor is a service account: one of the session's own
+-- tenant, or else a shared one of the system tenant. A service acting inside a
+-- tenant works in no party, and it needs the people of the tenant to do its
+-- work: the run grant exchange reads the grantor, the role grant applier reads
+-- the account it grants to. The party rule is a rule about people, so it passes
+-- a service actor.
+--
+-- A username is unique within a tenant only. A person of a tenant can share a
+-- username with a shared service account of the system tenant, so an account of
+-- the session's own tenant decides first, and the shared account decides only
+-- when the tenant has none of that name.
 --
 -- Security definer, so that reading the actor's own account does not apply the
 -- policy to itself.
 create or replace function ores_iam_actor_is_service_fn()
 returns boolean as $$
-    select exists (
-        select 1
-        from ores_iam_accounts_tbl a
-        where a.username = ores_iam_current_actor_fn()
-          and a.account_type = 'service'
-          and (a.tenant_id = ores_iam_current_tenant_id_fn()
-               or (a.tenant_id = ores_utility_system_tenant_id_fn() and a.shared))
-          and a.valid_to = ores_utility_infinity_timestamp_fn()
-    );
+    select coalesce(
+        (select a.account_type = 'service'
+         from ores_iam_accounts_tbl a
+         where a.username = ores_iam_current_actor_fn()
+           and a.tenant_id = ores_iam_current_tenant_id_fn()
+           and a.valid_to = ores_utility_infinity_timestamp_fn()),
+        (select a.account_type = 'service'
+         from ores_iam_accounts_tbl a
+         where a.username = ores_iam_current_actor_fn()
+           and a.tenant_id = ores_utility_system_tenant_id_fn()
+           and a.shared
+           and a.valid_to = ores_utility_infinity_timestamp_fn()),
+        false);
 $$ language sql stable security definer set search_path = public, pg_temp;
 
 -- The system party of the session's tenant. Every person sees the people who
@@ -394,3 +404,138 @@ with check (
 -- (e.g. during login). Tenant isolation above is the correct boundary here.
 -- Party isolation on other tables (business_units, etc.) is fine because those
 -- tables are only accessed after login when a party context is already set.
+
+-- -----------------------------------------------------------------------------
+-- Authentication events and run token issues
+-- -----------------------------------------------------------------------------
+-- Audit rows name accounts, sessions, source addresses and the runs a grant
+-- served, so a tenant reads and writes only its own. Both tables carry the
+-- tenant as text, because an event can happen before a tenant is known; such a
+-- row is the system tenant's, and the system tenant reads only its own like any
+-- other. The log classes write each row through a session of the row's tenant.
+alter table ores_iam_auth_events_tbl enable row level security;
+
+drop policy if exists auth_events_tenant_isolation_policy
+    on ores_iam_auth_events_tbl;
+
+create policy auth_events_tenant_isolation_policy on ores_iam_auth_events_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+);
+
+alter table ores_iam_run_token_issues_tbl enable row level security;
+
+drop policy if exists run_token_issues_tenant_isolation_policy
+    on ores_iam_run_token_issues_tbl;
+
+create policy run_token_issues_tenant_isolation_policy on ores_iam_run_token_issues_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+);
+
+-- -----------------------------------------------------------------------------
+-- Seed profiles and their parts
+-- -----------------------------------------------------------------------------
+-- The platform's own configuration. The models state :system_scope:, so every
+-- row belongs to the system tenant and every tenant may read it, because a
+-- tenant is provisioned from a profile. Only the system tenant writes it, which
+-- a write confined to the session's own tenant states, because the insert
+-- trigger pins every row to the system tenant. This is the shared-reference
+-- shape: one policy per command, because a single
+-- `for all` policy would let a tenant change or remove a profile.
+
+alter table ores_iam_seed_profiles_tbl enable row level security;
+
+drop policy if exists seed_profile_select_policy on ores_iam_seed_profiles_tbl;
+drop policy if exists seed_profile_insert_policy on ores_iam_seed_profiles_tbl;
+drop policy if exists seed_profile_update_policy on ores_iam_seed_profiles_tbl;
+drop policy if exists seed_profile_delete_policy on ores_iam_seed_profiles_tbl;
+
+create policy seed_profile_select_policy on ores_iam_seed_profiles_tbl
+for select using (
+    tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_insert_policy on ores_iam_seed_profiles_tbl
+for insert with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy seed_profile_update_policy on ores_iam_seed_profiles_tbl
+for update using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy seed_profile_delete_policy on ores_iam_seed_profiles_tbl
+for delete using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+alter table ores_iam_seed_profile_steps_tbl enable row level security;
+
+drop policy if exists seed_profile_step_select_policy on ores_iam_seed_profile_steps_tbl;
+drop policy if exists seed_profile_step_insert_policy on ores_iam_seed_profile_steps_tbl;
+drop policy if exists seed_profile_step_update_policy on ores_iam_seed_profile_steps_tbl;
+drop policy if exists seed_profile_step_delete_policy on ores_iam_seed_profile_steps_tbl;
+
+create policy seed_profile_step_select_policy on ores_iam_seed_profile_steps_tbl
+for select using (
+    tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_step_insert_policy on ores_iam_seed_profile_steps_tbl
+for insert with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy seed_profile_step_update_policy on ores_iam_seed_profile_steps_tbl
+for update using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy seed_profile_step_delete_policy on ores_iam_seed_profile_steps_tbl
+for delete using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+alter table ores_iam_seed_profile_parameters_tbl enable row level security;
+
+drop policy if exists seed_profile_parameter_select_policy on ores_iam_seed_profile_parameters_tbl;
+drop policy if exists seed_profile_parameter_insert_policy on ores_iam_seed_profile_parameters_tbl;
+drop policy if exists seed_profile_parameter_update_policy on ores_iam_seed_profile_parameters_tbl;
+drop policy if exists seed_profile_parameter_delete_policy on ores_iam_seed_profile_parameters_tbl;
+
+create policy seed_profile_parameter_select_policy on ores_iam_seed_profile_parameters_tbl
+for select using (
+    tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy seed_profile_parameter_insert_policy on ores_iam_seed_profile_parameters_tbl
+for insert with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy seed_profile_parameter_update_policy on ores_iam_seed_profile_parameters_tbl
+for update using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy seed_profile_parameter_delete_policy on ores_iam_seed_profile_parameters_tbl
+for delete using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

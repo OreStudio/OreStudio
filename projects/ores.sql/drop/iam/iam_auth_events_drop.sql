@@ -26,6 +26,4 @@
 drop rule if exists ores_iam_auth_events_delete_rule on "ores_iam_auth_events_tbl";
 drop trigger if exists ores_iam_auth_events_insert_trg on "ores_iam_auth_events_tbl";
 drop function if exists ores_iam_auth_events_insert_fn;
-drop materialized view if exists ores_iam_auth_events_daily_vw cascade;
-drop materialized view if exists ores_iam_auth_events_hourly_vw cascade;
 drop table if exists "ores_iam_auth_events_tbl";

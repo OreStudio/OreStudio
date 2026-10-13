@@ -40,17 +40,20 @@ namespace ores::iam::domain {
  * :current_state:: an event is a fact about an instant, and the bi-temporal pair
  * has no meaning on it.
  *
- * The table is the system's audit log of who signed in and who failed to. It
- * carries no row-level security and no tenant column of the generated kind. Its
- * tenant_id is an ordinary text column, because an event can happen before a
- * tenant is known, and the empty string then says so. The read in
+ * The table is the audit log of who signed in and who failed to. Its tenant_id
+ * is an ordinary text column and not the generated kind, because an event can
+ * happen before a tenant is known, and it is then the system tenant's. The read in
  * ores.iam.auth_event_operations scopes on that column itself.
  *
  * The table is internal: its protocol, handler and shell commands are the
  * hand-written operation model's, so only the data layer and the SQL schema are
- * generated here. The two continuous aggregates and their retention are a
- * paste block in the SQL section, because the generator states the hypertable and
- * the raw table's retention and nothing above them.
+ * generated here.
+ *
+ * The table is isolated by tenant like the rest of IAM, by a policy in
+ * iam_rls_policies_create.sql. An event that names no tenant is the system
+ * tenant's. The hourly and daily continuous aggregates it once had are gone:
+ * nothing read them, and TimescaleDB does not build a continuous aggregate over a
+ * table with row-level security.
  */
 struct auth_event final {
     /**

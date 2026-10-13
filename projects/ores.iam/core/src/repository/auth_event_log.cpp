@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.core/repository/audit_scope.hpp"
 #include "ores.iam.core/repository/auth_event_entity.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
 #include <boost/lexical_cast.hpp>
@@ -60,7 +61,11 @@ void auth_event_log::insert(const std::string& event_type,
     event.party_id = party_id;
     event.error_detail = error_detail;
 
-    auth_event_repository().write(ctx_, event);
+    // The row is written by a session of its own tenant, which the isolation
+    // policy requires, and an event with no tenant is the platform's.
+    const auto scope = audit_scope_for(ctx_, tenant_id);
+    event.tenant_id = scope.tenant_id;
+    auth_event_repository().write(scope.ctx, event);
 
     BOOST_LOG_SEV(lg(), debug) << "Auth event recorded: " << event_type;
 }

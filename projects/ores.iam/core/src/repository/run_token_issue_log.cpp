@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.core/repository/audit_scope.hpp"
 #include "ores.iam.core/repository/run_token_issue_repository.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -82,7 +83,11 @@ void run_token_issue_log::record(const std::chrono::system_clock::time_point& is
     row.outcome = outcome;
     row.reason = reason;
 
-    run_token_issue_repository().write(ctx_, row);
+    // The row is written by a session of its own tenant, which the isolation
+    // policy requires, and an exchange that names no tenant is the platform's.
+    const auto scope = audit_scope_for(ctx_, tenant_id);
+    row.tenant_id = scope.tenant_id;
+    run_token_issue_repository().write(scope.ctx, row);
 }
 
 std::size_t run_token_issue_log::distinct_runs(const std::string& grant_id) const {

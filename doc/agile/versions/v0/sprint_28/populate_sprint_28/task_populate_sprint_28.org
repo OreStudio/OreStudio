@@ -89,8 +89,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 ** Sprint 28 populated (2026-10-13)
 
 The 41 stories sprint 27 carried into the product backlog — its 21 unfinished

@@ -20,13 +20,16 @@
  */
 
 import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, NavLink } from 'react-router';
-import type { Account, SessionMode } from '@ores/wire-protocol/browser';
+import type { Account, MyParty, SessionMode } from '@ores/wire-protocol/browser';
 import type { EnvironmentView } from '@ores/contracts';
+import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
-import { Button } from '../ui/Primitives.js';
+import { Button, Dialog, Notice } from '../ui/Primitives.js';
+import { PartyChoice } from '../ui/PartyChoice.js';
 import { useDismiss } from '../ui/useDismiss.js';
 import { useHeld } from '../access/holds.js';
 import { displayName } from '../access/names.js';
@@ -57,6 +60,14 @@ export interface AppShellProps {
     readonly username: string;
     readonly tenantName: string;
     readonly partyName: string | undefined;
+    /** The party the session acts for, so the menu can mark it among the person's parties. */
+    readonly partyId?: string;
+    /**
+     * Re-scopes the open session to another of the person's own parties, so the
+     * menu can offer a change without a sign-out. A shell given no action offers
+     * no change.
+     */
+    readonly onSwitchParty?: (partyId: string) => Promise<void>;
     /** The context the session runs in, as the server stated it. */
     readonly mode: SessionMode;
     /**
@@ -88,6 +99,8 @@ export function AppShell({
     username,
     tenantName,
     partyName,
+    partyId,
+    onSwitchParty,
     mode,
     width = 'column',
     onSignOut,
@@ -154,6 +167,8 @@ export function AppShell({
                             username={username}
                             tenantName={tenantName}
                             partyName={partyName}
+                            partyId={partyId}
+                            onSwitchParty={onSwitchParty}
                             onSignOut={onSignOut}
                             self={self}
                         />
@@ -186,6 +201,17 @@ export function AppShell({
 }
 
 /**
+ * The parties a person can change to: every party they work in but the one the
+ * session acts for now. A person who works in one party has none to change to.
+ */
+export function partiesToChangeTo(
+    parties: readonly MyParty[],
+    actingPartyId: string | undefined,
+): readonly MyParty[] {
+    return parties.filter((party) => party.partyId !== actingPartyId);
+}
+
+/**
  * The signed-in person's picture, and the menu behind it.
  *
  * The header holds the picture alone, as most applications do; who the person
@@ -201,17 +227,50 @@ function AccountMenu({
     username,
     tenantName,
     partyName,
+    partyId,
+    onSwitchParty,
     onSignOut,
     self,
 }: {
     readonly username: string;
     readonly tenantName: string;
     readonly partyName: string | undefined;
+    readonly partyId: string | undefined;
+    readonly onSwitchParty: ((partyId: string) => Promise<void>) | undefined;
     readonly onSignOut: () => void;
     readonly self: Account | null | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
+    const [changing, setChanging] = useState(false);
+    const [failure, setFailure] = useState('');
+    /*
+     * A person who works in one party has nothing to change to, so the menu
+     * offers the change only when the session can switch and there is another
+     * party. The choice itself is the sign-in's own widget.
+     */
+    const parties = useQuery({
+        queryKey: ['my-parties'],
+        queryFn: api.myParties,
+        enabled: onSwitchParty !== undefined,
+    });
+    const mine = (parties.data?.parties ?? []).map((party) => ({
+        id: party.partyId,
+        name: party.name !== '' ? party.name : party.shortCode,
+    }));
+    const mayChange =
+        onSwitchParty !== undefined &&
+        partiesToChangeTo(parties.data?.parties ?? [], partyId).length > 0;
+    const change = async (target: string): Promise<void> => {
+        if (onSwitchParty === undefined) return;
+        setFailure('');
+        try {
+            await onSwitchParty(target);
+            setChanging(false);
+        } catch (error) {
+            setFailure(error instanceof Error ? error.message : t('shell.menu.changePartyFailed'));
+        }
+    };
     const root = useRef<HTMLDivElement>(null);
     const name = displayName(self, username);
     const photo = self == null ? undefined : self.imageId === null ? null : imageUrl(self.imageId);
@@ -265,6 +324,23 @@ function AccountMenu({
                         {t('nav.security')}
                     </Link>
                 </div>
+                {mayChange && (
+                    <div className="border-b border-line py-1.5">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            role="menuitem"
+                            className="w-full justify-start"
+                            onClick={() => {
+                                close();
+                                setFailure('');
+                                setChanging(true);
+                            }}
+                        >
+                            {t('shell.menu.changeParty')}
+                        </Button>
+                    </div>
+                )}
                 <div className="pt-1.5">
                     <Button
                         variant="ghost"
@@ -280,6 +356,21 @@ function AccountMenu({
                     </Button>
                 </div>
             </div>
+            {changing && (
+                <Dialog title={t('shell.menu.changeParty')} onClose={() => setChanging(false)}>
+                    <p className="text-sm text-ink-muted">{t('shell.menu.changePartyHint')}</p>
+                    {failure !== '' && (
+                        <div className="mt-4">
+                            <Notice tone="error">{failure}</Notice>
+                        </div>
+                    )}
+                    <PartyChoice
+                        parties={mine}
+                        current={partyId}
+                        onChoose={(party) => void change(party.id)}
+                    />
+                </Dialog>
+            )}
         </div>
     );
 }

@@ -1287,6 +1287,8 @@ function signedIn(
                 username={view.username}
                 tenantName={view.tenantName}
                 partyName={view.party.name}
+                partyId={view.party.id}
+                onSwitchParty={shell.onSwitchParty}
                 mode={view.mode}
                 width={width}
                 serverVersion={version}

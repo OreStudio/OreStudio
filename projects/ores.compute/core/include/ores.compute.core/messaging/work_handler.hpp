@@ -117,12 +117,17 @@ public:
         // the node samples already carry it.
         if (auto req = decode<heartbeat_message>(msg)) {
             try {
-                // A node that holds a job under a lease keeps it by this heartbeat. The ledger is
-                // the installation's, so the extension needs no tenant.
-                repository::work_ledger_repository().extend_leases(
-                    ctx_,
-                    boost::lexical_cast<boost::uuids::uuid>(req->host_id),
-                    std::chrono::seconds{300});
+                // A node that is running a job names it, and keeps its lease by this heartbeat.
+                // Only that job is extended: an entry the host holds and does not name is
+                // abandoned, and its lease must run out. The ledger is the installation's, so
+                // the extension needs no tenant.
+                if (!req->result_id.empty()) {
+                    repository::work_ledger_repository().extend_lease(
+                        ctx_,
+                        boost::lexical_cast<boost::uuids::uuid>(req->host_id),
+                        boost::lexical_cast<boost::uuids::uuid>(req->result_id),
+                        std::chrono::seconds{300});
+                }
                 service::host_service svc(ctx_);
                 auto existing = svc.get_host(boost::lexical_cast<boost::uuids::uuid>(req->host_id));
                 if (!existing) {

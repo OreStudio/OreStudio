@@ -129,13 +129,32 @@ public:
     void remove(context ctx, const boost::uuids::uuid& result_id);
 
     /**
-     * @brief Extend the lease of every entry a host holds.
+     * @brief Extend the lease of the one entry a host is working on.
      *
-     * @return The number of entries extended.
+     * A host runs one job at a time and names it in its heartbeat. An entry the host
+     * holds and does not name is not being worked on, so its lease is left to run out.
+     * Extending every entry of a host would keep an abandoned claim alive for as long as
+     * the host lived.
+     *
+     * @return True when the host holds the entry and it was extended.
      */
-    std::size_t extend_leases(context ctx,
-                              const boost::uuids::uuid& host_id,
-                              std::chrono::seconds lease);
+    bool extend_lease(context ctx,
+                      const boost::uuids::uuid& host_id,
+                      const boost::uuids::uuid& result_id,
+                      std::chrono::seconds lease);
+
+    /**
+     * @brief Return to the queue every entry a host holds, keeping their attempts.
+     *
+     * A host that asks for work is free, because it runs one job at a time. An entry it still
+     * holds was claimed and never reported, for example when the reply to the claim was lost,
+     * so nobody is working on it. An entry with no attempts left is left for the reaper.
+     *
+     * @return The number of entries returned.
+     */
+    std::size_t requeue_held(context ctx,
+                             const boost::uuids::uuid& host_id,
+                             int max_attempts = max_claim_attempts);
 
     /**
      * @brief Return every claimed entry whose lease ended to the queue, while it has attempts left.

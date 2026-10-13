@@ -396,8 +396,9 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     Check(
         id="component-drift",
-        title="Every artefact matches its model",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py", "--all"),
+        title="The components this branch changed match their models",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py",
+              "--changed", "--base", "{base}"),
         classes=("modeling", "codegen"),
         phase=PREPARE,
         fix="Run compass codegen regenerate for the component the report names.",

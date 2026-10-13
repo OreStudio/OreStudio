@@ -26,11 +26,11 @@ heavy tier.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-13                               |
 
 * Acceptance
@@ -48,6 +48,29 @@ heavy tier.
 
 * Decisions
 
+- Render only what the branch changed, in both drift checks. The gate measures
+  a branch's own changes; pre-existing drift in an untouched component belongs
+  to that component's clean-up, which the hourly validation covers. Both
+  checks select on the modeling directory and render the whole corpus when the
+  change reaches the generator, a template or the registry, or changes no
+  model at all.
+- Publish only the pages the branch changed. The mtime rule republished the
+  corpus on a fresh checkout, because a checkout gives every source a new
+  mtime. The org-id map is still rebuilt every run: skipping it behind
+  =--no-index= turned a stale map into a false failure on the first link to a
+  page added since the last scan.
+- The non-heavy total falls from 785s to roughly 255s on a one-component
+  branch: =component-drift= 239.9s to ~11s, =drift-sweep= 195.9s to ~1s and
+  =site-page= 114.9s to ~8s. A cold site cache no longer times out at 900s.
+
 * Out of scope
 
--
+- The long tail and the heavy tier, left as captures: the corpus that fifteen
+  checks each re-parse ([[id:AA22CAD2-785D-44FC-9DAD-239A842C0ABD][The local checks each parse the model corpus in their own process]])
+  and the suites the heavy checks run serially ([[id:24BE9AD3-750C-4A98-B229-CDDA2DD4FA15][The heavy checks run their suites serially and recreate the database unconditionally]]).
+
+* Result
+
+The acceptance holds: the three biggest checks now measure the branch instead
+of the tree, so a one-component branch runs the non-heavy checks in about a
+third of the former time.

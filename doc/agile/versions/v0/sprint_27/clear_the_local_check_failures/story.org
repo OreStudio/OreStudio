@@ -51,6 +51,7 @@ The local check gate stops failing on drift that predates any branch.
 | [[id:DF3EF651-A3F0-462D-A4AF-354AF499F477][Refuse a leading plus in parse_double]] | DONE | | 2026-10-13 | parse_double accepts a leading plus, but std::from_chars, which it replaced, does not; the manual point service therefore took +0.09 and the marketdata core test failed. |
 | [[id:4E0371EC-F7F3-4FFC-A631-5897E1599E7F][Accept a leading plus in parse_double again]] | DONE | | 2026-10-13 | The estate's decimals are signed, so strike_label::parse reads +25RR through decimal::parse and canonicalises it to 25RR; mirroring from_chars' sign rule in parse_double broke the strike label tests. |
 | [[id:D3D44A23-38F6-49D0-896C-E429B27364FD][Take a manual point value as the estate's number]] | DONE | | 2026-10-13 | The manual point service refuses +0.09 with a private gate, while decimal -- the estate's one definition of a number, used by the key codec -- accepts it, and the service accepts other non-canonical spellings such as 0.090. |
+| [[id:D1AA7C2B-24DE-49A4-AE00-F3533F5321B6][Key the plus-value test before the snapshot's cut]] | DONE | | 2026-10-13 | The new manual point case keyed +0.09 at now, but the snapshot is read as of 2017-09-12, so the point was in the cut's future and the snapshot still showed the imported value. |
 
 * Decisions
 

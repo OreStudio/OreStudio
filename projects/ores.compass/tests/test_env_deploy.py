@@ -310,18 +310,24 @@ class TestDeploysAtTheSameTime:
         assert stage.parent == tmp_path / "build" / "docker-stage" / "hosts"
         assert "@" not in stage.name and "/" not in stage.name
 
+    def test_hosts_that_differ_only_in_a_dropped_character_have_different_stages(self, tmp_path):
+        assert env_deploy._host_stage(tmp_path, "a@b") != env_deploy._host_stage(tmp_path, "a_b")
+
     def test_an_image_is_copied_with_the_standard_podman_command(self, tmp_path, monkeypatch):
         calls = []
         monkeypatch.setattr(env_deploy, "_run",
                             lambda cmd, root, **kw: calls.append(cmd))
         env_deploy._transfer_one_image(
-            tmp_path, "marco@192.168.1.22", "localhost/ores-compute-wrapper:1.0", None, None)
+            tmp_path, "marco@192.168.1.22", "localhost/ores-compute-wrapper:1.0")
         assert calls == [["podman", "image", "scp", "localhost/ores-compute-wrapper:1.0",
                           "marco@192.168.1.22::"]]
 
     def _checkout_with_fake_compass(self, tmp_path, failing=()):
         root = tmp_path / "checkout"
         root.mkdir()
+        # A host with a profile is one that has been deployed to before.
+        for host in ("newton", "laptop", "simba", "other"):
+            (root / f".env.{host}").write_text("ORES_REMOTE_HOST=x\n", encoding="utf-8")
         # The child of a many-host deploy is `compass.sh env deploy HOST ...`.
         script = root / "compass.sh"
         script.write_text(
@@ -456,7 +462,7 @@ class TestStreamImages:
         _write(svc_stage / "ores.iam.service" / "bin" / "ores.iam.service",
                "ELF...")
 
-        def fake_transfer(project_root, host, img, stage, remote_tmp):
+        def fake_transfer(project_root, host, img):
             transfer_calls.append(img)
 
         def fake_ssh(host, cmd, **kwargs):
@@ -666,3 +672,67 @@ class TestRequirePodman:
 
         assert "marco@192.168.1.11" in str(err.value)
         assert "sudo apt install podman" in str(err.value)
+
+
+class TestTheManyHostRunIsCareful:
+    def _root(self, tmp_path, hosts):
+        root = tmp_path / "checkout"
+        root.mkdir()
+        for host in hosts:
+            (root / f".env.{host}").write_text("ORES_REMOTE_HOST=x\n", encoding="utf-8")
+        script = root / "compass.sh"
+        script.write_text('#!/bin/sh\necho "deploying $3"\nexit 0\n', encoding="utf-8")
+        script.chmod(0o755)
+        return root
+
+    def _args(self, hosts):
+        import argparse
+        return argparse.Namespace(host=hosts, role="compute", stop=False,
+                                  purge=False, setup_host=False)
+
+    def test_a_host_named_twice_is_deployed_once(self, tmp_path, capsys):
+        root = self._root(tmp_path, ["newton"])
+        assert env_deploy._deploy_many(self._args(["newton", "newton"]), root) == 0
+        out = capsys.readouterr().out
+        assert out.count("[newton] deploying newton") == 1
+        assert out.count("newton           ok") == 1
+
+    def test_a_host_with_no_profile_is_refused_before_anything_starts(self, tmp_path, capsys):
+        root = self._root(tmp_path, ["newton"])
+        with pytest.raises(RuntimeError, match="no host profile for brand-new"):
+            env_deploy._deploy_many(self._args(["newton", "brand-new"]), root)
+        assert "deploying" not in capsys.readouterr().out
+
+    def test_a_child_that_cannot_start_fails_its_host_and_the_others_go_on(self, tmp_path, capsys):
+        root = self._root(tmp_path, ["newton", "simba"])
+        real_popen = subprocess.Popen
+
+        def popen(cmd, *args, **kwargs):
+            if "simba" in cmd:
+                raise OSError("cannot start")
+            return real_popen(cmd, *args, **kwargs)
+
+        import pytest as _pytest  # noqa: F401
+        with pytest.MonkeyPatch.context() as patch:
+            patch.setattr(env_deploy.subprocess, "Popen", popen)
+            code = env_deploy._deploy_many(self._args(["newton", "simba"]), root)
+        out = capsys.readouterr().out
+        assert code == 1
+        assert "[simba] could not start: cannot start" in out
+        assert "newton           ok" in out
+        assert "simba            FAILED (exit 127)" in out
+
+    def test_the_children_are_told_to_write_each_line_at_once(self, tmp_path):
+        root = self._root(tmp_path, ["newton"])
+        seen = {}
+        real_popen = subprocess.Popen
+
+        def popen(cmd, *args, **kwargs):
+            seen.update(kwargs)
+            return real_popen(cmd, *args, **kwargs)
+
+        with pytest.MonkeyPatch.context() as patch:
+            patch.setattr(env_deploy.subprocess, "Popen", popen)
+            env_deploy._deploy_many(self._args(["newton"]), root)
+        assert seen["env"]["PYTHONUNBUFFERED"] == "1"
+        assert seen["stdin"] == subprocess.DEVNULL

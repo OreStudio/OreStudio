@@ -46,6 +46,8 @@ Deploys to Newton, the laptop and Simba, started at the same time, failed. Every
 - The compute settings and the certificates of a host are staged under =build/docker-stage/hosts/<host>/=, so no host's files are another's.
 - =compass env deploy= takes several hosts. Each host runs as a child process of an ordinary single-host deploy. The output of each line is prefixed with the host. A summary names the hosts that failed, and the exit code is non-zero if any did.
 - The line that podman prints for every layer is left out of a many-host run.
+- The many-host run names each host once, refuses a host with no profile before any child starts, gives the children no stdin and unbuffered output, reports a child that cannot start as a failure, and stops its children on an interrupt.
+- The stage name of a host ends in a short digest, so two names that differ only in a dropped character do not share a stage.
 
 * Measurements
 
@@ -59,7 +61,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Deploy tests | 52 pass | =projects/ores.compass/venv/bin/python -m pytest projects/ores.compass/tests/test_env_deploy.py -q= | branch head |
+| Deploy tests | 57 pass | =projects/ores.compass/venv/bin/python -m pytest projects/ores.compass/tests/test_env_deploy.py -q= | branch head |
 | A deploy of three hosts in one command | Newton, the laptop and Simba all ok | =compass env deploy newton laptop simba --role compute= | branch head |
 | Nodes running after that deploy | 11 on Newton, 3 on the laptop, 2 on Simba | =systemctl --user list-units= on each host | branch head |
 

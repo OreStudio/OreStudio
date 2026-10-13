@@ -48,6 +48,8 @@ docker/remote-run.sh and docker/remote-stop.sh, piped to the host via
 """
 
 import argparse
+import hashlib
+import os
 import re
 import shlex
 import subprocess
@@ -270,7 +272,10 @@ def _host_stage(project_root, host):
     tarball written by two saves of one image is refused by podman. Each host stages under
     its own directory.
     """
-    safe = re.sub(r"[^A-Za-z0-9_.-]", "_", host)
+    # Two hosts that differ only in a character the name drops must not share a stage, so a
+    # short digest of the host as written ends the name.
+    digest = hashlib.sha256(host.encode("utf-8")).hexdigest()[:8]
+    safe = re.sub(r"[^A-Za-z0-9_.-]", "_", host) + "-" + digest
     stage = project_root / "build" / "docker-stage" / "hosts" / safe
     stage.mkdir(parents=True, exist_ok=True)
     return stage
@@ -336,8 +341,6 @@ def _stream_images(project_root, host, images):
        the already-loaded base (each overlay is just the binary — a few
        MB — not a full image tarball).
     """
-    stage = project_root / "build" / "docker-stage" / "transfer"
-    stage.mkdir(parents=True, exist_ok=True)
     remote_tmp = f"/tmp/ores-deploy-{host}"
 
     # Separate the base image from per-service overlays and standalone
@@ -351,11 +354,11 @@ def _stream_images(project_root, host, images):
 
     # -- Phase 1: Transfer base image (once) ------------------------------
     for img in base_images:
-        _transfer_one_image(project_root, host, img, stage, remote_tmp)
+        _transfer_one_image(project_root, host, img)
 
     # -- Phase 2: Transfer standalone images (NATS, compute) --------------
     for img in nats_images + compute_images:
-        _transfer_one_image(project_root, host, img, stage, remote_tmp)
+        _transfer_one_image(project_root, host, img)
 
     # -- Phase 3: Remote-build per-service overlays -----------------------
     if overlay_images:
@@ -406,12 +409,14 @@ def _stream_images(project_root, host, images):
         _ssh(host, f"rm -rf {shlex.quote(remote_build_context)}", check=True)
 
 
-def _transfer_one_image(project_root, host, img, stage, remote_tmp):
+def _transfer_one_image(project_root, host, img):
     """Copy a single image to the remote host with the standard podman command.
 
     `podman image scp IMAGE HOST::` saves the image and loads it on the host over ssh. It
     writes no staging file, so deploys to several hosts can run at the same time without
-    sharing anything on this machine.
+    sharing anything on this machine. The host is written USER@ADDRESS, as ORES_REMOTE_HOST
+    is. Podman does not read an alias from ~/.ssh/config, so a custom port or a jump host needs
+    a podman system connection, which the host would then name instead.
     """
     print(f"  Transferring image: {img}")
     _run(["podman", "image", "scp", img, f"{host}::"], project_root)
@@ -592,20 +597,37 @@ def _deploy_many(args, project_root):
 
     Each child is a plain single-host deploy, so what one host gets does not depend on the
     others, and each stages under its own directory. The output of a host is prefixed with its
-    name. The exit code is non-zero when any host failed, and the summary names the ones that
-    did.
+    name and arrives as the child writes it. The exit code is non-zero when any host failed, and
+    the summary names the ones that did. A host named twice is deployed once. A host with no
+    profile is refused before any deploy starts, because the child would otherwise stop to ask
+    about it with nobody reading its output. An interrupt stops the children.
     """
     import threading  # noqa: PLC0415
+
+    hosts = list(dict.fromkeys(args.host))
+    unknown = [h for h in hosts if not _profile_path(project_root, h).is_file()]
+    if unknown:
+        raise RuntimeError(
+            "no host profile for " + ", ".join(unknown) + "; deploy each new host once on its own "
+            "first, so that its profile is made and checked")
 
     flags = ["--role", args.role]
     for name in ("stop", "purge", "setup_host"):
         if getattr(args, name):
             flags.append("--" + name.replace("_", "-"))
-    children = {}
-    for host in args.host:
-        children[host] = subprocess.Popen(
-            [str(project_root / "compass.sh"), "env", "deploy", host, *flags],
-            cwd=project_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    # The children write to a pipe, and Python buffers a pipe in blocks, so they are told to
+    # write each line at once.
+    env = {**os.environ, "PYTHONUNBUFFERED": "1"}
+    children, codes = {}, {}
+    for host in hosts:
+        try:
+            children[host] = subprocess.Popen(
+                [str(project_root / "compass.sh"), "env", "deploy", host, *flags],
+                cwd=project_root, env=env, stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        except OSError as error:
+            print(f"[{host}] could not start: {error}")
+            codes[host] = 127
 
     def pump(host, child):
         for line in child.stdout:
@@ -616,14 +638,21 @@ def _deploy_many(args, project_root):
             sys.stdout.flush()
 
     threads = [threading.Thread(target=pump, args=(h, c)) for h, c in children.items()]
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    codes = {host: child.wait() for host, child in children.items()}
-    failed = [host for host, code in codes.items() if code != 0]
+    try:
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        for host, child in children.items():
+            codes[host] = child.wait()
+    finally:
+        for child in children.values():
+            if child.poll() is None:
+                child.terminate()
+    failed = [host for host in hosts if codes.get(host, 1) != 0]
     print("=== Deploy summary ===")
-    for host, code in codes.items():
+    for host in hosts:
+        code = codes.get(host, 1)
         print(f"  {host:<16} {'ok' if code == 0 else f'FAILED (exit {code})'}")
     return 1 if failed else 0
 

@@ -367,56 +367,58 @@ is not drawn.
 - A column beside the plot shows the process that made the curves: the engine, the
   rate and each parameter with its saved value.
 
-** The feed overview
+** The Synthetic screen
 
-The Synthetic folder of Market data opens on cards: the feed overview and the feed lists
-of each asset class. The overview (=marketdata/FeedOverviewPage.tsx=) is the dashboard.
-It drills down in three columns, scope, provider and feed kind, and the node chosen in
-each column narrows the next. It counts feeds and never lists one.
+Synthetic (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with two tabs, the
+dashboard and the feed tree. It lists no feed list of its own per asset class: the feed
+table lists every kind. Everything on it is synthetic, so no label says so. The
+[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] shows it.
 
-- A scope is /System feeds/ (a collection whose scope says system) or /Test feeds/
-  (every other). A provider is the provider a collection stands for, or /Generic/ when
-  it stands for none, drawn with the synthetic mark, "Bloomberg (synthetic)". A feed
-  kind is an asset class folder of the collection.
-- Every node shows its FX spots and IR curves and one of Running, Stopped, "n of m
-  running" or Empty. The node chosen has a panel: its figures, Start and Stop, and the
-  nodes under it with the same figures.
+*** The dashboard
+
+The dashboard (=DashboardTab.tsx=) has one row for each provider. A provider is a row of
+the provider catalogue, with a description of what it simulates, and every collection
+names one, so every feed has a provider. The ORE examples are the provider /ORE/.
+
+- A row shows what the provider simulates, its FX and IR counts, one of Running, Stopped,
+  "n of m running" or Empty, and how many of its feeds should run and do not. Start and
+  Stop on a row act on every feed of the provider.
+- A banner counts the feeds that are enabled, start on their own, and are not running.
+  A restart of the synthetic service stops every feed and nothing starts them again, so
+  this is the first thing the screen says. /Start them/ starts exactly those feeds; /Show
+  them in the feed tree/ opens the tree on them.
+- The chosen provider has a panel with its asset classes and a link into the tree.
 - The server counts. =synthetic.v1.ops.list_feed_folders= returns the children of one
-  folder, or the roots, each with the feeds under it at any depth and how many run. The
-  database groups the feeds by folder and the controller reports what runs, so the page
-  reads a few folders and not the feeds. The page asks again every five seconds.
-- Start and Stop of a provider or a kind ask first, saying how many feeds the request
-  touches, and that stopping a bound feed stops it for every party bound to it. One
-  request names a folder (=/api/synthetic/folders/:id/start= or =stop=) and the server
-  walks its subtree. A toast then says what started, what was already running and what
-  was skipped. The buttons are drawn for a person who may write feeds.
-- The overview stops at the feed kind. The feeds are in the feed lists, and in the feed
-  tree when it is built.
+  folder, or the roots, each with the feeds under it at any depth, how many run and how
+  many are idle. The screen asks again every five seconds.
 
-** The feed tree
+*** The feed tree
 
-The feed tree (=marketdata/FeedTreePage.tsx=) reaches every feed. Its roots are the two
-scopes, /System feeds/ and /Test feeds/. Under system feeds come the providers, under
-test feeds the collections, and under a collection come its asset class and instrument
-type folders. The service counts every node, and a node opens a level at a time, so the
-tree never reads the feeds.
+The feed tree (=FeedTreeTab.tsx=) has the providers and their folders on the left and a
+table of feeds on the right. A provider with one collection stands for it, so its
+children are the asset class folders; a provider with several lists its collections.
 
-- Each node shows the feeds that run under it as a count and a bar. The node chosen has
-  a panel with its figures, Start and Stop, and the nodes under it, as the overview does,
-  and the same question asks before a start or a stop.
-- The folder that holds feeds lists them in its panel a page at a time
-  (=synthetic.v1.ops.list_folder_feeds=): the feed, its source, whether it runs, Start and
-  Stop for the feed, and a link to its page. The feeds are not tree nodes, because a
-  folder can hold thousands.
-- The search box finds feeds by words in their label, source name or URI, wherever they
-  sit, and shows each one with the folders it sits in. The service matches the words.
-- /Running only/ narrows the tree to the nodes with feeds running, and the lists to the
-  running feeds.
-- A node has an address, =?node=scope:system=, =?node=provider:system:bloomberg= or
-  =?node=folder:<id>=, so a link opens the tree on it. The overview's /Open in feed tree/
-  and the folders on a feed's trail use it.
+- The table lists the feeds under the chosen node, with the folders below it, a page at a
+  time, with the standard pager. Its columns are state, enabled, name, asset class,
+  underlying (a currency pair or a currency, with flags), engine and frequency. A row
+  opens the feed's page.
+- The filters are the state (All, Started, Stopped), the asset class, and the search
+  words. The search reaches every provider. All of them run on the server
+  (=synthetic.v1.ops.list_folder_feeds=), so the counts and the pages are right.
+- A row has no Start or Stop. A person ticks rows, or the whole page, and a link then
+  offers every feed that matches the filter. A bar shows how many are picked and has
+  Start and Stop for the pick. The request carries the filter and the ids picked or left
+  out (=synthetic.v1.ops.start_selected_feeds= and =stop_selected_feeds=); the server
+  resolves the feeds with the same filter that pages the table, so a set of thousands
+  costs one small request and the screen never holds the ids. A toast says what started,
+  what was already running and what was skipped.
+- /Add feed/ asks for the kind, FX or IR, and opens its form. The feed's page opens when
+  it is saved.
+- A node has an address, =?tab=tree&node=provider:bloomberg= or
+  =?tab=tree&node=folder:<id>=, and the filters are in the address too, so a link opens
+  the tree as it was.
 - A feed's page has the trail Home, Market data, Synthetic, Feed tree, the folders down to
-  the feed, then the feed, whichever screen opened it. Each folder opens the tree on it.
+  the feed, then the feed. Each folder opens the tree on it.
 
 ** History
 
@@ -476,8 +478,8 @@ of its own, and a kind with a mixture-like process would share the FX one.
 
 | Screen | Conformance |
 |--------+-------------|
-| FX price feeds | Conforms. It is the screen this standard was taken from |
-| IR curve feeds | Conforms: the list, the page with Details, Process, Curve template, Ticks and History, the previews and the unsaved marks. The Ticks tab draws curves, see below. The task [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] states the aim |
+| FX price feeds | Conforms. It is the screen this standard was taken from; its feeds are listed in the feed tree of Synthetic |
+| IR curve feeds | Conforms: the page with Details, Process, Curve template, Ticks and History, the previews and the unsaved marks. The Ticks tab draws curves, see below. The task [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] states the aim |
 
 ** Building a feed screen for a new asset class
 

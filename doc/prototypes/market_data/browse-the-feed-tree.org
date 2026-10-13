@@ -2,12 +2,12 @@
 :ID: 17E6CB2C-E1C9-4911-81AC-591D88AC5B89
 :END:
 #+title: Browse the feed tree prototype
-#+description: The synthetic feeds area before it is built: a Synthetic folder card under Market data, a feed overview, a feed tree whose feeds open their existing pages, and a breadcrumb back through the tree, on a throwaway page of mock data
+#+description: Synthetic as one screen with a Dashboard tab and a Feed tree tab: providers and what each simulates, the feeds that should run and do not, and a paged table of feeds started and stopped by selection, on a throwaway page of mock data
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:synthetic:
 #+created: 2026-10-12
-#+updated: 2026-10-12
+#+updated: 2026-10-13
 
 | Item          | Where                                      |
 |---------------+--------------------------------------------|
@@ -17,25 +17,24 @@
 
 * Summary
 
-The prototype argues where the synthetic feeds live in the web and how a person
-moves between them, before any of it is built. It is the successor of the
-=ores.qt= Market Simulator window and of the
-[[id:768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC][Market simulator prototype]], which
-argued that window on the desktop, for three collections and sixteen feeds.
+The prototype argues that the synthetic feeds are one screen, not four. It is
+the successor of the =ores.qt= Market Simulator window and of the
+[[id:768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC][Market simulator prototype]]. An
+earlier version of this page argued a Synthetic folder of four cards; building
+it showed that the two list screens and the tree answer the same question.
 
-It is one connected flow:
+The flow is short:
 
-- *Market data* gets a /Synthetic/ folder card, beside Curve evolution.
-- *Synthetic* is a page of cards: Feed overview, Feed tree, FX price feeds and
-  IR curve feeds.
-- *Feed overview* is the dashboard: drill-down columns by scope, provider and
-  feed kind, with the counts, the running roll-up and start and stop of a
-  provider or a kind. It never lists a feed.
-- *Feed tree* is the tree to the feeds, the selected node beside it, with
-  search and a running-only filter.
-- Choosing a feed leaves the tree for the feed's existing page,
-  =/market-data/fx-feeds/:id= or =/market-data/ir-feeds/:id=. Its breadcrumb
-  runs through the tree, and each folder on it returns to the tree there.
+- *Market data* has one /Synthetic/ card. It opens a screen, not a folder.
+- *Synthetic* has two tabs. Every feed on it is synthetic, so no label says
+  so. Real market data will get its own card under Market data.
+- *Dashboard* is the first tab. It lists the providers, says what each one
+  simulates, and shows what runs. A banner counts the feeds that should run and
+  do not, with one button to start them.
+- *Feed tree* is the second tab. The tree of providers and asset classes sits
+  beside a table of feeds, a page at a time. A person picks rows, then starts or
+  stops the pick with one button.
+- A row opens the feed's own page. That page does not change.
 
 It is throwaway, with no service and no build step. Open the
 [[file:browse-the-feed-tree/][prototype]].
@@ -44,24 +43,44 @@ It is throwaway, with no service and no build step. Open the
 
 ** The question
 
-The feeds are organised by provider and scope (see
-[[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]]):
-/System feeds/ by provider, then feed kind, and /Test feeds/ by party, then
-collection. Bloomberg alone holds 55 feeds, and the story expects many thousands.
-The open question was which layout keeps a node's running state and its start
-and stop in reach at that size, and where the screens sit in the menu.
+Bloomberg alone holds 55 feeds, and the story expects many thousands. The first
+version listed the feeds in three places: the FX list, the IR list and the tree.
+Each had its own filter, its own start and stop and its own columns. The
+question is what one screen must hold so that the two lists can go.
 
 ** What was chosen
 
-A first version offered three layouts of one screen: a tree with a node panel,
-a single tree table, and drill-down columns. The columns became the overview,
-stopped at the feed kind, because they never draw a large folder whole. The tree
-became the screen that reaches a feed. The tree table was dropped.
-
-From the Qt window the prototype keeps the running, stopped or partial state
-with its count on every node, one folder-scoped request to start or stop a
-subtree, and the two-flag pair. It leaves editing, the mixture and the live
-chart to the feed pages.
+- *One screen, two tabs.* The FX price feeds and IR curve feeds screens are
+  removed, with their cards, addresses, words and tests. There are no
+  redirects. The test data is rebuilt, so nothing needs the old addresses.
+- *No scope level.* The system and test split had no data behind it, and the
+  name /Test feeds/ was wrong for synthetic feeds. The tree has providers, then
+  asset classes. The split comes back when a dataset publishes feeds for the
+  installation.
+- *Providers carry a description.* The dashboard shows what each provider
+  simulates. The 2016 ORE Samples collection sits under a new /ORE/ provider.
+  There is no /Generic/ provider and no feed without a provider.
+- *Every feed has an asset class.* A new column holds the code from the asset
+  class table: FX for an FX spot, Rates for an IR curve. The table and the tree
+  filter on it.
+- *The feed table keeps what the lists had.* State, name, asset class,
+  underlying, engine, frequency and enabled. The underlying is a currency pair
+  with two flags for an FX feed, and a currency with one flag for an IR feed.
+  Auto-start stays a hidden column. Add feed opens the new-feed form in the
+  chosen folder.
+- *Standard paging.* The table pages by 25, 50, 100 or 200 rows, with first,
+  previous, next and last.
+- *Start and Stop apply to a pick.* A row has no buttons. Ticking rows picks
+  them. When the page is all picked, a link offers every feed that matches the
+  filter. The request carries the filter and the picked or left-out ids. The
+  server resolves the feeds, so the browser never holds the ids of a large
+  set. The dialog counts what the request touches, and the report says what
+  started, what already ran and what was skipped.
+- *State filter.* Started, Stopped or All replaces the Running only box.
+- *Feeds that should run.* A restart of the synthetic service stops every
+  feed, and nothing starts them again. The dashboard counts the enabled
+  auto-start feeds that are stopped and starts them in one step. The
+  /restart/ state shows it.
 
 ** The screens and states
 
@@ -69,50 +88,50 @@ Switch with the bottom bar, or =?screen= and =?state=.
 
 | Screen | What it shows |
 |--------+---------------|
-| =market= | Market data with the Synthetic folder card |
-| =synthetic= | The Synthetic page of cards |
-| =overview= | Feed overview: the columns and the selected scope, provider or kind |
-| =tree= | Feed tree: the tree and the selected folder |
+| =market= | Market data with the one Synthetic card |
+| =dashboard= | Providers, what each simulates, what runs, the banner |
+| =tree= | The tree, the filters, the pick bar and the paged table |
 | =feed= | A feed's page, as a stub, with the breadcrumb through the tree |
 
 | State | What it shows |
 |-------+---------------|
-| =mixed= | The Bloomberg FX spots running and its IR curves stopped, so Bloomberg reads 26 of 55; one test feed running. |
-| =stopped= | Nothing running. |
-| =scale= | Six providers and about 2,850 feeds, with an /Order books/ kind marked planned under each new provider. |
-| =search= | The tree's search holds "usd sofr". |
+| =mixed= | Bloomberg FX running, the rest stopped. |
+| =restart= | The service has just restarted: nothing runs and 52 feeds should. |
+| =stopped= | Nothing runs and no feed is meant to. |
+| =scale= | Seven providers and about 2,900 feeds, to try paging and "all matching". |
+| =search= | The tree's search holds "usd sofr", across every provider. |
 
-Start and Stop ask first, saying how many feeds the request touches, and that
-stopping a bound feed stops every party bound to it; the report then says what
-started, what was already running and what was skipped, and every roll-up
-recomputes.
+Starting a feed whose series another running feed already publishes is skipped.
+ORE and Bloomberg publish the same thirteen FX series, so the report shows it.
 
-** What it changed in the menu structure
+** What it changes in the menu structure
 
-[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] allowed it in part. Three points were decided and the page
-amended:
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] is amended in two
+points:
 
-- *A folder card inside an area.* The page holds the folder and file cards, but
-  every folder today is an area. A Synthetic folder makes the trail Home, Market
-  data, Synthetic, then the screen, one level deeper than the rule states. The
-  addresses follow the trail: =/market-data/synthetic/...=, with the current
-  feed addresses redirected.
-- *A folder page holds cards only.* So the overview is a screen with its own file
-  card, not a panel on the Synthetic page.
-- *A feed page's breadcrumb runs through the tree.* A record page's trail is its
-  list and then the subject. Here the feed tree stands in for the list, with the
-  folders between, for every feed, whichever screen the person came from, so
-  the screen keeps one trail.
+- Synthetic is a screen card with tabs, not a folder card. The trail is Home,
+  Market data, Synthetic. The deeper folder level goes away.
+- A feed page's breadcrumb still runs through the Feed tree and the folders
+  between.
+
+** Open points
+
+- The addresses. This page proposes =/market-data/synthetic= for the screen,
+  with the tab in the query, and =/market-data/synthetic/fx/:id= and
+  =/market-data/synthetic/ir/:id= for the feed pages. The source moves to a
+  =synthetic= folder under =marketdata=.
+- The collection level. ORE keeps its collection, 2016 ORE Samples, as a folder
+  under the provider. Bloomberg has none. Whether every provider gets one is
+  not decided.
+- The tree stops at the asset class. The instrument type is a column of the
+  feed, not a folder.
 
 ** What the prototype assumes
 
-- Bloomberg sits under /System feeds/, the story's target. Today it is a party
-  collection published with the tenant, because the services do not yet read
-  system collections.
-- The 2016 ORE Samples collection sits under the /Generic/ provider, since it
-  stands for no provider.
-- The counts and ticks are mock values; a built screen reads them from the
-  feed status the synthetic service already reports.
+- The counts and ticks are mock values. A built screen reads them from the feed
+  status the synthetic service already reports.
+- "Should run" is a feed that is enabled, marked to start automatically and
+  stopped.
 
 * See also
 

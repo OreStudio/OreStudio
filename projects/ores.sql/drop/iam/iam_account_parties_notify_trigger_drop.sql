@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,10 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
-drop rule if exists ores_iam_account_roles_delete_rule on ores_iam_account_roles_tbl;
-drop trigger if exists ores_iam_account_roles_insert_trg on ores_iam_account_roles_tbl;
-drop function if exists ores_iam_account_roles_insert_fn;
-drop index if exists account_roles_role_idx;
-drop index if exists account_roles_account_idx;
-drop table if exists ores_iam_account_roles_tbl;
+drop trigger if exists ores_iam_account_parties_notify_close_trg on "ores_iam_account_parties_tbl";
+drop trigger if exists ores_iam_account_parties_notify_trg on "ores_iam_account_parties_tbl";
+drop function if exists ores_iam_account_parties_notify_fn;

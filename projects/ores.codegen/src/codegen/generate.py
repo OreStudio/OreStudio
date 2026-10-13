@@ -205,6 +205,22 @@ _JUNCTION_HISTORY_FACETS = frozenset({
     "ores.cpp.presentation",
 })
 
+# A junction's change events are opt-in as well: the model states
+# ``:events: true``. The registrar needs composing into its service and the
+# trigger needs a table to watch, so a junction that does not announce
+# generates none of the four.
+_JUNCTION_EVENT_ARCHETYPES = frozenset({
+    "ores.sql.schema.notify_trigger",
+    "ores.sql.schema.notify_trigger_drop",
+})
+
+_JUNCTION_EVENT_FACETS = frozenset({
+    "ores.cpp.nats-eventing",
+    "ores.cpp.nats-event-registrar",
+    "ores.sql.schema.notify_trigger",
+    "ores.sql.schema.notify_trigger_drop",
+})
+
 # The per-entity history-provider registrar renders every version's actor
 # through build_entity_history_versions(), which requires the entity's
 # domain type to carry flat modified_by and recorded_at members. Two
@@ -561,6 +577,7 @@ def resolve_targets(
                 "rendering %s",
                 model_path.name, owner, ", ".join(sorted(owned)))
             gen_facets = gen_facets - owned
+    no_temporal_archetypes: frozenset[str] = frozenset()
     if model_type == "junction":
         junction = model_data.get("junction", {})
         left = (junction.get("left") or {}).get("list_by")
@@ -588,7 +605,12 @@ def resolve_targets(
             # must not re-admit them for one that does not.
             gen_facets = {f for f in gen_facets
                           if f not in _JUNCTION_HISTORY_FACETS}
-    no_temporal_archetypes: frozenset[str] = frozenset()
+        if not junction.get("events"):
+            gen_facets = {f for f in gen_facets
+                          if f not in _JUNCTION_EVENT_FACETS}
+            # The two SQL archetypes live in the ``ores.sql.schema`` facet, which
+            # a junction renders for its table, so they are withheld by address.
+            no_temporal_archetypes = _JUNCTION_EVENT_ARCHETYPES
     if model_type == "domain_entity":
         entity = model_data.get("domain_entity", {})
         sql_flags = entity.get("sql") or {}

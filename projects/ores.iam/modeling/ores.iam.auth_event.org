@@ -1,0 +1,281 @@
+:PROPERTIES:
+:ID: 24031CC6-5F22-4A6F-96FD-A1E149038580
+:END:
+#+title: ores.iam.auth_event
+#+description: Codegen entity model for the iam auth_events hypertable, one row per authentication event.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: auth_event
+#+entity_plural: auth_events
+#+entity_title: Auth Event
+#+brief: One authentication event: a login, a failed attempt, a logout, a token refresh, a rejected refresh, a tenant entered or left, or a signup; a TimescaleDB hypertable partitioned by event_time.
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+One row per authentication event. The rows are append-only, so the model states
+=:current_state:=: an event is a fact about an instant, and the bi-temporal pair
+has no meaning on it.
+
+The table is the system's audit log of who signed in and who failed to. It
+carries no row-level security and no tenant column of the generated kind. Its
+=tenant_id= is an ordinary text column, because an event can happen before a
+tenant is known, and the empty string then says so. The read in
+=ores.iam.auth_event_operations= scopes on that column itself.
+
+The table is internal: its protocol, handler and shell commands are the
+hand-written operation model's, so only the data layer and the SQL schema are
+generated here. The two continuous aggregates and their retention are a
+paste block in the SQL section, because the generator states the hypertable and
+the raw table's retention and nothing above them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: false
+:profile:       readonly-timeseries
+:subcomponent:  api
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            text
+:cpp_type:        std::string
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The event's id, a uuid in its text form. It sits in the primary key beside the
+partition column.
+
+** event_time
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:primary_key: true
+:nullable:    false
+:END:
+
+When the event happened. The partition column.
+
+** tenant_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The tenant the event belongs to, in its text form. Empty when the event came
+before a tenant was resolved, such as a failed login.
+
+** account_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The account the event is about, in its text form. Empty when unknown.
+
+** event_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What happened: login_success, login_failure, logout, token_refresh,
+max_session_exceeded, tenant_entered, tenant_left, signup_success or
+signup_failure.
+
+** username
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The username the event names. Empty for an event with no resolved account.
+
+** session_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The session the event belongs to. Empty when no session was established.
+
+** party_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The party chosen at sign-in. Empty when none was.
+
+** error_detail
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Why a failure failed. Empty for a success.
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ae
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                     ores_iam_auth_events_tbl
+:current_state:                 true
+:hypertable:                    true
+:hypertable_partition_column:   event_time
+:hypertable_chunk_interval:     1 day
+:hypertable_retention_interval: 90 days
+:no_audit_columns:              true
+:suppress_nk_index:             true
+:END:
+
+** Indexes
+
+| name                      | columns                  | unique | current_only | where_extra |
+|---------------------------+--------------------------+--------+--------------+-------------|
+| tenant_time | tenant_id, event_time desc | false | false |  |
+| event_type | event_type, event_time desc | false | false |  |
+
+** Extra DDL
+
+The hourly and daily aggregates count each event type per tenant. They need the
+Timescale licence, as the retention does, so they are created only under it.
+
+#+begin_src sql :name extra_ddl :implements 92432102-d405-46fc-911a-111dfed27358
+do $$
+declare
+    current_license text;
+begin
+    if not exists (select 1 from pg_extension where extname = 'timescaledb') then
+        return;
+    end if;
+    select current_setting('timescaledb.license', true) into current_license;
+    if current_license = 'timescale' then
+        execute $sql$
+            create materialized view if not exists ores_iam_auth_events_hourly_vw
+            with (timescaledb.continuous) as
+            select
+                public.time_bucket('1 hour', event_time) as hour,
+                tenant_id,
+                event_type,
+                count(*) as event_count
+            from ores_iam_auth_events_tbl
+            group by hour, tenant_id, event_type
+            with no data
+        $sql$;
+
+        perform public.add_continuous_aggregate_policy(
+            'ores_iam_auth_events_hourly_vw',
+            start_offset => interval '1 day',
+            end_offset => interval '15 minutes',
+            schedule_interval => interval '15 minutes',
+            if_not_exists => true
+        );
+
+        execute $sql$
+            create materialized view if not exists ores_iam_auth_events_daily_vw
+            with (timescaledb.continuous) as
+            select
+                public.time_bucket('1 day', event_time) as day,
+                tenant_id,
+                event_type,
+                count(*) as event_count,
+                count(distinct account_id) filter (
+                    where account_id != '') as unique_accounts
+            from ores_iam_auth_events_tbl
+            group by day, tenant_id, event_type
+            with no data
+        $sql$;
+
+        perform public.add_continuous_aggregate_policy(
+            'ores_iam_auth_events_daily_vw',
+            start_offset => interval '3 days',
+            end_offset => interval '1 hour',
+            schedule_interval => interval '1 hour',
+            if_not_exists => true
+        );
+
+        perform public.add_retention_policy(
+            'ores_iam_auth_events_hourly_vw',
+            drop_after => interval '90 days',
+            if_not_exists => true
+        );
+        perform public.add_retention_policy(
+            'ores_iam_auth_events_daily_vw',
+            drop_after => interval '3 years',
+            if_not_exists => true
+        );
+    else
+        raise notice 'TimescaleDB Apache license - continuous aggregates skipped';
+    end if;
+end $$;
+#+end_src
+
+** Extra drop
+
+The aggregates depend on the table, so they go first.
+
+#+begin_src sql :name extra_drop :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop materialized view if exists ores_iam_auth_events_daily_vw cascade;
+drop materialized view if exists ores_iam_auth_events_hourly_vw cascade;
+#+end_src
+
+* Physical space
+
+The table is internal, so only the data layer and the SQL schema are generated.
+The protocol, the handler and the shell commands are the operation model's.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell-command              | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

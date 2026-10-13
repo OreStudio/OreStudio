@@ -165,6 +165,8 @@ const fr: SourceCatalogue = {
             notYourself: 'Vous ne pouvez pas vous retirer un rôle.',
             whatTheyAllow: 'Ce que ces rôles permettent',
             giveTitle: 'Accorder un rôle à {name}',
+            recordRole: 'Rôle',
+            recordParty: 'Partie',
             alreadyHeld: 'déjà détenu',
             chooseReason: 'Choisissez une raison',
             note: 'Note (facultative)',
@@ -2381,7 +2383,7 @@ const fr: SourceCatalogue = {
             account_party:
                 'Les parties où une personne travaille n’ont pas pu être lues, donc l’arrivée ou le départ n’apparaît pas.',
             account_role:
-                'Un rôle retiré n’apparaît pas, seuls les rôles détenus aujourd’hui apparaissent.',
+                'Les rôles donnés à une personne n’ont pas pu être lus ; l’octroi ou le retrait d’un rôle n’apparaît donc pas.',
             auth_event:
                 'Seules les connexions les plus récentes sont conservées, donc les plus anciennes n’apparaissent pas.',
             unread: 'Une partie de cet historique n’a pas pu être lue, donc elle n’apparaît pas.',

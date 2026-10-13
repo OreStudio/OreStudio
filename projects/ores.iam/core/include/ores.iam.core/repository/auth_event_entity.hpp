@@ -17,89 +17,43 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_AUTH_EVENT_ENTITY_HPP
-#define ORES_IAM_REPOSITORY_AUTH_EVENT_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_AUTH_EVENT_ENTITY_HPP
+#define ORES_IAM_CORE_REPOSITORY_AUTH_EVENT_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include <cstdint>
+#include <optional>
 #include <ostream>
 #include <string>
 
 namespace ores::iam::repository {
 
+using db_timestamp = ores::database::repository::db_timestamp;
+
 /**
- * @brief Entity for a single authentication event in the auth events hypertable.
- *
- * Records logins, logouts, token refreshes, and related outcomes.
- * No RLS -- this is a system-level audit log.
- *
- * It lived in session_entity.hpp until the session entity model took that
- * file over; the auth events table has no model of its own yet, so the
- * struct keeps its own header. The two primary-key columns are bound as
- * strings, the estate-wide convention for a timestamp column read through
- * the text protocol.
+ * @brief Represents a auth event in the database.
  */
 struct auth_event_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_auth_events_tbl";
 
-    /**
-     * @brief UUID for this event -- part of composite primary key.
-     */
     sqlgen::PrimaryKey<std::string> id;
-
-    /**
-     * @brief Event timestamp -- part of composite primary key and partition column.
-     */
     sqlgen::PrimaryKey<std::string> event_time;
-
-    /**
-     * @brief Tenant identifier. Empty string if unknown (e.g. failed login
-     * before tenant resolution).
-     */
     std::string tenant_id;
-
-    /**
-     * @brief Account identifier. Empty string if unknown.
-     */
     std::string account_id;
-
-    /**
-     * @brief Event type: login_success, login_failure, logout,
-     * token_refresh, max_session_exceeded, signup_success, signup_failure.
-     */
     std::string event_type;
-
-    /**
-     * @brief Username associated with the event. May be empty for
-     * events without a resolved account.
-     */
     std::string username;
-
-    /**
-     * @brief Session UUID. Empty string if no session was established.
-     */
     std::string session_id;
-
-    /**
-     * @brief Party UUID. Empty string if no party was selected.
-     */
     std::string party_id;
-
-    /**
-     * @brief Error detail for failure events. Empty string for success events.
-     */
     std::string error_detail;
 };
 
-inline std::ostream& operator<<(std::ostream& s, const auth_event_entity& v) {
-    s << "id: " << v.id.value() << ", event_time: " << v.event_time.value()
-      << ", tenant_id: " << v.tenant_id << ", account_id: " << v.account_id
-      << ", event_type: " << v.event_type << ", username: " << v.username
-      << ", session_id: " << v.session_id << ", party_id: " << v.party_id
-      << ", error_detail: " << v.error_detail;
-    return s;
-}
+std::ostream& operator<<(std::ostream& s, const auth_event_entity& v);
 
 }
 

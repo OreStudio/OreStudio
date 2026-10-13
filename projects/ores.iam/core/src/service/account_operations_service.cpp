@@ -20,7 +20,7 @@
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
-#include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
@@ -420,7 +420,7 @@ void account_operations_service::record_lock_event(bool locked,
                                                    const domain::account& account,
                                                    const std::string& detail) {
     try {
-        repository::auth_event_repository events(ctx_);
+        repository::auth_event_log events(ctx_);
         const auto now = std::chrono::system_clock::now();
         const auto tenant = ctx_.tenant_id().to_string();
         const auto id = boost::uuids::to_string(account.id);

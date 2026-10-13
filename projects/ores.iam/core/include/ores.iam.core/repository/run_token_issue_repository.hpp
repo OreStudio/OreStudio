@@ -17,14 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_RUN_TOKEN_ISSUE_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_RUN_TOKEN_ISSUE_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_RUN_TOKEN_ISSUE_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_RUN_TOKEN_ISSUE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.iam.api/domain/run_token_issue.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
-#include <cstddef>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <string_view>
@@ -33,32 +41,7 @@
 namespace ores::iam::repository {
 
 /**
- * @brief One row of the run token issue log, as the exchange writes and reads
- * it.
- *
- * The log is the exchange's record of every token it issued and refused, and
- * the store a grant's @c max_runs is counted in. It is insert-only.
- */
-struct run_token_issue {
-    std::chrono::system_clock::time_point issued_at;
-    std::string tenant_id;
-    std::string party_id;
-    std::string grant_id;
-    std::string run_id;
-    std::string service;
-    std::string grantor_account_id;
-    std::string outcome;
-    std::string reason;
-};
-
-/**
- * @brief Repository for the run token issue log.
- *
- * Writes to, and reads the counts from, the ores_iam_run_token_issues_tbl
- * TimescaleDB hypertable. Insert-only: an issue is a fact once recorded.
- *
- * This is a system-level audit log: no RLS is applied, so every tenant's rows
- * are reachable from the connection the exchange happens to hold.
+ * @brief Reads and writes run token issues to data storage.
  */
 class ORES_IAM_CORE_EXPORT run_token_issue_repository {
 private:
@@ -72,49 +55,161 @@ private:
 
 public:
     using context = ores::database::context;
-    explicit run_token_issue_repository(context ctx);
 
     /**
-     * @brief Appends one issue-log row.
-     *
-     * @param issue The row: the grant, the run, the service and the outcome.
+     * @brief Returns the SQL created by sqlgen to construct the table.
      */
-    void record(const run_token_issue& issue);
+    std::string sql();
 
     /**
-     * @brief Appends one issue-log row from its parts.
+     * @brief Writes run token issues to database.
      *
-     * @param outcome Either @c issued or @c refused.
-     * @param reason Why a refusal happened; empty on issue.
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
      */
-    void record(const std::chrono::system_clock::time_point& issued_at,
-                const std::string& tenant_id,
-                const std::string& party_id,
-                const std::string& grant_id,
-                const std::string& run_id,
-                const std::string& service,
-                const std::string& grantor_account_id,
-                const std::string& outcome,
-                const std::string& reason);
+    /**@{*/
+    void write(context ctx, const domain::run_token_issue& v);
+    void write(context ctx, const std::vector<domain::run_token_issue>& v);
+    /**@}*/
 
     /**
-     * @brief How many distinct runs a grant has already been served.
+     * @brief Writes a issue, honouring the claim it states.
      *
-     * The count a grant's @c max_runs is measured against. Issued rows alone
-     * are counted: a refusal served no run.
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     *
+     * This table carries no version column, so the store cannot check a
+     * version. A @c must_match_version claim is refused here, and a
+     * @c must_not_exist claim over a live row is refused by the read below
+     * rather than by the trigger.
      */
-    [[nodiscard]] std::size_t distinct_runs(const std::string& grant_id) const;
+    void write(context ctx,
+               const domain::run_token_issue& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
-     * @brief Whether a grant has already been served for this run.
-     *
-     * A second exchange for the same run is a retry of the same work, so it
-     * neither consumes another run nor is refused as exhausted.
+     * @brief Writes a set of run token issues, each honouring its own
+     * claim, as one statement.
      */
-    [[nodiscard]] bool exists(const std::string& grant_id, const std::string& run_id) const;
+    void write(context ctx,
+               const std::vector<domain::run_token_issue>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
+
+    /**
+     * @brief Reads latest run token issues, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::run_token_issue> read_latest(context ctx);
+    std::vector<domain::run_token_issue>
+    read_latest(context ctx, const std::string& id, const std::string& issued_at);
+    std::vector<domain::run_token_issue> read_latest(context ctx,
+                                                     const std::vector<std::string>& ids,
+                                                     const std::vector<std::string>& issued_ats);
+    /**@}*/
+
+
+    /**
+     * @brief Reads the issue rows for the given primary key.
+     *
+     * A current-state table holds one row per key, so this is the single
+     * current row, not a version history.
+     */
+    std::vector<domain::run_token_issue>
+    read_all(context ctx, const std::string& id, const std::string& issued_at);
+
+
+    /**
+     * @brief Whether a list of run token issues can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
+     * @brief Reads latest run token issues with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
+     * @throws std::invalid_argument if the field is not sortable
+     */
+    std::vector<domain::run_token_issue>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {});
+
+    /**
+     * @brief Gets the total count of active run token issues.
+     * @param ctx Repository context with database connection
+     * @return Total number of active run token issues
+     */
+    std::uint32_t get_total__count(context ctx);
+
+    /**
+     * @brief Deletes a issue permanently.
+     *
+     * A current-state table has no history, so the row is removed, not
+     * soft-closed.
+     */
+    void remove(context ctx, const std::string& id, const std::string& issued_at);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a issue, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(context ctx,
+                         const std::string& id,
+                         const std::string& issued_at,
+                         std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes run token issues permanently.
+     */
+    void remove(context ctx,
+                const std::vector<std::string>& ids,
+                const std::vector<std::string>& issued_ats);
+
 
 private:
-    context ctx_;
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx,
+                                                      const domain::run_token_issue& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::run_token_issue apply_claim(context ctx,
+                                        const domain::run_token_issue& v,
+                                        const ores::utility::domain::precondition& claim);
 };
 
 }

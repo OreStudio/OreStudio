@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: AE009E37-918F-417F-9182-0027F115D929
+:END:
+#+title: ores.iam.run_token_issue
+#+description: Codegen entity model for the iam run_token_issues hypertable, one row per run grant exchange that reached the log.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: run_token_issue
+#+entity_plural: run_token_issues
+#+entity_title: Run Token Issue
+#+brief: One run grant exchange that reached the log, issued or refused; a TimescaleDB hypertable partitioned by issued_at.
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+A row says who asked for a run token, for which grant and which run, and whether
+the token was issued or refused. The exchange reads it to count the distinct runs
+a grant has already served, so a grant with a =max_runs= admits exactly that
+many runs. The rows are append-only, so the model states =:current_state:=.
+
+The table is a system-level audit log. Its =tenant_id= is an ordinary text
+column, and the table carries no row-level security. Only IAM's own exchange
+reads and writes it.
+
+No retention policy is set. A grant that names a =max_runs= is counted from this
+table, so dropping rows would let a grant serve more runs than its grantor
+allowed.
+
+The table is internal, so only the data layer and the SQL schema are generated.
+The reads stay hand-written in =run_token_issue_log=, because they are counts
+the generated reads do not express.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: false
+:profile:       readonly-timeseries
+:subcomponent:  api
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            text
+:cpp_type:        std::string
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The row's id, a uuid in its text form. It sits in the primary key beside the
+partition column.
+
+** issued_at
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:primary_key: true
+:nullable:    false
+:END:
+
+When the exchange reached the log. The partition column.
+
+** tenant_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The tenant of the grant, in its text form.
+
+** party_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The party the grant names, in its text form.
+
+** grant_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The run grant the exchange was made against.
+
+** run_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The run the token was asked for.
+
+** service
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The service that asked.
+
+** grantor_account_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The account whose consent the grant records.
+
+** outcome
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the exchange answered: issued, when a token was minted, or refused.
+
+** reason
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The check that refused the exchange, or unavailable when a limit refused before
+the checks. Empty for an issue.
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rti
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                   ores_iam_run_token_issues_tbl
+:current_state:               true
+:hypertable:                  true
+:hypertable_partition_column: issued_at
+:hypertable_chunk_interval:   1 day
+:no_audit_columns:            true
+:suppress_nk_index:           true
+:END:
+
+** Indexes
+
+| name       | columns                  | unique | current_only | where_extra |
+|------------+--------------------------+--------+--------------+-------------|
+| grant_run   | grant_id, run_id         | false  | false        |             |
+| tenant_time | tenant_id, issued_at desc | false  | false        |             |
+
+* Physical space
+
+The table is internal, so only the data layer and the SQL schema are generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell-command              | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

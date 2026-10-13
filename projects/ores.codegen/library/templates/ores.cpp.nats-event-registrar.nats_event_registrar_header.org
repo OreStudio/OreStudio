@@ -49,6 +49,25 @@ register_{{entity_singular}}_event_mapping(ores::eventing::service::postgres_eve
 
 #endif
 {{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_service_upper}}_MESSAGING_{{name_singular_upper}}_EVENT_REGISTRAR_HPP
+#define ORES_{{component_service_upper}}_MESSAGING_{{name_singular_upper}}_EVENT_REGISTRAR_HPP
+
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+
+namespace ores::{{component}}::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription
+register_{{name_singular}}_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                           ores::eventing::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats);
+
+}
+
+#endif
+{{/junction}}
 #+end_src
 
 * See also

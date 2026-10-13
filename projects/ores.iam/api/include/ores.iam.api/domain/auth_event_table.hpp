@@ -1,6 +1,6 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,10 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_DOMAIN_AUTH_EVENT_TABLE_HPP
+#define ORES_IAM_API_DOMAIN_AUTH_EVENT_TABLE_HPP
 
-drop rule if exists ores_iam_role_permissions_delete_rule on ores_iam_role_permissions_tbl;
-drop trigger if exists ores_iam_role_permissions_insert_trg on ores_iam_role_permissions_tbl;
-drop function if exists ores_iam_role_permissions_insert_fn;
-drop index if exists role_permissions_permission_idx;
-drop index if exists role_permissions_role_idx;
-drop table if exists ores_iam_role_permissions_tbl;
+#include "ores.iam.api/domain/auth_event.hpp"
+#include "ores.iam.api/export.hpp"
+#include <string>
+#include <vector>
+
+namespace ores::iam::domain {
+
+/**
+ * @brief Converts auth_events to the table format.
+ */
+ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<auth_event>& v);
+
+}
+
+#endif

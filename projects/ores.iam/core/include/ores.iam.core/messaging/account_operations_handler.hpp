@@ -29,7 +29,7 @@
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
-#include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
@@ -1298,7 +1298,7 @@ public:
              * sign-in that already succeeded.
              */
             try {
-                repository::auth_event_repository ev_repo(ctx);
+                repository::auth_event_log ev_repo(ctx);
                 ev_repo.record_login_success(std::chrono::system_clock::now(),
                                              tenant_id_str,
                                              boost::uuids::to_string(account_id),

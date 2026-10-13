@@ -65,6 +65,15 @@ struct account_parties_filter {
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
 };
 
+struct account_party_event {
+    boost::uuids::uuid event_id;
+    account_party_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct list_account_parties_request {
     using response_type = struct list_account_parties_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.list";

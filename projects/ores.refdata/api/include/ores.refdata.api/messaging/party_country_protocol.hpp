@@ -65,6 +65,15 @@ struct party_countries_filter {
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 };
 
+struct party_country_event {
+    boost::uuids::uuid event_id;
+    party_country_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct list_party_countries_request {
     using response_type = struct list_party_countries_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_countries.list";

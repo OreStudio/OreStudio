@@ -196,7 +196,7 @@ describe('the story of a party', () => {
     });
 
     /** One version of a link, which names the pair as its ID and says when it ended. */
-    function linkVersion(number: number, link: string, closedAt = '') {
+    function linkVersion(number: number, link: string, closedAt = '', closedBy = '') {
         const [, country = ''] = link.split('/');
         return {
             version: number,
@@ -207,6 +207,7 @@ describe('the story of a party', () => {
                 { name: 'Party', value: PARTY },
                 { name: 'Country', value: country },
                 { name: 'Closed At', value: closedAt },
+                { name: 'Closed By', value: closedBy },
                 { name: 'Change Reason Code', value: 'system.new_record' },
             ],
             changes: { entries: [] },
@@ -223,7 +224,7 @@ describe('the story of a party', () => {
                     {
                         'ores.refdata.party_country': [
                             linkVersion(1, link),
-                            linkVersion(2, link, '2026-10-05T10:00:00Z'),
+                            linkVersion(2, link, '2026-10-05T10:00:00Z', 'priya'),
                         ],
                     },
                 ),
@@ -237,8 +238,8 @@ describe('the story of a party', () => {
             ['changed', 2, link],
             ['raised', 1, link],
         ]);
-        // The store records when a link ended and not who ended it.
-        expect(own[0]?.actor).toBe('');
+        // The store records when a link ended and who ended it.
+        expect(own[0]?.actor).toBe('priya');
         expect(own[0]?.at).toBe('2026-10-05T10:00:00Z');
         expect(own[0]?.fields.map((f) => f.name)).toEqual(['ID', 'Party', 'Country']);
     });

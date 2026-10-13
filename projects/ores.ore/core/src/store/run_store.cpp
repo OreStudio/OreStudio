@@ -31,6 +31,7 @@
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.core/repository/file_type_repository.hpp"
 #include "ores.reporting.core/service/run_document_service.hpp"
 #include <algorithm>
@@ -71,13 +72,11 @@ constexpr std::string_view imported_types[] = {
  */
 std::string
 setup_parameter_of(const std::vector<reporting::domain::file_type>& types, std::string_view code) {
-    const auto it = std::ranges::find_if(types, [&](const auto& t) {
-        return !t.analytic_type_code && t.configuration_type_code == code;
-    });
-    if (it == types.end())
+    const auto* t = reporting::domain::setup_file_type_of(types, code);
+    if (t == nullptr)
         throw std::invalid_argument(
             std::format("No file type names the document of the {} configuration type.", code));
-    return it->ore_parameter;
+    return t->ore_parameter;
 }
 
 std::vector<document_kind> document_kinds_of(const std::vector<reporting::domain::file_type>& types) {

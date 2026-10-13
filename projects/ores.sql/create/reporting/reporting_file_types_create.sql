@@ -105,6 +105,11 @@ on "ores_reporting_file_types_tbl" (tenant_id, analytic_type_code, ore_parameter
 where valid_to = ores_utility_infinity_timestamp_fn()
   and analytic_type_code is not null;
 
+create unique index if not exists file_types_setup_document_idx
+on "ores_reporting_file_types_tbl" (tenant_id, configuration_type_code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and analytic_type_code is null and configuration_type_code is not null;
+
 create or replace function ores_reporting_file_types_insert_fn()
 returns trigger as $$
 declare

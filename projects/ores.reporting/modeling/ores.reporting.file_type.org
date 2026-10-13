@@ -234,12 +234,13 @@ checks the template emits on its own.
 The analytic and the ORE parameter say which file a type is, so a second row for the
 same pair would name the file twice. The Setup block has no analytic, and a null does
 not make two rows differ in a unique index, so the Setup parameters and the analytic
-parameters each have an index of their own.
+parameters each have an index of their own. A third index gives each configuration type one Setup file, because the export finds the file of a bound document by its type.
 
 | name             | columns                                    | unique | current_only | where_extra                    |
 |------------------+--------------------------------------------+--------+--------------+--------------------------------|
 | setup_parameter  | tenant_id, ore_parameter                   | true   | true         | analytic_type_code is null     |
 | analytic_parameter | tenant_id, analytic_type_code, ore_parameter | true | true         | analytic_type_code is not null |
+| setup_document   | tenant_id, configuration_type_code         | true   | true         | analytic_type_code is null and configuration_type_code is not null |
 
 * Foreign keys
 

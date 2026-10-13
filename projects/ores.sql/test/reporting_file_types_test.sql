@@ -30,6 +30,8 @@
  *   name it
  * - The cube and the scenario data that a simulation writes are read by xva and pfe under the
  *   name the simulation gives them, and the compressed and binary files are named too
+ * - A configuration type has one Setup file, so the export finds the file of a bound
+ *   document by its type whatever the order of the rows
  * - Two file types cannot name the same file: the analytic and the parameter are unique
  *
  * The seed itself is compared with the ORE samples by
@@ -40,7 +42,7 @@
 
 begin;
 
-select plan(24);
+select plan(26);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -246,6 +248,26 @@ select throws_ok(
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
     '23514', null,
     'a file that is not xml has no XSD');
+
+select throws_ok(
+    $$insert into ores_reporting_file_types_tbl (
+          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+          configuration_type_code, name_pattern, sample_count, sample_total, description,
+          display_order, modified_by, performed_by, change_reason_code, change_commentary)
+      values ('test.secondsetup', ores_utility_system_tenant_id_fn(), 0, null, 'otherFile',
+              'input', 'xml', 'input_document', 'conventions', 'other.xml', 1, 1,
+              'A test file type.', 999,
+              current_user, current_user, 'system.test', 'pgTAP fixture')$$,
+    '23505', null,
+    'a second Setup file for the same configuration type is refused');
+
+select is(
+    (select count(*) from (
+        select configuration_type_code from t_live
+        where analytic_type_code is null and configuration_type_code is not null
+        group by configuration_type_code having count(*) > 1) d),
+    0::bigint,
+    'every configuration type has one Setup file at most in the seed');
 
 select * from finish();
 rollback;

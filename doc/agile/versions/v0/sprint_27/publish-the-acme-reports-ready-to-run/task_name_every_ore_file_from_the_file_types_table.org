@@ -67,7 +67,7 @@ task and name that file in the Command column.
 | Exports valid against the schema | 78 of 78 | =xmllint --noout --schema external/ore/xsd/ore.xsd= on each ore.xml | see PR |
 | Setup files named and present in the package | 78 of 78 packages, 4 of 4 files each | package check script over the exports | see PR |
 | Staged parameter values in the exports | 224 of 224 match | compare script over the exports, file parameters set aside | see PR |
-| pgTAP | 457 tests in 46 files pass | =projects/ores.sql/test/run_tests.sh= on a freshly recreated database | see PR |
+| pgTAP | 459 tests in 46 files pass | =projects/ores.sql/test/run_tests.sh= on a freshly recreated database | see PR |
 | C++ suites | ores.reporting.core, ores.reporting.service, ores.ore.core, ores.ore.service, ores.shell.reporting pass | =ctest --preset linux-clang-debug-make -R= on the five suites | see PR |
 
 * Notes
@@ -104,7 +104,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Setup file of a configuration type is not unique | ores.reporting.file_type.org | Accepted | Partial unique index on the configuration type for Setup rows, with pgTAP cases for the refusal and for the seed. |
+| 2 | The Setup lookup is written three times | run_document_generator.cpp, run_store.cpp, run_configuration_operations.cpp | Accepted | One helper, setup_file_type_of, in ores.reporting.api serves all three. |
+| 3 | The ore service reads the first 1000 rows; the system tenant is unchecked | run_configuration_operations.cpp, run_store.cpp | Accepted for the read, explained for the tenant | The request now asks only for the Setup rows of the four imported types. The rows are seeded for the system tenant, as the parameter definitions are. |
+| 4 | A reader takes the first active analytic of the writer's type | run_document_generator.cpp | Accepted | A comment says so. The samples never repeat an analytic type in a run document. |
+| 5 | Position handling and stated overrides | run_document_generator.cpp | No change | Correct as reviewed. |
+| 6 | A bound type with no Setup file type now throws | run_document_generator.cpp | No change | All 78 ACME runs bind only the four documents and the risk configuration, and all export. |
+| 7 | More generator tests | service_run_document_generator_tests.cpp | Partly accepted | The missing type and the writer switched off already had tests. The two-rows case is a pgTAP case. |
+| 8 | Track the analytic input documents | n/a | No change | Backlog tasks 5 and 6 cover them. |
+| 9 | The full gate has not been run | n/a | Accepted | Run before merge. |
 
 * Result
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
+#include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -39,14 +40,6 @@ const file_type* find_by_code(const std::vector<file_type>& types, const std::st
     return it == types.end() ? nullptr : &*it;
 }
 
-// The Setup file type of a configuration type: the parameter that names the document.
-const file_type* setup_file_type(const std::vector<file_type>& types, const std::string& type_code) {
-    const auto it = std::ranges::find_if(types, [&](const file_type& t) {
-        return !t.analytic_type_code && t.configuration_type_code == type_code;
-    });
-    return it == types.end() ? nullptr : &*it;
-}
-
 const messaging::run_parameter* find_parameter(const messaging::run_analytic& a,
                                                const std::string& name) {
     const auto it = std::ranges::find(a.parameters, name, &messaging::run_parameter::name);
@@ -58,7 +51,9 @@ bool is_on(const messaging::run_analytic& a) {
 }
 
 // The name a file has in this run: the value the configuration states, or the well
-// known name. A reader follows its writer, so the two cannot differ.
+// known name. A reader follows its writer, so the two cannot differ. A run document
+// holds an analytic type once, as the ORE samples do, so the first active analytic of the
+// writer's type is the writer.
 std::optional<std::string> name_of(const std::vector<file_type>& types,
                                    const std::vector<messaging::run_analytic>& analytics,
                                    const file_type& t) {
@@ -143,7 +138,7 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
         // The risk configuration fills no file: the run document is built from it.
         if (type == "risk_report_config")
             continue;
-        const auto* t = setup_file_type(in.file_types, type);
+        const auto* t = domain::setup_file_type_of(in.file_types, type);
         if (t == nullptr)
             throw std::invalid_argument(
                 std::format("No file type names the document of the {} configuration the "

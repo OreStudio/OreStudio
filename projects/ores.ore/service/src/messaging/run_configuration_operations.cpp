@@ -27,6 +27,7 @@
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
+#include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -101,16 +102,19 @@ typename Req::response_type call(nats_client& owners, const Req& req) {
 
 // The documents a run names, each with the Setup parameter the file types table gives it.
 std::vector<document_kind> document_kinds_of(nats_client& owners) {
-    const auto reply = call(owners, rp::list_file_types_request{.limit = 1000});
+    rp::file_types_filter filter;
+    filter.analytic_type_code = std::optional<std::string>{};
+    filter.configuration_type_code_one_of =
+        std::vector<std::string>(std::begin(imported_types), std::end(imported_types));
+    const auto reply = call(owners, rp::list_file_types_request{.limit = 100, .filter = filter});
+
     std::vector<document_kind> kinds;
     for (const auto code : imported_types) {
-        const auto it = std::ranges::find_if(reply.types, [&](const auto& t) {
-            return !t.analytic_type_code && t.configuration_type_code == code;
-        });
-        if (it == reply.types.end())
+        const auto* t = ores::reporting::domain::setup_file_type_of(reply.types, code);
+        if (t == nullptr)
             throw std::invalid_argument(std::format(
                 "No file type names the document of the {} configuration type.", code));
-        kinds.push_back({code, it->ore_parameter});
+        kinds.push_back({code, t->ore_parameter});
     }
     return kinds;
 }

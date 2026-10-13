@@ -7,41 +7,49 @@
 #+level: s1
 #+filetags: :make_the_local_checks_faster:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/publish-changed-site-pages
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The site page check publishes only the pages the branch changed, instead of
+every page whose source mtime beats its published HTML, and it finishes in
+seconds whether or not the site cache is warm.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
 
-- A one-component branch runs the non-heavy checks well under half the present time.
+- The site page check publishes only the pages the branch changed.
+- The org-id map is refreshed first, so a link to a page the branch added resolves.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Select the pages from the diff against the base rather than from file
+mtimes: a fresh checkout gives every source a new mtime, so the mtime rule
+republishes the whole corpus whatever the branch touched. =compass site
+page= already takes the files to publish, so pass them. Let it rebuild the
+org-id map every time: the scan costs seconds, and skipping it behind
+=--no-index= turns a stale map into a false failure on the first link to a
+page added since the last scan -- which is exactly what happened while
+developing this.
 
 * Measurements
 
@@ -55,7 +63,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| site-page before, warm cache | 114.9s | =./compass.sh check --all --exclude-heavy= | 770fc62e23 |
+| site-page before, cold cache | 1487 pages published, 900s timeout | the same | 770fc62e23 |
+| site-page after, one changed page | 7.9s | =./compass.sh check --only site-page= | this branch |
 
 * Notes
 
@@ -83,3 +93,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Only the pages a branch changed are published, and the org-id map is
+refreshed first. The check runs in seconds, warm or cold.

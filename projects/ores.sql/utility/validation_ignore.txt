@@ -322,14 +322,6 @@ RLS_001 ores_inbox_approval_decision_types_tbl
 RLS_001 ores_inbox_notification_kinds_tbl
 RLS_001 ores_inbox_notification_channels_tbl
 
-# IAM auth events — append-only audit log. The entire log is accessible to
-# tenant admins; party-level isolation is not applied to audit trails.
-RLS_001 ores_iam_auth_events_tbl
-
-# IAM run token issues — append-only exchange audit log, alongside the auth
-# events log. It is read by IAM's own exchange to count a grant's served runs.
-RLS_001 ores_iam_run_token_issues_tbl
-
 # Refdata lookup/enum tables — system-wide or tenant-seeded reference data.
 # These are code tables (statuses, types, categories) with no per-party data.
 RLS_001 ores_refdata_book_statuses_tbl

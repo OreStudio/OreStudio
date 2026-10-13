@@ -40,7 +40,7 @@ No IAM table that carries a tenant is readable across the tenant boundary unless
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F9DB8877-1278-4089-9763-EEE59BFA7AC4][Scaffold story: Close the IAM isolation gaps and review account visibility]] | STARTED | 2026-10-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:23ABA651-A56B-4F97-848E-E25A755DC8E7][Isolate the authentication and run token logs by tenant]] | BACKLOG | | | Initial task for: Close the IAM isolation gaps and review account visibility |
+| [[id:23ABA651-A56B-4F97-848E-E25A755DC8E7][Isolate the authentication and run token logs by tenant]] | STARTED | 2026-10-13 | | Initial task for: Close the IAM isolation gaps and review account visibility |
 | [[id:1A47FC97-D907-453E-A163-03F48E7B28E9][Decide who may read the seed profiles]] | BACKLOG | | | The three seed profile tables are the platform's own configuration. Any tenant can read them across the tenant boundary, and the super administrator reads them during setup. They either get a policy that admits the system tenant, or the ignore file says why they have none. |
 | [[id:CB992B78-04D7-4AB3-9A53-49EF208661EF][Review the security of account visibility]] | BACKLOG | | | Review the account visibility model built in PR 3124 against a stated list of threats: the shared rows, the party rule with its service actor and system party clauses, the existence function, the delete rule, the system tenant read on the account repository, the security definer functions, and the lists that now return shared rows. Each threat is a test or a recorded finding. |
 

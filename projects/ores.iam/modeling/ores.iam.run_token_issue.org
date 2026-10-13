@@ -18,9 +18,10 @@ the token was issued or refused. The exchange reads it to count the distinct run
 a grant has already served, so a grant with a =max_runs= admits exactly that
 many runs. The rows are append-only, so the model states =:current_state:=.
 
-The table is a system-level audit log. Its =tenant_id= is an ordinary text
-column, and the table carries no row-level security. Only IAM's own exchange
-reads and writes it.
+The table is an audit log. Its =tenant_id= is an ordinary text column and not
+the generated kind. The table is isolated by tenant like the rest of IAM, by a
+policy in =iam_rls_policies_create.sql=, and only IAM's own exchange reads and
+writes it, each row through a session of its own tenant.
 
 No retention policy is set. A grant that names a =max_runs= is counted from this
 table, so dropping rows would let a grant serve more runs than its grantor

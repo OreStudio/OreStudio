@@ -394,3 +394,37 @@ with check (
 -- (e.g. during login). Tenant isolation above is the correct boundary here.
 -- Party isolation on other tables (business_units, etc.) is fine because those
 -- tables are only accessed after login when a party context is already set.
+
+-- -----------------------------------------------------------------------------
+-- Authentication events and run token issues
+-- -----------------------------------------------------------------------------
+-- Audit rows name accounts, sessions, source addresses and the runs a grant
+-- served, so a tenant reads and writes only its own. Both tables carry the
+-- tenant as text, because an event can happen before a tenant is known; such a
+-- row is the system tenant's, and the system tenant reads only its own like any
+-- other. The log classes write each row through a session of the row's tenant.
+alter table ores_iam_auth_events_tbl enable row level security;
+
+drop policy if exists auth_events_tenant_isolation_policy
+    on ores_iam_auth_events_tbl;
+
+create policy auth_events_tenant_isolation_policy on ores_iam_auth_events_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+);
+
+alter table ores_iam_run_token_issues_tbl enable row level security;
+
+drop policy if exists run_token_issues_tenant_isolation_policy
+    on ores_iam_run_token_issues_tbl;
+
+create policy run_token_issues_tenant_isolation_policy on ores_iam_run_token_issues_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+);

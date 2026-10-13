@@ -89,7 +89,7 @@ are read from =status= and =outcome= as stored. The references in the
 details (the node, the job, the party) are links, not text.
 
 The screen shows four states in words: loading ("Reading the batches..."), empty
-("No jobs match. Clear the filters or widen the dates."), error (the server's
+("No jobs match. Clear the filters."), error (the server's
 reason and a Retry action) and refused ("Your role cannot read jobs.").
 
 #+caption: Browse the grid's jobs: the finder bar, the tree of batches, workunits and results, and the details panel.

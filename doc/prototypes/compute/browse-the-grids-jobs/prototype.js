@@ -43,6 +43,9 @@
     ];
     var SIZES = { p1: [15, 6, 9, 12], p2: [20, 10, 14, 8], p3: [35, 15, 31, 24], p4: [3, 2, 3, 2] };
     var STORAGE = '/api/v1/storage/ores/compute/';
+    var WUNIT_PAGE = 5;
+    /* The member role stands for a member of ACCOUK. */
+    var MEMBER_PARTY = 'ACCOUK';
     var SERVICE = 'ores_solid_dirac_compute_service';
     var APP_VERSION = '01a132ed-e945-76fb-b727-b9daee60a0ed';
 
@@ -92,7 +95,8 @@
                 recorded_at: b.recorded_at,
                 failing: w < b.failed
             });
-            resultsOf(b, out[out.length - 1]);
+            var run = resultsOf(b, out[out.length - 1])[0];
+            out[out.length - 1].canonical_result_id = run.server_state === 5 && run.outcome === 1 ? run.id : null;
         }
         return out;
     }
@@ -119,7 +123,6 @@
             modified_by: SERVICE,
             recorded_at: b.recorded_at
         };
-        wu.canonical_result_id = inFlight || wu.failing ? null : rid;
         return [r];
     }
 
@@ -147,7 +150,7 @@
         return batches.filter(function (b) {
             return (!ui.text || b.external_ref.indexOf(ui.text) >= 0 || b.id === ui.text) &&
                 (!ui.state || b.status === ui.state) &&
-                (role === 'member' ? b.party === 'ACCOUK' : !ui.party || b.party === ui.party);
+                (role === 'member' ? b.party === MEMBER_PARTY : !ui.party || b.party === ui.party);
         });
     }
 
@@ -168,8 +171,8 @@
             sel.appendChild(o);
         });
         sel.onchange = function () { onSize(parseInt(sel.value, 10)); };
-        bar.appendChild(sel);
-        if (total <= 1000) {
+        if (!inner) { bar.appendChild(sel); }
+        if (total <= 1000 && !inner) {
             var all = el('button', 'btn', 'Load all');
             all.onclick = function () { onSize(total || 1); };
             bar.appendChild(all);
@@ -213,7 +216,7 @@
             if (!open) { return; }
             var wus = workunitsOf(b);
             var wp = ui.wuPage[b.id] || 0;
-            var wsize = 5;
+            var wsize = WUNIT_PAGE;
             var l1 = el('ul', 'tree lvl1');
             wus.slice(wp * wsize, wp * wsize + wsize).forEach(function (wu) {
                 var wopen = !!ui.open[wu.id];
@@ -397,7 +400,7 @@
         var p = el('div', 'panel');
         var map = {
             loading: ['note', 'Reading the batches...'],
-            empty: ['note', 'No jobs match. Clear the filters or widen the dates.'],
+            empty: ['note', 'No jobs match. Clear the filters.'],
             error: ['note err', 'The batches could not be read: the compute service did not answer.'],
             refused: ['note', 'Your role cannot read jobs.']
         }[screen];

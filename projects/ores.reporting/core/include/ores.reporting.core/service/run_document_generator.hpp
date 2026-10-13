@@ -21,6 +21,7 @@
 #define ORES_REPORTING_CORE_SERVICE_RUN_DOCUMENT_GENERATOR_HPP
 
 #include "ores.reporting.api/domain/configuration_market_binding.hpp"
+#include "ores.reporting.api/domain/file_type.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
@@ -66,6 +67,12 @@ struct run_document_inputs {
      * @brief The configuration type codes the definition binds.
      */
     std::vector<std::string> bound_types;
+
+    /**
+     * @brief The file types of the ORE universe. Every file name in the run
+     * document comes from here, so no name is written twice.
+     */
+    std::vector<ores::reporting::domain::file_type> file_types;
 };
 
 /**
@@ -74,7 +81,14 @@ struct run_document_inputs {
  * The document carries the choices, the analytics and the market bindings of the
  * configuration as they are. It names one input file for each configuration type
  * the definition binds, and nothing for a type it does not bind, so the export
- * writes exactly the files that exist. The settings of the document always name
+ * writes exactly the files that exist. A bound type that no file type names is
+ * refused, because the export could not name its file.
+ *
+ * Each analytic also names the files its file types mark as defaults: the files
+ * it writes, and the files it reads that another analytic of the run writes. A
+ * parameter the configuration states for the same file overrides the default. A
+ * reader takes the name its writer has, so two analytics that share a file read
+ * one name. The settings of the document always name
  * the date the run values the portfolio at, resolved from the configuration's
  * market data type. A run with no analytic that is on is
  * refused, because an ORE run with none does nothing.

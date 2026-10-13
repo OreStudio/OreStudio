@@ -43,6 +43,57 @@ analytic(const std::string& type, int order, const std::string& active = "Y") {
     return a;
 }
 
+ores::reporting::domain::file_type setup_file(const std::string& parameter,
+                                              const std::string& configuration_type,
+                                              const std::string& name) {
+    ores::reporting::domain::file_type t;
+    t.code = "setup." + parameter;
+    t.ore_parameter = parameter;
+    t.kind = "input_document";
+    t.configuration_type_code = configuration_type;
+    t.name_pattern = name;
+    return t;
+}
+
+ores::reporting::domain::file_type analytic_file(const std::string& analytic,
+                                                 const std::string& parameter,
+                                                 const std::string& kind,
+                                                 const std::string& name,
+                                                 const std::string& writer = "") {
+    ores::reporting::domain::file_type t;
+    t.code = analytic + "." + parameter;
+    t.analytic_type_code = analytic;
+    t.ore_parameter = parameter;
+    t.kind = kind;
+    t.name_pattern = name;
+    t.is_default = true;
+    if (!writer.empty())
+        t.produced_by_file_type_code = writer;
+    return t;
+}
+
+std::vector<ores::reporting::domain::file_type> file_types() {
+    return {setup_file("conventionsFile", "conventions", "conventions.xml"),
+            setup_file("curveConfigFile", "curve_configuration", "curveconfig.xml"),
+            setup_file("marketConfigFile", "todays_market", "todaysmarket.xml"),
+            setup_file("pricingEnginesFile", "pricing_engines", "pricingengine.xml"),
+            analytic_file("npv", "outputFileName", "output_file", "npv.csv"),
+            analytic_file("sensitivity", "sensitivityOutputFile", "output_file", "sensitivity.csv"),
+            analytic_file("parametricVar",
+                          "sensitivityInputFile",
+                          "intermediate_file",
+                          "sensitivity.csv",
+                          "sensitivity.sensitivityOutputFile")};
+}
+
+const ores::reporting::messaging::run_parameter*
+parameter_of(const ores::reporting::messaging::run_analytic& a, const std::string& name) {
+    for (const auto& p : a.parameters)
+        if (p.name == name)
+            return &p;
+    return nullptr;
+}
+
 run_document_inputs inputs() {
     run_document_inputs in;
     in.risk.market_data_type = "date";
@@ -55,6 +106,7 @@ run_document_inputs inputs() {
     in.market_bindings = {pricing};
     in.analytics = {analytic("curves", 1)};
     in.bound_types = {"conventions", "curve_configuration", "todays_market", "pricing_engines"};
+    in.file_types = file_types();
     return in;
 }
 
@@ -174,4 +226,80 @@ TEST_CASE("a run date that is no date is refused for an end of day run", tags) {
     in.risk.market_data_date.clear();
     in.run_date = "yesterday";
     CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
+}
+
+TEST_CASE("a bound type that no file type names is refused", tags) {
+    auto in = inputs();
+    in.bound_types.push_back("netting");
+    CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
+}
+
+TEST_CASE("the risk configuration binding names no file", tags) {
+    auto in = inputs();
+    in.bound_types = {"risk_report_config", "conventions"};
+    const auto& files = generate_run_document(in).files;
+    REQUIRE(files.size() == 1);
+    CHECK(files[0].parameter == "conventionsFile");
+}
+
+TEST_CASE("an analytic names the file it writes with the well known name", tags) {
+    auto in = inputs();
+    in.analytics = {analytic("npv", 1)};
+    const auto d = generate_run_document(in);
+    const auto* p = parameter_of(d.analytics[0], "outputFileName");
+    REQUIRE(p != nullptr);
+    CHECK(p->value == "npv.csv");
+}
+
+TEST_CASE("a name the configuration states is kept", tags) {
+    auto in = inputs();
+    auto npv = analytic("npv", 1);
+    npv.parameters = {{"outputFileName", "mine.csv", 1}};
+    in.analytics = {npv};
+    const auto d = generate_run_document(in);
+    REQUIRE(d.analytics[0].parameters.size() == 1);
+    CHECK(d.analytics[0].parameters[0].value == "mine.csv");
+}
+
+TEST_CASE("an analytic that is off names no file", tags) {
+    auto in = inputs();
+    in.analytics = {analytic("curves", 1), analytic("npv", 2, "N")};
+    const auto d = generate_run_document(in);
+    CHECK(d.analytics[1].parameters.empty());
+}
+
+TEST_CASE("a reader takes the name of the analytic that writes the file", tags) {
+    auto in = inputs();
+    in.analytics = {analytic("sensitivity", 1), analytic("parametricVar", 2)};
+    const auto d = generate_run_document(in);
+    const auto* written = parameter_of(d.analytics[0], "sensitivityOutputFile");
+    const auto* read = parameter_of(d.analytics[1], "sensitivityInputFile");
+    REQUIRE(written != nullptr);
+    REQUIRE(read != nullptr);
+    CHECK(read->value == written->value);
+}
+
+TEST_CASE("a reader follows the name its writer was given", tags) {
+    auto in = inputs();
+    auto sensitivity = analytic("sensitivity", 1);
+    sensitivity.parameters = {{"sensitivityOutputFile", "mine.csv", 1}};
+    in.analytics = {sensitivity, analytic("parametricVar", 2)};
+    const auto d = generate_run_document(in);
+    const auto* read = parameter_of(d.analytics[1], "sensitivityInputFile");
+    REQUIRE(read != nullptr);
+    CHECK(read->value == "mine.csv");
+}
+
+TEST_CASE("a reader whose writer is not in the run names no file", tags) {
+    auto in = inputs();
+    in.analytics = {analytic("npv", 1), analytic("parametricVar", 2)};
+    const auto d = generate_run_document(in);
+    CHECK(parameter_of(d.analytics[1], "sensitivityInputFile") == nullptr);
+}
+
+TEST_CASE("a reader whose writer is switched off names no file", tags) {
+    auto in = inputs();
+    in.analytics = {analytic("sensitivity", 1, "N"), analytic("parametricVar", 2)};
+    const auto d = generate_run_document(in);
+    CHECK(parameter_of(d.analytics[1], "sensitivityInputFile") == nullptr);
 }

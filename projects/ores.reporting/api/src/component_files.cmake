@@ -127,6 +127,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/configuration_type_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/file_type.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/file_type_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/file_type_lookup.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/file_type_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/file_type_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/parameter_definition.hpp"

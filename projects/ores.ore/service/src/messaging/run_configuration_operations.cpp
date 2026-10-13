@@ -27,6 +27,8 @@
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
+#include "ores.reporting.api/domain/file_type_lookup.hpp"
+#include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -52,34 +54,36 @@ constexpr std::string_view run_document_file = "ore.xml";
 /**
  * @brief A configuration document a run can name: the configuration type it
  * fills and the Setup parameter that names its file.
+ *
+ * The parameter is not written here. It comes from the file types table, which
+ * holds the name of every ORE parameter that carries a file.
  */
 struct document_kind {
     std::string_view code;
-    std::string_view parameter;
+    std::string parameter;
 };
 
-std::optional<std::string>
-file_of(const rp::run_document& document, std::string_view parameter) {
+std::optional<std::string> file_of(const rp::run_document& document, std::string_view parameter) {
     for (const auto& f : document.files)
         if (f.parameter == parameter)
             return f.name;
     return std::nullopt;
 }
 
-// In the order an import stores them: a curve segment names its conventions,
-// so the conventions go first.
-constexpr document_kind document_kinds[] = {
-    {"conventions", "conventionsFile"},
-    {"curve_configuration", "curveConfigFile"},
-    {"todays_market", "marketConfigFile"},
-    {"pricing_engines", "pricingEnginesFile"},
+// The configuration types an import stores, in the order it stores them: a curve
+// segment names its conventions, so the conventions go first.
+constexpr std::string_view imported_types[] = {
+    "conventions",
+    "curve_configuration",
+    "todays_market",
+    "pricing_engines",
 };
 
 // The run settings are no input file: the run document is built from them.
 constexpr std::string_view run_settings_type = "risk_report_config";
 
-const document_kind* find_kind(std::string_view code) {
-    for (const auto& k : document_kinds)
+const document_kind* find_kind(const std::vector<document_kind>& kinds, std::string_view code) {
+    for (const auto& k : kinds)
         if (k.code == code)
             return &k;
     return nullptr;
@@ -93,6 +97,25 @@ typename Req::response_type call(nats_client& owners, const Req& req) {
     if (!resp || !error.empty())
         throw std::runtime_error(error.empty() ? "no response" : error);
     return *resp;
+}
+
+// The documents a run names, each with the Setup parameter the file types table gives it.
+std::vector<document_kind> document_kinds_of(nats_client& owners) {
+    rp::file_types_filter filter;
+    filter.analytic_type_code = std::optional<std::string>{};
+    filter.configuration_type_code_one_of =
+        std::vector<std::string>(std::begin(imported_types), std::end(imported_types));
+    const auto reply = call(owners, rp::list_file_types_request{.limit = 100, .filter = filter});
+
+    std::vector<document_kind> kinds;
+    for (const auto code : imported_types) {
+        const auto* t = ores::reporting::domain::setup_file_type_of(reply.types, code);
+        if (t == nullptr)
+            throw std::invalid_argument(
+                std::format("No file type names the document of the {} configuration type.", code));
+        kinds.push_back({code, t->ore_parameter});
+    }
+    return kinds;
 }
 
 template <typename Document>
@@ -190,8 +213,9 @@ run_configuration_import_execute_result import_run(nats_client& owners,
 
     // Everything an import can refuse, a missing file or one that does not
     // parse, is found before its first write.
+    const auto kinds = document_kinds_of(owners);
     parsed_documents parsed;
-    for (const auto& kind : document_kinds) {
+    for (const auto& kind : kinds) {
         const auto file = file_of(document, kind.parameter);
         if (!file)
             continue;
@@ -212,7 +236,7 @@ run_configuration_import_execute_result import_run(nats_client& owners,
                                            .document = document});
         r.run_document_saved = true;
         r.stored.push_back(std::string(run_document_file));
-        for (const auto& kind : document_kinds) {
+        for (const auto& kind : kinds) {
             const auto file = file_of(document, kind.parameter);
             if (!file)
                 continue;
@@ -274,8 +298,10 @@ input_files export_run(nats_client& owners, const std::string& report_definition
     const auto run =
         call(owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
 
+    const auto kinds = document_kinds_of(owners);
     ore document;
-    document.Setup = run_document_mapper::reverse_setup({run.document.settings, run.document.files});
+    document.Setup =
+        run_document_mapper::reverse_setup({run.document.settings, run.document.files});
     document.Analytics = run_document_mapper::reverse_analytics(run.document.analytics);
     if (!run.document.market_bindings.empty())
         document.Markets =
@@ -286,7 +312,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
     for (const auto& b : run.bindings) {
         if (b.configuration_type_code == run_settings_type)
             continue;
-        const auto* kind = find_kind(b.configuration_type_code);
+        const auto* kind = find_kind(kinds, b.configuration_type_code);
         if (kind == nullptr)
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, which the export cannot write.",

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
+#include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -29,18 +30,69 @@ namespace ores::reporting::service {
 
 namespace {
 
-struct input_file {
-    const char* type_code;
-    const char* parameter;
-    const char* file;
-};
+using domain::file_type;
 
-constexpr input_file input_files[] = {
-    {"conventions", "conventionsFile", "conventions.xml"},
-    {"curve_configuration", "curveConfigFile", "curveconfig.xml"},
-    {"todays_market", "marketConfigFile", "todaysmarket.xml"},
-    {"pricing_engines", "pricingEnginesFile", "pricingengine.xml"},
-};
+constexpr const char* output_kind = "output_file";
+constexpr const char* intermediate_kind = "intermediate_file";
+
+const file_type* find_by_code(const std::vector<file_type>& types, const std::string& code) {
+    const auto it = std::ranges::find(types, code, &file_type::code);
+    return it == types.end() ? nullptr : &*it;
+}
+
+const messaging::run_parameter* find_parameter(const messaging::run_analytic& a,
+                                               const std::string& name) {
+    const auto it = std::ranges::find(a.parameters, name, &messaging::run_parameter::name);
+    return it == a.parameters.end() ? nullptr : &*it;
+}
+
+bool is_on(const messaging::run_analytic& a) {
+    return a.analytic.active == "Y";
+}
+
+// The name a file has in this run: the value the configuration states, or the well
+// known name. A reader follows its writer, so the two cannot differ. A run document
+// holds an analytic type once, as the ORE samples do, so the first active analytic of the
+// writer's type is the writer.
+std::optional<std::string> name_of(const std::vector<file_type>& types,
+                                   const std::vector<messaging::run_analytic>& analytics,
+                                   const file_type& t) {
+    if (t.produced_by_file_type_code) {
+        const auto* writer = find_by_code(types, *t.produced_by_file_type_code);
+        if (writer == nullptr || !writer->analytic_type_code)
+            return std::nullopt;
+        const auto it = std::ranges::find_if(analytics, [&](const auto& a) {
+            return is_on(a) && a.analytic.analytic_type_code == *writer->analytic_type_code;
+        });
+        if (it == analytics.end())
+            return std::nullopt;
+        if (const auto* stated = find_parameter(*it, writer->ore_parameter))
+            return stated->value;
+        return writer->name_pattern;
+    }
+    return t.name_pattern;
+}
+
+// Names the files an analytic reads or writes by default.
+void name_default_files(const std::vector<file_type>& types,
+                        const std::vector<messaging::run_analytic>& analytics,
+                        messaging::run_analytic& a) {
+    int position = 0;
+    for (const auto& p : a.parameters)
+        position = std::max(position, p.position);
+    for (const auto& t : types) {
+        if (!t.is_default || t.analytic_type_code != a.analytic.analytic_type_code)
+            continue;
+        if (t.kind != output_kind && t.kind != intermediate_kind)
+            continue;
+        if (find_parameter(a, t.ore_parameter) != nullptr)
+            continue;
+        const auto name = name_of(types, analytics, t);
+        if (!name)
+            continue;
+        a.parameters.push_back({t.ore_parameter, *name, ++position});
+    }
+}
 
 // The weekday before a date. Holiday calendars are not consulted.
 std::string previous_weekday(const std::string& iso_date) {
@@ -50,8 +102,8 @@ std::string previous_weekday(const std::string& iso_date) {
     if (std::sscanf(iso_date.c_str(), "%d-%u-%u%c", &y, &m, &d, &tail) != 3)
         throw std::invalid_argument(
             std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
-    const std::chrono::year_month_day ymd{std::chrono::year{y}, std::chrono::month{m},
-                                          std::chrono::day{d}};
+    const std::chrono::year_month_day ymd{
+        std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
     if (!ymd.ok())
         throw std::invalid_argument(
             std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
@@ -82,12 +134,22 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
     r.settings = in.risk;
     r.settings.market_data_date = as_of(in.risk, in.run_date);
     r.settings.market_data_type = "date";
-    for (const auto& f : input_files) {
-        const auto bound = std::ranges::find(in.bound_types, f.type_code) != in.bound_types.end();
-        if (bound)
-            r.files.push_back({f.parameter, f.file});
+    for (const auto& type : in.bound_types) {
+        // The risk configuration fills no file: the run document is built from it.
+        if (type == "risk_report_config")
+            continue;
+        const auto* t = domain::setup_file_type_of(in.file_types, type);
+        if (t == nullptr)
+            throw std::invalid_argument(
+                std::format("No file type names the document of the {} configuration the "
+                            "definition binds.",
+                            type));
+        r.files.push_back({t->ore_parameter, t->name_pattern});
     }
     r.analytics = in.analytics;
+    for (auto& a : r.analytics)
+        if (is_on(a))
+            name_default_files(in.file_types, in.analytics, a);
     r.market_bindings = in.market_bindings;
     return r;
 }

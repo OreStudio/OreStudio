@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T22:47:58.818299Z
+' Generated: 2026-10-13T02:57:06.189900Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-553 tables in 21 groups.
+559 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -482,6 +482,7 @@ entity "trading" as trading {
   ores_trading_callable_swap_call_dates_tbl
   ores_trading_callable_swap_instruments_tbl
   ores_trading_cap_floor_instruments_tbl
+  ores_trading_cds_instruments_tbl
   ores_trading_commodity_basket_constituents_tbl
   ores_trading_commodity_instruments_tbl
   ores_trading_composite_instruments_tbl
@@ -489,6 +490,7 @@ entity "trading" as trading {
   ores_trading_counterparty_scope_types_tbl
   ores_trading_credit_basket_constituents_tbl
   ores_trading_credit_instruments_tbl
+  ores_trading_credit_linked_swap_instruments_tbl
   ores_trading_entry_channel_types_tbl
   ores_trading_equity_accumulator_instruments_tbl
   ores_trading_equity_asian_option_instruments_tbl
@@ -512,6 +514,8 @@ entity "trading" as trading {
   ores_trading_fx_forward_instruments_tbl
   ores_trading_fx_vanilla_option_instruments_tbl
   ores_trading_fx_variance_swap_instruments_tbl
+  ores_trading_index_cds_instruments_tbl
+  ores_trading_index_cds_option_instruments_tbl
   ores_trading_inflation_swap_instruments_tbl
   ores_trading_instrument_option_exercise_fees_tbl
   ores_trading_instrument_option_exercise_prices_tbl
@@ -532,6 +536,7 @@ entity "trading" as trading {
   ores_trading_price_types_tbl
   ores_trading_rate_instruments_tbl
   ores_trading_return_types_tbl
+  ores_trading_risk_participation_instruments_tbl
   ores_trading_scripted_instruments_tbl
   ores_trading_settlement_types_tbl
   ores_trading_structure_kinds_tbl
@@ -543,6 +548,7 @@ entity "trading" as trading {
   ores_trading_swap_leg_rates_tbl
   ores_trading_swap_legs_tbl
   ores_trading_swaption_instruments_tbl
+  ores_trading_synthetic_cdo_instruments_tbl
   ores_trading_trade_activities_tbl
   ores_trading_trade_additional_fields_tbl
   ores_trading_trade_bookings_tbl
@@ -558,7 +564,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-105 tables — ores_schema.trading.puml
+111 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

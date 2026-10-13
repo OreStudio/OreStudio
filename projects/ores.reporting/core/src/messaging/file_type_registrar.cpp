@@ -88,6 +88,12 @@ register_file_type_handlers(ores::nats::service::client& nats,
                              [h](ores::nats::message msg) {
                                  h->list_by_configuration_type_code_file_types(std::move(msg));
                              }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_produced_by_file_type_code_file_types_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_produced_by_file_type_code_file_types(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
         list_file_type_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->list_file_type_versions(std::move(msg));

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/name-every-ore-file-from-the-file-types-table
+#+pr: 3241
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,16 @@ When the export writes an ORE file, or the run document names one, it looks the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The tasks that add the file types table and the analytic parameters. |
-| Next         | Classify the 129 file parameters of the analytic parameter definitions. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
 
-- The parameter definition has a value domain for a reference to a document and a column for the configuration type it refers to. The 129 analytic parameters with File in their name are classified as input document, output file or intermediate file.
+- The file types table classifies every file parameter of the ORE samples and of the official user guide: input or output, input document, data file, intermediate file or output file, its format and, for an XML file, its XSD. It replaces the classification of the parameter definitions that this task first planned, because the table already holds the name, the direction and the writer of each file.
 - The export and the run store name every file from the file types table. The names hard coded in the run document builder and in the run store are removed.
 - Each parameter that names an input document is filled from the binding of the definition. A definition that binds no document of the type fails the readiness check with a message that names the type.
 - The simulation and the analytic that reads its cube agree on the cube file name by construction.
@@ -43,10 +43,10 @@ When the export writes an ORE file, or the run document names one, it looks the 
 
 * Plan
 
-1. Classify every analytic parameter with File in its name as an input document, an output file or an intermediate file. Record the classification.
-2. Add a value domain for a reference to a document, and a column on the parameter definition for the configuration type it refers to. Add a default value to the parameter definition for output and intermediate files.
+1. Classify every file parameter as an input document, a data file, an intermediate file or an output file, from the ORE samples and the official user guide. Record the classification in the file types table with the direction, the format and the XSD.
+2. Mark the files an analytic names by default, and link a file that one analytic reads to the file type of the analytic that writes it.
 3. Replace the file names hard coded in the run document builder and in the run store with a lookup in the file types table.
-4. Resolve each input document parameter from the bindings of the definition at export. A definition without the bound document fails the readiness check with the missing type.
+4. Resolve each input document parameter from the bindings of the definition at export. A definition whose bound type no file type names fails with a message that names the type.
 5. Make an intermediate file that two analytics share read one name.
 6. Validate every exported package, and check that every file a run document names is in the package.
 
@@ -62,11 +62,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| File types seeded | 164: 83 input documents, 13 data files, 13 intermediate files, 55 output files; 80 XML files with an XSD | =python3 projects/ores.sql/utility/generate_file_types_populate.py= over the guide extract and the 416 samples | see PR |
+| ACME runs exported | 78 of 78, none failed | =ore export-run= for every ACME definition after a clean recreate and provision | see PR |
+| Exports valid against the schema | 78 of 78 | =xmllint --noout --schema external/ore/xsd/ore.xsd= on each ore.xml | see PR |
+| Setup files named and present in the package | 78 of 78 packages, 4 of 4 files each | package check script over the exports | see PR |
+| Staged parameter values in the exports | 224 of 224 match | compare script over the exports, file parameters set aside | see PR |
+| pgTAP | 459 tests in 46 files pass | =projects/ores.sql/test/run_tests.sh= on a freshly recreated database | see PR |
+| C++ suites | ores.reporting.core, ores.reporting.service, ores.ore.core, ores.ore.service, ores.shell.reporting pass | =ctest --preset linux-clang-debug-make -R= on the five suites | see PR |
 
 * Notes
 
 The files are of three kinds. Input documents are dumps of domain entities: the export writes them from the database under a well known name, so no parameter needs to store the name. Analytic specific configuration documents, such as the simulation and the sensitivity configuration, are the same kind of thing and are bound as configuration types. Files the engine writes are not in the database, and the platform only needs their names to collect results.
+
+Decisions made while building this.
+
+- The classification lives in the file types table, so the parameter definition is unchanged. The first plan put it on the parameter definition.
+- The canonical name of a file is the name the official ORE user guide gives it in its listings. A file the guide does not list takes the most common name in the 416 samples without a date. A name that few samples use for an input document that other analytics name too is not canonical, so the shared name replaces it.
+- A file type marked as a default is one that at least half of the samples running the analytic name. The run document names the default files of an analytic unless the configuration states the parameter, and a stated value wins.
+- A file one analytic reads and another writes takes the writer's name, including the name the writer's configuration states. The reader is named only when the writer is in the run and switched on.
+- The analytic input documents, such as netting.xml and simulation.xml, are in the table with their names, their format and their XSD, but the export does not write the parameter that names them. No entity produces the document yet, so naming it would put a file in the run document that the package does not contain. The tasks that add the entities switch them on.
+- The export finds the Setup parameter of a configuration type in the table. Nothing else in the export or the run store holds a file name.
 
 * Test Scenarios
 
@@ -83,12 +98,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3241][#3241]] | [reporting,ore,sql] Name every ORE file from the file types table |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Setup file of a configuration type is not unique | ores.reporting.file_type.org | Accepted | Partial unique index on the configuration type for Setup rows, with pgTAP cases for the refusal and for the seed. |
+| 2 | The Setup lookup is written three times | run_document_generator.cpp, run_store.cpp, run_configuration_operations.cpp | Accepted | One helper, setup_file_type_of, in ores.reporting.api serves all three. |
+| 3 | The ore service reads the first 1000 rows; the system tenant is unchecked | run_configuration_operations.cpp, run_store.cpp | Accepted for the read, explained for the tenant | The request now asks only for the Setup rows of the four imported types. The rows are seeded for the system tenant, as the parameter definitions are. |
+| 4 | A reader takes the first active analytic of the writer's type | run_document_generator.cpp | Accepted | A comment says so. The samples never repeat an analytic type in a run document. |
+| 5 | Position handling and stated overrides | run_document_generator.cpp | No change | Correct as reviewed. |
+| 6 | A bound type with no Setup file type now throws | run_document_generator.cpp | No change | All 78 ACME runs bind only the four documents and the risk configuration, and all export. |
+| 7 | More generator tests | service_run_document_generator_tests.cpp | Partly accepted | The missing type and the writer switched off already had tests. The two-rows case is a pgTAP case. |
+| 8 | Track the analytic input documents | n/a | No change | Backlog tasks 5 and 6 cover them. |
+| 9 | The full gate has not been run | n/a | Accepted | Run before merge. |
 
 * Result
+
+The export names every file from the file types table. The generator, the run store and the ore service hold no file name. The Setup file of each configuration type, the default output files of each analytic and the files that one analytic reads from another all come from the table.
+
+The table is richer than the first version: every row has a direction (input or output), a format (xml, csv, csv_gz, txt, dat or json), for an XML file the XSD that validates it, and a description of the purpose of the file, built from the official ORE user guide where the guide speaks and worded to claim no more than the guide supports where it does not. The canonical names are the guide's. A name that few samples use for an input document that other analytics name too is replaced by the shared name, and lists of files and name stems are not file types.
+
+All 78 ACME runs export, validate against ore.xsd, name four Setup files each and carry those files in the package. The simulation, pfe and xva runs agree on the cube and scenario data names by construction.
+
+Found on the way: the reporting service never registered the generated file type handlers, so the ore service could not read the table over NATS until the registrar was fixed. The analytic type, configuration type and parameter definition handlers are not registered either, and nothing needs them yet.
+
+Not done: the analytic input documents (netting, collateral balances, simulation, sensitivity, stress and the rest) are in the table with names, formats and XSDs, but the export does not name them, because no entity produces the documents. The tasks that add them switch them on.

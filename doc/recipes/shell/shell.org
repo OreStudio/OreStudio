@@ -1549,3 +1549,27 @@ tangled into the runnable script library
 * Party Counterparty Changes
 
 - [[id:3474AB5C-382E-5576-943C-7EBD0BD0DBF0][How do I run the party_counterparty_changes commands from the shell?]]
+
+* Credit Default Swap Instruments
+
+- [[id:B72052B0-A83F-5073-B461-E2BD5D23C38E][How do I run the credit_default_swap_instruments commands from the shell?]]
+
+* Credit Linked Swap Instruments
+
+- [[id:4EE8EE65-D9B7-512F-A4C5-ABDE5448FD62][How do I run the credit_linked_swap_instruments commands from the shell?]]
+
+* Index Credit Default Swap Instruments
+
+- [[id:F54BC21B-CB17-553E-95B0-C2E91E29A348][How do I run the index_credit_default_swap_instruments commands from the shell?]]
+
+* Index Credit Default Swap Option Instruments
+
+- [[id:519BA383-41E0-558F-A38C-884A6FC1F50E][How do I run the index_credit_default_swap_option_instruments commands from the shell?]]
+
+* Risk Participation Agreement Instruments
+
+- [[id:25FB9B3D-707A-55CF-8121-49010B6D040D][How do I run the risk_participation_agreement_instruments commands from the shell?]]
+
+* Synthetic Cdo Instruments
+
+- [[id:B7BC68A9-AD11-5E63-819D-8826AE453D87][How do I run the synthetic_cdo_instruments commands from the shell?]]

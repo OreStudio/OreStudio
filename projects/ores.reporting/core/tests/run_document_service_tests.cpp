@@ -97,9 +97,12 @@ TEST_CASE("a run document reads back as it was saved", tags) {
     CHECK(back->files.empty());
     REQUIRE(back->analytics.size() == 1);
     CHECK(back->analytics[0].analytic.analytic_type_code == "npv");
-    REQUIRE(back->analytics[0].parameters.size() == 1);
+    // The stored parameter, and the file the npv analytic writes, named from the file types table.
+    REQUIRE(back->analytics[0].parameters.size() == 2);
     CHECK(back->analytics[0].parameters[0].name == "baseCurrency");
     CHECK(back->analytics[0].parameters[0].value == "EUR");
+    CHECK(back->analytics[0].parameters[1].name == "outputFileName");
+    CHECK(back->analytics[0].parameters[1].value == "npv.csv");
     REQUIRE(back->market_bindings.size() == 1);
     CHECK(back->market_bindings[0].market_configuration_name == "default");
 }

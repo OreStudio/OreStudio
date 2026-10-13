@@ -79,6 +79,29 @@ struct file_type final {
     std::string ore_parameter;
 
     /**
+     * @brief Whether ORE Studio reads the file or ORE writes it: input or output. An input is a
+     * file ORE Studio reads and parses into the entities of its configuration type when it imports
+     * a run, and writes back from those entities when it exports one. An output is a file ORE
+     * writes when the run executes, which ORE Studio names but does not parse. A file that one
+     * analytic writes and another reads is an output of the writer and an input of the reader.
+     */
+    std::string direction;
+
+    /**
+     * @brief The format of the file: xml, csv, csv_gz for a compressed csv, txt, dat for a binary
+     * file, or json. An xml file is validated against the XSD in xsd_file. A csv file has a header
+     * line and its columns are named by the guide or by the report that writes it.
+     */
+    std::string format;
+
+    /**
+     * @brief For an xml file, the XSD of ORE that declares its root element, for example
+     * nettingsetdefinitions.xsd for netting.xml. Nothing for a file that is not xml, or an xml file
+     * that ORE publishes no schema for.
+     */
+    std::optional<std::string> xsd_file;
+
+    /**
      * @brief What the file is: input_document, data_file, output_file or intermediate_file. An
      * intermediate file is one analytic writes and another reads.
      */
@@ -98,7 +121,22 @@ struct file_type final {
     std::string name_pattern;
 
     /**
-     * @brief How many of the ORE samples that name this file give it this name.
+     * @brief Whether a run of the analytic names this file unless the configuration says otherwise.
+     * The seed sets it for a file that at least half of the samples that run the analytic name. A
+     * Setup file type is never a default, because the definition's bindings decide which documents
+     * the run names.
+     */
+    bool is_default = false;
+
+    /**
+     * @brief For an intermediate file, the file type of the analytic that writes it. The reader
+     * takes the name of the writer, so two analytics that share a file read one name.
+     */
+    std::optional<std::string> produced_by_file_type_code;
+
+    /**
+     * @brief How many of the ORE samples that name this file give it this name. It is zero when the
+     * name comes from the official ORE user guide and no sample uses it.
      */
     int sample_count = 0;
 
@@ -108,7 +146,9 @@ struct file_type final {
     int sample_total = 0;
 
     /**
-     * @brief What the file is, in one line.
+     * @brief What the file is for, in detail: what it holds, what the analytic does with it, who
+     * writes it and who reads it, and how a run names it. A reader who has never seen an ORE run
+     * can tell from it why the file is there.
      */
     std::string description;
 

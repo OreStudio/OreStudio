@@ -47,9 +47,14 @@ struct file_type_entity {
     int version = 0;
     std::optional<std::string> analytic_type_code;
     std::string ore_parameter;
+    std::string direction;
+    std::string format;
+    std::optional<std::string> xsd_file;
     std::string kind;
     std::optional<std::string> configuration_type_code;
     std::string name_pattern;
+    bool is_default = false;
+    std::optional<std::string> produced_by_file_type_code;
     int sample_count = 0;
     int sample_total = 0;
     std::string description;

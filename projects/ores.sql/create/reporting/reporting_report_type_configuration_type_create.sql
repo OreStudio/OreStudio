@@ -43,7 +43,6 @@ create table if not exists "ores_reporting_report_type_configuration_types_tbl" 
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    "closed_by" text null,
     primary key (tenant_id, report_type_code, configuration_type_code, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -165,8 +164,7 @@ create or replace rule ores_reporting_report_type_configuration_types_delete_rul
 on delete to "ores_reporting_report_type_configuration_types_tbl"
 do instead
   update "ores_reporting_report_type_configuration_types_tbl"
-  set valid_to = clock_timestamp(),
-      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
+  set valid_to = clock_timestamp()
   where tenant_id = old.tenant_id
   and report_type_code = old.report_type_code
   and configuration_type_code = old.configuration_type_code

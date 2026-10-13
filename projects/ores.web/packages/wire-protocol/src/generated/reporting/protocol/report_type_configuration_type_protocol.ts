@@ -59,15 +59,6 @@ export interface ReportTypeConfigurationTypesFilter {
     report_type_code_one_of: string[] | null;
 }
 
-export interface ReportTypeConfigurationTypeEvent {
-    event_id: string;
-    key: ReportTypeConfigurationTypeKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListReportTypeConfigurationTypesRequest {
     offset: number;
     limit: number;

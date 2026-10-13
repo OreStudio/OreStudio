@@ -573,16 +573,13 @@ credit_instrument_data credit_instrument_mapper::forward_rpa(const trade& t) {
         result.instrument.start_date = to_optional_date(std::string(d.ProtectionStart));
         result.instrument.maturity_date = to_optional_date(std::string(d.ProtectionEnd));
 
-        for (const auto& ld : d.ProtectionFee.LegData)
-            append_leg(result, ld, "protection_fee");
-
-        // An underlying leg keeps its own schedule, because the header's
-        // dates are the protection period and not the leg's.
-        for (const auto& ld : d.Underlying.LegData) {
+        // A leg keeps its own schedule when it states one, because the
+        // header's dates are the protection period and not the leg's.
+        const auto append_with_schedule = [&](const legData& ld, const std::string& group) {
             const int leg_number = static_cast<int>(result.legs.size()) + 1;
-            append_leg(result, ld, "underlying");
+            append_leg(result, ld, group);
             if (!ld.ScheduleData)
-                continue;
+                return;
             auto rows = swap_instrument_mapper::map_schedule(
                 *ld.ScheduleData, "swap", leg_number, "schedule");
             result.schedules.insert(result.schedules.end(),
@@ -591,7 +588,11 @@ credit_instrument_data credit_instrument_mapper::forward_rpa(const trade& t) {
             result.schedule_dates.insert(result.schedule_dates.end(),
                                          std::make_move_iterator(rows.dates.begin()),
                                          std::make_move_iterator(rows.dates.end()));
-        }
+        };
+        for (const auto& ld : d.ProtectionFee.LegData)
+            append_with_schedule(ld, "protection_fee");
+        for (const auto& ld : d.Underlying.LegData)
+            append_with_schedule(ld, "underlying");
 
         // The agreement has no option of its own, so the option rows are the
         // underlying's.

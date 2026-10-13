@@ -453,3 +453,19 @@ TEST_CASE("credit_mapper_holds_the_option_block_of_an_agreement_underlying", tag
     CHECK(std::string(option->LongShort) == "Short");
     REQUIRE(option->exerciseDatesGroup);
 }
+
+TEST_CASE("credit_mapper_numbers_the_agreement_legs_across_both_groups", tags) {
+    const auto data = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
+
+    REQUIRE(data.legs.size() == 3);
+    CHECK(data.legs[0].identity.leg_number == 1);
+    CHECK(*data.legs[0].leg_group == "protection_fee");
+    CHECK(data.legs[1].identity.leg_number == 2);
+    CHECK(*data.legs[1].leg_group == "underlying");
+    CHECK(data.legs[2].identity.leg_number == 3);
+    CHECK(*data.legs[2].leg_group == "underlying");
+
+    // Each underlying leg owns the schedule rows of its own number.
+    for (const auto& row : data.schedules)
+        CHECK((row.owner_number == 2 || row.owner_number == 3));
+}

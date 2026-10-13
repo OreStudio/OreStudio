@@ -121,6 +121,14 @@ via its "Verifies task" field.
 | 1 | The design put a money column for the protection fee | design.org | accept | The binding shows a list of legs; the design now says so. |
 | 2 | The treasury lock is not stored | credit_instrument_mapper.cpp | accept | It holds a bond; recorded as a known limit with a warning and no corpus case. |
 | 3 | A shared change to the cashflow leg touches the rates family | swap_instrument_mapper.cpp | accept | The rates suites pass and the export is now valid for a cashflow leg. |
+| 4 | A protection fee leg that states a schedule would lose it | credit_instrument_mapper.cpp | accept | Both leg groups now keep a stated schedule as shared schedule rows. |
+| 5 | The leg numbering across the two groups is not pinned | xml_credit_mapper_roundtrip_tests.cpp | accept | A test pins fee leg 1 and underlying legs 2 and 3, and their schedule owners. |
+| 6 | The participation rate is rounded through a float | credit_instrument_mapper.cpp | decline | A continuous quantity is a binary float by the family's rule, as the recovery rate is; the tests compare within a range. |
+| 7 | The new not null column needs a migration | the agreement model | decline | The project recreates the database and writes no migration. |
+| 8 | The shell commands changed their positional arity | the shell commands | decline | The commands are generated from the model, as in every earlier unit, and read optionals through one parser. |
+| 9 | The first commit's trailer has an unexpanded variable | the commit | decline | Commits are never amended; a follow-up commit records the task. |
+| 10 | The treasury lock is dropped on export | credit_instrument_mapper.cpp | decline | Recorded as a known limit: it holds a bond, the import warns, and no corpus document has one. |
+| 11 | The shell, API and codegen suites were not rerun | the PR | accept | Run after the full build: the trading API, trading service, shell application and codegen suites pass, and the misspell scan of the changed files is clean. |
 
 * Result
 

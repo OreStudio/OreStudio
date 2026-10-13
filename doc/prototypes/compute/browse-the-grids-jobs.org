@@ -27,6 +27,12 @@ It is throwaway. It reads no service. Open the [[file:browse-the-grids-jobs/][Jo
 
 * Detail
 
+** The verdict
+
+Signed off on 2026-10-13. The layout, the three roles, the four states and the
+dashed run-statistics block stand as drawn. The statistics need three tasks:
+the result fields, the wrapper's measurements and the aggregate read.
+
 ** What it argues
 
 - A tree is the right shape. A batch holds workunits and a workunit holds

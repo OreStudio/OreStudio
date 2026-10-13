@@ -15,7 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from test_junction_history import render  # noqa: E402
+from test_junction_history import CODEGEN_BASE, JUNCTION, render  # noqa: E402
+from codegen.generate import resolve_targets  # noqa: E402
 
 EVENTS = ":events: true\n"
 
@@ -55,3 +56,26 @@ def test_a_junction_that_does_not_ask_for_events_announces_nothing(tmp_path):
 
     assert "struct test_link_event" not in protocol
     assert "struct test_link_event" in with_events
+
+
+def test_a_junction_asks_for_the_event_files_only_by_stating_events(tmp_path):
+    asks = tmp_path / "asks" / "modeling"
+    plain = tmp_path / "plain" / "modeling"
+    asks.mkdir(parents=True)
+    plain.mkdir(parents=True)
+    name = "ores.testcomp.test_link_junction.org"
+    (asks / name).write_text(JUNCTION.format(flags=EVENTS, columns=""), encoding="utf-8")
+    (plain / name).write_text(JUNCTION.format(flags="", columns=""), encoding="utf-8")
+
+    event_templates = {
+        "sql_schema_notify_trigger.mustache",
+        "sql_schema_notify_trigger_drop.mustache",
+        "cpp_nats_changed_event.hpp.mustache",
+        "cpp_nats_event_registrar.cpp.mustache",
+        "cpp_nats_event_registrar.hpp.mustache",
+    }
+    asked, _, _ = resolve_targets(asks / name, CODEGEN_BASE)
+    not_asked, _, _ = resolve_targets(plain / name, CODEGEN_BASE)
+
+    assert event_templates <= {u["template"] for u in asked}
+    assert not (event_templates & {u["template"] for u in not_asked})

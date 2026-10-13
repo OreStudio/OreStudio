@@ -30,22 +30,18 @@ It is throwaway, with no service and no build step. Open the
 
 * Detail
 
-** What it draws, from the standard
+** What it draws
 
-| Part | How the standard draws it |
-|------+---------------------------|
-| List | Breadcrumb, the plural as the title, one sentence, *Refresh* and *Add* (drawn only for a person who may add), a search and a filter, the table with the key first, a pager, and the four states: loading, no records, nothing matches and error |
-| Record page | Breadcrumb, the source name as the title, the lead line, the access mark and the status, *Edit* and *Delete* (drawn only when allowed), the tabs *Details* and *History*, and the Last changed line at the end of Details |
-| Add and Edit | One dialog over the page. Add is titled "Add binding" and states the reason new record in a note. Edit is titled "Edit <key>", asks for a change reason and a commentary, and offers *Non-material update* only when no field changed |
-| Delete | A dialog that names the binding, says what is lost and that its history stays, and asks for a reason |
-| History | The shared timeline: a chart of the events over time above a rail of one-line entries, newest first, with the details collapsed, the current-version emblem, *Hide system activity*, and *Revert* on older versions with its dialog |
-| An oresmd URL | A link to the series page in a new tab when the party has the series, plain text when it does not, and an *Inspect* button that opens the read only view. The same dialog shell serves it |
-
-Every dialog has one shell: a title with a close mark, a body, and a footer with
-*Cancel* first and the one primary action last. A successful write closes the
-dialog and the page shows the new values; there is no toast. An action a person
-may not take is not drawn. Start and stop belong to the feed, so a binding has
-none, and its page links to the feed.
+The list, the record page, the add, edit, delete and revert dialogs, and the
+access, states and words are those of the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The History
+tab is the timeline of the
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]. An oresmd
+URL is drawn as the product ships it: a link, and an *Inspect* button for the read
+only view. The prototype adds no layout of its own and has no variants. The list
+cell shows the series title and not the full URL, which stays on the record page.
+What it decides where those pages are silent is under /What the standards left
+open/.
 
 ** The scenarios, the states and the actor
 

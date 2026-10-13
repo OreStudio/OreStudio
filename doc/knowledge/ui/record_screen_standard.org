@@ -377,25 +377,13 @@ from it, as /Derive a calendar/ does.
 
 ** History
 
-The History tab is the shared timeline (=Timeline=). A record's history is one
-stream of its versions, drawn as a chart of events over time above a rail of
-one-line entries, newest first. The rules of the chart, the rail, the details,
-the system activity toggle and the author are in
+The History tab is the shared timeline (=Timeline=), defined once in the
 [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], section
-History and the timeline. This section states what a record screen adds. The
-timeline reads the generic history request (=GET /api/history=,
-=refdata.v1.history.get=).
+History and the timeline. A record screen draws it as that section says and adds
+two things:
 
-- Each entry is one line: the kind, Created or Changed, the record and its
-  version, the fields that changed, the reason code, who modified the version and
-  for whom, and the time. The commentary stands on its own line below.
-- The detail is collapsed. A changed field is drawn as a removed line and an added
-  line, with the changed part marked. The first version is drawn as the whole
-  record. A version that changed no field says "No changes".
-- The provenance fields are not drawn as changes; they differ by definition and
-  stand in the header.
-- The newest version carries the current-version emblem and offers nothing.
-- "Hide system activity" sits above the chart and starts off.
+- The stream is the record's own versions, read through the generic history request
+  (=GET /api/history=, =refdata.v1.history.get=).
 - /Revert/ is offered on any version but the current one, to a person who may write.
   It opens the revert dialog, which says that the values of version /n/ are written
   back as a new version and that no version is lost. It asks for a reason, and

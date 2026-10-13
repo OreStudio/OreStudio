@@ -118,17 +118,13 @@ scenario. The last block says where the real data scenario differs.
    observations stay, and the binding's history stays. The person picks a reason
    and writes a commentary when it needs one. After the delete the system returns
    to the list.
-8. *See who changed a binding.* The person opens the *History* tab. It is the
-   shared timeline: a chart of the events over time above a rail of one-line
-   entries, newest first. Each entry says whether the version was created or
-   changed, the record and its version, the fields that changed, the reason, who
-   modified it and for whom, and when, with the commentary below. The detail is
-   collapsed and shows the removed and the added line. The newest version carries
-   the current-version emblem. *Hide system activity* hides the versions that a
-   service wrote. *Revert* is offered on any older version, to a person who may
-   write. Its dialog says that the values of that version are written back as a
-   new version and that no version is lost. Start and stop are the feed's and are
-   not in the binding's history.
+8. *See who changed a binding.* The person opens the *History* tab, the shared
+   timeline of the
+   [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], for
+   the binding's own versions. *Revert* is offered on an older version, to a person
+   who may write, as the
+   [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] says. Start
+   and stop are the feed's and are not in the binding's history.
 9. *See a binding that has gone quiet.* The status column says *Quiet* for a
    binding that is enabled and has not ticked within the interval its tick rate
    implies, and a quiet binding stays in the list. The person sorts by last tick.

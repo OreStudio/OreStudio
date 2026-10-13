@@ -26,7 +26,9 @@ import { api, type FeedFilter, type FeedFolder, type FolderFeed } from '../../ap
 import { FlagOf } from '../../images/flags.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { show, useRecords } from '../../refdata/records.js';
+import { useLabelCatalogue } from '../../refdata/shared.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../../ui/Pager.js';
+import { Label } from '../../ui/Label.js';
 import { Button, Input, Notice, Select, Tag, cx } from '../../ui/Primitives.js';
 import { AddFeed, useMayAddFeed } from './AddFeed.js';
 import { StateTag, useProviderFacts } from './DashboardTab.js';
@@ -214,6 +216,7 @@ export function FeedTreeTab(): ReactNode {
     const [params, setParams] = useSearchParams();
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
+    const labels = useLabelCatalogue();
     const folderRows = useRecords('folders');
     const rows: readonly FolderRow[] = (folderRows.data ?? []).map((row) => ({
         id: show(row['id']),
@@ -288,10 +291,10 @@ export function FeedTreeTab(): ReactNode {
     const roots = providerNodes(collections);
     const label = (node: TreeNode): string =>
         node.role === 'provider' ? providerName(node.providerCode ?? '', facts) : node.name;
-    // The tree starts open on its providers and their collections, once, when they first load.
+    // The tree starts fully open, once, when the providers and the folders have loaded.
     const opened = useRef(false);
     useEffect(() => {
-        if (opened.current || collections.length === 0) {
+        if (opened.current || collections.length === 0 || rows.length === 0) {
             return;
         }
         opened.current = true;
@@ -299,11 +302,13 @@ export function FeedTreeTab(): ReactNode {
             (current) =>
                 new Set([
                     ...current,
-                    ...providerNodes(collections).map((node) => node.key),
-                    ...collections.map((collection) => folderKey(collection.id)),
+                    ...roots.map((node) => node.key),
+                    ...rows
+                        .filter((row) => row.kind !== 'root' && row.kind !== 'instrument_type')
+                        .map((row) => folderKey(row.id)),
                 ]),
         );
-    }, [collections]);
+    }, [collections, folderRows.data]);
     useEffect(() => {
         if (parsed?.kind === 'folder') {
             const chain = folderChain(rows, parsed.id);
@@ -641,9 +646,14 @@ export function FeedTreeTab(): ReactNode {
                                                     )}
                                                 </td>
                                                 <td className="px-3 py-2">
-                                                    {t(
-                                                        `marketdata.synthetic.assetClass.${feed.asset_class_code}`,
-                                                    )}
+                                                    <Label
+                                                        text={t(
+                                                            `marketdata.synthetic.assetClass.${feed.asset_class_code}`,
+                                                        )}
+                                                        badge={labels.byCode.get(
+                                                            `asset_class_${feed.asset_class_code}`,
+                                                        )}
+                                                    />
                                                 </td>
                                                 <td className="px-3 py-2">
                                                     <Underlying feed={feed} />

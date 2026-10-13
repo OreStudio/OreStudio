@@ -22,6 +22,7 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
+#include "ores.marketdata.core/messaging/feed_binding_activity_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
@@ -166,6 +167,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             manual_point_handler h(nats, ctx, verifier);
                                             h.clear(std::move(msg));
                                         }));
+
+    // What each feed binding has written: the series of its source's newest
+    // observation and when the source last ticked.
+    subs.push_back(
+        nats.queue_subscribe(std::string(list_feed_binding_activity_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 feed_binding_activity_handler h(nats, ctx, verifier);
+                                 h.list(std::move(msg));
+                             }));
 
     // The oresmd schema: what a URI may hold, for a client that edits one.
     subs.push_back(nats.queue_subscribe(std::string(describe_oresmd_schema_request::nats_subject),

@@ -432,6 +432,27 @@ market_observation_repository::read_latest_for_series(context ctx,
         "Reading latest market observations.");
 }
 
+std::optional<domain::market_observation>
+market_observation_repository::read_newest_for_source(context ctx, const std::string& source) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the newest observation of source: " << source;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<market_observation_entity>> |
+        where("tenant_id"_c == tid && "source"_c == source && "valid_to"_c == max.value()) |
+        order_by("observation_datetime"_c.desc()) | sqlgen::limit(1);
+
+    const auto rows = execute_read_query<market_observation_entity, domain::market_observation>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_observation_mapper::map(entities); },
+        lg(),
+        "Reading the newest market observation of a source.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+
 namespace {
 
 /*

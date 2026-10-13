@@ -238,6 +238,9 @@ public:
     std::vector<domain::market_observation>
     read_latest_for_series(context ctx, const boost::uuids::uuid& series_id);
 
+    std::optional<domain::market_observation> read_newest_for_source(context ctx,
+                                                                     const std::string& source);
+
     std::vector<observation_record>
     read_as_of_records(context ctx,
                        const boost::uuids::uuid& series_id,

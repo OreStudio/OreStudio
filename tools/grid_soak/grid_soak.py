@@ -63,6 +63,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -144,8 +145,16 @@ def discover_parties(root, tenant_code):
         capture_output=True, text=True, check=False,
     )
     if done.returncode != 0:
+        print(f"[soak] the parties of {tenant_code} could not be read: {done.stderr.strip()}",
+              flush=True)
         return []
-    return [line.strip() for line in done.stdout.splitlines() if len(line.strip()) == 36]
+    parties = []
+    for line in done.stdout.splitlines():
+        try:
+            parties.append(str(uuid.UUID(line.strip())))
+        except ValueError:
+            continue
+    return parties
 
 
 def wave_script(principal, password, reference, count, app_version, package, party=None):

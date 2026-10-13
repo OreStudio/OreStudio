@@ -4079,6 +4079,13 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
             )
             fields.append(field_entry)
         entry["fields"] = fields
+        adopts_field = entry.get("shell_adopts_token_for")
+        if adopts_field and adopts_field not in {f["name"] for f in fields}:
+            raise ValueError(
+                f"message {node.title} states :shell_adopts_token_for: "
+                f"{adopts_field!r}, which is not one of its fields; name the "
+                "request field that carries the party the token is scoped to"
+            )
         messages.append(entry)
     return messages
 

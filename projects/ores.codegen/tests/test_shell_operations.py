@@ -340,6 +340,48 @@ class TestTheDeclaredTimeout:
                 ":request_timeout_seconds: 1800\n:auth: none\n"))
 
 
+class TestTheTokenACommandKeeps:
+    """A command that re-scopes the session keeps the token the answer carries."""
+
+    def _body(self, line):
+        return f"""* Messages
+
+** op_request
+:PROPERTIES:
+:subject: iam.v1.op
+:response: op_response
+{line}:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+"""
+
+    def test_a_message_without_the_property_keeps_no_token(self):
+        command = shell_command_projection(_declared(self._body("")))[0]
+        assert not command["adopts_token_field"]
+
+    def test_the_model_names_the_field_and_the_command_reads_it(self):
+        messages = _declared(self._body(":shell_adopts_token_for: party_id\n"))
+        assert messages[0]["shell_adopts_token_for"] == "party_id"
+        command = shell_command_projection(messages)[0]
+        assert command["adopts_token_field"] == "party_id"
+
+    def test_a_field_the_request_does_not_have_is_refused(self):
+        # A typo must not generate code that reads a member the request lacks.
+        with pytest.raises(ValueError, match="not one of its fields"):
+            _declared(self._body(":shell_adopts_token_for: partyid\n"))
+
+    def test_the_template_emits_the_block_only_for_such_a_command(self):
+        template = (
+            Path(__file__).resolve().parents[1]
+            / "library" / "templates" / "cpp_shell_operation_implementation.cpp.mustache"
+        ).read_text(encoding="utf-8")
+        assert "{{#adopts_token_field}}" in template
+        assert "info.jwt = result->token;" in template
+
+
 class TestTheCommandVerb:
     """A message whose name repeats its menu states the verb it wants."""
 

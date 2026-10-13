@@ -195,6 +195,10 @@ function Person({
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
+    const newRoles = useChangedRows('person-roles', roles, (role) => role.roleId, {
+        dataUpdatedAt: access.dataUpdatedAt,
+        isPlaceholder: access.isPlaceholderData,
+    });
 
     return (
         <div className="space-y-4">
@@ -345,7 +349,7 @@ function Person({
                                 {roles.map((role) => (
                                     <tr
                                         key={role.roleId}
-                                        className="border-b border-line-subtle last:border-b-0"
+                                        className={`border-b border-line-subtle last:border-b-0${newRoles.has(role.roleId) ? ' row-changed' : ''}`}
                                     >
                                         <td className="px-4 py-2">
                                             <span className="block font-medium">

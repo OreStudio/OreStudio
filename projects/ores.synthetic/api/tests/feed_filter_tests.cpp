@@ -131,7 +131,7 @@ TEST_CASE("feed_filter leaves out the excluded feeds", tags) {
     feed_filter f;
     f.excluded_ids = {folder, other};
     CHECK_THAT(
-        where_clause(f, {}),
+        where_clause(f, {}, true),
         ContainsSubstring("id::uuid not in (E'" + folder + "'::uuid, E'" + other + "'::uuid)"));
 }
 

@@ -177,7 +177,7 @@ describe('the Synthetic dashboard', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('>Dashboard<');
-        expect(html).toContain('>Feed tree<');
+        expect(html).toContain('>Feeds<');
         expect(html).toContain('Bloomberg');
         expect(html).toContain('Simulates Bloomberg composite quotes.');
         expect(html).toContain('Simulates the ORE examples.');

@@ -3686,7 +3686,7 @@ const pt: SourceCatalogue = {
         synthetic: {
             title: 'Sintético',
             lead: 'Os dados de mercado que a plataforma gera em vez de receber: o que corre por fornecedor, e cada feed numa árvore.',
-            tabs: { dashboard: 'Painel', tree: 'Árvore de feeds' },
+            tabs: { dashboard: 'Painel', tree: 'Feeds' },
             state: {
                 running: 'A correr',
                 stopped: 'Parado',

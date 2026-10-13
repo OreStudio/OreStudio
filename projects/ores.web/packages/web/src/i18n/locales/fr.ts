@@ -3711,7 +3711,7 @@ const fr: SourceCatalogue = {
         synthetic: {
             title: 'Synthétique',
             lead: 'Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et chaque flux dans une arborescence.',
-            tabs: { dashboard: 'Tableau de bord', tree: 'Arbre des flux' },
+            tabs: { dashboard: 'Tableau de bord', tree: 'Flux' },
             state: {
                 running: 'En marche',
                 stopped: 'Arrêté',

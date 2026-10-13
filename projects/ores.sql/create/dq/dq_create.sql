@@ -167,13 +167,13 @@
 -- Synthetic market data artefact tables
 \ir ./dq_synthetic_fx_spot_configs_artefact_create.sql
 \ir ./dq_market_data_providers_artefact_create.sql
-\ir ./dq_synthetic_gmm_components_artefact_create.sql
-\ir ./dq_synthetic_ir_curve_configs_artefact_create.sql
-\ir ./dq_synthetic_ir_curve_template_entries_artefact_create.sql
+\ir ./dq_gmm_components_artefact_create.sql
+\ir ./dq_ir_curve_generation_configs_artefact_create.sql
+\ir ./dq_ir_curve_template_entries_artefact_create.sql
 
 -- Market data artefact tables
-\ir ./dq_market_data_observations_artefact_create.sql
-\ir ./dq_crm_topology_bundles_artefact_create.sql
+\ir ./dq_market_observations_artefact_create.sql
+\ir ./dq_crm_topology_configs_artefact_create.sql
 
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql

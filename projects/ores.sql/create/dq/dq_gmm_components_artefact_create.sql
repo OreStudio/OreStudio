@@ -17,14 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
--- Synthetic GMM Components artefacts - per-pair Gaussian mixture components
--- backing an fx_spot_configs artefact row, keyed by currency pair within the
--- same dataset - Artefact Table
+-- A single weighted Gaussian component (mean, standard deviation, weight) of the Gaussian Mixture Model that drives an fx_spot_generation_config's price process. Components belong to a parent FX spot config via fx_spot_config_id; their weights are normalised at generation time. Party- and tenant-scoped. - Artefact Table
 -- =============================================================================
 
-create table if not exists "ores_dq_synthetic_gmm_components_artefact_tbl" (
+create table if not exists "ores_dq_gmm_components_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "base_currency_code" text not null,
@@ -36,11 +39,14 @@ create table if not exists "ores_dq_synthetic_gmm_components_artefact_tbl" (
     "weight" double precision not null
 );
 
-create index if not exists dq_synthetic_gmm_components_artefact_dataset_idx
-on ores_dq_synthetic_gmm_components_artefact_tbl (dataset_id);
+create index if not exists dq_gmm_components_artefact_dataset_idx
+on ores_dq_gmm_components_artefact_tbl (dataset_id);
 
-create index if not exists dq_synthetic_gmm_components_artefact_tenant_idx
-on ores_dq_synthetic_gmm_components_artefact_tbl (tenant_id);
+create index if not exists dq_gmm_components_artefact_tenant_idx
+on ores_dq_gmm_components_artefact_tbl (tenant_id);
 
-create index if not exists dq_synthetic_gmm_components_artefact_pair_idx
-on ores_dq_synthetic_gmm_components_artefact_tbl (dataset_id, base_currency_code, quote_currency_code);
+create index if not exists dq_gmm_components_artefact_base_currency_code_idx
+on ores_dq_gmm_components_artefact_tbl (base_currency_code);
+
+create index if not exists dq_gmm_components_artefact_pair_idx
+on ores_dq_gmm_components_artefact_tbl (dataset_id, base_currency_code, quote_currency_code);

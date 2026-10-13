@@ -94,7 +94,7 @@ begin
           and series_id in (
               select ms.id
               from ores_marketdata_market_series_tbl ms
-              join ores_dq_market_data_observations_artefact_tbl dq
+              join ores_dq_market_observations_artefact_tbl dq
                 on dq.oresmd_uri = ms.oresmd_uri
               where dq.dataset_id = p_dataset_id
                 and dq.tenant_id = ores_utility_system_tenant_id_fn()
@@ -109,7 +109,7 @@ begin
         select
             dq.oresmd_uri, dq.datum_uri,
             dq.observation_date, dq.value, dq.source
-        from ores_dq_market_data_observations_artefact_tbl dq
+        from ores_dq_market_observations_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
         order by dq.oresmd_uri, dq.datum_uri

@@ -170,6 +170,16 @@ ARTEFACT_INDEXES_NOT_UNIQUE = """\
 :END:
 """
 
+# An expression table in the section's own body: the staging table's checks.
+ARTEFACT_COLUMNS_WITH_CHECKS = ARTEFACT_COLUMNS.replace(
+    "* Artefact columns\n",
+    "* Artefact columns\n\n"
+    "| expression           |\n"
+    "|----------------------|\n"
+    "| \"name\" <> ''        |\n"
+    "| \"version\" >= 0      |\n",
+)
+
 INSERT_FN_WITH_SECTION = ARTEFACT_COLUMNS
 
 
@@ -287,6 +297,33 @@ def test_the_section_keeps_the_artefact_header_indexes(tmp_path):
 
     assert "dq_test_entities_artefact_dataset_idx" in sql
     assert "dq_test_entities_artefact_tenant_idx" in sql
+
+
+def test_declared_checks_close_the_body(tmp_path):
+    sql = generate_domain(tmp_path, ARTEFACT_COLUMNS_WITH_CHECKS)
+
+    assert (
+        '    "name" text not null\n'
+        "    ,check (\"name\" <> '')\n"
+        '    ,check ("version" >= 0)\n'
+        ");"
+    ) in sql
+
+
+def test_a_section_without_checks_renders_none(tmp_path):
+    sql = generate_domain(tmp_path, ARTEFACT_COLUMNS)
+
+    assert "check (" not in sql
+
+
+def test_checks_on_a_lookup_entity_are_refused(tmp_path):
+    """The lookup template renders no checks, so it would drop them."""
+    body = HEADER.replace(
+        "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
+    ) + FLAGS + COLUMNS + ARTEFACT_COLUMNS_WITH_CHECKS
+
+    with pytest.raises(ValueError, match="check expressions"):
+        _render(tmp_path, body, "sql_schema_artefact_create.mustache", "lookup_checks")
 
 
 def test_an_empty_section_is_refused(tmp_path):

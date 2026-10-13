@@ -176,7 +176,7 @@ begin
 
     -- Primary component: weight 0.95, calibrated per-pair stdev
     -- (annualised vol / 3970.9, per the header comment).
-    insert into ores_dq_synthetic_gmm_components_artefact_tbl (
+    insert into ores_dq_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,
         component_index, description, mean, stdev, weight
     )
@@ -201,7 +201,7 @@ begin
 
     -- Tail component: weight 0.05, 4x the primary's stdev, adding the fat
     -- tails a single Gaussian understates.
-    insert into ores_dq_synthetic_gmm_components_artefact_tbl (
+    insert into ores_dq_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,
         component_index, description, mean, stdev, weight
     )

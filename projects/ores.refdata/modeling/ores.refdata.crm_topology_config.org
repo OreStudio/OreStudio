@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3F8C1A2D-6B4E-4A9F-8D2C-1E7A9B5C3F0D
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.crm_topology_config
 #+description: Codegen entity model for the refdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.
@@ -102,6 +103,54 @@ edited) without disrupting the running engine.
 #+begin_src cpp :name generator
 faker::datatype::boolean()
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: crm_name
+:END:
+
+One import row stands for one currency pair of a named CRM: a driver pair, which is an edge of the spanning tree, or an enabled derived pair, which is a curated cross that is not an edge. The CRM itself is the distinct set of names, and every row of one name repeats its pivot. Publishing writes the CRM, its driver pairs and its enabled derived pairs.
+
+| expression                                       |
+|--------------------------------------------------|
+| "row_kind" in ('driver', 'derived')              |
+| "base_currency_code" <> ''                       |
+| "quote_currency_code" <> ''                      |
+| "base_currency_code" <> "quote_currency_code"    |
+| "crm_name" <> ''                                 |
+| "pivot_currency_code" <> ''                      |
+
+** crm_name
+:PROPERTIES:
+:type: text
+:END:
+
+** pivot_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** base_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** row_kind
+:PROPERTIES:
+:type: text
+:END:
+
+* Artefact indexes
+
+** name
+:PROPERTIES:
+:columns: dataset_id, crm_name
+:END:
 
 * SQL
 

@@ -56,7 +56,7 @@ external/fed_h10/manifest.json
 projects/ores.sql/populate/marketdata/marketdata_fx_driver_rates_populate.sql
   - Registers the marketdata.fx_driver_rates DQ dataset, methodology,
     catalog, and bundle membership.
-  - Seeds ores_dq_market_data_observations_artefact_tbl with one row per
+  - Seeds ores_dq_market_observations_artefact_tbl with one row per
     (vintage date, currency pair) combination, each individually citing
     its own source_url/retrieved_at -- see
     marketdata_fx_driver_rates_populate.sql for the current vintage

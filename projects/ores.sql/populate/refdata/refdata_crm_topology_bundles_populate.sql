@@ -156,12 +156,12 @@ begin
     end if;
 
     -- Clear existing rows for this dataset (idempotency)
-    delete from ores_dq_crm_topology_bundles_artefact_tbl
+    delete from ores_dq_crm_topology_configs_artefact_tbl
     where dataset_id = v_dataset_id;
 
     raise debug 'Populating CRM topology bundles for dataset: refdata.crm_topology_bundles';
 
-    insert into ores_dq_crm_topology_bundles_artefact_tbl (
+    insert into ores_dq_crm_topology_configs_artefact_tbl (
         dataset_id, tenant_id, crm_name, pivot_currency_code,
         base_currency_code, quote_currency_code, row_kind
     )

@@ -131,7 +131,7 @@ begin
      true, true, 'GBP', 'USD', 1.2650, 3600, 'geometric',
      'vintage', 'ore.reference', '2016-02-05', 'ore');
 
-    insert into ores_dq_synthetic_gmm_components_artefact_tbl (
+    insert into ores_dq_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,
         component_index, description, mean, stdev, weight
     )

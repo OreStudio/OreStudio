@@ -23,8 +23,10 @@ import { describe, expect, it } from 'vitest';
 import type { QueryClient } from '@tanstack/react-query';
 import { Route } from 'react-router';
 import type { RecordRow } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
 import { textOf } from '../textOf.js';
-import { PartiesPage, PartyPage } from './parties.js';
+import { PartiesPage, PartyPage, TabPane } from './parties.js';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { FIRST_PAGE, pageKey } from './RecordList.js';
 import { accessOf, renderRecords, resourceView } from './testSupport.js';
 
@@ -43,12 +45,22 @@ const REGISTRY = [
         sortable: ['short_code', 'full_name', 'party_type', 'status'],
     }),
     resourceView('party-identifiers', ['id']),
-    resourceView('party-contacts', ['id']),
+    resourceView('party-contacts', ['id'], { name: 'party_contact_informations' }),
     resourceView('party-countries', ['party_id', 'country_alpha2_code'], { versioned: false }),
     resourceView('party-currencies', ['party_id', 'currency_iso_code'], { versioned: false }),
     resourceView('party-counterparties', ['party_id', 'counterparty_id'], { versioned: false }),
     resourceView('business-units', ['id']),
 ];
+
+/** The reads of the parts a party page draws a tab for. */
+const PART_READS = [
+    'party_identifiers',
+    'party_contact_informations',
+    'party_countries',
+    'party_currencies',
+    'business_units',
+    'party_counterparties',
+].map((name) => `refdata::${name}:read`);
 
 const party: RecordRow = {
     version: 7,
@@ -131,9 +143,39 @@ describe('the parties list', () => {
     });
 });
 
+describe('a tab of the party page', () => {
+    const draw = (tab: string, seen: string[]): string =>
+        renderToStaticMarkup(
+            <TabPane name="contacts" tab={tab} seen={new Set(seen)}>
+                <p>The contacts</p>
+            </TabPane>,
+        );
+
+    it('is drawn while it is the open tab', () => {
+        expect(draw('contacts', [])).not.toContain('hidden');
+        expect(draw('contacts', [])).toContain('The contacts');
+    });
+
+    it('stays drawn but hidden once the person has opened it and gone to another', () => {
+        const html = draw('history', ['contacts', 'history']);
+
+        expect(html).toContain('hidden');
+        expect(html).toContain('The contacts');
+    });
+
+    it('is not drawn, and so reads nothing, until the person opens it', () => {
+        expect(draw('history', ['history'])).toBe('');
+    });
+});
+
 describe('a party page', () => {
-    const open = (codes: string[], tab = 'details'): string =>
-        page(`/refdata/parties/${ID}?tab=${tab}`, codes, (client) => {
+    const open = (
+        codes: string[],
+        tab = 'details',
+        more: (client: QueryClient) => void = () => undefined,
+    ): string =>
+        page(`/refdata/parties/${ID}?tab=${tab}`, [...codes, ...PART_READS], (client) => {
+            more(client);
             client.setQueryData(
                 ['records', 'party-identifiers', ID],
                 [
@@ -188,6 +230,50 @@ describe('a party page', () => {
         expect(words).not.toContain('Structure');
     });
 
+    it('draws only the tabs the reader may read, and always History', () => {
+        const words = textOf(
+            page(`/refdata/parties/${ID}`, ['refdata::parties:read'], () => undefined),
+        );
+
+        expect(words).toContain('Details');
+        expect(words).toContain('History');
+        for (const tab of [
+            'Identifiers',
+            'Contacts',
+            'Memberships',
+            'Business centres',
+            'Counterparties',
+        ]) {
+            expect(words, tab).not.toContain(tab);
+        }
+    });
+
+    it('draws the tab of a part for a reader of that part and for no one else', () => {
+        const words = textOf(
+            page(
+                `/refdata/parties/${ID}`,
+                ['refdata::parties:read', 'refdata::party_identifiers:read'],
+                () => undefined,
+            ),
+        );
+
+        expect(words).toContain('Identifiers');
+        expect(words).not.toContain('Contacts');
+    });
+
+    it('draws the memberships for a reader of either kind of link', () => {
+        const words = textOf(
+            page(
+                `/refdata/parties/${ID}?tab=memberships`,
+                ['refdata::parties:read', 'refdata::party_currencies:read'],
+                () => undefined,
+            ),
+        );
+
+        expect(words).toContain('Currencies it operates in');
+        expect(words).not.toContain('Countries it operates in');
+    });
+
     it('offers Refresh, because the page reloads only when the person asks', () => {
         const words = textOf(open(['refdata::parties:read']));
 
@@ -221,6 +307,66 @@ describe('a party page', () => {
         const words = textOf(open(['refdata::parties:read'], 'counterparties'));
 
         expect(words).toContain('Counterparties it may trade with');
+    });
+
+    it('says under a fixed field why it never changes', () => {
+        const words = textOf(open(['refdata::parties:read'], 'details'));
+
+        expect(words).toContain('Set when the record was made, and never changed here.');
+    });
+
+    it('names a linked counterparty and never draws its identifier', () => {
+        const CP = '55555555-5555-4555-8555-555555555555';
+        const words = textOf(
+            open(['refdata::parties:read'], 'counterparties', (client) => {
+                client.setQueryData(
+                    ['records', 'party-counterparties', ID],
+                    [{ version: 1, party_id: ID, counterparty_id: CP }],
+                );
+                client.setQueryData(
+                    ['records', 'counterparties'],
+                    [{ version: 1, id: CP, full_name: 'Globex Corporation' }],
+                );
+            }),
+        );
+
+        expect(words).toContain('Globex Corporation');
+        expect(words).not.toContain(CP);
+    });
+
+    it('marks a panel read only for a person who may not change its links', () => {
+        const words = textOf(open(['refdata::parties:read'], 'counterparties'));
+
+        expect(words).toContain('Read only');
+    });
+
+    it('says that a party does not exist and offers the list, and does not leave the page', () => {
+        const html = renderRecords(
+            '/refdata/parties/missing',
+            REGISTRY,
+            <Route path="/refdata/parties/:id" element={<PartyPage />} />,
+            (client) => {
+                client.setQueryData(['my-access'], accessOf(['refdata::parties:read']));
+                // An errored read is tried again when its screen mounts, which would
+                // hide the error from this render.
+                client.setQueryDefaults(['records', 'parties', 'key', 'missing'], {
+                    retryOnMount: false,
+                });
+                client
+                    .getQueryCache()
+                    .build(client, { queryKey: ['records', 'parties', 'key', 'missing'] })
+                    .setState({
+                        status: 'error',
+                        fetchStatus: 'idle',
+                        error: new ApiFailure(404, { code: 'not_found', message: 'gone' } as never),
+                        errorUpdateCount: 1,
+                        errorUpdatedAt: Date.now(),
+                    });
+            },
+        );
+
+        expect(textOf(html)).toContain('There is no such record, or you may not see it.');
+        expect(html).toContain('href="/refdata/parties"');
     });
 
     it('calls the picture of a party its logo', () => {

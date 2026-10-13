@@ -2384,6 +2384,12 @@ const fr: SourceCatalogue = {
                 'Les devises dans lesquelles elle opère n’ont pas pu être lues, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
             party_counterparty:
                 'Les contreparties avec lesquelles elle peut traiter n’ont pas pu être lues, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
+            party_identifier_removed:
+                'Un identifiant qui a été retiré n’apparaît pas, car aucune lecture ne liste les identifiants retirés.',
+            party_contact_information_removed:
+                'Un contact qui a été retiré n’apparaît pas, car aucune lecture ne liste les contacts retirés.',
+            business_unit_removed:
+                'Une unité d’affaires qui a été retirée n’apparaît pas, car aucune lecture ne liste les unités d’affaires retirées.',
             account_party:
                 'Les parties où une personne travaille n’ont pas pu être lues, donc l’arrivée ou le départ n’apparaît pas.',
             account_role:
@@ -3287,6 +3293,9 @@ const fr: SourceCatalogue = {
             removeTitle: 'Supprimer {code} ?',
             needs: 'Reste à renseigner : {fields}',
             noLinks: 'Aucun pour le moment.',
+            fixedHint: 'Définie à la création de l’enregistrement, et jamais modifiée ici.',
+            notFound: 'Cet enregistrement n’existe pas, ou vous ne pouvez pas le voir.',
+            backToList: 'Retour à la liste',
             unlink: 'Retirer {name}',
             linkChoose: 'Choisir un élément à ajouter…',
             link: 'Ajouter',

@@ -19,7 +19,7 @@
  *
  */
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import type { HistoryVersion, TimelineEvent } from '@ores/wire-protocol/browser';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -54,6 +54,7 @@ import {
     RevertDialog,
     show,
     useRecordPermissions,
+    useMayRead,
     useRecordTabs,
     useRecords,
     type FieldSpec,
@@ -291,31 +292,36 @@ function namesOf(
     return (rows ?? []).map((row) => ({ value: show(row[value]), label: show(row[label]) }));
 }
 
-/** The countries and the currencies a party works in. */
+/** The countries and the currencies a party works in, each panel drawn for a reader of its kind. */
 function Memberships({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
+    const mayRead = useMayRead();
     const countries = useRecords('countries');
     const currencies = useRecords('currencies');
     return (
         <div className="space-y-4">
-            <LinkPanel
-                title={t('refdata.parties.countries')}
-                junction="party-countries"
-                parentField="party_id"
-                parentValue={partyId}
-                childField="country_alpha2_code"
-                flag="country"
-                choices={namesOf(countries.data, 'alpha2_code', 'name')}
-            />
-            <LinkPanel
-                title={t('refdata.parties.currencies')}
-                junction="party-currencies"
-                parentField="party_id"
-                parentValue={partyId}
-                childField="currency_iso_code"
-                flag="currency"
-                choices={namesOf(currencies.data, 'iso_code', 'name')}
-            />
+            {mayRead('party-countries') && (
+                <LinkPanel
+                    title={t('refdata.parties.countries')}
+                    junction="party-countries"
+                    parentField="party_id"
+                    parentValue={partyId}
+                    childField="country_alpha2_code"
+                    flag="country"
+                    choices={namesOf(countries.data, 'alpha2_code', 'name')}
+                />
+            )}
+            {mayRead('party-currencies') && (
+                <LinkPanel
+                    title={t('refdata.parties.currencies')}
+                    junction="party-currencies"
+                    parentField="party_id"
+                    parentValue={partyId}
+                    childField="currency_iso_code"
+                    flag="currency"
+                    choices={namesOf(currencies.data, 'iso_code', 'name')}
+                />
+            )}
         </div>
     );
 }
@@ -447,9 +453,194 @@ function partyWatches(row: RecordRow): readonly WatchedEntity[] {
     ];
 }
 
-/** The reads that make up a party's page, named by the start of their keys. */
+/**
+ * The reads a party's page shows, named by the start of their keys.
+ *
+ * Refresh reads these again and nothing else, and the load time under it is the
+ * oldest of them. A pick list that only names a link is not one of them.
+ */
 function partyQueries(id: string): readonly (readonly string[])[] {
-    return [['records'], ['timeline', 'party', id]];
+    return [
+        ['records', PARTIES, 'key', id],
+        ['records', IDENTIFIERS, id],
+        ['records', CONTACTS, id],
+        ['records', UNITS, id],
+        ['records', 'party-countries', id],
+        ['records', 'party-currencies', id],
+        ['records', 'party-counterparties', id],
+        ['timeline', 'party', id],
+    ];
+}
+
+/**
+ * A tab of the page. Once the person has opened it, it stays drawn and is hidden
+ * while another is open, so leaving a tab never unmounts its reads and coming
+ * back to it reads nothing.
+ */
+export function TabPane({
+    name,
+    tab,
+    seen,
+    children,
+}: {
+    readonly name: string;
+    readonly tab: string;
+    readonly seen: ReadonlySet<string>;
+    readonly children: ReactNode;
+}): ReactNode {
+    if (tab !== name && !seen.has(name)) {
+        return null;
+    }
+    return <div hidden={tab !== name}>{children}</div>;
+}
+
+function IdentifiersTab({ partyId }: { readonly partyId: string }): ReactNode {
+    const { t } = useTranslation();
+    const identifiers = useRecords(IDENTIFIERS, partyId);
+    return (
+        <PartsPanel
+            resource={IDENTIFIERS}
+            titles={{
+                add: t('refdata.parties.addPart.party-identifiers'),
+                one: t('refdata.parties.editPart.party-identifiers'),
+                remove: t('refdata.parties.removePart.party-identifiers'),
+            }}
+            entityType="ores.refdata.party_identifier"
+            specs={IDENTIFIER_FIELDS}
+            parentField="party_id"
+            parent={partyId}
+            rows={identifiers.data ?? []}
+            error={identifiers.error?.message}
+            lead={t('refdata.parties.identifiersLead')}
+            columns={[
+                {
+                    header: t('refdata.fields.id_scheme'),
+                    cell: (row) => show(row['id_scheme']),
+                },
+                {
+                    header: t('refdata.fields.id_value'),
+                    cell: (row) => show(row['id_value']),
+                    mono: true,
+                },
+                {
+                    header: t('refdata.fields.description'),
+                    cell: (row) => show(row['description']),
+                },
+            ]}
+            sort={(row) => `${show(row['id_scheme'])}${show(row['id_value'])}`}
+        />
+    );
+}
+
+function ContactsTab({ partyId }: { readonly partyId: string }): ReactNode {
+    const { t } = useTranslation();
+    const contacts = useRecords(CONTACTS, partyId);
+    return (
+        <PartsPanel
+            resource={CONTACTS}
+            titles={{
+                add: t('refdata.parties.addPart.party-contacts'),
+                one: t('refdata.parties.editPart.party-contacts'),
+                remove: t('refdata.parties.removePart.party-contacts'),
+            }}
+            entityType="ores.refdata.party_contact_information"
+            specs={CONTACT_FIELDS}
+            parentField="party_id"
+            parent={partyId}
+            rows={contacts.data ?? []}
+            error={contacts.error?.message}
+            initial={{ is_primary: 'false' }}
+            columns={[
+                {
+                    header: t('refdata.fields.contact_type'),
+                    cell: (row) => (
+                        <ClassifiedValue list="contact-type" code={show(row['contact_type'])} />
+                    ),
+                },
+                {
+                    header: t('refdata.parties.address'),
+                    cell: (row) =>
+                        [show(row['street_line_1']), show(row['city']), show(row['postal_code'])]
+                            .filter((part) => part !== '')
+                            .join(', '),
+                },
+                {
+                    header: t('refdata.fields.country_code'),
+                    cell: (row) => (
+                        <FlaggedCode source="country" code={show(row['country_code'])} />
+                    ),
+                },
+                {
+                    header: t('refdata.fields.phone'),
+                    cell: (row) => show(row['phone']),
+                },
+                {
+                    header: t('refdata.fields.email'),
+                    cell: (row) => (
+                        <Address text={show(row['email'])} link={mailtoLink(show(row['email']))} />
+                    ),
+                },
+                {
+                    header: t('refdata.fields.web_page'),
+                    cell: (row) => (
+                        <Address
+                            text={show(row['web_page'])}
+                            link={webLink(show(row['web_page']))}
+                        />
+                    ),
+                },
+            ]}
+            sort={(row) => show(row['contact_type'])}
+        />
+    );
+}
+
+function UnitsTab({ partyId }: { readonly partyId: string }): ReactNode {
+    const { t } = useTranslation();
+    const units = useRecords(UNITS, partyId);
+    return (
+        <PartsPanel
+            resource={UNITS}
+            titles={{
+                add: t('refdata.parties.addPart.business-units'),
+                one: t('refdata.parties.editPart.business-units'),
+                remove: t('refdata.parties.removePart.business-units'),
+            }}
+            entityType="ores.refdata.business_unit"
+            specs={UNIT_FIELDS}
+            parentField="party_id"
+            parent={partyId}
+            keep={['parent_business_unit_id']}
+            rows={units.data ?? []}
+            error={units.error?.message}
+            lead={t('refdata.parties.unitsLead')}
+            columns={[
+                {
+                    header: t('refdata.fields.unit_name'),
+                    cell: (row) => show(row['unit_name']),
+                },
+                {
+                    header: t('refdata.fields.unit_code'),
+                    cell: (row) => show(row['unit_code']),
+                    mono: true,
+                },
+                {
+                    header: t('refdata.fields.business_centre_code'),
+                    cell: (row) => (
+                        <FlaggedCode
+                            source="businessCentre"
+                            code={show(row['business_centre_code'])}
+                        />
+                    ),
+                },
+                {
+                    header: t('refdata.fields.status'),
+                    cell: (row) => show(row['status']),
+                },
+            ]}
+            sort={(row) => show(row['unit_code'])}
+        />
+    );
 }
 
 function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
@@ -457,22 +648,26 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const id = show(row['id']);
     const name = show(row['full_name']);
     const may = useRecordPermissions(PARTIES);
+    const mayRead = useMayRead();
     const root = useAreaRoot('refdata');
+    // A tab the reader may not read is not drawn. History is always drawn, and
+    // its timeline says what it cannot answer.
     const { tab, bar } = useRecordTabs({
         label: name,
         tabs: [
             'details',
-            'identifiers',
-            'contacts',
-            'memberships',
-            'centres',
-            'counterparties',
+            ...(mayRead(IDENTIFIERS) ? ['identifiers'] : []),
+            ...(mayRead(CONTACTS) ? ['contacts'] : []),
+            ...(mayRead('party-countries') || mayRead('party-currencies') ? ['memberships'] : []),
+            ...(mayRead(UNITS) ? ['centres'] : []),
+            ...(mayRead('party-counterparties') ? ['counterparties'] : []),
             'history',
         ],
     });
-    const identifiers = useRecords(IDENTIFIERS, id);
-    const contacts = useRecords(CONTACTS, id);
-    const units = useRecords(UNITS, id);
+    const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set([tab]));
+    useEffect(() => {
+        setSeen((before) => (before.has(tab) ? before : new Set(before).add(tab)));
+    }, [tab]);
     const [editing, setEditing] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
     const image = show(row['image_id']);
@@ -486,6 +681,11 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
             void queries.invalidateQueries({ queryKey: key });
         }
     };
+    const pane = (name: string, children: ReactNode): ReactNode => (
+        <TabPane name={name} tab={tab} seen={seen}>
+            {children}
+        </TabPane>
+    );
 
     return (
         <div className="space-y-4">
@@ -503,7 +703,8 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                 {...(image === '' ? {} : { mark: <Flag src={imageUrl(image)} size="lg" /> })}
             />
             {bar}
-            {tab === 'details' && (
+            {pane(
+                'details',
                 <RecordDetails
                     specs={PARTY_FIELDS}
                     row={row}
@@ -511,162 +712,19 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                         title: t('refdata.parties.card'),
                         onEdit: may.write ? () => setEditing(true) : undefined,
                     }}
-                />
+                />,
             )}
-            {tab === 'identifiers' && (
-                <PartsPanel
-                    resource={IDENTIFIERS}
-                    titles={{
-                        add: t('refdata.parties.addPart.party-identifiers'),
-                        one: t('refdata.parties.editPart.party-identifiers'),
-                        remove: t('refdata.parties.removePart.party-identifiers'),
-                    }}
-                    entityType="ores.refdata.party_identifier"
-                    historyKey={(row) => show(row['id_value'])}
-                    specs={IDENTIFIER_FIELDS}
-                    parentField="party_id"
-                    parent={id}
-                    rows={identifiers.data ?? []}
-                    error={identifiers.error?.message}
-                    lead={t('refdata.parties.identifiersLead')}
-                    columns={[
-                        {
-                            header: t('refdata.fields.id_scheme'),
-                            cell: (row) => show(row['id_scheme']),
-                        },
-                        {
-                            header: t('refdata.fields.id_value'),
-                            cell: (row) => show(row['id_value']),
-                            mono: true,
-                        },
-                        {
-                            header: t('refdata.fields.description'),
-                            cell: (row) => show(row['description']),
-                        },
-                    ]}
-                    sort={(row) => `${show(row['id_scheme'])}${show(row['id_value'])}`}
-                />
-            )}
-            {tab === 'contacts' && (
-                <PartsPanel
-                    resource={CONTACTS}
-                    titles={{
-                        add: t('refdata.parties.addPart.party-contacts'),
-                        one: t('refdata.parties.editPart.party-contacts'),
-                        remove: t('refdata.parties.removePart.party-contacts'),
-                    }}
-                    entityType="ores.refdata.party_contact_information"
-                    historyKey={(row) => show(row['contact_type'])}
-                    specs={CONTACT_FIELDS}
-                    parentField="party_id"
-                    parent={id}
-                    rows={contacts.data ?? []}
-                    error={contacts.error?.message}
-                    initial={{ is_primary: 'false' }}
-                    columns={[
-                        {
-                            header: t('refdata.fields.contact_type'),
-                            cell: (row) => (
-                                <ClassifiedValue
-                                    list="contact-type"
-                                    code={show(row['contact_type'])}
-                                />
-                            ),
-                        },
-                        {
-                            header: t('refdata.parties.address'),
-                            cell: (row) =>
-                                [
-                                    show(row['street_line_1']),
-                                    show(row['city']),
-                                    show(row['postal_code']),
-                                ]
-                                    .filter((part) => part !== '')
-                                    .join(', '),
-                        },
-                        {
-                            header: t('refdata.fields.country_code'),
-                            cell: (row) => (
-                                <FlaggedCode source="country" code={show(row['country_code'])} />
-                            ),
-                        },
-                        {
-                            header: t('refdata.fields.phone'),
-                            cell: (row) => show(row['phone']),
-                        },
-                        {
-                            header: t('refdata.fields.email'),
-                            cell: (row) => (
-                                <Address
-                                    text={show(row['email'])}
-                                    link={mailtoLink(show(row['email']))}
-                                />
-                            ),
-                        },
-                        {
-                            header: t('refdata.fields.web_page'),
-                            cell: (row) => (
-                                <Address
-                                    text={show(row['web_page'])}
-                                    link={webLink(show(row['web_page']))}
-                                />
-                            ),
-                        },
-                    ]}
-                    sort={(row) => show(row['contact_type'])}
-                />
-            )}
-            {tab === 'memberships' && <Memberships partyId={id} />}
-            {tab === 'centres' && (
-                <PartsPanel
-                    resource={UNITS}
-                    titles={{
-                        add: t('refdata.parties.addPart.business-units'),
-                        one: t('refdata.parties.editPart.business-units'),
-                        remove: t('refdata.parties.removePart.business-units'),
-                    }}
-                    entityType="ores.refdata.business_unit"
-                    historyKey={(row) => show(row['unit_code'])}
-                    specs={UNIT_FIELDS}
-                    parentField="party_id"
-                    parent={id}
-                    keep={['parent_business_unit_id']}
-                    rows={units.data ?? []}
-                    error={units.error?.message}
-                    lead={t('refdata.parties.unitsLead')}
-                    columns={[
-                        {
-                            header: t('refdata.fields.unit_name'),
-                            cell: (row) => show(row['unit_name']),
-                        },
-                        {
-                            header: t('refdata.fields.unit_code'),
-                            cell: (row) => show(row['unit_code']),
-                            mono: true,
-                        },
-                        {
-                            header: t('refdata.fields.business_centre_code'),
-                            cell: (row) => (
-                                <FlaggedCode
-                                    source="businessCentre"
-                                    code={show(row['business_centre_code'])}
-                                />
-                            ),
-                        },
-                        {
-                            header: t('refdata.fields.status'),
-                            cell: (row) => show(row['status']),
-                        },
-                    ]}
-                    sort={(row) => show(row['unit_code'])}
-                />
-            )}
-            {tab === 'counterparties' && <TradingCounterparties partyId={id} />}
-            {tab === 'history' && (
+            {pane('identifiers', <IdentifiersTab partyId={id} />)}
+            {pane('contacts', <ContactsTab partyId={id} />)}
+            {pane('memberships', <Memberships partyId={id} />)}
+            {pane('centres', <UnitsTab partyId={id} />)}
+            {pane('counterparties', <TradingCounterparties partyId={id} />)}
+            {pane(
+                'history',
                 <PartyHistory
                     row={row}
                     onRevert={may.write ? (version) => setReverting(version) : undefined}
-                />
+                />,
             )}
             {editing && (
                 <RecordDialog

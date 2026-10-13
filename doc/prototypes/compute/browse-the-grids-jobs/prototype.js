@@ -2,27 +2,40 @@
  * data, no framework, no build step.
  *
  * From doc/knowledge/journeys/compute/journey_browse_the_grids_jobs.org.
- * The fixtures are shaped by the compute.v1 batch, workunit and result
- * reads. Nothing here reads the server. */
+ *
+ * Every field the screen shows is a field of the entity model it comes from
+ * (ores.compute.batch, .workunit, .result and .host), under the model's own
+ * table-display header. The screen computes nothing: no count, no total and
+ * no state that the models do not hold. A list's own paging total is the one
+ * figure the server returns beside the rows. Nothing here reads the server. */
 
 (function () {
     'use strict';
 
     var ROLES = {
-        operator: { name: 'Operator', gist: 'Sees every tenant and party, and the node of each run.', parties: true, nodes: true },
-        tenant: { name: 'Tenant admin', gist: 'Sees every party of the tenant. No node names.', parties: true, nodes: false },
-        member: { name: 'Party member', gist: 'Sees only the party they belong to. No node names.', parties: false, nodes: false }
+        operator: { name: 'Operator', gist: 'Sees every tenant and party, and the host of each result.', parties: true, hosts: true },
+        tenant: { name: 'Tenant admin', gist: 'Sees every party of the tenant. No host names.', parties: true, hosts: false },
+        member: { name: 'Party member', gist: 'Sees only the party they belong to. No host names.', parties: false, hosts: false }
     };
     var STATES = ['loaded', 'loading', 'empty', 'error', 'refused'];
     var PAGE_SIZES = [10, 25, 50];
+
+    /* batch.status: open, processing, assimilating, closed. */
+    var BATCH_STATUSES = ['open', 'processing', 'assimilating', 'closed'];
+    /* result.server_state: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done. */
+    var SERVER_STATE = {
+        1: ['Inactive', 'gray'], 2: ['Unsent', 'queue'], 4: ['InProgress', 'run'], 5: ['Done', 'ok']
+    };
+    /* result.outcome: 1=Success, 3=ClientError, 4=NoReply; 0 is not set. */
+    var OUTCOME = { 1: ['Success', 'ok'], 3: ['ClientError', 'bad'], 4: ['NoReply', 'warn'] };
+
     /* Shapes taken from the development database on 2026-10-13: the soak's
-     * batch references and party codes, the storage URIs, the host names, and
-     * the server_state and outcome of the stored results (all done and
-     * success). The failed and in-flight rows are invented, because the stored
-     * data holds none. */
+     * external_ref values, the party codes, the storage URIs, the host display
+     * names and the stored server_state and outcome (all 5 and 1). The failed
+     * and in-flight results, the app_version_id and the ids are invented. */
     var PARTY_OF = { p1: 'ACCOHK', p2: 'ACCOUS', p3: 'ACCOUK', p4: 'ACMCOR' };
     var PARTIES = ['ACCOUK', 'ACCOUS', 'ACCOHK', 'ACMCOR'];
-    var NODES = [
+    var HOSTS = [
         'timid-uakari-3eaa5870', 'quiet-hamster-ed10585e', 'idle-xerus-ed485b3f',
         'timid-hamster-593e583f', 'quiet-yak-bc485725', 'bumbling-tapir-b16f5933',
         'witty-tapir-d8115deb', 'plucky-pangolin-6d6f5712', 'graceful-xerus-22625e7e',
@@ -30,10 +43,11 @@
     ];
     var SIZES = { p1: [15, 6, 9, 12], p2: [20, 10, 14, 8], p3: [35, 15, 31, 24], p4: [3, 2, 3, 2] };
     var STORAGE = '/api/v1/storage/ores/compute/';
+    var SERVICE = 'ores_solid_dirac_compute_service';
+    var APP_VERSION = '01a132ed-e945-76fb-b727-b9daee60a0ed';
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
-    /* A stable pseudo-uuid, so the same record shows the same id each render. */
     function uuid(seed) {
         var x = 0x9e3779b1 ^ seed, out = '';
         for (var i = 0; i < 32; i++) {
@@ -48,14 +62,14 @@
     var seq = 0;
     [9, 8, 7, 6, 5, 4].forEach(function (wave) {
         ['p4', 'p3', 'p2', 'p1'].forEach(function (pk, pi) {
-            var jobs = SIZES[pk][(wave + pi) % 4];
-            var newest = wave === 9;
             batches.push({
                 id: uuid(++seq),
-                ref: 'soak-1013031448-' + wave + '-' + pk,
+                external_ref: 'soak-1013031448-' + wave + '-' + pk,
                 party: PARTY_OF[pk],
-                state: newest && pk === 'p3' ? 'open' : 'closed',
-                jobs: jobs,
+                status: wave === 9 && pk === 'p3' ? 'processing' : 'closed',
+                modified_by: SERVICE,
+                recorded_at: '2026-10-13 02:' + pad(27 + (wave % 3)) + ':27',
+                jobs: SIZES[pk][(wave + pi) % 4],
                 failed: wave === 7 && pk === 'p3' ? 2 : wave === 5 && pk === 'p2' ? 1 : 0
             });
         });
@@ -64,40 +78,42 @@
     function workunitsOf(b) {
         var out = [];
         for (var w = 0; w < b.jobs; w++) {
-            var id = uuid(b.jobs * 977 + w * 31 + b.ref.length + b.ref.charCodeAt(b.ref.length - 3));
+            var id = uuid(b.jobs * 977 + w * 31 + b.external_ref.length + b.external_ref.charCodeAt(b.external_ref.length - 3));
             out.push({
                 id: id,
-                label: id.slice(0, 8),
+                batch_id: b.id,
+                app_version_id: APP_VERSION,
+                input_uri: STORAGE + 'input/' + b.id + '.tar.gz',
+                config_uri: null,
                 priority: 1,
-                redundancy: 1,
-                input: STORAGE + 'input/' + b.id + '.tar.gz',
-                config: '',
-                bad: w < b.failed
+                target_redundancy: 1,
+                canonical_result_id: null,
+                modified_by: SERVICE,
+                recorded_at: b.recorded_at,
+                failing: w < b.failed
             });
+            resultsOf(b, out[out.length - 1]);
         }
         return out;
     }
 
     function resultsOf(b, wu) {
-        var out = [];
-        var n = wu.redundancy + (wu.bad ? 1 : 0);
-        for (var r = 0; r < n; r++) {
-            var failedRun = wu.bad && r === wu.redundancy;
-            var inFlight = b.state === 'open' && r === 0 && wu.id.charCodeAt(0) % 3 === 0;
-            var rid = uuid(wu.id.charCodeAt(2) * 131 + wu.id.charCodeAt(5) * 17 + r + wu.id.length * 7 + wu.id.charCodeAt(9));
-            out.push({
-                id: rid,
-                label: rid.slice(0, 8),
-                state: inFlight ? 'running' : failedRun ? 'failed' : 'succeeded',
-                serverState: inFlight ? 'in progress (4)' : 'done (5)',
-                outcome: inFlight ? '' : failedRun ? 'client error (2)' : 'success (1)',
-                error: failedRun ? 'engine exited with code 3: market data snapshot not found' : '',
-                node: inFlight ? '' : NODES[(wu.id.charCodeAt(1) + r) % NODES.length],
-                received: inFlight ? '' : '2026-10-13 02:' + pad(27 + (r % 3)) + ':' + pad(10 + (wu.id.charCodeAt(3) % 49)),
-                output: failedRun || inFlight ? '' : STORAGE + 'output/' + rid + '.tar.gz'
-            });
-        }
-        return out;
+        var inFlight = b.status === 'processing' && wu.id.charCodeAt(0) % 3 === 0;
+        var rid = uuid(wu.id.charCodeAt(2) * 131 + wu.id.charCodeAt(5) * 17 + wu.id.length * 7 + wu.id.charCodeAt(9));
+        var r = {
+            id: rid,
+            workunit_id: wu.id,
+            host: inFlight ? null : HOSTS[(wu.id.charCodeAt(1)) % HOSTS.length],
+            server_state: inFlight ? 4 : 5,
+            outcome: inFlight ? 0 : wu.failing ? 3 : 1,
+            output_uri: inFlight || wu.failing ? null : STORAGE + 'output/' + rid + '.tar.gz',
+            error_message: wu.failing ? 'engine exited with code 3: market data snapshot not found' : null,
+            received_at: inFlight ? null : '2026-10-13 02:' + pad(27 + (wu.id.charCodeAt(4) % 3)) + ':' + pad(10 + (wu.id.charCodeAt(3) % 49)),
+            modified_by: SERVICE,
+            recorded_at: b.recorded_at
+        };
+        wu.canonical_result_id = inFlight || wu.failing ? null : rid;
+        return [r];
     }
 
     var q = new URLSearchParams(location.search);
@@ -112,15 +128,18 @@
         return e;
     }
 
-    function badge(text) {
-        var cls = { succeeded: 'ok', closed: 'ok', failed: 'bad', running: 'run', open: 'queue' }[text] || 'queue';
-        return el('span', 'badge b-' + cls, text);
+    function badge(text, tone) {
+        return el('span', 'badge b-' + tone, text);
+    }
+
+    function statusTone(st) {
+        return { open: 'queue', processing: 'run', assimilating: 'run', closed: 'ok' }[st] || 'queue';
     }
 
     function filtered() {
         return batches.filter(function (b) {
-            return (!ui.text || b.ref.indexOf(ui.text) >= 0 || b.id === ui.text) &&
-                (!ui.state || (ui.state === 'failures' ? b.failed > 0 : b.state === ui.state)) &&
+            return (!ui.text || b.external_ref.indexOf(ui.text) >= 0 || b.id === ui.text) &&
+                (!ui.state || b.status === ui.state) &&
                 (role === 'member' ? b.party === 'ACCOUK' : !ui.party || b.party === ui.party);
         });
     }
@@ -151,16 +170,24 @@
         return bar;
     }
 
-    function row(cls, label, state, count, id, twist, failedCount) {
+    function row(label, id, twist, badges, note) {
         var r = el('li', 'row' + (ui.selected === id ? ' sel' : ''));
         var n = el('span', 'name');
         n.appendChild(el('span', 'twist', twist || ''));
         n.appendChild(document.createTextNode(label));
         r.appendChild(n);
-        r.appendChild(el('span', 'count' + (failedCount ? ' has-failed' : ''), count || ''));
-        r.appendChild(state ? badge(state) : el('span'));
+        r.appendChild(el('span', 'count', note || ''));
+        var bs = el('span', 'badges');
+        (badges || []).forEach(function (x) { bs.appendChild(x); });
+        r.appendChild(bs);
         r.dataset.id = id;
         return r;
+    }
+
+    function resultBadges(res) {
+        var out = [badge(SERVER_STATE[res.server_state][0], SERVER_STATE[res.server_state][1])];
+        if (OUTCOME[res.outcome]) { out.push(badge(OUTCOME[res.outcome][0], OUTCOME[res.outcome][1])); }
+        return out;
     }
 
     function tree() {
@@ -173,8 +200,7 @@
         var start = ui.page * ui.size;
         list.slice(start, start + ui.size).forEach(function (b) {
             var open = !!ui.open[b.id];
-            var r = row('', b.ref + (role === 'member' ? '' : '  · ' + b.party), b.state,
-                b.jobs + ' jobs, ' + b.failed + ' failed', b.id, open ? '▾' : '▸', b.failed);
+            var r = row(b.external_ref + (ROLES[role].parties ? '  \u00b7 ' + b.party : ''), b.id, open ? '\u25be' : '\u25b8', [badge(b.status, statusTone(b.status))]);
             r.onclick = function () { ui.open[b.id] = !open; ui.selected = b.id; render(); };
             ul.appendChild(r);
             if (!open) { return; }
@@ -184,14 +210,13 @@
             var l1 = el('ul', 'tree lvl1');
             wus.slice(wp * wsize, wp * wsize + wsize).forEach(function (wu) {
                 var wopen = !!ui.open[wu.id];
-                var wr = row('', wu.label, wu.bad ? 'failed' : 'succeeded',
-                    wu.redundancy + (wu.redundancy > 1 ? ' runs' : ' run'), wu.id, wopen ? '▾' : '▸');
+                var wr = row(wu.id.slice(0, 8), wu.id, wopen ? '\u25be' : '\u25b8', [], 'priority ' + wu.priority + ' \u00b7 target redundancy ' + wu.target_redundancy);
                 wr.onclick = function (e) { e.stopPropagation(); ui.open[wu.id] = !wopen; ui.selected = wu.id; render(); };
                 l1.appendChild(wr);
                 if (wopen) {
                     var l2 = el('ul', 'tree lvl2');
                     resultsOf(b, wu).forEach(function (res) {
-                        var rr = row('', res.label, res.state, '', res.id);
+                        var rr = row(res.id.slice(0, 8), res.id, '', resultBadges(res));
                         rr.onclick = function (e) { e.stopPropagation(); ui.selected = res.id; render(); };
                         l2.appendChild(rr);
                     });
@@ -216,9 +241,7 @@
             for (var j = 0; j < wus.length; j++) {
                 if (wus[j].id === id) { return { kind: 'workunit', b: b, wu: wus[j] }; }
                 var rs = resultsOf(b, wus[j]);
-                for (var k = 0; k < rs.length; k++) {
-                    if (rs[k].id === id) { return { kind: 'result', b: b, wu: wus[j], res: rs[k] }; }
-                }
+                if (rs[0].id === id) { return { kind: 'result', b: b, wu: wus[j], res: rs[0] }; }
             }
         }
         return null;
@@ -227,7 +250,7 @@
     function details() {
         var panel = el('div', 'panel detail-panel');
         var hit = ui.selected && find(ui.selected);
-        var title = !hit ? 'Details' : hit.kind === 'batch' ? 'Batch details' : hit.kind === 'workunit' ? 'Workunit details' : 'Result details';
+        var title = !hit ? 'Details' : hit.kind === 'batch' ? 'Batch' : hit.kind === 'workunit' ? 'Workunit' : 'Result';
         var head = el('h2', 'with-count', title);
         if (hit) { head.appendChild(el('span', 'access', 'Read only')); }
         panel.appendChild(head);
@@ -238,63 +261,63 @@
             return panel;
         }
         var rec = hit.kind === 'batch' ? hit.b : hit.kind === 'workunit' ? hit.wu : hit.res;
-        d.appendChild(el('div', 'kicker', hit.kind === 'batch' ? 'Reference' : hit.kind === 'workunit' ? 'Workunit id' : 'Result id'));
-        d.appendChild(el('div', 'big mono', hit.kind === 'batch' ? hit.b.ref : rec.id));
-        function tiles(pairs) {
-            var g = el('div', 'tiles');
-            pairs.forEach(function (p) {
-                var t = el('div', 'tile');
-                t.appendChild(el('span', 'kicker', p[0]));
-                t.appendChild(el('strong', '', p[1]));
-                g.appendChild(t);
-            });
-            d.appendChild(g);
-        }
+        d.appendChild(el('div', 'kicker', 'ID'));
+        d.appendChild(el('div', 'big mono', rec.id));
         var dl = el('dl');
-        function add(k, v, link) {
+        function put(k, node) {
             dl.appendChild(el('dt', '', k));
             var dd = el('dd');
-            if (link) { var a = el('a', '', v); a.href = '#'; a.onclick = function (e) { e.preventDefault(); }; dd.appendChild(a); }
-            else { dd.textContent = v === '' ? '—' : v; }
+            dd.appendChild(node);
             dl.appendChild(dd);
         }
-        function addFile(k, uri) {
-            dl.appendChild(el('dt', '', k));
-            var dd = el('dd');
-            if (!uri) { dd.textContent = 'none'; dl.appendChild(dd); return; }
+        function text(k, v) { put(k, document.createTextNode(v === null || v === '' ? 'none' : String(v))); }
+        function link(k, v, target) {
+            var a = el('a', v.length === 36 ? 'mono' : '', v);
+            a.href = '#';
+            a.title = 'Open ' + target;
+            a.onclick = function (e) { e.preventDefault(); toast('Would open ' + target + ' ' + v); };
+            put(k, a);
+        }
+        function file(k, uri) {
+            if (!uri) { text(k, null); return; }
             var a = el('a', 'mono path', uri);
             a.href = uri;
             a.download = uri.split('/').pop();
             a.onclick = function (e) { e.preventDefault(); toast('Would download ' + uri); };
-            dd.appendChild(a);
-            dl.appendChild(dd);
+            put(k, a);
         }
+        function audit() { text('Modified By', rec.modified_by); text('Recorded At', rec.recorded_at); }
         if (hit.kind === 'batch') {
-            tiles([['Jobs', String(hit.b.jobs)], ['Failed', String(hit.b.failed)]]);
-            add('State', hit.b.state);
-            if (ROLES[role].parties) { add('Party', hit.b.party, true); }
-            add('Closed', hit.b.state === 'closed' ? 'closed does not mean every run succeeded' : 'still open');
+            text('External Ref', hit.b.external_ref);
+            if (ROLES[role].parties) { link('Party', hit.b.party, 'party'); }
+            put('Status', badge(hit.b.status, statusTone(hit.b.status)));
+            audit();
         } else if (hit.kind === 'workunit') {
-            tiles([['Priority', String(hit.wu.priority)], ['Target redundancy', String(hit.wu.redundancy)]]);
-            add('Batch', hit.b.ref, true);
-            add('Config', hit.wu.config || 'none');
-            addFile('Input', hit.wu.input);
+            link('Batch ID', hit.b.id, 'batch');
+            link('App Version ID', hit.wu.app_version_id, 'app version');
+            file('Input URI', hit.wu.input_uri);
+            text('Config URI', hit.wu.config_uri);
+            text('Priority', hit.wu.priority);
+            text('Target Redundancy', hit.wu.target_redundancy);
+            if (hit.wu.canonical_result_id) { link('Canonical Result ID', hit.wu.canonical_result_id, 'result'); }
+            else { text('Canonical Result ID', null); }
+            audit();
         } else {
-            tiles([['State', hit.res.state], ['Outcome', hit.res.outcome || '—']]);
-            add('Server state', hit.res.serverState);
-            add('Node', ROLES[role].nodes ? (hit.res.node || 'not yet known') : 'hidden for your role', ROLES[role].nodes && !!hit.res.node);
-            add('Received', hit.res.received);
-            add('Error', hit.res.error);
-            addFile('Input', hit.wu.input);
-            addFile('Output', hit.res.output);
+            link('Workunit ID', hit.wu.id, 'workunit');
+            if (!ROLES[role].hosts) { text('Host ID', 'hidden for your role'); }
+            else if (hit.res.host) { link('Host ID', hit.res.host, 'host'); }
+            else { text('Host ID', null); }
+            var st = SERVER_STATE[hit.res.server_state];
+            put('Server State', badge(st[0], st[1]));
+            if (OUTCOME[hit.res.outcome]) { put('Outcome', badge(OUTCOME[hit.res.outcome][0], OUTCOME[hit.res.outcome][1])); }
+            else { text('Outcome', 'not set (0)'); }
+            file('Output URI', hit.res.output_uri);
+            text('Error Message', hit.res.error_message);
+            text('Received At', hit.res.received_at);
+            audit();
         }
         d.appendChild(dl);
         panel.appendChild(d);
-        var act = el('div', 'actions');
-        var job = el('button', 'btn primary', 'Open job \u2192');
-        job.disabled = hit.kind === 'batch';
-        act.appendChild(job);
-        panel.appendChild(act);
         return panel;
     }
 
@@ -305,9 +328,9 @@
         t.onkeydown = function (e) { if (e.key === 'Enter') { ui.text = t.value.trim(); ui.page = 0; render(); } };
         field('Find', t);
         var s = el('select');
-        [['', 'Any'], ['open', 'open'], ['closed', 'closed'], ['failures', 'has failures']].forEach(function (pair) { var v = pair[0]; var o = el('option', '', pair[1]); o.value = v; o.selected = v === ui.state; s.appendChild(o); });
+        [''].concat(BATCH_STATUSES).forEach(function (v) { var o = el('option', '', v || 'Any'); o.value = v; o.selected = v === ui.state; s.appendChild(o); });
         s.onchange = function () { ui.state = s.value; ui.page = 0; render(); };
-        field('State', s);
+        field('Status', s);
         if (ROLES[role].parties) {
             var p = el('select');
             [''].concat(PARTIES).forEach(function (v) { var o = el('option', '', v || 'Any'); o.value = v; o.selected = v === ui.party; p.appendChild(o); });

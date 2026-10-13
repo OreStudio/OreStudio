@@ -26,30 +26,27 @@ salt
   }
   --
   {
-    Find [ batch reference or id   ] | State [ Any v ] | Party [ Any v ] | [ Search ] | [ Clear ]
+    Find [ batch reference or id   ] | Status [ Any v ] | Party [ Any v ] | [ Search ] | [ Clear ]
   }
   --
   {
     <b>BATCHES, WORKUNITS AND RESULTS</b> | <b>DETAILS</b>
     {#
-      Name | State | Jobs | Failed
-      v batch_2026_10_12_a | closed | 12 | 1
-      . v wu 0007 | done | 3 runs | 1
-      . . result 1 | succeeded
-      . . result 2 | succeeded
-      . . result 3 | failed
-      . > wu 0008 | done | 1 run | 0
-      > batch_2026_10_12_b | open | 40 | 0
+      External ref / id | Status
+      v soak-1013031448-9-p2 | closed
+      . v d347fc6b | priority 1, redundancy 1
+      . . cd131473 | Done, Success
+      . > a3ae8d1d | priority 1, redundancy 1
+      > soak-1013031448-9-p3 | processing
     } | {
-      <b>Result 3</b> | Read only
-      State | failed
-      Outcome | client error
-      Node | grid-04.example.com
-      Received | 14:05:10
-      Error | exit code 3
-      Input | [ Download ]
-      Output | [ Download ]
-      [ Open job ] | [ Open node ]
+      <b>Result</b> | Read only
+      Workunit ID | d347fc6b-... (link)
+      Host ID | timid-hamster-593e583f (link)
+      Server State | Done
+      Outcome | Success
+      Output URI | [ /api/v1/storage/.../output/cd13....tar.gz ]
+      Error Message | none
+      Received At | 2026-10-13 02:27:16
     }
   }
   --

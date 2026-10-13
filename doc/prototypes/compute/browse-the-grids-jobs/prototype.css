@@ -216,7 +216,6 @@ p { margin: 0; }
 
 .with-count { display: flex; justify-content: space-between; align-items: center; }
 .with-count .faint { font-weight: 400; }
-.count.has-failed { color: var(--bad); font-weight: 600; }
 .lvl1 { margin-left: 18px; border-left: 1px solid var(--line); padding: 0; }
 .lvl2 { margin-left: 18px; border-left: 1px solid var(--line); padding: 0; }
 .lvl1 .row { padding-left: 14px; }
@@ -230,3 +229,8 @@ p { margin: 0; }
 a.path { display: block; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 6px 8px; font-size: 11px; word-break: break-all; }
 .detail-panel .actions { margin: 0; padding: 12px 14px; border-top: 1px solid var(--line); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #0b0e13; font-weight: 600; width: 100%; }
+
+.b-gray { color: var(--ink-dim); border-color: var(--ink-faint); }
+.b-warn { color: var(--warn); border-color: var(--warn); }
+.badges { display: flex; gap: 6px; }
+.detail-panel .details { padding-bottom: 16px; }

@@ -36,10 +36,12 @@ It is throwaway. It reads no service. Open the [[file:browse-the-grids-jobs/][Jo
 - The same screen serves three roles. The operator sees every party and the node
   of each run. The tenant administrator sees every party and no node. A party
   member sees one party and no party filter.
-- A closed batch is not a successful batch. The row states the failure count in
-  red and the filter offers /has failures/.
-- Inputs and outputs are links to the stored files, so a person can take them
-  away.
+- The screen shows only fields the entity models hold, under the models' own
+  headers. It computes no count and no state. A closed batch is not a successful
+  batch: the person reads the =outcome= of each result.
+- A workunit's Input URI and a result's Output URI are links to the stored
+  files, so a person can take them away. A result has no input of its own: its
+  Workunit ID link leads to it.
 
 ** Variants and states
 
@@ -48,33 +50,35 @@ The bar at the foot of the page switches both.
 
 ** What is real and what is not
 
-The batch references, party codes, job counts, storage paths, host names and the
-stored state and outcome codes come from the development database as it stood on
-2026-10-13. The ids are generated, and the failed and in-flight runs are
-invented, because the stored results are all done and successful.
+Every field shown is a field of =batch=, =workunit=, =result= or =host=. The
+=external_ref= values, party codes, storage URIs, host display names and the
+stored =server_state= and =outcome= (all Done and Success) come from the
+development database as it stood on 2026-10-13. The ids, the =app_version_id=,
+the failed and in-flight results and the batches in =processing= are invented.
 
-No server behind the screen exists yet for the filters, the per-batch counts or
-the download route. The journey lists them as gaps.
+No server behind the screen exists yet for the filters, the failed-result read
+or the download route. The journey lists them as gaps.
 
 ** The Gemini review
 
 Gemini drew the tab as one screen with one batch open and the workunit
-inspector. It is kept at [[file:browse-the-grids-jobs/review/][the review]]. The agreed design stands. The prototype took
-five things from it and left the rest.
+inspector. It is kept at [[file:browse-the-grids-jobs/review/][the review]]. The agreed design stands. The
+prototype took two things from it and left the rest. An earlier build took three
+more (a red failure count, a /has failures/ filter and tiles), and the
+entity-fields pass removed them: the models hold no count and no failure state.
 
 | Taken | Why |
 |-------+-----|
-| The count in the tree's header (batches and page) | A person reads how much there is before paging. |
-| The failure count in red on a batch row | It is a true status, so red is allowed, and it answers "which batch failed". |
-| A /has failures/ filter | The question that started the screen is "which ones failed". |
-| The inspector named for the record, with its id large and the figures in tiles | The person reads the id first, and the tiles separate the facts. |
-| The action pinned to the foot of the inspector, as one primary button | The action stays in reach when the details are long. |
+| The count in the tree's header (batches and page) | A person reads how much there is before paging. The list's paging total is the server's own figure. |
+| The inspector named for the record, with its id large | The person reads the id first. |
 
 | Left | Why |
 |------+-----|
+| A red failure count on a batch row, and a /has failures/ filter | The batch model holds no count and no failure state. The journey lists the missing read. |
+| Figures in tiles and an /Open job/ button | The tiles repeated fields the list already shows, and the button implied a route. The references are links instead. |
 | The header bar with "5/5 Nodes Online" and an avatar | The shell draws the header. A node count belongs to the operator and has no source on this screen. |
 | The grid's tabs drawn twice | They repeat the same four names. |
-| A /Failed/ batch state | A batch is open or closed. Failure belongs to its runs, so the filter says /has failures/ instead. |
+| A /Failed/ batch state | A batch is open, processing, assimilating or closed. Failure belongs to a result's =outcome=. |
 | Two download buttons | The prototype shows the file as a link, which is the file's own address. |
 | One role and one selection only | The prototype must show three roles and the four states. |
 | Tailwind from a CDN and web fonts | A prototype uses no framework and no build step. |

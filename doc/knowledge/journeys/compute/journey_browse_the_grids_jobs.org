@@ -41,25 +41,27 @@ file. The screen is read-only.
 * Steps
 
 1. The person opens the Jobs tab. The system reads the first page of batches
-   that the session may see, newest first, and shows each with its state and
-   its job and failure counts.
+   that the session may see, newest first, and shows each with its =external_ref=
+   and its =status=.
 2. The person narrows the list. They type a batch reference or id, choose a
-   state, or (as operator or tenant administrator) choose a party. Each change
+   =status=, or (as operator or tenant administrator) choose a party. Each change
    returns to page one.
 3. The person opens a batch. The system reads one page of its workunits and
-   shows them under the batch. The person may open several batches.
+   shows them under the batch, each with its =priority= and =target_redundancy=.
+   The person may open several batches.
 4. The person opens a workunit. The system reads its results and shows them as
-   leaves of the tree.
-5. The person selects any row. The details panel shows that record's fields.
-   For a result it shows the outcome, the error message, the node and the time
-   received.
-6. The person follows the Input link of a batch, a workunit or a result, or the
-   Output link of a result. Each link is the stored file's own address, taken
-   from =input_uri= or =output_uri=, and the system serves the file as a
-   download. The file is large, so the download streams.
-7. The person follows a link from the details: to the job in
-   [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]], or, as operator,
-   to the node in the Machines tab.
+   leaves of the tree, each with its =server_state= and =outcome=.
+5. The person selects any row. The details panel shows that record's own fields
+   under the model's headers. For a result it shows the outcome, the error
+   message, the host and the time received.
+6. The person follows the Input URI link of a workunit or the Output URI link of
+   a result. Each link is the stored file's own address and the system serves the
+   file as a download. A result has no input of its own: the person reaches it
+   through the result's Workunit ID link. The file is large, so the download streams.
+7. The person follows a reference in the details: the batch of a workunit, the
+   workunit of a result, the canonical result of a workunit, or, as operator, the
+   host of a result. The workunit's page continues in
+   [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]].
 
 No step needs the server to finish work later, so the journey carries no state
 beyond the address: the filters, the open rows and the pages live in the URL.
@@ -75,8 +77,15 @@ size and Load all, and Load all appears only when the total is 1000 or less.
 Opening a node never reads more than one page of its children.
 
 State is a badge, as the [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX
-Language]] sets it: green for succeeded and closed, red for failed, sky for
-running, blue for queued, and gray only for inactive. The references in the
+Language]] sets it. A batch's =status= is blue for open, sky for processing and
+assimilating, and green for closed. A result's =server_state= is gray for
+Inactive, blue for Unsent, sky for InProgress and green for Done. Its =outcome=
+is green for Success, red for ClientError and amber for NoReply. Gray means
+inactive only.
+
+The screen shows only fields the entity models hold, under the models' own
+headers. It computes no count and no state: a closed batch and a failed result
+are read from =status= and =outcome= as stored. The references in the
 details (the node, the job, the party) are links, not text.
 
 The screen shows four states in words: loading ("Reading the batches..."), empty
@@ -101,10 +110,10 @@ roles, and the four states.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =batch= | The tree's roots: =external_ref=, =status=, =party_id= and the job counts | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
-| =workunit= | The second level: =priority=, =target_redundancy=, =input_uri=, =config_uri= and =canonical_result_id= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
-| =result= | The leaves: =server_state=, =outcome=, =error_message=, =output_uri=, =received_at= and =host_id= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
-| =host= | The node name in a result's details, for the operator | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =batch= | The tree's roots: =external_ref=, =status= and =party_id= | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
+| =workunit= | The second level: =batch_id=, =app_version_id=, =input_uri=, =config_uri=, =priority=, =target_redundancy= and =canonical_result_id= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
+| =result= | The leaves: =workunit_id=, =host_id=, =server_state=, =outcome=, =output_uri=, =error_message= and =received_at= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
+| =host= | The =display_name= that the =host_id= link shows, for the operator | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
 
 * Operations and messages
 
@@ -112,8 +121,8 @@ roles, and the four states.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | 1, 2 | Read a page of batches | =compute.v1.batches.list= | partial |
-| 2 | Filter batches by state, party or reference | (the list takes an offset and a limit only) | missing |
-| 1 | Count the jobs and failures of each batch | (no count on the batch row) | missing |
+| 2 | Filter batches by status, party or reference | (the list takes an offset and a limit only) | missing |
+| 4 | Find the results whose =outcome= is not Success | (=read_by_state= filters on =server_state= only) | missing |
 | 3 | Read a page of a batch's workunits | =compute.v1.workunits.list_by_batch_id= | exists |
 | 4 | Read the results of a workunit | =compute.v1.results.list_by_workunit_id= | exists |
 | 5 | Read one record | =compute.v1.batches.get=, =compute.v1.workunits.get=, =compute.v1.results.get= | exists |
@@ -129,12 +138,15 @@ the Member role need the same check as the grid sample read did.
 
 * What is missing
 
-1. *No filters on the batch list.* The list pages by offset and limit. State,
+1. *No filters on the batch list.* The list pages by offset and limit. Status,
    party and reference filters need a server-side predicate, or the screen
    cannot find one batch among thousands.
-2. *No per-batch counts.* The tree row wants the job count and the failure
-   count. Counting them in the browser means reading every workunit. A count
-   on the batch row, or a grouped read, is the missing piece.
+2. *No way to find failed results.* "Which of the 1268 failed?" has no read.
+   =read_by_state= filters on =server_state=, and every stored result is Done,
+   so the failed ones are not separable. A read by =outcome=, and a way from a
+   result to its batch, would answer it. Until then the person opens batches
+   and reads each result's =outcome=. The screen shows no per-batch job or
+   failure count, because the models hold none.
 3. *No download route.* =input_uri= and =output_uri= name stored objects. The
    browser has no route to stream them, and the route must check that the
    caller may read the owning record first.

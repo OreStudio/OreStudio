@@ -608,8 +608,14 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
     set_date(d.TradeDate, fact.trade_date);
     set_date(d.FrontEndProtectionStartDate, fact.front_end_protection_start_date);
 
-    if (data.wrapped_index_swap)
+    if (data.wrapped_index_swap) {
         write_index_swap(*data.wrapped_index_swap, d.IndexCreditDefaultSwapData);
+    } else {
+        // The importer writes the wrapped swap's row beside the option's, so
+        // a missing row means a partial write. The export has no credit curve.
+        BOOST_LOG_SEV(lg(), warn) << "Index option has no wrapped index swap row; "
+                                     "the exported CreditCurveId is empty";
+    }
     const auto legs = reverse_group(data, "premium");
     if (!legs.empty())
         d.IndexCreditDefaultSwapData.LegData = legs.front();

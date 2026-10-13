@@ -80,6 +80,10 @@ task and name that file in the Command column.
 
 * Notes
 
+- After the review the trading API, trading service, shell application and ORE
+  core suites passed through =compass test run=, the codegen suite passed with
+  1,397 cases, and a misspell scan of every file the branch changes found
+  nothing.
 - The ORE binding showed what the analysis missed. The agreement's
   =ProtectionFee= is a list of legs, not an amount, and its =Underlying= holds
   legs, an optional option block, a naked-option flag and an optional treasury
@@ -117,6 +121,11 @@ via its "Verifies task" field.
 | 1 | The agreement is split from this unit | the staging | accept | Its protection fee and underlying need legs, an option and a bond; they are unit 7. |
 | 2 | A flag spelled false comes back as N | credit_instrument_mapper.cpp | accept | The ORE flag type has thirteen spellings and the table holds a boolean, so the export is canonical. |
 | 3 | The index option writes two fact rows | the carrier | accept | The wrapped swap's columns would otherwise be copied into the option's table. |
+| 4 | An index option with no wrapped swap row exports an empty curve id | credit_instrument_mapper.cpp | accept | The export logs a warning. The importer writes both rows, so a missing row means a partial write. |
+| 5 | An unknown strike type becomes Price | credit_instrument_mapper.cpp | decline | The table's check allows Spread and Price only, so no other value is stored. |
+| 6 | A number that does not parse in the CDO upfront fee is dropped | credit_instrument_mapper.cpp | decline | The schema type allows an empty text or a float, so a valid document never fails the parse. |
+| 7 | The cash settlement days are cast from 64 bits to int with no bound | credit_instrument_mapper.cpp | decline | A value beyond the integer range wraps negative and the table's check refuses the row, so the import reports an item error. |
+| 8 | The trading API, trading service, shell application and codegen suites and the misspell scan were not run | the PR | accept | Run before the merge; see the Notes. |
 
 * Result
 

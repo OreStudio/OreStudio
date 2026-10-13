@@ -5,7 +5,7 @@
 #+description: Shell commands that build, on the developer's machine, exactly the packages the compute grid would receive for a report, and fetch the packages of an earlier report instance.
 #+type: task
 #+level: s1
-#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
 #+pr:
@@ -16,7 +16,7 @@
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,10 +27,10 @@ A developer can take a report and get, on disk, every package the compute grid w
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Not yet started.                       |
+| Parent story | [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] |
+| Now          | The kind lookup, the package chain and the build-packages and fetch-packages commands are written. The branch is rebased onto sprint 28 main and awaits a build. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Build on linux-clang-release-ninja, then prove the packages on the ACME reports. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance

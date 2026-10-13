@@ -276,8 +276,8 @@ public:
             if (!first_setting)
                 sql += ", ";
             first_setting = false;
-            sql += "set_config('" + std::string(name) + "', '" + quote_setting(*value) +
-                   "', false)";
+            sql +=
+                "set_config('" + std::string(name) + "', '" + quote_setting(*value) + "', false)";
         }
 
         auto exec_result = (*session_result)->execute(sql);
@@ -286,10 +286,10 @@ public:
                                  std::string(exec_result.error().what()));
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Set session context | tenant=" << tenant_id_str
-                                   << " party=" << party_str
-                                   << " visible_parties=" << visible_party_ids_.size()
-                                   << " actor=" << actor_ << " service=" << service_account_;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Set session context | tenant=" << tenant_id_str << " party=" << party_str
+            << " visible_parties=" << visible_party_ids_.size() << " actor=" << actor_
+            << " service=" << service_account_;
 
         return session_result;
     }

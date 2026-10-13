@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 07177FE0-F0B9-44E8-B67C-CEAA6DCC696A
+:END:
+#+title: RLS and permission exceptions register
+#+description: Every exception to the tenant and party row-level security rules, and every installation-owned table, with its reason, its limits, its evidence and the state of its security review and sign-off.
+#+type: knowledge
+#+level: cross
+#+filetags: :security:multi_tenancy:compute:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+* Summary
+
+This page lists, in one place, every exception to the tenant and party row-level security rules, and every table that the installation owns, that the compute grid work added. Each entry gives what changed, why, what it exposes, what limits it, how it was checked, and where its security review and sign-off stand. The rule that governs entries is in [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]: an exception needs a stated reason, a review and a sign-off before it is accepted. No entry here has completed a security review yet. The state of each is stated, so a later review can start from this list.
+
+The guard =check_rls_system_tenant_widenings.py= still reports 11 system-tenant widenings, all listed, and none of the entries below adds one. None gives a system-tenant session a read of another tenant's rows.
+
+* Detail
+
+** How to read an entry
+
+| Field | Meaning |
+|-------+---------|
+| What | The policy, table, permission or route that changed, and the file |
+| Why | The reason, and who asked for it |
+| Exposes | What a session can now read that it could not before |
+| Limits | What still holds it back |
+| Evidence | How it was checked, with the PR |
+| Review | The state of the security review |
+| Sign-off | The state of the owner's approval |
+
+States: *Pending* means not done. A state is changed only when the review or the approval has happened, and the date and the person are written beside it.
+
+** E1. The system party reads every party's compute work
+
+| What | The four party policies of the compute tables (=batches_party_isolation_policy=, =workunits_party_isolation_policy=, =results_party_isolation_policy=, =grid_samples_party_isolation_policy=) gain =or (select ores_compute_session_is_system_party_fn())=. The function is true when the session's party is the tenant's system party. File: =projects/ores.sql/create/compute/compute_rls_policies_create.sql=. |
+| Why | A tenant administrator who signs in as the system party saw the fleet and no jobs, because the party rule hid every other party's rows from a session in a party with no children. The owner's rule, stated on 2026-10-13: the system party sees every party of the tenant, and each other party sees only its own. |
+| Exposes | To a session in the tenant's system party: the batches, workunits, results and grid sample rows of every party of its own tenant. |
+| Limits | The policies are restrictive, so the tenant isolation policy still applies and no other tenant's row is reachable. Only the four compute tables change. No other table's party rule changes. A session in any other party reads the same rows as before. |
+| Evidence | PR #3217. A transaction with the session settings of the Acme system party read 285 batches, 18034 workunits, 18034 results and 57 party sample rows. The same with a child party (ACCOUK) read 0 of each. A repository test checks that the system party sums every party and a party sums its own. |
+| Review | Pending |
+| Sign-off | Pending. Requested of the owner on 2026-10-13. The requirement came from the owner, and the approval of the policy as written has not been given. |
+
+Open points for the review:
+- The function compares the session's party with the system party by id. It does not look at the session's mode or permissions, so any account that can act in the system party gets the rule. The accounts that can do so are those linked to that party.
+- The same rule exists for the accounts table in another form (the system party's people are visible to everyone). The two rules are not the same rule, and the review should say whether they should be.
+
+** E2. Rows with no party are visible to every party session
+
+| What | The party policies pass a row whose =party_id= is NULL. This is the rule that batches, workunits and results already had. The grid samples now follow it. |
+| Why | Work from before the party scope has no party, and so has work that a service submits. Both must stay visible inside the tenant. |
+| Exposes | A session in a party reads the counters of the tenant's no-party work, summed with its own party's counters in the grid series. |
+| Limits | Only inside the tenant. The rows hold counts and no business data. |
+| Evidence | PR #3214. A repository test counts the no-party row in a party session on purpose. |
+| Review | Pending |
+| Sign-off | Pending |
+
+** E3. Every session reads the system tenant's grid sample rows
+
+| What | The grid samples table policy is =tenant_id = current or tenant_id = system=. It is the shared-reference shape and is older than this work. The tenant series read now uses it: the host counts come from the system tenant's rows. |
+| Why | A tenant needs the installation's capacity (hosts, online, idle) to read its own queue. The owner decided on 2026-10-13 that a summary of capacity is fine for a tenant. |
+| Exposes | The installation's host, online and idle counts to every tenant's session. |
+| Limits | The series read takes only the three host columns of the system rows. No machine, host name or hardware is read for a tenant, and the BFF reads no node series and no host list for a tenant. |
+| Evidence | PR #3214. A repository test reads the fleet through a tenant session. A BFF test checks that no node or host read happens for a tenant. |
+| Review | Pending |
+| Sign-off | Pending |
+
+Open point for the review: the policy admits the whole system-tenant row, and the fleet row also holds the system tenant's own job counters for its work with no party. The series read does not use them, but a direct read of the table by a tenant session would see them. The review should say whether the fleet should move to a row or table of its own.
+
+** E4. Tables that the installation owns
+
+| What | =ores_compute_work_ledger_tbl= (PR #3198) and =ores_compute_work_tenants_tbl= (PR #3214). The policy of each is =tenant_id = current and tenant_id = system=, which admits only a session of the system tenant. |
+| Why | The queue of the grid serves every tenant, and the system tenant cannot read a tenant's own rows, so the queue cannot be a query over the tenants' results. The tenant list exists because the poller of the samples must know which tenants to count, and the compute service has no read of the tenant roster. |
+| Exposes | Nothing to a tenant. The ledger holds result ids, tenant ids, platforms, priority, host, lease and attempts. The tenant list holds tenant ids and a time. Neither holds business data. |
+| Limits | A tenant session and an operator who has entered a tenant read none of either table. Both are written only by the compute service as the system tenant. |
+| Evidence | PRs #3198 and #3214. Repository tests read each table. A test checks that a tenant session reads none of the tenant list. The validation ignore list names both tables for the tenant column rule. |
+| Review | Pending |
+| Sign-off | Pending |
+
+** E5. The service enters a tenant to read or write
+
+| What | The compute service uses =tenant_context::with_tenant= to enter a tenant. The claim handler marks a result in progress, the lease reaper ends a result, the dispatcher saves results, and the poller reads each tenant's work and writes its sample rows. |
+| Why | The work belongs to the tenant, and the queue and the samples belong to the installation. Entering the tenant is the documented way for a service to touch a tenant's own rows. |
+| Exposes | The service reads and writes the work of every tenant that it serves, as the tenant. |
+| Limits | Each entry is of one tenant at a time and writes only that tenant's own rows. The reads count rows and the writes are the ones the operation needs. |
+| Evidence | PRs #3198, #3201 and #3214. |
+| Review | Pending. The review should check whether a service's entry needs an audit record, as an operator's entry has. |
+| Sign-off | Pending |
+
+** E6. The permissions and the route that open the grid to tenants and parties
+
+| What | The Member role holds =compute::grid_samples:read= and =compute::batches:read= in the populate script. The grid screen card needs =compute::grid_samples:read= and no longer the read of the deployment. The BFF route =/api/operations/grid/series= serves a tenant or party session its own series without the deployment read. File: =projects/ores.sql/populate/iam/iam_roles_populate.sql=, =projects/ores.web/packages/bff/src/operations.ts=. |
+| Why | A tenant administrator and a party member must see the grid's load, throughput and outcomes for their own work. The owner decided on 2026-10-13 that a party user sees all the statistics of the party. |
+| Exposes | Every person of a tenant gains the read of the grid series and usage for the work their party scope allows. |
+| Limits | The rows are cut by the policies above. The machines, nodes and heatmap routes still need the read of the deployment. The route reads no node and no host for a non-operator. |
+| Evidence | PR #3214. BFF and web tests check the tenant series route and that a tenant is not offered the machines, nodes or heatmap. |
+| Review | Pending. The live Member roles of Acme and Barclays were not changed. The populate script is the only change, so a database that is not rebuilt does not have the permissions. |
+| Sign-off | Pending |
+
+** E7. An operator enters each tenant to read its work
+
+| What | The BFF enters each tenant with =readInsideTenant=, reads the usage there, and leaves. The server records each entry and exit. |
+| Why | A system administrator needs the grid's use by tenant, and no policy lets the system tenant read another tenant's work. |
+| Exposes | The operator reads each tenant's usage counts, as that tenant. |
+| Limits | The entries are recorded. A tenant that cannot be entered is listed as unavailable and never as empty. |
+| Evidence | PR #3197. |
+| Review | Pending |
+| Sign-off | Pending |
+
+* See also
+
+- [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]: the rule that an exception needs a reason, a review and a sign-off.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]]: the work ledger and the claim.

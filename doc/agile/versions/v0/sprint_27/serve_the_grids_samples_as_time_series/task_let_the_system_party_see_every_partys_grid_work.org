@@ -44,7 +44,7 @@ A tenant administrator who signed in as the system party saw the fleet and no jo
 
 - Add =ores_compute_session_is_system_party_fn()=, which is true when the session's party is the tenant's system party.
 - Add it to the four party policies of the compute tables: batches, workunits, results and grid samples.
-- The rule stays inside one tenant. The security page records it.
+- The rule stays inside one tenant. The security page records it, and the exceptions register lists it as E1 with its reason, its limits, its evidence and the state of its review and sign-off, both still pending.
 
 * Measurements
 

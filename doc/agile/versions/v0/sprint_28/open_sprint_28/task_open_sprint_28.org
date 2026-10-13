@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_28:sprint_28:v0:
 #+owner: marco
 #+branch: feature/mop-up-release-issues
-#+pr:
+#+pr: 3272
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3272][#3272]] | [agile] Open sprint 28 |
 
 * Review
 

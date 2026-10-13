@@ -22,7 +22,7 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 28 in flight: finish the record screens and the remainders. |
+| Now              | Sprint 28 in flight: finishing the work carried from sprint 27. |
 | Waiting on       | Nothing.                                                          |
 | Next             | Pick the first story.                                             |
 | Last touched     | 2026-10-13                                                        |
@@ -62,4 +62,4 @@ the current sprint; the rest are closed.
 | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] | 2026-08-03 | 2026-09-23 | Resolve sprint drift on as many components as possible; progress IR curves.    |
 | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] | 2026-09-23 | 2026-10-05 | Codegen sync and drift per module, then user journeys, then UX.                |
 | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] | 2026-10-05 | 2026-10-13 | Finish the UX pass: the remaining journey groups and the record screens.       |
-| [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] | 2026-10-13 |            | Finish the record screens and the journey remainders carried from sprint 27.   |
+| [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] | 2026-10-13 |            | Finish the work carried out of sprint 27: the record screens, the journeys and the rest of its remainders. |

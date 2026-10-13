@@ -2,7 +2,7 @@
 :ID: 3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD
 :END:
 #+title: Sprint 28
-#+description: Sprint 28 — finish the record screens and the journey remainders carried from sprint 27, with fewer stories in flight.
+#+description: Sprint 28 -- finish the work carried out of sprint 27: the record screens, the remaining journeys, and the rest of its remainders.
 #+type: sprint
 #+level: s3
 #+filetags: :v0:
@@ -16,12 +16,17 @@ This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Spri
 
 * Mission
 
-Finish the record screens and the journey remainders carried from sprint 27,
-with fewer stories in flight.
+Finish the work carried out of sprint 27 — the record screens, the remaining
+journeys, and the rest of its remainders — before drawing anything new from the
+product backlog.
 
-Sprint 27 closed RED with thirty-one stories in flight. This sprint starts
-from the product backlog, keeps the in-flight count low, and finishes what the
-UX pass left open.
+Sprint 28 opens with 41 stories carried from sprint 27, across nine themes: the
+record screens and the web UX standard, the journeys in ores.web, four-eyes
+approvals, market-data feeds and bindings, security and tenancy, the grid and
+telemetry, reporting and ACME data, trading-model integrity, and codegen and
+data-quality debt. The sprint commits to finishing those stories rather than
+adding scope. Sprint 27's retrospective asked for fewer stories in flight, so
+nothing new is pulled from the product backlog this sprint.
 
 * Status
 
@@ -32,7 +37,7 @@ UX pass left open.
 | Previous       | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Start          | 2026-10-13                               |
 | End (expected) | 2026-10-20                           |
-| Now            | Sprint in flight.                      |
+| Now            | Sprint 28 in flight: finishing the work carried from sprint 27. |
 | Waiting on     | Nothing.                               |
 | Next           | Pick the first story.                  |
 | Release Notes  | Added at end of sprint.                |

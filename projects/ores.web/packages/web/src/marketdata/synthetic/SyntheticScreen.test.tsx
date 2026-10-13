@@ -207,6 +207,32 @@ describe('the Synthetic dashboard', () => {
         expect(html).not.toContain('should be running');
     });
 
+    it('offers no start or stop to a person who may write the feeds but not run them', () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(
+                ['my-access'],
+                access([
+                    'synthetic::fx_spot_generation_configs:read',
+                    'synthetic::fx_spot_generation_configs:write',
+                ]),
+            );
+        });
+        expect(html).toContain('Bloomberg');
+        expect(html).not.toContain('>Start<');
+        expect(html).not.toContain('Start them');
+    });
+
+    it('offers start and stop to a person who holds the run permission', () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(
+                ['my-access'],
+                access(['synthetic::fx_spot_generation_configs:read', 'synthetic::feeds:run']),
+            );
+        });
+        expect(html).toContain('>Start<');
+        expect(html).toContain('Start them');
+    });
+
     it('offers a reader the figures but no start or stop', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(

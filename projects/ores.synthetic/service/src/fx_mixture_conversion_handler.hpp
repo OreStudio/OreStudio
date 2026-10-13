@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FX_MIXTURE_CONVERSION_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FX_MIXTURE_CONVERSION_HANDLER_HPP
 
+#include "client_message.hpp"
 #include "feed_kind_registry.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -103,7 +104,7 @@ public:
             resp.gmm_weights = out.weights;
             resp.success = true;
         } catch (const std::exception& e) {
-            resp.message = e.what();
+            resp.message = client_message(e);
             BOOST_LOG_SEV(fx_mixture_conversion_handler_lg(), warn)
                 << "convert_fx_mixture refused: " << e.what();
         }

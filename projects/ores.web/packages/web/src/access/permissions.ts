@@ -40,6 +40,7 @@ export const PERMISSION = {
     observationsWrite: 'marketdata::market_observations:write',
     fxFeedsRead: 'synthetic::fx_spot_generation_configs:read',
     irFeedsRead: 'synthetic::ir_curve_generation_configs:read',
+    feedsRun: 'synthetic::feeds:run',
     contactsRead: 'iam::account_contact_informations:read',
     contactsWrite: 'iam::account_contact_informations:write',
     organisationRead: 'iam::organisation:read',

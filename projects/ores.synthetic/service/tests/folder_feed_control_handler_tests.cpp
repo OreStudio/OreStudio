@@ -469,7 +469,8 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
     const auto folder = boost::uuids::to_string(seeds.root_folder_id);
     const std::string fx_kind(ores::synthetic::feed::fx_spot_feed_kind);
     const std::string ir_kind(ores::synthetic::feed::ir_curve_feed_kind);
@@ -563,7 +564,8 @@ TEST_CASE("folder_cascade_rejects_a_malformed_folder_id", tags) {
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
 
     const auto resp =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
@@ -586,7 +588,8 @@ TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", tags) 
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
     const auto folder = boost::uuids::to_string(seeds.root_folder_id);
 
     // The filter names the folder and the provider of its collection: the same feeds the
@@ -645,7 +648,8 @@ TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
 
     const auto malformed =
         send_request<start_selected_feeds_request, start_selected_feeds_response>(
@@ -671,4 +675,40 @@ TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_
           std::string(ores::nats::headers::bearer_prefix) + narrow}});
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+}
+
+TEST_CASE("feed_verbs_refuse_a_caller_who_may_read_the_feeds_but_not_run_them", tags) {
+    using ores::synthetic::messaging::start_selected_feeds_request;
+    using ores::synthetic::messaging::stop_selected_feeds_request;
+
+    cascade_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto seeds = seed_cascade(f.db, test_party);
+    const auto reader = mint_token(f.db.tenant_id().to_string(),
+                                   test_party,
+                                   {"synthetic::fx_spot_generation_configs:read",
+                                    "synthetic::ir_curve_generation_configs:read"});
+    const auto forbidden = [&](const std::string& subject, auto body) {
+        const auto reply = f.nats.request_sync(
+            subject,
+            std::move(body),
+            {{std::string(ores::nats::headers::authorization),
+              std::string(ores::nats::headers::bearer_prefix) + reader}});
+        REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+        CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+    };
+    const auto folder = boost::uuids::to_string(seeds.root_folder_id);
+    forbidden(test_start_subject,
+              ores::nats::default_wire_codec().encode(
+                  start_feeds_under_folder_request{.folder_id = folder}));
+    forbidden(test_stop_subject,
+              ores::nats::default_wire_codec().encode(
+                  stop_feeds_under_folder_request{.folder_id = folder}));
+    forbidden(test_select_start_subject,
+              ores::nats::default_wire_codec().encode(
+                  start_selected_feeds_request{.folder_id = folder}));
+    forbidden(test_select_stop_subject,
+              ores::nats::default_wire_codec().encode(
+                  stop_selected_feeds_request{.folder_id = folder}));
+    CHECK(f.ctrl->running_count() == 0);
 }

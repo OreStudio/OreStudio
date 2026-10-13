@@ -139,6 +139,14 @@ struct feed_simulation_result final {
 };
 
 /**
+ * @brief The permission that starts and stops feeds, of every kind.
+ *
+ * Running a feed changes what the platform publishes, so it is not the read of the feed's
+ * config. A caller needs this and the read of the configs the verb touches.
+ */
+inline constexpr std::string_view run_permission = "synthetic::feeds:run";
+
+/**
  * @brief One registered asset class: its factory kind, its config permission,
  * its config rows, and its two simulate closures.
  *
@@ -236,6 +244,9 @@ public:
 
     /** True only when the caller holds every registered kind's config permission. */
     [[nodiscard]] bool permits_all_configs(const ores::database::context& ctx) const;
+
+    /** True when the caller may start and stop feeds. */
+    [[nodiscard]] static bool permits_run(const ores::database::context& ctx);
 
     /** Every config row of every kind. No container read. */
     [[nodiscard]] std::vector<feed_kind_row> rows(const ores::database::context& ctx) const;

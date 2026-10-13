@@ -19,6 +19,7 @@
  */
 #include "../src/feed_config_handler.hpp"
 #include "../src/feed_controller.hpp"
+#include "../src/client_message.hpp"
 #include "../src/feed_kind_registry.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "../src/simulate_handler.hpp"
@@ -309,7 +310,8 @@ struct stub_fixture {
     ores::database::context ctx;
     std::shared_ptr<ores::synthetic::service::feed_controller> ctrl;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
-    std::string token = mint_token({stub_permission});
+    std::string token =
+        mint_token({stub_permission, std::string(ores::synthetic::service::run_permission)});
 
     stub_fixture()
         : nats(ores::testing::make_nats_options())
@@ -476,7 +478,8 @@ TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
     REQUIRE(ores::synthetic::service::run_simulate_paths(recording).success);
     CHECK(seeds == std::vector<std::uint32_t>{7, 8, 9});
 
-    // A process that throws is reported, not propagated.
+    // A process that throws is reported, not propagated, and the client reads a fixed sentence
+    // rather than the text of the failure.
     auto throwing = env;
     throwing.make_process =
         [](std::uint32_t) -> std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> {
@@ -484,7 +487,8 @@ TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
     };
     const auto failed = ores::synthetic::service::run_simulate_paths(throwing);
     CHECK_FALSE(failed.success);
-    CHECK(failed.message == "no process");
+    CHECK(failed.message == ores::synthetic::service::client_message(std::runtime_error("x")));
+    CHECK(failed.message.find("no process") == std::string::npos);
 }
 
 TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
@@ -565,4 +569,14 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
         simulate_handler h(f.nats, f.ctx, f.verifier, *f.registry);
         h.simulate(request_message(simulate_fx_spot_paths_request{}, f.token), "not_a_kind");
     }
+}
+
+TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else", tags) {
+    using ores::synthetic::service::client_message;
+    CHECK(client_message(std::invalid_argument("The half-life must be longer than zero.")) ==
+          "The half-life must be longer than zero.");
+    const auto fixed = client_message(std::runtime_error("PQ: password for ores_user rejected"));
+    CHECK(fixed.find("password") == std::string::npos);
+    CHECK_FALSE(fixed.empty());
+    CHECK(client_message(std::out_of_range("vector::at")) == fixed);
 }

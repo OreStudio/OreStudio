@@ -26,3 +26,7 @@ The review of PR #3239 found it. The check matches the folder verbs that came fi
 * See also
 
 - [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]]
+
+* Resolved
+
+Done, not discarded. The permission =synthetic::feeds:run= guards every verb that starts or stops a feed, and the screen draws the buttons only for a person who holds it.

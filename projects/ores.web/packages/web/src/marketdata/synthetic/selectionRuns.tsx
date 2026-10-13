@@ -22,6 +22,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { useHeld } from '../../access/holds.js';
+import { PERMISSION } from '../../access/permissions.js';
 import { api, type FeedSelection } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Button, Dialog } from '../../ui/Primitives.js';
@@ -53,9 +54,7 @@ export function useSelectionRuns(onDone?: () => void): {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const holds = useHeld();
-    const mayRun =
-        holds('synthetic::fx_spot_generation_configs:write') ||
-        holds('synthetic::ir_curve_generation_configs:write');
+    const mayRun = holds(PERMISSION.feedsRun);
     const [asking, setAsking] = useState<{
         readonly action: 'start' | 'stop';
         readonly target: RunTarget;

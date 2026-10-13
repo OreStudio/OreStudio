@@ -466,7 +466,8 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", tags) {
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
 
     // FX start by config_id: the server resolves the config, its children,
     // and the container, then starts the feed via the factory.
@@ -538,7 +539,8 @@ TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly", tags) {
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
 
     const auto missing_id = boost::uuids::to_string(boost::uuids::random_generator()());
     const auto not_found = send_request<start_feed_request, start_feed_response>(
@@ -613,7 +615,8 @@ TEST_CASE("feed_config_start_rejects_missing_children", tags) {
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
 
     const auto fx_no_comps = send_request<start_feed_request, start_feed_response>(
         f.nats,
@@ -643,7 +646,8 @@ TEST_CASE("feed_config_start_reports_oresmd_conflict", tags) {
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read"});
+                                   "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::feeds:run"});
 
     const auto first = send_request<start_feed_request, start_feed_response>(
         f.nats,

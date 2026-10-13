@@ -190,10 +190,11 @@ private:
             error_reply(nats_, msg, ctx_expected.error());
             return std::nullopt;
         }
-        if (!registry_.permits_all_configs(*ctx_expected)) {
+        if (!registry_.permits_all_configs(*ctx_expected) ||
+            !feed_kind_registry::permits_run(*ctx_expected)) {
             BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
                 << "Rejecting " << verb
-                << " request: missing a registered kind's config read permission.";
+                << " request: missing a feed config read permission or the run permission.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return std::nullopt;
         }

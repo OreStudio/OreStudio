@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(8);
+select plan(10);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
@@ -126,6 +126,62 @@ select is(
        and valid_to = ores_utility_infinity_timestamp_fn()),
     29,
     'every curve feed belongs to the interest_rates asset class'
+);
+
+-- A feed added by hand names no folder: it is placed in the folder its kind uses.
+insert into ores_synthetic_fx_spot_generation_configs_tbl (
+    id, tenant_id, version, party_id, config_id, base_currency_code, quote_currency_code,
+    source_name, oresmd_uri, price_source, gmm_initial_price, ticks_per_hour, process_type,
+    enabled, auto_start, vintage_source, vintage_date, asset_class_code,
+    modified_by, performed_by, change_reason_code, change_commentary
+) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
+    (select id from t_collection), 'EUR', 'JPY', 'synthetic.bloomberg.placement.eurjpy',
+    'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=JPY', 'fixed', 160, 60,
+    'geometric', false, false, '', '', 'fx',
+    current_user, current_user, 'system.test', 'placement test';
+
+select is(
+    (select f.name || ' > ' || a.name || ' > ' || c.name
+     from ores_synthetic_fx_spot_generation_configs_tbl x
+     join ores_synthetic_folders_tbl f on f.id = x.folder_id and f.valid_to = ores_utility_infinity_timestamp_fn()
+     join ores_synthetic_folders_tbl a on a.id = f.parent_id and a.valid_to = ores_utility_infinity_timestamp_fn()
+     join ores_synthetic_folders_tbl c on c.id = a.parent_id and c.valid_to = ores_utility_infinity_timestamp_fn()
+     where x.source_name = 'synthetic.bloomberg.placement.eurjpy'
+       and x.valid_to = ores_utility_infinity_timestamp_fn()),
+    'FX Rates > FX > Bloomberg',
+    'a feed added by hand lands in the FX Rates folder of its collection'
+);
+
+-- A collection made by hand has no folders; its first feed makes them.
+insert into ores_synthetic_market_data_generation_configs_tbl (
+    id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled,
+    dataset_id, provider_code, modified_by, performed_by, change_reason_code, change_commentary
+) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
+    'party', 'sandboxed', 'Placement Test', 'test', true, null, 'ore',
+    current_user, current_user, 'system.test', 'placement test';
+
+insert into ores_synthetic_ir_curve_generation_configs_tbl (
+    id, tenant_id, version, party_id, config_id, currency_code, index_family, tenor, role,
+    process_type, ticks_per_hour, enabled, auto_start, price_source, vintage_source, vintage_date,
+    vintage_series_uri, description, fixed_leg_payment_frequency_code, source_name, asset_class_code,
+    modified_by, performed_by, change_reason_code, change_commentary
+) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
+    (select id from ores_synthetic_market_data_generation_configs_tbl
+     where name = 'Placement Test' and valid_to = ores_utility_infinity_timestamp_fn()),
+    'USD', 'sofr', '', 'self_discounting', 'VASICEK', 60, true, false, 'fixed', '', '', '',
+    'placement test', 'Annual', 'synthetic.placementtest.usdsofr', 'interest_rates',
+    current_user, current_user, 'system.test', 'placement test';
+
+select is(
+    (select f.name || ' > ' || a.name || ' > ' || c.name
+     from ores_synthetic_ir_curve_generation_configs_tbl x
+     join ores_synthetic_folders_tbl f on f.id = x.folder_id and f.valid_to = ores_utility_infinity_timestamp_fn()
+     join ores_synthetic_folders_tbl a on a.id = f.parent_id and a.valid_to = ores_utility_infinity_timestamp_fn()
+     join ores_synthetic_folders_tbl c on c.id = a.parent_id and c.valid_to = ores_utility_infinity_timestamp_fn()
+     where x.source_name = 'synthetic.placementtest.usdsofr'
+       and x.valid_to = ores_utility_infinity_timestamp_fn()),
+    'IR Curves > Rates > Placement Test',
+    'the first feed of a collection made by hand makes its folders'
 );
 
 select * from finish();

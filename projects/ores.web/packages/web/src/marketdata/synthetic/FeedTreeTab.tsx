@@ -35,6 +35,7 @@ import { StateTag, useProviderFacts } from './DashboardTab.js';
 import { frequencyOf } from './frequency.js';
 import {
     ASSET_CLASSES,
+    collectionOf,
     feedPageOf,
     filterOf,
     folderChain,
@@ -344,6 +345,8 @@ export function FeedTreeTab(): ReactNode {
             : parsed?.kind === 'folder'
               ? (rows.find((row) => row.id === parsed.id)?.name ?? '')
               : t('marketdata.synthetic.tree.all');
+
+    const chosenCollection = collectionOf(parsed, collections, rows);
 
     const ids = feeds.map((feed) => feed.id);
     const count = pickedCount(picked, total);
@@ -710,7 +713,7 @@ export function FeedTreeTab(): ReactNode {
                     </div>
                 </div>
             )}
-            {adding && <AddFeed onClose={() => setAdding(false)} />}
+            {adding && <AddFeed collectionId={chosenCollection} onClose={() => setAdding(false)} />}
             {runs.dialog}
         </div>
     );

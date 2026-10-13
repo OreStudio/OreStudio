@@ -171,3 +171,22 @@ export function feedPageOf(feed: Pick<FolderFeed, 'kind' | 'id'>): string {
 
 /** The asset classes a feed can have, by the code the feed carries. */
 export const ASSET_CLASSES = ['fx', 'interest_rates'] as const;
+
+/**
+ * The collection a person is looking at: the one a provider holds when it holds one, or the
+ * collection a folder sits in. Empty when the node names none, or a provider holds several.
+ */
+export function collectionOf(
+    parsed: ParsedKey | undefined,
+    collections: readonly FeedFolder[],
+    rows: readonly FolderRow[],
+): string {
+    if (parsed?.kind === 'provider') {
+        const held = collections.filter((one) => one.provider_code === parsed.code);
+        return held.length === 1 ? (held[0]?.id ?? '') : '';
+    }
+    if (parsed?.kind === 'folder') {
+        return folderChain(rows, parsed.id).find((row) => row.kind === 'collection')?.id ?? '';
+    }
+    return '';
+}

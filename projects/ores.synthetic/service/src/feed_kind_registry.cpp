@@ -18,6 +18,7 @@
  *
  */
 #include "feed_kind_registry.hpp"
+#include "client_message.hpp"
 #include "ir_curve_preview_process.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -388,6 +389,10 @@ bool feed_kind_registry::permits_all_configs(const ores::database::context& ctx)
     });
 }
 
+bool feed_kind_registry::permits_run(const ores::database::context& ctx) {
+    return ores::service::messaging::has_permission(ctx, std::string(run_permission));
+}
+
 std::vector<feed_kind_row> feed_kind_registry::rows(const ores::database::context& ctx) const {
     std::vector<feed_kind_row> out;
     for (const auto& [_, k] : kinds_)
@@ -537,7 +542,7 @@ feed_simulation_result run_simulate_paths(const feed_simulate_envelope& env) {
         r.success = true;
     } catch (const std::exception& e) {
         r.success = false;
-        r.message = e.what();
+        r.message = client_message(e);
     }
     return r;
 }

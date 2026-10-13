@@ -4220,6 +4220,7 @@ const fr: SourceCatalogue = {
         observationsWrite: 'ajuster à la main des points de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
         irFeedsRead: 'voir les flux de courbes de taux synthétiques',
+        feedsRun: 'démarrer et arrêter les flux synthétiques',
     },
 
     unavailable: {

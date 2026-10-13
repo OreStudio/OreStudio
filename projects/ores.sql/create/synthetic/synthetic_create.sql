@@ -47,5 +47,8 @@
 \ir ./synthetic_ir_curve_template_entries_create.sql
 \ir ./synthetic_ir_curve_template_entries_notify_trigger_create.sql
 
+-- Feed placement
+\ir ./synthetic_feed_placement_create.sql
+
 -- Publish-from-DQ
 \ir ./synthetic_publish_from_dq_create.sql

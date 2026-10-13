@@ -17,7 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
-drop index if exists run_token_issues_grant_run_idx;
-drop index if exists run_token_issues_tenant_time_idx;
-drop table if exists ores_iam_run_token_issues_tbl;
+drop rule if exists ores_iam_run_token_issues_delete_rule on "ores_iam_run_token_issues_tbl";
+drop trigger if exists ores_iam_run_token_issues_insert_trg on "ores_iam_run_token_issues_tbl";
+drop function if exists ores_iam_run_token_issues_insert_fn;
+drop table if exists "ores_iam_run_token_issues_tbl";

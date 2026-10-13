@@ -40,6 +40,7 @@ create table if not exists "ores_refdata_party_counterparties_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, party_id, counterparty_id, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -139,7 +140,8 @@ create or replace rule ores_refdata_party_counterparties_delete_rule as
 on delete to "ores_refdata_party_counterparties_tbl"
 do instead
   update "ores_refdata_party_counterparties_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and party_id = old.party_id
   and counterparty_id = old.counterparty_id

@@ -338,14 +338,6 @@ namespace ores #F2F2F2 {
             class registrar {
                 +register_handlers(ores::nats::service::client& nats, ores::database::context ctx, optional<ores::security::jwt::jwt_authenticator> verifier) : vector<ores::nats::service::subscription>
             }
-            class report_definition_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-                +list_report_definitions(ores::nats::message msg) : void
-                +get_report_definition(ores::nats::message msg) : void
-                +get_many_report_definitions(ores::nats::message msg) : void
-            }
             class report_definition_template_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -373,14 +365,6 @@ namespace ores #F2F2F2 {
                 +list_synthetic_fx_spot_configs(ores::nats::message msg) : void
                 +get_synthetic_fx_spot_config(ores::nats::message msg) : void
                 +get_many_synthetic_fx_spot_configs(ores::nats::message msg) : void
-            }
-            class synthetic_market_data_provider_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-                +list_synthetic_market_data_providers(ores::nats::message msg) : void
-                +get_synthetic_market_data_provider(ores::nats::message msg) : void
-                +get_many_synthetic_market_data_providers(ores::nats::message msg) : void
             }
             class treatment_dimension_handler {
                 -nats_ : ores::nats::service::client&
@@ -1440,45 +1424,6 @@ namespace ores #F2F2F2 {
                 -replace_claim(context ctx, const domain::publication& v) : ores::utility::domain::precondition
                 -apply_claim(context ctx, const domain::publication& v, const ores::utility::domain::precondition& claim) : domain::publication
             }
-            class report_definition_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
-                +tenant_id : string
-                +name : string
-                +description : optional<string>
-                +report_type : string
-                +schedule_expression : string
-                +concurrency_policy : string
-                +display_order : int
-            }
-            class report_definition_mapper {
-                -lg() : [[nodiscard]] static auto&
-                +map(const report_definition_entity& v) : domain::report_definition
-                +map(const domain::report_definition& v) : report_definition_entity
-                +map(const vector<report_definition_entity>& v) : vector<domain::report_definition>
-                +map(const vector<domain::report_definition>& v) : vector<report_definition_entity>
-            }
-            class report_definition_repository {
-                +remove_status : enum class
-                -lg() : [[nodiscard]] static auto&
-                +sql() : string
-                +write(context ctx, const domain::report_definition& v) : void
-                +write(context ctx, const vector<domain::report_definition>& v) : void
-                +write(context ctx, const domain::report_definition& v, const ores::utility::domain::precondition& claim) : void
-                +write(context ctx, const vector<domain::report_definition>& v, const vector<ores::utility::domain::precondition>& claims) : void
-                +read_latest(context ctx) : vector<domain::report_definition>
-                +read_latest(context ctx, const string& id) : vector<domain::report_definition>
-                +read_latest(context ctx, const vector<string>& ids) : vector<domain::report_definition>
-                +read_all(context ctx, const string& id) : vector<domain::report_definition>
-                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::report_definition>
-                +get_total_definition_count(context ctx) : uint32_t
-                +remove(context ctx, const string& id) : void
-                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
-                +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::report_definition& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::report_definition& v, const ores::utility::domain::precondition& claim) : domain::report_definition
-            }
             class subject_area_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
@@ -1566,42 +1511,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const vector<string>& ids) : void
                 -replace_claim(context ctx, const domain::synthetic_fx_spot_config& v) : ores::utility::domain::precondition
                 -apply_claim(context ctx, const domain::synthetic_fx_spot_config& v, const ores::utility::domain::precondition& claim) : domain::synthetic_fx_spot_config
-            }
-            class synthetic_market_data_provider_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
-                +tenant_id : string
-                +name : string
-                +kind : string
-                +description : string
-                +display_order : int
-            }
-            class synthetic_market_data_provider_mapper {
-                -lg() : [[nodiscard]] static auto&
-                +map(const synthetic_market_data_provider_entity& v) : domain::synthetic_market_data_provider
-                +map(const domain::synthetic_market_data_provider& v) : synthetic_market_data_provider_entity
-                +map(const vector<synthetic_market_data_provider_entity>& v) : vector<domain::synthetic_market_data_provider>
-                +map(const vector<domain::synthetic_market_data_provider>& v) : vector<synthetic_market_data_provider_entity>
-            }
-            class synthetic_market_data_provider_repository {
-                -lg() : [[nodiscard]] static auto&
-                +sql() : string
-                +write(context ctx, const domain::synthetic_market_data_provider& v) : void
-                +write(context ctx, const vector<domain::synthetic_market_data_provider>& v) : void
-                +write(context ctx, const domain::synthetic_market_data_provider& v, const ores::utility::domain::precondition& claim) : void
-                +write(context ctx, const vector<domain::synthetic_market_data_provider>& v, const vector<ores::utility::domain::precondition>& claims) : void
-                +read_latest(context ctx) : vector<domain::synthetic_market_data_provider>
-                +read_latest(context ctx, const string& code) : vector<domain::synthetic_market_data_provider>
-                +read_latest(context ctx, const vector<string>& codes) : vector<domain::synthetic_market_data_provider>
-                +read_all(context ctx, const string& code) : vector<domain::synthetic_market_data_provider>
-                +is_sortable(string_view field) : bool
-                +get_total_provider_count(context ctx, const optional<messaging::synthetic_market_data_providers_filter>& filter) : uint32_t
-                +remove(context ctx, const string& code) : void
-                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
-                +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::synthetic_market_data_provider& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::synthetic_market_data_provider& v, const ores::utility::domain::precondition& claim) : domain::synthetic_market_data_provider
             }
             class treatment_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2203,23 +2112,6 @@ namespace ores #F2F2F2 {
                 -record_publication(const domain::publication_result& result, domain::publication_mode mode, const string& published_by) : void
                 -call_populate_function(const domain::dataset& dataset, const domain::artefact_type& artefact_type, domain::publication_mode mode, const string& published_by) : domain::publication_result
             }
-            class report_definition_service {
-                -ctx_ : context
-                -repo_ : repository::report_definition_repository
-                -lg() : [[nodiscard]] static auto&
-                +report_definition_service(context ctx)
-                +list_report_definitions(const messaging::list_report_definitions_request& request) : messaging::list_report_definitions_response
-                +get_report_definition(const messaging::get_report_definition_request& request) : messaging::get_report_definition_response
-                +get_many_report_definitions(const messaging::get_many_report_definitions_request& request) : messaging::get_many_report_definitions_response
-                +list_definitions(uint32_t offset, uint32_t limit) : vector<domain::report_definition>
-                +count_definitions() : uint32_t
-                +get_definition(const boost::uuids::uuid& id) : optional<domain::report_definition>
-                +get_definitions(const vector<string>& ids) : vector<domain::report_definition>
-                +save_definition(const domain::report_definition& definition) : void
-                +save_definitions(const vector<domain::report_definition>& definitions) : void
-                +delete_definition(const boost::uuids::uuid& id) : void
-                +delete_definitions(const vector<string>& ids) : void
-            }
             class subject_area_service {
                 -ctx_ : context
                 -repo_ : repository::subject_area_repository
@@ -2262,23 +2154,6 @@ namespace ores #F2F2F2 {
                 +save_configs(const vector<domain::synthetic_fx_spot_config>& configs) : void
                 +delete_config(const boost::uuids::uuid& id) : void
                 +delete_configs(const vector<string>& ids) : void
-            }
-            class synthetic_market_data_provider_service {
-                -ctx_ : context
-                -repo_ : repository::synthetic_market_data_provider_repository
-                -lg() : [[nodiscard]] static auto&
-                +synthetic_market_data_provider_service(context ctx)
-                +list_synthetic_market_data_providers(const messaging::list_synthetic_market_data_providers_request& request) : messaging::list_synthetic_market_data_providers_response
-                +get_synthetic_market_data_provider(const messaging::get_synthetic_market_data_provider_request& request) : messaging::get_synthetic_market_data_provider_response
-                +get_many_synthetic_market_data_providers(const messaging::get_many_synthetic_market_data_providers_request& request) : messaging::get_many_synthetic_market_data_providers_response
-                +list_providers(uint32_t offset, uint32_t limit) : vector<domain::synthetic_market_data_provider>
-                +count_providers() : uint32_t
-                +get_provider(const string& code) : optional<domain::synthetic_market_data_provider>
-                +get_providers(const vector<string>& codes) : vector<domain::synthetic_market_data_provider>
-                +save_provider(const domain::synthetic_market_data_provider& provider) : void
-                +save_providers(const vector<domain::synthetic_market_data_provider>& providers) : void
-                +delete_provider(const string& code) : void
-                +delete_providers(const vector<string>& codes) : void
             }
             class treatment_dimension_service {
                 -ctx_ : context
@@ -2343,7 +2218,6 @@ ores::dq::repository::methodology_mapper ..> ores::dq::repository::methodology_e
 ores::dq::repository::nature_dimension_mapper ..> ores::dq::repository::nature_dimension_entity
 ores::dq::repository::origin_dimension_mapper ..> ores::dq::repository::origin_dimension_entity
 ores::dq::repository::publication_mapper ..> ores::dq::repository::publication_entity
-ores::dq::repository::report_definition_mapper ..> ores::dq::repository::report_definition_entity
 ores::dq::repository::subject_area_mapper ..> ores::dq::repository::subject_area_entity
 ores::dq::repository::synthetic_fx_spot_config_mapper ..> ores::dq::repository::synthetic_fx_spot_config_entity
 ores::dq::repository::treatment_dimension_mapper ..> ores::dq::repository::treatment_dimension_entity
@@ -2372,7 +2246,6 @@ ores::dq::service::publication_service *-- ores::dq::repository::publication_rep
 ores::dq::service::publish_service *-- ores::dq::repository::artefact_type_repository
 ores::dq::service::publish_service *-- ores::dq::repository::dataset_dependency_repository
 ores::dq::service::publish_service *-- ores::dq::repository::dataset_repository
-ores::dq::service::report_definition_service *-- ores::dq::repository::report_definition_repository
 ores::dq::service::subject_area_service *-- ores::dq::repository::subject_area_repository
 ores::dq::service::synthetic_fx_spot_config_service *-- ores::dq::repository::synthetic_fx_spot_config_repository
 ores::dq::service::treatment_dimension_service *-- ores::dq::repository::treatment_dimension_repository

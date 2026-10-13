@@ -269,9 +269,11 @@ public:
     heartbeat_sender(ores::nats::service::client& nats,
                      const std::string& host_id,
                      std::uint32_t interval_seconds,
-                     node_stats_reporter* reporter = nullptr)
+                     node_stats_reporter* reporter = nullptr,
+                     std::string result_id = {})
         : nats_(nats)
         , host_id_(host_id)
+        , result_id_(std::move(result_id))
         , interval_(interval_seconds)
         , reporter_(reporter) {}
 
@@ -315,6 +317,7 @@ private:
             static const auto system = ores::platform::system::get_system_info();
             compute::messaging::heartbeat_message msg;
             msg.host_id = host_id_;
+            msg.result_id = result_id_;
             msg.cpu_count = system.cpu_count;
             msg.ram_mb = system.ram_mb;
             nats_.publish(compute::messaging::heartbeat_message::nats_subject,
@@ -328,6 +331,8 @@ private:
 
     ores::nats::service::client& nats_;
     std::string host_id_;
+    /// The job this sender keeps leased, or empty for the sender that only says the node is alive.
+    std::string result_id_;
     std::uint32_t interval_;
     node_stats_reporter* reporter_;
     std::atomic<bool> stop_{false};
@@ -562,7 +567,7 @@ void process_assignment(ores::nats::service::client& nats,
         return;
     }
 
-    heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
+    heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter, evt.result_id);
     hb.start();
 
     // Outcome codes match the domain: 1=Success, 3=ClientError.

@@ -34,7 +34,7 @@
 #include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/database_info_lookups.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
@@ -1264,7 +1264,7 @@ private:
     template <typename Func>
     void record_auth_event(const ores::database::context& ctx, const char* event_name, Func&& fn) {
         try {
-            repository::auth_event_repository ev_repo(ctx);
+            repository::auth_event_log ev_repo(ctx);
             fn(ev_repo);
         } catch (const std::exception& ev_err) {
             using namespace ores::logging;

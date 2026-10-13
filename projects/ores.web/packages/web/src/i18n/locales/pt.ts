@@ -169,6 +169,8 @@ const pt: SourceCatalogue = {
             notYourself: 'Não pode retirar um papel a si próprio.',
             whatTheyAllow: 'O que estes papéis permitem',
             giveTitle: 'Dar um papel a {name}',
+            recordRole: 'Papel',
+            recordParty: 'Parte',
             alreadyHeld: 'já atribuído',
             chooseReason: 'Escolha um motivo',
             note: 'Nota (opcional)',
@@ -1682,6 +1684,7 @@ const pt: SourceCatalogue = {
                     party: 'A quota de uma parte é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
                 },
                 unavailable: 'Não foi possível ler',
+                outcomes: { title: 'Desfecho dos resultados concluídos nas últimas 24 horas' },
                 pie: {
                     tenant: 'Quota dos resultados por inquilino',
                     party: 'Quota dos resultados por parte',
@@ -2370,7 +2373,7 @@ const pt: SourceCatalogue = {
             account_party:
                 'As partes em que uma pessoa trabalha não puderam ser lidas, por isso não se mostra quando entra ou sai de uma.',
             account_role:
-                'Um papel que foi retirado não se mostra, apenas os papéis detidos agora.',
+                'Os papéis dados a uma pessoa não puderam ser lidos, por isso não se mostra quando um é dado ou retirado.',
             auth_event:
                 'Só se guardam os inícios de sessão mais recentes, por isso os mais antigos não se mostram.',
             unread: 'Parte deste histórico não pôde ser lida, por isso não se mostra.',

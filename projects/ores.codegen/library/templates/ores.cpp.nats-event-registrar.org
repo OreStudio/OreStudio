@@ -4,7 +4,7 @@
 #+title: ores.cpp.nats-event-registrar
 #+description: Per-entity NATS event-mapping registrar pair wiring an entity's Postgres LISTEN/NOTIFY channel to its changed-event pipeline.
 #+type: facet
-#+model_types: domain_entity
+#+model_types: domain_entity junction
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

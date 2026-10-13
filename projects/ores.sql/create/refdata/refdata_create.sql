@@ -160,12 +160,15 @@
 
 -- Party-counterparty visibility junction
 \ir ./refdata_party_counterparty_create.sql
+\ir ./refdata_party_counterparties_notify_trigger_create.sql
 
 -- Party-currency visibility junction
 \ir ./refdata_party_currency_create.sql
+\ir ./refdata_party_currencies_notify_trigger_create.sql
 
 -- Party-country visibility junction
 \ir ./refdata_party_country_create.sql
+\ir ./refdata_party_countries_notify_trigger_create.sql
 
 -- Counterparty-to-centre junction: the centres a counterparty deals through
 \ir ./refdata_counterparty_business_centre_create.sql
@@ -226,6 +229,7 @@
 \ir ./refdata_party_counterparty_changes_create.sql
 \ir ./refdata_party_counterparty_changes_notify_trigger_create.sql
 \ir ./refdata_book_change_parties_fn_create.sql
+\ir ./refdata_counterparty_change_parties_fn_create.sql
 
 -- ORE conventions (curve-building conventions imported from conventions.xml)
 \ir ./refdata_zero_conventions_create.sql

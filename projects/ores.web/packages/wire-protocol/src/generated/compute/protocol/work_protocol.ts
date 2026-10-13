@@ -101,6 +101,14 @@ export interface HeartbeatMessage {
      * @brief Physical memory of the computer in MiB, 0 when the node could not read it.
      */
     ram_mb: number;
+    /**
+     * @brief The result the node is running, or empty when it runs none.
+     *
+     * The service extends the lease of this one job and no other the host holds. A node runs one
+     * job at a time, so a claim the node never reported, such as one whose reply was lost, is not
+     * named here and its lease runs out.
+     */
+    result_id: string;
 }
 
 /**

@@ -78,6 +78,47 @@ register_{{entity_singular}}_event_mapping(ev::service::postgres_event_source& e
 
 }
 {{/domain_entity}}
+{{#junction}}
+#include "ores.{{component_service}}/messaging/{{name_singular}}_event_registrar.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.core/service/entity_event_publisher.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+// The event header specialises entity_event_traits, which the mapping and the
+// subject below instantiate.
+#include "ores.{{component_include}}/eventing/{{name_singular}}_event.hpp" // IWYU pragma: keep.
+#include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
+
+namespace ores::{{component}}::service::messaging {
+
+namespace {
+namespace ev = ores::eventing;
+}
+
+[[nodiscard]] ev::service::subscription
+register_{{name_singular}}_event_mapping(ev::service::postgres_event_source& event_source,
+                                           ev::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats) {
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this link's event.
+    event_source.register_entity_event_mapping<{{component}}::messaging::{{name_singular}}_event>(
+        "{{events_channel}}");
+
+    return event_bus.subscribe<ev::domain::published_entity_event<
+        {{component}}::messaging::{{name_singular}}_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                {{component}}::messaging::{{name_singular}}_event>& published) {
+            ev::service::publish_entity_event(
+                nats,
+                ev::domain::event_subject<{{component}}::messaging::{{name_singular}}_event>(
+                    published.event.action),
+                published);
+        });
+}
+
+}
+{{/junction}}
 #+end_src
 
 * See also

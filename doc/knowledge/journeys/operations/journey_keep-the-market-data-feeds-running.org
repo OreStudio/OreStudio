@@ -136,7 +136,8 @@ rather than from the binding.
 | Read one binding | Read one binding | =marketdata.v1.feed_bindings.get= | exists |
 | Read one binding | List a binding's versions | =marketdata.v1.feed_bindings_versions.list= | exists |
 | Read the feed behind the source | List the FX generation configs | =synthetic.v1.fx_spot_generation_configs.list= | exists |
-| Read the feed behind the source | Read one IR generation config | =synthetic.v1.ir_curve_generation_configs.get= | partial |
+| Read the feed behind the source | List the IR generation configs | =synthetic.v1.ir_curve_generation_configs.list= | exists |
+| Read the feed behind the source | Read one IR generation config | =synthetic.v1.ir_curve_generation_configs.get= | exists |
 | Read the feed behind the source | List the folders | =synthetic.v1.folders.list= | exists |
 | Read whether the source is running | List the running source names | =synthetic.v1.feed_configs.list= | exists |
 | Read the last tick | Read the tick count and last tick per source | no subject | missing |
@@ -146,7 +147,7 @@ rather than from the binding.
 | Stop a feed | Stop every feed under a folder | =marketdata.v1.ops.stop_feeds_under_folder= | exists |
 | Enable or disable a binding | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
 | Enable or disable a binding | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
-| See a feed that has gone quiet | Read the expected tick rate | =synthetic.v1.ir_curve_generation_configs.get=, =synthetic.v1.fx_spot_generation_configs.list= | partial |
+| See a feed that has gone quiet | Read the expected tick rate | =synthetic.v1.ir_curve_generation_configs.list=, =synthetic.v1.fx_spot_generation_configs.list= | partial |
 | See a feed that has gone quiet | Read a feed's uptime or status history | no subject | missing |
 
 The list of running sources is =synthetic.v1.feed_configs.list=, which returns
@@ -173,13 +174,10 @@ counters in memory and writes them to the status log once a minute; see
    is a series reference on the binding, or a read that resolves a source to the
    series it has written. Until then the screen shows the series of the source's
    most recent observations and says the mapping is inferred.
-3. *The IR producer configurations cannot be listed.*
-   =synthetic.v1.fx_spot_generation_configs= has list, get and put, but
-   =synthetic.v1.ir_curve_generation_configs= has only get and put, and its key
-   is a config id, so the IR feeds cannot be enumerated. The candidate is a list
-   subject for the IR generation configs. Until then the IR rows appear only
-   when the screen already knows a config id, and the folder tree stands in for
-   the enumeration.
+3. *The IR producer configurations can be listed now.*
+   =synthetic.v1.ir_curve_generation_configs.list= exists beside the FX list,
+   so the screen reads both lists and no longer needs the folder tree to
+   enumerate the IR feeds. This item stays so the numbering of the others holds.
 4. *Start and stop are shell-only, and carry no permission of their own.* The
    subjects exist and the shell reaches them, through =synthetic start
    folder|feed=, =synthetic stop folder|feed= and =synthetic list feeds=, but

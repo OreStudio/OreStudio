@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: EF5CF958-03A0-45D1-AB2D-7DE9C35D8869
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.market_data_provider
 #+description: Reference data table of the simulated market data providers a synthetic feed can stand for: data vendors such as Bloomberg and Refinitiv, exchanges such as CME and LSE, brokers, and reference sets such as the ORE examples.

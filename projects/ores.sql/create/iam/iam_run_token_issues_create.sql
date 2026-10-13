@@ -17,46 +17,67 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Run Token Issue Table
+ *
+ * A row says who asked for a run token, for which grant and which run, and whether
+ * the token was issued or refused. The exchange reads it to count the distinct runs
+ * a grant has already served, so a grant with a max_runs admits exactly that
+ * many runs. The rows are append-only, so the model states :current_state:.
+ *
+ * The table is a system-level audit log. Its tenant_id is an ordinary text
+ * column, and the table carries no row-level security. Only IAM's own exchange
+ * reads and writes it.
+ *
+ * No retention policy is set. A grant that names a max_runs is counted from this
+ * table, so dropping rows would let a grant serve more runs than its grantor
+ * allowed.
+ *
+ * The table is internal, so only the data layer and the SQL schema are generated.
+ * The reads stay hand-written in run_token_issue_log, because they are counts
+ * the generated reads do not express.
+ */
 
--- =============================================================================
--- Run token issues: one row per run grant exchange that reached the log.
---
--- A row says who asked for a run token, for which grant and which run, and
--- whether the token was issued or refused. The exchange reads it to count the
--- distinct runs a grant has already served, so a grant with a max_runs admits
--- exactly that many runs. Designed for a TimescaleDB hypertable on issued_at.
--- No RLS, matching the auth events log: it is a system-level audit log, read
--- and written only by IAM's own exchange.
---
--- Outcomes:
---   issued    - a run token was minted and answered
---   refused   - the exchange refused; reason names the check that refused it,
---               or is "unavailable" when a limit refused before the checks
---
--- No retention policy is set. A grant that names a max_runs is counted from
--- this table, so dropping rows would let a grant serve more runs than its
--- grantor allowed.
--- =============================================================================
-
-create table if not exists ores_iam_run_token_issues_tbl (
-    "id"                  text not null,
-    "issued_at"           timestamp with time zone not null,
-    "tenant_id"           text not null default '',
-    "party_id"            text not null default '',
-    "grant_id"            text not null default '',
-    "run_id"              text not null default '',
-    "service"             text not null default '',
-    "grantor_account_id"  text not null default '',
-    "outcome"             text not null,
-    "reason"              text not null default '',
-    primary key (id, issued_at)
+create table if not exists "ores_iam_run_token_issues_tbl" (
+    "id" text not null,
+    "issued_at" timestamp with time zone not null,
+    "tenant_id" text not null default '',
+    "party_id" text not null default '',
+    "grant_id" text not null default '',
+    "run_id" text not null default '',
+    "service" text not null default '',
+    "grantor_account_id" text not null default '',
+    "outcome" text not null,
+    "reason" text not null default '',
+    primary key (id, issued_at),
+    check ("id" <> '')
 );
 
+
+
 create index if not exists run_token_issues_grant_run_idx
-on ores_iam_run_token_issues_tbl (grant_id, run_id);
+on "ores_iam_run_token_issues_tbl" (grant_id, run_id);
 
 create index if not exists run_token_issues_tenant_time_idx
-on ores_iam_run_token_issues_tbl (tenant_id, issued_at desc);
+on "ores_iam_run_token_issues_tbl" (tenant_id, issued_at desc);
+
+create or replace function ores_iam_run_token_issues_insert_fn()
+returns trigger as $$
+declare
+begin
+
+
+    return NEW;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger ores_iam_run_token_issues_insert_trg
+before insert on "ores_iam_run_token_issues_tbl"
+for each row execute function ores_iam_run_token_issues_insert_fn();
 
 do $$
 declare
@@ -67,15 +88,15 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
-        raise notice 'TimescaleDB detected - creating hypertable (1-day chunks)';
+        raise notice 'TimescaleDB detected - creating hypertable (1 day chunks)';
 
         perform public.create_hypertable(
-            'ores_iam_run_token_issues_tbl',
+            '"ores_iam_run_token_issues_tbl"',
             'issued_at',
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
     else
-        raise notice 'TimescaleDB not available - using regular table';
+        raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;
 end $$;

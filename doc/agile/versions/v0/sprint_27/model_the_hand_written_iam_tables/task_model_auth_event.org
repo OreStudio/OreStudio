@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-12
 #+updated: 2026-10-12
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:575E321C-CF36-4E2F-87C9-E29D8C698D3A][Model the hand-written IAM tables]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:575E321C-CF36-4E2F-87C9-E29D8C698D3A][Model the hand-written IAM tables]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-12                               |
 
 * Acceptance
@@ -83,3 +83,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=auth_event= is generated from =ores.iam.auth_event.org=, a hypertable entity in the same shape as the compute samples.
+
+- The table, entity, mapper, domain type and repository come from the model. The schema is the one the hand-written script made: the same columns, the same two indexes and the same retention.
+- The hourly and daily aggregates, with their retention, are an SQL paste block in the model, and their drop is a second paste block, so the generated drop script removes them before the table.
+- The recorders and the filtered read stay hand-written, renamed =auth_event_log=, because the generated reads do not express them. The recorder writes through the generated repository.
+- The table still carries no row-level security. That finding is in its own capture.

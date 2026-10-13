@@ -17,29 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_AUTH_EVENT_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_AUTH_EVENT_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_AUTH_EVENT_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_AUTH_EVENT_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.iam.api/domain/auth_event.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.iam.core/repository/auth_event_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::iam::repository {
 
 /**
- * @brief Repository for inserting JWT authentication telemetry events.
- *
- * Writes to the ores_iam_auth_events_tbl TimescaleDB hypertable.
- * Insert-only — events are immutable once recorded.
- *
- * This is a system-level audit log: no RLS is applied. The caller must
- * ensure that the context has write access to the auth events table.
+ * @brief Reads and writes auth events to data storage.
  */
 class ORES_IAM_CORE_EXPORT auth_event_repository {
 private:
@@ -53,191 +55,159 @@ private:
 
 public:
     using context = ores::database::context;
-    explicit auth_event_repository(context ctx);
 
     /**
-     * @brief Record a login success event.
-     *
-     * @param event_time  Timestamp of the event
-     * @param tenant_id   Tenant UUID string
-     * @param account_id  Account UUID string
-     * @param username    Username used for login
-     * @param session_id  Session UUID string created at login
-     * @param party_id    Selected party UUID string (empty if multi-party)
+     * @brief Returns the SQL created by sqlgen to construct the table.
      */
-    void record_login_success(const std::chrono::system_clock::time_point& event_time,
-                              const std::string& tenant_id,
-                              const std::string& account_id,
-                              const std::string& username,
-                              const std::string& session_id,
-                              const std::string& party_id);
+    std::string sql();
 
     /**
-     * @brief Record a login failure event.
+     * @brief Writes auth events to database.
      *
-     * @param event_time   Timestamp of the event
-     * @param tenant_id    Tenant UUID string (empty if tenant could not be resolved)
-     * @param username     Username that was attempted
-     * @param error_detail Error message describing the failure reason
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
      */
-    void record_login_failure(const std::chrono::system_clock::time_point& event_time,
-                              const std::string& tenant_id,
-                              const std::string& username,
-                              const std::string& error_detail);
+    /**@{*/
+    void write(context ctx, const domain::auth_event& v);
+    void write(context ctx, const std::vector<domain::auth_event>& v);
+    /**@}*/
 
     /**
-     * @brief Record a logout event.
+     * @brief Writes a event, honouring the claim it states.
      *
-     * @param event_time  Timestamp of the event
-     * @param tenant_id   Tenant UUID string
-     * @param account_id  Account UUID string
-     * @param username    Username of the account
-     * @param session_id  Session UUID string being ended
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     *
+     * This table carries no version column, so the store cannot check a
+     * version. A @c must_match_version claim is refused here, and a
+     * @c must_not_exist claim over a live row is refused by the read below
+     * rather than by the trigger.
      */
-    void record_logout(const std::chrono::system_clock::time_point& event_time,
-                       const std::string& tenant_id,
-                       const std::string& account_id,
-                       const std::string& username,
-                       const std::string& session_id);
+    void write(context ctx,
+               const domain::auth_event& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
-     * @brief Record a successful token refresh event.
-     *
-     * @param event_time  Timestamp of the event
-     * @param tenant_id   Tenant UUID string from the JWT claims
-     * @param account_id  Account UUID string (subject claim)
-     * @param username    Username from the JWT claims
-     * @param session_id  Session UUID string from the JWT claims
+     * @brief Writes a set of auth events, each honouring its own
+     * claim, as one statement.
      */
-    void record_token_refresh(const std::chrono::system_clock::time_point& event_time,
-                              const std::string& tenant_id,
-                              const std::string& account_id,
-                              const std::string& username,
-                              const std::string& session_id);
+    void write(context ctx,
+               const std::vector<domain::auth_event>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
-     * @brief Record a max_session_exceeded event.
-     *
-     * Emitted when a token refresh is rejected because the session has
-     * reached its maximum allowed duration.
-     *
-     * @param event_time  Timestamp of the event
-     * @param tenant_id   Tenant UUID string from the JWT claims
-     * @param account_id  Account UUID string (subject claim)
-     * @param username    Username from the JWT claims
-     * @param session_id  Session UUID string from the JWT claims
+     * @brief Reads latest auth events, possibly filtered by primary key.
      */
-    void record_max_session_exceeded(const std::chrono::system_clock::time_point& event_time,
-                                     const std::string& tenant_id,
-                                     const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& session_id);
+    /**@{*/
+    std::vector<domain::auth_event> read_latest(context ctx);
+    std::vector<domain::auth_event>
+    read_latest(context ctx, const std::string& id, const std::string& event_time);
+    std::vector<domain::auth_event> read_latest(context ctx,
+                                                const std::vector<std::string>& ids,
+                                                const std::vector<std::string>& event_times);
+    /**@}*/
+
 
     /**
-     * @brief Record a system administrator entering a tenant.
+     * @brief Reads the event rows for the given primary key.
      *
-     * The event is the entered tenant's, and its account is the
-     * administrator's, so the tenant's own trail says who looked inside it.
-     *
-     * @param party_id  The tenant's system party, which the session acts as
+     * A current-state table holds one row per key, so this is the single
+     * current row, not a version history.
      */
-    void record_tenant_entered(const std::chrono::system_clock::time_point& event_time,
-                               const std::string& tenant_id,
-                               const std::string& account_id,
-                               const std::string& username,
-                               const std::string& session_id,
-                               const std::string& party_id);
+    std::vector<domain::auth_event>
+    read_all(context ctx, const std::string& id, const std::string& event_time);
+
 
     /**
-     * @brief Record a system administrator leaving a tenant.
+     * @brief Whether a list of auth events can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
      */
-    void record_tenant_left(const std::chrono::system_clock::time_point& event_time,
-                            const std::string& tenant_id,
-                            const std::string& account_id,
-                            const std::string& username,
-                            const std::string& session_id,
-                            const std::string& party_id);
+    static bool is_sortable(std::string_view field);
 
     /**
-     * @brief Record that an account was locked.
-     *
-     * @param account_id   The account that was locked
-     * @param username     Username of that account
-     * @param error_detail Why: who locked it, or the failed attempts that did
+     * @brief Reads latest auth events with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
+     * @throws std::invalid_argument if the field is not sortable
      */
-    void record_account_locked(const std::chrono::system_clock::time_point& event_time,
-                               const std::string& tenant_id,
-                               const std::string& account_id,
-                               const std::string& username,
-                               const std::string& error_detail);
+    std::vector<domain::auth_event> read_latest(context ctx,
+                                                std::uint32_t offset,
+                                                std::uint32_t limit,
+                                                const ores::utility::domain::order& order = {});
 
     /**
-     * @brief Record that an account was unlocked.
-     *
-     * @param account_id   The account that was unlocked
-     * @param username     Username of that account
-     * @param error_detail Who unlocked it
+     * @brief Gets the total count of active auth events.
+     * @param ctx Repository context with database connection
+     * @return Total number of active auth events
      */
-    void record_account_unlocked(const std::chrono::system_clock::time_point& event_time,
-                                 const std::string& tenant_id,
-                                 const std::string& account_id,
-                                 const std::string& username,
-                                 const std::string& error_detail);
+    std::uint32_t get_total__count(context ctx);
 
     /**
-     * @brief Record a signup success event.
+     * @brief Deletes a event permanently.
      *
-     * @param event_time  Timestamp of the event
-     * @param tenant_id   Tenant UUID string
-     * @param account_id  New account UUID string
-     * @param username    Username created
+     * A current-state table has no history, so the row is removed, not
+     * soft-closed.
      */
-    void record_signup_success(const std::chrono::system_clock::time_point& event_time,
-                               const std::string& tenant_id,
-                               const std::string& account_id,
-                               const std::string& username);
+    void remove(context ctx, const std::string& id, const std::string& event_time);
 
     /**
-     * @brief Record a signup failure event.
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
      *
-     * @param event_time   Timestamp of the event
-     * @param tenant_id    Tenant UUID string
-     * @param username     Username that was attempted
-     * @param error_detail Error message describing the failure reason
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
      */
-    void record_signup_failure(const std::chrono::system_clock::time_point& event_time,
-                               const std::string& tenant_id,
-                               const std::string& username,
-                               const std::string& error_detail);
+    enum class remove_status { removed, conflicting, missing, unsupported };
 
     /**
-     * @brief Read one tenant's authentication events, newest first.
+     * @brief Removes a event, refusing a row that moved on.
      *
-     * The table carries no row-level security, so the read scopes on
-     * =tenant_id= itself rather than relying on a policy. An empty
-     * =account_id=, =event_type=, =from_time= or =to_time= does not filter.
-     * The times are the storage form, so they compare as the column does.
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
      */
-    std::vector<repository::auth_event_entity> read_events(const context& ctx,
-                                                           const std::string& tenant_id,
-                                                           const std::string& account_id,
-                                                           const std::string& event_type,
-                                                           const std::string& from_time,
-                                                           const std::string& to_time,
-                                                           std::uint32_t limit,
-                                                           std::uint32_t offset);
+    remove_status remove(context ctx,
+                         const std::string& id,
+                         const std::string& event_time,
+                         std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes auth events permanently.
+     */
+    void remove(context ctx,
+                const std::vector<std::string>& ids,
+                const std::vector<std::string>& event_times);
+
 
 private:
-    void insert(const std::string& event_type,
-                const std::chrono::system_clock::time_point& event_time,
-                const std::string& tenant_id,
-                const std::string& account_id,
-                const std::string& username,
-                const std::string& session_id,
-                const std::string& party_id,
-                const std::string& error_detail);
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::auth_event& v);
 
-    context ctx_;
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::auth_event apply_claim(context ctx,
+                                   const domain::auth_event& v,
+                                   const ores::utility::domain::precondition& claim);
 };
 
 }

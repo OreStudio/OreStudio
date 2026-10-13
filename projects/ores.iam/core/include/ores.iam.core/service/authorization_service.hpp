@@ -27,6 +27,7 @@
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/account_permission_repository.hpp"
 #include "ores.iam.core/repository/account_role_repository.hpp"
 #include "ores.iam.core/repository/permission_repository.hpp"
 #include "ores.iam.core/repository/role_permission_repository.hpp"
@@ -422,6 +423,7 @@ private:
     repository::permission_repository permission_repo_;
     repository::role_repository role_repo_;
     repository::account_role_repository account_role_repo_;
+    repository::account_permission_repository account_permission_repo_;
     repository::role_permission_repository role_permission_repo_;
     utility::uuid::uuid_v7_generator uuid_generator_;
     event_bus* event_bus_;

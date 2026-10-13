@@ -55,6 +55,11 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:CDCDA380-711C-4F7E-9AE4-A9CB91BBA5A6][Total the machines table]] | DONE | 2026-10-12 | 2026-10-12 | A totals row under the machines table sums the fleet's machines, hardware, nodes and tasks. |
 | [[id:0ADD9640-2C5B-4065-8114-3443E9D62EFE][Give a tenant and a party the grid views]] | DONE | 2026-10-12 | 2026-10-13 | The poller writes a sample row for each tenant and party, a tenant or party session reads the series of its own work, and the grid screen opens to a tenant administrator and a party user with the fleet capacity as a summary. |
 | [[id:D66FEF0D-C8BC-46C5-9DB3-F9555BA25718][Keep the token of a party switch in the shell]] | DONE | 2026-10-13 | 2026-10-13 | The shell keeps the token that select-party and switch-party return, so later commands run in the chosen party, and the grid soak spreads its work across the parties of a tenant. |
+| [[id:236153F4-4708-4205-BA5E-2BC938A3ABEA][Spread the soak by party and draw the outcomes]] | DONE | 2026-10-13 | 2026-10-13 | Each soak wave is shared out among the parties of the sender's tenant, and the Usage tab draws a pie of how the finished results ended. |
+| [[id:DD432150-81CD-4D91-AF2E-D0F26A06F912][Let the system party see every party's grid work]] | DONE | 2026-10-13 | 2026-10-13 | A session in the tenant's system party sees the compute work of every party of the tenant, and every other party sees only its own. |
+| [[id:28C3DC0E-5143-4489-864B-CBDC46AD2B41][Let a table's repository write its own table]] | DONE | 2026-10-13 | 2026-10-13 | The entity-table write check lets a hand-written repository write the table it is named for, so the work ledger and work tenants repositories no longer fail it. |
+| [[id:F80D0975-E69C-4E61-AC89-17318465B90E][Deploy to several hosts at the same time]] | DONE | 2026-10-13 | 2026-10-13 | compass env deploy copies an image with podman image scp, stages each host on its own, and takes several hosts in one command. |
+| [[id:85155A7E-FAB4-4828-BE50-875D84BA3D13][Free the claims a host abandoned]] | DONE | 2026-10-13 | 2026-10-13 | A claim whose reply was lost is returned to the queue when its host asks again, a heartbeat extends only the job the node runs, and the compute service has a larger database pool. |
 
 * Findings
 

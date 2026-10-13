@@ -157,7 +157,6 @@
 
 -- Analytics artefact tables
 \ir ./dq_report_definitions_artefact_create.sql
-\ir ./dq_report_definitions_artefact_tier_alter.sql
 \ir ./dq_risk_report_configs_artefact_create.sql
 \ir ./dq_configuration_analytics_artefact_create.sql
 \ir ./dq_configuration_analytic_parameters_artefact_create.sql
@@ -165,7 +164,7 @@
 
 -- Synthetic market data artefact tables
 \ir ./dq_synthetic_fx_spot_configs_artefact_create.sql
-\ir ./dq_synthetic_market_data_providers_artefact_create.sql
+\ir ./dq_market_data_providers_artefact_create.sql
 \ir ./dq_synthetic_gmm_components_artefact_create.sql
 \ir ./dq_synthetic_ir_curve_configs_artefact_create.sql
 \ir ./dq_synthetic_ir_curve_template_entries_artefact_create.sql

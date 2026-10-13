@@ -71,10 +71,10 @@ begin
         raise exception 'Dataset synthetic.market_data_providers not found.';
     end if;
 
-    delete from ores_dq_synthetic_market_data_providers_artefact_tbl
+    delete from ores_dq_market_data_providers_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    insert into ores_dq_synthetic_market_data_providers_artefact_tbl (
+    insert into ores_dq_market_data_providers_artefact_tbl (
         dataset_id, tenant_id, code, version, name, kind, description, display_order
     ) values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ore', 0, 'ORE', 'reference',
@@ -104,5 +104,5 @@ begin
 end $$;
 
 -- Summary
-select 'dq_synthetic_market_data_providers_artefact' as entity, count(*) as count
-from ores_dq_synthetic_market_data_providers_artefact_tbl;
+select 'dq_market_data_providers_artefact' as entity, count(*) as count
+from ores_dq_market_data_providers_artefact_tbl;

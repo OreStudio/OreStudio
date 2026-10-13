@@ -128,7 +128,7 @@ ordered rail of steps, and each step draws the view it needs. Commit
 =e47043269f= deleted the generated entity screens. A step that lists,
 shows or maintains records of one kind does not draw its own table or
 form: it is a record screen, and it uses the shared list, record page,
-dialogs and history panel that the
+dialogs and timeline that the
 [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] defines.
 
 The journey catalogue, and the "one screen, not one per entity" rule,

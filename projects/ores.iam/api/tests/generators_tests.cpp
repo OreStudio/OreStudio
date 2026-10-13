@@ -253,7 +253,7 @@ TEST_CASE("account_role_generator_produces_valid_instance", tags) {
 
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
-    CHECK(!sut.assigned_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.test");
     CHECK(sut.change_commentary == "Synthetic test data");
 }

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6AADB1A7-1229-4D10-8951-58446788957F
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.netting_agreement
 #+description: Codegen entity model for the refdata =netting_agreement= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -138,6 +139,49 @@ Optional description of the agreement.
 #+begin_src cpp :name generator
 std::optional<std::string>("Test netting agreement")
 #+end_src
+
+* Artefact columns
+
+The import names the counterparty by LEI where the store holds the party and counterparty uuids. Publishing resolves them in the target tenant.
+
+** agreement_number
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** counterparty_lei
+:PROPERTIES:
+:type: text
+:END:
+
+** agreement_type
+:PROPERTIES:
+:type: text
+:END:
+
+** governing_law
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* Artefact indexes
+
+** counterparty_lei
+:PROPERTIES:
+:columns: counterparty_lei
+:END:
 
 * SQL
 

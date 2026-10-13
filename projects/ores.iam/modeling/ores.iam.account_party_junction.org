@@ -27,6 +27,7 @@ can act on behalf of.
 :PROPERTIES:
 :profile: tenant-scoped-junction
 :history: true
+:events: true
 :history_read_permission: iam::accounts:read
 :END:
 

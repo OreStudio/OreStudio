@@ -178,7 +178,7 @@ The test for a screen is one question: which topic would a person look in?
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
 | Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
-| Market data | The prices and curves the platform receives or generates: the Synthetic screen (Dashboard and Feed tree) and the curve evolution | Any one of those screens |
+| Market data | The prices and curves the platform receives or generates: the Synthetic screen (Dashboard and Feed tree), the Bindings, and the curve evolution | Any one of those screens |
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
@@ -214,6 +214,12 @@ A feed's page is the record page of the feed, and its breadcrumb runs through th
 feed tree: Home, Market data, Synthetic, Feed tree, the folders down to the feed's
 asset class, then the feed. Each folder on it opens the feed tree with that folder
 chosen. The FX and IR lists are gone; the feed table lists both kinds.
+
+Bindings is a card of Market data beside Synthetic. A binding
+is a party's choice to consume one producer source, and it covers a vendor's source as well as a
+synthetic one, so it is not one of the feeds Synthetic holds. Its list is the record
+screen of the Record screen standard, and its trail is Home, Market data, Bindings,
+then the binding.
 
 Each card is drawn for a person who holds the read of its screen.
 
@@ -283,6 +289,7 @@ the first step of every trail.
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
 | Synthetic, Watch a curve evolve | Market data | A feed generates the prices that market data holds, and a curve is one of them |
+| Bindings | Market data | A binding says which producers a party consumes, so it belongs with the data it carries and not with the feeds that produce it |
 | Trades, Book a trade, Import a portfolio from ORE, Export a portfolio to ORE | Trades | A trade is held by the tenant and is not a shared list |
 | Structures and packages, Group trades | Trades | A structure is the tree of a deal made of trades |
 | Tenants | Tenants | The roster of the installation |

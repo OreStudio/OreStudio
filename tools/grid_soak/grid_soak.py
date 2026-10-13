@@ -43,10 +43,10 @@ Usage, from the repository root:
     python3 tools/grid_soak/grid_soak.py --app-version <id of the engine version>
     python3 tools/grid_soak/grid_soak.py --capacity 90 --seed 7
 
-Each wave also switches to a party of the sender's tenant, drawn at random from the
-parties the tenant has other than its system party, so the work lands in every party and
-the screens that split by party have rows to show. The parties are read from the
-database when the run starts. --no-spread-parties keeps the party the login opens in.
+Each wave is shared out among the parties of the sender's tenant other than its system
+party, with a random share for each, so every wave lands in every party and the screens that
+split by party have rows to show. The parties are read from the database when the run starts.
+--no-spread-parties keeps the party the login opens in.
 
 The app version changes when the database is recreated. Each wave is sent by a
 principal drawn by weight, so the work lands in several tenants and the grid's
@@ -56,6 +56,7 @@ given, and it must fit every principal.
 """
 
 import argparse
+import math
 import os
 import random
 import signal
@@ -128,13 +129,33 @@ def tenant_code_of(principal):
     return principal.partition("@")[2]
 
 
+# How much of a tenant's work each of its parties sends, by party short code. The Acme
+# holding company submits little, its UK arm most, and the US and Hong Kong arms in
+# between, which is the shape of a real group. A party not named here weighs 1.
+DEFAULT_PARTY_WEIGHTS = {"ACCOUK": 5.0, "ACCOUS": 3.0, "ACCOHK": 2.0, "ACMCOR": 0.5}
+
+
+def parse_party_weights(specs):
+    """The weight of each party short code, from CODE=WEIGHT, over the defaults."""
+    weights = dict(DEFAULT_PARTY_WEIGHTS)
+    for spec in specs or []:
+        code, _, weight = spec.partition("=")
+        try:
+            weights[code] = float(weight)
+        except ValueError:
+            raise SystemExit(f"grid_soak: the weight of party {code!r} is not a number: {weight!r}")
+        if not math.isfinite(weights[code]) or weights[code] <= 0:
+            raise SystemExit(f"grid_soak: the weight of party {code!r} must be a finite number above zero")
+    return weights
+
+
 def discover_parties(root, tenant_code):
-    """The ids of the parties of a tenant other than its system party, in id order."""
+    """The (id, short code) of the parties of a tenant other than its system party."""
     # The code is a word of letters, digits and underscores, so it is safe in a literal.
     if not tenant_code or not all(c.isalnum() or c == "_" for c in tenant_code):
         return []
     sql = (
-        "select p.id from ores_refdata_parties_tbl p "
+        "select p.id, p.short_code from ores_refdata_parties_tbl p "
         "join ores_iam_tenants_tbl t on t.id = p.tenant_id "
         "and t.valid_to = ores_utility_infinity_timestamp_fn() "
         f"where t.code = '{tenant_code}' and p.party_category <> 'System' "
@@ -150,28 +171,56 @@ def discover_parties(root, tenant_code):
         return []
     parties = []
     for line in done.stdout.splitlines():
+        ident, _, code = line.strip().partition("|")
         try:
-            parties.append(str(uuid.UUID(line.strip())))
+            parties.append((str(uuid.UUID(ident)), code))
         except ValueError:
             continue
     return parties
 
 
-def wave_script(principal, password, reference, count, app_version, package, party=None):
-    """The ores.shell script of one wave."""
-    switch = [f"account_operations switch-party {party}"] if party else []
-    return "\n".join(
-        [
-            "connect $ORES_NATS_URL",
-            f"login {principal} {password}",
-            *switch,
-            f'batches add {reference} open system.new_record "grid soak"',
-            f"compute dispatch-batch {reference} {count} {app_version} {package}",
-            "logout",
-            "exit",
-            "",
-        ]
-    )
+def split_count(rng, count, parties, weights=None):
+    """The jobs of a wave shared out among the parties, as (party, jobs) pairs.
+
+    Every party gets a share in proportion to its weight, nudged a little at random so
+    no two waves are alike, and one wave reaches all of them. A wave with fewer jobs than
+    parties reaches a subset drawn by weight, with a job each. The shares always add up to
+    the count, and every party in the result has at least one job.
+    """
+    if count <= 0 or not parties:
+        return []
+    base = list(weights) if weights else [1.0] * len(parties)
+    if count < len(parties):
+        chosen, pool = [], list(range(len(parties)))
+        while len(chosen) < count:
+            pick = rng.choices(pool, [base[i] for i in pool])[0]
+            chosen.append(pick)
+            pool.remove(pick)
+        return [(parties[i], 1) for i in chosen]
+    weights = [w * (0.8 + 0.4 * rng.random()) for w in base]
+    total = sum(weights)
+    # One job each first, then the rest by weight, with the remainder to the heaviest.
+    spare = count - len(parties)
+    shares = [1 + int(spare * w / total) for w in weights]
+    shares[weights.index(max(weights))] += count - sum(shares)
+    return list(zip(parties, shares))
+
+
+def wave_script(principal, password, reference, parts, app_version, package):
+    """The ores.shell script of one wave.
+
+    A part is a (party, jobs) pair. A party of None keeps the party the login opens in. Each
+    part is its own batch, so the work of a wave lands in every party it names.
+    """
+    lines = ["connect $ORES_NATS_URL", f"login {principal} {password}"]
+    for index, (party, count) in enumerate(parts, start=1):
+        ref = reference if len(parts) == 1 else f"{reference}-p{index}"
+        if party:
+            lines.append(f"account_operations switch-party {party}")
+        lines.append(f'batches add {ref} open system.new_record "grid soak"')
+        lines.append(f"compute dispatch-batch {ref} {count} {app_version} {package}")
+    lines += ["logout", "exit", ""]
+    return "\n".join(lines)
 
 
 def send_wave(root, args, rng, reference, count):
@@ -179,11 +228,17 @@ def send_wave(root, args, rng, reference, count):
     names, weights = args.principals
     principal = rng.choices(names, weights)[0]
     pool = args.party_pools.get(tenant_code_of(principal), [])
-    party = rng.choice(pool) if pool else None
-    where = f" in party {party}" if party else ""
-    print(f"[soak] {reference} sent by {principal}{where}", flush=True)
+    if pool:
+        ids = [ident for ident, _ in pool]
+        shares = [args.party_weights.get(code, 1.0) for _, code in pool]
+        codes = dict(pool)
+        parts = split_count(rng, count, ids, shares)
+    else:
+        parts, codes = [(None, count)], {}
+    where = ", ".join(f"{codes.get(p, str(p)[:8])} {n}" for p, n in parts if p)
+    print(f"[soak] {reference} sent by {principal}" + (f": {where}" if where else ""), flush=True)
     script = wave_script(
-        principal, args.password, reference, count, args.app_version, args.package, party
+        principal, args.password, reference, parts, args.app_version, args.package
     )
     with tempfile.NamedTemporaryFile("w", suffix=".ores", delete=False) as handle:
         handle.write(script)
@@ -250,6 +305,9 @@ def build_parser():
     ap.add_argument("--principal", action="append", metavar="NAME[:WEIGHT]",
                     help="Who sends a wave; repeat it. Default: the Acme and Barclays tenant "
                          "administrators and the super administrator, weighted 6, 3 and 1")
+    ap.add_argument("--party-weight", action="append", metavar="CODE=WEIGHT",
+                    help="How much of a wave a party takes, by its short code; repeat it. Default: "
+                         "ACCOUK 5, ACCOUS 3, ACCOHK 2 and ACMCOR 0.5, and 1 for any other party")
     ap.add_argument("--no-spread-parties", action="store_true",
                     help="Keep the party the login opens in, and do not switch")
     ap.add_argument("--password", default=None)
@@ -269,6 +327,7 @@ def main(argv):
     if args.password is None:
         ap.error("no password: set ORES_SHELL_LOGIN_PASSWORD in .env or pass --password")
 
+    args.party_weights = parse_party_weights(args.party_weight)
     args.party_pools = {}
     if not args.no_spread_parties:
         for name in dict.fromkeys(args.principals[0]):

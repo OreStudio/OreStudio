@@ -59,7 +59,7 @@ namespace {
  * test writes by hand is synthetic data.
  */
 void state_the_tail(database_helper& h, role_permission& link) {
-    link.assigned_by = h.db_user();
+    link.modified_by = h.db_user();
     link.change_reason_code = "system.test";
     link.change_commentary = "Synthetic test data";
 }
@@ -82,7 +82,7 @@ TEST_CASE("write_single_role_permission", tags) {
     perm_repo.write(h.context(), p);
 
     role_permission rp;
-    rp.tenant_id = h.tenant_id();
+    rp.tenant_id = h.tenant_id().to_string();
     rp.role_id = r.id;
     rp.permission_id = p.id;
     state_the_tail(h, rp);
@@ -108,7 +108,7 @@ TEST_CASE("read_latest_role_permissions", tags) {
     perm_repo.write(h.context(), p);
 
     role_permission rp;
-    rp.tenant_id = h.tenant_id();
+    rp.tenant_id = h.tenant_id().to_string();
     rp.role_id = r.id;
     rp.permission_id = p.id;
     state_the_tail(h, rp);
@@ -138,13 +138,13 @@ TEST_CASE("read_latest_role_permissions_by_role", tags) {
     perm_repo.write(h.context(), p2);
 
     role_permission rp1;
-    rp1.tenant_id = h.tenant_id();
+    rp1.tenant_id = h.tenant_id().to_string();
     rp1.role_id = r.id;
     rp1.permission_id = p1.id;
     state_the_tail(h, rp1);
 
     role_permission rp2;
-    rp2.tenant_id = h.tenant_id();
+    rp2.tenant_id = h.tenant_id().to_string();
     rp2.role_id = r.id;
     rp2.permission_id = p2.id;
     state_the_tail(h, rp2);

@@ -129,7 +129,7 @@ values
      'dq_synthetic_fx_spot_configs_artefact_tbl, dq_synthetic_ir_curve_configs_artefact_tbl', 'synthetic_market_data_generation_configs_tbl', 'synthetic.v1.ops.publish_feeds_from_dq', 34,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'market_data_providers', 0, 'Market Data Providers', 'The simulated market data providers (data vendors, exchanges, brokers and the generic provider) the synthetic feeds stand for -- installation data, published into the system tenant',
-     'dq_synthetic_market_data_providers_artefact_tbl', 'synthetic_market_data_providers_tbl', 'synthetic.v1.ops.publish_market_data_providers_from_dq', 74,
+     'dq_market_data_providers_artefact_tbl', 'synthetic_market_data_providers_tbl', 'synthetic.v1.ops.publish_market_data_providers_from_dq', 74,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'currency_pairs', 0, 'Currency Pairs', 'Standard FX currency pairs (majors, minors, and common EM crosses)',
      'dq_currency_pairs_artefact_tbl', 'refdata_currency_pairs_tbl', 'refdata.v1.ops.publish_currency_pairs_from_dq', 35,

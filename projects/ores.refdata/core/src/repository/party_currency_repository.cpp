@@ -364,8 +364,11 @@ party_currency_repository::read_all_by_party(const boost::uuids::uuid& party_id)
                     !rows.empty() &&
                     rows.back().link.currency_iso_code == row.link.currency_iso_code &&
                     rows.back().link.version == row.link.version + 1;
-                if (!replaced)
+                if (!replaced) {
                     row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
                 rows.push_back(std::move(row));
             }
             return rows;

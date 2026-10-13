@@ -20,7 +20,7 @@
 #include "ores.iam.core/service/run_grant_operations_service.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/repository/run_token_issue_repository.hpp"
+#include "ores.iam.core/repository/run_token_issue_log.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/run_grant_service.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -460,7 +460,7 @@ void run_grant_operations_service::log_refusal(const std::string& tenant_id,
                                                const std::string& grantor_account_id,
                                                std::string_view reason) {
     try {
-        repository::run_token_issue_repository(ctx_).record(std::chrono::system_clock::now(),
+        repository::run_token_issue_log(ctx_).record(std::chrono::system_clock::now(),
                                                             tenant_id,
                                                             "",
                                                             request.grant_id,
@@ -496,7 +496,7 @@ run_grant_operations_service::issue(const domain::run_grant& grant,
 
     // The row is appended before the token is handed over, so no run token
     // exists that the issue log does not name.
-    repository::run_token_issue_repository(ctx_).record(
+    repository::run_token_issue_log(ctx_).record(
         now,
         grant.tenant_id.to_string(),
         boost::uuids::to_string(grant.party_id),
@@ -611,7 +611,7 @@ messaging::exchange_run_grant_response run_grant_operations_service::exchange_ru
     // 3. The two permission lists the last check and the mint read. The role
     // and the grantor live in the grant's tenant, so they are read there, not
     // in the calling service's own tenant.
-    std::optional<repository::run_token_issue_repository> issues;
+    std::optional<repository::run_token_issue_log> issues;
     std::string grant_key;
     if (facts.grant) {
         issues.emplace(grant_ctx);

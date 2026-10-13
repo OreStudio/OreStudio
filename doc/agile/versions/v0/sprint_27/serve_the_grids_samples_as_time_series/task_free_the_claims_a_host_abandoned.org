@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 85155A7E-FAB4-4828-BE50-875D84BA3D13
+:END:
+#+title: Task: Free the claims a host abandoned
+#+description: A claim whose reply was lost is returned to the queue when its host asks again, a heartbeat extends only the job the node runs, and the compute service has a larger database pool.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/free-the-claims-a-host-abandoned
+#+pr: 3234
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No job stays in progress because a claim reply was lost, and a busy grid does not starve its claims.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- After a soak no result stays in progress and the ledger holds no real entry.
+- The compute service log shows no database pool warning during the soak.
+
+* Plan
+
+Two soaks of the Acme tenant left about a fifth of the jobs, 64 and then 59 results, in progress for good, held by hosts that were alive.
+
+- *Cause one.* The service handlers share one database pool, and its default size is 2. During a burst the claims waited for a connection past the 30 second timeout of the node. The log showed =No available database connections in the pool= 13 times in 12 minutes. A claim that timed out for the node had often been served: the service had taken the entry and marked the result in progress, and the reply came too late.
+- *Cause two.* A heartbeat extended the lease of every entry of its host. The node never reported the lost claim, so the entry stayed leased for as long as the host lived, and the reaper never saw it.
+
+The fix has three parts.
+- The heartbeat names the job the node runs (=result_id=). The service extends the lease of that job only.
+- A host that asks for work is free, because it runs one job at a time. The claim first returns to the queue every entry the host still holds, with the attempts kept, so a lost reply costs the time until the host asks again. An entry with no attempts left stays for the reaper.
+- The handlers' pool is 8. The loops of the service keep their own pools.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Compute api and core test suites, with three new ledger cases | pass | =ctest --preset linux-clang-debug-make -R "ores.compute.(api|core).tests" -j2= | branch head |
+| Results of a 10 minute Acme soak on 21 nodes | 741 of 741 finished with success, none in progress | the result table grouped by party and state | branch head |
+| Database pool warnings during the soak | 0, against 13 before | the compute service journal | branch head |
+| Claims that went back to the queue because a host asked again | 4 warnings | the compute service journal | branch head |
+| Claim timeouts on the 5 local wrappers in the soak | 2 | the wrapper journals | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3234][#3234]] | [compute] Free the claims a host abandoned |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A lost claim reply no longer strands a job. The 59 results that the last soak left in progress finished as soon as their hosts asked for work again, and a 10 minute soak of 21 nodes finished every one of its 741 results. The service log shows no pool warning. The soak showed the party split that was asked for.

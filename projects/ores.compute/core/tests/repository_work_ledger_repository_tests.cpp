@@ -295,7 +295,7 @@ TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", tags) {
     const auto host = random_uuid();
     work_ledger_repository ledger;
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(0)).has_value());
-    ledger.extend_leases(cleanup.system(), host, seconds(300));
+    ledger.extend_lease(cleanup.system(), host, queued.result_id, seconds(300));
 
     CHECK(!ledger.remove_expired(cleanup.system(), queued.result_id));
     CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
@@ -341,7 +341,7 @@ TEST_CASE("holder_is_nothing_for_an_entry_that_waits_and_for_one_not_in_the_ledg
     CHECK(!ledger.holder(cleanup.system(), random_uuid()).has_value());
 }
 
-TEST_CASE("extend_leases_extends_only_the_entries_the_host_holds", tags) {
+TEST_CASE("extend_lease_extends_only_the_job_the_host_names", tags) {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -350,10 +350,57 @@ TEST_CASE("extend_leases_extends_only_the_entries_the_host_holds", tags) {
     work_ledger_repository ledger;
     const auto host = random_uuid();
     const auto stranger = random_uuid();
-    REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(60)).has_value());
+    // The host holds two entries, as it does when the reply to a claim was lost.
+    const auto first = ledger.claim(cleanup.system(), host, platform, seconds(0));
+    const auto second = ledger.claim(cleanup.system(), host, platform, seconds(0));
+    REQUIRE(first.has_value());
+    REQUIRE(second.has_value());
 
-    CHECK(ledger.extend_leases(cleanup.system(), host, seconds(300)) == 1);
-    CHECK(ledger.extend_leases(cleanup.system(), stranger, seconds(300)) == 0);
+    CHECK(ledger.extend_lease(cleanup.system(), host, second->result_id, seconds(300)));
+    // A host that does not hold the entry extends nothing, and the entry it holds and does
+    // not name keeps its short lease, so it expires and the reaper returns it.
+    CHECK(!ledger.extend_lease(cleanup.system(), stranger, second->result_id, seconds(300)));
+    ledger.requeue_expired(cleanup.system());
+    CHECK(ledger.holder(cleanup.system(), second->result_id) == host);
+    CHECK(!ledger.holder(cleanup.system(), first->result_id).has_value());
+}
+
+TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    work_ledger_repository ledger;
+    const auto host = random_uuid();
+    REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
+
+    CHECK(ledger.requeue_held(cleanup.system(), host) == 1);
+    CHECK(!ledger.holder(cleanup.system(), queued.result_id).has_value());
+    // The next claim counts a second attempt, so the first one was kept.
+    const auto again = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
+    REQUIRE(again.has_value());
+    CHECK(again->attempts == 2);
+}
+
+TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_entries", tags) {
+    database_helper h;
+    ledger_cleanup cleanup(h);
+    const auto platform = unique_platform();
+    const auto mine = cleanup.add(entry_for(platform, random_uuid()));
+    const auto theirs = cleanup.add(entry_for(platform, random_uuid()));
+    work_ledger_repository ledger;
+    const auto host = random_uuid();
+    const auto other = random_uuid();
+    REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
+    REQUIRE(ledger.claim(cleanup.system(), other, platform, seconds(300)).has_value());
+
+    // With one attempt allowed, the entry the host holds has none left.
+    CHECK(ledger.requeue_held(cleanup.system(), host, 1) == 0);
+    // Both entries are still held, because nothing was returned.
+    CHECK(ledger.holder(cleanup.system(), mine.result_id).has_value());
+    CHECK(ledger.holder(cleanup.system(), theirs.result_id).has_value());
+    // Another host's entry is never returned by a request for this host.
+    CHECK(ledger.requeue_held(cleanup.system(), random_uuid()) == 0);
 }
 
 TEST_CASE("enqueue_leaves_an_entry_already_in_the_ledger_as_it_is", tags) {

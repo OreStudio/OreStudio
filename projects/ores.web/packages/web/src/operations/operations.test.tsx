@@ -1908,6 +1908,30 @@ describe('the grid usage tab', () => {
         expect(parties).toContain('Share of the results by party');
     });
 
+    it('draws a pie of the outcomes of the last 24 hours, green for a success and red for a failure', () => {
+        const html = renderUsage([
+            usageGroup({ outcomes_success: 30, outcomes_failed: 10 }),
+            usageGroup({
+                key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                outcomes_success: 10,
+                outcomes_failed: 0,
+            }),
+        ]);
+
+        expect(html).toContain('Outcomes of the results finished in the last 24 hours');
+        // The two groups together: 40 successes and 10 failures.
+        expect(html).toContain('80%');
+        expect(html).toContain('20%');
+        expect(html).toContain('text-up');
+        expect(html).toContain('text-down');
+    });
+
+    it('draws no outcomes pie when nothing finished in the window', () => {
+        const html = renderUsage([usageGroup({ outcomes_success: 0, outcomes_failed: 0 })]);
+
+        expect(html).not.toContain('Outcomes of the results finished');
+    });
+
     it('draws no pie when no group has run anything', () => {
         const html = renderUsage([usageGroup({ results: 0 })]);
 

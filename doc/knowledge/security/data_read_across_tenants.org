@@ -52,6 +52,12 @@ A person sees the accounts of the parties they have access to, the accounts of t
 
 The existence function stays. A record that names a person asks it for yes or no, so the service does not need to read the account to write the record.
 
+** Who sees which party's compute work
+
+The batches, workunits, results and grid samples of the compute grid carry the party that submitted the work. A session that acts in a party sees the work of that party and of the parties below it, and the work that has no party. A session that acts in the system party of its tenant administers the tenant, so it sees the work of every party of that tenant. The function =ores_compute_session_is_system_party_fn()= decides this, and it compares the session's party with =ores_iam_system_party_id_fn()=. The rule is inside one tenant. It reads no other tenant's work, and an operator still reads a tenant by entering it.
+
+This is an exception to the party rule. Its reason, its limits and the state of its review and sign-off are in [[id:07177FE0-F0B9-44E8-B67C-CEAA6DCC696A][the RLS and permission exceptions register]], entry E1. Every exception and installation-owned table of the compute grid is listed there, so that a security review can read them together.
+
 ** An operator reads a tenant's work inside the tenant
 
 The six blocks share a row of the system tenant with every tenant. The opposite direction, a system-tenant session that reads every tenant's rows, is not a sixth block. It is the widening that =check_rls_system_tenant_widenings.py= exists to stop, and the audit task removes the widenings that remain.

@@ -262,7 +262,7 @@ The tabs are held in the address (=useRecordTabs=). In this order:
 | /Details/ | Always, first | The record's own fields, laid out by =RecordDetails=, then the last-changed line |
 | /<Field group>/ | The kind declares a field group | The fields of that group |
 | /<Related plural>/ | The kind has links or parts of that kind | One related-records panel |
-| /History/ | The kind is versioned | The history panel |
+| /History/ | The kind is versioned | The timeline |
 
 A tab that does not apply to this record is not drawn: a derived calendar has no
 Rules tab. A tab that applies but holds nothing yet is drawn, with "None yet."
@@ -377,26 +377,17 @@ from it, as /Derive a calendar/ does.
 
 ** History
 
-The History tab is the shared history panel (=HistoryPanel=), reading the
-generic history request (=GET /api/history=, =refdata.v1.history.get=).
+The History tab is the shared timeline (=Timeline=), defined once in the
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], section
+History and the timeline. A record screen draws it as that section says and adds
+two things:
 
-- On the left, the timeline, newest first. Each version shows its number, when,
-  who modified it and for whom, the change reason and the commentary.
-- On the right, the comparison: a /From/ and a /To/ version, and /All fields/ or
-  /Only changes/. The difference is drawn in the GitHub style, a removed line
-  and an added line per changed field, with the changed part marked.
-- The oldest version shows "Initial version". A version with no field change
-  shows "No field changes". A /From/ newer than the /To/ is refused.
-- The same "Hide system activity" toggle sits in the toolbar. It hides the
-  versions that a service account wrote from the timeline on the left. It keeps
-  the selected version. The rules are in
-  [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], section System activity.
-- The provenance fields are not compared; they differ by definition and show on
-  the timeline.
-- /Revert to this version/ is offered on any version but the current one, to a
-  person who may write. It opens the revert dialog, which says that the values
-  of version /n/ are written back as a new version and that no version is lost.
-  It asks for a reason, and writes against the current version.
+- The stream is the record's own versions, read through the generic history request
+  (=GET /api/history=, =refdata.v1.history.get=).
+- /Revert/ is offered on any version but the current one, to a person who may write.
+  It opens the revert dialog, which says that the values of version /n/ are written
+  back as a new version and that no version is lost. It asks for a reason, and
+  writes against the current version.
 
 A screen that shows a log of events is an Audit screen, not History. It has
 Refresh and no comparison or revert.
@@ -574,6 +565,7 @@ and in its journey, never found later.
 | /Shaped by its source/ | Tabs depend on what the record is made of, such as a QuantLib, derived or bespoke calendar |
 | /Singleton/ | One record by definition: no list, no Add, no Delete |
 | /Accumulating/ | Most recent first; Delete usually refused |
+| /Feed binding/ | The key is the source name and it can be edited: Edit offers it, with help that says it switches the ingest source without restarting a producer, because that is how a party rebinds. A vendor binding is read only and has no Edit, but it keeps Delete, so a stale one can be removed |
 | /Mixture/ | A set of parts that are read and judged as one, such as an FX feed's Gaussians. The tab lists the set across the full width, with the previews it implies side by side below it and the engine's note under them. A row opens the part in a dialog; each row moves up or down and is deleted from the set; Add opens the dialog empty. What is not saved is marked: a new row, a changed cell, a moved row, and a deleted row kept struck through with Undo, with a count beside Save. Save is one button beside Add, enabled while there are changes; it opens a dialog that asks the reason and says when the parent uses the change. The part's history is not offered row by row: the parent's History tab is one stream of the parent and every part, the timeline of the entity screen specification, with Revert on each older version |
 
 An exception decides which parts exist and which actions show. It never changes
@@ -604,7 +596,7 @@ component carries it today.
 | Unsaved changes | =useCloseGuard=, =LeavingFooter= | Exists |
 | Delete | =DeleteDialog=, =RemoveRecordDialog= | Exists; =DeleteDialog= takes the write, =RemoveRecordDialog= deletes a refdata record with it; parts are deleted one after another |
 | Revert | =RevertVersionDialog=, =RevertDialog= | Exists; =RevertVersionDialog= takes the write, =RevertDialog= reverts a refdata record with it |
-| History | =HistoryPanel= | Exists |
+| History | =Timeline= in =timeline/Timeline.tsx= | Exists |
 | Links | =LinkPanel= | Exists |
 | Parts | =PartsPanel= in =refdata/records.tsx= | Exists, beside =LinkPanel= |
 | Labels and fallback | =RowLabel=, =ClassifiedValue=, =ui/Label.tsx= | Exists |
@@ -625,7 +617,7 @@ component carries it today.
 | Classifications | Conform, under the classification list exception: a list is read whole once and paged in the browser |
 | People | Conforms: the shared list over the accounts, and a page per person with details, contact, roles and sign-ins as tabs; roles are read one person at a time, as the server has no joined read |
 | Tenants | Conforms: the roster searches and sorts, the page has a History tab, and the tenant's parties and people are shared record tables in its tabs that search and sort |
-| Parties | Conforms as an entity: the shared list, and a page per party with its details, identifiers, contacts, memberships, structure and history, each changed in a dialog. A party has no Delete, because it is retired by its status. Its History tab is the entity timeline of the entity specification, not the compare panel. A new party is provisioned by a workflow, listed in the Workflows menu. A change writes directly until the four-eyes approval of party changes is built |
+| Parties | Conforms as an entity: the shared list, and a page per party with its details, identifiers, contacts, memberships, structure and history, each changed in a dialog. A party has no Delete, because it is retired by its status. Its History tab is the timeline. A new party is provisioned by a workflow, listed in the Workflows menu. A change writes directly until the four-eyes approval of party changes is built |
 | Roles | Their own list and page layout; the list reads every role, and the role page reads every account with its roles |
 | Synthetic feeds | Conforms to the [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]], which extends this one for feeds |
 
@@ -643,7 +635,7 @@ Work in this order. Each step ends in something to check.
 3. Write the field table and the column list.
 4. Build the list from the shared parts: header, search, =RecordTable=, =Pager=.
 5. Build the record page from =useRecordTabs=, =RecordDetails=, the related
-   panels and =HistoryPanel=.
+   panels and the =Timeline=.
 6. Use =RecordDialog=, =RemoveRecordDialog= and =RevertDialog= for every write.
 7. Add the strings in English, French and Portuguese.
 8. Check it on the running server: list, page, search, open, add, edit with a

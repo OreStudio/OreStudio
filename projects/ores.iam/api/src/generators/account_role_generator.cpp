@@ -17,8 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.api/generators/account_role_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::iam::generators {
 
@@ -26,17 +33,18 @@ using ores::utility::generation::generation_keys;
 
 domain::account_role generate_synthetic_account_role(utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
-    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::account_role r;
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
+    r.version = 0;
+    r.tenant_id = tenant_id;
     r.account_id = ctx.generate_uuid();
     r.role_id = ctx.generate_uuid();
-    r.assigned_by = modified_by;
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
-    r.assigned_at = ctx.past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
@@ -44,7 +52,7 @@ std::vector<domain::account_role>
 generate_synthetic_account_roles(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::account_role> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i)
+    while (r.size() < n)
         r.push_back(generate_synthetic_account_role(ctx));
     return r;
 }

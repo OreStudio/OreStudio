@@ -87,27 +87,29 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <analytic_type_code> <ore_parameter> <kind> <configuration_type_code>
-     * <name_pattern> <sample_count> <sample_total> <description> <display_order> <reason>
-     * <commentary>
+     * @brief add <code> <analytic_type_code> <ore_parameter> <direction> <format> <xsd_file> <kind>
+     * <configuration_type_code> <name_pattern> <is_default> <produced_by_file_type_code>
+     * <sample_count> <sample_total> <description> <display_order> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <analytic_type_code> <ore_parameter> <kind> <configuration_type_code>
-     * <name_pattern> <sample_count> <sample_total> <description> <display_order> <reason>
-     * <commentary> [--version <n>]
+     * @brief set <code> <analytic_type_code> <ore_parameter> <direction> <format> <xsd_file> <kind>
+     * <configuration_type_code> <name_pattern> <is_default> <produced_by_file_type_code>
+     * <sample_count> <sample_total> <description> <display_order> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <code> <analytic_type_code> <ore_parameter> <kind>
-     * <configuration_type_code> <name_pattern> <sample_count> <sample_total> <description>
-     * <display_order> <reason> <commentary>
+     * @brief put-many --count <n> <code> <analytic_type_code> <ore_parameter> <direction> <format>
+     * <xsd_file> <kind> <configuration_type_code> <name_pattern> <is_default>
+     * <produced_by_file_type_code> <sample_count> <sample_total> <description> <display_order>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -142,6 +144,14 @@ public:
     static void process_by_configuration_type_code(std::ostream& out,
                                                    ores::nats::service::nats_client& session,
                                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief by-produced-by-file-type-code <produced_by_file_type_code> [--offset <n>] [--limit
+     * <n>] [--order <field>] [--desc]
+     */
+    static void process_by_produced_by_file_type_code(std::ostream& out,
+                                                      ores::nats::service::nats_client& session,
+                                                      const std::vector<std::string>& args);
 
     /**
      * @brief versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

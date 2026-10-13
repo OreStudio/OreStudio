@@ -175,6 +175,31 @@ public:
 
 
     /**
+     * @brief Reads latest file types filtered by produced_by_file_type_code, with pagination.
+     * @param ctx Repository context with database connection
+     * @param produced_by_file_type_code The produced_by_file_type_code to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::file_type> read_latest_by_produced_by_file_type_code(
+        context ctx,
+        const std::string& produced_by_file_type_code,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::file_types_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active file types filtered by produced_by_file_type_code.
+     */
+    std::uint32_t get_total_type_count_by_produced_by_file_type_code(
+        context ctx,
+        const std::string& produced_by_file_type_code,
+        const std::optional<messaging::file_types_filter>& filter = std::nullopt);
+
+
+    /**
      * @brief Whether a list of file types can be ordered by a field.
      *
      * The model's :sortable: columns, and nothing else.

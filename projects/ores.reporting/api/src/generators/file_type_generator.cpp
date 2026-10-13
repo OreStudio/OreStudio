@@ -47,8 +47,11 @@ domain::file_type generate_synthetic_file_type(utility::generation::generation_c
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.ore_parameter = std::string(faker::word::noun());
+    r.direction = std::string("input");
+    r.format = std::string("csv");
     r.kind = std::string("data_file");
     r.name_pattern = std::string(faker::word::noun()) + ".xml";
+    r.is_default = false;
     r.sample_count = 1;
     r.sample_total = 1;
     r.description = std::string(faker::word::noun());

@@ -109,6 +109,11 @@ filter_condition(const std::optional<messaging::file_types_filter>& filter) {
             *filter->configuration_type_code ?
                 equals("configuration_type_code", filter_value(**filter->configuration_type_code)) :
                 is_null("configuration_type_code"));
+    if (filter->produced_by_file_type_code)
+        r.push_back(*filter->produced_by_file_type_code ?
+                        equals("produced_by_file_type_code",
+                               filter_value(**filter->produced_by_file_type_code)) :
+                        is_null("produced_by_file_type_code"));
     if (filter->code_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->code_one_of)
@@ -126,6 +131,12 @@ filter_condition(const std::optional<messaging::file_types_filter>& filter) {
         for (const auto& v : *filter->configuration_type_code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("configuration_type_code", std::move(values)));
+    }
+    if (filter->produced_by_file_type_code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->produced_by_file_type_code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("produced_by_file_type_code", std::move(values)));
     }
     return all_of(std::move(r));
 }
@@ -361,6 +372,58 @@ std::uint32_t file_type_repository::get_total_type_count_by_configuration_type_c
                                                  filter_condition(filter),
                                                  lg(),
                                                  "Counting file types by configuration_type_code");
+}
+
+
+std::vector<domain::file_type> file_type_repository::read_latest_by_produced_by_file_type_code(
+    context ctx,
+    const std::string& produced_by_file_type_code,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::file_types_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. produced_by_file_type_code: "
+                               << produced_by_file_type_code << " offset: " << offset
+                               << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<file_type_entity>> |
+                       where("tenant_id"_c == tid &&
+                             "produced_by_file_type_code"_c == produced_by_file_type_code &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_ordered_read_query<file_type_entity, domain::file_type>(
+        ctx,
+        query,
+        list_order(order, {"code"}, false),
+        filter_condition(filter),
+        [](const auto& entities) { return file_type_mapper::map(entities); },
+        lg(),
+        "Reading latest file types by produced_by_file_type_code.");
+}
+
+std::uint32_t file_type_repository::get_total_type_count_by_produced_by_file_type_code(
+    context ctx,
+    const std::string& produced_by_file_type_code,
+    const std::optional<messaging::file_types_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Retrieving total active file types count. produced_by_file_type_code: "
+        << produced_by_file_type_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<file_type_entity>> |
+                       where("tenant_id"_c == tid &&
+                             "produced_by_file_type_code"_c == produced_by_file_type_code &&
+                             "valid_to"_c == max.value());
+
+    return execute_count_query<file_type_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting file types by produced_by_file_type_code");
 }
 
 

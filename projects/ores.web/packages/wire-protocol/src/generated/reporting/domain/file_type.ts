@@ -36,9 +36,14 @@ export interface FileType {
     code: string;
     analytic_type_code: string | null;
     ore_parameter: string;
+    direction: string;
+    format: string;
+    xsd_file: string | null;
     kind: string;
     configuration_type_code: string | null;
     name_pattern: string;
+    is_default: boolean;
+    produced_by_file_type_code: string | null;
     sample_count: number;
     sample_total: number;
     description: string;

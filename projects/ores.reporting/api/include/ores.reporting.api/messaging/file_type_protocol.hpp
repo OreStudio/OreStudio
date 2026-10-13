@@ -43,9 +43,14 @@ struct file_type_write {
     std::string code;
     std::optional<std::string> analytic_type_code;
     std::string ore_parameter;
+    std::string direction;
+    std::string format;
+    std::optional<std::string> xsd_file;
     std::string kind;
     std::optional<std::string> configuration_type_code;
     std::string name_pattern;
+    bool is_default;
+    std::optional<std::string> produced_by_file_type_code;
     int sample_count;
     int sample_total;
     std::string description;
@@ -70,9 +75,11 @@ struct file_type_lookup {
 struct file_types_filter {
     std::optional<std::optional<std::string>> analytic_type_code;
     std::optional<std::optional<std::string>> configuration_type_code;
+    std::optional<std::optional<std::string>> produced_by_file_type_code;
     std::optional<std::vector<std::string>> code_one_of;
     std::optional<std::vector<std::string>> analytic_type_code_one_of;
     std::optional<std::vector<std::string>> configuration_type_code_one_of;
+    std::optional<std::vector<std::string>> produced_by_file_type_code_one_of;
 };
 
 struct file_type_event {
@@ -273,6 +280,31 @@ struct list_by_configuration_type_code_file_types_request {
 };
 
 struct list_by_configuration_type_code_file_types_response {
+    ores::utility::domain::result result;
+    std::vector<ores::reporting::domain::file_type> types;
+    std::uint64_t total;
+};
+
+struct list_by_produced_by_file_type_code_file_types_request {
+    using response_type = struct list_by_produced_by_file_type_code_file_types_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.file_types.list_by_produced_by_file_type_code";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::optional<std::string> produced_by_file_type_code;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<file_types_filter> filter;
+};
+
+struct list_by_produced_by_file_type_code_file_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::file_type> types;
     std::uint64_t total;

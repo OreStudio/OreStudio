@@ -40,10 +40,16 @@ std::vector<ores::diff::domain::field_value> render_file_type_fields(const domai
     fields.push_back(
         {.name = "Analytic Type Code", .value = v.analytic_type_code.value_or(std::string{})});
     fields.push_back({.name = "Ore Parameter", .value = v.ore_parameter});
+    fields.push_back({.name = "Direction", .value = v.direction});
+    fields.push_back({.name = "Format", .value = v.format});
+    fields.push_back({.name = "Xsd File", .value = v.xsd_file.value_or(std::string{})});
     fields.push_back({.name = "Kind", .value = v.kind});
     fields.push_back({.name = "Configuration Type Code",
                       .value = v.configuration_type_code.value_or(std::string{})});
     fields.push_back({.name = "Name Pattern", .value = v.name_pattern});
+    fields.push_back({.name = "Is Default", .value = v.is_default ? "true" : "false"});
+    fields.push_back({.name = "Produced By File Type Code",
+                      .value = v.produced_by_file_type_code.value_or(std::string{})});
     fields.push_back({.name = "Sample Count", .value = std::to_string(v.sample_count)});
     fields.push_back({.name = "Sample Total", .value = std::to_string(v.sample_total)});
     fields.push_back({.name = "Description", .value = v.description});

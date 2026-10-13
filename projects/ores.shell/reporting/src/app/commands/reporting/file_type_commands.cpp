@@ -141,27 +141,29 @@ void file_type_commands::register_commands(cli::Menu& root_menu, nats_client& se
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <analytic_type_code> <ore_parameter> <kind> <configuration_type_code> "
-        "<name_pattern> <sample_count> <sample_total> <description> <display_order> <reason> "
-        "<commentary>");
+        "add <code> <analytic_type_code> <ore_parameter> <direction> <format> <xsd_file> <kind> "
+        "<configuration_type_code> <name_pattern> <is_default> <produced_by_file_type_code> "
+        "<sample_count> <sample_total> <description> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <analytic_type_code> <ore_parameter> <kind> <configuration_type_code> "
-        "<name_pattern> <sample_count> <sample_total> <description> <display_order> <reason> "
-        "<commentary> [--version <n>]");
+        "set <code> <analytic_type_code> <ore_parameter> <direction> <format> <xsd_file> <kind> "
+        "<configuration_type_code> <name_pattern> <is_default> <produced_by_file_type_code> "
+        "<sample_count> <sample_total> <description> <display_order> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <analytic_type_code> <ore_parameter> <kind> "
-        "<configuration_type_code> <name_pattern> <sample_count> <sample_total> <description> "
-        "<display_order> <reason> <commentary>");
+        "put-many --count <n> <code> <analytic_type_code> <ore_parameter> <direction> <format> "
+        "<xsd_file> <kind> <configuration_type_code> <name_pattern> <is_default> "
+        "<produced_by_file_type_code> <sample_count> <sample_total> <description> <display_order> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -191,6 +193,15 @@ void file_type_commands::register_commands(cli::Menu& root_menu, nats_client& se
             process_by_configuration_type_code(std::ref(out), std::ref(session), std::move(args));
         },
         "by-configuration-type-code <configuration_type_code> [--offset <n>] [--limit <n>] "
+        "[--order <field>] [--desc]");
+
+    menu->Insert(
+        "by-produced-by-file-type-code",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_produced_by_file_type_code(
+                std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-produced-by-file-type-code <produced_by_file_type_code> [--offset <n>] [--limit <n>] "
         "[--order <field>] [--desc]");
 
     menu->Insert(
@@ -372,8 +383,8 @@ void file_type_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -381,11 +392,18 @@ void file_type_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.analytic_type_code, parsed->positionals[next++], "analytic_type_code");
         read_token(req.change.write.ore_parameter, parsed->positionals[next++], "ore_parameter");
+        read_token(req.change.write.direction, parsed->positionals[next++], "direction");
+        read_token(req.change.write.format, parsed->positionals[next++], "format");
+        read_token(req.change.write.xsd_file, parsed->positionals[next++], "xsd_file");
         read_token(req.change.write.kind, parsed->positionals[next++], "kind");
         read_token(req.change.write.configuration_type_code,
                    parsed->positionals[next++],
                    "configuration_type_code");
         read_token(req.change.write.name_pattern, parsed->positionals[next++], "name_pattern");
+        read_token(req.change.write.is_default, parsed->positionals[next++], "is_default");
+        read_token(req.change.write.produced_by_file_type_code,
+                   parsed->positionals[next++],
+                   "produced_by_file_type_code");
         read_token(req.change.write.sample_count, parsed->positionals[next++], "sample_count");
         read_token(req.change.write.sample_total, parsed->positionals[next++], "sample_total");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
@@ -432,8 +450,8 @@ void file_type_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -441,11 +459,18 @@ void file_type_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.analytic_type_code, parsed->positionals[next++], "analytic_type_code");
         read_token(req.change.write.ore_parameter, parsed->positionals[next++], "ore_parameter");
+        read_token(req.change.write.direction, parsed->positionals[next++], "direction");
+        read_token(req.change.write.format, parsed->positionals[next++], "format");
+        read_token(req.change.write.xsd_file, parsed->positionals[next++], "xsd_file");
         read_token(req.change.write.kind, parsed->positionals[next++], "kind");
         read_token(req.change.write.configuration_type_code,
                    parsed->positionals[next++],
                    "configuration_type_code");
         read_token(req.change.write.name_pattern, parsed->positionals[next++], "name_pattern");
+        read_token(req.change.write.is_default, parsed->positionals[next++], "is_default");
+        read_token(req.change.write.produced_by_file_type_code,
+                   parsed->positionals[next++],
+                   "produced_by_file_type_code");
         read_token(req.change.write.sample_count, parsed->positionals[next++], "sample_count");
         read_token(req.change.write.sample_total, parsed->positionals[next++], "sample_total");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
@@ -504,8 +529,8 @@ void file_type_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 15 + 2) {
+            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -515,11 +540,18 @@ void file_type_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.analytic_type_code, parsed->positionals[next++], "analytic_type_code");
             read_token(change.write.ore_parameter, parsed->positionals[next++], "ore_parameter");
+            read_token(change.write.direction, parsed->positionals[next++], "direction");
+            read_token(change.write.format, parsed->positionals[next++], "format");
+            read_token(change.write.xsd_file, parsed->positionals[next++], "xsd_file");
             read_token(change.write.kind, parsed->positionals[next++], "kind");
             read_token(change.write.configuration_type_code,
                        parsed->positionals[next++],
                        "configuration_type_code");
             read_token(change.write.name_pattern, parsed->positionals[next++], "name_pattern");
+            read_token(change.write.is_default, parsed->positionals[next++], "is_default");
+            read_token(change.write.produced_by_file_type_code,
+                       parsed->positionals[next++],
+                       "produced_by_file_type_code");
             read_token(change.write.sample_count, parsed->positionals[next++], "sample_count");
             read_token(change.write.sample_total, parsed->positionals[next++], "sample_total");
             read_token(change.write.description, parsed->positionals[next++], "description");
@@ -749,6 +781,61 @@ void file_type_commands::process_by_configuration_type_code(std::ostream& out,
 
     auto result = do_auth_request<messaging::list_by_configuration_type_code_file_types_response>(
         out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void file_type_commands::process_by_produced_by_file_type_code(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-produced-by-file-type-code request.";
+
+    using request_type = messaging::list_by_produced_by_file_type_code_file_types_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-produced-by-file-type-code." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.produced_by_file_type_code = ores::shell::app::from_token<std::optional<std::string>>(
+            parsed->positionals[next++], "produced_by_file_type_code");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result =
+        do_auth_request<messaging::list_by_produced_by_file_type_code_file_types_response>(
+            out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

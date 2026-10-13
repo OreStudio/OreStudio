@@ -37,9 +37,14 @@ export interface FileTypeWrite {
     code: string;
     analytic_type_code: string | null;
     ore_parameter: string;
+    direction: string;
+    format: string;
+    xsd_file: string | null;
     kind: string;
     configuration_type_code: string | null;
     name_pattern: string;
+    is_default: boolean;
+    produced_by_file_type_code: string | null;
     sample_count: number;
     sample_total: number;
     description: string;
@@ -64,9 +69,11 @@ export interface FileTypeLookup {
 export interface FileTypesFilter {
     analytic_type_code: string | null | null;
     configuration_type_code: string | null | null;
+    produced_by_file_type_code: string | null | null;
     code_one_of: string[] | null;
     analytic_type_code_one_of: string[] | null;
     configuration_type_code_one_of: string[] | null;
+    produced_by_file_type_code_one_of: string[] | null;
 }
 
 export interface FileTypeEvent {
@@ -189,6 +196,21 @@ export interface ListByConfigurationTypeCodeFileTypesResponse {
     total: number;
 }
 
+export interface ListByProducedByFileTypeCodeFileTypesRequest {
+    produced_by_file_type_code: string | null;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: FileTypesFilter | null;
+}
+
+export interface ListByProducedByFileTypeCodeFileTypesResponse {
+    result: Result;
+    types: FileType[];
+    total: number;
+}
+
 export interface ListFileTypeVersionsRequest {
     key: FileTypeKey;
     offset: number;
@@ -224,6 +246,8 @@ export const subjects = {
         'reporting.v1.file_types.list_by_analytic_type_code',
     list_by_configuration_type_code_file_types_request:
         'reporting.v1.file_types.list_by_configuration_type_code',
+    list_by_produced_by_file_type_code_file_types_request:
+        'reporting.v1.file_types.list_by_produced_by_file_type_code',
     list_file_type_versions_request: 'reporting.v1.file_types_versions.list',
     get_file_type_version_request: 'reporting.v1.file_types_versions.get',
 } as const;
@@ -242,6 +266,7 @@ export const requiresSession = {
     delete_many_file_types_request: true,
     list_by_analytic_type_code_file_types_request: true,
     list_by_configuration_type_code_file_types_request: true,
+    list_by_produced_by_file_type_code_file_types_request: true,
     list_file_type_versions_request: true,
     get_file_type_version_request: true,
 } as const;

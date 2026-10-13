@@ -67,6 +67,41 @@ The analytic whose parameter names the file, or nothing when the Setup block nam
 
 The ORE parameter that carries the file name.
 
+** direction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether ORE Studio reads the file or ORE writes it: input or output. An input is a file ORE Studio reads and parses into the entities of its configuration type when it imports a run, and writes back from those entities when it exports one. An output is a file ORE writes when the run executes, which ORE Studio names but does not parse. A file that one analytic writes and another reads is an output of the writer and an input of the reader.
+
+#+begin_src cpp :name generator
+std::string("input")
+#+end_src
+
+** format
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The format of the file: xml, csv, csv_gz for a compressed csv, txt, dat for a binary file, or json. An xml file is validated against the XSD in xsd_file. A csv file has a header line and its columns are named by the guide or by the report that writes it.
+
+#+begin_src cpp :name generator
+std::string("csv")
+#+end_src
+
+** xsd_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+For an xml file, the XSD of ORE that declares its root element, for example nettingsetdefinitions.xsd for netting.xml. Nothing for a file that is not xml, or an xml file that ORE publishes no schema for.
+
 ** kind
 :PROPERTIES:
 :type:     text
@@ -102,6 +137,30 @@ The well known name of the file, or a pattern when a run may split the file by a
 std::string(faker::word::noun()) + ".xml"
 #+end_src
 
+** is_default
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:default_value: false
+:END:
+
+Whether a run of the analytic names this file unless the configuration says otherwise. The seed sets it for a file that at least half of the samples that run the analytic name. A Setup file type is never a default, because the definition's bindings decide which documents the run names.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** produced_by_file_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+For an intermediate file, the file type of the analytic that writes it. The reader takes the name of the writer, so two analytics that share a file read one name.
+
 ** sample_count
 :PROPERTIES:
 :type:     integer
@@ -109,7 +168,7 @@ std::string(faker::word::noun()) + ".xml"
 :nullable: false
 :END:
 
-How many of the ORE samples that name this file give it this name.
+How many of the ORE samples that name this file give it this name. It is zero when the name comes from the official ORE user guide and no sample uses it.
 
 #+begin_src cpp :name generator
 1
@@ -135,7 +194,7 @@ How many of the ORE samples name this file at all.
 :nullable: false
 :END:
 
-What the file is, in one line.
+What the file is for, in detail: what it holds, what the analytic does with it, who writes it and who reads it, and how a run names it. A reader who has never seen an ORE run can tell from it why the file is there.
 
 ** display_order
 :PROPERTIES:
@@ -162,6 +221,10 @@ checks the template emits on its own.
 | expression |
 |------------|
 | "ore_parameter" <> '' |
+| "direction" in ('input', 'output') |
+| ("direction" = 'output') = ("kind" = 'output_file') |
+| "format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json') |
+| "xsd_file" is null or "format" = 'xml' |
 | "kind" in ('input_document', 'data_file', 'output_file', 'intermediate_file') |
 | "name_pattern" ~ '^[A-Za-z0-9_.-]*(\{\{[A-Z][A-Z0-9_]*\}\}[A-Za-z0-9_.-]*)*$' |
 | "sample_count" >= 0 and "sample_count" <= "sample_total" |
@@ -169,12 +232,14 @@ checks the template emits on its own.
 ** Indexes
 
 The analytic and the ORE parameter say which file a type is, so a second row for the
-same pair would name the file twice. The Setup block has no analytic, so the empty
-string stands for it.
+same pair would name the file twice. The Setup block has no analytic, and a null does
+not make two rows differ in a unique index, so the Setup parameters and the analytic
+parameters each have an index of their own.
 
-| name                  | columns                                                | unique | current_only | where_extra |
-|-----------------------+--------------------------------------------------------+--------+--------------+-------------|
-| parameter             | tenant_id, (coalesce(analytic_type_code, '')), ore_parameter | true   | true         |             |
+| name             | columns                                    | unique | current_only | where_extra                    |
+|------------------+--------------------------------------------+--------+--------------+--------------------------------|
+| setup_parameter  | tenant_id, ore_parameter                   | true   | true         | analytic_type_code is null     |
+| analytic_parameter | tenant_id, analytic_type_code, ore_parameter | true | true         | analytic_type_code is not null |
 
 * Foreign keys
 
@@ -195,6 +260,16 @@ string stands for it.
 :parent_entity: configuration_type
 :nullable:      true
 :error_message: Invalid configuration_type_code: %. No active configuration type found with this code.
+:list_by:       true
+:END:
+
+** produced_by_file_type_code
+:PROPERTIES:
+:table:         ores_reporting_file_types_tbl
+:target_column: code
+:parent_entity: file_type
+:nullable:      true
+:error_message: Invalid produced_by_file_type_code: %. No active file type found with this code.
 :list_by:       true
 :END:
 
@@ -269,8 +344,13 @@ string stands for it.
 | code                    | Code                   | line_edit | true   | true        | Enter file type code |
 | analytic_type_code      | Analytic Type          | line_edit |        |             | e.g. npv |
 | ore_parameter           | ORE Parameter          | line_edit |        | true        | e.g. outputFileName |
+| direction               | Direction              | line_edit |        | true        | input or output |
+| format                  | Format                 | line_edit |        | true        | e.g. xml |
+| xsd_file                | XSD                    | line_edit |        |             | e.g. conventions.xsd |
 | kind                    | Kind                   | line_edit |        | true        | e.g. output_file |
 | configuration_type_code | Configuration Type     | line_edit |        |             | e.g. conventions |
+| is_default              | Default In Run         | check_box |        |             |  |
+| produced_by_file_type_code | Produced By         | line_edit |        |             | e.g. sensitivity.sensitivityOutputFile |
 | name_pattern            | Name                   | line_edit |        | true        | e.g. npv.csv |
 | sample_count            | Samples Using Name     | spin_edit |        | true        | Enter count |
 | sample_total            | Samples Naming File    | spin_edit |        | true        | Enter count |

@@ -27,6 +27,7 @@
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
+#include "ores.reporting.core/messaging/file_type_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
@@ -344,6 +345,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 subject, group, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
         }
     }
+
+    // ----------------------------------------------------------------
+    // File types (generated CRUD handlers). The export asks for them to name the files of
+    // a run.
+    // ----------------------------------------------------------------
+    for (auto& sub : register_file_type_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
 
     return subs;
 }

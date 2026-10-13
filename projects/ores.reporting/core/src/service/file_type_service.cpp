@@ -99,9 +99,14 @@ domain::file_type to_domain(const messaging::file_type_write& write) {
     v.code = write.code;
     v.analytic_type_code = write.analytic_type_code;
     v.ore_parameter = write.ore_parameter;
+    v.direction = write.direction;
+    v.format = write.format;
+    v.xsd_file = write.xsd_file;
     v.kind = write.kind;
     v.configuration_type_code = write.configuration_type_code;
     v.name_pattern = write.name_pattern;
+    v.is_default = write.is_default;
+    v.produced_by_file_type_code = write.produced_by_file_type_code;
     v.sample_count = write.sample_count;
     v.sample_total = write.sample_total;
     v.description = write.description;
@@ -137,6 +142,12 @@ file_type_service::list_file_types(const messaging::list_file_types_request& req
         request.filter->configuration_type_code_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
                                  {.field = "configuration_type_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->produced_by_file_type_code_one_of &&
+        request.filter->produced_by_file_type_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "produced_by_file_type_code_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -182,6 +193,12 @@ file_type_service::list_by_analytic_type_code_file_types(
         request.filter->configuration_type_code_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
                                  {.field = "configuration_type_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->produced_by_file_type_code_one_of &&
+        request.filter->produced_by_file_type_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "produced_by_file_type_code_one_of", .limit = "1000"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -231,6 +248,12 @@ file_type_service::list_by_configuration_type_code_file_types(
                                  {.field = "configuration_type_code_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->produced_by_file_type_code_one_of &&
+        request.filter->produced_by_file_type_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "produced_by_file_type_code_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.scope == ores::utility::domain::scope::subtree) {
         response.result = refuse(outcome_code::scope_not_supported, {.entity = "file types"});
         return response;
@@ -247,6 +270,59 @@ file_type_service::list_by_configuration_type_code_file_types(
         ctx_, relation, request.offset, request.limit, request.order, request.filter);
     response.total =
         repo_.get_total_type_count_by_configuration_type_code(ctx_, relation, request.filter);
+    return response;
+}
+
+messaging::list_by_produced_by_file_type_code_file_types_response
+file_type_service::list_by_produced_by_file_type_code_file_types(
+    const messaging::list_by_produced_by_file_type_code_file_types_request& request) {
+    messaging::list_by_produced_by_file_type_code_file_types_response response;
+    if (!request.order.field.empty() &&
+        !repository::file_type_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "file types", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->code_one_of &&
+        request.filter->code_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->analytic_type_code_one_of &&
+        request.filter->analytic_type_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "analytic_type_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->configuration_type_code_one_of &&
+        request.filter->configuration_type_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "configuration_type_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->produced_by_file_type_code_one_of &&
+        request.filter->produced_by_file_type_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "produced_by_file_type_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "file types"});
+        return response;
+    }
+    // A read scoped by a relation the request may leave unstated has no scope
+    // when it does, so it is refused rather than answered with every unset row.
+    if (!request.produced_by_file_type_code) {
+        response.result = refuse(outcome_code::relation_required,
+                                 {.entity = "file types", .field = "produced_by_file_type_code"});
+        return response;
+    }
+    const auto relation = *request.produced_by_file_type_code;
+    response.types = repo_.read_latest_by_produced_by_file_type_code(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_type_count_by_produced_by_file_type_code(ctx_, relation, request.filter);
     return response;
 }
 
@@ -518,6 +594,23 @@ std::uint32_t file_type_service::count_types_by_configuration_type_code(
     BOOST_LOG_SEV(lg(), debug) << "Getting total file types count by configuration_type_code: "
                                << configuration_type_code;
     return repo_.get_total_type_count_by_configuration_type_code(ctx_, configuration_type_code);
+}
+
+
+std::vector<domain::file_type> file_type_service::list_types_by_produced_by_file_type_code(
+    const std::string& produced_by_file_type_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing file types by produced_by_file_type_code: "
+                               << produced_by_file_type_code;
+    return repo_.read_latest_by_produced_by_file_type_code(
+        ctx_, produced_by_file_type_code, offset, limit);
+}
+
+std::uint32_t file_type_service::count_types_by_produced_by_file_type_code(
+    const std::string& produced_by_file_type_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total file types count by produced_by_file_type_code: "
+                               << produced_by_file_type_code;
+    return repo_.get_total_type_count_by_produced_by_file_type_code(ctx_,
+                                                                    produced_by_file_type_code);
 }
 
 

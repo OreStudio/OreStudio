@@ -31,6 +31,7 @@
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.reporting.core/repository/file_type_repository.hpp"
 #include "ores.reporting.core/service/run_document_service.hpp"
 #include <algorithm>
 #include <filesystem>
@@ -47,20 +48,51 @@ namespace {
 /**
  * @brief A configuration document a run can name: the configuration type it
  * fills and the Setup parameter that names its file.
+ *
+ * The parameter is not written here. It comes from the file types table, which
+ * holds the name of every ORE parameter that carries a file.
  */
 struct document_kind {
     std::string_view code;
-    std::string_view parameter;
+    std::string parameter;
 };
 
-// In the order an import writes them: a curve segment names its conventions,
-// so the conventions are written before the curves.
-constexpr document_kind document_kinds[] = {
-    {"conventions", "conventionsFile"},
-    {"curve_configuration", "curveConfigFile"},
-    {"todays_market", "marketConfigFile"},
-    {"pricing_engines", "pricingEnginesFile"},
+// The configuration types an import stores, in the order it stores them: a curve
+// segment names its conventions, so the conventions are written before the curves.
+constexpr std::string_view imported_types[] = {
+    "conventions",
+    "curve_configuration",
+    "todays_market",
+    "pricing_engines",
 };
+
+/**
+ * @brief The Setup parameter that names the document of a configuration type.
+ */
+std::string
+setup_parameter_of(const std::vector<reporting::domain::file_type>& types, std::string_view code) {
+    const auto it = std::ranges::find_if(types, [&](const auto& t) {
+        return !t.analytic_type_code && t.configuration_type_code == code;
+    });
+    if (it == types.end())
+        throw std::invalid_argument(
+            std::format("No file type names the document of the {} configuration type.", code));
+    return it->ore_parameter;
+}
+
+std::vector<document_kind> document_kinds_of(const std::vector<reporting::domain::file_type>& types) {
+    std::vector<document_kind> kinds;
+    for (const auto code : imported_types)
+        kinds.push_back({code, setup_parameter_of(types, code)});
+    return kinds;
+}
+
+std::vector<reporting::domain::file_type> file_types_of(const context& ctx) {
+    return database::repository::read_where(
+        ctx.with_tenant(utility::uuid::tenant_id::system(), "ores.ore.run_store"),
+        reporting::repository::file_type_repository(),
+        [](const auto&) { return true; });
+}
 
 /**
  * @brief The name a run document gives one file, empty when it names none.
@@ -76,8 +108,8 @@ file_of(const reporting::messaging::run_document& document, std::string_view par
 // The run settings are no input file: the run document is built from them.
 constexpr std::string_view run_settings_type = "risk_report_config";
 
-const document_kind* find_kind(std::string_view code) {
-    for (const auto& k : document_kinds)
+const document_kind* find_kind(const std::vector<document_kind>& kinds, std::string_view code) {
+    for (const auto& k : kinds)
         if (k.code == code)
             return &k;
     return nullptr;
@@ -258,8 +290,9 @@ run_import_result import_run(const context& ctx,
     // Everything an import can refuse, a missing file or one that does not
     // parse, is found before its first write, since the writes are not one
     // transaction.
+    const auto kinds = document_kinds_of(file_types_of(ctx));
     parsed_documents parsed;
-    for (const auto& kind : document_kinds) {
+    for (const auto& kind : kinds) {
         const auto file = file_of(document, kind.parameter);
         if (!file)
             continue;
@@ -277,7 +310,7 @@ run_import_result import_run(const context& ctx,
 
     run_import_result r;
     r.stored.push_back(std::string(run_document_file));
-    for (const auto& kind : document_kinds) {
+    for (const auto& kind : kinds) {
         const auto file = file_of(document, kind.parameter);
         if (!file)
             continue;
@@ -315,6 +348,7 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
         throw std::invalid_argument("The report definition holds no run document.");
     const auto& document = *stored;
 
+    const auto kinds = document_kinds_of(file_types_of(ctx));
     domain::ore run;
     run.Setup = domain::run_document_mapper::reverse_setup({document.settings, document.files});
     run.Analytics = domain::run_document_mapper::reverse_analytics(document.analytics);
@@ -327,7 +361,7 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
     for (const auto& b : runs.bindings(report_definition_id)) {
         if (b.configuration_type_code == run_settings_type)
             continue;
-        const auto* kind = find_kind(b.configuration_type_code);
+        const auto* kind = find_kind(kinds, b.configuration_type_code);
         if (kind == nullptr)
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, which the export cannot write.",

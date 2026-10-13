@@ -1,0 +1,1592 @@
+{
+  "documents": {
+    "calendaradjustment.xml": {
+      "chapter": "parameterisation/calendaradjustment.tex",
+      "text": "This file calendaradjustment.xml list out all additional holidays and business days that are added to a specified calendar in ORE. These dates would originally be missing from the calendar and has to be added.The general structure is shown in listing the guide. In this example, two additional dates had been added to the calendar \"Japan\", one additional holiday and one additional business day. If the user is not certain whether the date is already included or not, adding it to the calendaradjustment.xml to be safe won't raise any errors. A sample calendaradjustment.xml file can be found in the global example input directory. However, it is only used in Example_1. If the parameter BaseCalendar! is provided then a new calendar will be created using the specified calendar as a base, and adding any AdditionalHolidays! or AdditionalBusinessDays!. In the example below a new calendar CUSTOM_Japan! is being created, it will include any additional holidays or business days specified in the original Japan! calendar plus one additional date. If a new calendar is added in this way and the schema is being used to validate XML input, the corresponding calendar name must be prefixed with `CUSTOM_'."
+    },
+    "collateralbalances.xml": {
+      "chapter": "parameterisation/collateralbalances.tex",
+      "text": "The collateral balances file - collateralbalances.xml - contains the list of collateral balances (i.e. margin amounts and independent amount) under a Credit Support Annex. The balances of each netting set are defined within their own CollateralBalance! node. All of these CollateralBalance! nodes are contained as children of a CollateralBalances! node. The collateral balances are given in the following XML template:"
+    },
+    "conventions.xml": {
+      "chapter": "parameterisation/conventions.tex",
+      "text": "The conventions to associate with a set market quotes in the construction of termstructures are specified in another xml file which we will refer to as conventions.xml in the following though the file name can be chosen by the user. Each separate set of conventions is stored in an XML node. The type of conventions that a node holds is determined by the node name. Every node has an Id! node that gives a unique identifier for the convention set. The following sections describe the type of conventions that can be created and the allowed values. Zero Conventions A node with name Zero is used to store conventions for direct zero rate quotes. Direct zero rate quotes can be given with an explicit maturity date or with a tenor and a set of conventions from which the maturity date is deduced. The node for a zero rate quote with an explicit maturity date is shown in Listing the guide. The node for a tenor based zero rate is shown in Listing the guide. The meanings of the various elements in this node are as follows: TenorBased: True if the conventions are for a tenor based zero quote and False if they are for a zero quote with an explicit maturity date. DayCounter: The day count basis associated with the zero rate quote (for choices see section the guide) CompoundingFrequency: The frequency of compounding (Choices are Once, Annual, Semiannual, Quarterly, Bimonthly, Monthly, Weekly,"
+    },
+    "counterparty.xml": {
+      "chapter": "parameterisation/counterpartyinformation.tex",
+      "text": "The counterparty information file - counterparty.xml - contains a list of counterparty-level details. The file is written in XML format, with a top-level CounterpartyInformation! node consisting of two children nodes: Counterparties! and Correlations!. Counterparties The Counterparties! node is used to define inputs for each counterparty in the calculations. Each counterparty is then defined with its own Counterparty! node, with the following XML template: The meanings of the various elements of the Counterparty! node are as follows (default input values for certain analytics are specified in their own respective sections, otherwise the defaults below are applicable): CounterpartyId!: The unique identifier for the counterparty. Allowable values: Any string. ClearingCounterparty! [Optional]: Whether the counterparty is a clearing counterparty. Allowable values: Boolean node, allowing Y, N, 1, 0, true, false, etc. The full set of allowable values is given in Table the guide. If left blank or omitted, defaults to False. CreditQuality! [Optional]: Credit quality/rating. Allowable values: HY (high yield), IG (investment grade), NR (not rated). Defaults to NR if left blank or omitted. BaCvaRiskWeight! [Optional]: BA-CVA supervisory risk weight based on sector and credit quality, as defined in Section the guide. This field is only used when calculating BA-CVA or SA-CVA. Allowable"
+    },
+    "curveconfig.xml": {
+      "chapter": "parameterisation/curveconfig.tex",
+      "text": "The configuration of various term structures required to price a portfolio is covered in a single configuration file which we will label curveconfig.xml in the following though the file name can be chosen by the user. This configuration determines the composition of Yield curves Default curves Inflation curves Equity forward price curves Swaption volatility structures Cap/Floor volatility structures FX Option volatility structures CDS volatility structures Inflation Cap/Floor price surfaces Equity volatility structures Security spreads and recovery rates Base correlation curves Correlation termstructures Intraday power curves Bond future volatility structures This file also contains other market objects such as FXSpots, Security Spreads and Security Rates which are necessary for the construction of a market. curve_configurations/yieldcurves curve_configurations/default_curves_from_cds curve_configurations/default_curves_other"
+    },
+    "fixings.txt": {
+      "chapter": "fixingdata.tex",
+      "text": "Fixing History Historical fixings data in the fixings.txt file is given in three columns; Index Name, Fixing Date and Index value. Columns are separated by semicolons \";\" or blanks. Fixings are used in cases where the current coupon of a trade has been fixed in the past, or other path dependent features. Allowable values: Any real number (not expressed as a percentage or basis points). An excerpt of a fixings file is shown in Listing the guide. Note that alternative index name formats are used (Table the guide)."
+    },
+    "historicalreturnconfig.xml": {
+      "chapter": "parameterisation/historicalreturnconfiguration.tex",
+      "text": "The ReturnConfiguration| allows the user to specify, for each risk factor type, how historical returns are computed in historical scenario generation and backtesting. This configuration controls the return type (e.g., log, absolute, relative) and an optional displacement for each risk factor. Additionally, it is possible to override the default return configuration for specific names (e.g., for a particular equity or commodity). The root element is ReturnConfiguration|, which contains one or more |<Return>| blocks. Each Return| must have a key| attribute, either the risk factor key type for the default configuration (e.g., DiscountCurve, FXSpot, EquitySpot, etc.). or the risk factor key type plus the underlying name for a specific override (e.g EquitySpot/EQUITY1. Return key=\"...\"|: Specifies the configuration for a risk factor type. The key| attribute must match a valid risk factor key type or the specific key type and name. Type|: The return type. Allowed values are Log, Absolute, and Relative. Displacement|: The displacement value (floating point). Used to avoid division by zero or negative values in relative/log returns."
+    },
+    "ibor_fallback.xml": {
+      "chapter": "parameterisation/iborfallbackconfig.tex",
+      "text": "The Ibor Fallback Configuration represents the rules for replacing Ibor reference rates by risk free rates. If no configuration is specified, a standard configuration is used. Specifying a custom configuration mainly serves testing purposes. The fields are: EnableIborFallbacks: If false, Ibor fallbacks are disabled. UseRfrCurveInTodaysMarket: If true, the todays market Ibor forwarding curve for a replaced Ibor index is built using the RfrIndex OIS curve and the Spread. UseRfrCurveInSimulationMarket: If true, the simulation market Ibor forward curve for a replaced Ibor index is built using the RfrIndex OIS curve and the Spread. Fallback: Each Ibor index to be replaced is declared by IborIndex: the Ibor index name RfrIndex: the rfr index name Spread: the spread to apply to the rfr rate SwitchDate: the date on which the fallback is used"
+    },
+    "market.txt": {
+      "chapter": "marketdata.tex",
+      "text": "Market Data In this section we discuss the market data, which enters into the calibration of OREs risk factor evolution models. Market data in the market.txt file is given in three columns; Date, Quote and Quote value. Quote: A generic description that contains Instrument Type and Quote Type, followed by instrument specific descriptions (see the guide ff.). The base of a quote consists of InstType/QuoteType followed by instrument specific information separated by slashes \"/\". Allowable values for Instrument Types and Quote Types are given in Table the guide."
+    },
+    "netting.xml": {
+      "chapter": "nettingdata.tex",
+      "text": "The netting set definitions file - netting.xml - contains a list of definitions for various ISDA netting agreements. The file is written in XML format. Each netting set is defined within its own NettingSet! node. All of these NettingSet! nodes are contained as children of a NettingSetDefinitions! node. An ISDA agreement which does not contain a Credit Support Annex (CSA). An ISDA agreement which does contain a CSA. Uncollateralised Netting Set If an ISDA agreement does not contain a Credit Support Annex, the portfolio exposures are not eligible for collateralisation. In such a case the netting set can be defined within the following XML template:"
+    },
+    "referencedata.xml": {
+      "chapter": "parameterisation/referencedata.tex",
+      "text": "Reference Data is used to ease the burden on portfolio xml representation (see ), by taking common elements and storing them as static data. Currently this can be used for Bond Derivatives that require bond static information. Bond reference data is also used to build yield curves fitted to liquid bond prices, see the guide. The allowable types for ReferenceData is Bond static data consists of the Leg data for a given bond. SubType has been added for reporting purposes, to feed into the ISDA product taxonomy, without impact on pricing. Valid SubTypes are: ABS, Corp(orate), Loans, Muni, Sovereign ABX, CMBX, MBX, PrimeX, TRX, iBoxx (in case the Bond represents a Credit or Bond index) Note that the SubType field is currently optional and not covered by schema checks."
+    },
+    "sensitivity.xml": {
+      "chapter": "parameterisation/sensitivity.tex",
+      "text": "ORE currently supports sensitivity analysis with respect to Discount curves (in the zero rate domain) Index curves (in the zero rate domain) Yield curves including e.g. equity forecast yield curves (in the zero rate domain) FX Spots FX volatilities Swaption volatilities, ATM matrix or cube Cap/Floor volatility matrices (in the caplet/floorlet domain) Default probability curves (in the \"zero rate\" domain, expressing survival probabilities S(t) in term of zero rates z(t) via S(t)=(-z(t) t) with Actual/365 day counter) Equity spot prices Equity volatilities, ATM or including strike dimension Zero inflation curves Year-on-Year inflation curves CDS volatilities Bond credit spreads Base correlation curves Correlation termstructures Commodity curves Intraday power curves The sensitivity.xml file specifies how sensitivities are computed for each market component. The general structure is shown in listing the guide, for a more comprehensive case see Examples/Example_15. A subset of the following parameters is used in each market component to specify the sensitivity analysis: ShiftType: Both absolute or relative shifts can be used to compute a sensitivity, specified by the key words Absolute resp. Relative. ShiftSize: The size of the shift to apply. ShiftScheme: The finite difference scheme to use (Forward, Backward, Central), if not given, this parameter defaults to Forward"
+    },
+    "simmcalibration.xml": {
+      "chapter": "parameterisation/simmcalibration.tex",
+      "text": "The SIMM Calibration can be used to add or override SIMM versions by specifying the risk weights, correlations, concentration thresholds along with associated buckets/labels and currency groups (for risk class FX and IR). See Example_44 for a full SIMM calibration file for SIMM 2.5A . The official configuration files for each version (SIMM 2.2 and greater) can be found in folder Configurations/SIMM/ The file consists of a <SIMMCalibrationData> node, with <SIMMCalibration> subnodes that each define a given SIMM version, as in Listing the guide below."
+    },
+    "simulation.xml": {
+      "chapter": "parameterisation/simulation.tex",
+      "text": "This file determines the behaviour of the risk factor simulation (scenario generation) module. It is structured in three blocks of data. Grid: Specifies the simulation time grid, here 80 quarterly steps. is set to for instance 2W in a netting set definition in netting.xml, then one has to set Grid to for instance 80,2W. TimeStepsPerYear: Minimum number of time steps per year to be used to evolve the stochastic process. This is useful if Euler discretization with a coarse Grid is used. Optional, defaults to null which means only the points specified under Grid are used to evolve the stochastic process. Calendar: Calendar or combination of calendars used to adjust the dates of the grid. Date adjustment is required because the simulation must step over `good' dates on which index fixings can be stored. DayCounter: Day count convention used to translate dates to times. Optional, defaults to ActualActual ISDA. item Sequence: Choose random sequence generator (MersenneTwister, MersenneTwisterAntithetic, Sobol, Burley2020Sobol, SobolBrownianBridge, Burley2020SobolBrownianBridge). Seed: Random number generator seed Samples: Number of Monte Carlo paths to be produced use (Backward, Forward, BestOfForwardBackward, InterpolatedForwardBackward), which number of forward horizon days to use if one of the Forward related methods is chosen. Ordering: If the sequence type SobolBrownianBridge or"
+    },
+    "stresstest.xml": {
+      "chapter": "parameterisation/stressconfig.tex",
+      "text": "Stress tests can be applied in ORE to the same market segments and with same granularity as described in the sensitivity section the guide. This file stressconfig.xml specifies how stress tests can be configured. The general structure is shown in listing the guide. In this example, two zero stress scenarios \"parallel_rates\" and \"twist\" and one par rate \"par_parallel\" are defined. Each scenario definition contains the market components to be shifted in this scenario in a similar syntax that is also used for the sensitivity configuration, see the guide. In addition to the \"Absolute\" and \"Relative\" shift types defined in sensitivity configuration, stress tests allow an \"EqualTo\" shift type. In this case, the user provides the values that the curve should be shifted to. In the case of Discount, Yield, Index curves, and Survival Probabilities, an additional field \"ShiftingZeros\" is required to indicate if the given shifted values are zero rates (true) or discount rates (false)."
+    },
+    "todaysmarket.xml": {
+      "chapter": "parameterisation/todaysmarket.tex",
+      "text": "This configuration file determines the subset of the 'market' universe which is going to be built by ORE. It is the user's responsibility to make sure that this subset is sufficient to cover the portfolio to be analysed. If it is not, the application will complain at run time and exit. We assume that the market configuration is provided in file todaysmarket.xml, however, the file name can be chosen by the user. The file name needs to be entered into the master configuration file ore.xml, see section the guide. The file starts and ends with the opening and closing tags <TodaysMarket> and </TodaysMarket>. The file then contains configuration blocks for Discounting curves Index curves (to project index fixings) Yield curves (for other purposes, e.g. as benchmark curve for bond pricing) Swap index curves (to project Swap rates) FX spot rates Inflation index curves (to project zero or yoy inflation fixings) Equity curves (to project forward prices) Default curves Swaption volatility structures Cap/Floor volatility structures FX volatility structures Inflation Cap/Floor volatility surfaces Equity volatility structures CDS volatility structures Base correlation structures Correlation structures Securities Intraday power price curves"
+    }
+  },
+  "examples": {
+    "bacva|active": {
+      "section": "CVA Capital: SA-CVA and BA-CVA",
+      "value": "Y"
+    },
+    "bacva|collateralBalancesFile": {
+      "section": "CVA Capital: SA-CVA and BA-CVA",
+      "value": "collateralbalances.xml"
+    },
+    "bacva|csaFile": {
+      "section": "CVA Capital: SA-CVA and BA-CVA",
+      "value": "netting.xml"
+    },
+    "calibration|active": {
+      "section": "Simulation and Model Calibration",
+      "value": "Y"
+    },
+    "calibration|basisFunctionNumber": {
+      "section": "Simulation and Model Calibration",
+      "value": "2"
+    },
+    "calibration|configFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "simulation.xml"
+    },
+    "calibration|curveTenors": {
+      "section": "Simulation and Model Calibration",
+      "value": "1Y,2Y,3Y,5Y,10Y,15Y,20Y,30Y"
+    },
+    "calibration|endDate": {
+      "section": "Simulation and Model Calibration",
+      "value": "2022-09-27"
+    },
+    "calibration|foreignCurrencies": {
+      "section": "Simulation and Model Calibration",
+      "value": "EUR,GBP"
+    },
+    "calibration|haltonMaxGuess": {
+      "section": "Simulation and Model Calibration",
+      "value": "500"
+    },
+    "calibration|kappaUpperBound": {
+      "section": "Simulation and Model Calibration",
+      "value": "5.0"
+    },
+    "calibration|lambda": {
+      "section": "Simulation and Model Calibration",
+      "value": "1"
+    },
+    "calibration|meanReversionCalibration": {
+      "section": "Simulation and Model Calibration",
+      "value": "Y"
+    },
+    "calibration|meanReversionOutputFileName": {
+      "section": "Simulation and Model Calibration",
+      "value": "meanReversion.csv"
+    },
+    "calibration|mode": {
+      "section": "Simulation and Model Calibration",
+      "value": "historical"
+    },
+    "calibration|model": {
+      "section": "Simulation and Model Calibration",
+      "value": "CAM"
+    },
+    "calibration|outputFileName": {
+      "section": "Simulation and Model Calibration",
+      "value": "calibration.csv"
+    },
+    "calibration|pcaCalibration": {
+      "section": "Simulation and Model Calibration",
+      "value": "Y"
+    },
+    "calibration|pcaInputFileName": {
+      "section": "Simulation and Model Calibration",
+      "value": "pca_USD.csv,pca_EUR.csv,pca_GBP.csv"
+    },
+    "calibration|pcaOutputFileName": {
+      "section": "Simulation and Model Calibration",
+      "value": "pca.csv"
+    },
+    "calibration|scenarioInputFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "scenario.csv"
+    },
+    "calibration|startDate": {
+      "section": "Simulation and Model Calibration",
+      "value": "2019-09-29"
+    },
+    "calibration|useForwardOrZeroRate": {
+      "section": "Simulation and Model Calibration",
+      "value": "zero"
+    },
+    "calibration|varianceRetained": {
+      "section": "Simulation and Model Calibration",
+      "value": "0.90"
+    },
+    "cashflow|active": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "Y"
+    },
+    "cashflow|includePastCashflows": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "N"
+    },
+    "cashflow|outputFileName": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "flows.csv"
+    },
+    "correlation|active": {
+      "section": "Correlation",
+      "value": "Y"
+    },
+    "correlation|correlation_method": {
+      "section": "Correlation",
+      "value": "Pearson"
+    },
+    "correlation|filterCamCorrelationScenarioTenor": {
+      "section": "Correlation",
+      "value": "{\"DiscountCurve/.*\":\"2Y\", \"IndexCurve/USD-FedFunds\":\"1Y\"}"
+    },
+    "correlation|historicalPeriod": {
+      "section": "Correlation",
+      "value": "2016-12-30,2019-12-30"
+    },
+    "correlation|historicalScenarioFile": {
+      "section": "Correlation",
+      "value": "scenarios.csv"
+    },
+    "correlation|marketConfigFile": {
+      "section": "Correlation",
+      "value": "simulation.xml"
+    },
+    "correlation|mporCalendar": {
+      "section": "Correlation",
+      "value": "USD"
+    },
+    "correlation|mporDays": {
+      "section": "Correlation",
+      "value": "10"
+    },
+    "correlation|outputFile": {
+      "section": "Correlation",
+      "value": "correlation.csv"
+    },
+    "correlation|sensitivityConfigFile": {
+      "section": "Correlation",
+      "value": "sensitivity.xml"
+    },
+    "crif|active": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "N"
+    },
+    "crif|baseCurrency": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "EUR"
+    },
+    "crif|crifOutputFile": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "crif.csv"
+    },
+    "crif|marketConfigFile": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "crifmarket.xml"
+    },
+    "crif|sensitivityConfigFile": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "sensitivity.xml"
+    },
+    "crif|simmVersion": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "2.7"
+    },
+    "curves|active": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "Y"
+    },
+    "curves|calendar": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "TARGET"
+    },
+    "curves|configuration": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "default"
+    },
+    "curves|grid": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "240,1M"
+    },
+    "curves|outputFileName": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "curves.csv"
+    },
+    "curves|outputTodaysMarketCalibration": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "Y"
+    },
+    "curves|todaysMarketCalibrationPrecision": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "8"
+    },
+    "historicalSimulationVar|active": {
+      "section": "Value at Risk",
+      "value": "Y"
+    },
+    "historicalSimulationVar|historicalPeriod": {
+      "section": "Value at Risk",
+      "value": "2017-01-17,2019-12-30"
+    },
+    "historicalSimulationVar|historicalScenarioFile": {
+      "section": "Value at Risk",
+      "value": "scenarios.csv"
+    },
+    "historicalSimulationVar|includeExpectedShortfall": {
+      "section": "Value at Risk",
+      "value": "Y"
+    },
+    "historicalSimulationVar|mporCalendar": {
+      "section": "Value at Risk",
+      "value": "USD"
+    },
+    "historicalSimulationVar|mporDays": {
+      "section": "Value at Risk",
+      "value": "10"
+    },
+    "historicalSimulationVar|mporOverlappingPeriods": {
+      "section": "Value at Risk",
+      "value": "true"
+    },
+    "historicalSimulationVar|outputFile": {
+      "section": "Value at Risk",
+      "value": "var.csv"
+    },
+    "historicalSimulationVar|quantiles": {
+      "section": "Value at Risk",
+      "value": "0.01,0.05,0.95,0.99"
+    },
+    "historicalSimulationVar|riskClassBreakdown": {
+      "section": "Value at Risk",
+      "value": "Y"
+    },
+    "historicalSimulationVar|riskFactorBreakdown": {
+      "section": "Value at Risk",
+      "value": "N"
+    },
+    "historicalSimulationVar|sensitivityConfigFile": {
+      "section": "Value at Risk",
+      "value": "sensitivity.xml"
+    },
+    "historicalSimulationVar|sensitivityInputFile": {
+      "section": "Value at Risk",
+      "value": "sensitivity.csv"
+    },
+    "historicalSimulationVar|simulationConfigFile": {
+      "section": "Value at Risk",
+      "value": "simulation.xml"
+    },
+    "historicalSimulationVar|tradePnl": {
+      "section": "Value at Risk",
+      "value": "N"
+    },
+    "imschedule|active": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "Y"
+    },
+    "imschedule|calculationCurrency": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "USD"
+    },
+    "imschedule|crif": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "crif_schedule.csv"
+    },
+    "npv|active": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "Y"
+    },
+    "npv|additionalResults": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "Y"
+    },
+    "npv|additionalResultsReportPrecision": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "12"
+    },
+    "npv|baseCurrency": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "EUR"
+    },
+    "npv|outputFileName": {
+      "section": "Pricing, Cashflows, Curves",
+      "value": "npv.csv"
+    },
+    "parStressConversion|active": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "parStressConversion|marketConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "simulation.xml"
+    },
+    "parStressConversion|outputThreshold": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "0.000001"
+    },
+    "parStressConversion|pricingEnginesFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "pricingengine.xml"
+    },
+    "parStressConversion|scenarioOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "stresstest.csv"
+    },
+    "parStressConversion|sensitivityConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "sensitivity.xml"
+    },
+    "parStressConversion|stressConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "stresstest.xml"
+    },
+    "parStressConversion|stressZeroScenarioDataFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "results.xml"
+    },
+    "parametricVar|SalvagingAlgorithm": {
+      "section": "Value at Risk",
+      "value": "None"
+    },
+    "parametricVar|active": {
+      "section": "Value at Risk",
+      "value": "Y"
+    },
+    "parametricVar|breakdown": {
+      "section": "Value at Risk",
+      "value": "Y"
+    },
+    "parametricVar|covarianceInputFile": {
+      "section": "Value at Risk",
+      "value": "covariance.csv"
+    },
+    "parametricVar|mcSamples": {
+      "section": "Value at Risk",
+      "value": "100000"
+    },
+    "parametricVar|mcSeed": {
+      "section": "Value at Risk",
+      "value": "42"
+    },
+    "parametricVar|method": {
+      "section": "Value at Risk",
+      "value": "DeltaGammaNormal"
+    },
+    "parametricVar|outputFile": {
+      "section": "Value at Risk",
+      "value": "var.csv"
+    },
+    "parametricVar|portfolioFilter": {
+      "section": "Value at Risk",
+      "value": "PF1|PF2"
+    },
+    "parametricVar|quantiles": {
+      "section": "Value at Risk",
+      "value": "0.01,0.05,0.95,0.99"
+    },
+    "parametricVar|sensitivityInputFile": {
+      "section": "Value at Risk",
+      "value": "../Output/sensitivity.csv,../Output/crossgamma.csv"
+    },
+    "pfe|active": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "pfe|allocationMethod": {
+      "section": "Value Adjustments",
+      "value": "None"
+    },
+    "pfe|baseCurrency": {
+      "section": "Value Adjustments",
+      "value": "EUR"
+    },
+    "pfe|calculationType": {
+      "section": "Value Adjustments",
+      "value": "Symmetric"
+    },
+    "pfe|csaFile": {
+      "section": "Value Adjustments",
+      "value": "netting.xml"
+    },
+    "pfe|cubeFile": {
+      "section": "Value Adjustments",
+      "value": "cube.csv.gz"
+    },
+    "pfe|exerciseNextBreak": {
+      "section": "Value Adjustments",
+      "value": "N"
+    },
+    "pfe|exposureProfiles": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "pfe|exposureProfilesByTrade": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "pfe|marginalAllocationLimit": {
+      "section": "Value Adjustments",
+      "value": "1.0"
+    },
+    "pfe|netCubeOutputFile": {
+      "section": "Value Adjustments",
+      "value": "netcube.csv"
+    },
+    "pfe|quantile": {
+      "section": "Value Adjustments",
+      "value": "0.95"
+    },
+    "pfe|rawCubeOutputFile": {
+      "section": "Value Adjustments",
+      "value": "rawcube.csv"
+    },
+    "pfe|scenarioFile": {
+      "section": "Value Adjustments",
+      "value": "scenariodata.csv.gz"
+    },
+    "pfe|useDoublePrecisionCubes": {
+      "section": "Value Adjustments",
+      "value": "false"
+    },
+    "pnlExplain|active": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "Y"
+    },
+    "pnlExplain|conventionsMporFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "conventions.xml"
+    },
+    "pnlExplain|curveConfigMporFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "curveconfig.xml"
+    },
+    "pnlExplain|dateAdjustedRiskFactors": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "CommodityCurve"
+    },
+    "pnlExplain|mporDate": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "2023-02-14"
+    },
+    "pnlExplain|outputFileName": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "pnl_explain.csv"
+    },
+    "pnlExplain|parSensitivity": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "Y"
+    },
+    "pnlExplain|portfolioMporFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "mporportfolio.xml"
+    },
+    "pnlExplain|riskFactorLevelReporting": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "Y"
+    },
+    "pnlExplain|sensitivityConfigFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "sensitivity.xml"
+    },
+    "pnlExplain|simulationConfigFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "simulation.xml"
+    },
+    "pnl|active": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "Y"
+    },
+    "pnl|conventionsMporFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "conventions.xml"
+    },
+    "pnl|curveConfigMporFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "curveconfig.xml"
+    },
+    "pnl|dateAdjustedRiskFactors": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "CommodityCurve"
+    },
+    "pnl|mporCalendar": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "US"
+    },
+    "pnl|mporDate": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "2023-02-14"
+    },
+    "pnl|mporDays": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "10"
+    },
+    "pnl|outputFileName": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "pnl.csv"
+    },
+    "pnl|portfolioMporFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "mporportfolio.xml"
+    },
+    "pnl|simulationConfigFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "simulation.xml"
+    },
+    "saccr|active": {
+      "section": "CCR Capital: SA-CCR",
+      "value": "Y"
+    },
+    "saccr|collateralBalancesFile": {
+      "section": "CCR Capital: SA-CCR",
+      "value": "collateralbalances.xml"
+    },
+    "saccr|csaFile": {
+      "section": "CCR Capital: SA-CCR",
+      "value": "netting.xml"
+    },
+    "sacva|active": {
+      "section": "CVA Capital: SA-CVA and BA-CVA",
+      "value": "Y"
+    },
+    "sacva|cvaSensitivitiesFile": {
+      "section": "CVA Capital: SA-CVA and BA-CVA",
+      "value": "xva_par_sensitivity_cva.csv"
+    },
+    "sacva|saCvaNetSensitivitiesFile": {
+      "section": "CVA Capital: SA-CVA and BA-CVA",
+      "value": "sacva_sensitivity.csv"
+    },
+    "scenarioGeneration|active": {
+      "section": "Scenario Generation",
+      "value": "Y"
+    },
+    "scenarioGeneration|distributionBuckets": {
+      "section": "Scenario Generation",
+      "value": "20"
+    },
+    "scenarioGeneration|outputZeroRate": {
+      "section": "Scenario Generation",
+      "value": "Y"
+    },
+    "scenarioGeneration|scenariodump": {
+      "section": "Scenario Generation",
+      "value": "scenariodump.csv"
+    },
+    "scenarioGeneration|simulationConfigFile": {
+      "section": "Scenario Generation",
+      "value": "simulation.xml"
+    },
+    "scenario|active": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "Y"
+    },
+    "scenario|scenarioOutputFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "scenario.csv"
+    },
+    "scenario|simulationConfigFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "simulation.xml"
+    },
+    "sensitivityStress|active": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "sensitivityStress|calcBaseScenario": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "N"
+    },
+    "sensitivityStress|marketConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "simulation.xml"
+    },
+    "sensitivityStress|sensitivityConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "sensitivity.xml"
+    },
+    "sensitivityStress|stressConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "stresstest.xml"
+    },
+    "sensitivity|active": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "sensitivity|crossGammaOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "crossgamma.csv"
+    },
+    "sensitivity|decomposeIndexSensitivities": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "sensitivity|jacobiInverseOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "jacobi_inverse.csv"
+    },
+    "sensitivity|jacobiOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "jacobi.csv"
+    },
+    "sensitivity|marketConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "simulation.xml"
+    },
+    "sensitivity|outputJacobi": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "sensitivity|outputSensitivityThreshold": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "0.000001"
+    },
+    "sensitivity|parSensitivity": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "sensitivity|parSensitivityOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "parsensitivity.csv"
+    },
+    "sensitivity|pricingEnginesFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "../../Input/pricingengine.xml"
+    },
+    "sensitivity|recalibrateModels": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "sensitivity|scenarioOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "scenario.csv"
+    },
+    "sensitivity|sensitivityConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "sensitivity.xml"
+    },
+    "sensitivity|sensitivityOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "sensitivity.csv"
+    },
+    "setup|asofDate": {
+      "section": "Setup",
+      "value": "2016-02-05"
+    },
+    "setup|buildFailedTrades": {
+      "section": "Setup",
+      "value": "true"
+    },
+    "setup|calendarAdjustment": {
+      "section": "Setup",
+      "value": "../../Input/calendaradjustment.xml"
+    },
+    "setup|continueOnError": {
+      "section": "Setup",
+      "value": "false"
+    },
+    "setup|conventionsFile": {
+      "section": "Setup",
+      "value": "../../Input/conventions.xml"
+    },
+    "setup|counterpartyFile": {
+      "section": "Setup",
+      "value": "counterparty.xml"
+    },
+    "setup|currencyConfiguration": {
+      "section": "Setup",
+      "value": "../../Input/currencies.xml"
+    },
+    "setup|curveConfigFile": {
+      "section": "Setup",
+      "value": "../../Input/curveconfig.xml"
+    },
+    "setup|dividendDataFile": {
+      "section": "Setup",
+      "value": "../../Input/dividends_20160205.txt"
+    },
+    "setup|enrichIndexFixings": {
+      "section": "Setup",
+      "value": "false"
+    },
+    "setup|fixingDataFile": {
+      "section": "Setup",
+      "value": "../../Input/fixings_20160205.txt"
+    },
+    "setup|gzipCompressionLevel": {
+      "section": "Setup",
+      "value": "6"
+    },
+    "setup|iborFallbackConfig": {
+      "section": "Setup",
+      "value": "../../Input/iborFallbackConfig.xml"
+    },
+    "setup|ignoreFixingLag": {
+      "section": "Setup",
+      "value": "0"
+    },
+    "setup|ignoreFixingLead": {
+      "section": "Setup",
+      "value": "0"
+    },
+    "setup|implyTodaysFixings": {
+      "section": "Setup",
+      "value": "Y"
+    },
+    "setup|inputPath": {
+      "section": "Setup",
+      "value": "Input"
+    },
+    "setup|lazyMarketBuilding": {
+      "section": "Setup",
+      "value": "false"
+    },
+    "setup|logFile": {
+      "section": "Setup",
+      "value": "log.txt"
+    },
+    "setup|logMask": {
+      "section": "Setup",
+      "value": "255"
+    },
+    "setup|marketConfigFile": {
+      "section": "Setup",
+      "value": "../../Input/todaysmarket.xml"
+    },
+    "setup|marketDataFile": {
+      "section": "Setup",
+      "value": "../../Input/market_20160205.txt"
+    },
+    "setup|nThreads": {
+      "section": "Setup",
+      "value": "4"
+    },
+    "setup|observationModel": {
+      "section": "Setup",
+      "value": "Disable"
+    },
+    "setup|outputPath": {
+      "section": "Setup",
+      "value": "Output"
+    },
+    "setup|portfolioFile": {
+      "section": "Setup",
+      "value": "portfolio.xml"
+    },
+    "setup|pricingEnginesFile": {
+      "section": "Setup",
+      "value": "../../Input/pricingengine.xml"
+    },
+    "setup|referenceDataFile": {
+      "section": "Setup",
+      "value": "../../Input/referencedata.xml"
+    },
+    "setup|useAtParCouponsCurves": {
+      "section": "Setup",
+      "value": "Y"
+    },
+    "setup|useAtParCouponsTrades": {
+      "section": "Setup",
+      "value": "Y"
+    },
+    "simm|active": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "Y"
+    },
+    "simm|calculationCurrency": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "USD"
+    },
+    "simm|calculationCurrencyCall": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "USD"
+    },
+    "simm|calculationCurrencyPost": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "USD"
+    },
+    "simm|crif": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "crif.csv"
+    },
+    "simm|enforceIMRegulations": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "Y"
+    },
+    "simm|mporDays": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "10"
+    },
+    "simm|reportingCurrency": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "USD"
+    },
+    "simm|resultCurrency": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "USD"
+    },
+    "simm|simmCalibration": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "simm_calibration.xml"
+    },
+    "simm|version": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "2.6.5"
+    },
+    "simm|writeIntermediateReports": {
+      "section": "Initial Margin: ISDA SIMM and IM Schedule, CRIF Generation",
+      "value": "N"
+    },
+    "simulation|aggregationScenarioDataFileName": {
+      "section": "Simulation and Model Calibration",
+      "value": "scenariodata.csv.gz"
+    },
+    "simulation|amc": {
+      "section": "Simulation and Model Calibration",
+      "value": "Y"
+    },
+    "simulation|amcPricingEnginesFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "pricingengine_amc.xml"
+    },
+    "simulation|amcTradeTypes": {
+      "section": "Simulation and Model Calibration",
+      "value": "Swap"
+    },
+    "simulation|baseCurrency": {
+      "section": "Simulation and Model Calibration",
+      "value": "EUR"
+    },
+    "simulation|cptyCubeFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "cptyCube.csv.gz"
+    },
+    "simulation|cubeFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "cube.csv.gz"
+    },
+    "simulation|cubeNpvOverlay": {
+      "section": "Simulation and Model Calibration",
+      "value": "true"
+    },
+    "simulation|filterRiskKeys": {
+      "section": "Simulation and Model Calibration",
+      "value": "DiscountCurve"
+    },
+    "simulation|nettingSetCubeFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "nettingSetCube.csv.gz"
+    },
+    "simulation|pricingEnginesFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "../../Input/pricingengine.xml"
+    },
+    "simulation|scenariodump": {
+      "section": "Simulation and Model Calibration",
+      "value": "scenariodump.csv"
+    },
+    "simulation|simulationConfigFile": {
+      "section": "Simulation and Model Calibration",
+      "value": "simulation.xml"
+    },
+    "simulation|storeCreditStateNPVs": {
+      "section": "Simulation and Model Calibration",
+      "value": "8"
+    },
+    "simulation|storeFlows": {
+      "section": "Simulation and Model Calibration",
+      "value": "Y"
+    },
+    "simulation|storeSurvivalProbabilities": {
+      "section": "Simulation and Model Calibration",
+      "value": "Y"
+    },
+    "smrc|active": {
+      "section": "CVA Capital: SA-CVA and BA-CVA",
+      "value": "Y"
+    },
+    "stress|active": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "stress|generateCashflows": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "true"
+    },
+    "stress|marketConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "simulation.xml"
+    },
+    "stress|outputThreshold": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "0.000001"
+    },
+    "stress|precision": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "6"
+    },
+    "stress|pricingEnginesFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "../../Input/pricingengine.xml"
+    },
+    "stress|scenarioOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "stresstest.csv"
+    },
+    "stress|stressConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "stresstest.xml"
+    },
+    "stress|stressZeroScenarioDataFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "zeroStressScenarioData.xml"
+    },
+    "xvaExplain|active": {
+      "section": "XVA Explain",
+      "value": "Y"
+    },
+    "xvaExplain|marketConfigFile": {
+      "section": "XVA Explain",
+      "value": "simulation.xml"
+    },
+    "xvaExplain|mporCalendar": {
+      "section": "XVA Explain",
+      "value": "EUR"
+    },
+    "xvaExplain|mporDays": {
+      "section": "XVA Explain",
+      "value": "1"
+    },
+    "xvaExplain|sensitivityConfigFile": {
+      "section": "XVA Explain",
+      "value": "sensitivity_stress.xml"
+    },
+    "xvaExplain|shiftThreshold": {
+      "section": "XVA Explain",
+      "value": "1e-4"
+    },
+    "xvaExplain|stressConfigFile": {
+      "section": "XVA Explain",
+      "value": "stresstest.xml"
+    },
+    "xvaExplain|writeCubes": {
+      "section": "XVA Explain",
+      "value": "N"
+    },
+    "xvaSensitivity|active": {
+      "section": "XVA Sensitivity",
+      "value": "Y"
+    },
+    "xvaSensitivity|marketConfigFile": {
+      "section": "XVA Sensitivity",
+      "value": "simulation.xml"
+    },
+    "xvaSensitivity|parSensitivity": {
+      "section": "XVA Sensitivity",
+      "value": "Y"
+    },
+    "xvaSensitivity|sensitivityConfigFile": {
+      "section": "XVA Sensitivity",
+      "value": "sensitivity.xml"
+    },
+    "xvaStress|active": {
+      "section": "XVA Stress Testing",
+      "value": "Y"
+    },
+    "xvaStress|marketConfigFile": {
+      "section": "XVA Stress Testing",
+      "value": "simulation.xml"
+    },
+    "xvaStress|sensitivityConfigFile": {
+      "section": "XVA Stress Testing",
+      "value": "sensitivity_stress.xml"
+    },
+    "xvaStress|stressConfigFile": {
+      "section": "XVA Stress Testing",
+      "value": "stresstest.xml"
+    },
+    "xvaStress|writeCubes": {
+      "section": "XVA Stress Testing",
+      "value": "N"
+    },
+    "xva|active": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|allocationMethod": {
+      "section": "Value Adjustments",
+      "value": "None"
+    },
+    "xva|baseCurrency": {
+      "section": "Value Adjustments",
+      "value": "EUR"
+    },
+    "xva|calculationType": {
+      "section": "Value Adjustments",
+      "value": "NoLag"
+    },
+    "xva|collateralBalancesFile": {
+      "section": "Value Adjustments",
+      "value": "collateralbalances.xml"
+    },
+    "xva|collateralFloor": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|colva": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|cptyCubeFile": {
+      "section": "Value Adjustments",
+      "value": "cptyCube.csv.gz"
+    },
+    "xva|csaFile": {
+      "section": "Value Adjustments",
+      "value": "netting.xml"
+    },
+    "xva|cubeFile": {
+      "section": "Value Adjustments",
+      "value": "cube.csv.gz"
+    },
+    "xva|cva": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|dim": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|dimEvolutionFile": {
+      "section": "Value Adjustments",
+      "value": "dim_evolution.txt"
+    },
+    "xva|dimHorizonCalendarDays": {
+      "section": "Value Adjustments",
+      "value": "14"
+    },
+    "xva|dimLocalRegressionBandwidth": {
+      "section": "Value Adjustments",
+      "value": "0.25"
+    },
+    "xva|dimLocalRegressionEvaluations": {
+      "section": "Value Adjustments",
+      "value": "100"
+    },
+    "xva|dimModel": {
+      "section": "Value Adjustments",
+      "value": "Regression"
+    },
+    "xva|dimOutputGridPoints": {
+      "section": "Value Adjustments",
+      "value": "0"
+    },
+    "xva|dimOutputNettingSet": {
+      "section": "Value Adjustments",
+      "value": "CPTY_A"
+    },
+    "xva|dimQuantile": {
+      "section": "Value Adjustments",
+      "value": "0.99"
+    },
+    "xva|dimRegressionFiles": {
+      "section": "Value Adjustments",
+      "value": "dim_regression.txt"
+    },
+    "xva|dimRegressionOrder": {
+      "section": "Value Adjustments",
+      "value": "1"
+    },
+    "xva|dimRegressors": {
+      "section": "Value Adjustments",
+      "value": "EUR-EURIBOR-3M,USD-LIBOR-3M,USD"
+    },
+    "xva|dimScaling": {
+      "section": "Value Adjustments",
+      "value": "1.0"
+    },
+    "xva|dva": {
+      "section": "Value Adjustments",
+      "value": "N"
+    },
+    "xva|dvaName": {
+      "section": "Value Adjustments",
+      "value": "BANK"
+    },
+    "xva|dynamicCredit": {
+      "section": "Value Adjustments",
+      "value": "N"
+    },
+    "xva|exerciseNextBreak": {
+      "section": "Value Adjustments",
+      "value": "N"
+    },
+    "xva|exposureProfiles": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|exposureProfilesByTrade": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|flipViewBorrowingCurvePostfix": {
+      "section": "Value Adjustments",
+      "value": "_BORROW"
+    },
+    "xva|flipViewLendingCurvePostfix": {
+      "section": "Value Adjustments",
+      "value": "_LEND"
+    },
+    "xva|flipViewXVA": {
+      "section": "Value Adjustments",
+      "value": "N"
+    },
+    "xva|fullInitialCollateralisation": {
+      "section": "Value Adjustments",
+      "value": "true"
+    },
+    "xva|fva": {
+      "section": "Value Adjustments",
+      "value": "N"
+    },
+    "xva|fvaBorrowingCurve": {
+      "section": "Value Adjustments",
+      "value": "BANK_EUR_BORROW"
+    },
+    "xva|fvaLendingCurve": {
+      "section": "Value Adjustments",
+      "value": "BANK_EUR_LEND"
+    },
+    "xva|generateCorrelations": {
+      "section": "Value Adjustments",
+      "value": "N"
+    },
+    "xva|kva": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|kvaAlpha": {
+      "section": "Value Adjustments",
+      "value": "1.4"
+    },
+    "xva|kvaCapitalDiscountRate": {
+      "section": "Value Adjustments",
+      "value": "0.10"
+    },
+    "xva|kvaCapitalHurdle": {
+      "section": "Value Adjustments",
+      "value": "0.012"
+    },
+    "xva|kvaOurCvaRiskWeight": {
+      "section": "Value Adjustments",
+      "value": "0.005"
+    },
+    "xva|kvaOurPdFloor": {
+      "section": "Value Adjustments",
+      "value": "0.03"
+    },
+    "xva|kvaRegAdjustment": {
+      "section": "Value Adjustments",
+      "value": "12.5"
+    },
+    "xva|kvaTheirCvaRiskWeight": {
+      "section": "Value Adjustments",
+      "value": "0.05"
+    },
+    "xva|kvaTheirPdFloor": {
+      "section": "Value Adjustments",
+      "value": "0.03"
+    },
+    "xva|marginalAllocationLimit": {
+      "section": "Value Adjustments",
+      "value": "1.0"
+    },
+    "xva|mporCashFlowMode": {
+      "section": "Value Adjustments",
+      "value": "NonePay"
+    },
+    "xva|mva": {
+      "section": "Value Adjustments",
+      "value": "Y"
+    },
+    "xva|netCubeOutputFile": {
+      "section": "Value Adjustments",
+      "value": "netcube.csv"
+    },
+    "xva|nettingSetCubeFile": {
+      "section": "Value Adjustments",
+      "value": "nettingSetCube.csv.gz"
+    },
+    "xva|quantile": {
+      "section": "Value Adjustments",
+      "value": "0.95"
+    },
+    "xva|rawCubeOutputFile": {
+      "section": "Value Adjustments",
+      "value": "rawcube.csv"
+    },
+    "xva|scenarioFile": {
+      "section": "Value Adjustments",
+      "value": "scenariodata.csv.gz"
+    },
+    "xva|useDoublePrecisionCubes": {
+      "section": "Value Adjustments",
+      "value": "false"
+    },
+    "zeroToParSensiConversion|active": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "zeroToParSensiConversion|jacobiInverseOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "jacobi_inverse.csv"
+    },
+    "zeroToParSensiConversion|jacobiOutputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "jacobi.csv"
+    },
+    "zeroToParSensiConversion|marketConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "simulation.xml"
+    },
+    "zeroToParSensiConversion|outputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "parconversion_sensitivity.csv"
+    },
+    "zeroToParSensiConversion|outputJacobi": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "Y"
+    },
+    "zeroToParSensiConversion|outputThreshold": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "0.000001"
+    },
+    "zeroToParSensiConversion|pricingEnginesFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "../../Input/pricingengine.xml"
+    },
+    "zeroToParSensiConversion|sensitivityConfigFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "sensitivity.xml"
+    },
+    "zeroToParSensiConversion|sensitivityInputFile": {
+      "section": "Sensitivity and Stress Testing",
+      "value": "sensitivity.csv"
+    },
+    "zeroToParShift|active": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "Y"
+    },
+    "zeroToParShift|marketConfigFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "simulation.xml"
+    },
+    "zeroToParShift|parShiftsFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "parshifts.csv"
+    },
+    "zeroToParShift|pricingEnginesFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "pricingengine.xml"
+    },
+    "zeroToParShift|scenarioOutputFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "stresstest.csv"
+    },
+    "zeroToParShift|sensitivityConfigFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "sensitivity.xml"
+    },
+    "zeroToParShift|stressConfigFile": {
+      "section": "P&L, P&L Explain, ZeroToParShift, Scenario",
+      "value": "stresstest.xml"
+    }
+  },
+  "guide_commit": "3d75a69087911a7e2cf1e6882da7bc27135c0762",
+  "notes": {
+    "bacva|collateralBalancesFile": "The required input in addition to the setup section is a csaFile (as in XVA analytics) and a collateralBalancesFile which provides variation and initial margin balances as of today, the same as in the saccr analytic which is used under the hood to compute exposures at default.",
+    "bacva|csaFile": "The required input in addition to the setup section is a csaFile (as in XVA analytics) and a collateralBalancesFile which provides variation and initial margin balances as of today, the same as in the saccr analytic which is used under the hood to compute exposures at default.",
+    "calibration|basisFunctionNumber": "Number of basis functions used in mean reversion calibration.",
+    "calibration|curveTenors": "The list of tenors for each IR curve when providing historical discount factors or the tenor list of each value in eigenvectors. Will be ignored if model node set to CAM.",
+    "calibration|endDate": "End date of the historical data that will be used in calibration. Only needed when pcaCalibration set to true.",
+    "calibration|foreignCurrencies": "The list of foreign currencies that need the calibration. Will be ignored if model node set to CAM.",
+    "calibration|haltonMaxGuess": "Number of max guess in optimization in mean reversion calibration.",
+    "calibration|kappaUpperBound": "The upper bound of kappa during mean reversion calibration.",
+    "calibration|lambda": "The lambda used on exponentially-weighted historical rates diffs when computing the covariance matrix. The covariance matrix will be equally weighted when lambda is set to 1. Only needed when pcaCalibration set to true.",
+    "calibration|meanReversionCalibration": "When set to true, ORE will perform mean reversion calibration on principal components retained either from previous pca calibration step or from input files.",
+    "calibration|meanReversionOutputFileName": "The output file name for kappa and v for each curve.",
+    "calibration|mode": "The calibration mode, must be historical for now. Will be ignored if model node set to CAM.",
+    "calibration|model": "The model for Calibration, can be either CAM or HW, default to CAM when left blank or omitted.",
+    "calibration|pcaCalibration": "When set to true, ORE will read the historical discount factors and perform PCA calibration. Will be ignored if model node set to CAM.",
+    "calibration|pcaInputFileName": "The list of file names where eigenvalues and eigenvectors are provided for mean reversion calibration. The files should be one curve per file. Only needed when pcaCalibration is set to false and meanReversionCalibration is set to true.",
+    "calibration|pcaOutputFileName": "The output file name of eigenvalues and eigenvectors retained for each currency.",
+    "calibration|scenarioInputFile": "The path to the file which contains the historical discount factors and historical FX spot rates. Must be in the scenario.csv ORE format. Only needed when pcaCalibration set to true.",
+    "calibration|startDate": "Start date of the historical data that will be used in calibration. Only needed when pcaCalibration set to true.",
+    "calibration|useForwardOrZeroRate": "When pcaCalibration set to true, this means whether zero rate or forward rate will be used to calculate the covariance matrix for PCA calibration. When pcaCalibration set to false, this means whether zero rate or forward rate should be used to parse the provided PCA eigenvectors for mean reversion calibration.",
+    "calibration|varianceRetained": "The ratio between the combined variance of retained principal components and total variance. This decides how many principal components will be retained. Only needed when pcaCalibration set to true.",
+    "cashflow|outputFileName": "The discount factors for all curves with configuration default will be exported on this monthly grid into the csv file specified by key outputFileName.",
+    "correlation|correlation_method": "[H] ORE analytic: Correlation The parameters have the following interpretation: correlation_method: Regular expression used to filter the portfolio for which VaR is computed; if the filter is not provided, then the full portfolio is processed : Configuration file defining the simulation market under which sensitivities are computed, see the guide.",
+    "correlation|filterCamCorrelationScenarioTenor": "JSON object mapping regex patterns to tenors for filtering correlation scenario output. Patterns are matched against risk factor keys (format \"KeyType/Name\") in reverse order (last entry has highest priority). If no pattern matches a risk factor, all tenors are included. Example: +\"DiscountCurve/.*\":\"5Y\", \"DiscountCurve/USD/.*\":\"3Y\", \"IndexCurve/USD-FedFunds\":\"10Y\"+.",
+    "correlation|historicalPeriod": "comma-separated date list, an even number of ordered dates is required (d1, d2, d3, d4, ...), where each pair (d1-d2, d3-d4, ...) defines the start and end of historical observation periods used.",
+    "correlation|historicalScenarioFile": "csv file containing the market scenarios for each date in the observation periods defined below; the granularity of the scenarios (e.g. discount and index curves, number of yield curve tenors) needs to match the simulation market definition above; each yield curve tenor scenario is represented as a discount factor.",
+    "correlation|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "correlation|mporCalendar": "Calendar for computing the mporDate from asofDate and mporDays.",
+    "correlation|mporDays": "Alternatively, the second date can be specified in terms of calendar days from asofDate.",
+    "correlation|outputFile": "Output file name",
+    "correlation|sensitivityConfigFile": "Sensitivity parameterisation for the sensitivity analysis on asofDate.",
+    "curves|calendar": "The optional key calendar defines the calendar that is used to roll out the grid, it defaults to TARGET.",
+    "curves|configuration": "Key configuration selects the curve set to be used (see explanation in the previous Markets section). The discount factors for all curves with configuration default will be exported on this monthly grid into the csv file specified by key outputFileName.",
+    "curves|grid": "Key grid defines the time grid on which the yield curves are evaluated, in the example above a grid of 240 monthly time steps from today. The optional key calendar defines the calendar that is used to roll out the grid, it defaults to TARGET. The discount factors for all curves with configuration default will be exported on this monthly grid into the csv file specified by key outputFileName.",
+    "curves|outputFileName": "The discount factors for all curves with configuration default will be exported on this monthly grid into the csv file specified by key outputFileName.",
+    "curves|outputTodaysMarketCalibration": "The outputTodaysMarketCalibration parameter controls whether calibration information for the built market objects is written to a report.",
+    "curves|todaysMarketCalibrationPrecision": "The todaysMarketCalibrationPrecision parameter specifies the number of decimal places to use when formatting floating-point values in the market calibration report (default: 8).",
+    "historicalSimulationVar|historicalPeriod": "comma-separated date list; an even number of ordered dates is required (d1, d2, d3, d4, ), where each pair defines the start and end of a historical observation period.",
+    "historicalSimulationVar|historicalScenarioFile": "csv file containing the market scenarios for each date in the observation periods; the granularity of the scenarios must match the simulation market definition.",
+    "historicalSimulationVar|includeExpectedShortfall": "[Optional, default N]: if Y, additional ExpectedShortfall_<p> columns are appended to the output report for each requested quantile. The Expected Shortfall at confidence level p is the average P&L of all scenarios that fall at or below the corresponding VaR level; see section the guide for the mathematical definition.",
+    "historicalSimulationVar|mporCalendar": "calendar applied in the scenario date calculation.",
+    "historicalSimulationVar|mporDays": "number of calendar days between successive historical scenarios used to compute P&L effects (typically 1 or 10).",
+    "historicalSimulationVar|mporOverlappingPeriods": "if true, overlapping holding periods of length mporDays are used (t to t+10, t+1 to t+11, ); if false, consecutive non-overlapping periods are used.",
+    "historicalSimulationVar|outputFile": "Output file name",
+    "historicalSimulationVar|quantiles": "Several desired quantiles can be specified here in a comma separated list; these lead to several columns of results in the output file, see below. Note that e.g. the 1% quantile corresponds to the lower tail of the P&L distribution (VaR), 99% to the upper tail.",
+    "historicalSimulationVar|riskClassBreakdown": "[Optional, default Y]: if Y (the default), VaR is computed separately for each risk-class / risk-type combination (Interest Rate, FX, Inflation, Equity, Credit, Commodity) in addition to the aggregate portfolio row. Set to N to compute only the aggregate [All, All] row, which significantly reduces runtime when the per-class breakdown is not required.",
+    "historicalSimulationVar|riskFactorBreakdown": "[Optional, default N]: if Y, a third output report provides a P&L breakdown by individual risk factor.",
+    "historicalSimulationVar|sensitivityConfigFile": "[Optional]: sensitivity scenario configuration used to map historical scenario moves to the risk-factor keys in sensitivityInputFile. If either sensitivity input parameter is omitted, the analytic uses the existing full-revaluation path.",
+    "historicalSimulationVar|sensitivityInputFile": "Reference to the sensitivity (deltas, vegas, gammas) and cross gamma input as generated by ORE in a comma separated list",
+    "historicalSimulationVar|simulationConfigFile": "defines the structure of the simulation market applied in the P&L calculation, e.g. discount and index curves, yield curve tenor points, FX pairs, etc.",
+    "historicalSimulationVar|tradePnl": "[Optional, default N]: if Y, the second output report provides a P&L breakdown by trade ID, risk class and risk type.",
+    "imschedule|calculationCurrency": "Determines which Risk_FX entries of the CRIF will be ignored in the SIMM calculation",
+    "imschedule|crif": "CRIF file name. If the crif.csv input is omitted, then the ORE crif analytic (see below) is used internally to generate the CRIF input. However, CRIF generation in ORE is limited to IR/FX risks, whereas the SIMM analytic can process a full CRIF across IR/FX/INF/EQ/CR/COM risks.",
+    "npv|additionalResults": "The additionalResults analytic writes a report containing any additional results generated for the portfolio. [hbt] l|l|l|l #TradeId & ResultId & ResultType & ResultValue example_swaption & annuity & double & 2123720984 example_swaption & atmForward & double & 0.01664135 example_swaption & spreadCorrection & double & 0 example_swaption & stdDev & double & 0.00546015 example_swaption & strike & double & 0.024 example_swaption & swapLength & double & 4 example_swaption & vega & double & 309237709.5 AdditionalResults Report The todaysMarketCalibration analytic writes a report containing information on the build of the t0 market.",
+    "npv|additionalResultsReportPrecision": "This allows users to control the precision of numerical output in the calibration report, similar to the additionalResultsReportPrecision parameter for the NPV analytic.",
+    "npv|outputFileName": "The discount factors for all curves with configuration default will be exported on this monthly grid into the csv file specified by key outputFileName.",
+    "parStressConversion|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "parStressConversion|pricingEnginesFile": "Configuration file for the pricing engines to be used for sensitivity calculation.",
+    "parStressConversion|scenarioOutputFile": "File containing the results of the sensitivity calculation in terms of the base scenario NPV, the scenario NPV and their difference.",
+    "parStressConversion|sensitivityConfigFile": "Configuration file for the sensitivity calculation, see section the guide.",
+    "parStressConversion|stressConfigFile": "Stress Scenario definition, see section the guide",
+    "parStressConversion|stressZeroScenarioDataFile": "In the latter par stress case, the last parameter (stressZeroScenarioDataFile) causes exporting equivalent stress test definitions in the \"raw\" domain.",
+    "parametricVar|SalvagingAlgorithm": "Allowable values are: None, Spectral, Hypersphere, LowerDiagonal, Highham, Principal. If omitted, it defaults to Spectral. Compare .",
+    "parametricVar|breakdown": "If yes, VaR is computed by portfolio, risk class (All, Interest Rate, FX, Inflation, Equity, Credit) and risk type (All, Delta & Gamma, Vega)",
+    "parametricVar|mcSamples": "Number of Monte Carlo samples used when the MonteCarlo method is chosen",
+    "parametricVar|mcSeed": "Random number generator seed when the MonteCarlo method is chosen",
+    "parametricVar|method": "Choices are Delta, DeltaGammaNormal, MonteCarlo, see",
+    "parametricVar|outputFile": "Output file name",
+    "parametricVar|portfolioFilter": "[Optional]: only trades whose portfolioId matches this filter are processed; the entire portfolio is used if omitted.",
+    "parametricVar|quantiles": "Several desired quantiles can be specified here in a comma separated list; these lead to several columns of results in the output file, see below. Note that e.g. the 1% quantile corresponds to the lower tail of the P&L distribution (VaR), 99% to the upper tail.",
+    "parametricVar|sensitivityInputFile": "Reference to the sensitivity (deltas, vegas, gammas) and cross gamma input as generated by ORE in a comma separated list",
+    "pfe|allocationMethod": "XVA allocation method, choices are None, Marginal, RelativeXVA, RelativeFairValueGross, RelativeFairValueNet",
+    "pfe|baseCurrency": "Expression currency for all NPVs, value adjustments, exposures",
+    "pfe|calculationType": "Determines the settlement of margin calls. The admissible choices depend on having a close-out grid, see table the guide;",
+    "pfe|csaFile": "Netting set definitions file covering CSA details such as margining frequency, thresholds, minimum transfer amounts, margin period of risk",
+    "pfe|cubeFile": "NPV cube file previously generated and to be post-processed here",
+    "pfe|exerciseNextBreak": "Flag to terminate all trades at their next break date before aggregation and the subsequent analytics",
+    "pfe|exposureProfiles": "Flag to enable/disable exposure output for each netting set",
+    "pfe|exposureProfilesByTrade": "Flag to enable/disable stand-alone exposure output for each trade",
+    "pfe|marginalAllocationLimit": "The marginal allocation method a la Pykhtin/Rosen breaks down when the netting set value vanishes while the exposure does not. This parameter acts as a cutoff for the marginal allocation when the absolute netting set value falls below this limit and switches to equal distribution of the exposure in this case.",
+    "pfe|netCubeOutputFile": "File name for the aggregated NPV cube in human readable csv file format (per netting set, date, sample) after taking collateral into account. Leave empty to skip generation of this file.",
+    "pfe|quantile": "Confidence level for Potential Future Exposure (PFE) reporting",
+    "pfe|rawCubeOutputFile": "File name for the trade NPV cube in human readable csv file format (per trade, date, sample), leave empty to skip generation of this file.",
+    "pfe|scenarioFile": "Scenario data previously generated and used in the post-processor (simulated index fixings and FX rates)",
+    "pfe|useDoublePrecisionCubes": "whether NPV cubes are constructed wit double precision, optional, defaults to false (single precision)",
+    "pnlExplain|conventionsMporFile": "Conventions applied at the mporDate",
+    "pnlExplain|curveConfigMporFile": ", conventionsMporFile: Parametrisation to be applied at the mporDate; this may be different from the configuration on asofDate which is provided in the Setup section.",
+    "pnlExplain|dateAdjustedRiskFactors": "[Optional]: List of risk factor types (e.g., CommodityCurve) for which scenario dates at the mporDate are adjusted relative to the asofDate when computing P&L Explain. This adjustment is particularly important for commodity curves, so that scenario dates reference the same future contracts at both mporDate and asofDate.",
+    "pnlExplain|mporDate": "The second (later) of the two valuation dates for the P&L calculation. The first date is given by the asofDate in the Setup section. Note that market data needs to be provided for both dates.",
+    "pnlExplain|parSensitivity": "Boolean to specify whether par sesnitivities should be used in the P&L explanation; \"raw\" sensitivities will be used by default.",
+    "pnlExplain|portfolioMporFile": "[Optional]: The portfolio on mporDate which is usually different from the portfolio on asofDate.",
+    "pnlExplain|riskFactorLevelReporting": "Enables P&L explanation with decomposition by risk factor.",
+    "pnlExplain|sensitivityConfigFile": "Sensitivity parameterisation for the sensitivity analysis on asofDate",
+    "pnl|conventionsMporFile": "Conventions applied at the mporDate",
+    "pnl|curveConfigMporFile": ", conventionsMporFile: Parametrisation to be applied at the mporDate; this may be different from the configuration on asofDate which is provided in the Setup section.",
+    "pnl|dateAdjustedRiskFactors": "[Optional]: List of risk factor types (e.g., CommodityCurve) for which scenario dates at the mporDate are adjusted relative to the asofDate when computing P&L Explain. This adjustment is particularly important for commodity curves, so that scenario dates reference the same future contracts at both mporDate and asofDate.",
+    "pnl|mporCalendar": "Calendar for computing the mporDate from asofDate and mporDays.",
+    "pnl|mporDate": "The second (later) of the two valuation dates for the P&L calculation. The first date is given by the asofDate in the Setup section. Note that market data needs to be provided for both dates.",
+    "pnl|mporDays": "Alternatively, the second date can be specified in terms of calendar days from asofDate.",
+    "pnl|portfolioMporFile": "[Optional]: The portfolio on mporDate which is usually different from the portfolio on asofDate.",
+    "saccr|collateralBalancesFile": "The required input in addition to the setup section is a csaFile (as in XVA analytics) and a collateralBalancesFile which provides variation and initial margin balances as of today.",
+    "saccr|csaFile": "The required input in addition to the setup section is a csaFile (as in XVA analytics) and a collateralBalancesFile which provides variation and initial margin balances as of today.",
+    "scenarioGeneration|distributionBuckets": "Number of buckets used for the distribution histogram.",
+    "scenarioGeneration|outputZeroRate": "Determine whether the statistics report and distribution report will use zero rate or discount factors. If set to Y, the reports will use zero rates. If set to N, they will use discount factors.",
+    "scenarioGeneration|scenariodump": "File containing all the scenarios generated through simulation market. If the node is not given, this file will not be outputted.",
+    "scenarioGeneration|simulationConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide.",
+    "sensitivityStress|calcBaseScenario": "If set to true, unshifted BASE scenario will also be calculated. Defaults to false.",
+    "sensitivityStress|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "sensitivityStress|sensitivityConfigFile": "Configuration file for the sensitivity calculation, see section the guide.",
+    "sensitivityStress|stressConfigFile": "Stress Scenario definition, see section the guide",
+    "sensitivity|decomposeIndexSensitivities": "Decompose Credit index and Equity and Commodity index sensitivities into constituent sensitivities",
+    "sensitivity|jacobiInverseOutputFile": "Output file name for the inverse Jacobi matrix",
+    "sensitivity|jacobiOutputFile": "Output file name for the Jacobi matrix",
+    "sensitivity|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "sensitivity|outputJacobi": "If set to Y, then the relevant Jacobi and inverse Jacobi matrix is written to a file, see below",
+    "sensitivity|outputSensitivityThreshold": "Only finite differences with absolute value greater than this number are written to the output files.",
+    "sensitivity|parSensitivity": "If set to Y, par sensitivity analysis is performed following the \"raw\" sensitivity analysis; note that in this case the sensitivityConfigFile needs to contain ParConversion sections, see Example_40",
+    "sensitivity|parSensitivityOutputFile": "Output file name for the par sensitivity report",
+    "sensitivity|pricingEnginesFile": "Configuration file for the pricing engines to be used for sensitivity calculation.",
+    "sensitivity|recalibrateModels": "If set to Y, then recalibrate pricing models after each shift of relevant term structures; otherwise do not recalibrate",
+    "sensitivity|scenarioOutputFile": "File containing the results of the sensitivity calculation in terms of the base scenario NPV, the scenario NPV and their difference.",
+    "sensitivity|sensitivityConfigFile": "Configuration file for the sensitivity calculation, see section the guide.",
+    "sensitivity|sensitivityOutputFile": "File containing the results of the sensitivity calculation in terms of the base scenario NPV, the shift size together with the risk-factor and the resulting first and (pure) second order finite differences. Also included is a second set of shift sizes together with the risk-factor with a (mixed) second order finite difference associated to a cross gamma calculation",
+    "setup|buildFailedTrades": "If the parameter buildFailedTrades is set to true, the application will build a dummy trade if loading or building the original trade fails.",
+    "setup|calendarAdjustment": "Parameter calendarAdjustment includes the calendarAdjustment.xml which lists out additional holidays and business days to be added to specified calendars.",
+    "setup|continueOnError": "If the parameter continueOnError is set to true, the application will not exit on an error, but try to continue the processing.",
+    "setup|conventionsFile": "The curveConfigFile curveconfig.xml, the conventionsFile conventions.xml, the referenceDataFile referencedata.xml, the iborFallbackConfig, the marketDataFile and the fixingDataFile are explained in the sections below.",
+    "setup|currencyConfiguration": "The optional parameter currencyConfiguration points to a configuration file that contains additional currencies to be added to ORE's setup, see Examples/Input/currencies.xml for a full list of ISO currencies and a few unofficial currency codes that can thus be made available in ORE.",
+    "setup|curveConfigFile": "The curveConfigFile curveconfig.xml, the conventionsFile conventions.xml, the referenceDataFile referencedata.xml, the iborFallbackConfig, the marketDataFile and the fixingDataFile are explained in the sections below.",
+    "setup|enrichIndexFixings": "If the parameter enrichIndexFixings is set to true, the application will fill the gaps in index fixings, by fallback fixings, which are the previous fixings (priority) or the next fixings.",
+    "setup|fixingDataFile": "The curveConfigFile curveconfig.xml, the conventionsFile conventions.xml, the referenceDataFile referencedata.xml, the iborFallbackConfig, the marketDataFile and the fixingDataFile are explained in the sections below.",
+    "setup|gzipCompressionLevel": "Optional parameter gzipCompressionLevel specifies the gzip compression level to use when writing zipped cube files.",
+    "setup|iborFallbackConfig": "The curveConfigFile curveconfig.xml, the conventionsFile conventions.xml, the referenceDataFile referencedata.xml, the iborFallbackConfig, the marketDataFile and the fixingDataFile are explained in the sections below.",
+    "setup|ignoreFixingLag": "If the previous fixing date lags by more than Parameter ignoreFixingLag, the fixing would not be used as the fallback. A 0 ignoreFixingLag disables the check.",
+    "setup|ignoreFixingLead": "If the next fixing date leads by more than Parameter ignoreFixingLead, the fixing would not be used as the fallback. A 0 ignoreFixingLead disables the check.",
+    "setup|implyTodaysFixings": "When parameter implyTodaysFixings is set to Y, today's fixings would not be loaded but implied, relevant when pricing/bootstrapping off hypothetical market data as e.g.",
+    "setup|inputPath": "All file names are then interpreted relative to the `inputPath' and `outputPath', respectively.",
+    "setup|lazyMarketBuilding": "If the parameter lazyMarketBuilding is set to true, the build of the curves in the TodaysMarket is delayed until they are actually requested.",
+    "setup|logMask": "Parameter logMask determines the verbosity of log file output. Log messages are internally labelled as Alert, Critical, Error, Warning, Notice, Debug, associated with logMask values 1, 2, 4, 8, ..., 64. The logMask allows filtering subsets of these categories and controlling the verbosity of log file output.",
+    "setup|marketDataFile": "The curveConfigFile curveconfig.xml, the conventionsFile conventions.xml, the referenceDataFile referencedata.xml, the iborFallbackConfig, the marketDataFile and the fixingDataFile are explained in the sections below.",
+    "setup|nThreads": "If the parameter nThreads is given, multiple threads will be used for valuation engine runs where applicable (Sensitivity, Exposure Classic, Exposure AMC).",
+    "setup|observationModel": "The last parameter observationModel can be used to control ORE performance during simulation.",
+    "setup|outputPath": "All file names are then interpreted relative to the `inputPath' and `outputPath', respectively.",
+    "setup|referenceDataFile": "The curveConfigFile curveconfig.xml, the conventionsFile conventions.xml, the referenceDataFile referencedata.xml, the iborFallbackConfig, the marketDataFile and the fixingDataFile are explained in the sections below.",
+    "setup|useAtParCouponsCurves": "The parameters useAtParCouponsCurves and useAtParCouponsTrades control whether to use par approximation or indexed ibor coupons when building curves or building ore trades, respectively.",
+    "setup|useAtParCouponsTrades": "The parameters useAtParCouponsCurves and useAtParCouponsTrades control whether to use par approximation or indexed ibor coupons when building curves or building ore trades, respectively.",
+    "simm|calculationCurrency": "Determines which Risk_FX entries of the CRIF will be ignored in the SIMM calculation",
+    "simm|calculationCurrencyCall": "[Optional]: Separate calculation currency for the SIMM to call",
+    "simm|calculationCurrencyPost": "[Optional]: Separate calculation currency for the SIMM to post",
+    "simm|crif": "CRIF file name. If the crif.csv input is omitted, then the ORE crif analytic (see below) is used internally to generate the CRIF input. However, CRIF generation in ORE is limited to IR/FX risks, whereas the SIMM analytic can process a full CRIF across IR/FX/INF/EQ/CR/COM risks.",
+    "simm|enforceIMRegulations": "If true, SIMM is calculated per post/collect regulation (passed for each record in the CRIF), and finally the worst case SIMM is reported; the flag is set to false by default i.e. post and collect regulations in the CRIF file are ignored.",
+    "simm|mporDays": "1 or 10; ORE supports both choices for versions from 2.2 onwards, only 10 is supported for earlier versions.",
+    "simm|reportingCurrency": "[Optional]: Adds extra columns to the SIMM report (reporting currency and converted SIMM amount)",
+    "simm|resultCurrency": "[Optional]: Currency of the resulting SIMM amounts in the report, by default equal to the calculation currency",
+    "simm|simmCalibration": "[Optional]: SIMM model calibration (in a nutshell: risk weights and correlations) passed as a file; if provided, it overrides the version code above",
+    "simm|version": "SIMM version, ORE supports versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6, 2.6.5; the latest version as of December 2024",
+    "simulation|amc": "ORE supports NPV cube generation using both a \"classic\" Monte Carlo simulation as sketched above, as well as American Monte Carlo (AMC), see below. To use AMC simulation the simulation setup needs the additional elements shown in the guide [H] ORE analytic: simulation The amcTradeTypes element is a comma-separated list of ORE trade types to be covered by AMC in this run. ORE then combines the classic and AMC cubes.",
+    "simulation|amcTradeTypes": "To use AMC simulation the simulation setup needs the additional elements shown in the guide [H] ORE analytic: simulation The amcTradeTypes element is a comma-separated list of ORE trade types to be covered by AMC in this run.",
+    "simulation|cubeNpvOverlay": "Key 'cubeNpvOverlay' is optional and defaults to false.",
+    "stress|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "stress|precision": "The precision parameter defines the number of digits for the sensitivities in the stress output file.",
+    "stress|pricingEnginesFile": "Configuration file for the pricing engines to be used for sensitivity calculation.",
+    "stress|scenarioOutputFile": "File containing the results of the sensitivity calculation in terms of the base scenario NPV, the scenario NPV and their difference.",
+    "stress|stressConfigFile": "Stress Scenario definition, see section the guide",
+    "stress|stressZeroScenarioDataFile": "In the latter par stress case, the last parameter (stressZeroScenarioDataFile) causes exporting equivalent stress test definitions in the \"raw\" domain.",
+    "xvaExplain|active": "If set to active, ORE will run the regular XVA analytic and the XVA sensitivity or XVA stress analytic respectively.",
+    "xvaExplain|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "xvaExplain|mporCalendar": "Calendar used to ensure that t_1 is a valid business day.",
+    "xvaExplain|mporDays": "Derives the 2nd evaluation date t_1 from t_0 + mporDates.",
+    "xvaExplain|sensitivityConfigFile": "Configuration file for the sensitivity calculation, see section the guide.",
+    "xvaExplain|shiftThreshold": "Par Rate shifts below this threshold are ignored.",
+    "xvaExplain|stressConfigFile": "Stress Scenario definition, see section the guide",
+    "xvaExplain|writeCubes": "Boolean flag, if true ORE outputs the raw and net cube under each scenario, defaults to false.",
+    "xvaSensitivity|active": "If set to active, ORE will run the regular XVA analytic and the XVA sensitivity or XVA stress analytic, respectively.",
+    "xvaSensitivity|parSensitivity": "If the parSensitivity flag is set to true, an additional set of par sensitivity outputs is generated.",
+    "xvaStress|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "xvaStress|sensitivityConfigFile": "Configuration file for the sensitivity calculation, see section the guide.",
+    "xvaStress|stressConfigFile": "Stress Scenario definition, see section the guide",
+    "xvaStress|writeCubes": "Boolean flag, if true ORE outputs the raw and net cube under each scenario, defaults to false.",
+    "xva|allocationMethod": "XVA allocation method, choices are None, Marginal, RelativeXVA, RelativeFairValueGross, RelativeFairValueNet",
+    "xva|baseCurrency": "Expression currency for all NPVs, value adjustments, exposures",
+    "xva|calculationType": "Determines the settlement of margin calls. The admissible choices depend on having a close-out grid, see table the guide;",
+    "xva|collateralBalancesFile": "References an xml file that contains current VM and IM balances by netting set",
+    "xva|collateralFloor": "Flag to terminate all trades at their next break date before aggregation and the subsequent analytics cva, dva, fva, colva, collateralFloor, dim, mva: Flags to enable/disable these analytics.",
+    "xva|colva": "The XVA analytic section offers CVA, DVA, FVA and COLVA calculations which can be selected/deselected here individually. Flag to terminate all trades at their next break date before aggregation and the subsequent analytics cva, dva, fva, colva, collateralFloor, dim, mva: Flags to enable/disable these analytics.",
+    "xva|csaFile": "Netting set definitions file covering CSA details such as margining frequency, thresholds, minimum transfer amounts, margin period of risk",
+    "xva|cubeFile": "NPV cube file previously generated and to be post-processed here",
+    "xva|cva": "The XVA analytic section offers CVA, DVA, FVA and COLVA calculations which can be selected/deselected here individually. Flag to terminate all trades at their next break date before aggregation and the subsequent analytics cva, dva, fva, colva, collateralFloor, dim, mva: Flags to enable/disable these analytics. Regression is applied by default when the dimModel node is omitted (see appendix and further settings related to the regression DIM model below); Flat means a simple flat projection of todays's IM amount on each path (this requires providing today's IM using the collateralBalancesFile parameter, see above) Credit name to look up the own default probability curve and recovery rate for DVA calculation Identifier of the borrowing yield curve Identifier of the lending yield curve Flag to enable using pathwise survival probabilities when calculating CVA, DVA, FVA and MVA increments from exposures.",
+    "xva|dim": "Flag to terminate all trades at their next break date before aggregation and the subsequent analytics cva, dva, fva, colva, collateralFloor, dim, mva: Flags to enable/disable these analytics. Regression is applied by default when the dimModel node is omitted (see appendix and further settings related to the regression DIM model below); Flat means a simple flat projection of todays's IM amount on each path (this requires providing today's IM using the collateralBalancesFile parameter, see above) Credit name to look up the own default probability curve and recovery rate for DVA calculation Identifier of the borrowing yield curve Identifier of the lending yield curve Flag to enable using pathwise survival probabilities when calculating CVA, DVA, FVA and MVA increments from exposures. Quantile for Dynamic Initial Margin (DIM) calculation Horizon for DIM calculation, 14 calendar days for 2 weeks, etc.",
+    "xva|dimEvolutionFile": "Output file name to store the evolution of zero order DIM and average of nth order DIM through time",
+    "xva|dimHorizonCalendarDays": "Horizon for DIM calculation, 14 calendar days for 2 weeks, etc.",
+    "xva|dimLocalRegressionBandwidth": "Nadaraya-Watson local regression bandwidth in standard deviations of the independent variable (NPV)",
+    "xva|dimLocalRegressionEvaluations": "Nadaraya-Watson local regression evaluated at the given number of points to validate polynomial regression. Note that Nadaraya-Watson needs a large number of samples for meaningful results. Evaluating the local regression at many points (samples) has a significant performance impact, hence the option here to limit the number of evaluations.",
+    "xva|dimModel": "Type of dynamic initial margin model to be applied -- Regression or Flat. Regression is applied by default when the dimModel node is omitted (see appendix and further settings related to the regression DIM model below); Flat means a simple flat projection of todays's IM amount on each path (this requires providing today's IM using the collateralBalancesFile parameter, see above)",
+    "xva|dimOutputGridPoints": "Grid point(s) (in time) for the DIM regression snapshot, comma separated list",
+    "xva|dimOutputNettingSet": "Netting set for the DIM regression snapshot",
+    "xva|dimQuantile": "Quantile for Dynamic Initial Margin (DIM) calculation",
+    "xva|dimRegressionFiles": "Output file name(s) for a DIM regression snapshot, comma separated list",
+    "xva|dimRegressionOrder": "Order of the regression polynomial (netting set clean NPV move over the simulation period versus netting set NPV at period start)",
+    "xva|dimRegressors": "Variables used as regressors in a single- or multi-dimensional regression; these variable names need to match entries in the simulation.xml's AggregationScenarioDataCurrencies and AggregationScenarioDataIndices sections (only these scenario data are passed on to the post processor); if the list is empty, the NPV will be used as a single regressor",
+    "xva|dimScaling": "Optional scaling factor applied to DIM values (Regression and DeltaVaR-family models only; no effect for SimmAnalytic or DynamicIM). When set, this value is used directly for all netting sets and the collateral balance IM is ignored. When omitted, the scaling is derived per netting set as IM_t_0^actual/DIM_t_0^model from collateralBalancesFile; the IM must be strictly positive for each netting set or the run will abort. Set to 1.0 to apply no scaling.",
+    "xva|dva": "The XVA analytic section offers CVA, DVA, FVA and COLVA calculations which can be selected/deselected here individually. Flag to terminate all trades at their next break date before aggregation and the subsequent analytics cva, dva, fva, colva, collateralFloor, dim, mva: Flags to enable/disable these analytics. Regression is applied by default when the dimModel node is omitted (see appendix and further settings related to the regression DIM model below); Flat means a simple flat projection of todays's IM amount on each path (this requires providing today's IM using the collateralBalancesFile parameter, see above) Credit name to look up the own default probability curve and recovery rate for DVA calculation Identifier of the borrowing yield curve Identifier of the lending yield curve Flag to enable using pathwise survival probabilities when calculating CVA, DVA, FVA and MVA increments from exposures.",
+    "xva|dvaName": "Credit name to look up the own default probability curve and recovery rate for DVA calculation",
+    "xva|dynamicCredit": "Flag to enable using pathwise survival probabilities when calculating CVA, DVA, FVA and MVA increments from exposures. If set to N the survival probabilities are extracted from T0 curves.",
+    "xva|exerciseNextBreak": "Flag to terminate all trades at their next break date before aggregation and the subsequent analytics",
+    "xva|exposureProfiles": "Flag to enable/disable exposure output for each netting set",
+    "xva|exposureProfilesByTrade": "Flag to enable/disable stand-alone exposure output for each trade",
+    "xva|flipViewBorrowingCurvePostfix": "postfix for the borrowing curve, the calculation assumes this is curves being set up with cptyname + postfix given.",
+    "xva|flipViewLendingCurvePostfix": "postfix for the lending curve, the calculation assumes this is curve being set up with cptyname + postfix given.",
+    "xva|flipViewXVA": "If set to Y, the perspective in XVA calculations is switched to the cpty view, the npvs and the netting sets being reverted during calculation. In order to get the lending/borrowing curve, the calculation assumes these curves being set up with the cptyname + the postfix given in the next two settings.",
+    "xva|fullInitialCollateralisation": "If set to true, then for every netting set, the collateral balance at t=0 will be set to the NPV of the setting set. The resulting effect is that EPE, ENE and PFE are all zero at t=0. If set to false (default value), then the collateral balance at t=0 will be set to zero.",
+    "xva|fva": "The XVA analytic section offers CVA, DVA, FVA and COLVA calculations which can be selected/deselected here individually. Flag to terminate all trades at their next break date before aggregation and the subsequent analytics cva, dva, fva, colva, collateralFloor, dim, mva: Flags to enable/disable these analytics. Regression is applied by default when the dimModel node is omitted (see appendix and further settings related to the regression DIM model below); Flat means a simple flat projection of todays's IM amount on each path (this requires providing today's IM using the collateralBalancesFile parameter, see above) Credit name to look up the own default probability curve and recovery rate for DVA calculation Identifier of the borrowing yield curve Identifier of the lending yield curve Flag to enable using pathwise survival probabilities when calculating CVA, DVA, FVA and MVA increments from exposures.",
+    "xva|fvaBorrowingCurve": "Identifier of the borrowing yield curve",
+    "xva|fvaLendingCurve": "Identifier of the lending yield curve",
+    "xva|kva": "Flag to enable setting the kva ccr parameters.",
+    "xva|kvaAlpha": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|kvaCapitalDiscountRate": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|kvaCapitalHurdle": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|kvaOurCvaRiskWeight": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|kvaOurPdFloor": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|kvaRegAdjustment": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|kvaTheirCvaRiskWeight": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|kvaTheirPdFloor": "kvaCapitalDiscountRate, kvaAlpha, kvaRegAdjustment, kvaCapitalHurdle, kvaOurPdFloor, kvaTheirPdFloor kvaOurCvaRiskWeight, kvaTheirCvaRiskWeight: the kva CCR parameters (see ).",
+    "xva|marginalAllocationLimit": "The marginal allocation method a la Pykhtin/Rosen breaks down when the netting set value vanishes while the exposure does not. This parameter acts as a cutoff for the marginal allocation when the absolute netting set value falls below this limit and switches to equal distribution of the exposure in this case.",
+    "xva|mporCashFlowMode": "Assumption about payment of cashflows within mpor period. One of NonePay, BothPay, WePay, TheyPay, Unspecified. Defaults to Unspecified, in this case PP will assume NonePay if mpor sticky date is used, otherwise to BothPay.",
+    "xva|mva": "Flag to terminate all trades at their next break date before aggregation and the subsequent analytics cva, dva, fva, colva, collateralFloor, dim, mva: Flags to enable/disable these analytics. Regression is applied by default when the dimModel node is omitted (see appendix and further settings related to the regression DIM model below); Flat means a simple flat projection of todays's IM amount on each path (this requires providing today's IM using the collateralBalancesFile parameter, see above) Credit name to look up the own default probability curve and recovery rate for DVA calculation Identifier of the borrowing yield curve Identifier of the lending yield curve Flag to enable using pathwise survival probabilities when calculating CVA, DVA, FVA and MVA increments from exposures.",
+    "xva|netCubeOutputFile": "File name for the aggregated NPV cube in human readable csv file format (per netting set, date, sample) after taking collateral into account. Leave empty to skip generation of this file.",
+    "xva|quantile": "Confidence level for Potential Future Exposure (PFE) reporting",
+    "xva|rawCubeOutputFile": "File name for the trade NPV cube in human readable csv file format (per trade, date, sample), leave empty to skip generation of this file.",
+    "xva|scenarioFile": "Scenario data previously generated and used in the post-processor (simulated index fixings and FX rates)",
+    "xva|useDoublePrecisionCubes": "whether NPV cubes are constructed wit double precision, optional, defaults to false (single precision)",
+    "zeroToParSensiConversion|jacobiInverseOutputFile": "Output file name for the inverse Jacobi matrix",
+    "zeroToParSensiConversion|jacobiOutputFile": "Output file name for the Jacobi matrix",
+    "zeroToParSensiConversion|marketConfigFile": "Configuration file defining the simulation market under which sensitivities are computed, see the guide. Only a subset of the specification is needed (the one given under Market, see the guide for a detailed description).",
+    "zeroToParSensiConversion|outputJacobi": "If set to Y, then the relevant Jacobi and inverse Jacobi matrix is written to a file, see below",
+    "zeroToParSensiConversion|pricingEnginesFile": "Configuration file for the pricing engines to be used for sensitivity calculation.",
+    "zeroToParSensiConversion|sensitivityConfigFile": "Configuration file for the sensitivity calculation, see section the guide.",
+    "zeroToParSensiConversion|sensitivityInputFile": "The raw sensitivities are passed in (parameter sensitivityInputFile), all other parameters as above. There is one new parameter *sensitivityInputFile* which points to a csv file with the raw (zero)sensitivities. The raw sensitivities csv input file *sensitivityInputFile* needs to have at least six columns, the column names can be user configured in the master input file.",
+    "zeroToParShift|sensitivityConfigFile": "Sensitivity parameterisation for the sensitivity analysis on asofDate"
+  },
+  "source": "ORE user guide, Docs/UserGuide in the OpenSourceRisk Engine"
+}

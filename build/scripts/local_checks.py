@@ -480,6 +480,8 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "projects/ores.sql/populate/reporting/reporting_file_types_populate.sql",
             "projects/ores.sql/utility/generate_file_types_populate.py",
+            "projects/ores.sql/utility/file_type_descriptions.py",
+            "projects/ores.sql/utility/file_type_guide.json",
         ),
         fix="Run projects/ores.sql/utility/generate_file_types_populate.py and commit the seed.",
     ),

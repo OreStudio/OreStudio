@@ -94,6 +94,9 @@ public:
     messaging::list_by_configuration_type_code_file_types_response
     list_by_configuration_type_code_file_types(
         const messaging::list_by_configuration_type_code_file_types_request& request);
+    messaging::list_by_produced_by_file_type_code_file_types_response
+    list_by_produced_by_file_type_code_file_types(
+        const messaging::list_by_produced_by_file_type_code_file_types_request& request);
     messaging::list_file_type_versions_response
     list_file_type_versions(const messaging::list_file_type_versions_request& request);
     messaging::get_file_type_version_response
@@ -156,6 +159,27 @@ public:
      */
     std::uint32_t
     count_types_by_configuration_type_code(const std::string& configuration_type_code);
+
+
+    /**
+     * @brief Lists file types filtered by produced_by_file_type_code, with pagination.
+     *
+     * @param produced_by_file_type_code The produced_by_file_type_code to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching file types for the requested page.
+     */
+    std::vector<domain::file_type> list_types_by_produced_by_file_type_code(
+        const std::string& produced_by_file_type_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active file types filtered by produced_by_file_type_code.
+     *
+     * @param produced_by_file_type_code The produced_by_file_type_code to filter by.
+     * @return Total number of matching file types.
+     */
+    std::uint32_t
+    count_types_by_produced_by_file_type_code(const std::string& produced_by_file_type_code);
 
 
     /**

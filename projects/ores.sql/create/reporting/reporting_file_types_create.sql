@@ -46,9 +46,14 @@ create table if not exists "ores_reporting_file_types_tbl" (
     "version" integer not null,
     "analytic_type_code" text null,
     "ore_parameter" text not null,
+    "direction" text not null,
+    "format" text not null,
+    "xsd_file" text null,
     "kind" text not null,
     "configuration_type_code" text null,
     "name_pattern" text not null,
+    "is_default" boolean not null default false,
+    "produced_by_file_type_code" text null,
     "sample_count" integer not null,
     "sample_total" integer not null,
     "description" text not null,
@@ -68,6 +73,10 @@ create table if not exists "ores_reporting_file_types_tbl" (
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
     check ("ore_parameter" <> ''),
+    check ("direction" in ('input', 'output')),
+    check (("direction" = 'output') = ("kind" = 'output_file')),
+    check ("format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json')),
+    check ("xsd_file" is null or "format" = 'xml'),
     check ("kind" in ('input_document', 'data_file', 'output_file', 'intermediate_file')),
     check ("name_pattern" ~ '^[A-Za-z0-9_.-]*(\{\{[A-Z][A-Z0-9_]*\}\}[A-Za-z0-9_.-]*)*$'),
     check ("sample_count" >= 0 and "sample_count" <= "sample_total")
@@ -86,9 +95,15 @@ create index if not exists file_types_tenant_idx
 on "ores_reporting_file_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists file_types_parameter_idx
-on "ores_reporting_file_types_tbl" (tenant_id, (coalesce(analytic_type_code, '')), ore_parameter)
-where valid_to = ores_utility_infinity_timestamp_fn();
+create unique index if not exists file_types_setup_parameter_idx
+on "ores_reporting_file_types_tbl" (tenant_id, ore_parameter)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and analytic_type_code is null;
+
+create unique index if not exists file_types_analytic_parameter_idx
+on "ores_reporting_file_types_tbl" (tenant_id, analytic_type_code, ore_parameter)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and analytic_type_code is not null;
 
 create or replace function ores_reporting_file_types_insert_fn()
 returns trigger as $$
@@ -120,6 +135,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid configuration_type_code: %. No active configuration type found with this code.', NEW.configuration_type_code
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate produced_by_file_type_code (optional soft FK to ores_reporting_file_types_tbl)
+    if NEW.produced_by_file_type_code is not null then
+        if not exists (
+            select 1 from ores_reporting_file_types_tbl
+            where tenant_id = NEW.tenant_id
+              and code = NEW.produced_by_file_type_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid produced_by_file_type_code: %. No active file type found with this code.', NEW.produced_by_file_type_code
                 using errcode = '23503';
         end if;
     end if;

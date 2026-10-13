@@ -24,6 +24,7 @@
 #include "ores.reporting.core/repository/configuration_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
+#include "ores.reporting.core/repository/file_type_repository.hpp"
 #include "ores.reporting.core/repository/parameter_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
@@ -253,6 +254,9 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
     in.market_bindings = market_bindings_of(ctx_, configuration_id);
     for (const auto& b : bindings(report_definition_id))
         in.bound_types.push_back(b.configuration_type_code);
+    in.file_types = read_where(system_scope(ctx_), file_type_repository(), [](const auto&) {
+        return true;
+    });
     return generate_run_document(in);
 }
 

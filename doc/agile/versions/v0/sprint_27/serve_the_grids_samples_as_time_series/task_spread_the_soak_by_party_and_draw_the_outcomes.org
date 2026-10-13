@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: feature/spread-the-soak-by-party-and-draw-the-outcomes
-#+pr:
+#+pr: 3227
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3227][#3227]] | [soak] Weight the party shares and draw the outcomes |
 
 * Review
 

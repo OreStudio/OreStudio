@@ -8,7 +8,7 @@
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
 #+branch: feature/close-the-credit-round-trip
-#+pr:
+#+pr: 3220
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3220][#3220]] | [ore,trading,sql] Close the credit round trip for swap-like products |
 
 * Review
 

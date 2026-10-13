@@ -24,7 +24,7 @@
  */
 
 -- A link is closed by ending its validity and never deleted, so the close is an
--- update. A close that a new version of the same link follows is a replacement,
+-- update. A close that a newer version of the same link follows is a replacement,
 -- which the insert announces; a close with no successor is the link going away.
 -- The successor does not exist when the close runs, so the close is judged at
 -- the end of the transaction.
@@ -45,12 +45,16 @@ begin
            or NEW.valid_to = ores_utility_infinity_timestamp_fn() then
             return null;
         end if;
+        -- A newer version of the link, open or closed, answers for it: an open
+        -- one replaced this version, and a closed one is announced when its
+        -- own close is judged, so a link closed twice in one transaction is
+        -- told once.
         if exists (
             select 1 from ores_refdata_party_currencies_tbl
             where tenant_id = OLD.tenant_id
               and party_id = OLD.party_id
               and currency_iso_code = OLD.currency_iso_code
-              and valid_to = ores_utility_infinity_timestamp_fn()
+              and valid_from > OLD.valid_from
         ) then
             return null;
         end if;
@@ -93,6 +97,7 @@ create or replace trigger ores_refdata_party_currencies_notify_trg
 after insert on ores_refdata_party_currencies_tbl
 for each row execute function ores_refdata_party_currencies_notify_fn();
 
+drop trigger if exists ores_refdata_party_currencies_notify_close_trg on ores_refdata_party_currencies_tbl;
 create constraint trigger ores_refdata_party_currencies_notify_close_trg
 after update on ores_refdata_party_currencies_tbl
 deferrable initially deferred

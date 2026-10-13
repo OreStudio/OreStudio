@@ -1457,6 +1457,9 @@ def derive_junction_events(junction):
     junction['event_key_columns'] = [
         {'column': column, 'last': index == len(columns) - 1}
         for index, column in enumerate(columns)]
+    # The party travels in the envelope for a party-owned link. It is read from
+    # the key, where it already sits, so a party column that is not a key column
+    # is not announced.
     junction['has_party_column'] = 'party_id' in columns
 
 

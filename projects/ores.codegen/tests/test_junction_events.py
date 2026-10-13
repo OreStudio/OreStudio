@@ -37,7 +37,10 @@ def test_a_link_going_away_is_told_and_a_replacement_is_not(tmp_path):
     assert "create constraint trigger ores_testcomp_test_links_notify_close_trg" in sql
     assert "deferrable initially deferred" in sql
     assert "change_action := 'deleted';" in sql
-    assert "and valid_to = ores_utility_infinity_timestamp_fn()" in sql
+    # A newer version, open or closed, answers for the link, so a link closed
+    # twice in one transaction is told once.
+    assert "and valid_from > OLD.valid_from" in sql
+    assert "drop trigger if exists ores_testcomp_test_links_notify_close_trg" in sql
 
 
 def test_the_events_are_published_on_the_junctions_collection(tmp_path):

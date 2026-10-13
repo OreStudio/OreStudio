@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:data-model:codegen:data-oriented:instrument:credit:sprint_27:v0:
 #+created: 2026-10-02
-#+updated: 2026-10-11
+#+updated: 2026-10-13
 #+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,28 +15,26 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Rework the credit trade types and the risk participation agreement to the instrument table rule of the trade shape investigation (section 14), as the bonds were reworked, with the data-oriented review deciding the tables.
+Rework the credit trade types and the risk participation agreement to the instrument table rule: a family header holding exactly its codes, product fact tables keyed by the trade, shared children with role codes, and securities keyed by their reference datum.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The analysis is done and the design is written. The rework is staged into seven more units, all BACKLOG. |
-| Waiting on    | Nothing.                               |
-| Next          | Unit 2, carry the credit digits.       |
-| Last touched  | 2026-10-11                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
 - The family header's trade_type check lists exactly the family's codes, and each product fact table checks its own.
 - Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key.
-- The family's trade types route to their tables through the trade-type catalogue, not hand-written code.
-- The ORE round trip stays lossless across the family's corpus, and a money value is stored and exported as the digits the document wrote.
-- The credit family's dates are mapped into the blotter's common-date view.
-- The family's tables have a generated eventing integration test.
-- =RiskParticipationAgreement= routes, imports and exports through the credit family, with no table left that nothing writes.
+- The family's trade types route through the trade-type catalogue, and the two importer-less codes leave the routing.
+- The credit round trip and the risk participation agreement round trip are lossless, and a money value is stored and exported as the digits the document wrote.
+- The credit family's dates are mapped into the blotter's common-date view, and the family's tables have a generated eventing integration test.
 
 * Tasks
 
@@ -49,10 +47,11 @@ Rework the credit trade types and the risk participation agreement to the instru
 | [[id:DD0F79D0-38B4-43DE-B2E0-135976B8BA25][Author the credit family header and its fact tables]] | DONE | 2026-10-12 | 2026-10-12 | Replace the 25-column credit table with a header holding the reference entity and the two dates, and six product fact tables keyed by the trade. Remove the two importer-less codes from the routing. (Staging unit 5.) |
 | [[id:8B6C30D1-9BFE-484A-AACD-7541CBE77715][Close the credit round trip]] | DONE | 2026-10-12 | 2026-10-13 | Every credit product drops elements of the schema. Store the accrual and payment flags, the upfront date and fee, the cash settlement days, the index option's own elements and its option block, and export them. The agreement follows in unit 7. (Staging unit 6.) |
 | [[id:E58A1EF3-89FF-4AD8-BB25-462A2F8F29D7][Map the credit dates into the common-date view]] | DONE | 2026-10-13 | 2026-10-13 | Unit 5 declared the credit header's dates and generated the family's eventing tests. Prove the view: a probe reads one date column across a rates trade and a credit trade. (Staging unit 8.) |
-| [[id:0B4B0C19-93BE-44BB-AA8A-25DD1A3D3143][Prove the credit round trip over the corpus]] | BACKLOG | | | Run the ORE round trip over the credit corpus at the new shape: each trade imported, exported alone and imported again must give the same family rows. The last unit; it proves a shape the other units settle. (Staging unit 9.) |
 | [[id:D076B67B-DA79-4B67-B0D5-EB48C82458C6][Close the risk participation agreement round trip]] | DONE | 2026-10-13 | 2026-10-13 | The agreement's export omits its required ParticipationRate, ProtectionFee and Underlying, so it is not valid ORE. The protection fee is a list of legs and the underlying holds legs, an optional option and an optional treasury lock on a bond. Store and export them. (Staging unit 7.) |
 
 * Decisions
+
+The remainder is carried in [[id:6A48161C-53AE-4F60-A7C4-8649C3653414][Prove the credit round trip over the corpus]].
 
 Distilled from =design.org=, which carries the argument and the evidence.
 

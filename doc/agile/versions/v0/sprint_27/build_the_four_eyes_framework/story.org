@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-10
-#+updated: 2026-10-10
+#+updated: 2026-10-13
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,26 +15,26 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A gated write cannot take effect until every function the policy names has approved it, the person who asked cannot decide, and every kind of request shares one queue, one request page and one review panel.
+The four-eyes framework: a gated write raises an approval request that names several deciding parts, is held until every part approves, is applied as one transaction, and every kind of request shares one queue, one request page and one review panel. The book structure and counterparty write paths use it.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The design note is written and the tasks are filed. |
-| Waiting on    | Nothing.                               |
-| Next          | Start the parts and policy task. |
-| Last touched  | 2026-10-10                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- A request can name several deciding parts, each answered by a person holding that part's permission, in order where the policy says so.
+- A request can name several deciding parts, each answered by a person holding that part's permission, in the order the policy gives.
 - A request holds its proposed writes, applies them in one transaction on the last approval, and records a failed apply.
-- A gated write refuses with approval_required unless it comes from an approved request.
+- A gated write refuses with approval_required unless an approved request carries it out.
 - One review panel, one request page, one queue and one story draw every kind through a kind descriptor.
-- The book structure, counterparty, party, convention and tenor screens raise requests instead of writing.
+- The book structure screen and the counterparty write path raise requests instead of writing.
 
 * Tasks
 
@@ -46,10 +46,6 @@ A gated write cannot take effect until every function the policy names has appro
 | [[id:5A29D64E-B073-4596-8A2C-30396FE2E798][Gate the refdata writes behind the policy]] | DONE | 2026-10-12 | 2026-10-12 | Make the generated and hand-written refdata writers refuse a gated act with approval_required, so only an approved request can make it. |
 | [[id:BAA9EA78-C57E-4539-875D-59D0FE65B6F2][Draw every request with one set of screens]] | DONE | 2026-10-12 | 2026-10-12 | Replace the role-only request pages with a review panel, a request page, a queue and a story that draw any kind through a kind descriptor. |
 | [[id:AB2D51E5-C6D0-4B17-B36B-2F6FFC2738A5][Move the book structure screen onto the review panel]] | DONE | 2026-10-12 | 2026-10-12 | Make the book structure screen raise a request for a gated change instead of writing it. |
-| [[id:77613BC7-0180-47E6-8F3D-0BCF447F6818][Move the counterparty screen onto the review panel]] | BACKLOG | | | Build the counterparty as a record screen like the parties screen, where a gated change raises a request and a contact change is written directly. |
-| [[id:0705EF62-7930-4B2C-B003-E578AF0D0A16][Move the party details screen onto the review panel]] | BACKLOG | | | Make the party details screen raise a request for a gated change instead of writing it. |
-| [[id:40014A64-C176-46E6-B39F-EBA92DDC7967][Move the convention screen onto the review panel]] | BACKLOG | | | Make the instrument convention screen raise a request for every write. |
-| [[id:BE57136B-9C17-4FCB-A4EB-05AA840B11F2][Move the tenor resolution screen onto the review panel]] | BACKLOG | | | Make the tenor resolution screen raise a request for every write. |
 | [[id:4F8399A7-7512-4229-AA69-3364C82BB387][Generate the pending change for a gated entity]] | DONE | 2026-10-10 | 2026-10-10 | Add a codegen facet that makes, for an entity its model marks gated, the typed pending table, the typed raise and preview messages, the dry run, the apply and the typed read of a pending change, starting with the book. |
 | [[id:5FA7003F-7370-461C-A7E8-44A14F3D6D44][Apply an approved request]] | DONE | 2026-10-10 | 2026-10-10 | Apply the stored lines of an approved request to the books in one transaction, mark each line applied, and move a request whose apply is refused to apply_failed. The workflow that starts and resumes this is the next task. |
 | [[id:7FAE1F96-1EA6-4AD8-B204-A7B928C78305][Expose the book raise and preview]] | DONE | 2026-10-10 | 2026-10-10 | Offer the book preview and raise as NATS operations with a typed message and a handler that checks the caller may write or delete books, with the TypeScript wire types generated beside them. |
@@ -58,15 +54,15 @@ A gated write cannot take effect until every function the policy names has appro
 | [[id:04036159-8963-49AF-8D56-AB629156FA6D][Retry a stopped apply until the window ends]] | DONE | 2026-10-11 | 2026-10-11 | Resume an apply run that stopped on an infrastructure failure on a schedule, and move its request to apply_failed when the kind's window ends. |
 | [[id:DF40714D-7AE3-476E-B01E-6E5101385060][Grant the refdata service the inbox access it needs]] | DONE | 2026-10-11 | 2026-10-11 | Give the refdata service's database user the rights the raise, the apply and the notices need on the inbox tables, and prove them by running the raise and the apply as that user. |
 | [[id:5D566A4D-343D-4D0F-BCA0-C8B0025387FC][Run the engine and the inbox service as their own database users]] | DONE | 2026-10-11 | 2026-10-11 | Prove with tests that the workflow engine and the inbox service hold the database rights the apply workflow needs, by signing in as each of their users. |
-| [[id:DD150215-C89B-4DD7-9822-269ED4773F33][Raise requests from the ORE import for gated books]] | BACKLOG | | | Make the ORE import raise approval requests for the books it creates, because the gate now refuses a direct book write. |
 | [[id:4F731BF8-D63D-428E-849D-ED0D263E0873][Serve a request's parts, changes and checks to the web]] | DONE | 2026-10-12 | 2026-10-12 | Let the BFF answer a request's parts with who answered, its proposed changes as field deltas, its checks, a preview and a raise of book changes, and a decision that names its part. |
 | [[id:A3F75AC1-7ABC-47A2-8CC6-3F75C5998C78][Prototype the counterparty entity screen]] | DONE | 2026-10-12 | 2026-10-12 | Draw the counterparty as an entity screen like the parties screen, with its identifiers, contacts and links, where a gated change raises a request and a contact change is written directly, before the product screen is built. |
 | [[id:A2F9C3A9-63A8-4E49-AD3A-D709A635DA2F][Generate the pending change for the counterparty]] | DONE | 2026-10-12 | 2026-10-12 | Mark the counterparty, its identifier and its party link gated, and generate the typed pending change of each, as the book has. |
 | [[id:7C965B73-1358-43C6-B6EB-D6B30415DE08][Raise, preview and apply counterparty changes]] | DONE | 2026-10-12 | 2026-10-13 | Offer the counterparty preview and raise as operations, and apply an approved request as a workflow, as the book does. |
 | [[id:1D795DBF-FD05-4E48-A693-25DE97104E1F][Gate the counterparty writes behind the policy]] | DONE | 2026-10-13 | 2026-10-13 | Make the counterparty, identifier and party link writes refuse a gated act with approval_required unless an approved request carries it out. |
-| [[id:467B87FF-BB28-44A9-A249-FA975EAFCEA8][Raise requests from the shell for gated counterparties]] | BACKLOG | | | Make the shell counterparty identifier commands raise approval requests, because the gate now refuses a direct write. |
 
 * Decisions
+
+The remainder is carried in [[id:4CC34457-ABD1-4473-B877-ACCB6C33BB7B][Raise approval requests from the remaining gated write paths]].
 
 - *A line holds its proposed write as a typed row.* The product owner ruled that the data design allows no untyped or weakly typed data, and the role request already keeps a typed table keyed by the request. Each gated entity therefore gets a generated pending table with its own columns. The earlier recommendation of one lines table with a serialised write is withdrawn.
 

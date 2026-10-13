@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :dq:codegen:cleanup:staging:sprint_27:v0:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-13
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,26 +15,25 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Every DQ artefact table is generated from the model of the entity it stages, through the domain_entity_artefact_create flag, with an Artefact columns section where the staging shape differs. No ores.dq model duplicates a domain model, no artefact table is hand-written SQL, and a guide states the one way to add a DQ artefact so a new one never starts a second pattern. Junction artefact tables are out of scope.
+Move DQ artefact tables onto the canonical model: the duplicated ores.dq models and the hand-written artefact tables are generated from the entities they stage, and a guide states the one way to add a DQ artefact.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-11                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- A knowledge page states the one way to add a DQ artefact, the full pipeline from model to published row, and a checklist.
-- No ores.dq model duplicates a domain model that exists in another component; the duplicates' DQ C++, shell and TypeScript stacks are deleted.
-- No DQ artefact table is hand-written SQL.
-- No DQ artefact table comes from the older lookup template.
-- Each remaining ores.dq artefact model has a recorded owner decision.
+- A knowledge page states the one way to add a DQ artefact, the full pipeline from model to published row, a checklist and the legacy patterns named as patterns not to copy.
+- No ores.dq model duplicates a domain model; the five duplicated models and their generated DQ C++, shell and TypeScript stacks are deleted.
+- Five hand-written artefact tables are generated from their owning models with an Artefact columns section, and the artefact template renders check constraints.
+- The datasets publish as before: pgTAP, ctest and an Acme provision pass.
 
 * Tasks
 
@@ -43,11 +42,10 @@ Every DQ artefact table is generated from the model of the entity it stages, thr
 | [[id:D53DCEEA-CCDA-4608-A5B3-1FD973341DA6][Write the DQ artefact guide]] | DONE | 2026-10-12 | 2026-10-12 | A knowledge page that states the one way to add a DQ artefact: the owning model's domain_entity_artefact_create flag, an Artefact columns section where the staging shape differs, and the pipeline from model to published row (artefact table, dataset, artefact type, bundle member, publish function, subject, handler allow-list, dataset dependencies), with a checklist and the legacy patterns named as patterns not to copy. |
 | [[id:2FC7FD9E-9098-459F-A0A2-C1E63FD710FD][Move the duplicated DQ models onto their owners]] | DONE | 2026-10-12 | 2026-10-13 | Six artefact tables come from a separate ores.dq model that duplicates a domain model elsewhere: csas, netting_agreements and netting_sets (refdata), report_definitions and risk_report_configs (reporting), and synthetic_market_data_providers (synthetic). Set the flag on each owning model, delete the ores.dq model and its generated DQ C++, shell and TypeScript stack, and follow the table rename through the populates, publish functions and artefact types. |
 | [[id:64EE4260-1748-40E1-A1AA-4DD687CED92F][Model the hand-written artefact tables]] | DONE | 2026-10-13 | 2026-10-13 | Five artefact tables are hand-written SQL with no model: crm_topology_bundles, market_data_observations, synthetic_gmm_components, synthetic_ir_curve_configs and synthetic_ir_curve_template_entries. Generate each from its owning model, with an Artefact columns section where the staging shape differs from the entity. Two more were in scope and moved: lei_bic to the DQ-only task, and ip2country to its own task, because its geo store has no model. |
-| [[id:A31257E3-7495-46CD-B36D-10AA6D55CB09][Move the lookup artefact tables onto domain models]] | BACKLOG | | | Fifteen artefact tables come from the older lookup template, sql_schema_artefact_create, through ores.codegen.lookup_entity models: account_types, asset_classes, asset_measures, benchmark_rates, business_centres, business_processes, cashflow_types, entity_classifications, local_jurisdictions, party_relationships, party_roles, person_roles, regulatory_corporate_sectors, reporting_regimes and supervisory_bodies. Move their models to domain_entity with the flag, so the canonical template generates the tables, and retire the lookup artefact template once nothing uses it. Overlaps the capture Migrate remaining lookup_entity/table models (28F6B7B2). |
-| [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]] | BACKLOG | | | Nine artefact models live only in ores.dq: badge_definition, badge_severity, code_domain, coding_scheme, counterparty_alias, netting_set_alias, lei_entity, lei_relationship and synthetic_fx_spot_config. The hand-written lei_bic table belongs with lei_entity and lei_relationship, so it is decided and modelled with them. Where DQ owns the data, as with the badges and coding schemes, the ores.dq model is the owning model and stays. Where another component owns the published rows, move the artefact onto that component's model with an Artefact columns section, as the denormalised synthetic feed rows need. |
-| [[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][Model the geo ip2country store]] | BACKLOG | | | The ip2country artefact table is hand-written, and so is the table it publishes into, ores_geo_ip2country_tbl: the geo component has no model. The store is not temporal and keys on an int8range with a GiST index, which the entity templates cannot express. Model the store, then generate the staging table from that model. |
 
 * Decisions
+
+The remainder is carried in [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]].
 
 - *A moved table keeps its shape.* The owning model states the old staging
   columns in an =* Artefact columns= section, so a move changes no populate

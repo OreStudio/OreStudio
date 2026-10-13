@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: D054BDD3-351F-42D3-9638-7D3BAEEAD332
+:END:
+#+title: Task: Partition a run's trade population into trade sets
+#+description: Nothing in ores.trading can group trades. The run resolves its scope once, in gather_trades, and treats it as one bag of books, so one export object answers for every book. Give ores.trading a batcher with a pluggable strategy that partitions a report's trade population into trade sets, each with a name and an as-of; the simplest strategy batches by book. The set name is the batch key the rest of the run fans out over.
+#+type: task
+#+level: s1
+#+filetags: :inbox:product_backlog:gather-each-trade-set-and-its-market-data:
+#+owner: marco
+#+branch: feature/batch-a-trade-population
+#+pr: 2875
+#+blocked_on: The trade group and its membership ([[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]] in [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]]), which is what records a batch's sets against its run. That story parks itself pending a pilot process. The partitioning itself is not blocked: a set derived from a trade's book needs no table, and the book key already exists on the booking. The fan-in condition is unblocked too, since [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] is DONE.
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC05783F-3917-4401-902B-40C5277300A7][Gather each trade set and its market data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Nothing in =ores.trading= groups trades. The run resolves its scope once,
+inside =gather_trades=, and treats it as one bag of books: the handler asks the
+risk report configuration for its books and hands the whole list to one export.
+A report covers hundreds to thousands of books, and each needs its own trades
+archive, its own market data and its own portfolio XML.
+
+Give =ores.trading= a batcher: a subsystem that partitions a report's trade
+population into **trade sets**, driven by a **strategy**. The sets are what the
+rest of the run reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AC05783F-3917-4401-902B-40C5277300A7][Gather each trade set and its market data]] |
+| Now          | The partitioning landed: the strategy interface, batch by book, the bounded-set strategy, composition, the batch key and the partition invariants. The recording half is not built. |
+| Waiting on   | The trade group and its membership, [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]], for the acceptance bullet that records the sets against the run. |
+| Next         | Wire the batcher to the run once the group exists, and load a strategy's parameters from tables rather than from the caller. |
+| Last touched | 2026-10-07                               |
+
+
+* Acceptance
+
+- A batcher partitions a report's trade population into trade sets, and a
+  strategy decides how it partitions.
+- "Batch by book" is the first strategy, and it is one implementation behind an
+  interface rather than a special case in the caller.
+- A trade set carries a name and an as-of date. The name is the **batch key**,
+  a plain string of the form =REPORT_NAME:BOOK_ID:ASOF= for the book strategy,
+  and nothing downstream parses it beyond using it as the artifact key.
+- The batcher records the sets it created against the run, so the run knows its
+  fan-out width before any producer starts.
+- A later strategy can partition differently — by grid behaviour, by size —
+  without a producer or the package step changing.
+
+* Requirements the strategy machinery must carry
+
+Recorded here while the batching subsystem's own documentation is pending (it
+arrives with Merry Newton's trade-set work). These are requirements, not a
+design; the design lands with the subsystem's docs.
+
+- *A strategy is associated with a report.* Which batching a report uses is the
+  report's to state, not a global setting.
+- *Strategies compose.* "Simple report batching" is =batch by book= *and* =at
+  most 1000 trades= — a composite over two strategies, not a third strategy
+  that reimplements both. The simplest strategy is still the only leaf at the
+  start, but the composition must already be expressible.
+- *A strategy's parameters are configured in tables,* so a parameter is data
+  and changing it is not a deploy. What a strategy reads must therefore be
+  declared the same way its behaviour is.
+- *A strategy may be marked default,* for a report that states none.
+- *The leaf set starts at one.* =batch by book= ships first; the machinery
+  around it ships with it rather than after it, because retrofitting composition
+  onto a hard-coded first strategy is the thing this task exists to avoid.
+
+* Plan
+
+*The set is the unit, not the book.* A book is one way to slice trades and it is
+the first way, not the shape of the system. Everything downstream addresses a
+*trade set by its batch key*, so a strategy that groups by desk, by counterparty
+or by whatever the grid is doing next needs no subscriber to change.
+
+*The dependency is real and it is not ours.* Trade sets do not exist yet:
+they are being built in =ores.trading= by Merry Newton. This task is blocked on
+that landing, and the batcher is the second thing to be built rather than the
+first. What the batcher needs from the set is small and worth stating so the
+two efforts agree early: a name, an as-of, and the trades in it.
+
+*Why the strategy is an interface and not a switch.* Grid behaviour is the
+stated reason for wanting more than one strategy — how work is best split
+depends on what the grid is doing — and that is a thing that changes while the
+system runs. A switch in the caller would put grid knowledge in the report
+path; a strategy boundary keeps it in trading where the population is known.
+
+*The batch key is opaque downstream.* =REPORT_NAME:BOOK_ID:ASOF= is a
+convention, not a grammar. Nothing downstream splits it: the key names an
+artifact and the as-of travels on the set, so a future strategy may use any
+string without a producer being able to tell.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+*Where the sets come from, and why that splits this task.* The trade-set
+knowledge documents settled which sets need storage and which do not
+([[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]]).
+
+A set whose context is a book is *derived*: the trades in a book are the trades
+whose booking names that book, so the set is a predicate over a key the trade
+already carries and needs no table. Batch by book is therefore pure
+partitioning over data that exists, and nothing about it waits on a new entity.
+
+A set a *run* read is *recorded*, because a repeat has to reconstruct the input
+it read rather than today's. That is a [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][trade group]]: a set with a foreign
+key to the run, and a membership table beside it. It is
+[[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]], in
+[[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]], and that story is
+parked until a pilot process settles the run model.
+
+So one acceptance bullet — that the batcher records the sets it created against
+the run — waits on that work, and the rest does not. The earlier blocker text
+said the sets did not exist to partition into; on the settled model they do,
+for the strategy this task ships first.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 2875 | [trading] Partition a report's trade population into trade sets |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+*Landed: the partitioning.* =ores.trading.core/service/trade_batcher.hpp= holds
+the vocabulary and the walk.
+
+- =trade_population= is what a report asks to be partitioned: its name, the
+  as-of, and every trade in scope with the book its current booking names.
+- =trade_set= is what comes out: a name, an as-of and the trades. The name is
+  the batch key and it is opaque downstream.
+- =trade_batching_strategy= is the seam. A strategy splits the sets it is given
+  and leaves the ones it cannot split unchanged, so composition is a sequence
+  rather than a switch, and grid knowledge stays out of the report path.
+- =batch_by_book= is the first strategy. It is the derived set: it reads the
+  book from the population's trade and stores nothing.
+- =at_most_trades= bounds a set's size. With =batch_by_book= it makes the first
+  real batching — "batch by book and at most a thousand trades" — two
+  strategies composed rather than a third that reimplements both.
+- =composite_strategy= applies its members in order, and =trade_batcher= runs
+  one over the population.
+
+*The invariants are the batcher's, not each strategy's.* A partition covers the
+population exactly once and gives no two sets the same batch key. A strategy
+that loses a trade, puts one in two sets, or names two sets alike would price a
+population nobody asked for, so the batcher refuses it rather than handing it
+on. The cases assert both refusals.
+
+* Acceptance, bullet by bullet.
+
+1. A batcher partitions a population and a strategy decides how -- done.
+2. Batch by book is the first strategy, behind an interface -- done.
+3. A set carries a name and an as-of, the key being
+   =REPORT_NAME:BOOK_ID:ASOF= -- done.
+4. The batcher records the sets against the run -- **not done**. That is a
+   [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][trade group]], which is
+   [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]].
+5. A later strategy partitions differently without a producer changing -- the
+   seam is in, and a case exercises a strategy that partitions on something
+   other than the book.
+
+*What the design still owes.* The requirements recorded here say a strategy's
+parameters are configured in tables, so that changing one is not a deploy, and
+that a strategy may be marked default for a report that states none. Neither is
+built: a strategy takes its parameters as a value, which is the shape a table
+can supply, but no table supplies them yet. That and the run wiring need the
+group, so they travel together.
+
+*Not verified.* No build and no test run: the hourly validation owns them. The
+cases are written and the component file lists are regenerated, nothing more.

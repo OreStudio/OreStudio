@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 6A48161C-53AE-4F60-A7C4-8649C3653414
+:END:
+#+title: Story: Prove the credit round trip over the corpus
+#+description: Run the ORE round trip over the credit corpus at the new shape and prove that every trade survives import, export and re-import.
+#+type: story
+#+level: s2
+#+filetags: :inbox:product_backlog:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Run the ORE round trip over the credit corpus at the new shape and prove that every trade survives import, export and re-import.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- Each trade in the credit corpus is imported, exported alone and imported again, and gives the same family rows.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0B4B0C19-93BE-44BB-AA8A-25DD1A3D3143][Prove the credit round trip over the corpus]] | BACKLOG | | | Run the ORE round trip over the credit corpus at the new shape: each trade imported, exported alone and imported again must give the same family rows. The last unit; it proves a shape the other units settle. (Staging unit 9.) |
+
+* Decisions
+
+* Out of scope
+
+-

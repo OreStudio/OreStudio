@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-10-13
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A reader can open a diagram for the part of the schema they care about. Each diagram renders on this machine, shows the relationships inside its group, and is gated so it cannot go stale.
+The ER diagram is split into one file per package plus an index, drawn as SVG, and the relationships inside each group come from the SQL rather than a stale map.
 
 * Problem
 
@@ -113,26 +113,20 @@ Two combinations look strongest:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | One diagram per package, drawn as SVG; PNG and cmapx untracked. |
-| Waiting on    | Nothing.                               |
-| Next          | Work the four tasks in order, starting with the relationships. |
-| Last touched  | 2026-10-09                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- A decision is recorded in =* Decisions= naming the grouping and the
-  output format, with the reason the others were not taken.
-- One diagram exists per group, each drawing on this machine without the
-  raster overflow.
-- Relationships appear in the diagrams, recovered from the SQL rather
-  than from the stale =FK_TARGET_TABLES= map.
-- An index names the groups and what each holds, and the =er-diagram=
-  check covers every generated diagram, not only the old single file.
-- The tracked artefact set is deliberate: the =.puml= files carry what
-  the diagram says, the SVGs are the images the site renders, and both
-  come from the one script a build runs.
+- Relationships appear in the diagrams, inferred from the keys the create scripts state, and FK_TARGET_TABLES is deleted.
+- One .puml exists per package plus an index that names the groups and the tables each holds.
+- Every generated diagram renders on this machine with no raster overflow.
+- The draw step emits SVG, and ores_schema.png and ores_schema.cmapx are removed from the tree.
+- The grouping and output format decision is recorded as option A plus F.
 
 * Tasks
 
@@ -141,9 +135,10 @@ Two combinations look strongest:
 | [[id:440BD2AE-E77B-4BFA-BEB8-3DA607512407][Recover the ER diagram's relationships]] | DONE | 2026-10-09 | 2026-10-09 | The parser renders no relationships because its FK map lost the table prefix. Infer the edges from the SQL it already reads. |
 | [[id:240C063C-AFF0-4F5C-804D-13F32B7E2FA5][Split the ER diagram by package]] | DONE | 2026-10-09 | 2026-10-09 | One diagram over 463 tables cannot be painted. Generate one per package, plus an index. |
 | [[id:4EB66588-9DF4-4EF7-9F5C-416F88BE33E7][Draw the ER diagrams as SVG]] | DONE | 2026-10-09 | 2026-10-09 | The raster PNG overflows and the PNG and cmapx carry the installed PlantUML's layout. Emit SVG and untrack both. |
-| [[id:E2FA84AB-7F18-4998-8563-C2E749408B7F][Gate every ER diagram]] | BACKLOG | | | The er-diagram check reads one file. Make it cover every generated diagram, discovered rather than listed. |
 
 * Decisions
+
+The remainder is carried in [[id:FD9192F9-10B1-492B-915B-B53F813B277C][Gate every ER diagram]].
 
 *Taken: option A + F -- one diagram per package, drawn as SVG, with the
 PNG and cmapx removed from the tree.*

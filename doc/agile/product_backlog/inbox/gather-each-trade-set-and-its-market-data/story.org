@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: AC05783F-3917-4401-902B-40C5277300A7
+:END:
+#+title: Story: Gather each trade set and its market data
+#+description: Partition a report's trade population into trade sets and record them against the run, export one trade set as an archive and map it into the ORE portfolio, resolve and export each set's market data at its as-of, hand each configuration to its owner by id at an as-of, and assemble the package only w
+#+type: story
+#+level: s2
+#+filetags: :inbox:product_backlog:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Partition a report's trade population into trade sets and record them against the run, export one trade set as an archive and map it into the ORE portfolio, resolve and export each set's market data at its as-of, hand each configuration to its owner by id at an as-of, and assemble the package only when every declared input is present.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- The batcher records the sets it created against the run, and a strategy's parameters come from tables rather than the caller.
+- One trade set exports as an archive by its batch key and as-of, and the archive maps into the ORE portfolio, failing on a trade it cannot express.
+- A trade set's market data requirements resolve to series, observations and fixings read at the set's as-of, and the export is narrowed to them.
+- A configuration is fetched from its owner by id and as-of, and the package step runs only when every declared artifact exists, naming the missing ones.
+- Each convention kind that names an index or a curve holds an oresmd URI column.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D054BDD3-351F-42D3-9638-7D3BAEEAD332][Partition a run's trade population into trade sets]] | STARTED | 2026-10-08 | | Nothing in ores.trading can group trades. The run resolves its scope once, in gather_trades, and treats it as one bag of books, so one export object answers for every book. Give ores.trading a batcher with a pluggable strategy that partitions a report's trade population into trade sets, each with a name and an as-of; the simplest strategy batches by book. The set name is the batch key the rest of the run fans out over. PR 2875 landed the partitioning: the strategy interface, batch by book, the bounded-set strategy and composition. Recording the sets against the run waits on the trade group. |
+| [[id:8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807][Export a trade set as an archive]] | BACKLOG | | | trading.v1.ops.export_trades_to_storage takes book ids and no date and stores one blob for all of them: the export_portfolio_response, holding the trades and their typed instrument batch. The opaque payload is gone, so the ORE mapper can be driven from it — that is how the single-set run maps its portfolio today. What the export cannot do is answer for one set, because it names books and no as-of. Export one trade set at a time, by its batch key, and source everything the portfolio needs — trade headers, instruments and envelopes — into a zip whose shape is declared. The as-of travels on the set. |
+| [[id:18FFC5F4-6DEB-4E7F-B0C5-ECC359ED5A82][Map a trade set's archive into the ORE portfolio]] | BACKLOG | | | The exporter exists as ores.ore.xml::exporter::export_portfolio, which reverse-maps every instrument a trade carries and renders the portfolio with save_data(const portfolio&); the run path now calls it. Two things about it are wrong for a run that fans out over trade sets: it consumes the run's single export response rather than a trade set's archive, and it never fails — a trade it cannot reverse-map goes out as its type and envelope alone, and one whose ORE type the schema does not name is dropped. Move the mapper onto a trade set's archive and make an inexpressible trade stop the step, naming the trade. |
+| [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a trade set's market data requirements]] | BACKLOG | | | gather_market_data exports every series the tenant holds, at whatever the database happens to contain now, because no one can say which market data a set of trades actually needs. Resolve it, for one trade set: from its trades to the market data requirements they imply, expressed as oresmd, and from those requirements to the series, observations and fixings that answer them. The as-of is the set's. Decide how much of that resolution belongs in SQL, where the joins already live, and how much in the services. |
+| [[id:86994A25-E1C5-41AF-BE1D-E13F0667EFB1][Export the market data a trade set requires]] | BACKLOG | | | marketdata.v1.ops.export_market_data_to_storage takes no set and no date and writes the whole tenant's market data as one market file and one fixings file. A run that gathers per trade set needs the export narrowed to that set's resolved requirements and read at the set's as-of, so two runs of one set on different dates read different rows. |
+| [[id:75159083-58A4-4266-A64B-4FDC94EF0426][Hand each configuration to its owner by id at an as-of]] | BACKLOG | | | The run document's configuration documents are pulled synchronously inside prepare_ore_package: export_run calls each owner's document operation and waits, with the run token, one document at a time. A run that fans out over trade sets must be able to ask for one configuration by its id and as-of, have the owner write it to storage, and let the mapping happen later, so the package step waits on declared artifacts rather than on a call that blocks it. |
+| [[id:5B2B71A8-EE8E-4B9B-8D30-93BFB44282DA][Assemble the package once every input is present]] | BACKLOG | | | prepare_ore_package downloads whatever it is handed and packs it, so it cannot tell a run that is still gathering from one that is broken, and it fails on a missing input only when the engine reads it. Make the step consume the declared artifact set, run only when every artifact the run declared exists, and name the ones that are missing when it cannot. |
+| [[id:A13916C5-C2CF-4384-9CFD-911F8487A731][Link each convention to its market data series]] | BACKLOG | | | A convention's market-data reference is free text, so nothing can validate it or join it to a series. Give each convention kind that names an index or a curve one oresmd URI column, holding the address as a value, so refdata depends on the oresmd format as a contract only and never on the marketdata tables. |
+
+* Decisions
+
+* Out of scope
+
+-

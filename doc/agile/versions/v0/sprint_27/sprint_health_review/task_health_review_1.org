@@ -351,3 +351,32 @@ is genuinely finished, and carry the rest honestly. The next lever is focus —
 reduce the in-flight count and stop carrying the standing infrastructure
 programme in the same sprint as the UX pass. Sprint load, PR velocity and
 focus signal are RED together, so the overall verdict is RED.
+
+*** The close pass (2026-10-13)
+
+The close split every one of the 42 open stories into the part sprint 27
+delivered and the part it did not.
+
+- 21 stories were reworked and closed DONE. Each had its Goal and Acceptance
+  narrowed to the shipped scope, and its undelivered tasks moved into a new
+  successor story in the product backlog inbox. 20 successors were created;
+  one closed story — Hotfix: the seeded books have no purpose — had no
+  remainder and needed none.
+- 21 stories were carried whole to the inbox. Sixteen had no delivered task
+  at all. Five more had only a scaffolding or story-writing task DONE, which
+  does not satisfy the story's own Acceptance, so they were carried rather
+  than closed: build the retire or reset tenant journey, raise a notification
+  for a scenario waiting for a tester, restore the trading guards the
+  versioned model dropped, seed a relative-time trade population with the
+  market data it needs, and trace a process run and the trade groups it
+  creates.
+- 93 tasks moved with their successors. Each closed story names its successor
+  in its =* Decisions=; each carried story records that it came from sprint 27
+  at close.
+
+After the pass, sprint 27 holds 147 story files (146 DONE, 1 ABANDONED) and
+575 DONE tasks — no open story and no open task. The inbox grew from 326 to
+367 entries. The sprint table reads 146 DONE and 22 ABANDONED: the 21 carries
+plus the abandoned workspaces story. =compass sprint audit= fell from 26
+findings to 16; the 16 are the historical =Now= prose this review already
+recorded. The four charts were regenerated at the close.

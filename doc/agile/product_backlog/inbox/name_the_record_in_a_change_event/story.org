@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 7F612088-182C-415D-8B47-00D3C66B7A38
+:END:
+#+title: Story: Name the record in a change event
+#+description: A change event says that an entity changed and names no record, so a record screen cannot tell whether the change concerns the record it shows. Carry the key of the changed row on every entity event, pass it to the browser, and let a record screen go stale only for its own record.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:product_backlog:inbox:
+#+created: 2026-10-11
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A change event names the record that changed, on every entity in the system. The key already travels on the bus and the broker, in the payload of every typed event. The wire client, the BFF and the browser drop it. Carry it to the browser, so that a record page goes stale only when its own record changed, and a list still goes stale once for a bulk change. The protocol, the pipeline and the screen documents state the rule.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Test live with two sessions. Then the key log line and the other record pages. |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+- The protocol states that every entity event carries the key of the row that changed in its payload, and a test proves it. A key that cannot be read is logged.
+- The BFF tells a browser the keys of a change, up to a stated limit, and omits them for a bulk change. It joins the events of one entity that arrive close together into one message.
+- A record page goes stale only when its own record is among the keys, or the keys are omitted. A list behaves as before.
+- The drift gate and the conformance checks pass for every component.
+- The NATS entity protocol, the eventing pipeline, the Change notification page and the entity screen specification describe the rule.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:34293B98-59B2-4A67-AB11-290CBAE2BBD1][Prove the record key is on every entity event]] | STARTED | 2026-10-11 | | Task for: Name the record in a change event |
+| [[id:2A5A2501-B264-4D8C-9626-F5E74ABC1CD4][Tell the browser which records changed]] | BACKLOG | | | Task for: Name the record in a change event |
+| [[id:740F4FB7-8AE4-4DA0-BB26-81DB35972AF1][Stale a record page only for its own record]] | BACKLOG | | | Task for: Name the record in a change event |
+| [[id:07940056-8D24-4538-AB24-624BE68B82D8][Name the record in ores.qt]] | BACKLOG | | | Task for: Name the record in a change event |
+| [[id:9129A0EE-600A-40A4-AD2B-EBE3139F1505][Document the record key in change events]] | BACKLOG | | | Task for: Name the record in a change event |
+
+* Decisions
+
+Found in the live test of [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]]:
+
+- Diane changed her job title. Hazel was on her own page, and her Refresh button pulsed. Her record had not changed. The event says that the =accounts= entity changed, with a time, and names no record. The parent story chose a time and not a list, so that a bulk import makes a screen stale once.
+- That choice is right for a list and wrong for a record page. A pulse for a change that is not the person's own teaches them to ignore the pulse.
+
+What the code holds today, read at the start of the work:
+
+- The database notification carries =key=, the key of the row as a JSON object.
+- The typed event, such as =account_event=, carries =key= (an =account_key= with a =username=), =event_id=, =action=, =version=, =occurred_at= and =correlation_id=. The generated template sets =event.key= from the notification, so the key is in the NATS payload already.
+- The wire client decodes =occurred_at= and nothing else. The BFF passes =component=, =entity= and =at= to the browser. This is where the key is dropped. An earlier version of this page said the key was dropped between the notification and the typed event. That was wrong; it came from a search that hid the =key= line.
+
+What this story proposes:
+
+- No C++ or codegen change is needed to carry the key. One small thing stays: the template leaves the key empty without a word when it cannot read it, so a key that cannot be read is logged, and a test proves that the key is on the published payload.
+- The wire client passes the key object to the BFF.
+- The BFF joins the events of one entity that arrive within a short window into one =entity-changed= message. The message carries up to a small number of keys. A change with more keys than the limit, or an event with an empty key, omits them, which means /many/. A list ignores the keys.
+- A record page declares the record it shows, as a key object such as ={ username }=. It goes stale when its record is among the keys, or when the keys are omitted.
+
+Open decisions for the product owner:
+
+- The limit on keys in one message. The proposal is 20.
+- None on the key itself: the event carries the model's declared key (a username for an account), which is what a screen holds.
+
+* Out of scope
+
+- A dependent screen (a book showing a country name). The Change notification page states why.
+- The reporting line and role grants have no event of their own. They are in the parent story.

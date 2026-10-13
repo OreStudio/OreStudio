@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-10
-#+updated: 2026-10-10
+#+updated: 2026-10-13
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,62 +15,25 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-The ACME data that demonstrates the system reads as ORE sample data. The
-netting agreements, netting sets, CSAs and portfolios were built from the ORE
-examples and keep their names, their one currency, their retired overnight
-index and their test-book descriptions. The datasets carry the ORE catalogue,
-the ORE methodology and the ORE licence. A reader cannot tell the official
-ACME data from the data that exists only to make the samples import.
-
-This story separates the two and makes each one right.
-
-1. *The ACME base bundle is realistic.* It is inspired by the ORE samples and
-   improved. The ORE sample reporting configurations, CSAs, agreements and
-   portfolios are the starting point. The result looks and behaves like a real
-   group's data. It follows the report definitions that exist for each party,
-   and supplies the configuration those reports need to run.
-2. *The ORE samples bundle carries only what the sample import needs.* We keep
-   =ore_samples= and retarget it. It holds the reference data that makes the
-   ORE sample import work out of the box, and nothing else. Every item is
-   clearly labelled as ORE sample data. It installs on every party, so each
-   party can import the samples. Every import lands in a sandbox portfolio
-   tree, and its books go into that tree.
-
-The realistic ACME data and the sample data are different data. The ORE
-samples keep ORE's own CSA terms, so an imported sample still reproduces the
-ORE reference results. The ACME data does not copy ORE's terms.
+The ACME base bundle holds realistic agreements, netting sets, CSAs and portfolios for each party, and the ore_samples bundle carries only the labelled reference data the sample import needs and lands its imports in a sandbox portfolio tree.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The four tasks are done. Open items remain; see Next. |
-| Waiting on    | Nothing.                               |
-| Next          | Read the report definitions' needs and check the ACME base data against them. Prove the sample import for a second party. Add a default sandbox to the import wizard. |
-| Last touched  | 2026-10-10                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- Agreement number and netting set code are unique per party, and a CSA has
-  its own party. Two parties can hold the same codes.
-- The ACME base bundle holds realistic agreements, netting sets, CSAs and
-  portfolios for each party. Its datasets, methodology, catalogue and licence
-  are ACME's, not ORE's.
-- A reader of the ACME base data cannot tell it came from the ORE samples.
-  No code, name or description reads as test data.
-- The base bundle follows the report definitions each party holds. Every
-  netting set, counterparty and portfolio a seeded report definition names
-  exists for that party.
-- The =ore_samples= bundle holds only the reference data the sample import
-  needs. Every item in it is labelled as ORE sample data in its code and its
-  description.
-- The =ore_samples= bundle installs on every party. After provisioning, each
-  party resolves all 19 ORE netting set ids and the portfolio names the
-  samples use.
-- A sample import creates its portfolio and books inside a sandbox portfolio
-  tree. It creates nothing in the ACME portfolio tree.
+- Agreement number and netting set code are unique per party, and a CSA has its own party.
+- The ACME base bundle holds realistic agreements, netting sets, CSAs and portfolios for each party, with ACME datasets, methodology, catalogue and licence.
+- The ore_samples bundle holds only the reference data the sample import needs, every item is labelled as ORE sample data, and it installs on every party.
+- A sample import creates its portfolio and books inside a sandbox portfolio tree, and the import wizard and web default to that sandbox.
 - The sample CSAs keep ORE's terms.
 
 * Tasks
@@ -83,9 +46,10 @@ ORE reference results. The ACME data does not copy ORE's terms.
 | [[id:6F2B9202-0F43-48E2-B115-86D321B01228][Describe the story and its tasks]] | DONE | 2026-10-10 | 2026-10-10 | Write the story that splits the ACME data from the ORE samples, with its decisions, its open questions and its three tasks, from a read of the netting and portfolio datasets, the acme_demo profile and the party keys. |
 | [[id:CF12FE09-6733-4B9A-9911-3B2052D03B5F][Place the ORE import in the sample sandbox]] | DONE | 2026-10-10 | 2026-10-11 | Make the ORE import create its portfolios and virtual books inside the party's sample sandbox instead of the official portfolio tree. |
 | [[id:95AAA0FE-4748-4830-B18E-8DCFEDE2EFE8][Default the import wizard and web to the sample sandbox]] | DONE | 2026-10-11 | 2026-10-11 | Make the Qt import wizard and the web import choose the party's sample sandbox, so an import without a choice no longer enters the official tree. |
-| [[id:11AE607C-9F2B-479E-BAA7-36C743AC308F][Design the reports, configs and portfolio trees each ACME party runs]] | STARTED | 2026-10-11 | | Give each ACME party the reports it would really run, with the configuration those reports need and a realistic portfolio tree, root portfolio and currencies. Record and justify every decision for later review. |
 
 * Decisions
+
+The remainder is carried in [[id:8789FF50-9E1B-46A4-8DC0-9277C1B2825B][Design and seed the reports, configurations and portfolio trees each ACME party runs]].
 
 Taken with the product owner on 2026-10-10:
 

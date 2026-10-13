@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :refdata:journeys:ux:web:sprint_27:v0:
 #+created: 2026-10-07
-#+updated: 2026-10-09
+#+updated: 2026-10-13
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,40 +15,25 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-The five refdata journeys that were drawn and written in
-[[id:93E2D898-6098-4C1C-9C4E-0E8BFDF4E799][Write the refdata party,
-book, convention and tenor journeys]] work in =ores.web=, on the server
-changes each one needs. A tenant administrator onboards a counterparty,
-keeps a party's details current, shapes the book structure, defines the
-conventions for an instrument and defines how tenors resolve, on screens
-that match the accepted prototypes.
-
-Each journey document records what the server does not yet provide. The
-gaps are the tasks here, grouped by concern rather than by journey where
-several journeys need the same thing.
+Four of the five refdata journeys -- counterparty onboarding, party details, the book structure and the instrument conventions -- run in ores.web on the server changes each one needs. The tenor resolution journey is left to the successor.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Every server-side task is done and merged; the five screens are what remain. |
-| Waiting on    | Nothing.                               |
-| Next          | Build the five screens from their journey documents and accepted prototypes, in journey order. |
-| Last touched  | 2026-10-09                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- Each of the five journeys runs end to end in =ores.web= against the
-  live fleet, and matches the prototype the product owner accepted.
-- Every gap recorded in the five journey documents is either built or
-  recorded as dropped with its reason.
-- The operations and messages each journey names exist with the status
-  its coverage table claims, and the tables are corrected where they
-  say =missing= and the operation has since been built.
-- A person who is not a tenant administrator can reach the journeys
-  the catalogue assigns them.
+- The counterparty onboarding, party details, book structure and instrument convention journeys run end to end in ores.web against the live fleet and match their accepted prototypes.
+- The server gaps those four journeys name are built, and every gap is either built or recorded as dropped with its reason.
+- The operations and messages the journeys name exist with the status their coverage tables claim.
+- A person who is not a tenant administrator reaches the journeys the catalogue assigns them.
 
 * Tasks
 
@@ -69,24 +54,17 @@ several journeys need the same thing.
 | [[id:20994B80-87B6-4637-A1E6-3E8EFB99486A][Build the party details screen]] | DONE | 2026-10-10 | 2026-10-10 | Build journey 6 in ores.web from its document and prototype: the party list, overview, identifiers, contacts, memberships, structure, review, refusal and history.. Journeys 6. |
 | [[id:06486D5B-4BBB-4C08-91C2-14CA195329A1][Build the book structure screen]] | DONE | 2026-10-10 | 2026-10-10 | Build journey 7 in ores.web from its document and prototype: the portfolio tree, the book, its classification, the rights, the review, the refusal and the history.. Journeys 7. |
 | [[id:C8C40E6D-CB30-452D-ABBC-3CA7C97EA115][Build the instrument convention screen]] | DONE | 2026-10-10 | 2026-10-10 | Build journey 8 in ores.web from its document and prototype: the instrument picker, the convention, the terms, the review, the refusal and the history.. Journeys 8. |
-| [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] | BACKLOG | | | Build journey 9 in ores.web from its document and prototype: the tenor list, the tenor, its convention, the schedule, the resolved dates, the review, the refusal and the history.. Journeys 9. |
 | [[id:8F14837F-67BD-4FC3-854B-114B1E4F4CF2][Refuse from the outcome catalogue in every service]] | DONE | | 2026-10-08 | Second task for: Implement the refdata party, book, convention and tenor journeys |
-| [[id:75FC1047-7339-442F-983C-083DB8BD8C5E][Give the party memberships their versions]] | BACKLOG | | | Serve a versions read for the party_countries and party_currencies junctions, and settle whether the journey's membership history wants that read or the generic history route, which is blocked on a composite id. |
-| [[id:ABEC57F4-A85F-4D0E-83F6-1FC9C7C891AB][Serve the convention family mapping, its term filter and term rules]] | BACKLOG | | | Give the server the family-to-entity mapping, a term filter on the convention lists, an existence check on each term column, and a draft version in the history view. |
-| [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]] | BACKLOG | | | Add the resolve operation journey 9 draws in two places, and the refusal payload its failures should carry instead of a thrown exception reaching the screen as a 500. |
 | [[id:21B42DA6-013A-46D5-A2E0-866D43E872B9][Seed the tenor conventions' roll rule]] | DONE | 2026-10-09 | 2026-10-09 | business_day_convention_type was added to tenor_convention as a non-nullable, validated column, but no raw-SQL writer names it. A fresh compass db recreate fails in refdata_tenor_conventions_populate.sql, and a tenant provision fails copying the conventions. |
 | [[id:3EA34111-5FBA-4F35-B711-B9511B131293][Serve the counterparty routes from the BFF]] | DONE | 2026-10-10 | 2026-10-10 | Add the BFF routes the counterparty onboarding screen calls, so the screen runs against the live fleet: the page, the children, the pick lists, the composite write, the business centres and the visibility. |
-| [[id:2C468478-FE91-4067-BE3F-0BFBD6D23AA4][Address a portfolio right by account, portfolio and code]] | BACKLOG | | | The portfolio right's wire key is its code alone, so a grant collides across accounts and a removal reaches whichever account's row is found first. Give the right a key that names the account, the portfolio and the code, so the book structure screen can grant and remove rights. |
-| [[id:C37EA3F0-1A82-4E42-A21B-599C6873191A][Add the missing book-control actors to Acme]] | BACKLOG | | | The Acme dataset has no controller, no Finance account, no quant or IT user, and no second person for each approving part, so the book controls cannot be walked as Acme. Add the actors, and decide the roles their approvals use. |
 | [[id:FCABE1CB-D2AD-4674-9F1C-EE8A4643297A][State the kinds of book and the controls on each]] | DONE | 2026-10-10 | 2026-10-10 | The book notes never said which process applies to which kind of book, or who must approve a change, a move, a rights grant or a new portfolio. Write the note, take the decisions, and show the Acme gaps. |
 | [[id:BA13262B-EB14-492B-AD25-B4C46E3263A8][Draw the four-eyes controls in the book structure prototype]] | DONE | 2026-10-10 | 2026-10-10 | The book structure prototype lets one administrator write every change. The book controls note gates a new book, a change to a live book, a move, a rights grant and a new portfolio behind a second person. Draw the raise, wait, decide and decline states for sign-off before any screen is reworked. |
 | [[id:A6B218E1-56AA-4730-A140-421F7A1871E8][Draw the four-eyes controls in the other four prototypes]] | DONE | 2026-10-10 | 2026-10-10 | The book structure prototype draws the raise, wait, decide and decline states and is signed off. The counterparty, party, convention and tenor prototypes still let one administrator write every change. Draw the same states in each, with the decider the controls note names. |
 | [[id:B4092844-BBEE-486F-B26F-AF8D99D9A79B][Bring the party screens to the standard]] | DONE | 2026-10-13 | 2026-10-13 | Fix the party list and page against the entity screen specification and the record screen standard: nothing reloads by itself, a save does not reload the page, the part history buttons read by the row id, and the review's list of differences. |
-| [[id:808FFD73-439E-427E-BBAC-B9360B80BC7D][Filter a record list on the server]] | BACKLOG | | | Let a record list offer a type and a status filter that the server applies, starting with the party list. |
-| [[id:EC75DEEE-A08C-4ED0-8238-CF65C2C854D2][List the parts a party removed]] | BACKLOG | | | Add a history read by parent for party identifiers, contacts and business units, so the party timeline shows the ones that were removed. |
-| [[id:8F4FD36A-3EAA-44EA-B424-25ACB382C2D8][Window the party timeline]] | BACKLOG | | | Read a party's history a window at a time with a load-older control, and replace the read for each part row with one read for the party. |
 
 * Decisions
+
+The remainder is carried in [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]].
 
 - *The gaps are tasks, and they are grouped by concern.* Several
   journeys need the same thing: a refusal that names the field, a

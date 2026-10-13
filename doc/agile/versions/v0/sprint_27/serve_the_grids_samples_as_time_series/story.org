@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :compute:telemetry:web:grid:sprint_27:v0:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-13
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,27 +15,25 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A system administrator picks last hour, day or week and reads how the grid's load, fleet, throughput and outcomes moved, and which node was busy or quiet when. Both stored sample tables already hold the data. No subject reads a range of either, so the story adds the reads, serves them through the BFF, and draws the panels the Watch the grid journey names. A week of node samples is about half a million rows for 26 nodes, so the reads bucket the rows on the server. The second half reads ORE's runtimes.csv and its memory lines in the wrapper, so each node sample can also state how long the engine ran and how much memory it peaked at.
+Serve the grid's and the node samples as bucketed time series over a caller's range, page them through the BFF, and draw the load, fleet, throughput and outcomes panels on one shared time axis.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded. The findings below record what exists and what is missing. |
-| Waiting on    | Nothing.                               |
-| Next          | Read the grid samples over a range. |
-| Last touched  | 2026-10-11                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13 |
 
 * Acceptance
 
-- A grid sample range read returns the samples between two times, bucketed to a width the caller asks for, so a week comes back as hundreds of points and not tens of thousands.
-- A node sample range read returns one series per node over the same range and buckets, with the tasks done, failed, mean and longest duration and bytes moved.
+- A grid sample range read returns the samples between two times, bucketed to a width the caller asks for.
+- A node sample range read returns one series per node over the same range and buckets, with the tasks done, failed, durations and bytes moved.
 - Both reads serve the whole installation, are gated by a permission, and say an empty range is empty and not a flat line at zero.
 - The BFF serves both reads with the range presets of the other operations screens, and the grid screen draws load, fleet, throughput and outcomes on one shared time axis.
-- The grid screen draws the node load heatmap and the node state ribbon from the node series, grouped by machine.
-- A node sample carries the engine run time and the peak memory of its jobs, read from runtimes.csv and the memory lines, and the screen can chart them.
 
 * Tasks
 
@@ -46,10 +44,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:06CBD19C-E786-4F13-B037-62CD8609E2A1][Read the node samples over a range]] | DONE | | 2026-10-12 | One series per node over a range, bucketed on the server, with the failure fields and the machine name. |
 | [[id:C18E61DD-04F3-4F80-8C6F-FEF9A8108801][Serve the series through the BFF]] | DONE | | 2026-10-12 | A BFF route for the grid and node series, with the range presets of the other operations screens. |
 | [[id:F4472843-743E-42F1-8E14-948D27A498D9][Draw load, fleet, throughput and outcomes]] | DONE | | 2026-10-12 | The first panels of the Watch the grid journey on one shared time axis. |
-| [[id:C84D4CE6-CE41-4F7B-A71E-BAA8CA2F84FE][Draw the node heatmap and the state ribbon]] | BACKLOG | | | One row per node, one column per interval, grouped by machine. |
-| [[id:8737DBA8-5049-4F1F-934A-C7C49029EA91][Add the engine run time and peak memory to the node sample]] | BACKLOG | | | The wrapper reads ORE's runtimes.csv and its memory lines and reports them in the node sample. |
 | [[id:046E315D-EA73-4902-9863-B09BD883C235][Operate the grid across tenants and by party]] | DONE | 2026-10-12 | 2026-10-12 | Super admin sees the whole grid across tenants with a breakdown by tenant. A tenant admin sees the same screens for one tenant, broken down by party. |
-| [[id:DC09FAC1-7AFD-4B06-88B0-7702969D5535][Attribute job cost and show the grid to a tenant]] | BACKLOG | | | Give each host a cost rate and each result a cost, apportion idle cost, and open the grid screens to a tenant's administrator with a breakdown by party. Carries on from Operate the grid across tenants and by party. |
 | [[id:60802A8C-2F41-4D74-8485-D383E5F36EA9][Read each tenant's grid work inside the tenant]] | DONE | 2026-10-12 | 2026-10-12 | The operator's breakdown by tenant is built by entering each tenant and reading its usage there, as the tenancy documentation requires, and the three system-tenant read policies and the grid-wide summary that the first usage change added are removed. |
 | [[id:22BBF2AD-F2DE-44C0-A0A8-1C3FA66AB0B6][Show machines on a tab and draw the tenant pie]] | DONE | 2026-10-12 | 2026-10-12 | The machines table moves to its own tab, the Usage tab draws a pie of each group's share, and the no-host gap note is removed. |
 | [[id:CDCDA380-711C-4F7E-9AE4-A9CB91BBA5A6][Total the machines table]] | DONE | 2026-10-12 | 2026-10-12 | A totals row under the machines table sums the fleet's machines, hardware, nodes and tasks. |
@@ -61,9 +56,6 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | [[id:F80D0975-E69C-4E61-AC89-17318465B90E][Deploy to several hosts at the same time]] | DONE | 2026-10-13 | 2026-10-13 | compass env deploy copies an image with podman image scp, stages each host on its own, and takes several hosts in one command. |
 | [[id:85155A7E-FAB4-4828-BE50-875D84BA3D13][Free the claims a host abandoned]] | DONE | 2026-10-13 | 2026-10-13 | A claim whose reply was lost is returned to the queue when its host asks again, a heartbeat extends only the job the node runs, and the compute service has a larger database pool. |
 | [[id:6885C587-E059-48C8-A7CC-A37A1C615E6A][Prototype the grid's jobs browser]] | DONE | | 2026-10-13 | Journey and static prototype for the Jobs tab: a paged tree of batches, workunits and results with details and downloads. |
-| [[id:CB30997D-D8FF-45FC-AD6E-BB5070863CE0][Record the run statistics on the result]] | BACKLOG | | | Add started_at, finished_at, input_bytes, output_bytes and peak_memory_bytes to the result, and carry them in the submit message. |
-| [[id:209FA8E5-DA98-46A6-8805-96F79E2372FB][Measure the run statistics in the wrapper]] | BACKLOG | | | The wrapper measures the start and end of the engine run, the input and output bytes, and the engine's peak memory per job, and sends them with the result. |
-| [[id:CE7B06DF-5AD8-4FA3-9FA0-A5AA3E12E096][Aggregate the run statistics per workunit and batch]] | BACKLOG | | | A grouped read returns, for a workunit or a batch, the earliest start, the latest finish, the summed bytes and the largest peak memory of its results. |
 | [[id:45E304A8-CFCA-4855-9FA8-D7C2EFF228AF][Format the grid BFF route]] | DONE | | 2026-10-13 | Prettier flags packages/bff/src/operations.ts on main, which stops the web check before its tests run. |
 
 * Findings
@@ -125,6 +117,8 @@ Measured on 60 jobs unpacked from storage, each a 20 year interest rate swap.
   that, so the load panel states whose work it counts until then.
 
 * Decisions
+
+The remainder is carried in [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]].
 
 - The reads bucket on the server, and the caller asks for the width. The bucket
   is plain SQL on the epoch, so the read runs on a PostgreSQL without

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: FD9192F9-10B1-492B-915B-B53F813B277C
+:END:
+#+title: Story: Gate every ER diagram
+#+description: Make the er-diagram check compare every generated group diagram and the index, discovered from the model rather than a hard-coded list.
+#+type: story
+#+level: s2
+#+filetags: :inbox:product_backlog:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the er-diagram check compare every generated group diagram and the index, discovered from the model rather than a hard-coded list.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- The check compares every generated group file and the index, discovered from the model.
+- Adding a package or a table without regenerating turns the check red.
+- The check runs where the current one does and costs no more than a few seconds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E2FA84AB-7F18-4998-8563-C2E749408B7F][Gate every ER diagram]] | BACKLOG | | | The er-diagram check reads one file. Make it cover every generated diagram, discovered rather than listed. |
+
+* Decisions
+
+* Out of scope
+
+-

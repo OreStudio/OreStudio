@@ -53,6 +53,21 @@ using support::refusal_of;
 
 namespace {
 
+/**
+ * @brief Opens the approval gate of a service for the writes that follow.
+ *
+ * The gate refuses a write that no approved request carries. An apply names its
+ * request. A preview names none and is a rehearsal, because its transaction is
+ * never committed.
+ */
+template <typename Service>
+void open_gate(Service& svc, const std::string& request_id) {
+    if (request_id.empty())
+        svc.rehearse();
+    else
+        svc.carry_out_request(request_id);
+}
+
 constexpr auto kind_code = "refdata.counterparty_change";
 constexpr auto savepoint = "counterparty_line";
 
@@ -183,8 +198,10 @@ struct counterparty_kind {
     static std::string write(const ores::database::context& ctx,
                              const std::optional<row>& live,
                              const line& l,
-                             const change_intent& intent) {
+                             const change_intent& intent,
+                             const std::string& request_id) {
         counterparty_service svc(ctx);
+        open_gate(svc, request_id);
         if (l.operation == "put") {
             messaging::put_counterparty_request req;
             req.change.write = {.id = l.entity_id,
@@ -251,8 +268,10 @@ struct identifier_kind {
     static std::string write(const ores::database::context& ctx,
                              const std::optional<row>& live,
                              const line& l,
-                             const change_intent& intent) {
+                             const change_intent& intent,
+                             const std::string& request_id) {
         counterparty_identifier_service svc(ctx);
+        open_gate(svc, request_id);
         if (l.operation == "put") {
             messaging::put_counterparty_identifier_request req;
             req.change.write = {.id = l.entity_id,
@@ -288,7 +307,7 @@ struct link_kind {
     using repo = repository::party_counterparty_change_repository;
 
     static constexpr auto type = "party_counterparty";
-    static constexpr auto policy = "counterparty_party_link";
+    static constexpr auto policy = "party_counterparty";
 
     static std::string subject(const line& l) {
         return text_of(l.party_id) + " / " + text_of(l.counterparty_id);
@@ -316,8 +335,10 @@ struct link_kind {
     static std::string write(const ores::database::context& ctx,
                              const std::optional<row>& live,
                              const line& l,
-                             const change_intent& intent) {
+                             const change_intent& intent,
+                             const std::string& request_id) {
         party_counterparty_service svc(ctx);
+        open_gate(svc, request_id);
         if (l.operation == "put") {
             messaging::put_party_counterparty_request req;
             req.change.write = {.party_id = l.party_id, .counterparty_id = l.counterparty_id};
@@ -390,7 +411,7 @@ void preview_kind(const ores::database::context& ctx,
         in_transaction(ctx, std::string("savepoint ") + savepoint);
         try {
             out.refusal =
-                Kind::write(ctx, live, line, {line.change_reason_code, line.change_commentary});
+                Kind::write(ctx, live, line, {line.change_reason_code, line.change_commentary}, {});
         } catch (const std::exception& e) {
             // A refusal is the database's answer. A lost connection is not an
             // answer, and reporting it as one would hide it behind a refused line.
@@ -442,7 +463,7 @@ bool apply_kind(const ores::database::context& ctx,
                 row.change_reason_code,
                 "Approval request " + request_id +
                     (row.change_commentary.empty() ? "" : ": " + row.change_commentary)};
-            refusal = Kind::write(ctx, live, row, intent);
+            refusal = Kind::write(ctx, live, row, intent, request_id);
         } catch (const std::logic_error& e) {
             // The service refused the line's content before it reached the
             // store, and a retry would meet the same answer.

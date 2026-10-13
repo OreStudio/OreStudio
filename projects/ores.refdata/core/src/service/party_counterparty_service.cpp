@@ -34,9 +34,12 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
+#include "ores.refdata.core/repository/party_counterparty_change_repository.hpp"
+#include "ores.service/messaging/approval_gate.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
+#include <algorithm>
 
 namespace ores::refdata::service {
 
@@ -288,6 +291,10 @@ messaging::delete_party_counterparty_response party_counterparty_service::delete
         }
         expected = request.removal.precondition.version;
     }
+    if (const auto refused = gate_delete(read_one(repo_, request.removal.key), expected)) {
+        response.result = *refused;
+        return response;
+    }
     switch (
         repo_.remove(request.removal.key.party_id, request.removal.key.counterparty_id, expected)) {
         case repository::party_counterparty_repository::remove_status::removed:
@@ -333,6 +340,14 @@ party_counterparty_service::delete_many_party_counterparties(
     }
     if (request.removals.empty())
         return response;
+    // A batch carries no versions, so an approved line that claims one never
+    // matches here. The applier removes one link at a time, with its version.
+    for (const auto& removal : request.removals) {
+        if (const auto refused = gate_delete(read_one(repo_, removal.key), std::nullopt)) {
+            response.result = *refused;
+            return response;
+        }
+    }
     std::vector<boost::uuids::uuid> party_id_keys;
     party_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
@@ -354,6 +369,10 @@ party_counterparty_service::prepare_change(const messaging::party_counterparty_c
     ores::utility::domain::result result;
     out = to_domain(change.write);
     const auto current = read_one(repo_, key_from(out));
+    // The gate comes before the claim is checked, so an unapproved caller
+    // learns nothing about the link from a conflict.
+    if (const auto refused = gate_put(out, change.precondition))
+        return *refused;
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -392,4 +411,82 @@ party_counterparty_service::prepare_change(const messaging::party_counterparty_c
     return result;
 }
 
+void party_counterparty_service::carry_out_request(std::string request_id) {
+    pass_ = {.request_id = std::move(request_id), .rehearsal = false};
+}
+
+void party_counterparty_service::rehearse() {
+    pass_.rehearsal = true;
+}
+
+bool party_counterparty_service::holds_line(const std::string& operation,
+                                            const boost::uuids::uuid& party_id,
+                                            const boost::uuids::uuid& counterparty_id,
+                                            int base_version) {
+    if (pass_.request_id.empty())
+        return false;
+    // One more than the most a request may hold, so a request over the limit
+    // is seen as over it and never read as a shorter one.
+    constexpr std::uint32_t max_request_lines = 1000;
+    const auto lines = repository::party_counterparty_change_repository{}.read_latest_by_request_id(
+        ctx_, pass_.request_id, 0, max_request_lines + 1);
+    return std::ranges::any_of(lines, [&](const auto& l) {
+        return !l.applied && l.operation == operation && l.party_id == party_id &&
+               l.counterparty_id == counterparty_id && l.base_version == base_version;
+    });
+}
+
+std::optional<ores::utility::domain::result>
+party_counterparty_service::gate_put(const domain::party_counterparty& next,
+                                     const ores::utility::domain::precondition& claim) {
+    using ores::service::messaging::gate_verdict;
+    using ores::utility::domain::precondition_kind;
+    if (pass_.rehearsal)
+        return std::nullopt;
+    switch (ores::service::messaging::gate_verdict_of(
+        ctx_, "party_counterparty", "put", {}, pass_.request_id)) {
+        case gate_verdict::free:
+            return std::nullopt;
+        case gate_verdict::approved: {
+            // The line holds the version the maker read. A write with no claim
+            // names no line, so it never matches.
+            int base_version = -1;
+            if (claim.kind == precondition_kind::must_not_exist)
+                base_version = 0;
+            else if (claim.kind == precondition_kind::must_match_version && claim.version)
+                base_version = static_cast<int>(*claim.version);
+            if (holds_line("put", next.party_id, next.counterparty_id, base_version))
+                return std::nullopt;
+            break;
+        }
+        case gate_verdict::required:
+            break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "party_counterparty"});
+}
+
+std::optional<ores::utility::domain::result>
+party_counterparty_service::gate_delete(const std::vector<domain::party_counterparty>& live,
+                                        std::optional<std::uint32_t> expected) {
+    using ores::service::messaging::gate_verdict;
+    // A link that is not there has nothing to protect: the removal answers
+    // that it is missing.
+    if (pass_.rehearsal || live.empty())
+        return std::nullopt;
+    switch (ores::service::messaging::gate_verdict_of(
+        ctx_, "party_counterparty", "delete", {}, pass_.request_id)) {
+        case gate_verdict::free:
+            return std::nullopt;
+        case gate_verdict::approved:
+            if (holds_line("delete",
+                           live.front().party_id,
+                           live.front().counterparty_id,
+                           static_cast<int>(expected.value_or(0))))
+                return std::nullopt;
+            break;
+        case gate_verdict::required:
+            break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "party_counterparty"});
+}
 }

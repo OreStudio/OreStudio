@@ -23,7 +23,7 @@ multiple identifiers across different schemes.
 :product:       ores
 :component:     refdata
 :profile:   uuid-identified-lookup
-:pending_change: true
+:gated:     true
 :END:
 
 * Columns

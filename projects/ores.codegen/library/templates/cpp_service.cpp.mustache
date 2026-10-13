@@ -1093,6 +1093,11 @@ std::vector<ores::utility::domain::hierarchy_node>
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.database/domain/outcome_code.hpp"
+{{#gated}}
+#include "ores.{{component_core}}/repository/{{name_singular}}_change_repository.hpp"
+#include "ores.service/messaging/approval_gate.hpp"
+#include <algorithm>
+{{/gated}}
 
 namespace ores::{{component}}::service {
 
@@ -1375,6 +1380,12 @@ messaging::{{response}}
         }
         expected = request.removal.precondition.version;
     }
+{{#gated}}
+    if (const auto refused = gate_delete(read_one(repo_, request.removal.key), expected)) {
+        response.result = *refused;
+        return response;
+    }
+{{/gated}}
     switch (repo_.remove(request.removal.key.{{left.column}},
                          request.removal.key.{{right.column}}, expected)) {
     case repository::{{name_singular}}_repository::remove_status::removed:
@@ -1422,6 +1433,16 @@ messaging::{{response}}
     }
     if (request.removals.empty())
         return response;
+{{#gated}}
+    // A batch carries no versions, so an approved line that claims one never
+    // matches here. The applier removes one link at a time, with its version.
+    for (const auto& removal : request.removals) {
+        if (const auto refused = gate_delete(read_one(repo_, removal.key), std::nullopt)) {
+            response.result = *refused;
+            return response;
+        }
+    }
+{{/gated}}
     std::vector<{{left.cpp_type}}> {{left.column}}_keys;
     {{left.column}}_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
@@ -1446,6 +1467,12 @@ ores::utility::domain::result
     ores::utility::domain::result result;
     out = to_domain(change.write);
     const auto current = read_one(repo_, key_from(out));
+{{#gated}}
+    // The gate comes before the claim is checked, so an unapproved caller
+    // learns nothing about the link from a conflict.
+    if (const auto refused = gate_put(out, change.precondition))
+        return *refused;
+{{/gated}}
     switch (change.precondition.kind) {
     case precondition_kind::must_not_exist:
         if (!current.empty())
@@ -1493,6 +1520,84 @@ ores::utility::domain::result
 }
 
 {{/put_operations}}
+{{#gated}}
+void {{name_singular}}_service::carry_out_request(std::string request_id) {
+    pass_ = {.request_id = std::move(request_id), .rehearsal = false};
+}
+
+void {{name_singular}}_service::rehearse() {
+    pass_.rehearsal = true;
+}
+
+bool {{name_singular}}_service::holds_line(const std::string& operation,
+                                           const {{left.cpp_type}}& {{left.column}},
+                                           const {{right.cpp_type}}& {{right.column}},
+                                           int base_version) {
+    if (pass_.request_id.empty())
+        return false;
+    // One more than the most a request may hold, so a request over the limit
+    // is seen as over it and never read as a shorter one.
+    constexpr std::uint32_t max_request_lines = 1000;
+    const auto lines = repository::{{name_singular}}_change_repository{}.read_latest_by_request_id(
+        ctx_, pass_.request_id, 0, max_request_lines + 1);
+    return std::ranges::any_of(lines, [&](const auto& l) {
+        return !l.applied && l.operation == operation && l.{{left.column}} == {{left.column}} &&
+               l.{{right.column}} == {{right.column}} && l.base_version == base_version;
+    });
+}
+
+std::optional<ores::utility::domain::result>
+{{name_singular}}_service::gate_put(const domain::{{name_singular}}& next,
+                                    const ores::utility::domain::precondition& claim) {
+    using ores::service::messaging::gate_verdict;
+    using ores::utility::domain::precondition_kind;
+    if (pass_.rehearsal)
+        return std::nullopt;
+    switch (ores::service::messaging::gate_verdict_of(
+        ctx_, "{{name_singular}}", "put", {}, pass_.request_id)) {
+    case gate_verdict::free:
+        return std::nullopt;
+    case gate_verdict::approved: {
+        // The line holds the version the maker read. A write with no claim
+        // names no line, so it never matches.
+        int base_version = -1;
+        if (claim.kind == precondition_kind::must_not_exist)
+            base_version = 0;
+        else if (claim.kind == precondition_kind::must_match_version && claim.version)
+            base_version = static_cast<int>(*claim.version);
+        if (holds_line("put", next.{{left.column}}, next.{{right.column}}, base_version))
+            return std::nullopt;
+        break;
+    }
+    case gate_verdict::required:
+        break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "{{name_singular}}"});
+}
+
+std::optional<ores::utility::domain::result>
+{{name_singular}}_service::gate_delete(const std::vector<domain::{{name_singular}}>& live,
+                                       std::optional<std::uint32_t> expected) {
+    using ores::service::messaging::gate_verdict;
+    // A link that is not there has nothing to protect: the removal answers
+    // that it is missing.
+    if (pass_.rehearsal || live.empty())
+        return std::nullopt;
+    switch (ores::service::messaging::gate_verdict_of(
+        ctx_, "{{name_singular}}", "delete", {}, pass_.request_id)) {
+    case gate_verdict::free:
+        return std::nullopt;
+    case gate_verdict::approved:
+        if (holds_line("delete", live.front().{{left.column}}, live.front().{{right.column}},
+                       static_cast<int>(expected.value_or(0))))
+            return std::nullopt;
+        break;
+    case gate_verdict::required:
+        break;
+    }
+    return refuse(outcome_code::approval_required, {.entity = "{{name_singular}}"});
+}
+{{/gated}}
 {{/protocol_derived}}
 }
 {{/junction}}

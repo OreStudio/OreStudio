@@ -31,6 +31,7 @@
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_counterparty_repository.hpp"
+#include "ores.service/messaging/approval_gate.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>
@@ -96,6 +97,24 @@ public:
         const messaging::list_by_counterparty_id_party_counterparties_request& request);
     /**@}*/
 
+    /**
+     * @brief Lets this service's writes carry out an approved request.
+     *
+     * The approval policy gates the writes of this junction. A write passes
+     * only when it carries out a line that an approved request holds, so the
+     * applier names the request here before it writes. The pass is set in
+     * process: no field of a request a client sends can set it.
+     */
+    void carry_out_request(std::string request_id);
+
+    /**
+     * @brief Marks this service's writes as a rehearsal.
+     *
+     * A preview runs the real writes in a transaction it never commits. The
+     * gate lets a rehearsal through, because nothing it writes lasts.
+     */
+    void rehearse();
+
 private:
     context ctx_;
     repository::party_counterparty_repository repo_;
@@ -116,6 +135,38 @@ private:
     ores::utility::domain::result prepare_change(const messaging::party_counterparty_change& change,
                                                  const ores::utility::domain::change_intent& intent,
                                                  domain::party_counterparty& out);
+
+    ores::service::messaging::write_pass pass_;
+
+    /**
+     * @brief Asks the approval policy whether a put may be written.
+     *
+     * A link has no columns of its own, so the policy is asked with none and a
+     * row that names no column covers it.
+     *
+     * @return nullopt when the write may go ahead, otherwise the refusal.
+     */
+    std::optional<ores::utility::domain::result>
+    gate_put(const domain::party_counterparty& next,
+             const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Asks the approval policy whether a removal may be written.
+     *
+     * @return nullopt when the removal may go ahead, otherwise the refusal.
+     */
+    std::optional<ores::utility::domain::result>
+    gate_delete(const std::vector<domain::party_counterparty>& live,
+                std::optional<std::uint32_t> expected);
+
+    /**
+     * @brief True when the request named by the pass holds an unapplied line
+     * for exactly this operation, link and version.
+     */
+    bool holds_line(const std::string& operation,
+                    const boost::uuids::uuid& party_id,
+                    const boost::uuids::uuid& counterparty_id,
+                    int base_version);
 };
 
 }

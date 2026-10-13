@@ -96,12 +96,18 @@ TEST_CASE("a_value_that_is_no_term_follows_the_terms_in_its_stated_order", tags)
     CHECK(in_term_order({"odd", "1Y", "other", "1M"}) == strings{"1M", "1Y", "odd", "other"});
 }
 
+TEST_CASE("terms_a_few_days_apart_are_ordered_by_their_days", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A month counts as 30 days and a year as 365, so 12M is 360 days, 52W is 364
+    // and 1Y is 365. They are three lengths and not a tie.
+    CHECK(in_term_order({"1Y", "52W", "12M"}) == strings{"12M", "52W", "1Y"});
+}
+
 TEST_CASE("terms_of_equal_length_keep_their_stated_order", tags) {
     auto lg(make_logger(test_suite));
 
-    // 12M and 1Y are two spellings the shape holds as two values. A month counts
-    // as 30 days, so 12M is 360 days and 1Y is 365 and they do not tie; 52W is 364.
-    CHECK(in_term_order({"1Y", "52W", "12M"}) == strings{"12M", "52W", "1Y"});
+    // 7D and 1W are two spellings of seven days.
     CHECK(in_term_order({"7D", "1W"}) == strings{"7D", "1W"});
     CHECK(in_term_order({"1W", "7D"}) == strings{"1W", "7D"});
 }
@@ -138,4 +144,34 @@ TEST_CASE("an_imported_surface_is_read_with_its_expiries_in_order", tags) {
     CHECK(resp.nodes[2].coordinates.front() == "2Y");
     CHECK(resp.nodes[3].coordinates.front() == "10Y");
     CHECK(resp.values == strings{"0.070", "0.075", "0.085", "0.120"});
+}
+
+TEST_CASE("an_axis_that_is_no_term_keeps_the_order_its_source_stated", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    ores::marketdata::service::import_service svc(h.context(), auth_nats);
+    ores::marketdata::messaging::import_market_data_request req;
+    req.source = "test.series_shape";
+    // One expiry, and strikes stated in an order no sort by name or length gives.
+    req.market_data_content = "20180111 FX_OPTION/RATE_LNVOL/NZD/CNH/1Y/25RR 0.011\n"
+                              "20180111 FX_OPTION/RATE_LNVOL/NZD/CNH/1Y/ATM 0.080\n"
+                              "20180111 FX_OPTION/RATE_LNVOL/NZD/CNH/1Y/25BF 0.004\n";
+    REQUIRE(svc.import(req).success);
+
+    ores::marketdata::messaging::get_curve_snapshot_request snapshot_req;
+    snapshot_req.identity.asset = "fx";
+    snapshot_req.identity.scope = "NZD";
+    snapshot_req.identity.instrument_type = "fx_option";
+    snapshot_req.identity.quote_type = "rate_lnvol";
+    snapshot_req.identity.fields.push_back({"ccy", "CNH"});
+    const auto resp = ores::marketdata::service::series_snapshot_reader::read(
+        h.context(),
+        snapshot_req,
+        ores::platform::time::datetime::from_iso8601_utc("2018-01-12T00:00:00Z"));
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.nodes.size() == 3);
+    CHECK(resp.values == strings{"0.011", "0.080", "0.004"});
 }

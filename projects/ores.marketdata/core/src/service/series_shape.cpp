@@ -21,10 +21,12 @@
 #include "ores.marketdata.core/repository/series_axis_repository.hpp"
 #include "ores.marketdata.core/repository/series_axis_value_repository.hpp"
 #include <algorithm>
+#include <array>
 #include <compare>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -104,6 +106,7 @@ long long period_days(const std::string& text) {
             case 'W':
                 total += count * 7;
                 break;
+            case 'D':
             default:
                 total += count;
                 break;
@@ -123,16 +126,25 @@ long long digits_of(const std::string& text) {
     return number;
 }
 
+/// The place of an FX tenor among the overnight tenors: ON, then TN, then SN.
+long long fx_tenor_order(const std::string& text) {
+    constexpr std::array<std::string_view, 3> order{"ON", "TN", "SN"};
+    const auto at = std::ranges::find(order, text);
+    return static_cast<long long>(at - order.begin());
+}
+
 std::optional<term_rank> rank_of(const std::string& text) {
     const auto parsed = datum::term::parse(text);
     if (!parsed)
         return std::nullopt;
     switch (parsed->which()) {
         case datum::term::kind::fx_tenor:
-            return term_rank{0, text == "ON" ? 1 : (text == "TN" ? 2 : 3)};
+            return term_rank{0, fx_tenor_order(text)};
         case datum::term::kind::period:
             return term_rank{1, period_days(text)};
         case datum::term::kind::date:
+            // The term parser accepts YYYY-MM-DD and YYYYMMDD only, so the digits of
+            // a date sort as the date does. A date written another way would not.
             return term_rank{2, digits_of(text)};
         case datum::term::kind::continuation:
             return term_rank{3, digits_of(text)};

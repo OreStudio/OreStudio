@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
 #+branch: feature/clear-the-gate-failures
-#+pr:
+#+pr: 3257
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3257][#3257]] | [build,sql,iam,marketdata] Clear the local gates and platform breaks |
 
 * Review
 

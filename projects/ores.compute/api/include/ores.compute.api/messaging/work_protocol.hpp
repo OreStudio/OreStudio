@@ -25,6 +25,7 @@
 #ifndef ORES_COMPUTE_API_MESSAGING_WORK_PROTOCOL_HPP
 #define ORES_COMPUTE_API_MESSAGING_WORK_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 

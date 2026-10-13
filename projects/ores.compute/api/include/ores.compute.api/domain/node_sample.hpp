@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <cstdint>
 #include <string_view>
 
 namespace ores::compute::domain {

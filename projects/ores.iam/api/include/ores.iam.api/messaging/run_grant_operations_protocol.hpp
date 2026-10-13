@@ -25,6 +25,7 @@
 #ifndef ORES_IAM_API_MESSAGING_RUN_GRANT_OPERATIONS_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_RUN_GRANT_OPERATIONS_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 
 namespace ores::iam::messaging {

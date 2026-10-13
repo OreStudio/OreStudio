@@ -172,6 +172,7 @@ policy is what decides. Mutations stay tenant-scoped.
 
 #+begin_src cpp :name includes
 #include <chrono>
+#include <cstdint>
 #+end_src
 
 ** Conventions

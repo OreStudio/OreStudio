@@ -86,8 +86,9 @@ via its "Verifies task" field.
 
 * Result
 
-The account menu offers the other parties a person works in.
+The account menu offers Change party, which opens the same party choice a person sees when they sign in.
 
-- The list is read when the menu opens and is drawn only for a person who works in more than one party. It leaves out the party the session acts for.
-- Choosing one re-scopes the open session and reads every screen for that party again, so a screen never shows the old party's data under the new party's name.
-- A failure is said in the menu. The Where I work page switches party through the same session action and gains the same re-read.
+- The choice is one widget, =PartyChoice=, drawn by the sign-in page and by a dialog behind the menu item. It marks the party the session acts for and does not offer it again.
+- The menu item appears only when the person works in another party. The dialog names the parties by the name each has.
+- Choosing one re-scopes the open session and reads every screen again for that party, so a screen never shows the old party's data under the new party's name. A failure is said in the dialog.
+- The Where I work page still switches party through the same session action and gains the same re-read. Its Switch button is a second way to do the same thing and is left for a decision.

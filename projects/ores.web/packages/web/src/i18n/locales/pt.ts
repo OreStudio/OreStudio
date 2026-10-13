@@ -1682,6 +1682,7 @@ const pt: SourceCatalogue = {
                     party: 'A quota de uma parte é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
                 },
                 unavailable: 'Não foi possível ler',
+                outcomes: { title: 'Desfecho dos resultados concluídos nas últimas 24 horas' },
                 pie: {
                     tenant: 'Quota dos resultados por inquilino',
                     party: 'Quota dos resultados por parte',

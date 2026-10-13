@@ -1691,6 +1691,7 @@ const fr: SourceCatalogue = {
                     party: 'La part d’une partie est la fraction de ses résultats parmi tous les résultats de cette vue. Réussis et échoués comptent les dernières 24 heures.',
                 },
                 unavailable: 'N’a pas pu être lu',
+                outcomes: { title: 'Issue des résultats terminés ces dernières 24 heures' },
                 pie: {
                     tenant: 'Part des résultats par locataire',
                     party: 'Part des résultats par partie',

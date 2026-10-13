@@ -1,0 +1,16 @@
+Output of the probe evidence/common_dates_probe.sql, run in a transaction that rolls back.
+
+BEGIN
+SET
+SELECT 1
+INSERT 0 1
+INSERT 0 2
+INSERT 0 1
+ family |      trade_type_code       | trade_date | start_date | expiry_date | maturity_date
+--------+----------------------------+------------+------------+-------------+---------------
+ credit | CreditDefaultSwap          | 2026-04-28 | 2026-05-01 |             | 2031-05-01
+ credit | RiskParticipationAgreement |            | 2026-06-01 |             | 2037-12-16
+ rates  | ForwardRateAgreement       |            | 2026-04-01 |             | 2026-10-01
+(3 rows)
+
+ROLLBACK

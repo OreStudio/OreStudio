@@ -8,7 +8,7 @@
 #+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
 #+owner: marco
 #+branch: feature/prototype-browse-the-grids-jobs
-#+pr:
+#+pr: 3236
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3236][#3236]] | [compute] Prototype the grid's jobs browser |
 
 * Review
 

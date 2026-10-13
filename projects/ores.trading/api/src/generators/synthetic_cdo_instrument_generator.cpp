@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/synthetic_cdo_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -50,6 +51,11 @@ generate_synthetic_synthetic_cdo_instrument(utility::generation::generation_cont
     r.protection_start_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.attachment_point = 0.03;
     r.detachment_point = 0.07;
+    r.upfront_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.upfront_fee = ores::utility::decimal::decimal::from_string(
+                        std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                        .value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

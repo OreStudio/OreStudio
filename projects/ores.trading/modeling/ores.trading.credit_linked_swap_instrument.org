@@ -83,6 +83,26 @@ std::string("RED:2I65BYEG6")
 
 The fixed recovery rate as a fraction. Null when the document states none.
 
+** settles_accrual
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the accrued premium settles on default, from =SettlesAccrual=. Null when the document states none.
+
+** default_payment_time
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+When the default payment falls, from =DefaultPaymentTime= (e.g. atDefault). Null when the document states none.
+
 * Foreign keys
 
 ** trade_id
@@ -179,6 +199,7 @@ annotations; domain and repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
@@ -196,6 +217,7 @@ annotations; domain and repository profiles regenerate correctly.
 | trade_id | ID |
 | credit_curve_id | Credit Curve |
 | recovery_rate | Recovery Rate |
+| default_payment_time | Default Payment |
 | modified_by | Modified By |
 | version | Version |
 

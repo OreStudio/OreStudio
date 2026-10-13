@@ -49,6 +49,24 @@ render_synthetic_cdo_instrument_fields(const domain::synthetic_cdo_instrument& v
     fields.push_back({.name = "Detachment Point", .value = std::to_string(v.detachment_point)});
     fields.push_back({.name = "Recovery Rate",
                       .value = v.recovery_rate ? std::to_string(*v.recovery_rate) : std::string{}});
+    fields.push_back(
+        {.name = "Settles Accrual",
+         .value = v.settles_accrual ? (*v.settles_accrual ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Rebates Accrual",
+         .value = v.rebates_accrual ? (*v.rebates_accrual ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Pays At Default Time",
+                      .value = v.pays_at_default_time ?
+                                   (*v.pays_at_default_time ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Protection Payment Time",
+                      .value = v.protection_payment_time.value_or(std::string{})});
+    fields.push_back({.name = "Upfront Date",
+                      .value = v.upfront_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                    *v.upfront_date) :
+                                                std::string{}});
+    fields.push_back({.name = "Upfront Fee",
+                      .value = v.upfront_fee ? v.upfront_fee->to_string() : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

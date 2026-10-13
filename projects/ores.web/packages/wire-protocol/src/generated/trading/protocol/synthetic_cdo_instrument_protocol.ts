@@ -40,6 +40,12 @@ export interface SyntheticCdoInstrumentWrite {
     attachment_point: number;
     detachment_point: number;
     recovery_rate: number | null;
+    settles_accrual: boolean | null;
+    rebates_accrual: boolean | null;
+    pays_at_default_time: boolean | null;
+    protection_payment_time: string | null;
+    upfront_date: string | null;
+    upfront_fee: string | null;
 }
 
 export interface SyntheticCdoInstrumentChange {

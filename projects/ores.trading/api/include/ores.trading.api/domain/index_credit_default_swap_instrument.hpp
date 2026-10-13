@@ -25,9 +25,11 @@
 #ifndef ORES_TRADING_API_DOMAIN_INDEX_CREDIT_DEFAULT_SWAP_INSTRUMENT_HPP
 #define ORES_TRADING_API_DOMAIN_INDEX_CREDIT_DEFAULT_SWAP_INSTRUMENT_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -75,6 +77,64 @@ struct index_credit_default_swap_instrument final {
      * @brief The credit curve of the index, from the required CreditCurveId element.
      */
     std::string credit_curve_id;
+
+    /**
+     * @brief The issuer the index swap names, from IssuerId. Null when the document states none.
+     */
+    std::optional<std::string> issuer_id;
+
+    /**
+     * @brief Whether the accrued premium settles on default, from SettlesAccrual. Null when the
+     * document states none.
+     */
+    std::optional<bool> settles_accrual;
+
+    /**
+     * @brief Whether the accrued premium is rebated, from RebatesAccrual. Null when the document
+     * states none.
+     */
+    std::optional<bool> rebates_accrual;
+
+    /**
+     * @brief Whether the protection pays at the default time, from PaysAtDefaultTime. Null when the
+     * document states none.
+     */
+    std::optional<bool> pays_at_default_time;
+
+    /**
+     * @brief When the protection payment falls, from ProtectionPaymentTime (e.g. atDefault). Null
+     * when the document states none.
+     */
+    std::optional<std::string> protection_payment_time;
+
+    /**
+     * @brief The protection start date, from ProtectionStart. Null when the document states none.
+     */
+    std::optional<std::chrono::year_month_day> protection_start_date;
+
+    /**
+     * @brief The date the upfront fee is paid, from UpfrontDate. Null when the document states
+     * none.
+     */
+    std::optional<std::chrono::year_month_day> upfront_date;
+
+    /**
+     * @brief The upfront fee, from UpfrontFee. Money, so an exact decimal that keeps the digits the
+     * document wrote. Null when the document states none.
+     */
+    std::optional<ores::utility::decimal::decimal> upfront_fee;
+
+    /**
+     * @brief The trade date the data block states, from TradeDate. Null when the document states
+     * none.
+     */
+    std::optional<std::chrono::year_month_day> trade_date;
+
+    /**
+     * @brief The cash settlement lag in days, from CashSettlementDays. Null when the document
+     * states none.
+     */
+    std::optional<int> cash_settlement_days;
 
     /**
      * @brief Username of the person who last modified this index credit default swap instrument.
@@ -130,6 +190,16 @@ struct index_credit_default_swap_instrument final {
  */
 inline constexpr std::string_view index_credit_default_swap_instrument_economic_fields[] = {
     "credit_curve_id",
+    "issuer_id",
+    "settles_accrual",
+    "rebates_accrual",
+    "pays_at_default_time",
+    "protection_payment_time",
+    "protection_start_date",
+    "upfront_date",
+    "upfront_fee",
+    "trade_date",
+    "cash_settlement_days",
 };
 
 /**

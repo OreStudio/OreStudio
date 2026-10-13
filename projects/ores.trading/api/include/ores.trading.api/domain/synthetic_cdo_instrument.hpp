@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_SYNTHETIC_CDO_INSTRUMENT_HPP
 #define ORES_TRADING_API_DOMAIN_SYNTHETIC_CDO_INSTRUMENT_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -99,6 +100,42 @@ struct synthetic_cdo_instrument final {
     std::optional<double> recovery_rate;
 
     /**
+     * @brief Whether the accrued premium settles on default, from SettlesAccrual. Null when the
+     * document states none.
+     */
+    std::optional<bool> settles_accrual;
+
+    /**
+     * @brief Whether the accrued premium is rebated, from RebatesAccrual. Null when the document
+     * states none.
+     */
+    std::optional<bool> rebates_accrual;
+
+    /**
+     * @brief Whether the protection pays at the default time, from PaysAtDefaultTime. Null when the
+     * document states none.
+     */
+    std::optional<bool> pays_at_default_time;
+
+    /**
+     * @brief When the protection payment falls, from ProtectionPaymentTime (e.g. atDefault). Null
+     * when the document states none.
+     */
+    std::optional<std::string> protection_payment_time;
+
+    /**
+     * @brief The date the upfront fee is paid, from UpfrontDate. Null when the document states
+     * none.
+     */
+    std::optional<std::chrono::year_month_day> upfront_date;
+
+    /**
+     * @brief The upfront fee, from UpfrontFee. Money, so an exact decimal that keeps the digits the
+     * document wrote. Null when the document states none.
+     */
+    std::optional<ores::utility::decimal::decimal> upfront_fee;
+
+    /**
      * @brief Username of the person who last modified this synthetic CDO instrument.
      */
     std::string modified_by;
@@ -156,6 +193,12 @@ inline constexpr std::string_view synthetic_cdo_instrument_economic_fields[] = {
     "attachment_point",
     "detachment_point",
     "recovery_rate",
+    "settles_accrual",
+    "rebates_accrual",
+    "pays_at_default_time",
+    "protection_payment_time",
+    "upfront_date",
+    "upfront_fee",
 };
 
 /**

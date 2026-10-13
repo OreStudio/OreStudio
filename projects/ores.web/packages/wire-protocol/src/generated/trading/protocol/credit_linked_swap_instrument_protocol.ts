@@ -37,6 +37,8 @@ export interface CreditLinkedSwapInstrumentWrite {
     trade_activity_id: string;
     credit_curve_id: string;
     recovery_rate: number | null;
+    settles_accrual: boolean | null;
+    default_payment_time: string | null;
 }
 
 export interface CreditLinkedSwapInstrumentChange {

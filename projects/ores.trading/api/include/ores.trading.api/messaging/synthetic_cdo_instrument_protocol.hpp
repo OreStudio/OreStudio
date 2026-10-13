@@ -47,6 +47,12 @@ struct synthetic_cdo_instrument_write {
     double attachment_point;
     double detachment_point;
     std::optional<double> recovery_rate;
+    std::optional<bool> settles_accrual;
+    std::optional<bool> rebates_accrual;
+    std::optional<bool> pays_at_default_time;
+    std::optional<std::string> protection_payment_time;
+    std::optional<std::chrono::year_month_day> upfront_date;
+    std::optional<ores::utility::decimal::decimal> upfront_fee;
 };
 
 struct synthetic_cdo_instrument_change {

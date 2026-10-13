@@ -48,6 +48,8 @@ struct credit_linked_swap_instrument_entity {
     std::string trade_activity_id;
     std::string credit_curve_id;
     std::optional<double> recovery_rate;
+    std::optional<bool> settles_accrual;
+    std::optional<std::string> default_payment_time;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

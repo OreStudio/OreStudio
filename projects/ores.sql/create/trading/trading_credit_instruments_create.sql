@@ -240,6 +240,21 @@ begin
     delete from "ores_trading_instrument_schedule_dates_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_options_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_premiums_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_exercise_fees_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_payment_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_exercise_prices_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
     delete from "ores_trading_cds_instruments_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;

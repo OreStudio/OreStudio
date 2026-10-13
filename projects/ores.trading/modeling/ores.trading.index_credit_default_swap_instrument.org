@@ -73,6 +73,106 @@ The credit curve of the index, from the required =CreditCurveId= element.
 std::string("RED:2I65BYEG6")
 #+end_src
 
+** issuer_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The issuer the index swap names, from =IssuerId=. Null when the document states none.
+
+** settles_accrual
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the accrued premium settles on default, from =SettlesAccrual=. Null when the document states none.
+
+** rebates_accrual
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the accrued premium is rebated, from =RebatesAccrual=. Null when the document states none.
+
+** pays_at_default_time
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the protection pays at the default time, from =PaysAtDefaultTime=. Null when the document states none.
+
+** protection_payment_time
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+When the protection payment falls, from =ProtectionPaymentTime= (e.g. atDefault). Null when the document states none.
+
+** protection_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The protection start date, from =ProtectionStart=. Null when the document states none.
+
+** upfront_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date the upfront fee is paid, from =UpfrontDate=. Null when the document states none.
+
+** upfront_fee
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The upfront fee, from =UpfrontFee=. Money, so an exact decimal that keeps the digits the document wrote. Null when the document states none.
+
+** trade_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The trade date the data block states, from =TradeDate=. Null when the document states none.
+
+** cash_settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The cash settlement lag in days, from =CashSettlementDays=. Null when the document states none.
+
 * Foreign keys
 
 ** trade_id
@@ -138,6 +238,7 @@ is immutable.
 | expression |
 |------------|
 | "credit_curve_id" <> '' |
+| "cash_settlement_days" is null or "cash_settlement_days" >= 0 |
 
 * C++
 
@@ -168,8 +269,11 @@ annotations; domain and repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions
@@ -183,6 +287,8 @@ annotations; domain and repository profiles regenerate correctly.
 |--------+--------|
 | trade_id | ID |
 | credit_curve_id | Credit Curve |
+| issuer_id | Issuer |
+| upfront_fee | Upfront Fee |
 | modified_by | Modified By |
 | version | Version |
 

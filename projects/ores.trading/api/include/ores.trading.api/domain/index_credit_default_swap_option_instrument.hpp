@@ -28,6 +28,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -38,10 +39,10 @@ namespace ores::trading::domain {
 /**
  * @brief Index credit default swap option facts.
  *
- * Represents an IndexCreditDefaultSwapOption trade. The option wraps an index swap, whose credit
- * curve is this table's one column, so the trade has this row and no row in
- * index_credit_default_swap_instruments. The strike and the exercise dates are the shared
- * instrument_strikes and schedule rows.
+ * Represents an IndexCreditDefaultSwapOption trade. The option wraps an index swap, so the trade
+ * also has a row in index_credit_default_swap_instruments for the wrapped swap's own fields. The
+ * strike, the option block and the exercise dates are the shared instrument_strikes, option and
+ * schedule rows.
  *
  * This row is the family's fact table, not its identity. The header,
  * ores.trading.credit_instrument, holds the trade type code, the party, the
@@ -74,9 +75,32 @@ struct index_credit_default_swap_option_instrument final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief The credit curve of the wrapped index swap, from the required CreditCurveId element.
+     * @brief Whether the option knocks out, from KnockOut. Null when the document states none.
      */
-    std::string credit_curve_id;
+    std::optional<bool> knock_out;
+
+    /**
+     * @brief The index term, from IndexTerm (e.g. 5Y). Null when the document states none.
+     */
+    std::optional<std::string> index_term;
+
+    /**
+     * @brief How the strike is quoted, from StrikeType: Spread or Price. Null when the document
+     * states none.
+     */
+    std::optional<std::string> strike_type;
+
+    /**
+     * @brief The trade date the data block states, from TradeDate. Null when the document states
+     * none.
+     */
+    std::optional<std::chrono::year_month_day> trade_date;
+
+    /**
+     * @brief The front-end protection start date, from FrontEndProtectionStartDate. Null when the
+     * document states none.
+     */
+    std::optional<std::chrono::year_month_day> front_end_protection_start_date;
 
     /**
      * @brief Username of the person who last modified this index credit default swap option
@@ -132,7 +156,11 @@ struct index_credit_default_swap_option_instrument final {
  * Declared by the model's :economic: property on each column.
  */
 inline constexpr std::string_view index_credit_default_swap_option_instrument_economic_fields[] = {
-    "credit_curve_id",
+    "knock_out",
+    "index_term",
+    "strike_type",
+    "trade_date",
+    "front_end_protection_start_date",
 };
 
 /**

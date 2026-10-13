@@ -345,6 +345,17 @@ export function FeedTreeTab(): ReactNode {
               ? (rows.find((row) => row.id === parsed.id)?.name ?? '')
               : t('marketdata.synthetic.tree.all');
 
+    // The collection the person is looking at: a provider with one, or the one a folder sits in.
+    const chosenCollection =
+        parsed?.kind === 'provider'
+            ? ((): string => {
+                  const ofProvider = collections.filter((one) => one.provider_code === parsed.code);
+                  return ofProvider.length === 1 ? (ofProvider[0]?.id ?? '') : '';
+              })()
+            : parsed?.kind === 'folder'
+              ? (folderChain(rows, parsed.id).find((row) => row.kind === 'collection')?.id ?? '')
+              : '';
+
     const ids = feeds.map((feed) => feed.id);
     const count = pickedCount(picked, total);
     const names = (): string =>
@@ -710,7 +721,7 @@ export function FeedTreeTab(): ReactNode {
                     </div>
                 </div>
             )}
-            {adding && <AddFeed onClose={() => setAdding(false)} />}
+            {adding && <AddFeed collectionId={chosenCollection} onClose={() => setAdding(false)} />}
             {runs.dialog}
         </div>
     );

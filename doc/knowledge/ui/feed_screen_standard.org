@@ -412,8 +412,14 @@ children are the asset class folders; a provider with several lists its collecti
   resolves the feeds with the same filter that pages the table, so a set of thousands
   costs one small request and the screen never holds the ids. A toast says what started,
   what was already running and what was skipped.
-- /Add feed/ asks for the kind, FX or IR, and opens its form. The feed's page opens when
-  it is saved.
+- /Add feed/ asks for the kind, FX or IR, and opens its form with the collection the person
+  is looking at. The database places the feed in the folder of its kind under that
+  collection, and makes the folders that are missing, so the feed shows in the tree at once.
+  The feed's page opens when it is saved.
+- Starting and stopping a feed needs the permission =synthetic::feeds:run=, beside the read
+  of the feed configs the verb touches. The screen draws Start and Stop only for a person
+  who holds it, on the dashboard, in the feed table and on a feed's page. Every verb that
+  starts or stops, one feed, a folder or a selection, checks it in the service.
 - A node has an address, =?tab=tree&node=provider:bloomberg= or
   =?tab=tree&node=folder:<id>=, and the filters are in the address too, so a link opens
   the tree as it was.

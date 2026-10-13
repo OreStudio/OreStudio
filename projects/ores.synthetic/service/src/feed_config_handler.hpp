@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_CONFIG_HANDLER_HPP
 
 #include "feed_controller.hpp"
+#include "client_message.hpp"
 #include "feed_kind_registry.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -105,10 +106,11 @@ public:
             return;
         }
 
-        if (!has_permission(req_ctx, target->row.kind->config_permission)) {
+        if (!has_permission(req_ctx, target->row.kind->config_permission) ||
+            !feed_kind_registry::permits_run(req_ctx)) {
             BOOST_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Rejecting start request: missing permission "
-                << target->row.kind->config_permission << ".";
+                << target->row.kind->config_permission << " or " << run_permission << ".";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -133,8 +135,9 @@ public:
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             resp.success = false;
-            resp.message = std::string("Failed to start feed: ") + e.what();
-            BOOST_LOG_SEV(feed_config_handler_lg(), error) << msg.subject << " — " << resp.message;
+            resp.message = "The feed failed to start. " + client_message(e);
+            BOOST_LOG_SEV(feed_config_handler_lg(), error)
+                << msg.subject << " — failed to start: " << e.what();
             reply(nats_, msg, resp);
         }
     }
@@ -147,6 +150,13 @@ public:
         if (!ctx_expected)
             return;
         const auto& req_ctx = *ctx_expected;
+
+        if (!feed_kind_registry::permits_run(req_ctx)) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+                << "Rejecting stop request: missing permission " << run_permission << ".";
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
 
         auto req = decode<stop_feed_request>(msg);
         if (!req) {

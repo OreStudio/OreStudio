@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 2F9298B7-2BE4-493F-9F2E-B91AB9EF55A8
+:END:
+#+title: Task: Guard feed runs with a permission, tell the client only its own mistakes, and place a feed added by hand
+#+description: Closes the follow-ups of the Synthetic screen: a run permission, the raw error text, and the feed with no folder.
+#+type: task
+#+level: s1
+#+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
+#+owner: marco
+#+branch: feature/feed-permissions-and-handler-errors
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Starting and stopping a feed needs its own permission. The older handlers answer a fixed sentence for any failure but the caller's mistake. A feed added by hand lands in the folder of its kind.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- Every verb that starts or stops a feed checks synthetic::feeds:run, and the screen draws the buttons only for a person who holds it
+- A client reads the message of an invalid argument and a fixed sentence for any other failure
+- A feed added with no folder is placed under its collection, and the missing folders are made
+
+* Plan
+
+- A new permission, =synthetic::feeds:run=, in the IAM catalogue. Every verb that starts or stops a feed checks it with the read of the configs it touches: one feed, a folder, a selection. The one-feed stop checked nothing before. The wildcard =synthetic::*= and the admin roles cover it.
+- =client_message= decides what a client reads about a failure: the message of an invalid argument, which is written for the caller, and a fixed sentence for anything else. The five older handlers and the simulate path use it, and the log keeps the cause.
+- A trigger after the generated insert trigger places a feed that names no folder in the instrument type folder of its kind under its collection, and makes the folders that are missing. The publish function already named the same folders. The Add feed form starts with the collection the person is looking at.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

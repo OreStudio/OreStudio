@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_IR_PARAMETER_CONVERSION_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_IR_PARAMETER_CONVERSION_HANDLER_HPP
 
+#include "client_message.hpp"
 #include "feed_kind_registry.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -132,7 +133,7 @@ public:
             }
             resp.success = true;
         } catch (const std::exception& e) {
-            resp.message = e.what();
+            resp.message = client_message(e);
             BOOST_LOG_SEV(ir_parameter_conversion_handler_lg(), warn)
                 << "convert_ir_parameters refused: " << e.what();
         }

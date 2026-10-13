@@ -56,6 +56,7 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 | [[id:C19FC1F4-5654-457E-92D1-E2EACF8912F5][Build the feed tree]] | DONE | | 2026-10-13 | The tree of every feed by scope, provider and feed kind: opened a level at a time, counted by the service, searched by words, with start and stop at any folder, and a feed's page whose trail runs through it. |
 | [[id:60864476-FE24-4D5F-B9F7-044C97746D23][Give every feed a provider and an asset class, and start or stop a selection on the server]] | DONE | 2026-10-13 | 2026-10-13 | The server side of the single Synthetic screen: providers, asset classes, filters and selection. |
 | [[id:DE9F3227-DADD-4638-9D0E-D76EF4FE9D6E][Make Synthetic one screen with a dashboard and a feed tree]] | DONE | 2026-10-13 | 2026-10-13 | The web side: one screen with two tabs replaces the overview, the tree and the two lists. |
+| [[id:2F9298B7-2BE4-493F-9F2E-B91AB9EF55A8][Guard feed runs with a permission, tell the client only its own mistakes, and place a feed added by hand]] | DONE | 2026-10-13 | 2026-10-13 | Closes the follow-ups of the Synthetic screen: a run permission, the raw error text, and the feed with no folder. |
 
 * Decisions
 

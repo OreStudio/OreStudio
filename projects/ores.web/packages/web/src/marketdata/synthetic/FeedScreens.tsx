@@ -22,6 +22,8 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, type RecordRow } from '../../api/client.js';
+import { useHeld } from '../../access/holds.js';
+import { PERMISSION } from '../../access/permissions.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import {
     RecordDetails,
@@ -108,6 +110,7 @@ function FeedBody({
         show(feed['folder_id']),
     );
     const may = useRecordPermissions(kind.resource);
+    const mayRun = useHeld()(PERMISSION.feedsRun);
     const check = kind.useCheck();
     const parts = useFeedParts(kind, id);
     const { tab, bar } = useRecordTabs({
@@ -144,7 +147,7 @@ function FeedBody({
                 own={
                     <>
                         <FeedStatus running={running} />
-                        {may.write && running !== undefined && (
+                        {mayRun && running !== undefined && (
                             <Button
                                 size="sm"
                                 pending={runs.pending}

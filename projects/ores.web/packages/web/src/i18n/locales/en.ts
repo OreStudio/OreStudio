@@ -4157,6 +4157,7 @@ export const en: SourceCatalogue = {
         observationsWrite: 'adjust market data points by hand',
         fxFeedsRead: 'see the synthetic FX price feeds',
         irFeedsRead: 'see the synthetic IR curve feeds',
+        feedsRun: 'start and stop the synthetic feeds',
     },
 
     unavailable: {

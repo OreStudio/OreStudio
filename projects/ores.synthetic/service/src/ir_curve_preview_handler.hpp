@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_IR_CURVE_PREVIEW_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_PREVIEW_HANDLER_HPP
 
+#include "client_message.hpp"
 #include "feed_kind_registry.hpp"
 #include "ir_curve_preview_process.hpp"
 #include "ores.database/domain/context.hpp"
@@ -158,7 +159,7 @@ public:
             resp.success = true;
         } catch (const std::exception& e) {
             resp.success = false;
-            resp.message = e.what();
+            resp.message = client_message(e);
             BOOST_LOG_SEV(ir_curve_preview_handler_lg(), warn)
                 << "preview_shape failed: " << e.what();
         }

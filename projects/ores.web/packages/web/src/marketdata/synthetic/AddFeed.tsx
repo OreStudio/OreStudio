@@ -40,9 +40,11 @@ export function useMayAddFeed(): boolean {
 /** The form of one kind of feed; the feed's own page opens when it is saved. */
 function AddFeedForm({
     kind,
+    collectionId,
     onClose,
 }: {
     readonly kind: FeedKind;
+    readonly collectionId: string;
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -55,7 +57,9 @@ function AddFeedForm({
             specs={kind.fields}
             row={undefined}
             given={{ id: crypto.randomUUID(), folder_id: null }}
-            initial={kind.initial}
+            initial={
+                collectionId === '' ? kind.initial : { ...kind.initial, config_id: collectionId }
+            }
             complete={kind.complete}
             check={check}
             onClose={onClose}
@@ -67,14 +71,21 @@ function AddFeedForm({
 }
 
 /**
- * Add feed: choose the kind of feed, then fill its form. The feed is saved
- * outside every folder; its page opens next, where its process is set.
+ * Add feed: choose the kind of feed, then fill its form. The collection the person is
+ * looking at is the one the form starts with. The database places the feed in the
+ * folder of its kind under that collection; its page opens next, where its process is set.
  */
-export function AddFeed({ onClose }: { readonly onClose: () => void }): ReactNode {
+export function AddFeed({
+    collectionId,
+    onClose,
+}: {
+    readonly collectionId: string;
+    readonly onClose: () => void;
+}): ReactNode {
     const { t } = useTranslation();
     const [kind, setKind] = useState<FeedKind | undefined>();
     if (kind !== undefined) {
-        return <AddFeedForm kind={kind} onClose={onClose} />;
+        return <AddFeedForm kind={kind} collectionId={collectionId} onClose={onClose} />;
     }
     return (
         <Dialog

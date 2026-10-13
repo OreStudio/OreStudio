@@ -4191,6 +4191,7 @@ const pt: SourceCatalogue = {
         observationsWrite: 'ajustar à mão pontos de dados de mercado',
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
         irFeedsRead: 'ver os fluxos de curvas de taxas sintéticos',
+        feedsRun: 'iniciar e parar os feeds sintéticos',
     },
 
     unavailable: {

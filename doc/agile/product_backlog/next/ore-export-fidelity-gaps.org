@@ -31,8 +31,6 @@ required element:
 | =Commodity_Swap_LME_AL_AVG_ALT.xml= | =Quantity= | 38 |
 | =Commodity_Swap_NYMEX_A7Q.xml= | =Quantity= | 38 |
 | =Commodity_Swaption_NYMEX_NG.xml= | =Quantity= | 26 |
-| =Credit_RiskParticipationAgreement_on_CallableSwap.xml= | =LegData= | 18 |
-| =Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml= | =LegData= | 18 |
 | =Exotic_EquityAccumulator_single_name.xml= | =RangeBound= | 31 |
 | =Exotic_EquityTaRF.xml= | =BarrierData= | 30 |
 | =Exotic_EquityWorstOfBasketSwap.xml= | =InitialPrice= | 26 |
@@ -42,6 +40,10 @@ required element:
 | =Exotic_PerformanceOption_01_COM.xml= | =StrikePrice= | 27 |
 | =Exotic_PerformanceOption_01_FX.xml= | =StrikePrice= | 35 |
 | =FX_WorstOfBasketSwap.xml= | =InitialPrice= | 26 |
+
+The two risk participation agreement documents were listed here. The credit
+rework fixed them: the agreement now stores and exports its protection fee,
+its underlying and its participation rate, and both documents re-read.
 
 Run of 2026-09-26 over the 132 documents:
 

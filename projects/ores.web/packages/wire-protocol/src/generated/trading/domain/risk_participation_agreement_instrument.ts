@@ -38,6 +38,9 @@ export interface RiskParticipationAgreementInstrument {
     credit_curve_id: string;
     issuer_id: string | null;
     recovery_rate: number | null;
+    participation_rate: number;
+    settles_accrual: boolean | null;
+    naked_option: boolean | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

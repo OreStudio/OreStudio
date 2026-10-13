@@ -109,6 +109,9 @@ to_domain(const messaging::risk_participation_agreement_instrument_write& write)
     v.credit_curve_id = write.credit_curve_id;
     v.issuer_id = write.issuer_id;
     v.recovery_rate = write.recovery_rate;
+    v.participation_rate = write.participation_rate;
+    v.settles_accrual = write.settles_accrual;
+    v.naked_option = write.naked_option;
     return v;
 }
 

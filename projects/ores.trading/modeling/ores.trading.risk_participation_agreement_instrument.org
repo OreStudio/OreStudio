@@ -15,8 +15,11 @@
 #+created: 2026-10-12
 #+updated: 2026-10-12
 
-Represents the product facts of a RiskParticipationAgreement trade: the credit curve, the issuer and
-the fixed recovery rate. The protection start and end are the header's start and maturity dates.
+Represents the product facts of a RiskParticipationAgreement trade: the participation rate, the credit
+curve, the issuer, the fixed recovery rate and the two flags. The protection start and end are the
+header's start and maturity dates. The protection fee is a list of legs in the =protection_fee= group of
+=swap_legs=, and the underlying's legs are in the =underlying= group. The underlying's option block is
+the shared option rows, which the agreement owns because it has no option of its own.
 
 This row is the family's fact table, not its identity. The header,
 =ores.trading.credit_instrument=, holds the trade type code, the party, the
@@ -93,6 +96,41 @@ The issuer the agreement names, from the =IssuerId= element. Null when the docum
 
 The fixed recovery rate as a fraction. Null when the document states none.
 
+** participation_rate
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:economic:      true
+:END:
+
+The share of the underlying's loss the agreement participates in, from the required =ParticipationRate= element, as a fraction. Continuous, so a binary float.
+
+#+begin_src cpp :name generator
+0.9
+#+end_src
+
+** settles_accrual
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the accrued premium settles on default, from =SettlesAccrual=. Null when the document states none.
+
+** naked_option
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the underlying's option is naked, from the underlying's =NakedOption=. Null when the document states none.
+
 * Foreign keys
 
 ** trade_id
@@ -158,6 +196,7 @@ is immutable.
 | expression |
 |------------|
 | "credit_curve_id" <> '' |
+| "participation_rate" >= 0 and "participation_rate" <= 1 |
 | "recovery_rate" is null or ("recovery_rate" >= 0 and "recovery_rate" <= 1) |
 
 * C++
@@ -205,6 +244,7 @@ annotations; domain and repository profiles regenerate correctly.
 |--------+--------|
 | trade_id | ID |
 | credit_curve_id | Credit Curve |
+| participation_rate | Participation |
 | issuer_id | Issuer |
 | recovery_rate | Recovery Rate |
 | modified_by | Modified By |

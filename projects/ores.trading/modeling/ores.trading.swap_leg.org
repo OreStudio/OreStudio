@@ -300,7 +300,7 @@ is immutable.
 |---|
 | "leg_number" >= 1 |
 | "currency" <> '' |
-| "leg_group" is null or "leg_group" in ('premium', 'independent', 'contingent', 'default', 'recovery', 'underlying') |
+| "leg_group" is null or "leg_group" in ('premium', 'independent', 'contingent', 'default', 'recovery', 'underlying', 'protection_fee') |
 
 ** Indexes
 

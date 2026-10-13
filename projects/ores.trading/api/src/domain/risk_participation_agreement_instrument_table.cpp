@@ -46,11 +46,11 @@ std::string convert_to_table(const std::vector<risk_participation_agreement_inst
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Credit Curve" << "Issuer" << "Recovery Rate" << "Modified By"
-          << "Version" << fort::endr;
+    table << fort::header << "ID" << "Credit Curve" << "Participation" << "Issuer"
+          << "Recovery Rate" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rp : v) {
-        table << rp.trade_id << rp.credit_curve_id << opt_str(rp.issuer_id)
+        table << rp.trade_id << rp.credit_curve_id << rp.participation_rate << opt_str(rp.issuer_id)
               << opt_str(rp.recovery_rate) << rp.modified_by << rp.version << fort::endr;
     }
     return table.to_string();

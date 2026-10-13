@@ -142,16 +142,17 @@ void risk_participation_agreement_instrument_commands::register_commands(cli::Me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> <reason> "
-        "<commentary>");
+        "add <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> "
+        "<participation_rate> <settles_accrual> <naked_option> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> <reason> "
-        "<commentary> [--version <n>]");
+        "set <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> "
+        "<participation_rate> <settles_accrual> <naked_option> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +160,8 @@ void risk_participation_agreement_instrument_commands::register_commands(cli::Me
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> "
-        "<recovery_rate> <reason> <commentary>");
+        "<recovery_rate> <participation_rate> <settles_accrual> <naked_option> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -352,8 +354,8 @@ void risk_participation_agreement_instrument_commands::process_add(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -364,6 +366,11 @@ void risk_participation_agreement_instrument_commands::process_add(
             req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
         read_token(req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
         read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        read_token(
+            req.change.write.participation_rate, parsed->positionals[next++], "participation_rate");
+        read_token(
+            req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+        read_token(req.change.write.naked_option, parsed->positionals[next++], "naked_option");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -405,8 +412,8 @@ void risk_participation_agreement_instrument_commands::process_set(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -417,6 +424,11 @@ void risk_participation_agreement_instrument_commands::process_set(
             req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
         read_token(req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
         read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        read_token(
+            req.change.write.participation_rate, parsed->positionals[next++], "participation_rate");
+        read_token(
+            req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+        read_token(req.change.write.naked_option, parsed->positionals[next++], "naked_option");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -470,8 +482,8 @@ void risk_participation_agreement_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -484,6 +496,11 @@ void risk_participation_agreement_instrument_commands::process_put_many(
                 change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
             read_token(change.write.issuer_id, parsed->positionals[next++], "issuer_id");
             read_token(change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+            read_token(
+                change.write.participation_rate, parsed->positionals[next++], "participation_rate");
+            read_token(
+                change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+            read_token(change.write.naked_option, parsed->positionals[next++], "naked_option");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

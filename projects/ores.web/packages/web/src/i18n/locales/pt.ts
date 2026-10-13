@@ -3726,9 +3726,9 @@ const pt: SourceCatalogue = {
                 startTitle: 'Iniciar {name}?',
                 stopTitle: 'Parar {name}?',
                 startBody:
-                    'O serviço inicia cada feed de {name} que não corre. Depois diz o que iniciou, o que já corria e o que ignorou.',
+                    'O serviço inicia cada um destes feeds que não corre. Depois diz o que iniciou, o que já corria e o que ignorou.',
                 stopBody:
-                    'O serviço para cada feed de {name} que corre. Um feed ligado para para cada parte ligada a ele.',
+                    'O serviço para cada um destes feeds que corre. Um feed ligado para para cada parte ligada a ele.',
                 startReport:
                     '{started} iniciados em {name}. {already} já corriam, {skipped} ignorados.',
                 stopReport: '{stopped} parados em {name}.',
@@ -3749,6 +3749,7 @@ const pt: SourceCatalogue = {
                 shouldRun: 'Devia correr e não corre',
                 clearShouldRun: 'Remover este filtro',
                 selected: '{count} selecionados',
+                pickName: 'os {count} feeds que escolheu',
                 selectAll: 'Selecionar os {count} que correspondem',
                 allMatching: 'Cada feed que corresponde ao filtro, exceto os que desmarcar.',
                 clear: 'Limpar',

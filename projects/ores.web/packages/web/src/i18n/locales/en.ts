@@ -3700,9 +3700,9 @@ export const en: SourceCatalogue = {
                 startTitle: 'Start {name}?',
                 stopTitle: 'Stop {name}?',
                 startBody:
-                    'The service starts every feed of {name} that is not running. It then says what started, what already ran and what it skipped.',
+                    'The service starts each of these feeds that is not running. It then says what started, what already ran and what it skipped.',
                 stopBody:
-                    'The service stops every feed of {name} that is running. A bound feed stops for every party bound to it.',
+                    'The service stops each of these feeds that is running. A bound feed stops for every party bound to it.',
                 startReport:
                     'Started {started} of {name}. {already} already running, {skipped} skipped.',
                 stopReport: 'Stopped {stopped} of {name}.',
@@ -3722,6 +3722,7 @@ export const en: SourceCatalogue = {
                 shouldRun: 'Should run and does not',
                 clearShouldRun: 'Clear this filter',
                 selected: '{count} selected',
+                pickName: 'the {count} feeds you selected',
                 selectAll: 'Select all {count} that match',
                 allMatching: 'Every feed that matches the filter, except those you unselect.',
                 clear: 'Clear',

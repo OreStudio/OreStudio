@@ -326,7 +326,7 @@ export function FeedTreeTab(): ReactNode {
     const ids = feeds.map((feed) => feed.id);
     const count = pickedCount(picked, total);
     const names = (): string =>
-        t('marketdata.synthetic.tree.selected', { count: count.toLocaleString() });
+        t('marketdata.synthetic.tree.pickName', { count: count.toLocaleString() });
     const ask = (action: 'start' | 'stop'): void =>
         runs.ask(action, { name: names(), selection: selectionRequest(picked, filter) });
     const { first, last } = pageBounds(offset, feeds.length);
@@ -383,38 +383,42 @@ export function FeedTreeTab(): ReactNode {
                                 aria-label={t('marketdata.synthetic.tree.search')}
                                 onChange={(event) => setTyped(event.target.value)}
                             />
-                            <Select
-                                className="w-36"
-                                value={state}
-                                aria-label={t('marketdata.synthetic.tree.stateFilter')}
-                                onChange={(event) =>
-                                    narrow({
-                                        state:
-                                            event.target.value === 'all' ? '' : event.target.value,
-                                    })
-                                }
-                            >
-                                {STATES.map((one) => (
-                                    <option key={one} value={one}>
-                                        {t(`marketdata.synthetic.tree.states.${one}`)}
+                            <div className="w-36 shrink-0">
+                                <Select
+                                    value={state}
+                                    aria-label={t('marketdata.synthetic.tree.stateFilter')}
+                                    onChange={(event) =>
+                                        narrow({
+                                            state:
+                                                event.target.value === 'all'
+                                                    ? ''
+                                                    : event.target.value,
+                                        })
+                                    }
+                                >
+                                    {STATES.map((one) => (
+                                        <option key={one} value={one}>
+                                            {t(`marketdata.synthetic.tree.states.${one}`)}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </div>
+                            <div className="w-48 shrink-0">
+                                <Select
+                                    value={assetClass}
+                                    aria-label={t('marketdata.synthetic.tree.classFilter')}
+                                    onChange={(event) => narrow({ class: event.target.value })}
+                                >
+                                    <option value="">
+                                        {t('marketdata.synthetic.tree.allClasses')}
                                     </option>
-                                ))}
-                            </Select>
-                            <Select
-                                className="w-44"
-                                value={assetClass}
-                                aria-label={t('marketdata.synthetic.tree.classFilter')}
-                                onChange={(event) => narrow({ class: event.target.value })}
-                            >
-                                <option value="">
-                                    {t('marketdata.synthetic.tree.allClasses')}
-                                </option>
-                                {ASSET_CLASSES.map((code) => (
-                                    <option key={code} value={code}>
-                                        {t(`marketdata.synthetic.assetClass.${code}`)}
-                                    </option>
-                                ))}
-                            </Select>
+                                    {ASSET_CLASSES.map((code) => (
+                                        <option key={code} value={code}>
+                                            {t(`marketdata.synthetic.assetClass.${code}`)}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </div>
                             {mayAdd && (
                                 <Button variant="primary" onClick={() => setAdding(true)}>
                                     {t('marketdata.synthetic.tree.add')}

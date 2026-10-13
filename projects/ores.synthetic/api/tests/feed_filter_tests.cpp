@@ -163,6 +163,11 @@ TEST_CASE("feed_filter refuses a selection that names nothing and narrows nothin
     f.provider_code = "ore";
     CHECK(selection_problem(f).empty());
     f = {};
+    f.state = "started";
+    CHECK(selection_problem(f).empty());
+    f.state = "stopped";
+    CHECK(selection_problem(f).empty());
+    f = {};
     f.should_run = true;
     CHECK(selection_problem(f).empty());
     f = {};

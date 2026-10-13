@@ -3751,9 +3751,9 @@ const fr: SourceCatalogue = {
                 startTitle: 'Démarrer {name} ?',
                 stopTitle: 'Arrêter {name} ?',
                 startBody:
-                    "Le service démarre chaque flux de {name} qui ne tourne pas. Il dit ensuite ce qui a démarré, ce qui tournait déjà et ce qu'il a ignoré.",
+                    "Le service démarre chacun de ces flux qui ne tourne pas. Il dit ensuite ce qui a démarré, ce qui tournait déjà et ce qu'il a ignoré.",
                 stopBody:
-                    "Le service arrête chaque flux de {name} qui tourne. Un flux lié s'arrête pour chaque partie liée à lui.",
+                    "Le service arrête chacun de ces flux qui tourne. Un flux lié s'arrête pour chaque partie liée à lui.",
                 startReport:
                     '{started} démarrés pour {name}. {already} tournaient déjà, {skipped} ignorés.',
                 stopReport: '{stopped} arrêtés pour {name}.',
@@ -3773,6 +3773,7 @@ const fr: SourceCatalogue = {
                 shouldRun: 'Devrait tourner et ne tourne pas',
                 clearShouldRun: 'Retirer ce filtre',
                 selected: '{count} sélectionnés',
+                pickName: 'les {count} flux que vous avez choisis',
                 selectAll: 'Sélectionner les {count} qui correspondent',
                 allMatching:
                     'Chaque flux qui correspond au filtre, sauf ceux que vous désélectionnez.',

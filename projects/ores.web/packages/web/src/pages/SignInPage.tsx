@@ -24,6 +24,7 @@ import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { ApiFailure } from '../api/transport.js';
+import { PartyChoice, type PartyOption } from '../ui/PartyChoice.js';
 import { PasswordInput } from '../ui/PasswordField.js';
 import { JourneySplash } from '../journeys/parts.js';
 import type { SignInOutcome } from '../session/SessionProvider.js';
@@ -130,7 +131,7 @@ export function SignInPage({
      * on the screen can make it work: the sign-in has to begin again. So the
      * screen says so and returns to the form, and keeps the password out of it.
      */
-    const choose = async (party: PartySummary): Promise<void> => {
+    const choose = async (party: PartyOption): Promise<void> => {
         setFailure(undefined);
         try {
             await onChooseParty(party.id, parties ?? []);
@@ -153,21 +154,12 @@ export function SignInPage({
                     <Notice tone="error">{failure}</Notice>
                 </div>
             )}
-            <ul className="mt-4 space-y-2">
-                {(parties ?? []).map((party) => (
-                    <li key={party.id}>
-                        <Button
-                            variant="secondary"
-                            className="w-full justify-start"
-                            onClick={() => {
-                                void choose(party);
-                            }}
-                        >
-                            {party.name}
-                        </Button>
-                    </li>
-                ))}
-            </ul>
+            <PartyChoice
+                parties={parties ?? []}
+                onChoose={(party) => {
+                    void choose(party);
+                }}
+            />
         </>
     );
 

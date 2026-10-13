@@ -91,6 +91,8 @@ const pt: SourceCatalogue = {
             whereIWork: 'Onde trabalho',
             changeParty: 'Mudar de parte',
             changePartyFailed: 'Não foi possível mudar de parte.',
+            changePartyHint: 'Escolha a parte em nome da qual atua.',
+            currentParty: 'atual',
             profile: 'O meu perfil',
         },
     },

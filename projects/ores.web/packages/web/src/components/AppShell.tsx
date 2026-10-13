@@ -28,7 +28,8 @@ import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
-import { Button, Notice } from '../ui/Primitives.js';
+import { Button, Dialog, Notice } from '../ui/Primitives.js';
+import { PartyChoice } from '../ui/PartyChoice.js';
 import { useDismiss } from '../ui/useDismiss.js';
 import { useHeld } from '../access/holds.js';
 import { displayName } from '../access/names.js';
@@ -241,30 +242,33 @@ function AccountMenu({
 }): ReactNode {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
-    const [switching, setSwitching] = useState(false);
+    const [changing, setChanging] = useState(false);
     const [failure, setFailure] = useState('');
     /*
-     * The person's parties are read when the menu opens and not before, so a
-     * page that never opens it does not ask. A person who works in one party
-     * has nothing to change to and is offered no list.
+     * A person who works in one party has nothing to change to, so the menu
+     * offers the change only when the session can switch and there is another
+     * party. The choice itself is the sign-in's own widget.
      */
     const parties = useQuery({
         queryKey: ['my-parties'],
         queryFn: api.myParties,
-        enabled: open && onSwitchParty !== undefined,
+        enabled: onSwitchParty !== undefined,
     });
-    const others = partiesToChangeTo(parties.data?.parties ?? [], partyId);
+    const mine = (parties.data?.parties ?? []).map((party) => ({
+        id: party.partyId,
+        name: party.name !== '' ? party.name : party.shortCode,
+    }));
+    const mayChange =
+        onSwitchParty !== undefined &&
+        partiesToChangeTo(parties.data?.parties ?? [], partyId).length > 0;
     const change = async (target: string): Promise<void> => {
         if (onSwitchParty === undefined) return;
-        setSwitching(true);
         setFailure('');
         try {
             await onSwitchParty(target);
-            close();
+            setChanging(false);
         } catch (error) {
             setFailure(error instanceof Error ? error.message : t('shell.menu.changePartyFailed'));
-        } finally {
-            setSwitching(false);
         }
     };
     const root = useRef<HTMLDivElement>(null);
@@ -320,24 +324,21 @@ function AccountMenu({
                         {t('nav.security')}
                     </Link>
                 </div>
-                {others.length > 0 && (
-                    <div className="space-y-0.5 border-b border-line py-1.5">
-                        <div className="px-2 pb-1 text-xs font-medium text-ink-muted">
+                {mayChange && (
+                    <div className="border-b border-line py-1.5">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            role="menuitem"
+                            className="w-full justify-start"
+                            onClick={() => {
+                                close();
+                                setFailure('');
+                                setChanging(true);
+                            }}
+                        >
                             {t('shell.menu.changeParty')}
-                        </div>
-                        {others.map((party) => (
-                            <button
-                                key={party.partyId}
-                                type="button"
-                                role="menuitem"
-                                disabled={switching}
-                                className={`${item} w-full truncate text-left disabled:opacity-60`}
-                                onClick={() => void change(party.partyId)}
-                            >
-                                {party.name !== '' ? party.name : party.shortCode}
-                            </button>
-                        ))}
-                        {failure !== '' && <Notice tone="error">{failure}</Notice>}
+                        </Button>
                     </div>
                 )}
                 <div className="pt-1.5">
@@ -355,6 +356,21 @@ function AccountMenu({
                     </Button>
                 </div>
             </div>
+            {changing && (
+                <Dialog title={t('shell.menu.changeParty')} onClose={() => setChanging(false)}>
+                    <p className="text-sm text-ink-muted">{t('shell.menu.changePartyHint')}</p>
+                    {failure !== '' && (
+                        <div className="mt-4">
+                            <Notice tone="error">{failure}</Notice>
+                        </div>
+                    )}
+                    <PartyChoice
+                        parties={mine}
+                        current={partyId}
+                        onChoose={(party) => void change(party.id)}
+                    />
+                </Dialog>
+            )}
         </div>
     );
 }

@@ -92,6 +92,8 @@ export const en: SourceCatalogue = {
             whereIWork: 'Where I work',
             changeParty: 'Change party',
             changePartyFailed: 'The party could not be changed.',
+            changePartyHint: 'Choose the party to act for.',
+            currentParty: 'current',
             profile: 'My profile',
         },
     },

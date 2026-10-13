@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/fix-the-feed-filter-test-call
-#+pr:
+#+pr: 3261
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3261][#3261]] | [synthetic] Pass the system caller in the feed filter test |
 
 * Review
 

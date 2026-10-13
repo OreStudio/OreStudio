@@ -85,3 +85,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The party page hears about its links, and the person page about its roles.
+
+- The party page gained a Refresh button. It turns gold when the party, its identifiers, contacts or business units change, or when one of its own party's country, currency or counterparty links changes. It no longer reloads on its own, and history entries that arrive with a read pulse.
+- The party and person timelines show a link opened, changed and closed, and a closing names the account that closed it.
+- Done in the earlier link history and keyed history tasks, and in the IAM modelling story: the link histories, the roles taken away and the change events for the six junctions.

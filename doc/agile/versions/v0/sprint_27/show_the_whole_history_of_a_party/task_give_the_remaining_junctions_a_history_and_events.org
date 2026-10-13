@@ -85,3 +85,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Sixteen more junctions state what their component can serve.
+
+- History and change events: six refdata links, the two dq links and the IAM role grant request role. History only: the refdata calendar date, whose key is a date, and the three inbox links and the marketdata link, whose components compose no change events yet.
+- Neither: the assets image tag, the compute app version platform and the reporting report type configuration type. Their components serve no generic history, and each model says so.
+- The new providers are registered in their components and the new event registrars composed in the dq, iam and refdata services. The notify triggers are in the create and drop scripts.
+- Merging main brought the export macro on service classes, so the thirteen junction service headers and the three inbox ones are regenerated. The two stale IAM entries are dropped from the entity table writes baseline.
+- A flaky role grant applier test, which assumed the first role read was not already held, now picks a role the person lacks.

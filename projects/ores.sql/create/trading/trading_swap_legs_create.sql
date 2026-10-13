@@ -94,7 +94,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_number" >= 1),
     check ("currency" <> ''),
-    check ("leg_group" is null or "leg_group" in ('premium', 'independent', 'contingent', 'default', 'recovery', 'underlying'))
+    check ("leg_group" is null or "leg_group" in ('premium', 'independent', 'contingent', 'default', 'recovery', 'underlying', 'protection_fee'))
 );
 
 -- Version uniqueness for optimistic concurrency

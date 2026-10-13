@@ -88,8 +88,6 @@ const std::set<std::string>& known_export_gaps() {
         "Commodity_Swap_LME_AL_AVG_ALT.xml",
         "Commodity_Swap_NYMEX_A7Q.xml",
         "Commodity_Swaption_NYMEX_NG.xml",
-        "Credit_RiskParticipationAgreement_on_CallableSwap.xml",
-        "Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml",
         "Exotic_EquityAccumulator_single_name.xml",
         "Exotic_EquityTaRF.xml",
         "Exotic_EquityWorstOfBasketSwap.xml",

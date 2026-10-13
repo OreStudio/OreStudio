@@ -45,6 +45,13 @@ std::vector<ores::diff::domain::field_value> render_risk_participation_agreement
     fields.push_back({.name = "Issuer ID", .value = v.issuer_id.value_or(std::string{})});
     fields.push_back({.name = "Recovery Rate",
                       .value = v.recovery_rate ? std::to_string(*v.recovery_rate) : std::string{}});
+    fields.push_back({.name = "Participation Rate", .value = std::to_string(v.participation_rate)});
+    fields.push_back(
+        {.name = "Settles Accrual",
+         .value = v.settles_accrual ? (*v.settles_accrual ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Naked Option",
+         .value = v.naked_option ? (*v.naked_option ? "true" : "false") : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate>
-     * <reason> <commentary>
+     * <participation_rate> <settles_accrual> <naked_option> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate>
-     * <reason> <commentary> [--version <n>]
+     * <participation_rate> <settles_accrual> <naked_option> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id>
-     * <recovery_rate> <reason> <commentary>
+     * <recovery_rate> <participation_rate> <settles_accrual> <naked_option> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

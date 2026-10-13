@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/close-the-risk-participation-agreement-round-trip
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The agreement exports as valid ORE and its fields come back from the tables.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -42,9 +42,29 @@ The agreement exports as valid ORE and its fields come back from the tables.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Read the binding first.* The agreement's =ProtectionFee= is a list of legs,
+   and its =Underlying= holds legs, an optional option block, a naked-option
+   flag and an optional treasury lock whose data is a bond. The design had a
+   money column for the fee and no underlying, so the plan follows the binding.
+2. *Facts.* The agreement's table gains the participation rate (a continuous
+   fraction, so a binary float), the settles-accrual flag and the naked-option
+   flag.
+3. *Legs by group.* The fee legs are the =protection_fee= group of =swap_legs=
+   and the underlying's legs are the =underlying= group. The shared leg mapper
+   learns cashflow legs: a dated payment is a dated amount row, and the leg type
+   tells it from a notional.
+4. *Schedules.* An underlying leg keeps its own schedule as shared schedule rows
+   under the swap owner, because the header's dates are the protection period
+   and not the leg's.
+5. *The option.* The underlying's option block goes to the shared option rows.
+   The agreement has no option of its own, so the question of telling an
+   underlying's option from a trade's own does not arise: a trade holds one
+   option block, and for an agreement it is the underlying's.
+6. *Known limit.* The treasury lock holds a bond, which the bond family stores.
+   It is not stored, the import logs a warning, and the corpus has none.
+7. *Prove it.* Tests read the fields, the digits of the fee, the leg schedules
+   and the option block back, and the directory round trip shows both agreement
+   documents re-read.
 
 * Measurements
 
@@ -58,9 +78,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE core suite | all pass, with both agreement documents re-reading | =ctest --preset linux-clang-debug-make -R ores.ore.core.tests= | the PR head |
+| Trading core suite | all pass | =ctest --preset linux-clang-debug-make -R ores.trading.core.tests= | the PR head |
+| Shell trading suite | all pass | =ctest --preset linux-clang-debug-make -R ores.shell.trading.tests= | the PR head |
+| Build | exit 0 | =compass build ores.ore.core.tests ores.trading.core.tests ores.shell.trading.tests ores.ore.service.exe= | the PR head |
 
 * Notes
+
+- The two agreement documents were the credit entries of the export fidelity
+  capture: their export dropped the required legs, so they did not re-read. They
+  re-read now, and the directory round trip test no longer lists them as gaps.
+- A cashflow leg changed in the shared leg mapper. A rates document with a
+  cashflow leg now stores its dated amounts and exports a cashflow element
+  instead of a notional list. The rates suites pass.
+- The treasury lock of an underlying is not stored. It holds a bond, which the
+  bond family owns. A document that carries one imports with a warning in the
+  log. No corpus document has one.
+- The participation rate is a continuous fraction, so it is a binary float in
+  the table and the domain type.
 
 * Test Scenarios
 
@@ -83,6 +118,20 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The design put a money column for the protection fee | design.org | accept | The binding shows a list of legs; the design now says so. |
+| 2 | The treasury lock is not stored | credit_instrument_mapper.cpp | accept | It holds a bond; recorded as a known limit with a warning and no corpus case. |
+| 3 | A shared change to the cashflow leg touches the rates family | swap_instrument_mapper.cpp | accept | The rates suites pass and the export is now valid for a cashflow leg. |
 
 * Result
+
+The risk participation agreement stores and exports its required elements. Its
+table holds the participation rate, the settles-accrual flag and the
+naked-option flag. Its protection fee is the =protection_fee= legs and its
+underlying's legs are the =underlying= legs, each with its own schedule. The
+underlying's option block is the shared option rows, which the agreement owns
+because it has no option of its own. Both corpus documents export as valid ORE
+and re-read.
+
+Acceptance met except the treasury lock, which is recorded as a known limit. The
+open question is settled: a trade holds one option block, and for an agreement
+it is the underlying's.

@@ -45,6 +45,9 @@ struct risk_participation_agreement_instrument_write {
     std::string credit_curve_id;
     std::optional<std::string> issuer_id;
     std::optional<double> recovery_rate;
+    double participation_rate;
+    std::optional<bool> settles_accrual;
+    std::optional<bool> naked_option;
 };
 
 struct risk_participation_agreement_instrument_change {

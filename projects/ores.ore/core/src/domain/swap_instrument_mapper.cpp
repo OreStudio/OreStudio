@@ -1120,6 +1120,28 @@ swap_instrument_mapper::option_rows swap_instrument_mapper::map_option_block(con
     return rows;
 }
 
+swap_instrument_mapper::schedule_rows
+swap_instrument_mapper::map_schedule(const scheduleData& sd,
+                                     const std::string& owner_role,
+                                     int owner_number,
+                                     const std::string& schedule_role) {
+    trading::domain::swap_instrument_data scratch;
+    append_schedule(scratch, sd, owner_role, owner_number, schedule_role);
+    schedule_rows rows;
+    rows.schedules = std::move(scratch.schedules);
+    rows.dates = std::move(scratch.schedule_dates);
+    return rows;
+}
+
+std::optional<scheduleData> swap_instrument_mapper::rebuild_schedule(
+    const std::vector<trading::domain::instrument_schedule>& schedules,
+    const std::vector<trading::domain::instrument_schedule_date>& dates,
+    const std::string& owner_role,
+    int owner_number,
+    const std::string& schedule_role) {
+    return schedule_for(schedules, dates, owner_role, owner_number, schedule_role);
+}
+
 optionData swap_instrument_mapper::rebuild_option_block(const option_rows& rows) {
     optionData od;
     if (!rows.options.empty()) {
@@ -1213,6 +1235,13 @@ swap_instrument_mapper::map_leg_amounts(const legData& ld, int leg_number) {
         for (const auto& n : ld.Notionals->Notional) {
             const std::string from = n.startDate ? std::string(*n.startDate) : std::string{};
             append(exact_decimal(n), from);
+        }
+    } else if (ld.legDataType && ld.legDataType->CashflowData) {
+        // A cashflow leg states its amounts as dated payments; each one is a
+        // dated amount row, so the leg type tells it from a notional.
+        for (const auto& a : ld.legDataType->CashflowData->Cashflow.Amount) {
+            const std::string on = a.date ? std::string(*a.date) : std::string{};
+            append(exact_decimal(a), on);
         }
     } else if (ld.Amortizations) {
         for (const auto& a : ld.Amortizations->AmortizationData) {
@@ -1521,6 +1550,22 @@ legData swap_instrument_mapper::reverse_leg(
         ld.PaymentConvention = parse_code(tm.business_day_convention_code,
                                           business_day_convention_count,
                                           businessDayConvention::MF);
+
+    if (ld.LegType == legType::Cashflow) {
+        // A cashflow leg has dated payments and no notional or schedule.
+        legDataType_group_t cashflow_type;
+        _CashflowData_t cashflow;
+        for (const auto& a : amounts) {
+            _CashflowData_t_Cashflow_t_Amount_t v;
+            set_exact(v, a.amount);
+            if (a.start_date)
+                v.date = to_ore_date(*a.start_date);
+            cashflow.Cashflow.Amount.push_back(v);
+        }
+        cashflow_type.CashflowData = std::move(cashflow);
+        ld.legDataType = std::move(cashflow_type);
+        return ld;
+    }
 
     if (!amounts.empty()) {
         legData_Notionals_t n;

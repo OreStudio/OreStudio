@@ -212,6 +212,37 @@ void set_days(xsd::optional<uint64_t>& field, const std::optional<int>& v) {
         field = static_cast<uint64_t>(*v);
 }
 
+std::optional<bool> to_plain_flag(const xsd::optional<bool>& v) {
+    if (!v)
+        return std::nullopt;
+    return *v;
+}
+
+void append_option_rows(credit_instrument_data& result, swap_instrument_mapper::option_rows rows) {
+    const auto move_into = [](auto& to, auto& from) {
+        to.insert(to.end(), std::make_move_iterator(from.begin()), std::make_move_iterator(from.end()));
+    };
+    move_into(result.options, rows.options);
+    move_into(result.option_premiums, rows.premiums);
+    move_into(result.option_exercise_fees, rows.exercise_fees);
+    move_into(result.option_payment_dates, rows.payment_dates);
+    move_into(result.option_exercise_prices, rows.exercise_prices);
+    move_into(result.schedules, rows.schedules);
+    move_into(result.schedule_dates, rows.schedule_dates);
+}
+
+swap_instrument_mapper::option_rows option_rows_of(const credit_instrument_data& data) {
+    swap_instrument_mapper::option_rows rows;
+    rows.options = data.options;
+    rows.premiums = data.option_premiums;
+    rows.exercise_fees = data.option_exercise_fees;
+    rows.payment_dates = data.option_payment_dates;
+    rows.exercise_prices = data.option_exercise_prices;
+    rows.schedules = data.schedules;
+    rows.schedule_dates = data.schedule_dates;
+    return rows;
+}
+
 template <typename Fact>
 const Fact& fact_of(const credit_instrument_data& data) {
     static const Fact empty{};
@@ -293,6 +324,9 @@ std::vector<legData> credit_instrument_mapper::reverse_group(const credit_instru
         }
         out.push_back(
             swap_instrument_mapper::reverse_leg(start_date, maturity_date, leg, amounts, rates));
+        if (auto schedule = swap_instrument_mapper::rebuild_schedule(
+                data.schedules, data.schedule_dates, "swap", leg.identity.leg_number, "schedule"))
+            out.back().ScheduleData = std::move(*schedule);
     }
     return out;
 }
@@ -457,14 +491,7 @@ credit_instrument_data credit_instrument_mapper::forward_index_cds_option(const 
             stamp_audit(row);
             result.strikes.push_back(std::move(row));
         }
-        auto rows = swap_instrument_mapper::map_option_block(od.OptionData);
-        result.options = std::move(rows.options);
-        result.option_premiums = std::move(rows.premiums);
-        result.option_exercise_fees = std::move(rows.exercise_fees);
-        result.option_payment_dates = std::move(rows.payment_dates);
-        result.option_exercise_prices = std::move(rows.exercise_prices);
-        result.schedules = std::move(rows.schedules);
-        result.schedule_dates = std::move(rows.schedule_dates);
+        append_option_rows(result, swap_instrument_mapper::map_option_block(od.OptionData));
     }
     result.facts = std::move(fact);
     return result;
@@ -534,14 +561,47 @@ credit_instrument_data credit_instrument_mapper::forward_rpa(const trade& t) {
     auto fact = make_fact<risk_participation_agreement_instrument>();
     if (t.RiskParticipationAgreementData) {
         const auto& d = *t.RiskParticipationAgreementData;
+        fact.participation_rate = static_cast<double>(d.ParticipationRate);
         fact.credit_curve_id = std::string(d.CreditCurveId);
         if (d.IssuerId)
             fact.issuer_id = std::string(*d.IssuerId);
+        fact.settles_accrual = to_plain_flag(d.SettlesAccrual);
         fact.recovery_rate = to_double(d.FixedRecoveryRate);
+        fact.naked_option = to_plain_flag(d.Underlying.NakedOption);
         result.instrument.reference_entity =
             fact.issuer_id ? *fact.issuer_id : fact.credit_curve_id;
         result.instrument.start_date = to_optional_date(std::string(d.ProtectionStart));
         result.instrument.maturity_date = to_optional_date(std::string(d.ProtectionEnd));
+
+        for (const auto& ld : d.ProtectionFee.LegData)
+            append_leg(result, ld, "protection_fee");
+
+        // An underlying leg keeps its own schedule, because the header's
+        // dates are the protection period and not the leg's.
+        for (const auto& ld : d.Underlying.LegData) {
+            const int leg_number = static_cast<int>(result.legs.size()) + 1;
+            append_leg(result, ld, "underlying");
+            if (!ld.ScheduleData)
+                continue;
+            auto rows = swap_instrument_mapper::map_schedule(
+                *ld.ScheduleData, "swap", leg_number, "schedule");
+            result.schedules.insert(result.schedules.end(),
+                                    std::make_move_iterator(rows.schedules.begin()),
+                                    std::make_move_iterator(rows.schedules.end()));
+            result.schedule_dates.insert(result.schedule_dates.end(),
+                                         std::make_move_iterator(rows.dates.begin()),
+                                         std::make_move_iterator(rows.dates.end()));
+        }
+
+        // The agreement has no option of its own, so the option rows are the
+        // underlying's.
+        if (d.Underlying.OptionData)
+            append_option_rows(result,
+                               swap_instrument_mapper::map_option_block(*d.Underlying.OptionData));
+
+        if (d.Underlying.TreasuryLockData)
+            BOOST_LOG_SEV(lg(), warn) << "Treasury lock of the underlying is not stored: "
+                                      << std::string(t.id);
     }
     result.facts = std::move(fact);
     return result;
@@ -624,15 +684,7 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
     if (!data.strikes.empty() && data.strikes.front().bare_value)
         set_money(d.Strike, data.strikes.front().bare_value);
 
-    swap_instrument_mapper::option_rows rows;
-    rows.options = data.options;
-    rows.premiums = data.option_premiums;
-    rows.exercise_fees = data.option_exercise_fees;
-    rows.payment_dates = data.option_payment_dates;
-    rows.exercise_prices = data.option_exercise_prices;
-    rows.schedules = data.schedules;
-    rows.schedule_dates = data.schedule_dates;
-    d.OptionData = swap_instrument_mapper::rebuild_option_block(rows);
+    d.OptionData = swap_instrument_mapper::rebuild_option_block(option_rows_of(data));
     t.IndexCreditDefaultSwapOptionData = std::move(d);
     return t;
 }
@@ -696,18 +748,31 @@ trade credit_instrument_mapper::reverse_rpa(const credit_instrument_data& data) 
     trade t;
     t.TradeType = oreTradeType::RiskParticipationAgreement;
     rpaData d;
+    d.ParticipationRate = static_cast<float>(fact.participation_rate);
     static_cast<std::string&>(d.CreditCurveId) = fact.credit_curve_id;
     if (fact.issuer_id) {
         rpaData_IssuerId_t iid;
         static_cast<std::string&>(iid) = *fact.issuer_id;
         d.IssuerId = std::move(iid);
     }
+    if (fact.settles_accrual)
+        d.SettlesAccrual = *fact.settles_accrual;
     if (data.instrument.start_date)
         static_cast<std::string&>(d.ProtectionStart) = to_ore_date(data.instrument.start_date);
     if (data.instrument.maturity_date)
         static_cast<std::string&>(d.ProtectionEnd) = to_ore_date(data.instrument.maturity_date);
     if (fact.recovery_rate)
         d.FixedRecoveryRate = static_cast<float>(*fact.recovery_rate);
+
+    for (auto& leg : reverse_group(data, "protection_fee"))
+        d.ProtectionFee.LegData.push_back(std::move(leg));
+    for (auto& leg : reverse_group(data, "underlying"))
+        d.Underlying.LegData.push_back(std::move(leg));
+    if (fact.naked_option)
+        d.Underlying.NakedOption = *fact.naked_option;
+    if (!data.options.empty())
+        d.Underlying.OptionData = swap_instrument_mapper::rebuild_option_block(option_rows_of(data));
+
     t.RiskParticipationAgreementData = std::move(d);
     return t;
 }

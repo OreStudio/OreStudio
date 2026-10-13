@@ -51,6 +51,9 @@ domain::risk_participation_agreement_instrument risk_participation_agreement_ins
     r.credit_curve_id = v.credit_curve_id;
     r.issuer_id = v.issuer_id;
     r.recovery_rate = v.recovery_rate;
+    r.participation_rate = v.participation_rate;
+    r.settles_accrual = v.settles_accrual;
+    r.naked_option = v.naked_option;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -73,6 +76,9 @@ risk_participation_agreement_instrument_entity risk_participation_agreement_inst
     r.credit_curve_id = v.credit_curve_id;
     r.issuer_id = v.issuer_id;
     r.recovery_rate = v.recovery_rate;
+    r.participation_rate = v.participation_rate;
+    r.settles_accrual = v.settles_accrual;
+    r.naked_option = v.naked_option;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

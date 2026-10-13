@@ -21,11 +21,11 @@ An oresmd URL behaves like every other reference in the app. The link goes to th
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded and broken into tasks. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Open a series on the Evolution page from an oresmd URL. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-12                               |
 
 * Acceptance
@@ -72,6 +72,8 @@ An oresmd URL behaves like every other reference in the app. The link goes to th
 - The oresmd URI of a feed is its target: the series the feed writes its values to. A tooltip on the label says so.
 - A series the party does not have, a series with no axis on the Evolution page, a series with no observation and a URL the codec refuses are each said in words and never as a server error. Marco asked for this on 2026-10-12.
 - The read-only view of the dialog was signed off by Marco on 2026-10-12.
+- A series is named in words, by a title the schema table holds for each instrument type and each quote type, so the web holds no instrument names. Marco asked for this on 2026-10-12.
+- An FX spot rate is shown with the decimal places of its pair's convention, which is the market convention. A fifth digit of a tick is a fraction of a pip and is not shown. The series page reads by count only, with no time window. Marco decided this on 2026-10-13.
 - The link carries the URL in the address, as =uri=, and the Evolution page reads it through the server's parse. The link holds no part of the grammar.
 
 * Out of scope
@@ -79,3 +81,17 @@ An oresmd URL behaves like every other reference in the app. The link goes to th
 - A page for a quote or a fixing of its own.
 - Writing a URL back from the feed screens. A feed's URL follows from its currencies and its curve.
 - Changing the editor's grammar or the server's operations.
+
+* Result
+
+An oresmd URL in ores.web is a reference. A click goes to the series it names: the Evolution page for a series with an axis, and a new series page for one without, such as an FX spot rate. A fixing and a series the party does not have stay plain text. Beside the URL a text button reads Inspect, or Edit where a screen stores the URL, and Inspect opens a read-only view of the URL's parts. The series page draws the latest observations as a line and a table, names the series in words, such as AUD/USD spot rate, and formats a spot rate by its pair's convention. The Evolution page opens a series from a =uri= in its address and says in words when it cannot. The oresmd URI label of the IR and FX feeds has a tooltip that says it is the series the feed writes to. A new BFF route reads a series' observations, and the schema operation sends the titles.
+
+Follow-ups, none done here:
+- Bindings and the synthetic feeds that fill these series are a later task. The newest synthetic tick of AUD/USD was an hour old at the last check, and the cause is not known.
+- The list column called oresmd URI is plain text, not a link.
+- A time window for the series page. Only a count is used now.
+- A convention stored under the reverse pair is not found, so that spot rate shows in the plain format.
+- A shared hook for the copy button, a pure state function for the series page and a shared tooltip with keyboard access, from the reviews.
+- The French and Portuguese text needs a speaker, captured in PR #3216.
+- The Catch2 case for the titles was built and not run locally. CI has to run it.
+- The file of the link and button task still has icon in its name.

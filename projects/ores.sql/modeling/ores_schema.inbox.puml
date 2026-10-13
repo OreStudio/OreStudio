@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T22:47:58.818299Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -230,17 +230,18 @@ package "inbox" #FCE4EC {
     come with the policy read in a later task.
     end note
 
-    entity ores_inbox_approval_request_parts_tbl <<junction>> #ECECEC {
+    entity ores_inbox_approval_request_parts_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * request_id : uuid <<PK, FK>>
         * part_code : text <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -352,6 +353,7 @@ package "inbox" #FCE4EC {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -501,6 +503,7 @@ package "inbox" #FCE4EC {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }

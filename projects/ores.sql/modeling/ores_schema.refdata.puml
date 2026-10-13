@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-12T22:47:58.818299Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -658,6 +658,7 @@ package "refdata" #FFF3E0 {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -1450,17 +1451,18 @@ package "refdata" #FFF3E0 {
     parent_counterparty_id for group structures.
     end note
 
-    entity ores_refdata_counterparty_business_centres_tbl <<junction>> #ECECEC {
+    entity ores_refdata_counterparty_business_centres_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * counterparty_id : uuid <<PK, FK>>
         * business_centre_code : text <<PK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -1955,6 +1957,7 @@ package "refdata" #FFF3E0 {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -1982,6 +1985,7 @@ package "refdata" #FFF3E0 {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -2009,6 +2013,7 @@ package "refdata" #FFF3E0 {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -2119,6 +2124,7 @@ package "refdata" #FFF3E0 {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -4181,6 +4187,7 @@ package "refdata" #FFF3E0 {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_to : timestamptz
     }
 
@@ -4223,17 +4230,18 @@ package "refdata" #FFF3E0 {
     derive_pending_models.py.
     end note
 
-    entity ores_refdata_party_countries_tbl <<junction>> #ECECEC {
+    entity ores_refdata_party_countries_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * party_id : uuid <<PK, FK>>
         * country_alpha2_code : text <<PK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -4247,17 +4255,18 @@ package "refdata" #FFF3E0 {
     party-level visibility.
     end note
 
-    entity ores_refdata_party_currencies_tbl <<junction>> #ECECEC {
+    entity ores_refdata_party_currencies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * party_id : uuid <<PK, FK>>
         * currency_iso_code : text <<PK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -5121,6 +5130,7 @@ package "refdata" #FFF3E0 {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -5554,9 +5564,7 @@ ores_refdata_day_counters_tbl ||--o{ ores_refdata_commodity_curve_configs_tbl : 
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_price_segments_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
-ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_changes_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_contact_informations_tbl : "has"
-ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifier_changes_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"

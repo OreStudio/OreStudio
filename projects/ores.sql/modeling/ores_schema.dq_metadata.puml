@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T23:20:31.653727Z
+' Generated: 2026-10-13T11:18:17.504877Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -118,6 +118,7 @@ package "dq_metadata" #E1F5FE {
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+          closed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }

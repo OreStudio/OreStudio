@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/role_permissions/role_permission.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+role_permissions list --limit 1

@@ -221,7 +221,7 @@ class TestWriteComputeEnv:
     def test_writes_app_prefixed_env_with_remote_paths(self, tmp_path):
         root = tmp_path / "checkout"
         env_path, keys_stage = env_deploy._write_compute_env(
-            root, self._profile(tmp_path), "prod-main1", "/home/marco/ores-deploy")
+            root, self._profile(tmp_path), "prod-main1", "/home/marco/ores-deploy", "newton")
         text = env_path.read_text(encoding="utf-8")
         # The wrapper parser maps env via make_mapper("COMPUTE_WRAPPER"),
         # so the block must be app-prefixed (the TLS trio in particular
@@ -243,24 +243,24 @@ class TestWriteComputeEnv:
         profile = self._profile(tmp_path)
         profile["ORES_COMPUTE_REPLICAS"] = "3"
         env_path, _ = env_deploy._write_compute_env(
-            tmp_path / "checkout", profile, "prod-main1", "/home/marco/ores-deploy")
+            tmp_path / "checkout", profile, "prod-main1", "/home/marco/ores-deploy", "newton")
         assert "ORES_COMPUTE_REPLICAS=3\n" in env_path.read_text(encoding="utf-8")
 
     def test_certs_staged_with_basenames(self, tmp_path):
         root = tmp_path / "checkout"
         _, keys_stage = env_deploy._write_compute_env(
-            root, self._profile(tmp_path), "l", "/root")
+            root, self._profile(tmp_path), "l", "/root", "newton")
         staged = sorted(p.name for p in keys_stage.iterdir())
         assert staged == ["ca.crt", "client.crt", "client.key"]
 
     def test_http_base_url_optional(self, tmp_path):
         root = tmp_path / "checkout"
         prof = self._profile(tmp_path)
-        env_path, _ = env_deploy._write_compute_env(root, prof, "l", "/root")
+        env_path, _ = env_deploy._write_compute_env(root, prof, "l", "/root", "newton")
         assert "ORES_COMPUTE_WRAPPER_HTTP_BASE_URL" not in \
             env_path.read_text(encoding="utf-8")
         prof["ORES_COMPUTE_HTTP_BASE_URL"] = "http://192.168.1.10:8080"
-        env_path, _ = env_deploy._write_compute_env(root, prof, "l", "/root")
+        env_path, _ = env_deploy._write_compute_env(root, prof, "l", "/root", "newton")
         assert ("ORES_COMPUTE_WRAPPER_HTTP_BASE_URL="
                 "http://192.168.1.10:8080") in env_path.read_text(encoding="utf-8")
 
@@ -270,7 +270,92 @@ class TestWriteComputeEnv:
         prof["ORES_COMPUTE_NATS_TLS_KEY"] = str(tmp_path / "gone.key")
         import pytest
         with pytest.raises(RuntimeError, match="compute TLS file not found"):
-            env_deploy._write_compute_env(root, prof, "l", "/root")
+            env_deploy._write_compute_env(root, prof, "l", "/root", "newton")
+
+
+# --- Deploys that run at the same time ------------------------------------
+
+class TestDeploysAtTheSameTime:
+    def _profile(self, tmp_path, replicas):
+        keys = tmp_path / "serving" / "keys"
+        _write(keys / "ca.crt", "CA")
+        _write(keys / "client.crt", "CERT")
+        _write(keys / "client.key", "KEY")
+        return {
+            "ORES_COMPUTE_TENANT_ID": "acme",
+            "ORES_COMPUTE_NATS_URL": "nats://192.168.1.10:4222",
+            "ORES_COMPUTE_NATS_SUBJECT_PREFIX": "ores.prod.main1",
+            "ORES_COMPUTE_NATS_WIRE_FORMAT": "json",
+            "ORES_COMPUTE_NATS_TLS_CA": str(keys / "ca.crt"),
+            "ORES_COMPUTE_NATS_TLS_CERT": str(keys / "client.crt"),
+            "ORES_COMPUTE_NATS_TLS_KEY": str(keys / "client.key"),
+            "ORES_COMPUTE_REPLICAS": str(replicas),
+        }
+
+    def test_each_host_stages_its_own_compute_env(self, tmp_path):
+        root = tmp_path / "checkout"
+        newton, _ = env_deploy._write_compute_env(
+            root, self._profile(tmp_path, 11), "l", "/r", "marco@192.168.1.22")
+        laptop, _ = env_deploy._write_compute_env(
+            root, self._profile(tmp_path, 3), "l", "/r", "marco@192.168.1.11")
+
+        # One host's file is never the other's, so the replica count each host is sent cannot be
+        # overwritten by a deploy that runs beside it.
+        assert newton != laptop
+        assert "ORES_COMPUTE_REPLICAS=11\n" in newton.read_text(encoding="utf-8")
+        assert "ORES_COMPUTE_REPLICAS=3\n" in laptop.read_text(encoding="utf-8")
+
+    def test_the_host_stage_is_a_safe_directory_name(self, tmp_path):
+        stage = env_deploy._host_stage(tmp_path, "marco@192.168.1.22")
+        assert stage.parent == tmp_path / "build" / "docker-stage" / "hosts"
+        assert "@" not in stage.name and "/" not in stage.name
+
+    def test_an_image_is_copied_with_the_standard_podman_command(self, tmp_path, monkeypatch):
+        calls = []
+        monkeypatch.setattr(env_deploy, "_run",
+                            lambda cmd, root, **kw: calls.append(cmd))
+        env_deploy._transfer_one_image(
+            tmp_path, "marco@192.168.1.22", "localhost/ores-compute-wrapper:1.0", None, None)
+        assert calls == [["podman", "image", "scp", "localhost/ores-compute-wrapper:1.0",
+                          "marco@192.168.1.22::"]]
+
+    def _checkout_with_fake_compass(self, tmp_path, failing=()):
+        root = tmp_path / "checkout"
+        root.mkdir()
+        # The child of a many-host deploy is `compass.sh env deploy HOST ...`.
+        script = root / "compass.sh"
+        script.write_text(
+            "#!/bin/sh\n"
+            'echo "deploying $3"\n'
+            'echo "Copying blob sha256:abc"\n'
+            f'case "$3" in {"|".join(failing) or "NONE"}) exit 3;; esac\n'
+            "exit 0\n", encoding="utf-8")
+        script.chmod(0o755)
+        return root
+
+    def _args(self, hosts):
+        import argparse
+        return argparse.Namespace(host=hosts, role="compute", stop=False,
+                                  purge=False, setup_host=False)
+
+    def test_several_hosts_deploy_and_the_output_names_each(self, tmp_path, capsys):
+        root = self._checkout_with_fake_compass(tmp_path)
+        code = env_deploy._deploy_many(self._args(["newton", "laptop"]), root)
+        out = capsys.readouterr().out
+        assert code == 0
+        assert "[newton] deploying newton" in out
+        assert "[laptop] deploying laptop" in out
+        # The layer lines are noise and are left out.
+        assert "Copying blob" not in out
+        assert "newton           ok" in out and "laptop           ok" in out
+
+    def test_one_failed_host_fails_the_run_and_is_named(self, tmp_path, capsys):
+        root = self._checkout_with_fake_compass(tmp_path, failing=("simba",))
+        code = env_deploy._deploy_many(self._args(["newton", "simba"]), root)
+        out = capsys.readouterr().out
+        assert code == 1
+        assert "simba            FAILED (exit 3)" in out
+        assert "newton           ok" in out
 
 
 # --- _remote_root ---------------------------------------------------------

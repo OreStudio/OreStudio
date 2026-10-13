@@ -31,11 +31,12 @@ Binaries are stripped on the host (by stage-runtime.sh) BEFORE podman
 sees them — no in-container strip stage, no redundant COPY of
 unstripped data into the build context.
 
-Transfer: the base image is saved/gzipped/scp'd/loaded once; per-service
-overlays are scp'd as raw files and built remotely on top of the
-already-loaded base.  The old `podman save | gzip | ssh load` pipeline
-(which buffered heavily and could OOM) is replaced with discrete serial
-steps (save to disk → gzip → scp → remote load).
+Transfer: an image is copied with the standard `podman image scp IMAGE
+HOST::`, which writes no staging file; per-service overlays are scp'd as raw
+files and built remotely on top of the already-loaded base.  Nothing a deploy
+writes on this machine is shared with a deploy to another host, so several
+hosts can be deployed at the same time: name them all, as in
+`compass env deploy newton laptop simba --role compute`.
 
 Hosts are registered as named env files, .env.<host> at the repo root —
 the host-registry concept compass already has (`compass ... --env
@@ -259,17 +260,32 @@ def _generate_profile(project_root, profile_path, src_env_path, host,
     print("  (inspect and adjust ORES_REMOTE_HOST / ORES_REMOTE_ROOT before re-running)")
 
 
+# --- Per-host staging -----------------------------------------------------
+
+def _host_stage(project_root, host):
+    """The staging directory of one remote host.
+
+    Deploys to two hosts can run at the same time, so nothing a deploy writes may be shared:
+    the compute env file differs for each host (its replica count, its node), and an image
+    tarball written by two saves of one image is refused by podman. Each host stages under
+    its own directory.
+    """
+    safe = re.sub(r"[^A-Za-z0-9_.-]", "_", host)
+    stage = project_root / "build" / "docker-stage" / "hosts" / safe
+    stage.mkdir(parents=True, exist_ok=True)
+    return stage
+
+
 # --- Compute-node config --------------------------------------------------
 
-def _write_compute_env(project_root, profile_env, label, remote_root):
+def _write_compute_env(project_root, profile_env, label, remote_root, host):
     """Build the compute node's env file (app-prefixed
     ORES_COMPUTE_WRAPPER_NATS_* block — the wrapper parser reads its env
     via make_mapper("COMPUTE_WRAPPER"), and the TLS trio is deliberately
     not in the shared-domain fallback, so it must be app-prefixed) and
     stage the serving environment's client certs. Returns (env_path,
     keys_stage_dir)."""
-    stage = project_root / "build" / "docker-stage"
-    stage.mkdir(parents=True, exist_ok=True)
+    stage = _host_stage(project_root, host)
 
     # Named compute/keys (not compute-keys) so a recursive scp of the
     # stage dir into the remote compute/ parent creates exactly the
@@ -391,39 +407,14 @@ def _stream_images(project_root, host, images):
 
 
 def _transfer_one_image(project_root, host, img, stage, remote_tmp):
-    """Transfer a single image to the remote host via discrete serial
-    steps (save → compress → scp → remote-load → cleanup)."""
+    """Copy a single image to the remote host with the standard podman command.
+
+    `podman image scp IMAGE HOST::` saves the image and loads it on the host over ssh. It
+    writes no staging file, so deploys to several hosts can run at the same time without
+    sharing anything on this machine.
+    """
     print(f"  Transferring image: {img}")
-    safe_name = img.replace("/", "_").replace(":", "-")
-    tar_path = stage / f"{safe_name}.tar"
-    gz_path = stage / f"{safe_name}.tar.gz"
-
-    # 1. Save to a local tarball (disk, not pipe — avoids OOM).
-    print(f"    Saving to {tar_path.name} ...")
-    _run(["podman", "save", "-o", str(tar_path), img], project_root)
-    sz = tar_path.stat().st_size
-    print(f"    Saved: {sz / 1024 / 1024:.0f} MiB")
-
-    # 2. Compress (gzip -1 = fastest, ~70-80% ratio on container layers).
-    print(f"    Compressing ...")
-    _run(["gzip", "-1", "-f", str(tar_path)], project_root)
-    gz_sz = gz_path.stat().st_size
-    print(f"    Compressed: {gz_sz / 1024 / 1024:.0f} MiB "
-          f"({gz_sz / sz * 100:.0f}% of original)")
-
-    # 3. Transfer via scp (its own flow control, no pipe).
-    _ssh(host, f"mkdir -p {shlex.quote(remote_tmp)}", check=True)
-    _scp(project_root, host, gz_path, remote_tmp)
-
-    # 4. Load on the remote host from disk.
-    print(f"    Loading on {host} ...")
-    remote_gz = f"{remote_tmp}/{gz_path.name}"
-    _ssh(host, f"podman load -i {shlex.quote(remote_gz)}",
-         check=True, capture=False)
-    _ssh(host, f"rm -f {shlex.quote(remote_gz)}", check=True)
-
-    # 5. Clean up local staging file.
-    gz_path.unlink()
+    _run(["podman", "image", "scp", img, f"{host}::"], project_root)
     print(f"    Transfer complete: {img}")
 
 
@@ -596,6 +587,47 @@ def _cmd_list(project_root):
     return 0
 
 
+def _deploy_many(args, project_root):
+    """Deploy to several hosts at the same time, one child process for each.
+
+    Each child is a plain single-host deploy, so what one host gets does not depend on the
+    others, and each stages under its own directory. The output of a host is prefixed with its
+    name. The exit code is non-zero when any host failed, and the summary names the ones that
+    did.
+    """
+    import threading  # noqa: PLC0415
+
+    flags = ["--role", args.role]
+    for name in ("stop", "purge", "setup_host"):
+        if getattr(args, name):
+            flags.append("--" + name.replace("_", "-"))
+    children = {}
+    for host in args.host:
+        children[host] = subprocess.Popen(
+            [str(project_root / "compass.sh"), "env", "deploy", host, *flags],
+            cwd=project_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+    def pump(host, child):
+        for line in child.stdout:
+            # podman prints a line for every layer it copies; they are not worth the noise.
+            if line.startswith("Copying blob") or line.startswith("Getting image source"):
+                continue
+            sys.stdout.write(f"[{host}] {line}")
+            sys.stdout.flush()
+
+    threads = [threading.Thread(target=pump, args=(h, c)) for h, c in children.items()]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    codes = {host: child.wait() for host, child in children.items()}
+    failed = [host for host, code in codes.items() if code != 0]
+    print("=== Deploy summary ===")
+    for host, code in codes.items():
+        print(f"  {host:<16} {'ok' if code == 0 else f'FAILED (exit {code})'}")
+    return 1 if failed else 0
+
+
 def _cmd_deploy(argv, project_root):
     ap = argparse.ArgumentParser(
         prog="compass env deploy <host>",
@@ -604,7 +636,9 @@ def _cmd_deploy(argv, project_root):
                     "over SSH. Idempotent: re-running safely picks up a "
                     "new build without manual cleanup.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    ap.add_argument("host", help="Host alias (docker/.env.<host> profile)")
+    ap.add_argument("host", nargs="+",
+                    help="Host alias (docker/.env.<host> profile). Name several to "
+                         "deploy to all of them at the same time")
     ap.add_argument("--role", choices=("runtime", "compute"),
                     default="runtime",
                     help="runtime = full service/DB environment; "
@@ -618,6 +652,10 @@ def _cmd_deploy(argv, project_root):
                     help="One-time remote host prep (podman present, "
                          "linger, dbus.socket) and exit")
     args = ap.parse_args(argv)
+
+    if len(args.host) > 1:
+        return _deploy_many(args, project_root)
+    args.host = args.host[0]
 
     profile_path = _profile_path(project_root, args.host)
 
@@ -692,7 +730,7 @@ def _cmd_deploy(argv, project_root):
             project_root, profile_env,
             profile_env.get("ORES_COMPUTE_LABEL",
                             _label(profile_env, project_root)),
-            remote_root)
+            remote_root, remote_host)
         _transfer_compute(project_root, remote_host, remote_root,
                           env_path, keys_stage)
         _deploy_compute(project_root, remote_host, profile_env, remote_root)

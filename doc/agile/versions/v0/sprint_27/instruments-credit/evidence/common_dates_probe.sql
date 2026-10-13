@@ -1,4 +1,6 @@
 begin;
+-- The replica role turns off the foreign key and trigger checks, so the probe
+-- can use random party, book and activity ids. The transaction rolls back.
 set local session_replication_role = replica;
 create temp table ids as
   select ores_utility_system_tenant_id_fn() tn, gen_random_uuid() a, gen_random_uuid() p, gen_random_uuid() b, gen_random_uuid() cds;

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-13
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ The blotter reads one date column across the rates and credit families.
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-11                               |
+| Last touched | 2026-10-13                               |
 
 * Acceptance
 
@@ -99,6 +99,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The credit view has no expiry date | the credit header | decline | The expiry is a schedule row, not a column; recorded as a known limit. |
 | 2 | The probe is SQL and not a C++ test | evidence/common_dates_probe.sql | decline | The rates unit proved its view the same way, and the generated view has no C++ reader. |
+| 3 | The updated date and last touched are stale | the task page | accept | Both read 2026-10-13. |
+| 4 | The probe's replica setting is unexplained | evidence/common_dates_probe.sql | accept | A comment says why. |
+| 5 | The commit column reads "the PR head" | the Measurements table | decline | Every task of the project uses that wording until the merge. |
+| 6 | The review table lists a known limit | the Review table | decline | The rows 1 and 2 are the author's own review of the change; the limit also stands in the Notes. |
 
 * Result
 

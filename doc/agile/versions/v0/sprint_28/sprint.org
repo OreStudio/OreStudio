@@ -101,6 +101,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:164BE033-72BE-436D-B49A-1AE99F95B875][Audit the policies that let the system tenant read every tenant]] | BACKLOG | | | Each policy that lets the system tenant read every tenant is either replaced by acting inside the tenant or listed as a reviewed exception with its reason, and a check fails the build on an unlisted one. |
 | [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]] | BACKLOG | | | The grid screen draws the node heatmap and state ribbon, a node sample states the engine's run time and peak memory, and the run statistics are measured, recorded and aggregated for the grid. |
 | [[id:FD9192F9-10B1-492B-915B-B53F813B277C][Gate every ER diagram]] | BACKLOG | | | Make the er-diagram check compare every generated group diagram and the index, discovered from the model rather than a hard-coded list. |
+| [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] | BACKLOG | | | Split the tenor basis swap convention onto the data-oriented field groups its access patterns need, and find out why the configuration document protocol builds such a large MSVC translation unit, so the Windows build stops failing with C1202. |
 
 * Achievements
 

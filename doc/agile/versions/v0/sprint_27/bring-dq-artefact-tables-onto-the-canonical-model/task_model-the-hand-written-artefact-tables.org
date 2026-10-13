@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-13
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ None of the seven artefact tables is hand-written SQL.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13 |
 
 * Acceptance
 
@@ -40,9 +40,20 @@ None of the seven artefact tables is hand-written SQL.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Find each table's owning model. Five have one: =crm_topology_config=,
+   =market_observation=, =gmm_component=, =ir_curve_generation_config= and
+   =ir_curve_template_entry=. Two do not: =ip2country= publishes into a geo
+   store that has no model, and =lei_bic= is GLEIF data whose owner the
+   DQ-only task decides. Move those two to the tasks that own the question.
+2. Write an =* Artefact columns= section on each owner from the current table,
+   with its key and extra indexes, so the columns do not change.
+3. The CRM table has six check constraints, and the artefact template had no
+   way to state one. Add an expression table to the section, render it in
+   the template, and refuse it on the junction and lookup archetypes, whose
+   templates would drop it.
+4. Regenerate, diff each table against the old one, and follow the table
+   names through the hand-written SQL.
+5. Recreate the database, run pgTAP, and provision Acme.
 
 * Measurements
 
@@ -56,7 +67,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Branch diff | 47 files, 1,086 insertions, 574 deletions | =git diff --shortstat origin/main...HEAD= | 8b5d378f56 |
+| Table change | none: same columns, types and defaults; the CRM table keeps its six checks | diff of each old and generated table body | 8aa5c8bc41 |
+| Staging rows after the populates | market observations 339, GMM components 91, IR curves 53, template entries 311, CRM rows 49 | =compass db sql= | 8aa5c8bc41 |
+| Published rows after an Acme provision | CRM configs 15, driver pairs 75, derived pairs 170, market observations 6,388, GMM components 78, IR curves 33, template entries 251, feed bindings 275; no failed step | =compass db sql= | 8aa5c8bc41 |
+| pgTAP | 46 files, 449 tests, PASS | =compass check --only pgtap= | 8aa5c8bc41 |
+| Codegen suite | 1,404 passed | =compass check --only codegen-tests= | 8b5d378f56 |
 
 * Notes
 
@@ -81,6 +97,31 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The GMM table gets a key index on =base_currency_code= that it did not have | =ores.synthetic.gmm_component.org= | Decline | The template always builds a key index. One extra index on a small staging table costs nothing. |
+| 2 | Renamed tables and indexes reach only a recreated database | the moved tables | Decline | Databases are recreated from the schema; there is no migration path to keep. |
+| 3 | entity-writes, generated-column-refs and er-diagram fail | various | Decline | All three come from main: two compute writers, a reporting index expression and the ER overview. |
 
 * Result
+
+Five hand-written staging tables now come from their owning models: the CRM
+topology (=ores_dq_crm_topology_configs_artefact_tbl=), the market data
+observations (=ores_dq_market_observations_artefact_tbl=) and the three
+synthetic feed tables (=ores_dq_gmm_components_artefact_tbl=,
+=ores_dq_ir_curve_generation_configs_artefact_tbl= and
+=ores_dq_ir_curve_template_entries_artefact_tbl=). Each owning model carries
+an =* Artefact columns= section that states the staging shape, and the tables
+keep their columns. The populates, publish functions, artefact types and drop
+scripts follow the new names. The hand-written create scripts are gone; the
+drop scripts stay hand-written, as for every artefact table.
+
+The artefact template now renders check constraints from an expression table
+in the section, so the CRM table keeps its six checks.
+
+Two tables moved out of the task. =ip2country= needs a model of its geo store
+first, which [[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][Model the geo ip2country store]]
+covers. =lei_bic= is GLEIF data like =lei_entities= and =lei_relationships=,
+so [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]]
+decides its owner with theirs.
+
+Acceptance: the five tables are generated, and an Acme provision publishes
+every dataset that stages into them with no failed step.

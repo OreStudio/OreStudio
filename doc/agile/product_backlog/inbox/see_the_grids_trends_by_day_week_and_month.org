@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 91F812DB-585A-444D-B66B-7753528C8AAE
+:END:
+#+title: See the grid's trends by day, weekday and month
+#+description: Show the grid's load, throughput and outcomes as daily averages, monthly averages and averages by day of the week, so that an outlier stands out.
+#+type: capture
+#+level: cross
+#+filetags: :compute:grid:web:timeseries:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The grid screen shows the last hour, day or week. A person also needs the shape over longer spans, so that an outlier stands out. Show three views of the grid's load, throughput and outcomes:
+
+- *Daily averages.* One value for each day, over a range of weeks.
+- *Monthly averages.* One value for each month.
+- *Averages by day of the week.* The mean of every Monday, every Tuesday and so on, so that a quiet Tuesday or a busy Friday can be seen against its own kind.
+
+An outlier is a day, a month or a weekday whose figure sits far from the norm of its kind. The screen should mark it, for example a day more than two standard deviations from the mean of the same weekday.
+
+* Why
+
+The charts of the grid screen read the stored samples in buckets of one minute to thirty minutes, over at most a week. The samples are kept for thirty days on a TimescaleDB licence that sets a retention policy, and without bound otherwise, so they are too short or too fine to show a trend by week or by month. Three points need a decision:
+
+- *Source.* A read over the raw samples with a coarser bucket is enough for days and weeks while the samples last. Months and weekday averages need either a longer retention or a daily roll-up table that keeps one row for each day, tenant and party.
+- *Scope.* The averages follow the session's scope as the series does: the whole grid for the operator, the tenant for a tenant administrator, the party for a party member. A roll-up row therefore has the same tenant and party as a sample row.
+- *Outliers.* The marking needs a rule that the owner chooses, and a minimum number of days before it is shown.
+
+* References
+
+- [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]]: the story that serves the series today.
+- The grid sample table and its retention interval are in =projects/ores.compute/modeling/ores.compute.grid_sample.org=.
+
+* See also
+
+-

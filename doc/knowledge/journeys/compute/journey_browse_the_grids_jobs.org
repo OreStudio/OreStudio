@@ -53,9 +53,10 @@ file. The screen is read-only.
 5. The person selects any row. The details panel shows that record's fields.
    For a result it shows the outcome, the error message, the node and the time
    received.
-6. The person downloads a workunit's input or a result's output. The system
-   serves the file named by =input_uri= or =output_uri=. The file is large, so
-   the download streams.
+6. The person follows the Input link of a batch, a workunit or a result, or the
+   Output link of a result. Each link is the stored file's own address, taken
+   from =input_uri= or =output_uri=, and the system serves the file as a
+   download. The file is large, so the download streams.
 7. The person follows a link from the details: to the job in
    [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]], or, as operator,
    to the node in the Machines tab.

@@ -207,3 +207,9 @@ p { margin: 0; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .note { padding: 28px 18px; text-align: center; color: var(--ink-dim); }
 .note.err { color: var(--bad); }
+
+.toast {
+    position: fixed; right: 20px; bottom: 90px; z-index: 70; display: none;
+    background: var(--panel-2); border: 1px solid var(--accent); border-radius: var(--radius);
+    padding: 8px 14px; font-size: 12px; max-width: 70vw; word-break: break-all;
+}

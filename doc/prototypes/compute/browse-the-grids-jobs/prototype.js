@@ -245,17 +245,29 @@
             else { dd.textContent = v === '' ? '—' : v; }
             dl.appendChild(dd);
         }
-        var dl2 = [];
+        function addFile(k, uri) {
+            dl.appendChild(el('dt', '', k));
+            var dd = el('dd');
+            if (!uri) { dd.textContent = 'none'; dl.appendChild(dd); return; }
+            var a = el('a', 'mono', uri.split('/').pop());
+            a.href = uri;
+            a.download = uri.split('/').pop();
+            a.title = uri;
+            a.onclick = function (e) { e.preventDefault(); toast('Would download ' + uri); };
+            dd.appendChild(a);
+            dl.appendChild(dd);
+        }
         if (hit.kind === 'batch') {
             add('State', hit.b.state);
             if (ROLES[role].parties) { add('Party', hit.b.party, true); }
             add('Jobs', String(hit.b.jobs));
             add('Failed', String(hit.b.failed));
+            addFile('Input', STORAGE + 'input/' + hit.b.id + '.tar.gz');
             add('Closed', hit.b.state === 'closed' ? 'closed does not mean every run succeeded' : 'still open');
         } else if (hit.kind === 'workunit') {
             add('Priority', String(hit.wu.priority));
             add('Target redundancy', String(hit.wu.redundancy));
-            add('Input', hit.wu.input);
+            addFile('Input', hit.wu.input);
             add('Config', hit.wu.config || 'none');
             add('Batch', hit.b.ref, true);
         } else {
@@ -264,17 +276,14 @@
             add('Node', ROLES[role].nodes ? (hit.res.node || 'not yet known') : 'hidden for your role', ROLES[role].nodes && !!hit.res.node);
             add('Received', hit.res.received);
             add('Error', hit.res.error);
-            add('Output', hit.res.output || 'none');
+            addFile('Input', hit.wu.input);
+            addFile('Output', hit.res.output);
         }
         d.appendChild(dl);
         var act = el('div', 'actions');
-        var dlIn = el('button', 'btn', 'Download input');
-        dlIn.disabled = hit.kind === 'batch';
-        var dlOut = el('button', 'btn', 'Download output');
-        dlOut.disabled = hit.kind !== 'result' || !hit.res.output;
         var job = el('button', 'btn', 'Open job');
         job.disabled = hit.kind === 'batch';
-        [dlIn, dlOut, job].forEach(function (b) { act.appendChild(b); });
+        act.appendChild(job);
         d.appendChild(act);
         panel.appendChild(d);
         return panel;
@@ -316,6 +325,16 @@
         if (screen === 'error') { var r = el('button', 'btn', 'Retry'); r.style.marginLeft = '12px'; r.onclick = function () { setScreen('loaded'); }; n.appendChild(r); }
         p.appendChild(n);
         return p;
+    }
+
+    var toastTimer = null;
+    function toast(text) {
+        var t = document.getElementById('toast');
+        if (!t) { t = el('div', 'toast'); t.id = 'toast'; document.body.appendChild(t); }
+        t.textContent = text + ' (prototype: nothing is served)';
+        t.style.display = 'block';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { t.style.display = 'none'; }, 3500);
     }
 
     function setScreen(s) { screen = s; render(); }

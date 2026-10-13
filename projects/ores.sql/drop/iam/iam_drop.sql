@@ -35,6 +35,7 @@
 \ir ./iam_role_grant_requests_notify_trigger_drop.sql
 \ir ./iam_role_grant_requests_drop.sql
 \ir ./iam_account_party_functions_drop.sql
+\ir ./iam_account_parties_notify_trigger_drop.sql
 \ir ./iam_account_party_drop.sql
 
 -- Run grants (dropped before the accounts and roles they reference)
@@ -44,8 +45,10 @@
 -- RBAC
 \ir ./iam_member_role_drop.sql
 \ir ./iam_rbac_functions_drop.sql
-\ir ./iam_account_roles_drop.sql
-\ir ./iam_role_permissions_drop.sql
+\ir ./iam_account_roles_notify_trigger_drop.sql
+\ir ./iam_account_role_drop.sql
+\ir ./iam_role_permissions_notify_trigger_drop.sql
+\ir ./iam_role_permission_drop.sql
 \ir ./iam_roles_notify_trigger_drop.sql
 \ir ./iam_roles_drop.sql
 \ir ./iam_permissions_notify_trigger_drop.sql

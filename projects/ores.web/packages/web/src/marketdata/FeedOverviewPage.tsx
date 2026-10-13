@@ -19,16 +19,19 @@
  *
  */
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { useHeld } from '../access/holds.js';
+import { Link } from 'react-router';
 import { api, type FeedFolder } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useRecords, show } from '../refdata/records.js';
+import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { Button, Dialog, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
-import { toast } from '../ui/Toasts.js';
-import { RUNNING_KEY } from './feedRuns.js';
+import { PATHS } from '../shell/paths.js';
+import { Button, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
+import { folderKey, providerKey, scopeKey } from './feedTree.js';
+import { FOLDERS_KEY, useFolderRuns } from './folderRuns.js';
+import { EVERY_MS, useCollections } from './useCollections.js';
 import {
     providerName,
     providersOf,
@@ -43,21 +46,11 @@ import {
 } from './feedOverview.js';
 import { useSyntheticStep } from './syntheticTrail.js';
 
-/** How often the overview asks again, since a feed can start or stop from anywhere. */
-const EVERY_MS = 5_000;
-
-const FOLDERS_KEY = ['feed-folders'] as const;
-
-/** What a start or stop acts on: one or more folders, named for the person. */
-interface Target {
-    readonly name: string;
-    readonly folders: readonly string[];
-    readonly totals: Totals;
-}
-
 /** A node of the overview: a scope, a provider or a feed kind. */
 interface Node {
     readonly key: string;
+    /** The address of the same node in the feed tree. */
+    readonly treeKey: string;
     readonly name: string;
     readonly note?: string;
     readonly totals: Totals;
@@ -95,26 +88,19 @@ function StateTag({ totals }: { readonly totals: Totals }): ReactNode {
  * stopped; one request names the folder and the server walks its subtree.
  */
 export function FeedOverviewPage(): ReactNode {
+    return (
+        <RecordStoreProvider store={syntheticStore}>
+            <FeedOverview />
+        </RecordStoreProvider>
+    );
+}
+
+function FeedOverview(): ReactNode {
     const { t } = useTranslation();
-    const queries = useQueryClient();
-    const holds = useHeld();
-    const mayRun =
-        holds('synthetic::fx_spot_generation_configs:write') ||
-        holds('synthetic::ir_curve_generation_configs:write');
+    const runs = useFolderRuns();
     const synthetic = useSyntheticStep();
 
-    const roots = useQuery({
-        queryKey: [...FOLDERS_KEY, 'roots'],
-        queryFn: () => api.feedFolders(''),
-        refetchInterval: EVERY_MS,
-    });
-    const rootIds = (roots.data ?? []).map((root) => root.id);
-    const collections = useQuery({
-        queryKey: [...FOLDERS_KEY, 'collections', rootIds],
-        queryFn: async () => (await Promise.all(rootIds.map((id) => api.feedFolders(id)))).flat(),
-        enabled: roots.data !== undefined,
-        refetchInterval: EVERY_MS,
-    });
+    const { collections, loaded, error } = useCollections();
     const catalogue = useRecords('providers');
     const names = new Map<string, string>(
         (catalogue.data ?? []).map((row) => [show(row['code']), show(row['name'])]),
@@ -123,13 +109,7 @@ export function FeedOverviewPage(): ReactNode {
     const [chosenScope, setScope] = useState<OverviewScope | undefined>();
     const [chosenProvider, setProvider] = useState<string | undefined>();
     const [chosenKind, setKind] = useState<string | undefined>();
-    const [asking, setAsking] = useState<{
-        readonly action: 'start' | 'stop';
-        readonly target: Target;
-    } | null>(null);
-    const [pending, setPending] = useState(false);
-
-    const all = collections.data ?? [];
+    const all = collections;
     const scopes = scopesOf(all);
     const scope =
         scopes.find((entry) => entry.scope === chosenScope) ??
@@ -152,6 +132,7 @@ export function FeedOverviewPage(): ReactNode {
 
     const scopeNodes: readonly Node[] = scopes.map((entry) => ({
         key: entry.scope,
+        treeKey: scopeKey(entry.scope),
         name: t(`marketdata.feedOverview.scope.${entry.scope}`),
         note: t(`marketdata.feedOverview.scopeNote.${entry.scope}`),
         totals: entry.totals,
@@ -159,6 +140,12 @@ export function FeedOverviewPage(): ReactNode {
     }));
     const providerNodes: readonly Node[] = providers.map((entry) => ({
         key: entry.code,
+        treeKey:
+            scope?.scope === 'system'
+                ? providerKey('system', entry.code)
+                : entry.collections.length === 1
+                  ? folderKey(entry.collections[0]?.id ?? '')
+                  : scopeKey('test'),
         name: t('marketdata.feedOverview.named', { name: providerName(entry.code, names) }),
         totals: entry.totals,
         folders: entry.collections.map((collection) => collection.id),
@@ -168,6 +155,7 @@ export function FeedOverviewPage(): ReactNode {
     }));
     const kindNodes: readonly Node[] = kindFolders.map((folder) => ({
         key: folder.id,
+        treeKey: folderKey(folder.id),
         name:
             (provider?.collections.length ?? 0) > 1
                 ? `${folder.name} · ${
@@ -192,49 +180,10 @@ export function FeedOverviewPage(): ReactNode {
                 : providerNodes;
 
     const ask = (action: 'start' | 'stop', node: Node): void =>
-        setAsking({
-            action,
-            target: { name: node.name, folders: node.folders, totals: node.totals },
-        });
+        runs.ask(action, { name: node.name, folders: node.folders, totals: node.totals });
 
-    const run = async (): Promise<void> => {
-        if (asking === null) {
-            return;
-        }
-        const { action, target } = asking;
-        setPending(true);
-        try {
-            if (action === 'start') {
-                const reports = await Promise.all(target.folders.map((id) => api.startFolder(id)));
-                toast(
-                    t('marketdata.feedOverview.startReport', {
-                        name: target.name,
-                        started: String(reports.reduce((n, r) => n + r.started, 0)),
-                        already: String(reports.reduce((n, r) => n + r.alreadyRunning, 0)),
-                        skipped: String(reports.reduce((n, r) => n + r.skipped, 0)),
-                    }),
-                );
-            } else {
-                const reports = await Promise.all(target.folders.map((id) => api.stopFolder(id)));
-                toast(
-                    t('marketdata.feedOverview.stopReport', {
-                        name: target.name,
-                        stopped: String(reports.reduce((n, r) => n + r.stopped, 0)),
-                    }),
-                );
-            }
-        } catch (error) {
-            toast(error instanceof Error ? error.message : String(error), 'warn');
-        } finally {
-            setPending(false);
-            setAsking(null);
-            await queries.invalidateQueries({ queryKey: FOLDERS_KEY });
-            await queries.invalidateQueries({ queryKey: RUNNING_KEY });
-        }
-    };
-
-    const failed = roots.isError || collections.isError;
-    const nothing = roots.data !== undefined && all.length === 0;
+    const failed = error !== '';
+    const nothing = loaded && all.length === 0;
 
     return (
         <div className="space-y-6">
@@ -249,12 +198,8 @@ export function FeedOverviewPage(): ReactNode {
                     description={t('marketdata.feedOverview.lead')}
                 />
             </div>
-            {failed && (
-                <Notice tone="error">
-                    {roots.error?.message ?? collections.error?.message ?? ''}
-                </Notice>
-            )}
-            {roots.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
+            {failed && <Notice tone="error">{error}</Notice>}
+            {!loaded && !failed && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
             {nothing && <Notice tone="info">{t('marketdata.feedOverview.none')}</Notice>}
             {all.length > 0 && (
                 <>
@@ -291,42 +236,14 @@ export function FeedOverviewPage(): ReactNode {
                         <Detail
                             node={selected}
                             below={children}
-                            mayRun={mayRun}
+                            mayRun={runs.mayRun}
                             onAsk={ask}
                             atKind={kindNodes.some((node) => node.key === selected.key)}
                         />
                     )}
                 </>
             )}
-            {asking !== null && (
-                <Dialog
-                    title={t(`marketdata.feedOverview.${asking.action}Title`, {
-                        name: asking.target.name,
-                    })}
-                    onClose={() => setAsking(null)}
-                    footer={
-                        <>
-                            <Button variant="ghost" onClick={() => setAsking(null)}>
-                                {t('refdata.records.cancel')}
-                            </Button>
-                            <Button variant="primary" pending={pending} onClick={() => void run()}>
-                                {t(`marketdata.feedOverview.${asking.action}`)}
-                            </Button>
-                        </>
-                    }
-                >
-                    <p className="text-sm">
-                        {t(`marketdata.feedOverview.${asking.action}Body`, {
-                            name: asking.target.name,
-                            count: String(
-                                asking.action === 'start'
-                                    ? totalOf(asking.target.totals) - asking.target.totals.running
-                                    : asking.target.totals.running,
-                            ),
-                        })}
-                    </p>
-                </Dialog>
-            )}
+            {runs.dialog}
         </div>
     );
 }
@@ -464,6 +381,12 @@ function Detail({
             </dl>
             <div className="flex flex-wrap items-center gap-3">
                 {actions(node, false)}
+                <Link
+                    className="text-sm text-accent hover:text-accent-bright"
+                    to={`${PATHS.feedTree}?node=${encodeURIComponent(node.treeKey)}`}
+                >
+                    {t('marketdata.feedOverview.openInTree')}
+                </Link>
                 <span className="text-xs text-ink-faint">
                     {t('marketdata.feedOverview.requestNote', { name: node.name })}
                 </span>

@@ -142,6 +142,15 @@ struct credit_instrument_data {
     std::vector<instrument_strike> strikes;
     std::vector<instrument_schedule> schedules;
     std::vector<instrument_schedule_date> schedule_dates;
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
+    // An index option wraps an index swap, which has fact fields of its own.
+    // The option's fact row is the carrier's fact; the wrapped swap's row is
+    // here. A product that wraps no swap leaves it empty.
+    std::optional<index_credit_default_swap_instrument> wrapped_index_swap;
 };
 
 // An equity position states an entry collection beside the instrument that
@@ -285,6 +294,23 @@ inline void stamp_ids(credit_instrument_data& data,
     for (auto& schedule_date : data.schedule_dates) {
         stamp_ids(schedule_date, trade_id, activity_id);
     }
+    for (auto& option : data.options) {
+        stamp_ids(option, trade_id, activity_id);
+    }
+    for (auto& premium : data.option_premiums) {
+        stamp_ids(premium, trade_id, activity_id);
+    }
+    for (auto& fee : data.option_exercise_fees) {
+        stamp_ids(fee, trade_id, activity_id);
+    }
+    for (auto& payment_date : data.option_payment_dates) {
+        stamp_ids(payment_date, trade_id, activity_id);
+    }
+    for (auto& exercise_price : data.option_exercise_prices) {
+        stamp_ids(exercise_price, trade_id, activity_id);
+    }
+    if (data.wrapped_index_swap)
+        stamp_ids(*data.wrapped_index_swap, trade_id, activity_id);
 }
 
 inline void stamp_ids(equity_instrument_data& data,

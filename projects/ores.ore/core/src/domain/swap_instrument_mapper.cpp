@@ -1103,6 +1103,54 @@ void reverse_option_block(
 } // namespace
 
 // ---------------------------------------------------------------------------
+// The shared option block
+// ---------------------------------------------------------------------------
+
+swap_instrument_mapper::option_rows swap_instrument_mapper::map_option_block(const optionData& od) {
+    trading::domain::swap_instrument_data scratch;
+    append_option_block(scratch, od);
+    option_rows rows;
+    rows.options = std::move(scratch.options);
+    rows.premiums = std::move(scratch.option_premiums);
+    rows.exercise_fees = std::move(scratch.option_exercise_fees);
+    rows.payment_dates = std::move(scratch.option_payment_dates);
+    rows.exercise_prices = std::move(scratch.option_exercise_prices);
+    rows.schedules = std::move(scratch.schedules);
+    rows.schedule_dates = std::move(scratch.schedule_dates);
+    return rows;
+}
+
+optionData swap_instrument_mapper::rebuild_option_block(const option_rows& rows) {
+    optionData od;
+    if (!rows.options.empty()) {
+        reverse_option_block(rows.options,
+                             rows.premiums,
+                             rows.exercise_fees,
+                             rows.payment_dates,
+                             rows.exercise_prices,
+                             od);
+    } else {
+        static_cast<std::string&>(od.LongShort) = "Long";
+    }
+
+    const auto exercise_dates = exercise_dates_of(rows.schedule_dates);
+    if (!exercise_dates.empty()) {
+        _ExerciseDates_t ed;
+        for (const auto& date : exercise_dates)
+            ed.ExerciseDate.push_back(make_date(date));
+        exerciseDatesGroup_group_t edg;
+        edg.ExerciseDates = std::move(ed);
+        od.exerciseDatesGroup = std::move(edg);
+    } else if (const auto schedule = schedule_for(
+                   rows.schedules, rows.schedule_dates, "option", 1, "exercise_schedule")) {
+        exerciseDatesGroup_group_t edg;
+        edg.ExerciseSchedule = *schedule;
+        od.exerciseDatesGroup = std::move(edg);
+    }
+    return od;
+}
+
+// ---------------------------------------------------------------------------
 // Forward mapping: legData (swap) → swap_leg
 // ---------------------------------------------------------------------------
 

@@ -1275,6 +1275,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/overnight_index_convention_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_contact_information_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_counterparty_change_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_counterparty_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_country_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_currency_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_id_scheme_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/party_identifier_event.hpp"
@@ -1494,6 +1497,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/counterparty_identifier_change_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/counterparty_proposal_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/counterparty_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/country_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/crm_driver_pair_protocol.hpp"
@@ -1602,4 +1606,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/zero_inflation_index_convention_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/ores.refdata.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/workflow/book_apply_workflow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/workflow/counterparty_apply_workflow.hpp"
 )

@@ -862,7 +862,7 @@ begin
 
     for r in
         select dq.code, dq.name, dq.kind, dq.description, dq.display_order
-        from ores_dq_synthetic_market_data_providers_artefact_tbl dq
+        from ores_dq_market_data_providers_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
         order by dq.display_order, dq.code

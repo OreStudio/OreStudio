@@ -83,6 +83,18 @@ struct credit_linked_swap_instrument final {
     std::optional<double> recovery_rate;
 
     /**
+     * @brief Whether the accrued premium settles on default, from SettlesAccrual. Null when the
+     * document states none.
+     */
+    std::optional<bool> settles_accrual;
+
+    /**
+     * @brief When the default payment falls, from DefaultPaymentTime (e.g. atDefault). Null when
+     * the document states none.
+     */
+    std::optional<std::string> default_payment_time;
+
+    /**
      * @brief Username of the person who last modified this credit linked swap instrument.
      */
     std::string modified_by;
@@ -137,6 +149,8 @@ struct credit_linked_swap_instrument final {
 inline constexpr std::string_view credit_linked_swap_instrument_economic_fields[] = {
     "credit_curve_id",
     "recovery_rate",
+    "settles_accrual",
+    "default_payment_time",
 };
 
 /**

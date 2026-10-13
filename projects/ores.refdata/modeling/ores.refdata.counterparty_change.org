@@ -282,13 +282,6 @@ the unit test would be refused its modified_by.
     }
 #+end_src
 
-** parent_counterparty_id
-:PROPERTIES:
-:table:         ores_refdata_counterparties_tbl
-:nullable:      true
-:error_message: Invalid parent_counterparty_id: %. No active counterparty found with this id.
-:END:
-
 ** image_id
 :PROPERTIES:
 :table:         ores_assets_images_tbl

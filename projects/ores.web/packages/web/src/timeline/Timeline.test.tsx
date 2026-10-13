@@ -180,7 +180,7 @@ describe('the timeline', () => {
          */
         expect(html).not.toContain('ores.iam.');
         expect(html).not.toContain('refused this caller');
-        expect(html).toContain('A role that was taken away is not shown');
+        expect(html).toContain('The roles a person was given could not be read');
         expect(html).toContain('Only the most recent sign-ins are kept');
     });
 

@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -41,7 +42,19 @@ render_index_credit_default_swap_option_instrument_fields(
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
-    fields.push_back({.name = "Credit Curve ID", .value = v.credit_curve_id});
+    fields.push_back({.name = "Knock Out",
+                      .value = v.knock_out ? (*v.knock_out ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Index Term", .value = v.index_term.value_or(std::string{})});
+    fields.push_back({.name = "Strike Type", .value = v.strike_type.value_or(std::string{})});
+    fields.push_back({.name = "Trade Date",
+                      .value = v.trade_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.trade_date) :
+                                   std::string{}});
+    fields.push_back({.name = "Front End Protection Start Date",
+                      .value = v.front_end_protection_start_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(
+                                       *v.front_end_protection_start_date) :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

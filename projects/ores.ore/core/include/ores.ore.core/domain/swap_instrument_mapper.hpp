@@ -33,6 +33,13 @@
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/domain/instrument_option.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
+#include "ores.trading.api/domain/instrument_option_payment_date.hpp"
+#include "ores.trading.api/domain/instrument_option_premium.hpp"
+#include "ores.trading.api/domain/instrument_schedule.hpp"
+#include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
@@ -278,6 +285,29 @@ public:
             tranche_notionals,
         const std::vector<ores::trading::domain::instrument_schedule>& schedules,
         const std::vector<ores::trading::domain::instrument_schedule_date>& schedule_dates);
+
+    /**
+     * @brief The rows of one ORE option block: the option row, its premiums,
+     * fees, payment dates and exercise prices, and the exercise-date schedule.
+     *
+     * The shared option tables hold them for every family, so a family
+     * carrier copies these vectors into its own members.
+     */
+    struct option_rows {
+        std::vector<ores::trading::domain::instrument_option> options;
+        std::vector<ores::trading::domain::instrument_option_premium> premiums;
+        std::vector<ores::trading::domain::instrument_option_exercise_fee> exercise_fees;
+        std::vector<ores::trading::domain::instrument_option_payment_date> payment_dates;
+        std::vector<ores::trading::domain::instrument_option_exercise_price> exercise_prices;
+        std::vector<ores::trading::domain::instrument_schedule> schedules;
+        std::vector<ores::trading::domain::instrument_schedule_date> schedule_dates;
+    };
+
+    /** The option block of a document as rows of the shared option tables. */
+    static option_rows map_option_block(const optionData& od);
+
+    /** The option block rebuilt from its rows, exercise dates included. */
+    static optionData rebuild_option_block(const option_rows& rows);
 
     /**
      * The leg rows of one ORE leg, shared by every family whose legs are rows of

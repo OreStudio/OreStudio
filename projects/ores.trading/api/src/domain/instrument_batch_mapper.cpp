@@ -70,7 +70,13 @@ credit_instrument_data as_credit(const instrument_batch& batch,
                                   find_all(batch.credit_basket_constituents, trade_id),
                                   find_all(batch.instrument_strikes, trade_id),
                                   find_all(batch.instrument_schedules, trade_id),
-                                  find_all(batch.instrument_schedule_dates, trade_id)};
+                                  find_all(batch.instrument_schedule_dates, trade_id),
+                                  find_all(batch.instrument_options, trade_id),
+                                  find_all(batch.instrument_option_premiums, trade_id),
+                                  find_all(batch.instrument_option_exercise_fees, trade_id),
+                                  find_all(batch.instrument_option_payment_dates, trade_id),
+                                  find_all(batch.instrument_option_exercise_prices, trade_id),
+                                  std::nullopt};
 }
 
 /**
@@ -176,6 +182,25 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.instrument_schedule_dates.insert(batch.instrument_schedule_dates.end(),
                                                        v.schedule_dates.begin(),
                                                        v.schedule_dates.end());
+                if (v.wrapped_index_swap)
+                    append(batch, *v.wrapped_index_swap);
+                batch.instrument_options.insert(
+                    batch.instrument_options.end(), v.options.begin(), v.options.end());
+                batch.instrument_option_premiums.insert(batch.instrument_option_premiums.end(),
+                                                        v.option_premiums.begin(),
+                                                        v.option_premiums.end());
+                batch.instrument_option_exercise_fees.insert(
+                    batch.instrument_option_exercise_fees.end(),
+                    v.option_exercise_fees.begin(),
+                    v.option_exercise_fees.end());
+                batch.instrument_option_payment_dates.insert(
+                    batch.instrument_option_payment_dates.end(),
+                    v.option_payment_dates.begin(),
+                    v.option_payment_dates.end());
+                batch.instrument_option_exercise_prices.insert(
+                    batch.instrument_option_exercise_prices.end(),
+                    v.option_exercise_prices.begin(),
+                    v.option_exercise_prices.end());
             } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                 append(batch, v.instrument);
                 batch.composite_legs.insert(
@@ -250,9 +275,13 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
     if (const auto* header = find(batch.credit_instruments, trade_id)) {
         if (const auto* v = find(batch.credit_default_swap_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.index_credit_default_swap_option_instruments, trade_id)) {
+            auto data = as_credit(batch, *header, *v, trade_id);
+            if (const auto* wrapped = find(batch.index_credit_default_swap_instruments, trade_id))
+                data.wrapped_index_swap = *wrapped;
+            return data;
+        }
         if (const auto* v = find(batch.index_credit_default_swap_instruments, trade_id))
-            return as_credit(batch, *header, *v, trade_id);
-        if (const auto* v = find(batch.index_credit_default_swap_option_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.synthetic_cdo_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);

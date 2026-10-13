@@ -71,6 +71,9 @@ create table if not exists "{{junction.product}}_{{junction.component}}_{{juncti
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+{{#junction.history}}
+    "closed_by" text null,
+{{/junction.history}}
 {{#junction.has_tenant_id}}
     primary key (tenant_id, {{junction.left.column}}, {{junction.right.column}}, valid_from),
     exclude using gist (
@@ -242,7 +245,8 @@ create or replace rule {{junction.product}}_{{junction.component}}_{{junction.na
 on delete to "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
 do instead
   update "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(){{#junction.history}},
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user){{/junction.history}}
   where {{#junction.has_tenant_id}}tenant_id = old.tenant_id
   and {{/junction.has_tenant_id}}{{junction.left.column}} = old.{{junction.left.column}}
   and {{junction.right.column}} = old.{{junction.right.column}}

@@ -96,10 +96,18 @@ function personWatches(account: Account): readonly WatchedEntity[] {
         { component: 'iam', entity: 'accounts', record: { username: account.username } },
         { component: 'iam', entity: 'account_contact_informations' },
         { component: 'iam', entity: 'roles' },
+        { component: 'iam', entity: 'account_roles', record: { account_id: account.id } },
+        { component: 'iam', entity: 'account_parties', record: { account_id: account.id } },
         { component: 'iam', entity: 'login_info' },
         { component: 'iam', entity: 'sessions' },
     ];
 }
+
+/** The links in a person's story, named by what they point at rather than by their ids. */
+const LINK_RECORDS: Readonly<Record<string, { readonly label: string; readonly field: string }>> = {
+    'ores.iam.account_role': { label: 'access.person.recordRole', field: 'Role' },
+    'ores.iam.account_party': { label: 'access.person.recordParty', field: 'Party' },
+};
 
 /** The reads that make up a person's page, named by the start of their keys. */
 function personQueries(account: Account): readonly (readonly string[])[] {
@@ -172,15 +180,6 @@ function Person({
             void queries.invalidateQueries({ queryKey: key });
         }
     };
-    const refresh = () => {
-        void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
-        /*
-         * A grant taken away is read back as a closed one, which the stream
-         * does not carry, so the story is read again rather than patched.
-         */
-        void queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
-    };
-
     const { tab, bar } = useTabs({
         label: name,
         tabs: tabsFor(
@@ -196,6 +195,10 @@ function Person({
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
+    const newRoles = useChangedRows('person-roles', roles, (role) => role.roleId, {
+        dataUpdatedAt: access.dataUpdatedAt,
+        isPlaceholder: access.isPlaceholderData,
+    });
 
     return (
         <div className="space-y-4">
@@ -246,6 +249,16 @@ function Person({
                             actorPicture={actorPicture}
                             isService={isService}
                             marked={newEntries}
+                            recordName={(event) => {
+                                const link = LINK_RECORDS[event.entityType];
+                                if (link === undefined) return undefined;
+                                const named = event.fields.find(
+                                    (field) => field.name === link.field,
+                                )?.value;
+                                return [t(link.label), named]
+                                    .filter((part) => part !== undefined && part !== '')
+                                    .join(' ');
+                            }}
                             /*
                              * Two entries can be acted on. A grant is taken
                              * away, which closes it and is the write the roles
@@ -336,7 +349,7 @@ function Person({
                                 {roles.map((role) => (
                                     <tr
                                         key={role.roleId}
-                                        className="border-b border-line-subtle last:border-b-0"
+                                        className={`border-b border-line-subtle last:border-b-0${newRoles.has(role.roleId) ? ' row-changed' : ''}`}
                                     >
                                         <td className="px-4 py-2">
                                             <span className="block font-medium">
@@ -411,10 +424,7 @@ function Person({
                     name={name}
                     held={roles}
                     onClose={() => setGiving(false)}
-                    onDone={() => {
-                        setGiving(false);
-                        void refresh();
-                    }}
+                    onDone={() => setGiving(false)}
                 />
             )}
             {reverting !== null && (
@@ -439,10 +449,7 @@ function Person({
                     name={name}
                     role={taking}
                     onClose={() => setTaking(null)}
-                    onDone={() => {
-                        setTaking(null);
-                        void refresh();
-                    }}
+                    onDone={() => setTaking(null)}
                 />
             )}
         </div>

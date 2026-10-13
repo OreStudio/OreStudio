@@ -188,6 +188,18 @@ void {{entity_singular}}_operations_commands::process_{{identifier}}(
     }
     if (!result)
         return;
+{{#adopts_token_field}}
+
+    // The answer carries a token scoped to the party the request named. The session keeps
+    // it, so the commands that follow run in that party and not in the one the login
+    // opened in.
+    if (result->success && !result->token.empty()) {
+        auto info = session.auth();
+        info.jwt = result->token;
+        info.default_party_id = req.{{adopts_token_field}};
+        session.set_auth(std::move(info));
+    }
+{{/adopts_token_field}}
 
     out << rfl::json::write(*result) << std::endl;
 }

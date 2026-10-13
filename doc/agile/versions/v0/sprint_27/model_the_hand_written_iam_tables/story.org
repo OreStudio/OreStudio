@@ -40,13 +40,19 @@ Every IAM table that holds data has a model, so the drift check covers it and no
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7C5269E1-7F8B-449A-B747-88169B4B8E9D][Scaffold story: Model the hand-written IAM tables]] | DONE | 2026-10-12 | 2026-10-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E28819FD-7555-4744-AFC1-8BF60D2E9468][Model account_role as a junction]] | BACKLOG | | | Initial task for: Model the hand-written IAM tables |
-| [[id:79222DEC-CB96-4514-A5BE-3969C32A5E53][Model role_permission]] | BACKLOG | | | Generate the table that holds which permissions a role holds, and move its callers to the generated code. |
-| [[id:DD0CADA6-5F29-450D-BF25-9E3674EC13B0][Model auth_event]] | BACKLOG | | | Generate the authentication audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
-| [[id:9A3B0B97-57CA-4D6A-A077-6CD5BD464937][Model run_token_issue]] | BACKLOG | | | Generate the run-token audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
-| [[id:6598DC0C-5369-4EAC-AF3C-128192773747][Model session_sample]] | BACKLOG | | | Generate the session telemetry table and move its callers to the generated code. |
+| [[id:E28819FD-7555-4744-AFC1-8BF60D2E9468][Model account_role as a junction]] | DONE | 2026-10-12 | 2026-10-12 | Initial task for: Model the hand-written IAM tables |
+| [[id:79222DEC-CB96-4514-A5BE-3969C32A5E53][Model role_permission]] | DONE | | 2026-10-12 | Generate the table that holds which permissions a role holds, and move its callers to the generated code. |
+| [[id:DD0CADA6-5F29-450D-BF25-9E3674EC13B0][Model auth_event]] | DONE | | 2026-10-13 | Generate the authentication audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
+| [[id:9A3B0B97-57CA-4D6A-A077-6CD5BD464937][Model run_token_issue]] | DONE | | 2026-10-13 | Generate the run-token audit table, give it the row-level security policy it lacks, and move its callers to the generated code. |
+| [[id:6598DC0C-5369-4EAC-AF3C-128192773747][Model session_sample]] | DONE | | 2026-10-13 | Generate the session telemetry table and move its callers to the generated code. |
+| [[id:75F62B26-0F66-4DD3-BEF2-97F5BBCFEBC7][Give junctions change events]] | DONE | 2026-10-13 | 2026-10-13 | A junction states no change event, so a screen that shows its links never hears that one changed. The person page reloads itself after a role is given, which the refresh rules forbid. A junction gets a notify trigger and an event like every other entity, and the screens that show links watch it. |
 
 * Decisions
+
+- A table that holds links is a junction model with =:history: true=. The generated table gains =version=, =modified_by= and =performed_by= in place of =assigned_by= and =assigned_at=. The wire names are unchanged.
+- Reads that join a generated table to others, such as the permissions an account holds, stay hand-written in a repository of their own. The generated repository reads the table and nothing else.
+- A TimescaleDB log table is an entity model with =:hypertable:= and only the data layer and the SQL schema enabled. What the generator does not state, such as a continuous aggregate, is an SQL paste block in the model, with its drop as a second block.
+- The recorders and counts that the generated reads cannot express stay hand-written beside the generated repository, under a name that says what they are: =auth_event_log= and =run_token_issue_log=.
 
 * Out of scope
 

@@ -142,16 +142,20 @@ void credit_default_swap_instrument_commands::register_commands(cli::Menu& root_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> <reason> "
-        "<commentary>");
+        "add <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> "
+        "<reference_obligation> <settles_accrual> <rebates_accrual> <pays_at_default_time> "
+        "<protection_payment_time> <protection_start_date> <upfront_date> <upfront_fee> "
+        "<trade_date> <cash_settlement_days> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> <reason> "
-        "<commentary> [--version <n>]");
+        "set <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <recovery_rate> "
+        "<reference_obligation> <settles_accrual> <rebates_accrual> <pays_at_default_time> "
+        "<protection_payment_time> <protection_start_date> <upfront_date> <upfront_fee> "
+        "<trade_date> <cash_settlement_days> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +163,9 @@ void credit_default_swap_instrument_commands::register_commands(cli::Menu& root_
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> "
-        "<recovery_rate> <reason> <commentary>");
+        "<recovery_rate> <reference_obligation> <settles_accrual> <rebates_accrual> "
+        "<pays_at_default_time> <protection_payment_time> <protection_start_date> <upfront_date> "
+        "<upfront_fee> <trade_date> <cash_settlement_days> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +359,8 @@ void credit_default_swap_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -365,6 +371,28 @@ void credit_default_swap_instrument_commands::process_add(std::ostream& out,
             req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
         read_token(req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
         read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        read_token(req.change.write.reference_obligation,
+                   parsed->positionals[next++],
+                   "reference_obligation");
+        read_token(
+            req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+        read_token(
+            req.change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
+        read_token(req.change.write.pays_at_default_time,
+                   parsed->positionals[next++],
+                   "pays_at_default_time");
+        read_token(req.change.write.protection_payment_time,
+                   parsed->positionals[next++],
+                   "protection_payment_time");
+        read_token(req.change.write.protection_start_date,
+                   parsed->positionals[next++],
+                   "protection_start_date");
+        read_token(req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+        read_token(req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
+        read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
+        read_token(req.change.write.cash_settlement_days,
+                   parsed->positionals[next++],
+                   "cash_settlement_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -407,8 +435,8 @@ void credit_default_swap_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -419,6 +447,28 @@ void credit_default_swap_instrument_commands::process_set(std::ostream& out,
             req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
         read_token(req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
         read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        read_token(req.change.write.reference_obligation,
+                   parsed->positionals[next++],
+                   "reference_obligation");
+        read_token(
+            req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+        read_token(
+            req.change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
+        read_token(req.change.write.pays_at_default_time,
+                   parsed->positionals[next++],
+                   "pays_at_default_time");
+        read_token(req.change.write.protection_payment_time,
+                   parsed->positionals[next++],
+                   "protection_payment_time");
+        read_token(req.change.write.protection_start_date,
+                   parsed->positionals[next++],
+                   "protection_start_date");
+        read_token(req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+        read_token(req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
+        read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
+        read_token(req.change.write.cash_settlement_days,
+                   parsed->positionals[next++],
+                   "cash_settlement_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -472,8 +522,8 @@ void credit_default_swap_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 15 + 2) {
+            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -486,6 +536,28 @@ void credit_default_swap_instrument_commands::process_put_many(
                 change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
             read_token(change.write.issuer_id, parsed->positionals[next++], "issuer_id");
             read_token(change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+            read_token(change.write.reference_obligation,
+                       parsed->positionals[next++],
+                       "reference_obligation");
+            read_token(
+                change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+            read_token(
+                change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
+            read_token(change.write.pays_at_default_time,
+                       parsed->positionals[next++],
+                       "pays_at_default_time");
+            read_token(change.write.protection_payment_time,
+                       parsed->positionals[next++],
+                       "protection_payment_time");
+            read_token(change.write.protection_start_date,
+                       parsed->positionals[next++],
+                       "protection_start_date");
+            read_token(change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+            read_token(change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
+            read_token(change.write.trade_date, parsed->positionals[next++], "trade_date");
+            read_token(change.write.cash_settlement_days,
+                       parsed->positionals[next++],
+                       "cash_settlement_days");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

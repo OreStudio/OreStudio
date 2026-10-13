@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A3A7F21F-F1D6-40AE-9CFF-2D2ED94C5D72
+:END:
+#+title: Have a French and Portuguese speaker read the text that the …
+#+description: Have a French and Portuguese speaker read the text that the oresmd link story added to ores.web: the Evolution page notices, the series page, the Inspect dialog, the Series label, and the tooltip on the feed's oresmd URI. A model wrote it and no speaker has read it.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

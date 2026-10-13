@@ -801,6 +801,52 @@ export function registerSyntheticRoutes(
         return { folders: reply.folders };
     });
 
+    /**
+     * A page of the feeds in one folder, or of the feeds of every folder that match
+     * some words. The service pages and counts, so the feed tree never reads them all.
+     */
+    server.get('/api/synthetic/folder-feeds', async (request) => {
+        const session = requireSession(request);
+        const query = input(
+            z
+                .object({
+                    folder: z.string().trim().max(100).default(''),
+                    search: z.string().trim().max(200).default(''),
+                    offset: z.coerce.number().int().min(0).max(1_000_000).default(0),
+                    limit: z.coerce.number().int().min(1).max(200).default(60),
+                })
+                .strict(),
+            request.query,
+        );
+        const reply = await session.client.callAuthenticated(
+            feedOverviewSubjects.list_folder_feeds_request,
+            {
+                folder_id: query.folder,
+                search: query.search,
+                offset: query.offset,
+                limit: query.limit,
+            },
+            operationReplySchema.extend({
+                total: z.int().default(0),
+                feeds: z
+                    .array(
+                        z.object({
+                            id: z.string(),
+                            kind: z.string(),
+                            label: z.string(),
+                            source_name: z.string(),
+                            oresmd_uri: z.string(),
+                            folder_id: z.string(),
+                            enabled: z.boolean(),
+                        }),
+                    )
+                    .default([]),
+            }),
+        );
+        refuseUnless(reply, invalidRequest);
+        return { total: reply.total, feeds: reply.feeds };
+    });
+
     /** The source names of the feeds running now, of every kind the caller may see. */
     server.get('/api/synthetic/running', async (request) => {
         const session = requireSession(request);

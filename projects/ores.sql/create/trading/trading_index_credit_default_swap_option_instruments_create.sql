@@ -24,10 +24,9 @@
  *
  * Index Credit Default Swap Option Instrument Table
  *
- * Represents an IndexCreditDefaultSwapOption trade. The option wraps an index swap, whose credit curve is
- * this table's one column, so the trade has this row and no row in
- * index_credit_default_swap_instruments. The strike and the exercise dates are the shared
- * instrument_strikes and schedule rows.
+ * Represents an IndexCreditDefaultSwapOption trade. The option wraps an index swap, so the trade also
+ * has a row in index_credit_default_swap_instruments for the wrapped swap's own fields. The strike,
+ * the option block and the exercise dates are the shared instrument_strikes, option and schedule rows.
  *
  * This row is the family's fact table, not its identity. The header,
  * ores.trading.credit_instrument, holds the trade type code, the party, the
@@ -40,7 +39,11 @@ create table if not exists "ores_trading_index_cds_option_instruments_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "credit_curve_id" text not null,
+    "knock_out" boolean null,
+    "index_term" text null,
+    "strike_type" text null,
+    "trade_date" date null,
+    "front_end_protection_start_date" date null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -55,7 +58,7 @@ create table if not exists "ores_trading_index_cds_option_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("credit_curve_id" <> '')
+    check ("strike_type" is null or "strike_type" in ('Spread', 'Price'))
 );
 
 -- Version uniqueness for optimistic concurrency

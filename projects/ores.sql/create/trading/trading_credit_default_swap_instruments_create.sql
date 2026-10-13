@@ -41,6 +41,16 @@ create table if not exists "ores_trading_cds_instruments_tbl" (
     "credit_curve_id" text null,
     "issuer_id" text null,
     "recovery_rate" double precision null,
+    "reference_obligation" text null,
+    "settles_accrual" boolean null,
+    "rebates_accrual" boolean null,
+    "pays_at_default_time" boolean null,
+    "protection_payment_time" text null,
+    "protection_start_date" date null,
+    "upfront_date" date null,
+    "upfront_fee" numeric(38, 12) null,
+    "trade_date" date null,
+    "cash_settlement_days" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -55,7 +65,8 @@ create table if not exists "ores_trading_cds_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("recovery_rate" is null or ("recovery_rate" >= 0 and "recovery_rate" <= 1))
+    check ("recovery_rate" is null or ("recovery_rate" >= 0 and "recovery_rate" <= 1)),
+    check ("cash_settlement_days" is null or "cash_settlement_days" >= 0)
 );
 
 -- Version uniqueness for optimistic concurrency

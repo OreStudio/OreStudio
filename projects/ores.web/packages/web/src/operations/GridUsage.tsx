@@ -95,6 +95,39 @@ export function QueueAgeNotice({ usage }: { readonly usage: GridUsageView }): Re
     );
 }
 
+/**
+ * How the results that finished in the last 24 hours ended, over every group of the view.
+ * The colours carry the meaning, green for a success and red for a failure, so a pie of
+ * outcomes reads at a glance. Nothing is drawn when no result finished in the window.
+ */
+export function OutcomePie({ usage }: { readonly usage: GridUsageView }): ReactNode {
+    const { t } = useTranslation();
+    const readable = usage.groups.filter((group) => !group.unavailable);
+    const succeeded = readable.reduce((sum, group) => sum + group.outcomes_success, 0);
+    const failed = readable.reduce((sum, group) => sum + group.outcomes_failed, 0);
+    return (
+        <SharePie
+            caption={t('operations.grid.usage.outcomes.title')}
+            label={t('operations.grid.usage.outcomes.title')}
+            otherLabel={t('operations.grid.usage.pie.other')}
+            items={[
+                {
+                    key: 'succeeded',
+                    label: t('operations.grid.usage.columns.succeeded'),
+                    value: succeeded,
+                    swatch: 'text-up',
+                },
+                {
+                    key: 'failed',
+                    label: t('operations.grid.usage.columns.failed'),
+                    value: failed,
+                    swatch: 'text-down',
+                },
+            ]}
+        />
+    );
+}
+
 function UsageTable({ usage }: { readonly usage: GridUsageView }): ReactNode {
     const { t } = useTranslation();
     const unassigned = t('operations.grid.usage.unassigned');
@@ -180,17 +213,21 @@ export function UsagePanel({ usage }: { readonly usage: GridUsageView }): ReactN
                 </p>
             </header>
             <QueueAgeNotice usage={usage} />
-            <SharePie
-                label={t(`operations.grid.usage.pie.${usage.group_kind}`)}
-                otherLabel={t('operations.grid.usage.pie.other')}
-                items={usage.groups
-                    .filter((group) => !group.unavailable)
-                    .map((group) => ({
-                        key: group.key === '' ? 'none' : group.key,
-                        label: groupLabel(group, t('operations.grid.usage.unassigned')).text,
-                        value: group.results,
-                    }))}
-            />
+            <div className="flex flex-wrap gap-10">
+                <OutcomePie usage={usage} />
+                <SharePie
+                    caption={t(`operations.grid.usage.pie.${usage.group_kind}`)}
+                    label={t(`operations.grid.usage.pie.${usage.group_kind}`)}
+                    otherLabel={t('operations.grid.usage.pie.other')}
+                    items={usage.groups
+                        .filter((group) => !group.unavailable)
+                        .map((group) => ({
+                            key: group.key === '' ? 'none' : group.key,
+                            label: groupLabel(group, t('operations.grid.usage.unassigned')).text,
+                            value: group.results,
+                        }))}
+                />
+            </div>
             {usage.groups.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('operations.grid.usage.empty')}</p>
             ) : (

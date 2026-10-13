@@ -45,15 +45,15 @@ TEST_CASE("create_account_role_with_valid_fields", tags) {
     account_role sut;
     sut.account_id = boost::uuids::random_generator()();
     sut.role_id = boost::uuids::random_generator()();
-    sut.assigned_by = "admin";
-    sut.assigned_at = expected_time;
+    sut.modified_by = "admin";
+    sut.recorded_at = expected_time;
     BOOST_LOG_SEV(lg, info) << "Account role - account_id: " << sut.account_id
-                            << ", role_id: " << sut.role_id << ", assigned_by: " << sut.assigned_by;
+                            << ", role_id: " << sut.role_id << ", modified_by: " << sut.modified_by;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
-    CHECK(sut.assigned_by == "admin");
-    CHECK(sut.assigned_at == expected_time);
+    CHECK(sut.modified_by == "admin");
+    CHECK(sut.recorded_at == expected_time);
 }
 
 TEST_CASE("create_account_role_with_specific_uuids", tags) {
@@ -66,14 +66,14 @@ TEST_CASE("create_account_role_with_specific_uuids", tags) {
     account_role sut;
     sut.account_id = account_uuid;
     sut.role_id = role_uuid;
-    sut.assigned_by = "system";
-    sut.assigned_at = datetime::make_timepoint(2025, 1, 1);
+    sut.modified_by = "system";
+    sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
     BOOST_LOG_SEV(lg, info) << "Account role - account_id: " << sut.account_id
-                            << ", role_id: " << sut.role_id << ", assigned_by: " << sut.assigned_by;
+                            << ", role_id: " << sut.role_id << ", modified_by: " << sut.modified_by;
 
     CHECK(sut.account_id == account_uuid);
     CHECK(sut.role_id == role_uuid);
-    CHECK(sut.assigned_by == "system");
+    CHECK(sut.modified_by == "system");
 }
 
 TEST_CASE("account_role_same_account_multiple_roles", tags) {
@@ -86,8 +86,8 @@ TEST_CASE("account_role_same_account_multiple_roles", tags) {
         account_role ar;
         ar.account_id = account_id;
         ar.role_id = boost::uuids::random_generator()();
-        ar.assigned_by = "admin";
-        ar.assigned_at = datetime::make_timepoint(2025, 1, 15 + i, 10);
+        ar.modified_by = "admin";
+        ar.recorded_at = datetime::make_timepoint(2025, 1, 15 + i, 10);
         assignments.push_back(ar);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: " << ar.account_id
                                 << ", role_id: " << ar.role_id;
@@ -109,8 +109,8 @@ TEST_CASE("account_role_same_role_multiple_accounts", tags) {
         account_role ar;
         ar.account_id = boost::uuids::random_generator()();
         ar.role_id = role_id;
-        ar.assigned_by = "admin";
-        ar.assigned_at = datetime::make_timepoint(2025, 1, 15, 10 + i);
+        ar.modified_by = "admin";
+        ar.recorded_at = datetime::make_timepoint(2025, 1, 15, 10 + i);
         assignments.push_back(ar);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: " << ar.account_id
                                 << ", role_id: " << ar.role_id;
@@ -128,18 +128,18 @@ TEST_CASE("create_account_role_with_faker", tags) {
     account_role sut;
     sut.account_id = boost::uuids::random_generator()();
     sut.role_id = boost::uuids::random_generator()();
-    sut.assigned_by = std::string(faker::internet::username());
-    sut.assigned_at = datetime::make_timepoint(2025,
+    sut.modified_by = std::string(faker::internet::username());
+    sut.recorded_at = datetime::make_timepoint(2025,
                                                faker::number::integer(1, 12),
                                                faker::number::integer(1, 28),
                                                faker::number::integer(0, 23));
     BOOST_LOG_SEV(lg, info) << "Account role - account_id: " << sut.account_id
-                            << ", role_id: " << sut.role_id << ", assigned_by: " << sut.assigned_by;
+                            << ", role_id: " << sut.role_id << ", modified_by: " << sut.modified_by;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
-    CHECK(!sut.assigned_by.empty());
-    CHECK(sut.assigned_at != std::chrono::system_clock::time_point{});
+    CHECK(!sut.modified_by.empty());
+    CHECK(sut.recorded_at != std::chrono::system_clock::time_point{});
 }
 
 TEST_CASE("create_multiple_random_account_roles", tags) {
@@ -149,17 +149,17 @@ TEST_CASE("create_multiple_random_account_roles", tags) {
         account_role sut;
         sut.account_id = boost::uuids::random_generator()();
         sut.role_id = boost::uuids::random_generator()();
-        sut.assigned_by =
+        sut.modified_by =
             std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
-        sut.assigned_at = datetime::make_timepoint(2025, 1, faker::number::integer(1, 28), 10);
+        sut.recorded_at = datetime::make_timepoint(2025, 1, faker::number::integer(1, 28), 10);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: " << sut.account_id
                                 << ", role_id: " << sut.role_id
-                                << ", assigned_by: " << sut.assigned_by;
+                                << ", modified_by: " << sut.modified_by;
 
         CHECK(!sut.account_id.is_nil());
         CHECK(!sut.role_id.is_nil());
-        CHECK(!sut.assigned_by.empty());
-        CHECK(sut.assigned_at != std::chrono::system_clock::time_point{});
+        CHECK(!sut.modified_by.empty());
+        CHECK(sut.recorded_at != std::chrono::system_clock::time_point{});
     }
 }
 
@@ -168,13 +168,13 @@ TEST_CASE("account_role_default_values", tags) {
 
     account_role sut;
     BOOST_LOG_SEV(lg, info) << "Default account role - account_id: " << sut.account_id
-                            << ", role_id: " << sut.role_id << ", assigned_by: '" << sut.assigned_by
+                            << ", role_id: " << sut.role_id << ", modified_by: '" << sut.modified_by
                             << "'";
 
     CHECK(sut.account_id.is_nil());
     CHECK(sut.role_id.is_nil());
-    CHECK(sut.assigned_by.empty());
-    CHECK(sut.assigned_at == std::chrono::system_clock::time_point{});
+    CHECK(sut.modified_by.empty());
+    CHECK(sut.recorded_at == std::chrono::system_clock::time_point{});
 }
 
 TEST_CASE("account_role_assignment_with_different_assigners", tags) {
@@ -186,10 +186,10 @@ TEST_CASE("account_role_assignment_with_different_assigners", tags) {
         account_role sut;
         sut.account_id = boost::uuids::random_generator()();
         sut.role_id = boost::uuids::random_generator()();
-        sut.assigned_by = assigner;
-        sut.assigned_at = datetime::make_timepoint(2025, 1, 15, 10);
-        BOOST_LOG_SEV(lg, info) << "Account role assigned by: " << sut.assigned_by;
+        sut.modified_by = assigner;
+        sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 10);
+        BOOST_LOG_SEV(lg, info) << "Account role assigned by: " << sut.modified_by;
 
-        CHECK(sut.assigned_by == assigner);
+        CHECK(sut.modified_by == assigner);
     }
 }

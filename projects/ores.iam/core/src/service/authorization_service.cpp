@@ -43,6 +43,7 @@ namespace reason = ores::dq::domain::change_reason_constants;
 authorization_service::authorization_service(context ctx, event_bus* event_bus)
     : ctx_(ctx)
     , account_role_repo_(ctx)
+    , account_permission_repo_(ctx)
     , role_permission_repo_(ctx)
     , event_bus_(event_bus) {
     BOOST_LOG_SEV(lg(), info) << "Authorization service initialized.";
@@ -159,10 +160,10 @@ domain::role authorization_service::create_role(const std::string& name,
     // Create role-permission mappings
     for (const auto& perm : resolved_perms) {
         domain::role_permission rp;
-        rp.tenant_id = ctx_.tenant_id();
+        rp.tenant_id = ctx_.tenant_id().to_string();
         rp.role_id = role.id;
         rp.permission_id = perm.id;
-        rp.assigned_by = modified_by;
+        rp.modified_by = modified_by;
         rp.change_reason_code = std::string{reason::codes::new_record};
         rp.change_commentary = "Role created with its permission bundle";
         role_permission_repo_.write(rp);
@@ -275,10 +276,10 @@ authorization_service::replace_role_permissions(const boost::uuids::uuid& caller
             continue;
         }
         domain::role_permission link;
-        link.tenant_id = ctx_.tenant_id();
+        link.tenant_id = ctx_.tenant_id().to_string();
         link.role_id = role_id;
         link.permission_id = permission.id;
-        link.assigned_by = ctx_.actor();
+        link.modified_by = ctx_.actor();
         link.change_reason_code = reason;
         link.change_commentary = change_commentary;
         role_permission_repo_.write(link);
@@ -323,7 +324,7 @@ void authorization_service::assign_role(const boost::uuids::uuid& account_id,
     }
 
     // Check if already assigned
-    if (account_role_repo_.exists(account_id, role_id)) {
+    if (!account_role_repo_.read_latest(account_id, role_id).empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Role " << role_id << " already assigned to account "
                                   << account_id;
         return;
@@ -331,9 +332,10 @@ void authorization_service::assign_role(const boost::uuids::uuid& account_id,
 
     // Create assignment
     domain::account_role ar;
+    ar.tenant_id = ctx_.tenant_id().to_string();
     ar.account_id = account_id;
     ar.role_id = role_id;
-    ar.assigned_by = assigned_by;
+    ar.modified_by = assigned_by;
     ar.change_reason_code =
         change_reason_code.empty() ? std::string{reason::codes::new_record} : change_reason_code;
     ar.change_commentary = change_commentary;
@@ -379,7 +381,7 @@ authorization_service::get_account_roles(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting roles for account: " << account_id;
 
     // Use optimized single-query approach that fetches roles with permissions
-    return account_role_repo_.read_roles_with_permissions(account_id);
+    return account_permission_repo_.read_roles_with_permissions(account_id);
 }
 
 // ============================================================================
@@ -690,7 +692,7 @@ messaging::role_holders_response authorization_service::read_role_holders(
         row.username = account.username;
         row.full_name = account.full_name;
         row.image_id = account.image_id ? boost::uuids::to_string(*account.image_id) : "";
-        row.assigned_by = assignment.assigned_by;
+        row.assigned_by = assignment.modified_by;
         auto key = account.full_name.empty() ? account.username : account.full_name;
         std::transform(key.begin(), key.end(), key.begin(), [](unsigned char ch) {
             return static_cast<char>(std::tolower(ch));
@@ -742,8 +744,8 @@ authorization_service::compose_account_access(const boost::uuids::uuid& account_
         account_access_entry entry;
         entry.role = std::move(roles.front());
         entry.permission_codes = get_role_permissions(assignment.role_id);
-        entry.assigned_by = assignment.assigned_by;
-        entry.assigned_at = assignment.assigned_at;
+        entry.assigned_by = assignment.modified_by;
+        entry.assigned_at = assignment.recorded_at;
         entry.change_reason_code = assignment.change_reason_code;
         entry.change_commentary = assignment.change_commentary;
         result.push_back(std::move(entry));
@@ -769,7 +771,7 @@ authorization_service::get_effective_permissions(const boost::uuids::uuid& accou
     BOOST_LOG_SEV(lg(), debug) << "Computing effective permissions for account: " << account_id;
 
     // Use optimized single-query approach with JOINs
-    auto result = account_role_repo_.read_effective_permissions(account_id);
+    auto result = account_permission_repo_.read_effective_permissions(account_id);
 
     BOOST_LOG_SEV(lg(), debug) << "Account " << account_id << " has " << result.size()
                                << " effective permissions.";

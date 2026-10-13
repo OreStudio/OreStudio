@@ -1431,6 +1431,38 @@ def history_value_expression(cpp_type, member, owner):
     return template.format(x=member)
 
 
+def derive_junction_events(junction):
+    """Derive what a junction's change-event templates read.
+
+    A junction that states ``:events: true`` announces its changes like any
+    entity: a notify trigger names the link by both columns, and the service
+    publishes it on ``<component>.v1.<name>_events``. Sets the table's channel
+    name, the subject prefix, and the declarations the trigger spells for each
+    key column. A key column is spelled as text, which is what the JSON key
+    record reads back, whatever the column's own type.
+    """
+    owner = junction.get('name_singular', '?')
+    table = (junction.get('sql') or {}).get('tablename') or (
+        f"{junction.get('product', 'ores')}_{junction['component']}_{junction['name']}_tbl")
+    if not table.endswith('_tbl'):
+        raise ValueError(f"{owner}: the table name {table!r} does not end in _tbl")
+    columns = [junction[side]['column'] for side in ('left', 'right')]
+    for side in ('left', 'right'):
+        if junction[side].get('is_date'):
+            raise ValueError(
+                f"{owner}: cannot announce a link keyed by the date column "
+                f"{junction[side]['column']}")
+    junction['events_channel'] = table[:-len('_tbl')]
+    junction['event_prefix'] = f"{junction['component']}.v1.{junction['name']}_events"
+    junction['event_key_columns'] = [
+        {'column': column, 'last': index == len(columns) - 1}
+        for index, column in enumerate(columns)]
+    # The party travels in the envelope for a party-owned link. It is read from
+    # the key, where it already sits, so a party column that is not a key column
+    # is not announced.
+    junction['has_party_column'] = 'party_id' in columns
+
+
 def derive_junction_history(junction):
     """Derive what a junction's history templates read, from its two sides.
 
@@ -5672,6 +5704,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # side. See derive_junction_history.
         if junction.get('history'):
             derive_junction_history(junction)
+        if junction.get('events'):
+            derive_junction_events(junction)
         junction['has_date_left_or_right_or_column'] = (
             junction.get('left', {}).get('is_date', False) or
             junction.get('right', {}).get('is_date', False) or

@@ -169,6 +169,8 @@ export const en: SourceCatalogue = {
             notYourself: 'You cannot take a role away from yourself.',
             whatTheyAllow: 'What these roles let them do',
             giveTitle: 'Give {name} a role',
+            recordRole: 'Role',
+            recordParty: 'Party',
             alreadyHeld: 'already held',
             chooseReason: 'Choose a reason',
             note: 'Note (optional)',
@@ -1671,6 +1673,7 @@ export const en: SourceCatalogue = {
                     party: 'A share is the party’s results as a fraction of all the results in this view. Succeeded and failed count the last 24 hours.',
                 },
                 unavailable: 'Could not be read',
+                outcomes: { title: 'Outcomes of the results finished in the last 24 hours' },
                 pie: {
                     tenant: 'Share of the results by tenant',
                     party: 'Share of the results by party',
@@ -2350,7 +2353,8 @@ export const en: SourceCatalogue = {
                 'The counterparties it may trade with could not be read, so adding or removing one is not shown.',
             account_party:
                 'The parties a person works in could not be read, so joining or leaving one is not shown.',
-            account_role: 'A role that was taken away is not shown, only the roles held now.',
+            account_role:
+                'The roles a person was given could not be read, so giving or taking one away is not shown.',
             auth_event: 'Only the most recent sign-ins are kept, so older ones are not shown.',
             unread: 'Part of this history could not be read, so it is not shown.',
         },
@@ -3637,6 +3641,9 @@ export const en: SourceCatalogue = {
                 feedOverview: 'Feed overview',
                 feedOverviewBody:
                     'What runs, by scope, provider and kind. Start and stop a provider or a kind.',
+                feedTree: 'Feed tree',
+                feedTreeBody:
+                    'Every feed by scope, provider and kind. Start and stop any folder, and open a feed.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3709,11 +3716,25 @@ export const en: SourceCatalogue = {
                 'Started {started} feeds under {name}. {already} already running, {skipped} skipped.',
             stopReport: 'Stopped {stopped} feeds under {name}.',
             requestNote: 'Start and Stop act on every feed under {name}, in one request.',
+            openInTree: 'Open in feed tree',
             kindNote:
                 'The overview stops at the feed kind. The {count} feeds are in the lists, FX price feeds and IR curve feeds.',
             none: 'There are no feeds yet. A synthetic feeds dataset published for your party fills this page.',
             noProviders: 'No provider in this scope.',
             chooseProvider: 'Choose a provider to see its feed kinds.',
+        },
+        feedTree: {
+            title: 'Feed tree',
+            lead: 'Every feed by scope, provider and feed kind. Open a node to see what is under it. The folder that holds feeds lists them a page at a time, and a feed opens on its own page.',
+            search: 'Search feeds',
+            runningOnly: 'Running only',
+            results: 'Feeds matching “{query}”',
+            noFeeds: 'No feeds here.',
+            columns: { feed: 'Feed', source: 'Source', where: 'Where' },
+            open: 'Open',
+            range: '{from} to {to} of {total}',
+            previous: 'Previous',
+            next: 'Next',
         },
         irFeeds: {
             title: 'IR curve feeds',

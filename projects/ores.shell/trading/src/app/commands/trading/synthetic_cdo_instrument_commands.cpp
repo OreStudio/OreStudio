@@ -143,7 +143,9 @@ void synthetic_cdo_instrument_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_activity_id> <qualifier> <protection_start_date> <attachment_point> "
-        "<detachment_point> <recovery_rate> <reason> <commentary>");
+        "<detachment_point> <recovery_rate> <settles_accrual> <rebates_accrual> "
+        "<pays_at_default_time> <protection_payment_time> <upfront_date> <upfront_fee> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -151,7 +153,9 @@ void synthetic_cdo_instrument_commands::register_commands(cli::Menu& root_menu,
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_activity_id> <qualifier> <protection_start_date> <attachment_point> "
-        "<detachment_point> <recovery_rate> <reason> <commentary> [--version <n>]");
+        "<detachment_point> <recovery_rate> <settles_accrual> <rebates_accrual> "
+        "<pays_at_default_time> <protection_payment_time> <upfront_date> <upfront_fee> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +163,9 @@ void synthetic_cdo_instrument_commands::register_commands(cli::Menu& root_menu,
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_activity_id> <qualifier> <protection_start_date> "
-        "<attachment_point> <detachment_point> <recovery_rate> <reason> <commentary>");
+        "<attachment_point> <detachment_point> <recovery_rate> <settles_accrual> <rebates_accrual> "
+        "<pays_at_default_time> <protection_payment_time> <upfront_date> <upfront_fee> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -354,8 +360,8 @@ void synthetic_cdo_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -371,6 +377,18 @@ void synthetic_cdo_instrument_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.detachment_point, parsed->positionals[next++], "detachment_point");
         read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        read_token(
+            req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+        read_token(
+            req.change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
+        read_token(req.change.write.pays_at_default_time,
+                   parsed->positionals[next++],
+                   "pays_at_default_time");
+        read_token(req.change.write.protection_payment_time,
+                   parsed->positionals[next++],
+                   "protection_payment_time");
+        read_token(req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+        read_token(req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -413,8 +431,8 @@ void synthetic_cdo_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -430,6 +448,18 @@ void synthetic_cdo_instrument_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.detachment_point, parsed->positionals[next++], "detachment_point");
         read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        read_token(
+            req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+        read_token(
+            req.change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
+        read_token(req.change.write.pays_at_default_time,
+                   parsed->positionals[next++],
+                   "pays_at_default_time");
+        read_token(req.change.write.protection_payment_time,
+                   parsed->positionals[next++],
+                   "protection_payment_time");
+        read_token(req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+        read_token(req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -484,8 +514,8 @@ void synthetic_cdo_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -503,6 +533,18 @@ void synthetic_cdo_instrument_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.detachment_point, parsed->positionals[next++], "detachment_point");
             read_token(change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+            read_token(
+                change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
+            read_token(
+                change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
+            read_token(change.write.pays_at_default_time,
+                       parsed->positionals[next++],
+                       "pays_at_default_time");
+            read_token(change.write.protection_payment_time,
+                       parsed->positionals[next++],
+                       "protection_payment_time");
+            read_token(change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+            read_token(change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

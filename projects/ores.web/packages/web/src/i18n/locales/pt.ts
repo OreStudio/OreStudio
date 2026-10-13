@@ -169,6 +169,8 @@ const pt: SourceCatalogue = {
             notYourself: 'Não pode retirar um papel a si próprio.',
             whatTheyAllow: 'O que estes papéis permitem',
             giveTitle: 'Dar um papel a {name}',
+            recordRole: 'Papel',
+            recordParty: 'Parte',
             alreadyHeld: 'já atribuído',
             chooseReason: 'Escolha um motivo',
             note: 'Nota (opcional)',
@@ -1682,6 +1684,7 @@ const pt: SourceCatalogue = {
                     party: 'A quota de uma parte é a fração dos seus resultados entre todos os resultados desta vista. Com êxito e falhados contam as últimas 24 horas.',
                 },
                 unavailable: 'Não foi possível ler',
+                outcomes: { title: 'Desfecho dos resultados concluídos nas últimas 24 horas' },
                 pie: {
                     tenant: 'Quota dos resultados por inquilino',
                     party: 'Quota dos resultados por parte',
@@ -2370,7 +2373,7 @@ const pt: SourceCatalogue = {
             account_party:
                 'As partes em que uma pessoa trabalha não puderam ser lidas, por isso não se mostra quando entra ou sai de uma.',
             account_role:
-                'Um papel que foi retirado não se mostra, apenas os papéis detidos agora.',
+                'Os papéis dados a uma pessoa não puderam ser lidos, por isso não se mostra quando um é dado ou retirado.',
             auth_event:
                 'Só se guardam os inícios de sessão mais recentes, por isso os mais antigos não se mostram.',
             unread: 'Parte deste histórico não pôde ser lida, por isso não se mostra.',
@@ -3664,6 +3667,9 @@ const pt: SourceCatalogue = {
                 feedOverview: 'Visão geral dos fluxos',
                 feedOverviewBody:
                     'O que corre, por âmbito, fornecedor e tipo. Inicie e pare um fornecedor ou um tipo.',
+                feedTree: 'Árvore de fluxos',
+                feedTreeBody:
+                    'Cada fluxo por âmbito, fornecedor e tipo. Inicie e pare qualquer pasta, e abra um fluxo.',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },
@@ -3736,11 +3742,25 @@ const pt: SourceCatalogue = {
                 '{started} fluxos iniciados em {name}. {already} já a correr, {skipped} ignorados.',
             stopReport: '{stopped} fluxos parados em {name}.',
             requestNote: 'Iniciar e Parar atuam em cada fluxo de {name}, num único pedido.',
+            openInTree: 'Abrir na árvore de fluxos',
             kindNote:
                 'A visão geral pára no tipo de fluxo. Os {count} fluxos estão nas listas, fluxos de preços FX e fluxos de curvas de taxas.',
             none: 'Ainda não há fluxos. Um conjunto de fluxos sintéticos publicado para a sua parte preenche esta página.',
             noProviders: 'Nenhum fornecedor neste âmbito.',
             chooseProvider: 'Escolha um fornecedor para ver os seus tipos de fluxo.',
+        },
+        feedTree: {
+            title: 'Árvore de fluxos',
+            lead: 'Cada fluxo por âmbito, fornecedor e tipo de fluxo. Abra um nó para ver o que contém. A pasta que contém fluxos lista-os página a página, e um fluxo abre na sua própria página.',
+            search: 'Pesquisar fluxos',
+            runningOnly: 'Só a correr',
+            results: 'Fluxos que correspondem a «{query}»',
+            noFeeds: 'Não há fluxos aqui.',
+            columns: { feed: 'Fluxo', source: 'Origem', where: 'Onde' },
+            open: 'Abrir',
+            range: '{from} a {to} de {total}',
+            previous: 'Anterior',
+            next: 'Seguinte',
         },
         irFeeds: {
             title: 'Fluxos de curvas de taxas',

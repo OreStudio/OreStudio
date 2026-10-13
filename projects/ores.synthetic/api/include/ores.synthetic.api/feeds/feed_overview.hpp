@@ -54,6 +54,17 @@ children_with_counts(const std::vector<messaging::feed_folder>& folders,
                      const std::vector<folder_feed_count>& direct,
                      const std::string& parent_id);
 
+/**
+ * @brief The words of a search, lower case, in the order typed.
+ *
+ * Words are split on white space and cut to 64 characters, and at most eight are
+ * kept, so a search cannot grow a query without bound.
+ */
+ORES_SYNTHETIC_API_EXPORT std::vector<std::string> search_terms(const std::string& text);
+
+/// Whether the text is a folder id: a UUID in its written form, which is all a query may be given.
+ORES_SYNTHETIC_API_EXPORT bool is_folder_id(const std::string& text);
+
 }
 
 #endif

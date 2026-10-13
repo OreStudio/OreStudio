@@ -25,13 +25,17 @@
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <optional>
 #include <vector>
 
 namespace ores::trading::repository {
@@ -49,6 +53,28 @@ domain::index_credit_default_swap_instrument index_credit_default_swap_instrumen
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.credit_curve_id = v.credit_curve_id;
+    r.issuer_id = v.issuer_id;
+    r.settles_accrual = v.settles_accrual;
+    r.rebates_accrual = v.rebates_accrual;
+    r.pays_at_default_time = v.pays_at_default_time;
+    r.protection_payment_time = v.protection_payment_time;
+    r.protection_start_date = v.protection_start_date.has_value() ?
+                                  std::optional(ores::platform::time::datetime::from_iso8601_date(
+                                      *v.protection_start_date)) :
+                                  std::nullopt;
+    r.upfront_date =
+        v.upfront_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.upfront_date)) :
+            std::nullopt;
+    r.upfront_fee =
+        v.upfront_fee.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.upfront_fee).value()) :
+            std::nullopt;
+    r.trade_date =
+        v.trade_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.trade_date)) :
+            std::nullopt;
+    r.cash_settlement_days = v.cash_settlement_days;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -69,6 +95,26 @@ index_credit_default_swap_instrument_entity index_credit_default_swap_instrument
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.credit_curve_id = v.credit_curve_id;
+    r.issuer_id = v.issuer_id;
+    r.settles_accrual = v.settles_accrual;
+    r.rebates_accrual = v.rebates_accrual;
+    r.pays_at_default_time = v.pays_at_default_time;
+    r.protection_payment_time = v.protection_payment_time;
+    r.protection_start_date = v.protection_start_date.has_value() ?
+                                  std::optional(ores::platform::time::datetime::to_iso8601_date(
+                                      *v.protection_start_date)) :
+                                  std::nullopt;
+    r.upfront_date =
+        v.upfront_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.upfront_date)) :
+            std::nullopt;
+    r.upfront_fee =
+        v.upfront_fee.has_value() ? std::optional(v.upfront_fee->to_string()) : std::nullopt;
+    r.trade_date =
+        v.trade_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.trade_date)) :
+            std::nullopt;
+    r.cash_settlement_days = v.cash_settlement_days;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

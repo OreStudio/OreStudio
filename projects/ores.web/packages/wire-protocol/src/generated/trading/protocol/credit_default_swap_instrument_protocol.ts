@@ -38,6 +38,16 @@ export interface CreditDefaultSwapInstrumentWrite {
     credit_curve_id: string | null;
     issuer_id: string | null;
     recovery_rate: number | null;
+    reference_obligation: string | null;
+    settles_accrual: boolean | null;
+    rebates_accrual: boolean | null;
+    pays_at_default_time: boolean | null;
+    protection_payment_time: string | null;
+    protection_start_date: string | null;
+    upfront_date: string | null;
+    upfront_fee: string | null;
+    trade_date: string | null;
+    cash_settlement_days: number | null;
 }
 
 export interface CreditDefaultSwapInstrumentChange {

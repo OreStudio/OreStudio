@@ -90,6 +90,64 @@ struct list_feed_folders_response {
     std::vector<feed_folder> folders;
 };
 
+/**
+ * @brief One feed as the feed tree lists it: enough to name it, to open its
+ * page and to tell whether it runs, and nothing of its process.
+ */
+struct folder_feed {
+    /** @brief The feed's id. */
+    std::string id;
+    /** @brief The feed kind: fx_spot or ir_curve. */
+    std::string kind;
+    /** @brief What a person calls the feed: the pair, or the currency and the index. */
+    std::string label;
+    /** @brief The source name the feed publishes under. */
+    std::string source_name;
+    /** @brief The oresmd URI the feed publishes. */
+    std::string oresmd_uri;
+    /** @brief The folder the feed sits in; empty when it sits in none. */
+    std::string folder_id;
+    /** @brief Whether the feed is enabled. */
+    bool enabled = false;
+};
+
+/**
+ * @brief Request a page of the feeds that sit in one folder, or of the feeds of
+ * every folder that match some words.
+ */
+struct list_folder_feeds_request {
+    using response_type = struct list_folder_feeds_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.list_folder_feeds";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The folder whose feeds are wanted; empty for the feeds of every folder. */
+    std::string folder_id;
+    /** @brief Words that must all appear in the feed's label, source name or URI; empty for no
+     * search. */
+    std::string search;
+    /** @brief How many feeds to skip. */
+    int offset = 0;
+    /** @brief How many feeds to return at most. */
+    int limit = 60;
+};
+
+/**
+ * @brief A page of feeds, and how many match in all.
+ */
+struct list_folder_feeds_response {
+    bool success = false;
+    std::string message;
+    /** @brief How many feeds match, of which the page holds some. */
+    int total = 0;
+    /** @brief The page of feeds, in label order. */
+    std::vector<folder_feed> feeds;
+};
+
 }
 
 #endif

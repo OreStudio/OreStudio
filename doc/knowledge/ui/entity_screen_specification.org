@@ -516,9 +516,10 @@ as a record of its own.
   name, and its id stands only when the name cannot be read.
 - The opening of a link is a "Created" entry. A change to a link, where it has a
   column of its own, is a "Changed" entry with the difference.
-- The closing of a link is a "Closed" entry. It carries the time the link ended.
-  It has no author, because the store records when a link ended and not who ended
-  it. The entry does not say that it has none.
+- The closing of a link is a "Closed" entry. It carries the time the link ended
+  and the account that ended it, drawn as the author of any other entry is. A
+  link closed before the store recorded the closer has no author, and the entry
+  does not say that it has none.
 - A link that was closed and opened again is one record in two runs. The second
   run counts from one again.
 - The timeline names a gap for a kind of link only when that kind could not be

@@ -87,23 +87,29 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_activity_id> <credit_curve_id> <reason> <commentary>
+     * @brief add <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <settles_accrual>
+     * <rebates_accrual> <pays_at_default_time> <protection_payment_time> <protection_start_date>
+     * <upfront_date> <upfront_fee> <trade_date> <cash_settlement_days> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_activity_id> <credit_curve_id> <reason> <commentary> [--version
-     * <n>]
+     * @brief set <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id> <settles_accrual>
+     * <rebates_accrual> <pays_at_default_time> <protection_payment_time> <protection_start_date>
+     * <upfront_date> <upfront_fee> <trade_date> <cash_settlement_days> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_activity_id> <credit_curve_id> <reason>
-     * <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_activity_id> <credit_curve_id> <issuer_id>
+     * <settles_accrual> <rebates_accrual> <pays_at_default_time> <protection_payment_time>
+     * <protection_start_date> <upfront_date> <upfront_fee> <trade_date> <cash_settlement_days>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -419,6 +419,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.ops.select_party
 :response: select_party_response
+:shell_adopts_token_for: party_id
 :END:
 
 *** party_id
@@ -430,6 +431,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.ops.switch_party
 :response: select_party_response
+:shell_adopts_token_for: party_id
 :END:
 
 #+begin_src cpp :name comment

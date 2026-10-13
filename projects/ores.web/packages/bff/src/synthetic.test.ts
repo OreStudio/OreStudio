@@ -985,6 +985,68 @@ describe('synthetic operations', () => {
         expect(calls).toEqual([]);
     });
 
+    it('reads a page of the feeds in a folder', async () => {
+        const feed = {
+            id: 'x1',
+            kind: 'fx_spot',
+            label: 'EUR/USD',
+            source_name: 'synthetic.bloomberg.eurusd',
+            oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
+            folder_id: 'f1',
+            enabled: true,
+        };
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.list_folder_feeds': {
+                success: true,
+                message: '',
+                total: 26,
+                feeds: [feed],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/folder-feeds?folder=f1&search=usd&offset=60&limit=30',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ total: 26, feeds: [feed] });
+        expect(calls[0]?.body).toEqual({
+            folder_id: 'f1',
+            search: 'usd',
+            offset: 60,
+            limit: 30,
+        });
+    });
+
+    it('asks for the first page of every folder when nothing is named', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.list_folder_feeds': {
+                success: true,
+                message: '',
+                total: 0,
+                feeds: [],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/folder-feeds');
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ folder_id: '', search: '', offset: 0, limit: 60 });
+    });
+
+    it('refuses a feed page that asks for too many or for an unknown parameter', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        for (const query of ['limit=500', 'limit=0', 'offset=-1', 'depth=2']) {
+            const response = await send(
+                server,
+                sessionId,
+                'GET',
+                `/api/synthetic/folder-feeds?${query}`,
+            );
+            expect(response.statusCode, query).toBe(400);
+        }
+        expect(calls).toEqual([]);
+    });
+
     it('reads an FX mixture as the simple view through the synthetic service', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.convert_fx_simple': {

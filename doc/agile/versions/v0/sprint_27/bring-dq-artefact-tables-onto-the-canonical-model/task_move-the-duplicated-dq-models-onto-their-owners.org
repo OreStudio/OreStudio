@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :dq:codegen:cleanup:bring-dq-artefact-tables-onto-the-canonical-model:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-the-duplicated-dq-models-onto-their-owners
+#+pr: 3219
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-11
-#+environment:
+#+updated: 2026-10-13
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Each of the six artefact tables is generated from its owning model, and no dupli
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13 |
 
 * Acceptance
 
@@ -41,9 +41,26 @@ Each of the six artefact tables is generated from its owning model, and no dupli
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Confirm the inventory. Five of the six tables come from a duplicate
+   =ores.dq= model. =risk_report_configs= does not: it already comes from
+   =ores.reporting.risk_report_config=, which carries the flag. The guide's
+   table was wrong about it.
+2. For each of the five, set the flag on the owning model. Where the staging
+   shape differs from the entity, write an =* Artefact columns= section, and
+   carry the DQ model's =* Artefact indexes= over. A script reads the current
+   artefact table, so the section states the same columns, types, nullability
+   and defaults.
+3. Regenerate the SQL schema for each owning model and diff the artefact table
+   against the old one. The table must not change, other than its comment
+   header.
+4. Delete each =ores.dq= model and its generated stack: the DQ API domain, JSON
+   and table I/O, generator and protocol; the DQ core handler, registrar,
+   entity, mapper, repository and service; and the generated TypeScript. Remove
+   the registrar wiring, the shell command, the recipes, the protocol rows and
+   the read permissions only these handlers checked.
+5. Follow the provider table rename through the hand-written SQL.
+6. Run the drift checks, build, ctest and pgTAP. Recreate the database and
+   provision Acme.
 
 * Measurements
 
@@ -57,9 +74,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Branch diff | 161 files, 350 insertions, 13,409 deletions; 128 files deleted | =git diff --shortstat origin/main...HEAD= | 667112cd48 |
+| Artefact table change | none, other than the folded tier columns and the provider table name | =git diff projects/ores.sql/create/dq/= after regeneration | f6677f1341 |
+| ctest | 93 of 93 passed | =compass check --only ctest= | 667112cd48 |
+| pgTAP | 45 files, 433 tests, PASS | =compass check --only pgtap= | 667112cd48 |
+| pgTAP after rebasing on main | 46 files, 449 tests, PASS; build clean | =compass db recreate=, =compass check --only pgtap=, =compass build= | 823d6e8a44 |
+| Codegen suite | 1,397 passed | =pytest projects/ores.codegen/tests= | this commit |
+| Acme published rows | csas 35, netting_agreements 45, netting_sets 80, report_definitions 78 in the Acme tenant; 8 providers in the system tenant | =compass db sql= on the current-row counts | 667112cd48 |
+| Acme feeds | 55 bindings for each of the 5 parties; ticks arriving | =compass db sql= on feed bindings and observations | 667112cd48 |
 
 * Notes
+
+- *The provider table is renamed.* The owning model's plural is
+  =market_data_providers=, so the staging table is now
+  =ores_dq_market_data_providers_artefact_tbl=. The populate, the publish
+  function, the artefact type row, the drop script and the pgTAP test follow
+  the rename. The dataset code and the artefact type code do not change.
+- *The report definition tier columns move into the model.* The tier and the
+  applicable jurisdiction were added by a hand-written alter script,
+  =dq_report_definitions_artefact_tier_alter.sql=. They are now the last two
+  artefact columns of =ores.reporting.report_definition=, and the alter script
+  is deleted.
+- *The report definition template handler stays.* =dq.v1.report_definition_templates.list=
+  reads the artefact table in SQL, not through the deleted repository, and the
+  reporting service calls it. Its permission, =dq::report_definitions:read=,
+  stays with it.
+- *The DQ report definition capture is resolved.* The capture BAFCC111 said
+  the DQ report definition entity names a table that no script creates. The
+  entity is gone, so the capture is filed with a resolution.
+- The CSA, netting agreement and netting set tables keep their natural-key
+  shape: a netting set code, an agreement number and a counterparty LEI where
+  the store holds uuids. Publishing resolves them in the target tenant.
 
 * Test Scenarios
 
@@ -76,12 +121,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3219][#3219]] | [dq] Move the duplicated DQ models onto their owners |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The staging shim gate test named the deleted dq report definition model | =test_staging_only_facets_gate.py= | Accept | The test builds a fixture shim with a rival plural; the gate stays. |
+| 2 | Each artefact table comment now comes from the owning entity's description, not a staging description | generated =dq_*_artefact_create.sql= | Decline | This is how the canonical template works for every table. The staging difference is stated in the model's Artefact columns prose. |
+| 3 | =dq::report_definitions:read= names a resource that has no DQ entity now | =iam_permissions_populate.sql= | Decline | The template handler still checks it and ReportingService holds it. A rename changes roles for no gain in this task. |
+| 4 | The drift checks also report drift from main: shell scripts, history registrars, ER diagrams, a new entity writer | various | Decline | Not this branch. Left out of the commits. |
 
 * Result
+
+The five duplicated DQ models are gone. =csas=, =netting_agreements= and
+=netting_sets= come from their refdata models, =report_definitions= from
+=ores.reporting.report_definition=, and the provider staging table from
+=ores.synthetic.market_data_provider=, now named
+=ores_dq_market_data_providers_artefact_tbl=. Each owning model carries the
+artefact flag and an =* Artefact columns= section where the staging shape
+differs, and the regenerated tables keep their columns. The report definition
+tier columns are in the model, and the alter script is deleted. The DQ API,
+core, shell and TypeScript stacks of the five models are deleted, with their
+registrar wiring, shell command, recipes, protocol rows and permissions.
+
+=risk_report_configs= needed no change: it already came from its reporting
+model, and the DQ guide now says so.
+
+Acceptance: the models and stacks are deleted, and nothing consumed them other
+than the wiring removed here. The owning models carry the flag. pgTAP, ctest and
+an Acme provision pass, and the datasets publish into the Acme tenant. The
+provision recorded one failed step, =start_market_feeds=, which timed out while
+the feeds started. This branch does not touch that path; the capture
+=start_market_feeds_step_times_out_while_the_feeds_start= records it.

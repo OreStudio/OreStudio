@@ -243,10 +243,13 @@
 \ir ./refdata_party_identifiers_drop.sql
 
 -- Party-currency and party-country visibility junctions (drop before parties)
+\ir ./refdata_party_currencies_notify_trigger_drop.sql
 \ir ./refdata_party_currencies_drop.sql
+\ir ./refdata_party_countries_notify_trigger_drop.sql
 \ir ./refdata_party_countries_drop.sql
 
 -- Party-counterparty junction (drop before parties and counterparties)
+\ir ./refdata_party_counterparties_notify_trigger_drop.sql
 \ir ./refdata_party_counterparties_drop.sql
 
 -- Counterparty business centre junction (drop before counterparties and business centres)

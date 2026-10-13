@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: D66FEF0D-C8BC-46C5-9DB3-F9555BA25718
+:END:
+#+title: Task: Keep the token of a party switch in the shell
+#+description: The shell keeps the token that select-party and switch-party return, so later commands run in the chosen party, and the grid soak spreads its work across the parties of a tenant.
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch: feature/shell-adopts-the-party-token
+#+pr: 3224
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A script or a person who switches party in the shell works in that party afterwards.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- After switch-party, a batch added in the same session carries the chosen party.
+- The soak sends each wave in a random party of the sender's tenant.
+
+* Plan
+
+=select-party= and =switch-party= printed the new token and kept the old one, so every later command of the session ran in the party the login opened in. A script could not change party, and neither could a person in the shell. The commands are generated, so the fix is in the generator.
+
+- A message in an operation model may state =:shell_adopts_token_for: <request field>=. The field names the party the token is scoped to.
+- The loader reads it, refuses a field the request does not have, and projects it as =adopts_token_field=.
+- The shell command template emits a block for such a command. On success it stores the token as the session's token, with the party as the default party.
+- Both party messages of the iam model state it, and the shell commands are regenerated.
+- The grid soak reads the parties of the sender's tenant, other than its system party, when it starts. Each wave then switches to one at random. =--no-spread-parties= keeps the login party.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Codegen shell operation tests, with four new cases | 72 pass | =python3 -m pytest tests/test_shell_operations.py -q= in projects/ores.codegen | branch head |
+| Batches added after two switches in one script | one in ACCOUK, one in ACCOUS | a script run through =compass shell=, then the batch party in the reply | branch head |
+| Batches of a 70 second soak | in all four Acme parties | the batch table grouped by party | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3224][#3224]] | [shell] Keep the token of a party switch |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The shell keeps the token that a party switch returns, so later commands run in the chosen party. The soak spreads its waves across the parties of the sender's tenant. A script that switched to the UK and then the US party added a batch in each. A 70 second soak put batches in all four Acme parties. The compute work of a tenant can now be seen split by party.

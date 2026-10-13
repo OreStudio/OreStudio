@@ -44,6 +44,11 @@ render_credit_linked_swap_instrument_fields(const domain::credit_linked_swap_ins
     fields.push_back({.name = "Credit Curve ID", .value = v.credit_curve_id});
     fields.push_back({.name = "Recovery Rate",
                       .value = v.recovery_rate ? std::to_string(*v.recovery_rate) : std::string{}});
+    fields.push_back(
+        {.name = "Settles Accrual",
+         .value = v.settles_accrual ? (*v.settles_accrual ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Default Payment Time", .value = v.default_payment_time.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -290,13 +290,6 @@ namespace ores #F2F2F2 {
                     +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
-                class synthetic_market_data_provider_commands {
-                    -lg() : auto&
-                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
-                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
-                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
-                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
-                }
                 class treatment_dimension_commands {
                     -lg() : auto&
                     +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void

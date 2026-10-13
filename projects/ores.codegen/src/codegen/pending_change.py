@@ -237,6 +237,69 @@ def singular_of(front):
     return keyword(front, "entity_singular") or keyword(front, "name_singular")
 
 
+def pending_tables(models_dir):
+    """The tables of every model beside this one that has a pending change.
+
+    A request may create a row and the rows that name it together, so a pending
+    line cannot require that the row it names is live yet. The real write checks
+    that when it runs, in the preview and in the apply.
+    """
+    tables = set()
+    for path in sorted(Path(models_dir).glob("ores.*.org")):
+        text = path.read_text()
+        if not is_gated(text):
+            continue
+        front, sections = split_sections(text)
+        named = re.search(r"(?m)^:tablename:\s*(\S+)", text)
+        if named:
+            tables.add(named.group(1))
+            continue
+        component = keyword(front, "component")
+        plural = keyword(front, "entity_plural") or keyword(front, "name")
+        tables.add(f"ores_{component}_{plural}_tbl")
+    return tables
+
+
+def drop_pending_targets(body, tables):
+    """Remove the foreign key entries that point at a table with a pending change."""
+    kept = []
+    for entry in re.split(r"(?m)^(?=\*\* )", body):
+        target = re.search(r"(?m)^:table:\s*(\S+)", entry)
+        if target and target.group(1) in tables:
+            continue
+        kept.append(entry)
+    return "".join(kept)
+
+
+def lookups_only(validations):
+    """Keep each validation's column and function and drop its cardinality limit.
+
+    A cardinality limit counts the live rows of a parent. On a pending line it
+    would count the pending lines of every request, and refuse a second request
+    for the same parent. The real write enforces the limit. A table that names
+    only a column and a function is left as it is.
+    """
+    out = []
+    widths = None
+    for line in validations.split("\n"):
+        if not line.startswith("|"):
+            out.append(line)
+            continue
+        separator = set(line.strip()) <= set("|-+")
+        cells = line.strip().strip("|").split("+" if separator else "|")
+        if len(cells) <= 2:
+            out.append(line)
+            continue
+        if separator:
+            out.append("|" + "+".join("-" * w for w in widths) + "|")
+        else:
+            kept = [c.strip() for c in cells[:2]]
+            if widths is None:
+                widths = [len(c) + 2 for c in kept]
+            out.append("| " + " | ".join(kept) + " |")
+    return "\n".join(out)
+
+
 def derive_junction(source, text):
     """The pending-change entity model of a gated junction.
 
@@ -388,13 +451,17 @@ def derive(source, text):
     if fks:
         body = fks.split("\n", 1)[1].strip("\n")
         body = re.sub(r"(?m)^:(list_by|bump_parent_version|list_by_as_of):.*\n", "", body)
-        out.append(body + "\n\n")
+        body = drop_pending_targets(body, pending_tables(source.parent))
+        if body.strip():
+            out.append(body + "\n\n")
 
     trigger = by_name.get("Insert trigger")
     if trigger and "\n** Validations" in trigger:
         validations = trigger.split("\n** Validations", 1)[1]
         validations = re.split(r"(?m)^\*\* ", validations)[0]
-        out.append("* Insert trigger\n\n** Validations" + validations.rstrip("\n") + "\n\n")
+        out.append(
+            "* Insert trigger\n\n** Validations" + lookups_only(validations).rstrip("\n") + "\n\n"
+        )
 
     out.append("* C++\n\n** Flags\n:PROPERTIES:\n:subcomponent:    api\n:END:\n\n")
     out.append(

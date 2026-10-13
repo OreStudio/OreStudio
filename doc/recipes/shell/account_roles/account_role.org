@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 81B23CE4-432C-5562-AA74-CA1D0F481F3B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the account_roles commands from the shell?
+#+description: Every command the account_roles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:account_roles:
+
+This file documents the account_roles resource at the shell, one section per command. Every command is a subcommand of =account_roles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 07F089F1-9B4C-5E7B-8CA6-AFCE6D0A145B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_roles.list=.
+
+#+name: account_roles-list
+#+begin_src ores-shell :tangle account_roles-list.ores :exports none
+account_roles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 37983A53-EAF7-531D-9736-1F924C89400F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles get <account_id> <role_id>
+#+end_example
+
+It is addressed at =iam.v1.account_roles.get=.
+
+#+name: account_roles-get
+#+begin_src ores-shell :tangle account_roles-get.ores :exports none
+account_roles get 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D8D5E5E2-8DE6-5DA2-BC5A-514975CF8A0C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles get-many <account_id> <role_id>
+#+end_example
+
+It is addressed at =iam.v1.account_roles.get_many=.
+
+#+name: account_roles-get-many
+#+begin_src ores-shell :tangle account_roles-get-many.ores :exports none
+account_roles get-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7C6554EA-0D09-503B-ADC3-8E6B42341846
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles add <account_id> <role_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_roles.put=.
+
+#+name: account_roles-add
+#+begin_src ores-shell :tangle account_roles-add.ores :exports none
+account_roles add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: ADF20B97-46DB-5BC3-8B80-2EF41BE122C7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles set <account_id> <role_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_roles.put=.
+
+#+name: account_roles-set
+#+begin_src ores-shell :tangle account_roles-set.ores :exports none
+account_roles set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: F418CF51-AA7E-582B-8E09-1A9EF5CF1E20
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles put-many --count <n> <account_id> <role_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_roles.put_many=.
+
+#+name: account_roles-put-many
+#+begin_src ores-shell :tangle account_roles-put-many.ores :exports none
+account_roles put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 10C8FF38-D8D3-5248-B657-8CA7E35750DE
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles delete <account_id> <role_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_roles.delete=.
+
+#+name: account_roles-delete
+#+begin_src ores-shell :tangle account_roles-delete.ores :exports none
+account_roles delete 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2ADAEAF1-54BA-5F75-A37A-D7B8BB759F94
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles delete-many <account_id> <role_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_roles.delete_many=.
+
+#+name: account_roles-delete-many
+#+begin_src ores-shell :tangle account_roles-delete-many.ores :exports none
+account_roles delete-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-account-id=
+:PROPERTIES:
+:ID: 0F028F1F-085C-5ED7-84DF-A12D970F298C
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles by-account-id <account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_roles.list_by_account_id=.
+
+#+name: account_roles-by-account-id
+#+begin_src ores-shell :tangle account_roles-by-account-id.ores :exports none
+account_roles by-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-role-id=
+:PROPERTIES:
+:ID: 98B32669-3A12-580D-8CF4-3B6744494E26
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_roles by-role-id <role_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_roles.list_by_role_id=.
+
+#+name: account_roles-by-role-id
+#+begin_src ores-shell :tangle account_roles-by-role-id.ores :exports none
+account_roles by-role-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

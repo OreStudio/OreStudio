@@ -139,12 +139,13 @@ begin
             using errcode = '23503';
     end if;
 
+    -- A version of 0 states no earlier version to match: the trigger numbers the row.
     insert into ores_iam_account_roles_tbl (
-        tenant_id, account_id, role_id, assigned_by,
+        tenant_id, account_id, role_id, version, modified_by, performed_by,
         change_reason_code, change_commentary,
         valid_from, valid_to
     ) values (
-        v_system_tenant_id, v_account_id, v_super_admin_role_id, v_actor,
+        v_system_tenant_id, v_account_id, v_super_admin_role_id, 0, v_actor, v_actor,
         'system.initial_load', 'SuperAdmin role assigned during bootstrap',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     );

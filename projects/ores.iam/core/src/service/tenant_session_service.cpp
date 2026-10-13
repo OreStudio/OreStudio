@@ -20,7 +20,7 @@
 #include "ores.iam.core/service/tenant_session_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -151,7 +151,7 @@ tenant_session_service::enter(const tenant_session_caller& caller,
     // The entry is recorded once the session exists and before it is handed
     // over, so the trail never names an entry that did not happen and no
     // session leaves without its record.
-    repository::auth_event_repository(target_ctx)
+    repository::auth_event_log(target_ctx)
         .record_tenant_entered(now,
                                target_id,
                                boost::uuids::to_string(caller.account_id),
@@ -245,7 +245,7 @@ tenant_session_service::leave(const tenant_session_caller& caller) {
                 .message = std::string(describe(tenant_session_refusal::not_inside_a_tenant))};
     }
     const auto tenant_id = caller.tenant_id.to_string();
-    repository::auth_event_repository(ctx_.with_tenant(caller.tenant_id, caller.username))
+    repository::auth_event_log(ctx_.with_tenant(caller.tenant_id, caller.username))
         .record_tenant_left(std::chrono::system_clock::now(),
                             tenant_id,
                             boost::uuids::to_string(caller.account_id),

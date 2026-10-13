@@ -49,3 +49,52 @@ struct entity_event_traits<ores::{{component}}::messaging::{{entity_singular}}_e
 
 #endif
 {{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_include_upper}}_EVENTING_{{name_singular_upper}}_EVENT_HPP
+#define ORES_{{component_include_upper}}_EVENTING_{{name_singular_upper}}_EVENT_HPP
+
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <rfl/json.hpp>
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
+namespace ores::eventing::domain {
+
+/**
+ * @brief Event traits for {{name_singular_words}} changes.
+ *
+ * The events collection is addressed by three subjects, one per action, so the
+ * traits state the prefix and the action completes it. The conversion is this
+ * junction's own because the notification carries the key as a JSON object and
+ * only this junction knows which two columns its key record holds.
+ */
+template<>
+struct entity_event_traits<ores::{{component}}::messaging::{{name_singular}}_event> {
+    static constexpr std::string_view subject_prefix = "{{event_prefix}}";
+
+    static ores::{{component}}::messaging::{{name_singular}}_event
+    from_notification(const entity_event_notification& notification) {
+        ores::{{component}}::messaging::{{name_singular}}_event event;
+        event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
+        if (const auto key =
+                rfl::json::read<ores::{{component}}::messaging::{{name_singular}}_key>(
+                    notification.key))
+            event.key = *key;
+        event.action = notification.action;
+        event.version = notification.version;
+        event.occurred_at = notification.occurred_at;
+        event.correlation_id = notification.correlation_id;
+        return event;
+    }
+};
+
+}
+
+#endif
+{{/junction}}

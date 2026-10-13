@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: F33B55D5-3FC2-43ED-BD5E-194702512749
+:END:
+#+title: Story: Manage market data bindings
+#+description: A user journey, a prototype and the screen to manage the bindings that connect a producer of market data to a party's series, for synthetic data and for real data, where real data is shown and not supported.
+#+type: story
+#+level: s2
+#+filetags: :web:marketdata:journey:prototype:sprint_27:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A feed binding says that a party consumes one producer source. Today a binding is made by provisioning, a person can only read it through the operations journey, and the series it feeds and the last tick are not shown anywhere. This story designs how a person manages bindings: list them, say what each source writes and when it last ticked, bind and rebind a party to a source, enable and disable a binding, and start or stop the feed behind it. The journey covers two scenarios. Synthetic data is the one the product supports. Real data from a vendor is drawn in the journey and the prototype so the design holds it, and it is marked as not supported, so no screen offers to connect a real feed. The prototype comes first and is signed off before any screen is built. The snags that the oresmd link story left are tasks of this story.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | STARTED                                                |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. The scaffold is done and no task has started. |
+| Waiting on    | Nothing.                                               |
+| Next          | Write the journey, then the prototype.                 |
+| Last touched  | 2026-10-13                                             |
+
+* Acceptance
+
+- A user journey document describes how a person manages market data bindings, in the shape of the existing journeys, with both scenarios: synthetic, supported, and real, not supported.
+- A clickable prototype of the journey is built and signed off by Marco before any screen is built.
+- The snags left by the story Link an oresmd URL to what it names are tasks of this story, each with a clear goal.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B8E64686-DE38-42CB-8D8E-96E86C431A86][Scaffold story: Manage market data bindings]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EA123F47-98CC-4319-A243-D82D6FC9B89C][Write the journey to manage market data bindings]] | DONE | 2026-10-13 | 2026-10-13 | Initial task for: Manage market data bindings |
+| [[id:92CF062B-25A9-44B2-9B9B-FDB14E12BEA9][Prototype the market data binding journey]] | BACKLOG | | | Build a clickable prototype of the binding journey, with a variant for synthetic data and a variant for real data that is marked as not supported, and get it signed off before any screen is built. |
+| [[id:059F5F7F-D4B7-4861-9C77-EA4B7143C22D][Build the market data binding screen]] | BACKLOG | | | Build the screen the signed-off prototype shows. Its tasks are cut after the prototype is signed off. |
+| [[id:B110675F-C840-46E5-91CE-A56236526D0A][Find why the synthetic feed went quiet]] | BACKLOG | | | The newest synthetic tick of AUD/USD was an hour old at the last check, after the marketdata service was restarted. Find out whether the restart stopped the feed, and what a person must do to bring it back. |
+| [[id:EE0D4A71-CF26-4C75-81DC-250BEFA99752][Link the oresmd URI column of the feed lists]] | BACKLOG | | | The list column called oresmd URI on the IR and FX feed screens is plain text. Draw it as the link and button that the detail view has. |
+| [[id:CC080B67-F749-493F-8B30-5C01B69D36B7][Add a time window to the series page]] | BACKLOG | | | The series page reads the latest observations by count. A synthetic feed ticks every two seconds, so the latest 500 cover a few minutes. Offer a window of time. |
+| [[id:3AAE8BDA-9650-4722-8D96-53085DBEFA20][Find a convention stored under the reverse pair]] | BACKLOG | | | A spot rate looks up the convention of its pair as the unit currency over the quoted currency. A convention stored under the reverse pair is not found and the plain format shows. |
+| [[id:4F0E896D-0C89-4698-B218-3D0C084C5AF0][Share one copy hook between the oresmd dialogs]] | BACKLOG | | | The editor and the read-only view of an oresmd URL each hold the same copy-to-clipboard code: a timer, an unmount cleanup and a try and catch. Move it into one hook. |
+| [[id:A52E345C-746B-4487-B860-31EB4B98A752][Move the series page state into a pure function]] | BACKLOG | | | The series page picks one of seven states by a chain of conditions in the component. Move the choice into a pure function that a test can cover. |
+| [[id:2A606350-56AA-4781-A7BA-06CDD68B0737][Give hints a tooltip with keyboard access]] | BACKLOG | | | The tooltip on the oresmd URI label of a feed is a native title, which a touch screen and a keyboard do not show. Add one shared tooltip and use it for the hints. |
+| [[id:628D8369-F667-4254-80A2-2F8AC488616C][Run the series title test in CI]] | BACKLOG | | | The Catch2 case that every series title names only its own fields was built and never run, because the test binary needs the database of the environment. Run it in CI and make sure it is in a job. |
+
+** Build order
+
+| Step | Task | Needs |
+|------+------+-------|
+| 1 | Write the journey to manage market data bindings | nothing |
+| 2 | Find why the synthetic feed went quiet | nothing |
+| 3 | Prototype the market data binding journey | 1 |
+| 4 | Build the market data binding screen | 3 signed off by Marco |
+| 5 | Link the oresmd URI column of the feed lists | nothing |
+| 6 | Add a time window to the series page | nothing |
+| 7 | Find a convention stored under the reverse pair | nothing |
+| 8 | Share one copy hook between the oresmd dialogs | nothing |
+| 9 | Move the series page state into a pure function | nothing |
+| 10 | Give hints a tooltip with keyboard access | nothing |
+| 11 | Run the series title test in CI | nothing |
+
+Tasks 5 to 11 are the snags that the story [[id:441F3512-3189-4A45-9191-2F235C5D7E50][Link an oresmd URL to what it names]] left. They are small and do not wait for the journey. The French and Portuguese review of that story is a capture, PR 3216.
+
+* Decisions
+
+- The journey extends the existing journey [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]], which lists bindings and starts and stops feeds for the operations area. The new journey is about managing the bindings: what a binding connects, how it is made and changed, and what it feeds. The two journeys link to each other, and the new one does not repeat the old one's steps.
+- Synthetic data is the supported scenario, and a person can follow it to the end. Real data from a vendor is drawn in the journey and the prototype and marked as not supported, so the design holds both and no screen offers to connect a real feed. Marco decided this on 2026-10-13.
+- The prototype comes first and Marco signs it off before the screen is built, as for the other prototyped journeys.
+
+* Out of scope
+
+- Connecting a real vendor feed. The prototype and the journey show the case and say that it is not supported.
+- A new producer of synthetic data. The story manages the bindings of the producers that exist.

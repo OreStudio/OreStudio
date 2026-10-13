@@ -3778,10 +3778,12 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     """
     entity = junction_entity_shape(junction)
     messages = entity_protocol_messages(entity)
-    # A junction announces nothing, so it drops the entity derivation's
-    # announcement record rather than declaring a wire type nothing serves.
-    messages = [message for message in messages
-                if not message["name"].endswith(_ANNOUNCEMENT_RECORD_SUFFIXES)]
+    # A junction announces nothing unless its model states ``:events: true``,
+    # so it drops the entity derivation's announcement record rather than
+    # declaring a wire type nothing serves.
+    if not junction.get("events"):
+        messages = [message for message in messages
+                    if not message["name"].endswith(_ANNOUNCEMENT_RECORD_SUFFIXES)]
     # ``wire_write_enabled`` folds the repository's read_only together with the
     # client-only switch; the fallback keeps a hand-built junction dict, as the
     # tests use, on the read_only rule.
@@ -4048,6 +4050,13 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
                     f"{timeout!r}; the value is a positive whole number of seconds"
                 )
             entry["request_timeout_seconds"] = seconds
+        # A command whose answer is a new token for the session keeps it. Switching party
+        # re-scopes the session, and a shell that printed the token and went on with the
+        # old one would run every later command in the party it left. The value names the
+        # request field that carries the party the token is scoped to.
+        adopts = str(props.get("shell_adopts_token_for", "")).strip()
+        if adopts:
+            entry["shell_adopts_token_for"] = adopts
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -4072,6 +4081,13 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
             )
             fields.append(field_entry)
         entry["fields"] = fields
+        adopts_field = entry.get("shell_adopts_token_for")
+        if adopts_field and adopts_field not in {f["name"] for f in fields}:
+            raise ValueError(
+                f"message {node.title} states :shell_adopts_token_for: "
+                f"{adopts_field!r}, which is not one of its fields; name the "
+                "request field that carries the party the token is scoped to"
+            )
         messages.append(entry)
     return messages
 
@@ -4426,6 +4442,9 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             # default, so the generated call raises the ceiling the handler
             # already works within instead of the caller giving up first.
             "request_timeout_seconds": message.get("request_timeout_seconds"),
+            # The request field that names the party whose token the answer carries, when
+            # the command keeps the token for the session.
+            "adopts_token_field": message.get("shell_adopts_token_for"),
             "positionals": positionals,
             "flags": flags,
             "positional_count": len(positionals),

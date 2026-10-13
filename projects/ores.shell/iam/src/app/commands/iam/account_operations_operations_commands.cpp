@@ -712,6 +712,16 @@ void account_operations_operations_commands::process_select_party(
     if (!result)
         return;
 
+    // The answer carries a token scoped to the party the request named. The session keeps
+    // it, so the commands that follow run in that party and not in the one the login
+    // opened in.
+    if (result->success && !result->token.empty()) {
+        auto info = session.auth();
+        info.jwt = result->token;
+        info.default_party_id = req.party_id;
+        session.set_auth(std::move(info));
+    }
+
     out << rfl::json::write(*result) << std::endl;
 }
 
@@ -763,6 +773,16 @@ void account_operations_operations_commands::process_switch_party(
     }
     if (!result)
         return;
+
+    // The answer carries a token scoped to the party the request named. The session keeps
+    // it, so the commands that follow run in that party and not in the one the login
+    // opened in.
+    if (result->success && !result->token.empty()) {
+        auto info = session.auth();
+        info.jwt = result->token;
+        info.default_party_id = req.party_id;
+        session.set_auth(std::move(info));
+    }
 
     out << rfl::json::write(*result) << std::endl;
 }

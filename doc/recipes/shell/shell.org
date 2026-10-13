@@ -1526,10 +1526,6 @@ tangled into the runnable script library
 
 - [[id:2383895A-489A-5885-8C10-AEDFBB636BC8][How do I run the market_data_providers commands from the shell?]]
 
-* Synthetic Market Data Providers
-
-- [[id:754A384A-55E2-5721-BDC9-29B82F93FBE4][How do I run the synthetic_market_data_providers commands from the shell?]]
-
 * Configuration Analytic Parameters
 
 - [[id:648E9E27-C524-58D8-8EC2-6B4A62BF25E9][How do I run the configuration_analytic_parameters commands from the shell?]]

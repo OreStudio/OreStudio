@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: C19FC1F4-5654-457E-92D1-E2EACF8912F5
+:END:
+#+title: Task: Build the feed tree
+#+description: The tree of every feed by scope, provider and feed kind: opened a level at a time, counted by the service, searched by words, with start and stop at any folder, and a feed's page whose trail runs through it.
+#+type: task
+#+level: s1
+#+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reaches any feed through the tree, runs a folder of feeds, and finds a feed by words, on the screen the Browse the feed tree prototype argued.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The Synthetic folder has a Feed tree card. The tree opens a level at a time, with the feeds and the running ones counted by the service.
+- The folder that holds feeds lists them a page at a time, each with its state, Start and Stop, and a link to its page.
+- A search finds feeds by words in their label, source or URI, and a running only switch narrows the tree and the lists.
+- A feed's page has the trail Home, Market data, Synthetic, Feed tree, the folders down to the feed, and each folder opens the tree there.
+
+* Plan
+
+The shape is the [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
+
+- The nodes come from two service reads. =list_feed_folders= (built with the overview)
+  counts a folder's children. =list_folder_feeds= is new: a page of the feeds that sit in a
+  folder, or of the feeds of every folder that match some words. One query reads both feed
+  kinds, ordered by label; the folder id is a checked UUID and each word an escaped literal.
+- The scopes and the providers are made from the collections, as the overview makes them. A
+  provider with one collection stands for it, so its children are the folders under the
+  collection. The pure model is =feedTree.ts=.
+- The feeds are not tree nodes. The instrument type folder lists them in its panel, paged,
+  because a folder can hold thousands.
+- A node has an address in the URL. The overview, the feed page's trail and a search result
+  link to it.
+- Start and Stop are the overview's, in =useFolderRuns=, shared.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The prototype draws feeds as leaves of the tree. Here they are rows of the panel, paged,
+  so a folder of thousands stays light.
+- The search is a flat list of matching feeds with the folders each sits in, not a filter of
+  the tree.
+- A feed that sits in no folder keeps the trail of its list.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3221][#3221]] | Add the feed tree |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Synthetic folder has a Feed tree. Its roots are System feeds and Test feeds. The tree opens a level at a time, the service counts each level, and the chosen node has its figures, Start and Stop, and the nodes under it. The folder that holds feeds lists them in its panel a page at a time, each with its state, Start and Stop, and a link to its page. A search finds feeds by words in their label, source or URI and shows where each sits, and Running only narrows the tree and the lists. A node has an address, so the overview and a feed's trail link to it. A feed's page has the trail Home, Market data, Synthetic, Feed tree, the folders down to the feed.
+
+A new service read, =synthetic.v1.ops.list_folder_feeds=, pages the feeds of a folder or the feeds that match words. The folder id is a checked UUID and each word an escaped literal.
+
+Checked: the synthetic api suite (65 cases), the BFF route tests (54), 1467 web tests, the synthetic drift gate, and, as the Acme tenant administrator, the folder reads, a page of 26 feeds, searches including an injection string and a lone percent sign, and a bad folder id, which gets a 400.
+
+Not met: the prototype draws feeds as tree nodes and filters the tree by the search; here feeds are rows of the panel and the search is a flat list. System feeds is empty until a dataset publishes a system collection. The screens were not looked at in a browser by the author.

@@ -47,7 +47,10 @@ generate_synthetic_index_credit_default_swap_option_instrument(
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
     r.trade_activity_id = ctx.generate_uuid();
-    r.credit_curve_id = std::string("RED:2I65BYEG6");
+    r.trade_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.front_end_protection_start_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

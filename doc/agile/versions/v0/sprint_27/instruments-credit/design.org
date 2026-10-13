@@ -245,7 +245,7 @@ the header by the generated delete cascade.
 | =index_credit_default_swap_option_instruments= | knock-out flag, index term, strike type, front-end protection start |
 | =synthetic_cdo_instruments= | qualifier, protection start, attachment and detachment points, the flags, upfront date and fee, recovery rate |
 | =credit_linked_swap_instruments= | credit curve id, settles accrual, default payment time, recovery rate |
-| =risk_participation_agreement_instruments= | participation rate, protection fee, credit curve id, issuer id, settles accrual, recovery rate |
+| =risk_participation_agreement_instruments= | participation rate, credit curve id, issuer id, settles accrual, recovery rate; the protection fee is a list of legs in the =protection_fee= leg group, and the underlying's legs are in the =underlying= group |
 
 The option on an index wraps =IndexCreditDefaultSwapData=, so its one fact row
 carries that swap's credit curve id and the trade has no row in
@@ -333,7 +333,7 @@ No migration is written. The project recreates the database.
 
 ** Staging
 
-The units are ordered so each ends in a check and none depends on a later one.
+The units are ordered so each ends in a check and none depends on a later one. Unit 7 was split from unit 6 when the ORE binding showed that the agreement's protection fee is a list of legs and its underlying can hold a treasury lock on a bond.
 
 | Unit | Task | Check |
 |------+------+-------|
@@ -342,9 +342,10 @@ The units are ordered so each ends in a check and none depends on a later one.
 | 3 | Retire the unproduced =rpa_instruments= table | the tree builds and passes without its 47 files |
 | 4 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
 | 5 | Author the credit family header and its fact tables, with the header's common dates | codegen drift clean; the generated eventing tests pass; the corpus documents come back through the carrier |
-| 6 | Close the credit round trip: the agreement's required elements and underlying, the dropped elements | the mapper round trip per product |
-| 7 | Prove the credit dates in the common-date view (unit 5 declared them) | a probe across a swap and a credit trade |
-| 8 | Prove the credit round trip over the corpus | eight documents, eight trades, equal family rows |
+| 6 | Close the credit round trip: the dropped elements of the five swap-like products and the index option's option block | the mapper round trip per product |
+| 7 | Close the risk participation agreement round trip: its required elements, protection fee legs and underlying | the agreement exports as valid ORE |
+| 8 | Prove the credit dates in the common-date view (unit 5 declared them) | a probe across a swap and a credit trade |
+| 9 | Prove the credit round trip over the corpus | eight documents, eight trades, equal family rows |
 
 Retiring the agreement table is its own unit because it touches 47 files and
 a rates wire variant, and it can land before the new tables exist.

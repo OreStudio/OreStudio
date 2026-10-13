@@ -107,6 +107,16 @@ to_domain(const messaging::index_credit_default_swap_instrument_write& write) {
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
     v.credit_curve_id = write.credit_curve_id;
+    v.issuer_id = write.issuer_id;
+    v.settles_accrual = write.settles_accrual;
+    v.rebates_accrual = write.rebates_accrual;
+    v.pays_at_default_time = write.pays_at_default_time;
+    v.protection_payment_time = write.protection_payment_time;
+    v.protection_start_date = write.protection_start_date;
+    v.upfront_date = write.upfront_date;
+    v.upfront_fee = write.upfront_fee;
+    v.trade_date = write.trade_date;
+    v.cash_settlement_days = write.cash_settlement_days;
     return v;
 }
 

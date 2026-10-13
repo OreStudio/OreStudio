@@ -51,7 +51,6 @@
 #include "ores.dq.core/messaging/coding_scheme_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_registrar.hpp"
 #include "ores.dq.core/messaging/counterparty_alias_registrar.hpp"
-#include "ores.dq.core/messaging/csa_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
@@ -73,19 +72,15 @@
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
-#include "ores.dq.core/messaging/netting_agreement_registrar.hpp"
 #include "ores.dq.core/messaging/netting_set_alias_registrar.hpp"
-#include "ores.dq.core/messaging/netting_set_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/publication_registrar.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/publish_handler.hpp"
-#include "ores.dq.core/messaging/report_definition_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
 #include "ores.dq.core/messaging/subject_area_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
-#include "ores.dq.core/messaging/synthetic_market_data_provider_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/presentation/subject_area_history_field_mapper.hpp"
@@ -329,34 +324,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
                     std::make_move_iterator(counterparty_alias_subs.end()));
     }
     {
-        auto netting_agreement_subs = register_netting_agreement_handlers(nats, ctx, verifier);
-        subs.insert(subs.end(),
-                    std::make_move_iterator(netting_agreement_subs.begin()),
-                    std::make_move_iterator(netting_agreement_subs.end()));
-    }
-    {
-        auto netting_set_subs = register_netting_set_handlers(nats, ctx, verifier);
-        subs.insert(subs.end(),
-                    std::make_move_iterator(netting_set_subs.begin()),
-                    std::make_move_iterator(netting_set_subs.end()));
-    }
-    {
-        auto csa_subs = register_csa_handlers(nats, ctx, verifier);
-        subs.insert(subs.end(),
-                    std::make_move_iterator(csa_subs.begin()),
-                    std::make_move_iterator(csa_subs.end()));
-    }
-    {
         auto netting_set_alias_subs = register_netting_set_alias_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
                     std::make_move_iterator(netting_set_alias_subs.begin()),
                     std::make_move_iterator(netting_set_alias_subs.end()));
-    }
-    {
-        auto report_definition_subs = register_report_definition_handlers(nats, ctx, verifier);
-        subs.insert(subs.end(),
-                    std::make_move_iterator(report_definition_subs.begin()),
-                    std::make_move_iterator(report_definition_subs.end()));
     }
     {
         auto synthetic_fx_spot_config_subs =
@@ -364,13 +335,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(synthetic_fx_spot_config_subs.begin()),
                     std::make_move_iterator(synthetic_fx_spot_config_subs.end()));
-    }
-    {
-        auto synthetic_market_data_provider_subs =
-            register_synthetic_market_data_provider_handlers(nats, ctx, verifier);
-        subs.insert(subs.end(),
-                    std::make_move_iterator(synthetic_market_data_provider_subs.begin()),
-                    std::make_move_iterator(synthetic_market_data_provider_subs.end()));
     }
 
     // =========================================================================

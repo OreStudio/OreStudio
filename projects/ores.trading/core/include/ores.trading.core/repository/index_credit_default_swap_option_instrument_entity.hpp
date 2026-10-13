@@ -46,7 +46,11 @@ struct index_credit_default_swap_option_instrument_entity {
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
-    std::string credit_curve_id;
+    std::optional<bool> knock_out;
+    std::optional<std::string> index_term;
+    std::optional<std::string> strike_type;
+    std::optional<std::string> trade_date;
+    std::optional<std::string> front_end_protection_start_date;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

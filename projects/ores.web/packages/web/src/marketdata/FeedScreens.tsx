@@ -37,10 +37,12 @@ import {
 } from '../refdata/records.js';
 import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
 import { useAreaParts, useAreaRoot } from '../shell/AreaTrail.js';
+import { PATHS } from '../shell/paths.js';
 import { Button, Notice } from '../ui/Primitives.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns, useRunningFeeds } from './feedRuns.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import { feedPath, type FeedKind } from './feedKind.js';
+import { folderChain, folderKey } from './feedTree.js';
 import { useSyntheticStep } from './syntheticTrail.js';
 
 /**
@@ -236,6 +238,16 @@ function FeedBody({
     const name = kind.nameOf(feed);
     const words = `marketdata.${kind.words}`;
     const root = [...useAreaRoot('marketdata'), useSyntheticStep()];
+    const folders = useRecords('folders');
+    const chain = folderChain(
+        (folders.data ?? []).map((row) => ({
+            id: show(row['id']),
+            parent_id: show(row['parent_id']),
+            name: show(row['name']),
+            kind: show(row['kind']),
+        })),
+        show(feed['folder_id']),
+    );
     const may = useRecordPermissions(kind.resource);
     const check = kind.useCheck();
     const parts = useFeedParts(kind, id);
@@ -252,11 +264,23 @@ function FeedBody({
     return (
         <div className="space-y-4">
             <RecordHeader
-                crumbs={[
-                    ...root,
-                    { label: t(`${words}.title`), to: feedPath(kind) },
-                    { label: name },
-                ]}
+                crumbs={
+                    chain.length === 0
+                        ? [
+                              ...root,
+                              { label: t(`${words}.title`), to: feedPath(kind) },
+                              { label: name },
+                          ]
+                        : [
+                              ...root,
+                              { label: t('marketdata.feedTree.title'), to: PATHS.feedTree },
+                              ...chain.map((row) => ({
+                                  label: row.name,
+                                  to: `${PATHS.feedTree}?node=${encodeURIComponent(folderKey(row.id))}`,
+                              })),
+                              { label: name },
+                          ]
+                }
                 title={show(feed['source_name'])}
                 recordKey={name}
                 version={feed.version}

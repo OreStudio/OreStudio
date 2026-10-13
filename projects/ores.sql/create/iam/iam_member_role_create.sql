@@ -41,11 +41,13 @@ begin
         return null;
     end if;
 
+    -- A version of 0 states no earlier version to match: the trigger numbers the row.
     insert into ores_iam_account_roles_tbl (
-        tenant_id, account_id, role_id, assigned_by, assigned_at,
+        tenant_id, account_id, role_id, version, modified_by, performed_by,
         change_reason_code, change_commentary, valid_from, valid_to
     )
-    select NEW.tenant_id, NEW.id, r.id, '', current_timestamp,
+    select NEW.tenant_id, NEW.id, r.id, 0,
+           coalesce(ores_iam_current_actor_fn(), current_user), current_user,
            'system.new_record', 'Every person holds Member',
            current_timestamp, ores_utility_infinity_timestamp_fn()
     from ores_iam_roles_tbl r

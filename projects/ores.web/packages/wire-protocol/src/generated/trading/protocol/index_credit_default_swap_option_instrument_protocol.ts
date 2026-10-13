@@ -35,7 +35,11 @@ export interface IndexCreditDefaultSwapOptionInstrumentKey {
 export interface IndexCreditDefaultSwapOptionInstrumentWrite {
     trade_id: string;
     trade_activity_id: string;
-    credit_curve_id: string;
+    knock_out: boolean | null;
+    index_term: string | null;
+    strike_type: string | null;
+    trade_date: string | null;
+    front_end_protection_start_date: string | null;
 }
 
 export interface IndexCreditDefaultSwapOptionInstrumentChange {

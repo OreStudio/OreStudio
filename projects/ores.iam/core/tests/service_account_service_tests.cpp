@@ -30,7 +30,7 @@
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
@@ -632,7 +632,7 @@ namespace {
 std::vector<repository::auth_event_entity> lock_events(const ores::database::context& ctx,
                                                        const boost::uuids::uuid& account_id,
                                                        const std::string& event_type) {
-    return repository::auth_event_repository(ctx).read_events(ctx,
+    return repository::auth_event_log(ctx).read_events(ctx,
                                                               ctx.tenant_id().to_string(),
                                                               boost::uuids::to_string(account_id),
                                                               event_type,

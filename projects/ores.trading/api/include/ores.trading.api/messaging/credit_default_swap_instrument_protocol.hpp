@@ -45,6 +45,16 @@ struct credit_default_swap_instrument_write {
     std::optional<std::string> credit_curve_id;
     std::optional<std::string> issuer_id;
     std::optional<double> recovery_rate;
+    std::optional<std::string> reference_obligation;
+    std::optional<bool> settles_accrual;
+    std::optional<bool> rebates_accrual;
+    std::optional<bool> pays_at_default_time;
+    std::optional<std::string> protection_payment_time;
+    std::optional<std::chrono::year_month_day> protection_start_date;
+    std::optional<std::chrono::year_month_day> upfront_date;
+    std::optional<ores::utility::decimal::decimal> upfront_fee;
+    std::optional<std::chrono::year_month_day> trade_date;
+    std::optional<int> cash_settlement_days;
 };
 
 struct credit_default_swap_instrument_change {

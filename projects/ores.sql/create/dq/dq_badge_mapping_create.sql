@@ -54,6 +54,7 @@ create table if not exists "ores_dq_badge_mappings_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, code_domain_code, entity_code, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -153,7 +154,8 @@ create or replace rule ores_dq_badge_mappings_delete_rule as
 on delete to "ores_dq_badge_mappings_tbl"
 do instead
   update "ores_dq_badge_mappings_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and code_domain_code = old.code_domain_code
   and entity_code = old.entity_code

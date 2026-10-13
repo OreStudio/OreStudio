@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_currency_group.hpp"
 #include "ores.refdata.api/domain/currency_currency_group_json_io.hpp" // IWYU pragma: keep.
@@ -335,6 +336,50 @@ std::uint32_t currency_currency_group_repository::get_total_currency_group_count
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active currency groups count by group: " << count;
     return count;
+}
+
+std::vector<currency_currency_group_history_row>
+currency_currency_group_repository::read_all_by_currency(const std::string& currency_iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the currency groups. Currency: "
+                               << currency_iso_code;
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_currency_group_entity>> |
+                       where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code) |
+                       order_by("currency_group_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<currency_currency_group_entity, currency_currency_group_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<currency_currency_group_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                currency_currency_group_history_row row;
+                row.link = currency_currency_group_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced =
+                    !rows.empty() &&
+                    rows.back().link.currency_group_code == row.link.currency_group_code &&
+                    rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the currency groups by currency.");
 }
 
 void currency_currency_group_repository::remove(const std::string& currency_iso_code,

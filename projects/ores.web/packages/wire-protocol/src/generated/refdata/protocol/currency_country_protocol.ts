@@ -59,6 +59,15 @@ export interface CurrencyCountriesFilter {
     currency_iso_code_one_of: string[] | null;
 }
 
+export interface CurrencyCountryEvent {
+    event_id: string;
+    key: CurrencyCountryKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListCurrencyCountriesRequest {
     offset: number;
     limit: number;

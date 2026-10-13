@@ -27,6 +27,8 @@ calendars transitively through this junction.
 
 * Flags
 :PROPERTIES:
+:history: true
+:events: true
 :profile: tenant-scoped-junction
 :END:
 

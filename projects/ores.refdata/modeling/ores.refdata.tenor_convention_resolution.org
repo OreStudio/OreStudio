@@ -49,6 +49,8 @@ count lives in =schedule_step_count= now.
 
 * Flags
 :PROPERTIES:
+:history: true
+:events: true
 :schema:    public
 :product:   ores
 :component: refdata

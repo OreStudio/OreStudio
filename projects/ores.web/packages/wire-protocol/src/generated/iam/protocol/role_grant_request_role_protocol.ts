@@ -60,6 +60,15 @@ export interface RoleGrantRequestRolesFilter {
     request_id_one_of: string[] | null;
 }
 
+export interface RoleGrantRequestRoleEvent {
+    event_id: string;
+    key: RoleGrantRequestRoleKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListRoleGrantRequestRolesRequest {
     offset: number;
     limit: number;

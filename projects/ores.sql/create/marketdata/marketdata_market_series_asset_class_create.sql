@@ -43,6 +43,7 @@ create table if not exists "ores_marketdata_market_series_asset_classes_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+    "closed_by" text null,
     primary key (tenant_id, market_series_id, asset_class_code, valid_from),
     exclude using gist (
         tenant_id WITH =,
@@ -156,7 +157,8 @@ create or replace rule ores_marketdata_market_series_asset_classes_delete_rule a
 on delete to "ores_marketdata_market_series_asset_classes_tbl"
 do instead
   update "ores_marketdata_market_series_asset_classes_tbl"
-  set valid_to = clock_timestamp()
+  set valid_to = clock_timestamp(),
+      closed_by = coalesce(ores_iam_current_actor_fn(), current_user)
   where tenant_id = old.tenant_id
   and market_series_id = old.market_series_id
   and asset_class_code = old.asset_class_code

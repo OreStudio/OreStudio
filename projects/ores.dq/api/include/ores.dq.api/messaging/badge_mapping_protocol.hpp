@@ -66,6 +66,15 @@ struct badge_mappings_filter {
     std::optional<std::vector<std::string>> code_domain_code_one_of;
 };
 
+struct badge_mapping_event {
+    boost::uuids::uuid event_id;
+    badge_mapping_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct list_badge_mappings_request {
     using response_type = struct list_badge_mappings_response;
     static constexpr std::string_view nats_subject = "dq.v1.badge_mappings.list";

@@ -100,6 +100,7 @@
 \ir ./iam_role_grant_requests_create.sql
 \ir ./iam_role_grant_requests_notify_trigger_create.sql
 \ir ./iam_role_grant_request_role_create.sql
+\ir ./iam_role_grant_request_roles_notify_trigger_create.sql
 \ir ./iam_role_grant_request_functions_create.sql
 
 -- Publish-from-DQ functions (must follow accounts, account contact

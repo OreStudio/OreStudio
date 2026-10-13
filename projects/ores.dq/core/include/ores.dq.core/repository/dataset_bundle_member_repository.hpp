@@ -30,6 +30,7 @@
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
@@ -37,6 +38,26 @@
 #include <vector>
 
 namespace ores::dq::repository {
+
+/**
+ * @brief One version of a dataset bundle member, with the end of its validity.
+ *
+ * A link is closed by ending its validity, not by deleting the row, so a closed
+ * link is a row whose end is in the past. @c closed_at is set on a version that
+ * ended because the link was closed, and empty on a version that a later
+ * version replaced and on a link that is open. @c closed_by names the account
+ * that closed it, and is empty on the same versions. The domain type does not carry
+ * it, and it is final, so the history row holds the link beside it. The actor
+ * and the time stand flat on the row as well, which is the shape the history
+ * builder reads.
+ */
+struct dataset_bundle_member_history_row {
+    domain::dataset_bundle_member link;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::optional<std::chrono::system_clock::time_point> closed_at;
+    std::string closed_by;
+};
 
 /**
  * @brief Reads and writes dataset bundle members to data storage.
@@ -130,6 +151,16 @@ public:
      * @brief Gets the total count of active dataset bundle members filtered by dataset_code.
      */
     std::uint32_t get_total_member_count_by_dataset(const std::string& dataset_code);
+
+    /**
+     * @brief Reads every version of every dataset bundle member of one bundle.
+     *
+     * Closed links are included. The rows are grouped by dataset
+     * and run newest first within a group, so a caller numbers and diffs the
+     * versions of one link by walking a group.
+     */
+    std::vector<dataset_bundle_member_history_row>
+    read_all_by_bundle(const std::string& bundle_code);
 
     /**
      * @brief Deletes a dataset bundle member by its pair of keys.

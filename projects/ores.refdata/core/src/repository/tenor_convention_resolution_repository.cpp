@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution_json_io.hpp" // IWYU pragma: keep.
@@ -344,6 +345,51 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
     BOOST_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count by tenor: "
                                << count;
     return count;
+}
+
+std::vector<tenor_convention_resolution_history_row>
+tenor_convention_resolution_repository::read_all_by_convention(const std::string& convention_code) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading every version of the tenor convention resolutions. Convention: "
+        << convention_code;
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
+                       where("tenant_id"_c == tid && "convention_code"_c == convention_code) |
+                       order_by("tenor_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<tenor_convention_resolution_entity,
+                              tenor_convention_resolution_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<tenor_convention_resolution_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                tenor_convention_resolution_history_row row;
+                row.link = tenor_convention_resolution_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().link.tenor_code == row.link.tenor_code &&
+                                      rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the tenor convention resolutions by convention.");
 }
 
 void tenor_convention_resolution_repository::remove(const std::string& convention_code,

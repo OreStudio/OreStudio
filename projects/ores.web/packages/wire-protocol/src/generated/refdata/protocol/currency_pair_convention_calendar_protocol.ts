@@ -59,6 +59,15 @@ export interface CurrencyPairConventionCalendarsFilter {
     pair_code_one_of: string[] | null;
 }
 
+export interface CurrencyPairConventionCalendarEvent {
+    event_id: string;
+    key: CurrencyPairConventionCalendarKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListCurrencyPairConventionCalendarsRequest {
     offset: number;
     limit: number;

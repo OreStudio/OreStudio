@@ -40,6 +40,7 @@
 \ir ./refdata_currency_groups_create.sql
 \ir ./refdata_currency_groups_notify_trigger_create.sql
 \ir ./refdata_currency_currency_group_create.sql
+\ir ./refdata_currency_currency_groups_notify_trigger_create.sql
 \ir ./refdata_currency_pairs_create.sql
 \ir ./refdata_currency_pairs_notify_trigger_create.sql
 \ir ./refdata_currency_pair_conventions_create.sql
@@ -62,12 +63,15 @@
 
 -- Currency-country issuing junction
 \ir ./refdata_currency_country_create.sql
+\ir ./refdata_currency_countries_notify_trigger_create.sql
 
 -- Currency-calendar junction
 \ir ./refdata_currency_calendar_create.sql
+\ir ./refdata_currency_calendars_notify_trigger_create.sql
 
 -- Currency-pair-convention-calendar (advance calendar) junction
 \ir ./refdata_currency_pair_convention_calendar_create.sql
+\ir ./refdata_currency_pair_convention_calendars_notify_trigger_create.sql
 
 -- FPML Reference data tables
 \ir ./refdata_account_types_create.sql
@@ -172,6 +176,7 @@
 
 -- Counterparty-to-centre junction: the centres a counterparty deals through
 \ir ./refdata_counterparty_business_centre_create.sql
+\ir ./refdata_counterparty_business_centres_notify_trigger_create.sql
 
 -- Party and counterparty identifiers
 \ir ./refdata_party_identifiers_create.sql
@@ -313,6 +318,7 @@
 \ir ./refdata_tenor_conventions_create.sql
 \ir ./refdata_tenor_conventions_notify_trigger_create.sql
 \ir ./refdata_tenor_convention_resolution_create.sql
+\ir ./refdata_tenor_convention_resolutions_notify_trigger_create.sql
 
 -- Instrument leg reference data, moved from ores.trading: floating
 -- rate index codes and leg types used in leg definitions

@@ -32,6 +32,8 @@
 #include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.dq.core/messaging/artefact_type_history_provider_registrar.hpp"
+#include "ores.dq.core/messaging/badge_mapping_history_provider_registrar.hpp"
+#include "ores.dq.core/messaging/dataset_bundle_member_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/artefact_type_registrar.hpp"
 #include "ores.dq.core/messaging/badge_definition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/badge_definition_registrar.hpp"
@@ -415,6 +417,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         auto& hist_registry = history_registry();
 
         register_artefact_type_history_provider(hist_registry);
+        register_badge_mapping_history_provider(hist_registry);
+        register_dataset_bundle_member_history_provider(hist_registry);
         register_badge_definition_history_provider(hist_registry);
         register_badge_severity_history_provider(hist_registry);
         register_catalog_history_provider(hist_registry);

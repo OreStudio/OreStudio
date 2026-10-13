@@ -36,6 +36,8 @@ junction's, so the mapping read cannot drift from the entity it projects.
 
 * Flags
 :PROPERTIES:
+:history: true
+:events: true
 :profile: tenant-scoped-junction
 :END:
 

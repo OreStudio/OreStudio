@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/counterparty_business_centre.hpp"
 #include "ores.refdata.api/domain/counterparty_business_centre_json_io.hpp" // IWYU pragma: keep.
@@ -359,6 +360,54 @@ std::uint32_t counterparty_business_centre_repository::
     BOOST_LOG_SEV(lg(), debug)
         << "Total active counterparty business centres count by business_centre: " << count;
     return count;
+}
+
+std::vector<counterparty_business_centre_history_row>
+counterparty_business_centre_repository::read_all_by_counterparty(
+    const boost::uuids::uuid& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading every version of the counterparty business centres. Counterparty: "
+        << counterparty_id;
+
+    const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_business_centre_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str) |
+                       order_by("business_centre_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<counterparty_business_centre_entity,
+                              counterparty_business_centre_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<counterparty_business_centre_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                counterparty_business_centre_history_row row;
+                row.link = counterparty_business_centre_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced =
+                    !rows.empty() &&
+                    rows.back().link.business_centre_code == row.link.business_centre_code &&
+                    rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the counterparty business centres by counterparty.");
 }
 
 void counterparty_business_centre_repository::remove(const boost::uuids::uuid& counterparty_id,

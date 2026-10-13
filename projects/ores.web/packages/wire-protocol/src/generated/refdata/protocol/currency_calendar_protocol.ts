@@ -59,6 +59,15 @@ export interface CurrencyCalendarsFilter {
     currency_iso_code_one_of: string[] | null;
 }
 
+export interface CurrencyCalendarEvent {
+    event_id: string;
+    key: CurrencyCalendarKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListCurrencyCalendarsRequest {
     offset: number;
     limit: number;

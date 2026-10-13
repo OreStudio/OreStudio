@@ -234,6 +234,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/eventing/role_assigned_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/eventing/role_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/eventing/role_grant_request_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/eventing/role_grant_request_role_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/eventing/role_permission_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/eventing/role_revoked_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/eventing/run_grant_event.hpp"

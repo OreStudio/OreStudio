@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_series_asset_class_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
@@ -228,6 +229,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto& hist_registry = history_registry();
         register_market_series_history_provider(hist_registry);
+        register_market_series_asset_class_history_provider(hist_registry);
         register_feed_binding_history_provider(hist_registry);
         register_observation_lineage_history_provider(hist_registry);
         register_series_classification_rule_history_provider(hist_registry);

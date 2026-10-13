@@ -29,6 +29,8 @@ configuration of every type its report type requires.
 :profile: tenant-scoped-junction
 :END:
 
+It states neither =:history:= nor =:events:=. Its component serves no generic history and composes no change events yet, so a generated provider or registrar would be dead code.
+
 * Left
 :PROPERTIES:
 :column:        report_type_code

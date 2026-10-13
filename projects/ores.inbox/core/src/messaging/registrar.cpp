@@ -25,6 +25,9 @@
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
 #include "ores.inbox.core/messaging/apply_step_handler.hpp"
 #include "ores.inbox.core/messaging/approval_decision_history_provider_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_request_part_history_provider_registrar.hpp"
+#include "ores.inbox.core/messaging/notification_argument_history_provider_registrar.hpp"
+#include "ores.inbox.core/messaging/notification_recipient_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_type_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_type_registrar.hpp"
@@ -208,6 +211,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto& hist_registry = history_registry();
         register_approval_kind_history_provider(hist_registry);
+        register_approval_request_part_history_provider(hist_registry);
+        register_notification_argument_history_provider(hist_registry);
+        register_notification_recipient_history_provider(hist_registry);
         register_approval_part_history_provider(hist_registry);
         register_approval_policy_history_provider(hist_registry);
         register_approval_request_state_history_provider(hist_registry);

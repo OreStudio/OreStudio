@@ -56,6 +56,7 @@ struct dataset_bundle_member_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+    std::optional<std::string> closed_by;
 };
 
 std::ostream& operator<<(std::ostream& s, const dataset_bundle_member_entity& v);

@@ -8,7 +8,7 @@
 #+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
 #+branch: feature/feed-permissions-and-handler-errors
-#+pr:
+#+pr: 3250
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3250][#3250]] | [synthetic,web,sql] Guard feed runs and place a feed added by hand |
 
 * Review
 

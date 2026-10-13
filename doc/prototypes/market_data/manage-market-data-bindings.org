@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: BE9424FC-4E1F-4920-A4DD-C69F878A2CDB
+:END:
+#+title: Manage market data bindings prototype
+#+description: The screen to manage market data bindings before it is built: three views of the bindings, a synthetic scenario that runs to a bound feed, and a real data scenario that is drawn and marked as not supported, on a throwaway page of mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:manage-market-data-bindings/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The prototype argues what the screen to manage market data bindings shows and
+does before any of it is built. It answers to the journey
+[[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]].
+
+It argues the group page's row: a binding is a party's choice to consume one
+producer source, so the screen shows what each binding feeds and whether it still
+ticks, and every act that changes a binding says first what it will change. The
+person binds a source only after the screen has said which series it would write
+and whether a running feed already holds that series.
+
+It is throwaway, with no service and no build step. Open the
+[[file:manage-market-data-bindings/][bindings page]].
+
+* Detail
+
+** The question
+
+A binding names a source and a party. It does not name the series the source
+writes, and one running feed at most may write a series. The open question is how
+the screen keeps the series, the state and the last tick in view while the person
+binds, rebinds, enables, disables, starts or stops, and how it holds a real
+vendor binding that this product does not connect.
+
+** The variants
+
+Switch with the bottom bar, or =?variant=. The default is =a=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | table and detail | One row per binding: source, kind, the series it feeds, enabled, running and last tick. The selected binding opens below with its producer, its acts and its versions. |
+| =B= | by series | The bindings grouped by the series they feed. Two running feeds on one series show at once, as an error. A binding's own state sits one level down. |
+| =C= | list beside detail | A compact list that keeps every binding in view while one is open, without the series and kind columns. |
+
+*A* is the working view. *B* makes the one-feed-per-series rule visible. *C* trades
+columns for a detail that stays beside the list.
+
+** The scenarios, the states and the actor
+
+Switch with the bottom bar, or the query parameters.
+
+| Parameter | Values | What it does |
+|-----------+--------+--------------|
+| =scenario= | =synthetic=, =real= | Synthetic is the supported path and can be followed to the end. Real adds two vendor bindings, drawn with the kind Vendor and the running state "not supported". No control binds, rebinds or starts one. A vendor binding can still be enabled or disabled, and removed. |
+| =state= | =all=, =quiet=, =disabled= | Which mock binding is quiet, with a feed that does not run, or disabled. |
+| =actor= | =viewer=, =operator=, =admin= | Who uses the screen. A viewer reads only. The operator binds, rebinds, enables, disables, starts and stops. Only the administrator removes. |
+
+** Driving it
+
+The acts change the mock list in memory, so a walk-through shows the result.
+*Bind a source* lists the synthetic sources the party does not consume, says which
+series the pick would write, and refuses it, naming the holder, when a running
+feed already writes that series: pick the Reuters EUR/USD source to see it.
+*Rebind* says when the series changes. *Enable*, *Disable*, *Start*, *Stop* and
+*Remove* act at once, and *Remove* asks first and says that the series and its
+observations stay. Changing a query parameter reloads the page and resets the
+list.
+
+** What is fake
+
+Everything. The bindings, the sources, the series, the producers, the last ticks,
+the versions and the actors are literals. The series column and the last tick
+stand for reads that do not exist yet. The quiet threshold, ten minutes, is
+provisional. There is no server, no session and no build step.
+
+** Where the code lives
+
+=doc/prototypes/market_data/manage-market-data-bindings/=. One file, =index.html=,
+with its CSS and its JavaScript inline: no framework, no =prototype.css= and no
+=prototype.js=. The site build copies the directory as it stands and adds nothing.
+
+** The verdict
+
+Not yet. Marco has not signed the prototype off. The screen task waits for that.
+
+** What it asks Marco
+
+- Which variant is the working view: the table, the grouping by series, or the
+  list beside the detail.
+- Who may bind and rebind. The prototype proposes that an operator may and that
+  only the administrator may remove, and the actor bar lets the two be compared.
+- Whether a vendor binding should be shown at all, as it is in the real scenario,
+  or hidden.
+- Whether enabling a binding should also start its feed. The prototype enables
+  and starts together, and disabling stops ingestion and the feed.
+
+* See also
+
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]] — the journey this prototype answers to.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this
+  prototype argues.
+- [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] — the domain record the screen writes.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

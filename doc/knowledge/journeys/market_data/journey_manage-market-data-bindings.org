@@ -142,12 +142,17 @@ keeps the list in view while choosing.
 
 * Prototype
 
-A clickable prototype is built by the task Prototype the market data binding
-journey, under =doc/prototypes/market_data/manage-market-data-bindings/=. It has
-a synthetic scenario that runs from the list to a bound, running feed, and a
-real data scenario that shows a vendor binding and says that real feeds are not
-supported. Marco signs it off before the screen is built. This section is
-filled in with its variants and states when it exists.
+A static page at =doc/prototypes/market_data/manage-market-data-bindings/index.html=:
+mock data only, no backend, no build step and no session. It argues that a binding
+is a party's choice to consume one producer source, so the screen says what each
+feeds and whether it ticks, and each act says first what it will change.
+
+- Variants :: a table and detail, b by series, c list beside detail
+- Scenarios :: synthetic, supported and followed to the end; real, drawn and marked as not supported
+- States :: all, quiet, disabled
+- Actors :: viewer, operator, admin
+- Note :: [[id:BE9424FC-4E1F-4920-A4DD-C69F878A2CDB][Manage market data bindings prototype]]
+- Source :: =doc/prototypes/market_data/manage-market-data-bindings/index.html=
 
 * Entities composed
 

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The prototype argues what the binding screen shows and does: the list of binding
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

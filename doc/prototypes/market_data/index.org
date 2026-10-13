@@ -13,7 +13,7 @@
 
 Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time.
 
-21 prototypes answer to this group. Each one is a static page under
+22 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -46,6 +46,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | [[file:author-an-ir-curve-feed.org][Author an IR curve feed]] | An IR curve feed is a short-rate model, its parameters and the tenor ladder it is bootstrapped from; the curve shape and the sample paths say whether the choice is sane. | [[file:author-an-ir-curve-feed/][prototype]] | none |
 | [[file:browse-the-feed-tree.org][Browse the feed tree]] | Synthetic is a folder under Market data: an overview by provider and kind, a tree to the feeds, and a feed page whose breadcrumb returns to the tree. | [[file:browse-the-feed-tree/][prototype]] | none |
 | [[file:manage-synthetic-collections.org][Manage synthetic collections]] | A collection is the unit a person starts and stops, so it must show what it owns and where it came from before it is run. | [[file:manage-synthetic-collections/][prototype]] | none |
+| [[file:manage-market-data-bindings.org][Manage market data bindings]] | A binding is a party's choice to consume one producer source, so the screen says what each feeds and whether it ticks, and each act says first what it will change; real feeds are drawn and not supported. | [[file:manage-market-data-bindings/][prototype]] | none |
 | [[file:manage-gmm-components.org][Manage GMM components]] | A mixture is browsed across every feed at once, and the weights are normalised on save, so the screen must show the raw sum as well as the normalised weights. | [[file:manage-gmm-components/][prototype]] | none |
 | [[file:manage-yield-curve-process-types.org][Manage yield curve process types]] | The short-rate models and their parameters are data, not code, so a new model appears in the curve editor with no change to the editor. | [[file:manage-yield-curve-process-types/][prototype]] | none |
 

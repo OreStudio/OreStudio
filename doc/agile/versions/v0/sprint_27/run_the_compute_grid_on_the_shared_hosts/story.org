@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: DF013F6D-CD7A-4D6A-A73A-B02AF9251B11
+:END:
+#+title: Story: Run the compute grid on the shared hosts
+#+description: Point this environment's compute nodes at the machines on the local network and fix what co-hosting them exposes.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every machine on the local network runs this environment's compute nodes beside the environments already there, and each environment's deploy, stop and logs touch only its own state.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The branch fix/run-compute-on-shared-hosts is ready for review. |
+| Waiting on    | Nothing.                               |
+| Next          | Review and merge the PR.               |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- A second environment deploys to a host without changing the first environment's env file, certs, work tree or units.
+- Stopping one environment's compute nodes leaves a co-hosted environment's wrappers running.
+- compass image build stages the environment's own preset and leaves out a service that has no binary.
+- The grid screen's Refresh reloads its plots, for an operator and for a tenant administrator.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:56CEF280-FEFB-4677-ADEF-418080385B94][Fix the compute deploy for co-hosted hosts]] | DONE | 2026-10-13 | 2026-10-13 | Isolate each environment's compute state on a shared host, and fix what running the grid exposed in the image build and on the grid screen. |
+
+* Decisions
+
+* Out of scope
+
+-

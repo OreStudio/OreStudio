@@ -48,18 +48,17 @@ import {
     GapPanel,
     InstanceStateTag,
     InstanceVersion,
-    OperationsBack,
     SERVICE_RUNNING_WINDOW_MINUTES,
     newestVersionOf,
     type ScreenGap,
 } from './OperationsParts.js';
-import { GridLoadTab, GridNodeLoad } from './GridSeries.js';
-import { GridUsageTab } from './GridUsage.js';
+import { GRID_SERIES_QUERY_KEY, GridLoadTab, GridNodeLoad } from './GridSeries.js';
+import { GRID_USAGE_QUERY_KEY, GridUsageTab } from './GridUsage.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { gridMachinePath, gridNodePath } from '../shell/paths.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
-import { RefreshNow } from '../ui/RefreshButton.js';
+import { RefreshQueries } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
@@ -77,10 +76,29 @@ export const GRID_TABS = ['overview', 'usage', 'machines', 'nodes', 'heatmap'] a
 /** Where the grid read's answer is cached, so a test can seed it. */
 export const GRID_QUERY_KEY = ['operations-grid'] as const;
 
-/** The instant a read answered, as the wall clock a person reads, in UTC. */
-export function readTime(at: number): string {
-    return `${new Date(at).toISOString().slice(11, 19)} UTC`;
-}
+/**
+ * What the grid screen's Refresh reads again.
+ *
+ * The screen draws from three queries: the summary, the series behind every
+ * panel and the heatmap, and the usage counts. Naming only the summary left the
+ * charts untouched until a full page load, so the plots appeared not to refresh.
+ */
+export const GRID_REFRESH_KEYS: readonly (readonly unknown[])[] = [
+    GRID_QUERY_KEY,
+    [GRID_SERIES_QUERY_KEY],
+    GRID_USAGE_QUERY_KEY,
+];
+
+/**
+ * What the same Refresh reads on a tenant's screen.
+ *
+ * A tenant is not shown the installation's machines, so its screen has no
+ * summary to read and draws from the series and the usage counts alone.
+ */
+export const TENANT_GRID_REFRESH_KEYS: readonly (readonly unknown[])[] = [
+    [GRID_SERIES_QUERY_KEY],
+    GRID_USAGE_QUERY_KEY,
+];
 
 /** A byte count in GiB, as the node table states what a node fetched. */
 export function asGiB(bytes: number, t: Translator['t']): string {
@@ -649,7 +667,7 @@ function TenantGridPage(): ReactNode {
                 <PageHeader
                     title={t('operations.grid.title')}
                     description={t('operations.grid.tenantDescription')}
-                    actions={<OperationsBack />}
+                    actions={<RefreshQueries keys={TENANT_GRID_REFRESH_KEYS} />}
                 />
             </div>
 
@@ -718,14 +736,7 @@ function OperatorGridPage(): ReactNode {
                     description={t('operations.grid.description')}
                     actions={
                         <div className="flex items-center gap-3">
-                            <span className="text-xs text-ink-faint">
-                                {t('operations.grid.updated', { at: readTime(grid.dataUpdatedAt) })}
-                            </span>
-                            <RefreshNow
-                                onClick={() => void grid.refetch()}
-                                pending={grid.isFetching}
-                            />
-                            <OperationsBack />
+                            <RefreshQueries keys={GRID_REFRESH_KEYS} />
                         </div>
                     }
                 />

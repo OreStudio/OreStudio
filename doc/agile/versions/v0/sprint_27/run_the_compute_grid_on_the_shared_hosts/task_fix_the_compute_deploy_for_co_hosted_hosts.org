@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 56CEF280-FEFB-4677-ADEF-418080385B94
+:END:
+#+title: Task: Fix the compute deploy for co-hosted hosts
+#+description: Isolate each environment's compute state on a shared host, and fix what running the grid exposed in the image build and on the grid screen.
+#+type: task
+#+level: s1
+#+filetags: :run_the_compute_grid_on_the_shared_hosts:sprint_27:v0:
+#+owner: marco
+#+branch: fix/run-compute-on-shared-hosts
+#+pr: 3270
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DF013F6D-CD7A-4D6A-A73A-B02AF9251B11][Run the compute grid on the shared hosts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every machine on the local network runs this environment's compute nodes beside the environments already there, and each environment's deploy, stop and logs touch only its own state.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DF013F6D-CD7A-4D6A-A73A-B02AF9251B11][Run the compute grid on the shared hosts]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- A second environment deploys to a host without changing the first environment's env file, certs, work tree or units.
+- Stopping one environment's compute nodes leaves a co-hosted environment's wrappers running.
+- compass image build stages the environment's own preset and leaves out a service that has no binary.
+- The grid screen's Refresh reloads its plots, for an operator and for a tenant administrator.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Remote compute wrappers running | 19 | =compass env deploy all=, then =podman ps= on each host | 7349087ef4 |
+| Wrappers registered in the serving environment | 19 of 19 | =select count(*) from ores_compute_hosts_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | 7349087ef4 |
+| Soak jobs finished Success (outcome 1) | 62 | =results list=, counted by outcome | 4ae5f1a024 |
+| Soak jobs finished ClientError (outcome 3), all sent to fail | 8 | =results list=, counted by outcome | 4ae5f1a024 |
+| ores.compass env-deploy tests | 61 passed | =python3 -m pytest projects/ores.compass/tests/test_env_deploy.py -q= | 7349087ef4 |
+| ores.web tests | 1518 passed | =npm test --workspace @ores.web= | 2b08bebf7e |
+| Image staging services, node runtime excluded | 18 | =compass image build=, "Runtime services: 18" | e65e898afc |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3270][#3270]] | [ores.compass] Isolate each environment's compute state on a shared host |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done. The compute role keeps one directory per environment on a host
+(=compute/<label>=), holding its env file, client certs, per-replica work
+directories and logs, and =LABEL= is passed by =compass env deploy= rather
+than read back from the host. =remote-stop.sh= takes the label the same way,
+so stopping an environment no longer tears down whichever environment
+deployed last. Replica scratch directories are named =replica_<n>=.
+
+Building the images at all was blocked on the way here: =stage-runtime.sh=
+hard-coded =linux-clang-debug-make=, =compass image build= never exported
+=.env=, and the image set included =ores.web.service=, a node service with no
+binary. All three are fixed, and the service list now comes from one helper
+that applies the same node-runtime split the Quadlet generator already used.
+
+The grid screen's Refresh read only the summary query, so its plots stayed
+stale until a full page load, and a tenant administrator had no refresh
+control at all. Both are fixed, and the control now states its load as the
+existing ISO =LoadedAt= label rather than a hand-rolled =HH:MM:SS UTC= span.
+The redundant back-to-operations button is gone from all six operations
+screens, each of which already carries a breadcrumb.
+
+Verified live on 2026-10-13: 19 wrappers deployed across newton (11), laptop
+(3), simba (2) and goedel (3), all healthy and all registered in the serving
+environment, with =claim_work= polling visible in the wrapper logs. A
+five-minute soak then sent 70 jobs: 62 good ones finished Success and the 8
+sent to fail finished ClientError, each carrying the archiver error for its
+unreadable input.
+
+Two limits. The refresh button was not clicked under test: the web package
+has no interaction-testing setup, so it was verified by hand and by the
+served bundle matching the build. And the runtime role shares the same
+per-host state as the compute role but was not deployed, so its half of the
+isolation is untested.

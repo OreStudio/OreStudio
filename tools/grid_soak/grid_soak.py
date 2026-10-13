@@ -38,6 +38,12 @@ Each wave is one ores.shell session that adds a batch and dispatches its jobs
 to the app version. The run stops on Ctrl-C or SIGTERM, after the wave in
 flight, and prints what it sent.
 
+--fail-share sends a share of every wave's jobs with an input bundle that cannot
+be unpacked, so the grid has real failures to carry. Those jobs are ordinary
+dispatches of a corrupt input: the wrapper downloads it, the engine cannot run,
+and the result ends as a client error. They travel the whole path a good job
+travels, which is the point -- a soak that only ever succeeds exercises less.
+
 Usage, from the repository root:
 
     python3 tools/grid_soak/grid_soak.py --app-version <id of the engine version>
@@ -179,6 +185,49 @@ def discover_parties(root, tenant_code):
     return parties
 
 
+def wave_faults(total, share):
+    """How many of a wave's jobs go out with the unreadable input.
+
+    A share of zero sends none. Otherwise the share of the whole wave is
+    rounded, and a wave with any job at all sends at least one, so a run that
+    asks for faults produces them however small its waves are.
+    """
+    if share <= 0 or total <= 0:
+        return 0
+    return min(total, max(1, round(total * share)))
+
+
+def fault_split(parts, share):
+    """The (party, jobs, faults) of a wave, from its (party, jobs) pairs.
+
+    The faults are drawn for the wave rather than for each party: giving every
+    party one would over-deliver badly on a small wave. They come out of the
+    heaviest parties first, which leaves the smaller ones with good work and
+    never asks a party for more faults than it has jobs.
+    """
+    out = [[party, jobs, 0] for party, jobs in parts]
+    remaining = wave_faults(sum(jobs for _, jobs in parts), share)
+    for index in sorted(range(len(out)), key=lambda i: -out[i][1]):
+        if remaining <= 0:
+            break
+        take = min(out[index][1], remaining)
+        out[index][2] = take
+        remaining -= take
+    return [tuple(row) for row in out]
+
+
+def make_fault_package():
+    """A file named like an input bundle that cannot be unpacked.
+
+    Sending it is how the soak makes a job fail the way a corrupt input would:
+    the wrapper downloads it happily, and the engine cannot run from it.
+    """
+    handle = tempfile.NamedTemporaryFile("w", suffix=".tar.gz", delete=False)
+    with handle:
+        handle.write("not a gzip archive: the soak sends this to make a job fail\n")
+    return Path(handle.name)
+
+
 def split_count(rng, count, parties, weights=None):
     """The jobs of a wave shared out among the parties, as (party, jobs) pairs.
 
@@ -206,25 +255,39 @@ def split_count(rng, count, parties, weights=None):
     return list(zip(parties, shares))
 
 
-def wave_script(principal, password, reference, parts, app_version, package):
+def wave_script(principal, password, reference, parts, app_version, package,
+                fault_package=None):
     """The ores.shell script of one wave.
 
-    A part is a (party, jobs) pair. A party of None keeps the party the login opens in. Each
-    part is its own batch, so the work of a wave lands in every party it names.
+    A part is a (party, jobs, faults) triple. A party of None keeps the party the login
+    opens in. Each part is its own batch, so the work of a wave lands in every party it
+    names, and a part with faults sends a second batch whose input cannot be unpacked.
     """
     lines = ["connect $ORES_NATS_URL", f"login {principal} {password}"]
-    for index, (party, count) in enumerate(parts, start=1):
+    for index, (party, count, faults) in enumerate(parts, start=1):
         ref = reference if len(parts) == 1 else f"{reference}-p{index}"
         if party:
             lines.append(f"account_operations switch-party {party}")
-        lines.append(f'batches add {ref} open system.new_record "grid soak"')
-        lines.append(f"compute dispatch-batch {ref} {count} {app_version} {package}")
+        if count - faults > 0:
+            lines.append(f'batches add {ref} open system.new_record "grid soak"')
+            lines.append(
+                f"compute dispatch-batch {ref} {count - faults} {app_version} {package}"
+            )
+        if faults > 0 and fault_package:
+            lines.append(f'batches add {ref}-f open system.new_record "grid soak fault"')
+            lines.append(
+                f"compute dispatch-batch {ref}-f {faults} {app_version} {fault_package}"
+            )
     lines += ["logout", "exit", ""]
     return "\n".join(lines)
 
 
 def send_wave(root, args, rng, reference, count):
-    """Run one wave through compass shell. Returns True when the shell exited cleanly."""
+    """Run one wave through compass shell.
+
+    Returns (the shell exited cleanly, the number of jobs sent to fail). The
+    jobs meant to fail are part of the wave's count, not extra to it.
+    """
     names, weights = args.principals
     principal = rng.choices(names, weights)[0]
     pool = args.party_pools.get(tenant_code_of(principal), [])
@@ -235,19 +298,28 @@ def send_wave(root, args, rng, reference, count):
         parts = split_count(rng, count, ids, shares)
     else:
         parts, codes = [(None, count)], {}
-    where = ", ".join(f"{codes.get(p, str(p)[:8])} {n}" for p, n in parts if p)
+    share = args.fail_share if args.fault_package else 0.0
+    parts = fault_split(parts, share)
+    faults = sum(part[2] for part in parts)
+    where = ", ".join(f"{codes.get(p, str(p)[:8])} {n}" for p, n, _ in parts if p)
     print(f"[soak] {reference} sent by {principal}" + (f": {where}" if where else ""), flush=True)
+    if faults:
+        print(f"[soak] {reference} carries {faults} job(s) meant to fail", flush=True)
     script = wave_script(
-        principal, args.password, reference, parts, args.app_version, args.package
+        principal, args.password, reference, parts, args.app_version, args.package,
+        args.fault_package
     )
     with tempfile.NamedTemporaryFile("w", suffix=".ores", delete=False) as handle:
         handle.write(script)
         path = handle.name
     try:
         if args.dry_run:
-            return True
+            return True, faults
         # The shell's own output is left alone: the driver does not redirect it.
-        return subprocess.run([str(root / "compass.sh"), "shell", "-f", path], check=False).returncode == 0
+        ok = subprocess.run(
+            [str(root / "compass.sh"), "shell", "-f", path], check=False
+        ).returncode == 0
+        return ok, faults
     finally:
         os.unlink(path)
 
@@ -310,6 +382,12 @@ def build_parser():
                          "ACCOUK 5, ACCOUS 3, ACCOHK 2 and ACMCOR 0.5, and 1 for any other party")
     ap.add_argument("--no-spread-parties", action="store_true",
                     help="Keep the party the login opens in, and do not switch")
+    ap.add_argument("--fail-share", type=float, default=0.0, metavar="SHARE",
+                    help="Share of each wave's jobs sent with an input that cannot be "
+                         "unpacked, so the grid carries real failures; 0 sends none")
+    ap.add_argument("--fault-package", default=None, metavar="FILE",
+                    help="The unreadable input to send for those jobs; by default one is "
+                         "written for the run and removed at the end")
     ap.add_argument("--password", default=None)
     ap.add_argument("--dry-run", action="store_true", help="Draw the load and print it, send nothing")
     return ap
@@ -338,6 +416,17 @@ def main(argv):
                 note = f"{len(found)} part{'y' if len(found) == 1 else 'ies'}" if found else "no parties found, using the login party"
                 print(f"[soak] {code}: {note}", flush=True)
 
+    generated_fault = None
+    if args.fail_share > 0 and not args.fault_package:
+        generated_fault = make_fault_package()
+        args.fault_package = str(generated_fault)
+    if args.fail_share > 0:
+        print(f"[soak] {args.fail_share:.0%} of each wave's jobs fail on purpose "
+              f"({args.fault_package})", flush=True)
+    elif args.fault_package:
+        print("[soak] --fault-package given but --fail-share is 0: nothing will fail",
+              flush=True)
+
     seed = args.seed if args.seed is not None else random.SystemRandom().randrange(1 << 32)
     rng = random.Random(seed)
     phases = (
@@ -357,6 +446,7 @@ def main(argv):
     sent_waves = 0
     failed_waves = 0
     held_waves = 0
+    fault_jobs_sent = 0
     queue = 0.0
     last = time.monotonic()
     phase = None
@@ -396,8 +486,10 @@ def main(argv):
                 # A failed wave may have queued some of its jobs, so it counts as sent
                 # for the estimate and the estimate errs towards a longer queue.
                 queue += count
-                if send_wave(root, args, rng, reference, count):
+                ok, faults = send_wave(root, args, rng, reference, count)
+                if ok:
                     sent_jobs += count
+                    fault_jobs_sent += faults
                 else:
                     failed_waves += 1
                     print(f"[soak] wave {sent_waves} failed", flush=True)
@@ -405,9 +497,16 @@ def main(argv):
 
     print(
         f"[soak] stopped: {sent_waves} wave(s), {sent_jobs} job(s) sent, "
-        f"{held_waves} held back, {failed_waves} failed",
+        f"{held_waves} held back, {failed_waves} wave(s) failed",
         flush=True,
     )
+    if args.fail_share > 0:
+        print(
+            f"[soak] {fault_jobs_sent} of those job(s) were sent to fail on purpose",
+            flush=True,
+        )
+    if generated_fault is not None:
+        os.unlink(generated_fault)
     return 0
 
 

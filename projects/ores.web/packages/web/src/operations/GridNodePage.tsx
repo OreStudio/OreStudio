@@ -43,7 +43,7 @@ import { Notice, PageHeader } from '../ui/Primitives.js';
 import { SeriesChart, type ChartSeries } from '../ui/SeriesChart.js';
 import { GRID_QUERY_KEY, asGiB, asMiB, formatAge, instanceTail } from './GridPage.js';
 import { RangeBar, SeriesStatus, axisOf, changeOf, rowOf, useGridSeries } from './GridSeries.js';
-import { InstanceStateTag, OperationsBack } from './OperationsParts.js';
+import { InstanceStateTag } from './OperationsParts.js';
 import { LinkButton } from '../ui/Primitives.js';
 
 /** The figures of one node over the range, each a column on the series' time axis. */
@@ -277,7 +277,6 @@ export function GridNodePage(): ReactNode {
                             <LinkButton to="/operations/grid?tab=nodes" variant="secondary">
                                 {t('operations.grid.node.back')}
                             </LinkButton>
-                            <OperationsBack />
                         </div>
                     }
                 />

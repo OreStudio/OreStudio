@@ -63,7 +63,9 @@ def test_over_many_waves_every_party_gets_about_a_quarter():
 
 
 def test_the_script_switches_party_before_each_batch_and_names_each_batch():
-    script = grid_soak.wave_script("u@t", "pw", "ref", [("p1", 3), ("p2", 4)], "AV", "PKG")
+    script = grid_soak.wave_script(
+        "u@t", "pw", "ref", [("p1", 3, 0), ("p2", 4, 0)], "AV", "PKG"
+    )
     lines = script.splitlines()
     assert lines.index("account_operations switch-party p1") < lines.index(
         'batches add ref-p1 open system.new_record "grid soak"'
@@ -75,9 +77,75 @@ def test_the_script_switches_party_before_each_batch_and_names_each_batch():
 
 
 def test_a_wave_with_no_party_keeps_the_login_party_and_the_plain_reference():
-    script = grid_soak.wave_script("u@t", "pw", "ref", [(None, 9)], "AV", "PKG")
+    script = grid_soak.wave_script("u@t", "pw", "ref", [(None, 9, 0)], "AV", "PKG")
     assert "switch-party" not in script
     assert "compute dispatch-batch ref 9 AV PKG" in script.splitlines()
+
+
+def test_the_jobs_meant_to_fail_are_their_own_batch_with_the_unreadable_input():
+    script = grid_soak.wave_script(
+        "u@t", "pw", "ref", [("p1", 10, 3), ("p2", 4, 0)], "AV", "PKG",
+        "/tmp/fault.tar.gz"
+    )
+    lines = script.splitlines()
+    # The part's jobs are one batch of the good input and one of the bad,
+    # and together they still add up to the part.
+    assert "compute dispatch-batch ref-p1 7 AV PKG" in lines
+    assert "compute dispatch-batch ref-p1-f 3 AV /tmp/fault.tar.gz" in lines
+    assert 'batches add ref-p1-f open system.new_record "grid soak fault"' in lines
+    assert "compute dispatch-batch ref-p2 4 AV PKG" in lines
+
+
+def test_a_wave_with_no_fault_share_sends_one_batch_per_party():
+    script = grid_soak.wave_script(
+        "u@t", "pw", "ref", [("p1", 10, 0)], "AV", "PKG", "/tmp/fault.tar.gz"
+    )
+    assert "-f" not in script
+    assert "compute dispatch-batch ref 10 AV PKG" in script.splitlines()
+
+
+def test_a_lone_part_keeps_the_plain_reference_for_its_fault_batch():
+    script = grid_soak.wave_script(
+        "u@t", "pw", "ref", [("p1", 10, 3)], "AV", "PKG", "/tmp/fault.tar.gz"
+    )
+    lines = script.splitlines()
+    assert "compute dispatch-batch ref 7 AV PKG" in lines
+    assert "compute dispatch-batch ref-f 3 AV /tmp/fault.tar.gz" in lines
+
+
+def test_a_share_above_zero_always_faults_at_least_one_job_of_a_wave():
+    assert grid_soak.wave_faults(200, 0.1) == 20
+    assert grid_soak.wave_faults(3, 0.01) == 1
+    assert grid_soak.wave_faults(10, 0.0) == 0
+    assert grid_soak.wave_faults(0, 1.0) == 0
+    # A wave is never asked for more faults than it has jobs.
+    assert grid_soak.wave_faults(4, 1.0) == 4
+
+
+def test_the_fault_share_is_a_share_of_the_wave_not_of_each_party():
+    # Ten percent of eight jobs is one, not one per party: a per-party floor
+    # would send half the wave to fail.
+    split = grid_soak.fault_split([("p1", 4), ("p2", 2), ("p3", 1), ("p4", 1)], 0.1)
+    assert [faults for _, _, faults in split] == [1, 0, 0, 0]
+    assert sum(faults for _, _, faults in split) == 1
+
+
+def test_the_fault_split_keeps_every_part_and_its_jobs():
+    split = grid_soak.fault_split([("p1", 10), ("p2", 2)], 0.25)
+    assert split == [("p1", 10, 3), ("p2", 2, 0)]
+    assert sum(jobs for _, jobs, _ in split) == 12
+    assert sum(faults for _, _, faults in split) == 3
+
+
+def test_faults_never_exceed_a_party_and_go_to_the_heaviest_first():
+    # Half of eight is four, and the heaviest party can carry all four.
+    split = grid_soak.fault_split([("p1", 1), ("p2", 1), ("p3", 6)], 0.5)
+    assert [faults for _, _, faults in split] == [0, 0, 4]
+    assert all(faults <= jobs for _, jobs, faults in split)
+
+    # Asked for every job, no party is asked for more than it has.
+    split = grid_soak.fault_split([("p1", 1), ("p2", 1), ("p3", 2)], 1.0)
+    assert [faults for _, _, faults in split] == [1, 1, 2]
 
 
 def test_a_heavier_party_takes_more_of_every_wave_on_average():

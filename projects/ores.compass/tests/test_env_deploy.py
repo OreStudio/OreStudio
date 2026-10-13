@@ -230,11 +230,11 @@ class TestWriteComputeEnv:
         assert "ORES_COMPUTE_WRAPPER_NATS_SUBJECT_PREFIX=ores.prod.main1" in text
         assert "ORES_COMPUTE_WRAPPER_NATS_WIRE_FORMAT=json" in text
         assert ("ORES_COMPUTE_WRAPPER_NATS_TLS_CA="
-                "/home/marco/ores-deploy/compute/keys/ca.crt") in text
+                "/home/marco/ores-deploy/compute/prod-main1/keys/ca.crt") in text
         assert ("ORES_COMPUTE_WRAPPER_NATS_TLS_CERT="
-                "/home/marco/ores-deploy/compute/keys/client.crt") in text
+                "/home/marco/ores-deploy/compute/prod-main1/keys/client.crt") in text
         assert ("ORES_COMPUTE_WRAPPER_NATS_TLS_KEY="
-                "/home/marco/ores-deploy/compute/keys/client.key") in text
+                "/home/marco/ores-deploy/compute/prod-main1/keys/client.key") in text
         assert "ORES_COMPUTE_REPLICAS" not in text
         assert "ORES_COMPUTE_WRAPPER_TENANT_ID=acme" in text
         assert "ORES_COMPUTE_LABEL=prod-main1" in text
@@ -271,6 +271,87 @@ class TestWriteComputeEnv:
         import pytest
         with pytest.raises(RuntimeError, match="compute TLS file not found"):
             env_deploy._write_compute_env(root, prof, "l", "/root", "newton")
+
+    def test_state_is_named_after_the_environment(self, tmp_path):
+        root = tmp_path / "checkout"
+        profile = self._profile(tmp_path)
+        prod, _ = env_deploy._write_compute_env(
+            root, profile, "prod-main1", "/r", "newton")
+        dev, _ = env_deploy._write_compute_env(
+            root, profile, "dev-main1", "/r", "newton")
+
+        # Two environments on one host never share a path: the label is the
+        # directory, so neither deploy can overwrite the other's config or
+        # point the other's wrappers at the wrong NATS server.
+        assert prod != dev
+        assert prod.parent.name == "prod-main1"
+        assert dev.parent.name == "dev-main1"
+        assert "/r/compute/prod-main1/keys/ca.crt" in prod.read_text(encoding="utf-8")
+        assert "/r/compute/dev-main1/keys/ca.crt" in dev.read_text(encoding="utf-8")
+
+    def test_transfer_replaces_only_the_env_and_keys(self, tmp_path, monkeypatch):
+        ssh_calls = []
+        scp_targets = []
+        monkeypatch.setattr(
+            env_deploy, "_ssh",
+            lambda host, cmd, check=False, **kw: ssh_calls.append(cmd))
+        monkeypatch.setattr(
+            env_deploy, "_scp",
+            lambda pr, host, local, remote, recursive=False:
+                scp_targets.append(remote))
+
+        env_path, keys_stage = env_deploy._write_compute_env(
+            tmp_path / "checkout", self._profile(tmp_path), "prod-main1",
+            "/r", "newton")
+        env_deploy._transfer_compute(tmp_path / "checkout", "newton", "/r",
+                                     env_path, keys_stage)
+
+        removed = " ".join(ssh_calls)
+        # Only the keys are cleared. The work tree holds the per-replica
+        # scratch and the engine package cache, so a redeploy must not take
+        # it: that would force every wrapper to re-download the engine.
+        assert "rm -rf /r/compute/prod-main1/keys" in removed
+        assert "rm -rf /r/compute/prod-main1 " not in removed
+        assert "/r/compute/prod-main1/compute.env" in scp_targets
+
+    def test_deploy_and_stop_agree_on_the_label(self, monkeypatch):
+        captured = {}
+
+        def fake_ssh(host, command, input_text=None, check=False, **kwargs):
+            captured["command"] = command
+            return subprocess.CompletedProcess([], 0)
+        monkeypatch.setattr(env_deploy, "_ssh", fake_ssh)
+        monkeypatch.setattr(env_deploy, "_version_tag", lambda r: "0.0.25-abc")
+
+        repo_root = Path(__file__).resolve().parents[3]
+        profile = {"ORES_CHECKOUT_LABEL": "brave_hopper",
+                   "ORES_COMPUTE_LABEL": "prod1"}
+        # The profile's own label wins, and every verb names the same
+        # environment: the bug was that deploy and stop could disagree.
+        assert env_deploy._compute_label(profile, repo_root) == "prod1"
+
+        env_deploy._deploy_compute(repo_root, "newton",
+                                   "/home/marco/ores-deploy", "prod1")
+        assert "LABEL=prod1" in captured["command"]
+
+        env_deploy._stop(repo_root, "newton", profile,
+                         "/home/marco/ores-deploy", "compute", purge=False)
+        assert "LABEL=prod1" in captured["command"]
+
+    def test_stop_does_not_set_a_label_for_the_runtime_role(self, monkeypatch):
+        captured = {}
+
+        def fake_ssh(host, command, input_text=None, check=False, **kwargs):
+            captured["command"] = command
+            return subprocess.CompletedProcess([], 0)
+        monkeypatch.setattr(env_deploy, "_ssh", fake_ssh)
+
+        env_deploy._stop(Path(__file__).resolve().parents[3], "newton",
+                         {"ORES_CHECKOUT_LABEL": "brave_hopper"},
+                         "/home/marco/ores-deploy", "runtime", purge=False)
+        # The runtime role reads its label from the remote profile, which
+        # was not part of this change.
+        assert "LABEL=" not in captured["command"]
 
 
 # --- Deploys that run at the same time ------------------------------------
@@ -652,6 +733,81 @@ class TestDeployAll:
     def test_no_compute_profile_is_an_error(self, tmp_path, capsys):
         assert env_deploy.run(["all"], tmp_path) == 1
         assert "No host profile has compute settings" in capsys.readouterr().out
+
+
+class TestComputeDeployEndToEnd:
+    """The whole _cmd_deploy path for the compute role.
+
+    The tests above exercise the pieces. This one runs the composition, so
+    a caller and its callee disagreeing about the label — or about the
+    argument list — fails here rather than on a real host.
+    """
+
+    def _project(self, tmp_path):
+        root = tmp_path / "checkout"
+        (root / "docker").mkdir(parents=True)
+        for f in (root / ".env", root / "docker" / ".env"):
+            f.write_text("ORES_PRESET=x\n", encoding="utf-8")
+
+        # _deploy_compute pipes the real remote script, so the fake checkout
+        # needs a copy of it.
+        real = (Path(__file__).resolve().parents[3] / "docker"
+                / "remote-run.sh")
+        (root / "docker" / "remote-run.sh").write_text(
+            real.read_text(encoding="utf-8"), encoding="utf-8")
+
+        keys = tmp_path / "serving" / "keys"
+        _write(keys / "ca.crt", "CA")
+        _write(keys / "client.crt", "CERT")
+        _write(keys / "client.key", "KEY")
+        (root / ".env.newton").write_text("\n".join([
+            "ORES_CHECKOUT_LABEL=brave_hopper",
+            "ORES_REMOTE_HOST=marco@192.168.1.22",
+            "ORES_REMOTE_ROOT=/home/marco/ores-deploy",
+            "ORES_COMPUTE_TENANT_ID=acme",
+            "ORES_COMPUTE_NATS_URL=nats://192.168.1.10:4222",
+            "ORES_COMPUTE_NATS_SUBJECT_PREFIX=ores.dev.brave_hopper",
+            "ORES_COMPUTE_NATS_WIRE_FORMAT=msgpack",
+            f"ORES_COMPUTE_NATS_TLS_CA={keys / 'ca.crt'}",
+            f"ORES_COMPUTE_NATS_TLS_CERT={keys / 'client.crt'}",
+            f"ORES_COMPUTE_NATS_TLS_KEY={keys / 'client.key'}",
+        ]) + "\n", encoding="utf-8")
+        return root
+
+    def test_lands_the_environment_directory_and_names_its_label(
+            self, tmp_path, monkeypatch):
+        import image_build
+
+        root = self._project(tmp_path)
+        commands, scp_targets = [], []
+
+        monkeypatch.setattr(env_deploy, "_require_podman", lambda host: None)
+        monkeypatch.setattr(env_deploy, "_stream_images",
+                            lambda pr, host, images: None)
+        monkeypatch.setattr(env_deploy, "_version_tag",
+                            lambda r: "0.0.25-abc")
+        monkeypatch.setattr(image_build, "check_images_exist",
+                            lambda pr, role: True)
+        monkeypatch.setattr(
+            env_deploy, "_ssh",
+            lambda host, cmd, check=False, input_text=None, **kw:
+                commands.append(cmd) or subprocess.CompletedProcess([], 0))
+        monkeypatch.setattr(
+            env_deploy, "_scp",
+            lambda pr, host, local, remote, recursive=False:
+                scp_targets.append(remote))
+
+        assert env_deploy._cmd_deploy(
+            ["newton", "--role", "compute"], root) == 0
+
+        # Everything lands under the environment's own directory...
+        assert ("/home/marco/ores-deploy/compute/brave_hopper/compute.env"
+                in scp_targets)
+        assert all("/compute/brave_hopper" in t or "/build/" in t
+                   for t in scp_targets)
+        # ...and the remote is told which environment it is replacing,
+        # rather than reading that back from the host.
+        assert any("LABEL=brave_hopper" in c for c in commands)
 
 
 class TestRequirePodman:

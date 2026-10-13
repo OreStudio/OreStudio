@@ -175,11 +175,13 @@ def _version_tag(project_root: Path) -> str:
 
 
 def _runtime_services(project_root: Path) -> list:
-    """Return the list of enabled runtime service names from the service
-    registry (the same model consumed by systemd_generate)."""
-    from systemd_generate import load_service_registry  # noqa: PLC0415
-    raw = load_service_registry(project_root)
-    return [s["name"] for s in raw if s.get("enabled") and s["name"] != "ores.compute.wrapper"]
+    """Enabled services that have a container image to transfer.
+
+    Delegates to image_build so the set transferred and the set built
+    cannot drift apart.
+    """
+    import image_build  # noqa: PLC0415
+    return image_build.runtime_services(project_root)
 
 
 # --- Profile generation ---------------------------------------------------
@@ -283,6 +285,16 @@ def _host_stage(project_root, host):
 
 # --- Compute-node config --------------------------------------------------
 
+def _compute_label(profile_env, project_root):
+    """The name this environment's compute deployment owns on the host.
+
+    It is the directory under the remote compute root, so every caller
+    must agree on it: deploy, transfer and stop all name one environment.
+    """
+    return profile_env.get("ORES_COMPUTE_LABEL",
+                           _label(profile_env, project_root))
+
+
 def _write_compute_env(project_root, profile_env, label, remote_root, host):
     """Build the compute node's env file (app-prefixed
     ORES_COMPUTE_WRAPPER_NATS_* block — the wrapper parser reads its env
@@ -292,10 +304,12 @@ def _write_compute_env(project_root, profile_env, label, remote_root, host):
     keys_stage_dir)."""
     stage = _host_stage(project_root, host)
 
-    # Named compute/keys (not compute-keys) so a recursive scp of the
-    # stage dir into the remote compute/ parent creates exactly the
-    # compute/keys path that compute.env and remote-run.sh reference.
-    keys_stage = stage / "compute" / "keys"
+    # The remote compute root is per environment, not per host: co-hosted
+    # environments each own compute/<label>/, so one deploy cannot rename
+    # or re-point the other's wrappers. The staging tree mirrors that
+    # layout, so a recursive scp into the remote compute/ parent lands on
+    # compute/<label>/ as compute.env and remote-run.sh expect.
+    keys_stage = stage / label / "keys"
     keys_stage.mkdir(parents=True, exist_ok=True)
     tls_bases = {}
     for tls in ("CA", "CERT", "KEY"):
@@ -308,14 +322,14 @@ def _write_compute_env(project_root, profile_env, label, remote_root, host):
         (keys_stage / base).write_bytes(src.read_bytes())
         tls_bases[tls] = base
 
-    env_path = stage / "compute.env"
+    env_path = stage / label / "compute.env"
     lines = [
         f"ORES_COMPUTE_WRAPPER_NATS_URL={profile_env['ORES_COMPUTE_NATS_URL']}",
         f"ORES_COMPUTE_WRAPPER_NATS_SUBJECT_PREFIX={profile_env['ORES_COMPUTE_NATS_SUBJECT_PREFIX']}",
         f"ORES_COMPUTE_WRAPPER_NATS_WIRE_FORMAT={profile_env['ORES_COMPUTE_NATS_WIRE_FORMAT']}",
-        f"ORES_COMPUTE_WRAPPER_NATS_TLS_CA={remote_root}/compute/keys/{tls_bases['CA']}",
-        f"ORES_COMPUTE_WRAPPER_NATS_TLS_CERT={remote_root}/compute/keys/{tls_bases['CERT']}",
-        f"ORES_COMPUTE_WRAPPER_NATS_TLS_KEY={remote_root}/compute/keys/{tls_bases['KEY']}",
+        f"ORES_COMPUTE_WRAPPER_NATS_TLS_CA={remote_root}/compute/{label}/keys/{tls_bases['CA']}",
+        f"ORES_COMPUTE_WRAPPER_NATS_TLS_CERT={remote_root}/compute/{label}/keys/{tls_bases['CERT']}",
+        f"ORES_COMPUTE_WRAPPER_NATS_TLS_KEY={remote_root}/compute/{label}/keys/{tls_bases['KEY']}",
         f"ORES_COMPUTE_WRAPPER_TENANT_ID={profile_env['ORES_COMPUTE_TENANT_ID']}",
         f"ORES_COMPUTE_LABEL={label}",
     ]
@@ -445,7 +459,8 @@ def _preflight(project_root, profile_path, role, env):
         if not nats_conf.is_file():
             raise RuntimeError(
                 f"{nats_conf} not found — run: compass nats init")
-        publish = project_root / "build" / "output" / "linux-clang-debug-make" / "publish"
+        preset = env.get("ORES_PRESET", "linux-clang-debug-make")
+        publish = project_root / "build" / "output" / preset / "publish"
         if not publish.is_dir():
             raise RuntimeError(
                 f"{publish} not found — run: compass build first")
@@ -494,14 +509,18 @@ def _transfer_runtime(project_root, host, remote_root, profile_path,
 def _transfer_compute(project_root, host, remote_root, env_path, keys_stage):
     print("=== Transferring to the remote host ===")
     # scp -r <dir> <existing-target> creates <target>/<dir> (nesting) rather
-    # than merging contents — the same trap _transfer_runtime avoids. Remove
-    # the remote compute/keys directory and let scp re-create it by targeting
-    # its parent (compute.env references compute/keys/<file> directly).
-    _ssh(host, f"rm -rf {shlex.quote(remote_root)}/compute/keys "
-               f"&& mkdir -p {shlex.quote(remote_root)}/compute", check=True)
-    _scp(project_root, host, keys_stage, f"{remote_root}/compute/",
+    # than merging contents — the same trap _transfer_runtime avoids. Only
+    # the env file and the keys are replaced; the environment's work and log
+    # directories are left alone, so the engine package cache the wrappers
+    # on this host share survives a redeploy.
+    env_dir = env_path.parent
+    label = env_dir.name
+    remote_env_dir = f"{remote_root}/compute/{label}"
+    _ssh(host, f"rm -rf {shlex.quote(remote_env_dir)}/keys "
+               f"&& mkdir -p {shlex.quote(remote_env_dir)}", check=True)
+    _scp(project_root, host, keys_stage, f"{remote_env_dir}/",
          recursive=True)
-    _scp(project_root, host, env_path, f"{remote_root}/compute/compute.env")
+    _scp(project_root, host, env_path, f"{remote_env_dir}/compute.env")
 
 
 def _deploy_runtime(project_root, host, profile_env, remote_root):
@@ -519,20 +538,30 @@ def _deploy_runtime(project_root, host, profile_env, remote_root):
                     "IMAGE_TAG": tag, "SERVICES": services_arg})
 
 
-def _deploy_compute(project_root, host, profile_env, remote_root):
+def _deploy_compute(project_root, host, remote_root, label):
     tag = _version_tag(project_root)
-    print(f"=== Deploying compute node to {host} (tag '{tag}') ===")
+    print(f"=== Deploying compute node to {host} (label '{label}', "
+          f"tag '{tag}') ===")
     script = (project_root / "docker" / "remote-run.sh").read_text(
         encoding="utf-8")
+    # The label is passed rather than read back from the host: it names the
+    # directory this deploy owns, so the remote cannot be the one to decide
+    # which environment's wrappers are being replaced.
     _remote_script(host, script,
                    {"REMOTE_ROOT": remote_root, "ROLE": "compute",
-                    "IMAGE_TAG": tag})
+                    "IMAGE_TAG": tag, "LABEL": label})
 
 
 def _stop(project_root, host, profile_env, remote_root, role, purge):
     script = (project_root / "docker" / "remote-stop.sh").read_text(
         encoding="utf-8")
     env_vars = {"REMOTE_ROOT": remote_root, "ROLE": role}
+    # The compute role stops the wrappers of the environment named by this
+    # profile. That label used to be read back from the host's compute.env,
+    # which holds one environment only, so stopping a co-hosted environment
+    # tore down whichever one deployed last.
+    if role == "compute":
+        env_vars["LABEL"] = _compute_label(profile_env, project_root)
     if purge:
         env_vars["PURGE"] = "1"
     _remote_script(host, script, env_vars)
@@ -753,16 +782,14 @@ def _cmd_deploy(argv, project_root):
                 f"{profile_path} — add them (from the serving "
                 "environment's checkout) and re-run")
         tag = _version_tag(project_root)
+        label = _compute_label(profile_env, project_root)
         _stream_images(project_root, remote_host,
                        [f"{IMAGE_COMPUTE}:{tag}"])
         env_path, keys_stage = _write_compute_env(
-            project_root, profile_env,
-            profile_env.get("ORES_COMPUTE_LABEL",
-                            _label(profile_env, project_root)),
-            remote_root, remote_host)
-        _transfer_compute(project_root, remote_host, remote_root,
-                          env_path, keys_stage)
-        _deploy_compute(project_root, remote_host, profile_env, remote_root)
+            project_root, profile_env, label, remote_root, remote_host)
+        _transfer_compute(project_root, remote_host, remote_root, env_path,
+                          keys_stage)
+        _deploy_compute(project_root, remote_host, remote_root, label)
         return 0
 
     tag = _version_tag(project_root)

@@ -1537,7 +1537,6 @@ export const en: SourceCatalogue = {
         },
     },
     operations: {
-        back: 'Back to operations',
         instance: {
             olderBuild: 'older build',
             state: {
@@ -1631,7 +1630,6 @@ export const en: SourceCatalogue = {
             title: 'Compute grid',
             description:
                 "The installation's host and work summary, one row per machine, carrying the runner that reports for it.",
-            updated: 'Updated {at}',
             units: {
                 gib: '{value} GiB',
                 mib: '{value} MiB',

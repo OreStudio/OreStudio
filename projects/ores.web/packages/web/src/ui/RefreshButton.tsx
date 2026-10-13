@@ -22,6 +22,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type { LoadState } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime } from './Time.js';
 import { LoadedAt } from './LoadedAt.js';
@@ -103,7 +104,12 @@ export function RefreshNow({
 
 /**
  * Refresh for a screen whose rows come from queries: it reads again every query
- * that starts with one of the given keys, and shows that it is reading.
+ * that starts with one of the given keys, shows that it is reading, and states
+ * when the data arrived.
+ *
+ * It carries the same load label as RefreshButton, because a screen that offers
+ * the button must also say how old what it shows is. It never turns gold: these
+ * screens are not told that their data changed.
  */
 export function RefreshQueries({
     keys,
@@ -111,15 +117,18 @@ export function RefreshQueries({
     readonly keys: readonly (readonly unknown[])[];
 }): ReactNode {
     const client = useQueryClient();
-    const reading = keys.some((queryKey) => client.isFetching({ queryKey }) > 0);
+    const load = useLoadState(keys);
     return (
-        <RefreshNow
-            pending={reading}
-            onClick={() => {
-                for (const queryKey of keys) {
-                    void client.invalidateQueries({ queryKey });
-                }
-            }}
-        />
+        <div className="flex flex-col items-end gap-1">
+            <RefreshNow
+                pending={load.isFetching}
+                onClick={() => {
+                    for (const queryKey of keys) {
+                        void client.invalidateQueries({ queryKey });
+                    }
+                }}
+            />
+            <LoadedAt at={load.oldestUpdatedAt ?? load.dataUpdatedAt} />
+        </div>
     );
 }

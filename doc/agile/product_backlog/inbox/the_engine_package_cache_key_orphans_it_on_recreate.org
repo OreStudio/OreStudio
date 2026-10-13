@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 316D8899-AC22-49C9-BB95-CDB31E184D3F
+:END:
+#+title: The compute engine package cache is keyed by app version id, so a database recreate orphans it
+#+description: The wrapper caches a downloaded engine package under a directory named after app_version_id, a per-environment database row UUID: a compass db recreate leaves every cached package unreachable and never reclaims it.
+#+type: capture
+#+level: cross
+#+filetags: :compute:grid:storage:devops:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Key the wrapper's engine package cache by the identity of the package itself —
+the version and platform the serving environment publishes, and its SHA256 —
+instead of by =app_version_id=. Then give the cache a way to reclaim entries
+that no published version claims.
+
+* Why
+
+=ores.compute.wrapper= resolves its cache directory as
+
+#+begin_src cpp
+const fs::path pkg_cache_dir = package_root / evt.app_version_id;
+#+end_src
+
+(=projects/ores.compute/wrapper/src/app/application.cpp:586=). The directory is
+therefore named after a row in the serving environment's
+=ores_compute_app_versions_tbl=. That identifier does not survive
+=compass db recreate=: the recreate re-inserts the table from
+=projects/ores.sql/populate/compute/compute_ore_app_seed.sql= and every row gets a
+new UUID. The lock file and the downloaded archive are named the same way
+(=application.cpp:480= and =:490=).
+
+The effect is that a recreate orphans the whole cache on every compute host. The
+wrappers re-download the engine — 57.5 MB for =1.8.16.0-4-g3b62ba248= and 58.9 MB
+for =1.8.17.0= — and nothing removes the old entries, because there is no pruning
+of =package_root= anywhere in the wrapper. The download is verified against the
+serving environment's SHA256 (=application.cpp:510=), so a stale entry is never
+mistaken for a good one; it is simply dead weight.
+
+Observed on newton on 2026-10-13, after the 17:34 recreate: the cache held
+=77a3e12f-5202-4216-822f-398dcd7b18d1= and =87cce313-e356-41c7-a02b-727c15f1d819=,
+and neither is an =app_version_id= brave_hopper has now. That is about 118 MB of
+unreachable packages on one host, and it recurs on every recreate. A host serving
+several environments accumulates one such set per environment.
+
+A content-derived key would also make the cache worth sharing between
+environments. Today it cannot be: two environments never agree on
+=app_version_id= for the same engine version, so they can never share an entry.
+That is why the per-environment compute root gives each environment its own
+=compute/<label>/work/packages/= rather than one cache per host.
+
+This capture covers the package cache only. The adjacent retention problem — the
+per-job scratch directories =work/replica_<n>/jobs/<result_id>/= are created per
+workunit and never removed either — wants its own treatment.
+
+* References
+
+- =projects/ores.compute/wrapper/src/app/application.cpp= — =:586= the cache path,
+  =:480= and =:490= the lock file and archive names, =:510= the SHA256 check.
+- =projects/ores.sql/populate/compute/compute_ore_app_seed.sql= — re-inserts the
+  rows whose UUIDs are the current key.
+- =docker/remote-run.sh= — the compute role's per-environment
+  =compute/<label>/work/packages/=.
+
+* See also
+
+- [[id:0FFD3EF1-9AF8-43BA-899C-C5018F10272E][Story: Run compute nodes on the local network hosts]] — the
+  shared package cache this extends.

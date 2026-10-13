@@ -16,12 +16,10 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 cd "$REMOTE_ROOT"
 
 if [[ "$ROLE" == "compute" ]]; then
-    compute_env="$REMOTE_ROOT/compute/compute.env"
-    if [[ -f "$compute_env" ]]; then
-        # shellcheck disable=SC1091
-        source "$compute_env"
-    fi
-    label="${ORES_COMPUTE_LABEL:-ores}"
+    # The label names whose wrappers to stop, and it comes from the caller:
+    # the host holds one directory per co-hosted environment, so there is no
+    # longer a single compute env file that could say which one was meant.
+    label="${LABEL:?LABEL not set — run: compass env deploy <host> --role compute --stop}"
     container="ores-compute-node-${label}"
     echo "=== Stopping compute nodes '$container*' ==="
     export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
@@ -54,6 +52,10 @@ if [[ -n "$PURGE" ]]; then
     certs_volume="ores-nats-client-certs-${label}"
     echo "=== Removing staged certs volume '$certs_volume' ==="
     podman volume rm -f "$certs_volume" >/dev/null 2>&1 || true
+    # The staged client private key goes with it; a redeploy re-scps it.
+    if [[ "$ROLE" == "compute" ]]; then
+        rm -rf "$REMOTE_ROOT/compute/$label/keys" >/dev/null 2>&1 || true
+    fi
 fi
 
 echo "Done."

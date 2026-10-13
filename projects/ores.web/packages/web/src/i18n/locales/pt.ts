@@ -1546,7 +1546,6 @@ const pt: SourceCatalogue = {
         },
     },
     operations: {
-        back: 'Voltar às operações',
         instance: {
             olderBuild: 'versão mais antiga',
             state: {
@@ -1642,7 +1641,6 @@ const pt: SourceCatalogue = {
             title: 'Grelha de cálculo',
             description:
                 'O resumo dos anfitriões e do trabalho da instalação, uma linha por máquina, com o executor que se anuncia por ela.',
-            updated: 'Atualizado às {at}',
             units: {
                 gib: '{value} GiB',
                 mib: '{value} MiB',

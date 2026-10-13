@@ -44,7 +44,6 @@ import {
     GapPanel,
     InstanceStateTag,
     InstanceVersion,
-    OperationsBack,
     SERVICE_RUNNING_WINDOW_MINUTES,
     compareVersions,
     newestVersionOf,
@@ -238,7 +237,6 @@ export function ServicesPage(): ReactNode {
                                 onClick={() => void roster.refetch()}
                                 pending={roster.isFetching}
                             />
-                            <OperationsBack />
                         </div>
                     }
                 />

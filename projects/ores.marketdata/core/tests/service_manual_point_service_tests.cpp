@@ -199,9 +199,9 @@ TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", tags) {
     CHECK_FALSE(
         manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "0.09x")).success);
     CHECK_FALSE(manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "")).success);
-    // The text is stored as stated, so a spelling a decimal reader would not take
-    // is refused and not normalised.
-    for (const auto* spelling : {" 0.09", "0x10", "+0.09", "0.09 ", "inf", "nan"}) {
+    // The text is stored as stated, so a spelling the estate's decimals do not
+    // take is refused and not normalised.
+    for (const auto* spelling : {" 0.09", "0x10", "0.09 ", "inf", "nan"}) {
         CHECK_FALSE(
             manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, spelling)).success);
     }
@@ -215,6 +215,20 @@ TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", tags) {
     CHECK_FALSE(manual_point_service::key(ctx, no_commentary).success);
 
     CHECK(snapshot(h, identity).values == std::vector<std::string>{"0.080"});
+}
+
+TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import(h, "20170910 FX_OPTION/RATE_LNVOL/NZD/MXN/1Y/ATM 0.080\n");
+    const auto identity = fx_option_identity("NZD", "MXN");
+    const auto ctx = owner_context(h, identity);
+
+    // A plus is part of the estate's decimal grammar, so the value is taken;
+    // the text is stored as stated, so the plus survives.
+    CHECK(manual_point_service::key(ctx, key_request(identity, {"1Y", "ATM"}, "+0.09")).success);
+    CHECK(snapshot(h, identity).values == std::vector<std::string>{"+0.09"});
 }
 
 TEST_CASE("clearing_a_node_with_no_manual_point_says_so", tags) {

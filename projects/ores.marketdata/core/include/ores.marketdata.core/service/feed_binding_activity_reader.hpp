@@ -21,11 +21,14 @@
 #define ORES_MARKETDATA_CORE_SERVICE_FEED_BINDING_ACTIVITY_READER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::service {
 
@@ -39,9 +42,10 @@ namespace ores::marketdata::service {
  * last ticked. The reader asks for that one observation for each binding, which the
  * observations_source index serves, and reads no series or axis of its own.
  *
- * A party reads only its own bindings and its own observations, so the answer is the
- * caller's view. A binding whose source has written nothing for the party stays in
- * the answer with no series and no tick, so the screen can say so.
+ * The bindings and the observations are isolated by tenant alone, so the reader states
+ * the caller's party itself: it reads only that party's bindings and that party's
+ * observations. A binding whose source has written nothing for the party stays in the
+ * answer with no series and no tick, so the screen can say so.
  */
 class ORES_MARKETDATA_CORE_EXPORT feed_binding_activity_reader final {
 public:
@@ -49,10 +53,16 @@ public:
      * @brief Reads the activity of each binding the caller can see, in the order of
      * the bindings' source names.
      *
-     * @param ctx Database context, already tenant- and party-scoped by the caller.
-     * @return The activity. It never fails for want of bindings.
+     * @param ctx Database context, with the caller's tenant and party.
+     * @return The activity. It fails only when the context names no party, and an empty
+     * answer is a success.
      */
     static messaging::list_feed_binding_activity_response read(ores::database::context ctx);
+
+    /// The bindings that belong to @p party_id, from the bindings of a whole tenant.
+    static std::vector<domain::feed_binding>
+    bindings_of_party(std::vector<domain::feed_binding> bindings,
+                      const boost::uuids::uuid& party_id);
 
     /**
      * @brief The activity of one binding, from the newest observation its source has

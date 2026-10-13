@@ -56,11 +56,31 @@ feed_binding_activity_reader::activity_of(const std::string& source_name,
     return activity;
 }
 
+std::vector<domain::feed_binding>
+feed_binding_activity_reader::bindings_of_party(std::vector<domain::feed_binding> bindings,
+                                                const boost::uuids::uuid& party_id) {
+    std::erase_if(bindings, [&](const auto& b) { return b.party_id != party_id; });
+    return bindings;
+}
+
 messaging::list_feed_binding_activity_response
 feed_binding_activity_reader::read(ores::database::context ctx) {
     messaging::list_feed_binding_activity_response response;
 
-    auto bindings = repository::feed_binding_repository{}.read_latest(ctx);
+    // The bindings and the observations are isolated by tenant alone, so the caller's
+    // party is stated here. A context that names no party has no bindings of its own.
+    const auto party_id = ctx.party_id();
+    if (!party_id) {
+        response.success = false;
+        response.message = "The request names no party, so it has no feed bindings.";
+        return response;
+    }
+
+    // One read for each binding, which the source index serves. A party holds tens of
+    // bindings, so the round trips stay few; one read for all of them is the change if
+    // that stops being true.
+    auto bindings =
+        bindings_of_party(repository::feed_binding_repository{}.read_latest(ctx), *party_id);
     std::ranges::sort(bindings,
                       [](const auto& a, const auto& b) { return a.source_name < b.source_name; });
 

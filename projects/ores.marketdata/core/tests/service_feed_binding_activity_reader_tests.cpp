@@ -23,14 +23,16 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <vector>
 
 /**
  * @file service_feed_binding_activity_reader_tests.cpp
  * @brief What one binding's activity says, from the newest observation of its source.
  *
  * The read over the bindings and the observations needs a database. These tests cover
- * what it builds from each answer: a source that has written names its series and the
- * time of its newest observation, and a source that has written nothing names neither.
+ * what it builds from each answer: only the caller's party's bindings are kept, a source that has
+ * written names its series and the time of its newest observation, and a source that has written
+ * nothing names neither.
  */
 
 namespace {
@@ -48,6 +50,36 @@ domain::market_observation observation(const std::string& series_id,
     return obs;
 }
 
+
+domain::feed_binding binding(const std::string& party_id, const std::string& source) {
+    domain::feed_binding b;
+    b.party_id = boost::uuids::string_generator{}(party_id);
+    b.source_name = source;
+    return b;
+}
+
+}
+
+TEST_CASE("only the bindings of the caller's party are read from a tenant's bindings", tags) {
+    const std::string mine = "11111111-1111-4111-8111-111111111111";
+    const std::string other = "22222222-2222-4222-8222-222222222222";
+    const auto kept = feed_binding_activity_reader::bindings_of_party(
+        {binding(mine, "synthetic.bloomberg.audusd"),
+         binding(other, "synthetic.bloomberg.eurusd"),
+         binding(mine, "synthetic.bloomberg.nzdusd")},
+        boost::uuids::string_generator{}(mine));
+
+    REQUIRE(kept.size() == 2);
+    CHECK(kept[0].source_name == "synthetic.bloomberg.audusd");
+    CHECK(kept[1].source_name == "synthetic.bloomberg.nzdusd");
+}
+
+TEST_CASE("a party with no bindings of its own reads none", tags) {
+    const auto kept = feed_binding_activity_reader::bindings_of_party(
+        {binding("22222222-2222-4222-8222-222222222222", "synthetic.bloomberg.eurusd")},
+        boost::uuids::string_generator{}("11111111-1111-4111-8111-111111111111"));
+
+    CHECK(kept.empty());
 }
 
 TEST_CASE("a source that has written names its series and its last tick", tags) {

@@ -127,6 +127,7 @@ roles, and the four states.
 | 4 | Read the results of a workunit | =compute.v1.results.list_by_workunit_id= | exists |
 | 5 | Read one record | =compute.v1.batches.get=, =compute.v1.workunits.get=, =compute.v1.results.get= | exists |
 | 5 | Read the node of a result | =compute.v1.hosts.get= | exists |
+| 5 | Read a run's times, sizes and peak memory, and their aggregates per workunit and batch | (no field on the result; the submit message does not carry them) | missing |
 | 6 | Download an input or an output | (no route serves the stored file) | missing |
 | 1 to 5 | Reach the reads from the browser | (no BFF route for jobs) | missing |
 
@@ -147,16 +148,31 @@ the Member role need the same check as the grid sample read did.
    result to its batch, would answer it. Until then the person opens batches
    and reads each result's =outcome=. The screen shows no per-batch job or
    failure count, because the models hold none.
-3. *No download route.* =input_uri= and =output_uri= name stored objects. The
+3. *No run statistics on the result.* The result holds no start time, no end
+   time, no input or output size and no memory figure. The wrapper measures the
+   run's duration and the bytes it fetched and uploaded, but it only sums them
+   into =node_sample= per node and interval, so a node's mean is stored and a
+   job's own value is not. The engine reports its peak memory use in its own log
+   (=peakMemoryUsage (bytes) | memoryUsage (bytes)=), which the wrapper
+   publishes as a log line keyed by the result id and the platform does not parse
+   into a field. The host row holds its total =ram_mb= only. Per-run fields,
+   written by the wrapper in the submit message, are the missing piece:
+   =started_at=, =finished_at=, =input_bytes=, =output_bytes= and
+   =peak_memory_bytes=. A workunit and a batch show the aggregate of the results
+   below them: the earliest start, the latest finish, the sums of the bytes and
+   the largest peak memory. The aggregate is a grouped read, not a stored field.
+   The prototype draws all three levels in a dashed block labelled "proposed,
+   not stored yet".
+4. *No download route.* =input_uri= and =output_uri= name stored objects. The
    browser has no route to stream them, and the route must check that the
    caller may read the owning record first.
-4. *No BFF route.* The web client reads through hand-written BFF routes, as
+5. *No BFF route.* The web client reads through hand-written BFF routes, as
    the grid series does. A route for the paged tree is needed.
-5. *Node names for tenants.* A result names its host. A tenant administrator
+6. *Node names for tenants.* A result names its host. A tenant administrator
    or a party member should probably not see the installation's node names.
    The owner must decide. Until then, the prototype shows the node to the
    operator only.
-6. *A run in flight has no node.* As in Follow a job, the node is bound when
+7. *A run in flight has no node.* As in Follow a job, the node is bound when
    the run ends. The details say "not yet known".
 
 * Related journeys

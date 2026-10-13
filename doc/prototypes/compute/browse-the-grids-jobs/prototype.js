@@ -108,6 +108,13 @@
             outcome: inFlight ? 0 : wu.failing ? 3 : 1,
             output_uri: inFlight || wu.failing ? null : STORAGE + 'output/' + rid + '.tar.gz',
             error_message: wu.failing ? 'engine exited with code 3: market data snapshot not found' : null,
+            stats: inFlight ? null : {
+                started_at: '2026-10-13 02:27:0' + (wu.id.charCodeAt(6) % 9),
+                finished_at: '2026-10-13 02:27:1' + (wu.id.charCodeAt(7) % 9),
+                input_bytes: 1048576 * (4 + wu.id.charCodeAt(2) % 40),
+                output_bytes: wu.failing ? 0 : 1048576 * (1 + wu.id.charCodeAt(4) % 12),
+                peak_memory_bytes: 1048576 * (300 + wu.id.charCodeAt(8) * 7)
+            },
             received_at: inFlight ? null : '2026-10-13 02:' + pad(27 + (wu.id.charCodeAt(4) % 3)) + ':' + pad(10 + (wu.id.charCodeAt(3) % 49)),
             modified_by: SERVICE,
             recorded_at: b.recorded_at
@@ -247,6 +254,40 @@
         return null;
     }
 
+    function mib(n) { return (n / 1048576).toFixed(n >= 1073741824 ? 0 : 1) + ' MiB'; }
+
+    /* Not stored today: the wrapper measures the run's duration and the bytes
+     * it moved but only sums them per node; the engine's peak memory is a line
+     * in its log. The block is drawn to judge the layout, and it says so.
+     * A result shows its own figures. A workunit and a batch aggregate those
+     * of the results below them: the earliest start, the latest finish, the
+     * sums of the bytes, and the largest peak memory of any run. */
+    function runStats(label, results) {
+        var box = el('div', 'proposed');
+        box.appendChild(el('div', 'kicker', 'Run statistics \u00b7 proposed, not stored yet'));
+        var dl = el('dl');
+        function line(k, v) { dl.appendChild(el('dt', '', k)); dl.appendChild(el('dd', '', v)); }
+        var done = results.filter(function (r) { return r.stats; });
+        var running = results.length - done.length;
+        if (!done.length) {
+            line('Started At', 'not yet known');
+            line('Finished At', 'not yet known');
+        } else {
+            var started = done.map(function (r) { return r.stats.started_at; }).sort()[0];
+            var finished = done.map(function (r) { return r.stats.finished_at; }).sort().slice(-1)[0];
+            var sum = function (k) { return done.reduce(function (t, r) { return t + r.stats[k]; }, 0); };
+            var peak = Math.max.apply(null, done.map(function (r) { return r.stats.peak_memory_bytes; }));
+            line('Started At', started);
+            line('Finished At', running ? 'still running' : finished);
+            line('Input Bytes', mib(sum('input_bytes')));
+            line('Output Bytes', sum('output_bytes') ? mib(sum('output_bytes')) : 'none');
+            line('Peak Memory', mib(peak) + (results.length > 1 ? ' (largest run)' : ''));
+        }
+        box.appendChild(dl);
+        if (label) { box.appendChild(el('p', 'hint', label)); }
+        return box;
+    }
+
     function details() {
         var panel = el('div', 'panel detail-panel');
         var hit = ui.selected && find(ui.selected);
@@ -317,6 +358,13 @@
             audit();
         }
         d.appendChild(dl);
+        if (hit.kind === 'result') { d.appendChild(runStats('', [hit.res])); }
+        else if (hit.kind === 'workunit') { d.appendChild(runStats('Aggregated from the results of this workunit.', resultsOf(hit.b, hit.wu))); }
+        else {
+            var all = [];
+            workunitsOf(hit.b).forEach(function (w) { all = all.concat(resultsOf(hit.b, w)); });
+            d.appendChild(runStats('Aggregated from the results of its ' + workunitsOf(hit.b).length + ' workunits.', all));
+        }
         panel.appendChild(d);
         return panel;
     }

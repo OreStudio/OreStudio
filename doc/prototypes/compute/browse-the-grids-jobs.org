@@ -56,6 +56,14 @@ stored =server_state= and =outcome= (all Done and Success) come from the
 development database as it stood on 2026-10-13. The ids, the =app_version_id=,
 the failed and in-flight results and the batches in =processing= are invented.
 
+The dashed /Run statistics/ block is the one exception to the fields-only rule,
+and it says so on the screen. A result shows its start and end time, its input
+and output bytes and its peak memory. A workunit and a batch show the aggregate
+of the results below them (earliest start, latest finish, summed bytes, largest
+peak memory). None of these is stored: the wrapper measures the duration and the
+bytes and sums them per node, and the engine's peak memory is a log line. The
+journey lists the fields as a gap.
+
 No server behind the screen exists yet for the filters, the failed-result read
 or the download route. The journey lists them as gaps.
 

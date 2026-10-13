@@ -47,6 +47,7 @@ set(files
     "service_oresmd_uri_service_tests.cpp"
     "service_series_evolution_reader_tests.cpp"
     "service_series_identity_lister_tests.cpp"
+    "service_series_shape_tests.cpp"
     "service_series_slice_reader_tests.cpp"
     "service_series_snapshot_reader_tests.cpp"
 )

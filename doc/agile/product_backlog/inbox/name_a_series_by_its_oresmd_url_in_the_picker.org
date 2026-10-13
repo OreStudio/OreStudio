@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 37370E1F-099D-41C1-A659-AD6ED7D4B872
+:END:
+#+title: The evolution screen picker and the object form name a serie…
+#+description: The evolution screen picker and the object form name a series by four words and its identity fields, such as fx / EUR / fx_option / rate_lnvol · ccy=CHF. The market data URL, oresmd://fx/EUR?type=quote&instrument=fx_option..., is the one name the rest of the product uses, and the screen already opens a series from an oresmd URL in the address. Show the URL as the series name, with the words as a secondary label, so a person can copy it, paste it into a link and read the same name in the shell and the logs. The server already composes the URL from a typed identity (compose_oresmd_uri), so the screen needs no codec of its own. Open questions: whether a long URL fits a select, and whether the words stay as the visible label with the URL on copy.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

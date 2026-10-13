@@ -94,6 +94,23 @@ private:
 };
 
 /**
+ * @brief The values of a term axis in order of length.
+ *
+ * The shape stores an axis value in the order its source stated it, and a source
+ * lists tenors in any order. A term axis is read in the order a person reads
+ * tenors, so every read draws 1W, 1M, 2M, 3M, 6M, 9M, 1Y, 18M, 2Y whatever order
+ * the file gave.
+ *
+ * The order is by kind and then by length. An FX overnight tenor (ON, TN, SN)
+ * comes first, then a period, then a date, then a futures continuation. A period
+ * is compared by its length in days with a month counted as 30 and a year as 365,
+ * so 18M precedes 1Y6M by a few days and 12M precedes 1Y. Values of the same rank
+ * keep their stated order. A value that is not a term follows those that are, in
+ * its stated order.
+ */
+ORES_MARKETDATA_CORE_EXPORT std::vector<std::string> in_term_order(std::vector<std::string> stated);
+
+/**
  * @brief Reads the declared shape of @p series_id from the shape tables.
  *
  * @param ctx Database context, already tenant-scoped by the caller.

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: E2CC08DB-5110-40A6-BA7B-97B495A1211B
+:END:
+#+title: Task: Sort term axes when a shape is read
+#+description: Order the term values of an axis by duration in read_series_shape, with tests for sorted terms, an unreadable term and a second source.
+#+type: task
+#+level: s1
+#+filetags: :order_term_axes_by_duration:sprint_27:v0:
+#+owner: marco
+#+branch: feature/order-term-axes-by-duration
+#+pr: 3229
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4D584FA-E8F6-4945-8B5A-DCA2A4304EBD][Order the term axes of a shape by duration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A shape whose term axis was stored out of order is read in order of duration, so every read shows the nodes in that order.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E4D584FA-E8F6-4945-8B5A-DCA2A4304EBD][Order the term axes of a shape by duration]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- Terms stored as 2M, 10Y, 30Y, 5Y, 3M are read as 2M, 3M, 5Y, 10Y, 30Y.
+- A term the parser cannot read keeps its stated order after the terms it can read.
+- A second source that adds terms leaves the axis in order of duration.
+- An axis that is not a term keeps its stated order.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3229][#3229]] | [marketdata] Read a term axis in order of length |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=read_series_shape= now returns a term axis in order of length through the new =in_term_order=. The snapshot, slice and evolution reads take their nodes from that one function, so none of them changed. The shape tables keep the order the source stated.
+
+Acceptance met:
+- Terms stored as 2M, 10Y, 30Y, 5Y, 3M are read as 2M, 3M, 5Y, 10Y, 30Y. A unit test and an import-to-snapshot test cover it.
+- A value that is no term follows the terms in its stated order. Tested.
+- A second source needs no work, because the sort runs on every read.
+- An axis that is not a term is not touched. The code checks the axis kind. No test covers this case.
+
+Checked live: the EUR/CHF surface, stored in the order of the demo file, is read as 1W, 1M, 2M, 3M, 6M, 9M, 1Y, 18M, 2Y, 3Y, 4Y, 5Y, 7Y, 10Y, 30Y, with no re-import. The marketdata core suite passes, with six new cases.
+
+Decision: the sort is at read time and not at declare time. See the story.

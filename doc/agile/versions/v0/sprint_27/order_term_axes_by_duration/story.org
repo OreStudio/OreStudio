@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: E4D584FA-E8F6-4945-8B5A-DCA2A4304EBD
+:END:
+#+title: Story: Order the term axes of a shape by duration
+#+description: A composite series stores each axis value in the order its first source states it, so a surface imported from an unordered file shows its tenors out of order on every screen. Order a term axis by duration when the shape is read.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who reads a surface or a curve sees each term axis in order of length: 1W, 1M, 2M, 3M, 6M, 9M, 1Y, 18M, 2Y. The order does not depend on the order of the lines in the file that declared the shape.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- A shape whose term axis was stored out of order is read in order of duration, so the snapshot, slice and evolution reads return the nodes in that order without any change of their own.
+- A term the parser cannot read keeps its stated order and follows the terms it can read.
+- A second source that adds terms leaves the axis in order of duration.
+- A shape stored before this change is read in order too, with no backfill.
+- An axis that is not a term keeps the order its points state.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E2CC08DB-5110-40A6-BA7B-97B495A1211B][Sort term axes when a shape is read]] | DONE | 2026-10-13 | 2026-10-13 | Order the term values of an axis by duration in read_series_shape, with tests for sorted terms, an unreadable term and a second source. |
+
+* Decisions
+
+- The sort happens when the shape is read, in =read_series_shape=, and not when it is declared. Every read of the order goes through that one function. A sort at declare time would leave shapes already stored in the wrong order and would renumber stored values when a second source added a term. The stored order stays the order the source stated, which keeps the history honest.
+- The order is by kind, then by length. FX overnight tenors come first, then periods, then dates, then futures continuations. A period counts a month as 30 days and a year as 365. Values that are not terms follow the terms, in their stated order.
+
+* Out of scope
+
+- A sort in the screens. The server sorts once, so every read shows the same order.
+- A change to the stored order. The shape tables keep the order the source stated.
+
+* Result
+
+A term axis is now read in order of length, on every read, for shapes stored before this change as well as new ones. The screens needed no change. The decision to sort at read time and not at declare time is in the decisions. The marketdata core suite passes, and the order was checked on the live stack.

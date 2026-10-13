@@ -63,7 +63,9 @@ export interface ReportInstanceLookup {
 }
 
 export interface ReportInstancesFilter {
+    kind: string | null;
     id_one_of: string[] | null;
+    kind_one_of: string[] | null;
 }
 
 export interface ReportInstanceEvent {

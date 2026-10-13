@@ -235,6 +235,13 @@ messaging::{{response}}
     }
 {{/domain_entity.has_search}}
 {{/has_filter}}
+{{#domain_entity.list_default_filter}}
+    // A list narrows to {{column}} unless the caller states one, so the default view is
+    // the common case and the others are asked for by name.
+    auto filter = request.filter.value_or({{domain_entity.filter_type}}{});
+    if (!filter.{{column}})
+        filter.{{column}} = {{{expression}}};
+{{/domain_entity.list_default_filter}}
 {{#domain_entity.has_as_of_lookup}}
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
@@ -249,14 +256,14 @@ messaging::{{response}}
         }
     }
     response.{{entity_plural_short}} = repo_.read_latest(
-        ctx_, request.offset, request.limit, {{#has_order}}request.order{{/has_order}}{{^has_order}}{}{{/has_order}}{{#domain_entity.has_filter_record}}, {{#has_filter}}request.filter{{/has_filter}}{{^has_filter}}std::nullopt{{/has_filter}}{{/domain_entity.has_filter_record}}, as_of);
+        ctx_, request.offset, request.limit, {{#has_order}}request.order{{/has_order}}{{^has_order}}{}{{/has_order}}{{#domain_entity.has_filter_record}}, {{#has_filter}}{{#domain_entity.list_default_filter}}filter{{/domain_entity.list_default_filter}}{{^domain_entity.list_default_filter}}request.filter{{/domain_entity.list_default_filter}}{{/has_filter}}{{^has_filter}}std::nullopt{{/has_filter}}{{/domain_entity.has_filter_record}}, as_of);
     response.total = repo_.get_total_{{entity_singular_short}}_count(
-        ctx_{{#domain_entity.has_filter_record}}, {{#has_filter}}request.filter{{/has_filter}}{{^has_filter}}std::nullopt{{/has_filter}}{{/domain_entity.has_filter_record}}, as_of);
+        ctx_{{#domain_entity.has_filter_record}}, {{#has_filter}}{{#domain_entity.list_default_filter}}filter{{/domain_entity.list_default_filter}}{{^domain_entity.list_default_filter}}request.filter{{/domain_entity.list_default_filter}}{{/has_filter}}{{^has_filter}}std::nullopt{{/has_filter}}{{/domain_entity.has_filter_record}}, as_of);
 {{/domain_entity.has_as_of_lookup}}
 {{^domain_entity.has_as_of_lookup}}
     response.{{entity_plural_short}} = repo_.read_latest(
-        ctx_, request.offset, request.limit{{#has_order}}, request.order{{/has_order}}{{#has_filter}}{{^has_order}}, {}{{/has_order}}, request.filter{{/has_filter}});
-    response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_{{#has_filter}}, request.filter{{/has_filter}});
+        ctx_, request.offset, request.limit{{#has_order}}, request.order{{/has_order}}{{#has_filter}}{{^has_order}}, {}{{/has_order}}, {{#domain_entity.list_default_filter}}filter{{/domain_entity.list_default_filter}}{{^domain_entity.list_default_filter}}request.filter{{/domain_entity.list_default_filter}}{{/has_filter}});
+    response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_{{#has_filter}}{{#domain_entity.list_default_filter}}, filter{{/domain_entity.list_default_filter}}{{^domain_entity.list_default_filter}}, request.filter{{/domain_entity.list_default_filter}}{{/has_filter}});
 {{/domain_entity.has_as_of_lookup}}
     return response;
 }

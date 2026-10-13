@@ -132,6 +132,17 @@ messaging::list_report_instances_response report_instance_service::list_report_i
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->kind_one_of &&
+        request.filter->kind_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "kind_one_of", .limit = "1000"});
+        return response;
+    }
+    // A list narrows to kind unless the caller states one, so the default view is
+    // the common case and the others are asked for by name.
+    auto filter = request.filter.value_or(messaging::report_instances_filter{});
+    if (!filter.kind)
+        filter.kind = std::string("production");
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -143,9 +154,9 @@ messaging::list_report_instances_response report_instance_service::list_report_i
             return response;
         }
     }
-    response.instances = repo_.read_latest(
-        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
-    response.total = repo_.get_total_instance_count(ctx_, request.filter, as_of);
+    response.instances =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, filter, as_of);
+    response.total = repo_.get_total_instance_count(ctx_, filter, as_of);
     return response;
 }
 

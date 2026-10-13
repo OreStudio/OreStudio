@@ -70,7 +70,9 @@ struct report_instance_lookup {
 };
 
 struct report_instances_filter {
+    std::optional<std::string> kind;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> kind_one_of;
 };
 
 struct report_instance_event {

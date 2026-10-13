@@ -102,14 +102,12 @@ The order the kind appears in a list.
 
 #+begin_src cpp :name includes
 #include <string>
-#include <optional>
 #+end_src
 
 ** Entity includes
 
 #+begin_src cpp :name includes
 #include <string>
-#include <optional>
 #include "sqlgen/Timestamp.hpp"
 #+end_src
 

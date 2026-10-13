@@ -87,8 +87,8 @@ struct report_instance final {
      * @brief What this instance does: production prepares the input, computes it on the grid and
      * records the results, and package prepares the input and stops, so that its packages can be
      * inspected and run locally. Refers to ores_reporting_report_instance_kinds_tbl. The scheduler
-     * creates production instances only, and the concurrency policy of the definition counts them
-     * only.
+     * creates production instances only, the concurrency policy of the definition counts them only,
+     * and a list shows them unless the caller asks for another kind.
      */
     std::string kind = "production";
 

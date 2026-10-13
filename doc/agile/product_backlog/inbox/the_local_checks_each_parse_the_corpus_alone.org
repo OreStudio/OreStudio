@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: AA22CAD2-785D-44FC-9DAD-239A842C0ABD
+:END:
+#+title: The local checks each parse the model corpus in their own process
+#+description: About fifteen checks re-read the model and org corpus independently, and codegen-tests runs 1425 pytest cases single-threaded with no xdist in its venv.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:checks:performance:velocity:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give the checks one parse of the model and org corpus to share, and run the
+codegen suite in parallel.
+
+* Why
+
+About fifteen checks re-read the same corpus in their own process —
+=model-drift=, =model-sql-types=, =cmake-sources=, =physical-inventory=,
+=recipe-inventories=, =protocol-twins=, =subject-conformance=,
+=handler-permissions=, =generated-column-refs= and the rest — and several
+sit at 10-23s each (codegen-tests 44.1s, sql-hygiene 23.1s, exported-types
+19.8s, paste-blocks 14.8s, enum-attributes 10.9s). =codegen-tests= runs
+1425 pytest cases single-threaded, and =pytest-xdist= is not installed in
+=projects/ores.codegen/venv=. A parse cache keyed on file content, or one
+importable shared module, removes the repeated cost; scoping =sql-hygiene=
+and =tangle-shell= to the changed files removes most of theirs.
+
+* References
+
+- =build/scripts/local_checks.py=, the Checks phase.
+- =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q=.
+
+* See also
+
+- [[id:C7A3019A-CCFF-4985-AB7A-71FFF6303499][The drift checks render every component on every branch]]
+- [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]]

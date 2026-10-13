@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 24BE9AD3-750C-4A98-B229-CDDA2DD4FA15
+:END:
+#+title: The heavy checks run their suites serially and recreate the database unconditionally
+#+description: ctest and pgtap set no parallel level, and db recreate rebuilds the schema even when the fingerprint already matches the tree, on a path whose build is already about ninety minutes.
+#+type: capture
+#+level: cross
+#+filetags: :sql:checks:performance:velocity:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Parallelise the heavy checks and skip the work they do not need: set a test
+parallel level for =ctest=, run the pgTAP suites concurrently, and let
+=db recreate= no-op when the schema fingerprint already matches the tree.
+
+* Why
+
+The heavy tier is the gate's ceiling. =build= is about ninety minutes on
+one workstation, and =db recreate=, =ctest= and =pgtap= follow it on every
+run that selects the =sql=, =cpp= or =services= class. =ctest= and =pgtap=
+declare no parallel level, and =db recreate= rebuilds the schema
+unconditionally even though =context_factory= already computes a
+fingerprint saying the database matches the code.
+
+* References
+
+- =build/scripts/local_checks.py= ids =build=, =db=, =ctest=, =pgtap=.
+- =CTEST_PARALLEL_LEVEL= in [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
+- [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][Execution model]] — who runs the heavy tier.
+
+* See also
+
+- [[id:D277D1F9-AD43-4206-83FC-0CF0EB169BD1][Make the local checks faster]]

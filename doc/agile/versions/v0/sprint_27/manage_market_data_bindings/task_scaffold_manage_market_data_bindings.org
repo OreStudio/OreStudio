@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F33B55D5-3FC2-43ED-BD5E-194702512749][Manage market data bindings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -83,3 +83,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story Manage market data bindings is scaffolded in Sprint 27 with eleven further tasks: the journey, the prototype, the screen, and the snags that the oresmd link story left. Marco asked for the story, for a prototype in it, and for both a synthetic and a real data scenario, with real data shown and not supported, on 2026-10-13.
+

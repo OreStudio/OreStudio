@@ -231,6 +231,7 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         container.party_id = test_party;
         container.scope = scope::party;
         container.binding_mode = binding_mode::bound;
+        container.provider_code = "bloomberg";
         container.enabled = true;
         container.name = name;
         container.modified_by = db_user;

@@ -163,6 +163,13 @@ struct fx_spot_generation_config final {
     std::optional<boost::uuids::uuid> folder_id;
 
     /**
+     * @brief The asset class the feed belongs to (soft FK to asset_class_code.code): Every FX spot
+     * feed is fx. A screen filters the feeds by it. The catalogue
+     * ores.refdata.asset_class_catalogue declares the codes.
+     */
+    std::string asset_class_code = "fx";
+
+    /**
      * @brief Username of the person who last modified this FX spot generation config.
      */
     std::string modified_by;

@@ -48,7 +48,7 @@ create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     "description" text not null,
     "enabled" boolean not null,
     "dataset_id" uuid null,
-    "provider_code" text null,
+    "provider_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -87,10 +87,8 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate provider_code (optional field -- skip validation when null)
-    if NEW.provider_code is not null then
-        NEW.provider_code := ores_synthetic_validate_market_data_provider_fn(NEW.tenant_id, NEW.provider_code);
-    end if;
+    -- Validate provider_code
+    NEW.provider_code := ores_synthetic_validate_market_data_provider_fn(NEW.tenant_id, NEW.provider_code);
 
     -- At most one enabled bound config per *wider-scope-vs-narrower-scope*
     -- pair. Reject-at-activation: ambiguity must never reach a consumer,

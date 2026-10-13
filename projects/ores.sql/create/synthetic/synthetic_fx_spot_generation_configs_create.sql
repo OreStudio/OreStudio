@@ -50,6 +50,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "vintage_source" text not null,
     "vintage_date" text not null,
     "folder_id" uuid null,
+    "asset_class_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -125,6 +126,9 @@ begin
                 using errcode = '23503';
         end if;
     end if;
+
+    -- Validate asset_class_code
+    NEW.asset_class_code := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

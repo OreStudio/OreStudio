@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 60864476-FE24-4D5F-B9F7-044C97746D23
+:END:
+#+title: Task: Give every feed a provider and an asset class, and start or stop a selection on the server
+#+description: The server side of the single Synthetic screen: providers, asset classes, filters and selection.
+#+type: task
+#+level: s1
+#+filetags: :organise-feeds-by-provider-and-scope:sprint_27:v0:
+#+owner: marco
+#+branch: feature/synthetic-screen
+#+pr: 3239
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every feed has a provider and an asset class. The server filters the feed table by state, asset class and provider, and starts or stops the feeds a filter or a pick names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The ORE examples are the provider ORE, and no collection is without a provider
+- Both feed tables carry an asset class code, checked against the asset class table
+- The feed page read returns the provider, asset class, underlying, engine, frequency and run state
+- A start or stop request names a filter and ids, and the service resolves the feeds
+
+* Plan
+
+The shape is the [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
+
+- A collection names its provider, and the column is required. The ORE examples are a provider of their own, ORE, of kind reference, and the Generic provider is gone. Each provider's description says what it simulates.
+- Both feed tables carry =asset_class_code=, checked against the asset class table: =fx= for an FX spot, =interest_rates= for an IR curve.
+- One filter value, =feed_filter=, builds the query that pages the feed table and the query that resolves a selection, so a start applies to what the table shows. A pick names its ids; a filter names the folder (with the folders under it), provider, asset class, state and words, less the ids left out. Every part is checked or escaped.
+- The page read returns the provider, asset class, underlying, engine, frequency and run state of each feed. The folder read counts the enabled auto-start feeds that are not running.
+- =start_selected_feeds= and =stop_selected_feeds= use the same start and stop as the folder verbs, now one function.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The ORE reference set and the Bloomberg FOMC curve no longer start on their own. Each shares a series with a feed that does, and one series has one publisher, so they made the count of feeds that should run never reach zero.
+- A feed that is added in the tree is saved outside every folder, as it was in the lists. It shows under All providers and under its provider, not under a folder.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3239][#3239]] | [synthetic,web] Make Synthetic one screen with a dashboard and a feed tree |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+Every collection names a provider and every feed has an asset class. The ORE examples are the provider ORE. The feed table read pages and filters on the server by state, provider, asset class, folder and words, and returns what each row needs. One request starts or stops the feeds a filter or a list of ids names.
+
+Checked: the synthetic api suite (77 cases, 12 of them new for the filter), the synthetic core suite (43), the service suite (58, two new for the selection verbs), the shell and DQ suites, four pgTAP tests (publish with the asset class, scope, visibility, providers), and, as the Acme tenant administrator on a fresh database, the reads by provider, asset class, state and words, a start of the feeds that should run (54 started, none skipped, none left), a stop of a pick and a stop of a filter less one, and a refusal of a bad id and a bad state.
+
+Not met: nothing in the acceptance.

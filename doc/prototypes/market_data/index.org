@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:index:ui:market_data:
 #+created: 2026-10-08
-#+updated: 2026-10-09
+#+updated: 2026-10-13
 
 * Summary
 
@@ -44,7 +44,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | [[file:synthetic-market-simulator.org][Market simulator]] | Authoring synthetic feeds is one composite screen: a tree of the configured feeds, a summary of the selection, and the live chart it produces. Starting a collection is one folder-scoped request, and a node is running, stopped or partial. | [[file:synthetic-market-simulator/][prototype]] | none |
 | [[file:author-an-fx-price-feed.org][Author an FX price feed]] | An FX feed is a process plus a tick clock plus provenance, and the process is read twice before it is saved: the return distribution and the sample paths it implies. | [[file:author-an-fx-price-feed/][prototype]] | [[file:author-an-fx-price-feed/review/][Gemini review]] |
 | [[file:author-an-ir-curve-feed.org][Author an IR curve feed]] | An IR curve feed is a short-rate model, its parameters and the tenor ladder it is bootstrapped from; the curve shape and the sample paths say whether the choice is sane. | [[file:author-an-ir-curve-feed/][prototype]] | none |
-| [[file:browse-the-feed-tree.org][Browse the feed tree]] | Synthetic is a folder under Market data: an overview by provider and kind, a tree to the feeds, and a feed page whose breadcrumb returns to the tree. | [[file:browse-the-feed-tree/][prototype]] | none |
+| [[file:browse-the-feed-tree.org][Browse the feed tree]] | Synthetic is one screen with a Dashboard and a Feed tree: providers and what each simulates, the feeds that should run and do not, and a paged table whose picked rows are started or stopped by one request. | [[file:browse-the-feed-tree/][prototype]] | none |
 | [[file:manage-synthetic-collections.org][Manage synthetic collections]] | A collection is the unit a person starts and stops, so it must show what it owns and where it came from before it is run. | [[file:manage-synthetic-collections/][prototype]] | none |
 | [[file:manage-market-data-bindings.org][Manage market data bindings]] | The bindings screen follows the record screen standard and invents no layout; it argues what the standard leaves open, such as where the screen lives, whether the source name can change, and who may edit and delete. Real feeds are shown read only. | [[file:manage-market-data-bindings/][prototype]] | none |
 | [[file:manage-gmm-components.org][Manage GMM components]] | A mixture is browsed across every feed at once, and the weights are normalised on save, so the screen must show the raw sum as well as the normalised weights. | [[file:manage-gmm-components/][prototype]] | none |

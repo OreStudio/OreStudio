@@ -55,6 +55,7 @@ struct fx_spot_generation_config_write {
     std::string vintage_source;
     std::string vintage_date;
     std::optional<boost::uuids::uuid> folder_id;
+    std::string asset_class_code;
 };
 
 struct fx_spot_generation_config_change {

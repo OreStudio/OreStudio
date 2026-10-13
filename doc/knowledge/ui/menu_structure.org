@@ -178,7 +178,7 @@ The test for a screen is one question: which topic would a person look in?
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
 | Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
-| Market data | The prices and curves the platform receives or generates: the Synthetic folder (Feed overview, Feed tree, FX price feeds, IR curve feeds), the Bindings, and the curve evolution | Any one of those screens |
+| Market data | The prices and curves the platform receives or generates: the Synthetic screen (Dashboard and Feed tree), the Bindings, and the curve evolution | Any one of those screens |
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
@@ -199,33 +199,29 @@ for a person who holds the read of the deployment (see [[*The deployment read][T
 Market data is its own area. It holds data that changes by the minute: the feeds
 that generate prices and the curves built from them. Reference data is a list
 that changes by the month, and a person who looks for a curve does not look in
-it. It holds Watch a curve evolve and the Synthetic folder.
+it. It holds Watch a curve evolve and Synthetic.
 
-The Synthetic folder holds the feeds the platform generates rather than
-receives, and the screens that run them:
+Synthetic is one screen for the feeds the platform generates rather than receives.
+Everything on it is synthetic, so no label says so; real market data will have its own
+card in this area. The screen has two tabs:
 
-| Card | What it opens |
-|------+---------------|
-| Feed overview | The dashboard: the feeds by scope, provider and feed kind, with the counts, the running roll-up, and start and stop of a provider or a kind. It never lists a feed. |
-| Feed tree | Every feed by scope, provider and kind, start and stop at any folder, and each feed, which opens the feed's page. |
-| FX price feeds | The list of the FX spot feeds and each feed's page. |
-| IR curve feeds | The list of the IR curve feeds and each feed's page. |
+| Tab | What it shows |
+|-----+---------------|
+| Dashboard | The providers, what each one simulates, what runs, and one banner that counts the feeds that should run and do not. A provider can be started or stopped as a whole. |
+| Feed tree | The providers and their folders beside a paged table of feeds, filtered by state, asset class and words. A person picks rows, or every row the filter matches, and starts or stops the pick with one button. A row opens the feed's own page. |
 
-A feed's page is the record page of FX price feeds or IR curve feeds, but its
-breadcrumb runs through the feed tree, not through its list: Home, Market data,
-Synthetic, Feed tree, the folders down to the feed's kind, then the feed. Each
-folder on it opens the feed tree with that folder chosen. The trail is the same
-whichever screen opened the feed, so the page keeps one trail. The lists keep
-their own trail, Home, Market data, Synthetic, then the list.
+A feed's page is the record page of the feed, and its breadcrumb runs through the
+feed tree: Home, Market data, Synthetic, Feed tree, the folders down to the feed's
+asset class, then the feed. Each folder on it opens the feed tree with that folder
+chosen. The FX and IR lists are gone; the feed table lists both kinds.
 
-Bindings is a card of Market data beside the Synthetic folder, not in it. A binding
+Bindings is a card of Market data beside Synthetic. A binding
 is a party's choice to consume one producer source, and it covers a vendor's source as well as a
-synthetic one, so it is not one of the feeds the folder holds. Its list is the record
+synthetic one, so it is not one of the feeds Synthetic holds. Its list is the record
 screen of the Record screen standard, and its trail is Home, Market data, Bindings,
 then the binding.
 
-Each card is drawn for a person who holds the read of its screen, and the folder
-when they hold the read of one of them.
+Each card is drawn for a person who holds the read of its screen.
 
 *** Reference data
 
@@ -292,9 +288,8 @@ the first step of every trail.
 | Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
-| FX price feeds, Watch a curve evolve | Market data | A feed generates the prices that market data holds, and a curve is one of them |
+| Synthetic, Watch a curve evolve | Market data | A feed generates the prices that market data holds, and a curve is one of them |
 | Bindings | Market data | A binding says which producers a party consumes, so it belongs with the data it carries and not with the feeds that produce it |
-| Feed overview, Feed tree, FX price feeds, IR curve feeds | Market data, the Synthetic folder | They are the feeds the platform generates and the screens that run them |
 | Trades, Book a trade, Import a portfolio from ORE, Export a portfolio to ORE | Trades | A trade is held by the tenant and is not a shared list |
 | Structures and packages, Group trades | Trades | A structure is the tree of a deal made of trades |
 | Tenants | Tenants | The roster of the installation |
@@ -329,16 +324,10 @@ the same thing. A screen has one address.
 | Structures and packages | =/trades/structures= |
 | A structure's or package's page | =/trades/structures/:id= |
 | Group trades | =/trades/structures/new= |
-| Synthetic | =/market-data/synthetic= |
-| Feed overview | =/market-data/synthetic/overview= |
-| Feed tree | =/market-data/synthetic/tree= |
-| FX price feeds | =/market-data/synthetic/fx-feeds= |
-| An FX price feed's page | =/market-data/synthetic/fx-feeds/:id= |
-| IR curve feeds | =/market-data/synthetic/ir-feeds= |
-| An IR curve feed's page | =/market-data/synthetic/ir-feeds/:id= |
-
-The feed addresses =/market-data/fx-feeds= and =/market-data/ir-feeds=, with
-their pages, redirect to the Synthetic ones when the folder is built.
+| Synthetic, the Dashboard tab | =/market-data/synthetic= |
+| Synthetic, the Feed tree tab | =/market-data/synthetic?tab=tree= |
+| An FX price feed's page | =/market-data/synthetic/fx/:id= |
+| An IR curve feed's page | =/market-data/synthetic/ir/:id= |
 
 The earlier addresses (=/parties=, =/people=, =/hierarchy=, =/staff=, =/roles=,
 =/rescue=, =/audit=, =/classifications=, =/reporting-lines=) redirect to the new
@@ -363,11 +352,9 @@ Operations. They are drawn, and the server serves them, for a person who holds
 
 ** How today's menu differs
 
-The menu, the cards, the addresses and the breadcrumbs follow this page. The Synthetic
-folder holds the Feed overview, the Feed tree, FX price feeds and IR curve feeds at the
-addresses above, and the earlier addresses redirect to them. A feed's page has the trail
-Home, Market data, Synthetic, Feed tree, the folders down to the feed, then the feed; a
-feed that sits in no folder keeps the trail of its list.
+The menu, the cards, the addresses and the breadcrumbs follow this page. Synthetic is
+one screen with a Dashboard and a Feed tree at the addresses above. A feed's page has the
+trail Home, Market data, Synthetic, Feed tree, the folders down to the feed, then the feed.
 
 ** Not built yet
 
@@ -378,10 +365,10 @@ and it is drawn when its first screen exists and a person holds its read.
 
 Market data has no screen for curve surfaces or for feeds of other kinds yet.
 They are added to the Market data area when they have screens; a feed of a new
-kind joins the Synthetic folder.
+kind joins the Feed tree.
 
-The Synthetic folder, the Feed overview and the Feed tree are designed in the
-[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] and built by the feed browser tasks of
+The Synthetic screen, with its Dashboard and its Feed tree, is designed in the
+[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] and built by the tasks of
 [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]].
 
 ** Changing the menu

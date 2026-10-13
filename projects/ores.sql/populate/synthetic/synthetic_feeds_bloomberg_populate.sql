@@ -271,8 +271,9 @@ begin
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Bloomberg IR Curve: USD/USD-SOFR-FOMC',
         'Simulated Bloomberg FOMC-dated short end of USD-SOFR: the meeting-dated pillars 1F to 8F '
-        || 'and the 1Y split tenor, one series per pillar, with the main USD curve''s calibration.',
-        true, true, 'USD', 'sofr', 'FOMC', 'COX_INGERSOLL_ROSS',
+        || 'and the 1Y split tenor, one series per pillar, with the main USD curve''s calibration. '
+        || 'It does not start on its own: it shares a series with the main USD curve.',
+        true, false, 'USD', 'sofr', 'FOMC', 'COX_INGERSOLL_ROSS',
         0.55, 0.04, 0.008, 0.04,
         60, 'Quarterly',
         'fixed', '', '', '', 'bloomberg'

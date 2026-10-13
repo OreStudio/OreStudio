@@ -120,6 +120,7 @@ to_domain(const messaging::ir_curve_generation_config_write& write) {
     v.fixed_leg_payment_frequency_code = write.fixed_leg_payment_frequency_code;
     v.source_name = write.source_name;
     v.folder_id = write.folder_id;
+    v.asset_class_code = write.asset_class_code;
     return v;
 }
 

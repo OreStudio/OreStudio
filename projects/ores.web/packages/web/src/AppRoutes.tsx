@@ -91,11 +91,9 @@ import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
-import { FxFeedPage, FxFeedsPage } from './marketdata/fxFeeds.js';
-import { IrFeedPage, IrFeedsPage } from './marketdata/irFeeds.js';
-import { FeedOverviewPage } from './marketdata/FeedOverviewPage.js';
-import { FeedTreePage } from './marketdata/FeedTreePage.js';
-import { SyntheticPage } from './marketdata/SyntheticPage.js';
+import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
+import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
+import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -776,49 +774,13 @@ export function AppRoutes({
                     session,
                     shell,
                     () => (
-                        <SyntheticPage />
+                        <SyntheticScreen />
                     ),
                     'workspace',
                 )}
             />
             <Route
-                path={PATHS.feedOverview}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <FeedOverviewPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={PATHS.feedTree}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <FeedTreePage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={PATHS.fxFeeds}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <FxFeedsPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={`${PATHS.fxFeeds}/:id`}
+                path={`${PATHS.fxFeed}/:id`}
                 element={signedIn(
                     gate.version,
                     session,
@@ -830,19 +792,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path={PATHS.irFeeds}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <IrFeedsPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={`${PATHS.irFeeds}/:id`}
+                path={`${PATHS.irFeed}/:id`}
                 element={signedIn(
                     gate.version,
                     session,

@@ -145,7 +145,7 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         "add <config_id> <currency_code> <index_family> <tenor> <role> <process_type> "
         "<ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date> "
         "<vintage_series_uri> <description> <fixed_leg_payment_frequency_code> <source_name> "
-        "<folder_id> <reason> <commentary>");
+        "<folder_id> <asset_class_code> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -155,7 +155,7 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         "set <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type> "
         "<ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date> "
         "<vintage_series_uri> <description> <fixed_leg_payment_frequency_code> <source_name> "
-        "<folder_id> <reason> <commentary> [--version <n>]");
+        "<folder_id> <asset_class_code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -165,7 +165,7 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         "put-many --count <n> <id> <config_id> <currency_code> <index_family> <tenor> <role> "
         "<process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> "
         "<vintage_date> <vintage_series_uri> <description> <fixed_leg_payment_frequency_code> "
-        "<source_name> <folder_id> <reason> <commentary>");
+        "<source_name> <folder_id> <asset_class_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -359,8 +359,8 @@ void ir_curve_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -385,6 +385,8 @@ void ir_curve_generation_config_commands::process_add(std::ostream& out,
                    "fixed_leg_payment_frequency_code");
         read_token(req.change.write.source_name, parsed->positionals[next++], "source_name");
         read_token(req.change.write.folder_id, parsed->positionals[next++], "folder_id");
+        read_token(
+            req.change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -427,8 +429,8 @@ void ir_curve_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 18 + 2) {
-            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -453,6 +455,8 @@ void ir_curve_generation_config_commands::process_set(std::ostream& out,
                    "fixed_leg_payment_frequency_code");
         read_token(req.change.write.source_name, parsed->positionals[next++], "source_name");
         read_token(req.change.write.folder_id, parsed->positionals[next++], "folder_id");
+        read_token(
+            req.change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -507,8 +511,8 @@ void ir_curve_generation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 18 + 2) {
-            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 19 + 2) {
+            fail(out) << "Expected " << (change_count * 19 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -535,6 +539,8 @@ void ir_curve_generation_config_commands::process_put_many(std::ostream& out,
                        "fixed_leg_payment_frequency_code");
             read_token(change.write.source_name, parsed->positionals[next++], "source_name");
             read_token(change.write.folder_id, parsed->positionals[next++], "folder_id");
+            read_token(
+                change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(6);
+select plan(8);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
@@ -108,6 +108,24 @@ select is(
        and valid_to = ores_utility_infinity_timestamp_fn()),
     29,
     'the collection holds a curve for each of the 28 currencies and the USD FOMC short end'
+);
+
+select is(
+    (select count(*)::int from ores_synthetic_fx_spot_generation_configs_tbl
+     where config_id = (select id from t_collection)
+       and asset_class_code = 'fx'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    26,
+    'every FX feed belongs to the fx asset class'
+);
+
+select is(
+    (select count(*)::int from ores_synthetic_ir_curve_generation_configs_tbl
+     where config_id = (select id from t_collection)
+       and asset_class_code = 'interest_rates'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    29,
+    'every curve feed belongs to the interest_rates asset class'
 );
 
 select * from finish();

@@ -38,6 +38,7 @@ struct folder_feed_count {
     int fx_feeds = 0;
     int ir_feeds = 0;
     int running_feeds = 0;
+    int idle_auto_feeds = 0;
 };
 
 /**

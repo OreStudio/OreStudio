@@ -128,7 +128,7 @@ begin
         auto_start,
         base_currency_code, quote_currency_code,
         gmm_initial_price, ticks_per_hour, process_type,
-        price_source, vintage_source, vintage_date
+        price_source, vintage_source, vintage_date, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -138,7 +138,7 @@ begin
         'Uniform Volatility Demo synthetic FX spot generator: single-component geometric process, exaggerated volatility.',
         true, true, p.base, p.quote,
         0, 3600, 'geometric',
-        'vintage', 'fed.h10.2016-02-05', '2016-02-05'
+        'vintage', 'fed.h10.2016-02-05', '2016-02-05', 'ore'
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
         ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'),

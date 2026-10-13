@@ -28,6 +28,7 @@ the permissions it no longer holds.
 :PROPERTIES:
 :profile: tenant-scoped-junction
 :history: true
+:events: true
 :history_read_permission: iam::roles:read
 :END:
 

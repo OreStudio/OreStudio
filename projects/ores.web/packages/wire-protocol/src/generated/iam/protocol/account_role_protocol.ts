@@ -61,6 +61,15 @@ export interface AccountRolesFilter {
     role_id_one_of: string[] | null;
 }
 
+export interface AccountRoleEvent {
+    event_id: string;
+    key: AccountRoleKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListAccountRolesRequest {
     offset: number;
     limit: number;

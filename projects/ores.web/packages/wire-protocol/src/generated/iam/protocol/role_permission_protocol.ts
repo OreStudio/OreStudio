@@ -61,6 +61,15 @@ export interface RolePermissionsFilter {
     permission_id_one_of: string[] | null;
 }
 
+export interface RolePermissionEvent {
+    event_id: string;
+    key: RolePermissionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListRolePermissionsRequest {
     offset: number;
     limit: number;

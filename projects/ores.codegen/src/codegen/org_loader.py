@@ -3778,10 +3778,12 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     """
     entity = junction_entity_shape(junction)
     messages = entity_protocol_messages(entity)
-    # A junction announces nothing, so it drops the entity derivation's
-    # announcement record rather than declaring a wire type nothing serves.
-    messages = [message for message in messages
-                if not message["name"].endswith(_ANNOUNCEMENT_RECORD_SUFFIXES)]
+    # A junction announces nothing unless its model states ``:events: true``,
+    # so it drops the entity derivation's announcement record rather than
+    # declaring a wire type nothing serves.
+    if not junction.get("events"):
+        messages = [message for message in messages
+                    if not message["name"].endswith(_ANNOUNCEMENT_RECORD_SUFFIXES)]
     # ``wire_write_enabled`` folds the repository's read_only together with the
     # client-only switch; the fallback keeps a hand-built junction dict, as the
     # tests use, on the read_only rule.

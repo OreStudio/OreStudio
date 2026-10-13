@@ -28,6 +28,7 @@ roles includes the ones it no longer holds.
 :PROPERTIES:
 :profile: tenant-scoped-junction
 :history: true
+:events: true
 :history_read_permission: iam::accounts:read
 :END:
 

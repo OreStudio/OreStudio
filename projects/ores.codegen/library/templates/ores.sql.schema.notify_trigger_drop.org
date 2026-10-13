@@ -4,7 +4,7 @@
 #+title: ores.sql.schema.notify_trigger_drop
 #+description: Drop counterpart of the notify trigger. =sql= profile; output =projects/ores.sql/drop/{component}/{component}_{entity_plural}_notify_trigger_drop.sql=.
 #+type: archetype
-#+model_types: domain_entity
+#+model_types: domain_entity junction
 #+output: projects/ores.sql/drop/{component}/{component}_{entity_plural}_notify_trigger_drop.sql
 #+facet: ores.sql.schema
 #+level: cross
@@ -38,6 +38,17 @@ The full template source. Edit here and re-tangle with
 drop trigger if exists {{sql_name_base}}_notify_trg on "{{sql_name_base}}_tbl";
 drop function if exists {{sql_name_base}}_notify_fn;
 {{/domain_entity}}
+{{#junction}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger_drop.mustache
+ * To modify, update the template and regenerate.
+ */
+
+drop trigger if exists {{events_channel}}_notify_close_trg on "{{events_channel}}_tbl";
+drop trigger if exists {{events_channel}}_notify_trg on "{{events_channel}}_tbl";
+drop function if exists {{events_channel}}_notify_fn;
+{{/junction}}
 #+end_src
 
 * See also

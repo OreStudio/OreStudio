@@ -96,6 +96,8 @@ function personWatches(account: Account): readonly WatchedEntity[] {
         { component: 'iam', entity: 'accounts', record: { username: account.username } },
         { component: 'iam', entity: 'account_contact_informations' },
         { component: 'iam', entity: 'roles' },
+        { component: 'iam', entity: 'account_roles', record: { account_id: account.id } },
+        { component: 'iam', entity: 'account_parties', record: { account_id: account.id } },
         { component: 'iam', entity: 'login_info' },
         { component: 'iam', entity: 'sessions' },
     ];
@@ -178,15 +180,6 @@ function Person({
             void queries.invalidateQueries({ queryKey: key });
         }
     };
-    const refresh = () => {
-        void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
-        /*
-         * A grant taken away is read back as a closed one, which the stream
-         * does not carry, so the story is read again rather than patched.
-         */
-        void queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
-    };
-
     const { tab, bar } = useTabs({
         label: name,
         tabs: tabsFor(
@@ -427,10 +420,7 @@ function Person({
                     name={name}
                     held={roles}
                     onClose={() => setGiving(false)}
-                    onDone={() => {
-                        setGiving(false);
-                        void refresh();
-                    }}
+                    onDone={() => setGiving(false)}
                 />
             )}
             {reverting !== null && (
@@ -455,10 +445,7 @@ function Person({
                     name={name}
                     role={taking}
                     onClose={() => setTaking(null)}
-                    onDone={() => {
-                        setTaking(null);
-                        void refresh();
-                    }}
+                    onDone={() => setTaking(null)}
                 />
             )}
         </div>

@@ -256,7 +256,7 @@ which states the exception:
 | D5 | A decode failure that is not answered | *fixed* | =crm_handler= refuses with =bad_request=, and its bridge calls are guarded |
 | D1 | Request/reply subject without a queue group | *fixed* | =get_http_info= is now queue-subscribed as =ores.http.server= |
 | D6 | Thirty handlers that can let an exception escape | *fixed* | Every replying entry point is guarded, in six groups: history, marketdata, iam, synthetic preview, feed control, and the ORE import dispatch |
-| D4 | No message identity on a retryable message | *not started* | Now reachable, because D2 makes redelivery happen |
+| D4 | No message identity on a retryable message | *fixed* | The publisher side: the step id on a step's messages, the instance id on a workflow start, and none on a tick. The receiver side already guarded |
 | D7 | Two explicit deadlines without their reason | *fixed* | Both sites state why they depart from the 30s default, and the provisioning value is pinned above it with a static_assert |
 
 D6 needed per-handler triage rather than a bulk edit, and the triage changed

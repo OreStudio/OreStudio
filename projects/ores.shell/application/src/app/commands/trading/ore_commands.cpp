@@ -136,6 +136,112 @@ fetch_packages_into(std::ostream& out,
     return folders;
 }
 
+/**
+ * @brief The moment a package instance's age is measured from.
+ *
+ * A completed instance is as old as its completion; one that never completed is as old
+ * as its start. An instance with neither has no age to compare, so it is left alone.
+ */
+std::optional<std::chrono::system_clock::time_point>
+package_age_origin(const ores::reporting::domain::report_instance& instance) {
+    if (instance.completed_at)
+        return instance.completed_at;
+    return instance.started_at;
+}
+
+/**
+ * @brief Every package instance the caller's tenant can see.
+ *
+ * Pages through the listing, because the point of the command is the instances that have
+ * accumulated rather than the first page of them.
+ */
+std::optional<std::vector<ores::reporting::domain::report_instance>>
+list_package_instances(std::ostream& out, nats_client& session) {
+    constexpr std::uint32_t page_size = 500;
+    std::vector<ores::reporting::domain::report_instance> all;
+    for (std::uint32_t offset = 0;; offset += page_size) {
+        ores::reporting::messaging::list_report_instances_request request;
+        request.offset = offset;
+        request.limit = page_size;
+        request.filter = ores::reporting::messaging::report_instances_filter{};
+        request.filter->kind = std::string("package");
+
+        const auto reply =
+            do_auth_request<ores::reporting::messaging::list_report_instances_response>(
+                out, session, request.nats_subject, request, list_request_timeout);
+        if (!reply)
+            return std::nullopt;
+        all.insert(all.end(), reply->instances.begin(), reply->instances.end());
+        if (reply->instances.empty() || all.size() >= reply->total)
+            break;
+    }
+    return all;
+}
+
+/**
+ * @brief Removes every package stored under an instance's prefix.
+ *
+ * @return false when a listing or a removal failed, so the caller leaves the instance in
+ * place rather than deleting the only record of packages it could not remove.
+ */
+bool remove_stored_packages(std::ostream& out,
+                            nats_client& session,
+                            const std::string& report_instance_id) {
+    ores::storage::messaging::list_objects_request list;
+    list.bucket = std::string(ores::ore::net::ore_storage::bucket);
+    list.prefix = ores::ore::net::ore_storage::package_prefix(report_instance_id);
+    list.limit = 1000;
+
+    const auto listing = do_auth_request<ores::storage::messaging::list_objects_response>(
+        out, session, list.nats_subject, list, list_request_timeout);
+    if (!listing)
+        return false;
+    if (!listing->success) {
+        fail(out) << "Cannot list the packages of " << report_instance_id << ": "
+                  << listing->message << std::endl;
+        return false;
+    }
+
+    for (const auto& object : listing->objects) {
+        ores::storage::messaging::delete_objects_request request;
+        request.bucket = list.bucket;
+        request.key = object.key;
+
+        const auto reply = do_auth_request<ores::storage::messaging::delete_objects_response>(
+            out, session, request.nats_subject, request, list_request_timeout);
+        if (!reply)
+            return false;
+        if (!reply->success) {
+            fail(out) << "Cannot remove " << object.key << ": " << reply->message << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief Deletes a report instance by name.
+ */
+bool remove_instance(std::ostream& out, nats_client& session, const std::string& name) {
+    ores::reporting::messaging::delete_report_instance_request request;
+    request.removal.key.name = name;
+    request.intent.reason_code = "system.admin_reset";
+    request.intent.commentary =
+        "Remove a package instance, and the packages it stored, once they are old enough.";
+
+    const auto reply =
+        do_auth_request<ores::reporting::messaging::delete_report_instance_response>(
+            out, session, request.nats_subject, request, import_request_timeout);
+    if (!reply)
+        return false;
+    if (reply->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Cannot remove report instance " << name << ": " << reply->result.message
+                  << std::endl;
+        return false;
+    }
+    return true;
+}
+
 }
 
 void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
@@ -334,6 +440,34 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                      },
                      "Download and unpack the packages a report instance stored",
                      {"report_instance_id out_dir"});
+
+    ore_menu->Insert(
+        "clean-packages",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            auto parsed = parse_args(
+                args,
+                {{.name = "older-than", .requires_value = true, .default_value = ""},
+                 {.name = "dry-run", .requires_value = false, .default_value = "false"}});
+            if (!parsed) {
+                fail(out) << parsed.error() << std::endl;
+                return;
+            }
+            if (!parsed->positionals.empty()) {
+                fail(out) << "Usage: ore clean-packages --older-than <seconds> [--dry-run]"
+                          << std::endl;
+                return;
+            }
+            const auto older_than = parse_positive_seconds(parsed->flag("older-than"));
+            if (!older_than) {
+                fail(out) << "The age must be a positive number of seconds: "
+                          << parsed->flag("older-than") << std::endl;
+                return;
+            }
+            process_clean_packages(
+                std::ref(out), std::ref(session), *older_than, parsed->flag_set("dry-run"));
+        },
+        "Remove the package instances that are old enough, and the packages they stored",
+        {"--older-than <seconds> [--dry-run]"});
 
     ores::shell::app::insert_menu(root_menu, std::move(ore_menu));
 }
@@ -663,6 +797,74 @@ void ore_commands::process_build_packages(std::ostream& out,
         << ":" << std::endl;
     for (const auto& f : *folders)
         out << "    " << f.string() << std::endl;
+}
+
+void ore_commands::process_clean_packages(std::ostream& out,
+                                          nats_client& session,
+                                          std::chrono::seconds older_than,
+                                          bool dry_run) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    const auto instances = list_package_instances(out, session);
+    if (!instances)
+        return;
+
+    // An instance is as old as its completion or its start, so one that is still running
+    // is never removed however long ago it was asked for.
+    const auto now = std::chrono::system_clock::now();
+    std::vector<ores::reporting::domain::report_instance> expired;
+    std::size_t undated = 0;
+    for (const auto& instance : *instances) {
+        const auto origin = package_age_origin(instance);
+        if (!origin) {
+            ++undated;
+            continue;
+        }
+        if (now - *origin >= older_than)
+            expired.push_back(instance);
+    }
+
+    const auto undated_note = [&out](std::size_t count) {
+        if (count != 0)
+            out << "  " << count
+                << " instance(s) have neither a start nor a completion to age them by, and "
+                   "were left alone."
+                << std::endl;
+    };
+
+    if (expired.empty()) {
+        out << "No package instance is older than " << older_than.count() << " seconds."
+            << std::endl;
+        undated_note(undated);
+        return;
+    }
+
+    if (dry_run) {
+        out << "Would remove " << expired.size() << " package instance(s):" << std::endl;
+        for (const auto& instance : expired)
+            out << "    " << instance.name << std::endl;
+        undated_note(undated);
+        return;
+    }
+
+    std::size_t removed = 0;
+    for (const auto& instance : expired) {
+        // The packages go first. Deleting the instance first would leave its packages
+        // with nothing pointing at them, so a failure here keeps the instance for a
+        // later run rather than losing track of them.
+        if (!remove_stored_packages(out, session, boost::uuids::to_string(instance.id)))
+            continue;
+        if (!remove_instance(out, session, instance.name))
+            continue;
+        ++removed;
+        out << "✓ Removed " << instance.name << " and the packages it stored" << std::endl;
+    }
+    out << "Removed " << removed << " of " << expired.size() << " package instance(s)."
+        << std::endl;
+    undated_note(undated);
 }
 
 void ore_commands::process_export_run(std::ostream& out,

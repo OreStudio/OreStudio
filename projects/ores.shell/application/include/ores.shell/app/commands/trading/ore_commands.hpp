@@ -147,6 +147,25 @@ public:
                                        const std::string& out_dir);
 
     /**
+     * @brief Remove the package instances that are old enough, and the packages they
+     * stored.
+     *
+     * A package instance is tooling a developer made to read a report's input, and the
+     * packages it stored are large, so both are removed together. Each instance's stored
+     * objects go first and the instance is deleted after, so a failure leaves the
+     * instance in place to be retried rather than orphaning its packages. An instance's
+     * age is measured from when it completed, or from when it started when it never
+     * completed.
+     *
+     * With @p dry_run nothing is removed and the command reports only what it would
+     * remove.
+     */
+    static void process_clean_packages(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       std::chrono::seconds older_than,
+                                       bool dry_run);
+
+    /**
      * @brief Request a portfolio export and write the XML to a file.
      *
      * The reply carries trades and instruments, not XML, so the XML is

@@ -1,0 +1,190 @@
+:PROPERTIES:
+:ID: D6B18C35-12AD-48FB-A03A-525B3E23DE0C
+:END:
+#+title: Story: Ready for business checks
+#+description: A battery of system checks a super administrator runs against a live environment, on a tenant created blank for the purpose, that exercises every subsystem in variations and reports as a time series so the environment's health is visible over time.
+#+type: story
+#+level: s2
+#+filetags: :rfb:system-testing:testing:operations:development:inbox:product_backlog:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A super administrator can ask a live environment a direct question — /are you ready for business?/ — and get an answer that is evidence rather than opinion. The environment runs a battery of checks against itself, on a tenant created blank for the purpose, exercising every subsystem in the variations that matter: creating one of a thing, creating many, loading it, running the compute grid for a sustained period, and letting the feeds run. Each run is recorded, so the answer is a line on a chart that shows whether the environment is holding steady, improving or degrading.
+
+* Why
+
+Today there is no way to ask. The three audiences that need the answer each solve it badly:
+
+- /Operations/ are asked to confirm an environment is fit at a point in time, and have nothing to point at beyond "the services are running".
+- /Testers/ receiving a new version have no repeatable way to establish that this build is at least as good as the last, and no baseline to compare against.
+- /Developers/ adding a feature have no way to know whether they degraded something three subsystems away; the unit suites answer questions about a component, not about a system.
+
+The unit and integration suites cannot answer it by construction. They run against a component with the pieces assembled inside the test process — the transport is real, but the running service is not. Nothing today drives a deployed environment end to end. See the note on the existing test infrastructure in *Background*.
+
+* Background: what the test infrastructure does and does not do
+
+=ores.testing= already gives a test a real broker, a real scoped database and real request/reply with a bearer token:
+
+- =handler_test_keys= mints a JWT carrying exactly the permissions a case needs.
+- =request(nats, subject, token, req)= sends a canonical request over NATS and returns the reply.
+- =decode_reply<Resp>= and =error_of= decode it or report the error header.
+
+But the handler tests instantiate the handler *in the test process* and subscribe it to the subject themselves before sending. The 292 =[eventing][integration]= cases wire their chain in the same way. So transport, auth and storage are real; **the running service process is not**. There is no harness anywhere that exercises a deployed environment from the outside, which is exactly what this story needs.
+
+* Audiences and cadence
+
+| Audience | When they run it | What they need from it |
+|----------+------------------+------------------------|
+| Operations | At specific times, and before declaring an environment fit | A pass or fail for the whole battery, with the failing check named, runnable on demand |
+| Testers | On receiving a new version | The same battery as the previous version, so two runs can be compared |
+| Developers | While adding a feature | A quick subset they can run repeatedly without waiting for the full battery |
+
+A run must therefore be able to execute the /whole/ battery or a /named subset/, and every run must be recorded against the version it ran on, or the comparison the testers need is impossible.
+
+* The RFB tenant
+
+Every mutation a check makes happens inside one tenant, created blank for the purpose and owned by the super administrator. This is the containment design, and it is the part that must be right before anything else is built.
+
+- The tenant starts empty: no parties, no counterparties, no portfolios, no trades, no configuration documents, no feed bindings.
+- A check run populates it in the order the system expects — parties, then counterparties, then books and portfolios, then configuration, then trades, then feeds — because a check that skips a step tests a state the product cannot actually reach.
+- Nothing outside the RFB tenant is written to. A battery that mutates shared or seeded data is not repeatable and cannot be run by operations on a live environment at all.
+- The tenant's name is recognisable, so a human looking at the database or the UI can tell at a glance that this data is a check's and not a customer's.
+- A run leaves its tenant behind for inspection; tearing it down is an explicit action, not a side effect, so that a failure can be examined afterwards.
+
+Open questions to settle in the tasks below: whether a run gets a fresh tenant or reuses one and resets it, and whether a check may read the seeded system catalogue (it must — report types, instance kinds and permissions are system-tenant reference data) while writing only to its own.
+
+* Where the execution lives
+
+**The rule: no check logic in =ores.web= or =ores.shell=. They trigger checks and show results, and that is all.**
+
+Execution is regular backend functionality — a service on the bus with its own protocol, driven the same way as every other subsystem. Both surfaces are clients of it, so the two can never disagree about what a check does, and a check is testable the way the rest of the backend is.
+
+The service owns:
+
+| Operation | Purpose |
+|-----------+---------|
+| List the suites | What can be run, with what knobs, and what each asserts |
+| Start a run | Start the whole battery or a named subset, with the knobs supplied |
+| Report progress | Which check is running, how long it has been, what it has done so far |
+| Report the result | Per check: pass or fail, the reason, and the artifacts |
+| List past runs | The time series: every run with its version, environment, outcome and measurements |
+
+The knobs are declared by the suite rather than hard-coded by the caller — a soak check declares its duration, a load check its rate and ceiling — so the surface can render whatever the suite asks for without knowing what a soak test is.
+
+* Where the surfaces are
+
+**ores.shell.** A command or command group that lists suites, starts a run, reports progress, prints the result and lists past runs. This is what makes the battery scriptable and usable in a terminal, with no browser and no BFF in the path.
+
+**ores.web.** A section under =Development=, super administrator only. It lists the suites and their knobs, starts and stops runs, shows progress live, shows the last result, and charts the time series.
+
+Charts matter as much as the run: a single green tick says the environment passed once, and the reason this story exists is to see the environment's condition *over time*. A battery that is green today and was green a month ago but whose timings have doubled is not a healthy environment, and only the series shows it.
+
+* What a check is
+
+A check is a named sequence of steps with stated expectations, all expressed against the public interfaces of the system:
+
+1. *Arrange* — state what the tenant must contain before the step, creating it if the check owns it.
+2. *Act* — perform one operation through the same interface a real client uses.
+3. *Assert* — state the observable expectation and measure it.
+4. *Record* — the outcome, the reason, the duration and any measurements.
+
+A check asserts on what a client can observe, not on internals, for the same reason the unit suites do: an assertion on an internal detail passes while the system is broken for its users.
+
+* Variations to cover
+
+The battery exercises each subsystem in the variations that matter, not once in the happy path:
+
+| Variation | What it varies | Example |
+|-----------+----------------+---------|
+| Simple creation | One of a thing, end to end | Create a party, read it back, see its event |
+| Bulk creation | Many, in one request | 500 counterparties in a single write |
+| Load | Sustained rate against a subsystem | Add trades at a steady rate for N minutes |
+| Soak | Duration, with a steady background | Run the grid for N minutes and watch it settle |
+| Lifecycle | The whole life of a thing | Party → book → portfolio → trade → report → package |
+| Cross-subsystem | A journey spanning components | Configure a feed, start it, see observations arrive and publish |
+| Refusal | What the system must reject | A write without permission, a malformed request, a broken invariant |
+
+The *refusal* variation is not an afterthought. A system that accepts everything is not ready for business either, and the negative cases are the ones that are hardest to keep true as the product moves.
+
+* Reporting as a time series
+
+Every run is recorded, and the record is what makes the battery useful to all three audiences:
+
+- Per run: the version, the environment, the start and end, and the outcome of each check.
+- Per check: pass or fail, the reason on failure, the duration, and the measurements the check chose to report.
+- Over time: the same check across runs, so a trend is visible and a regression has a date.
+
+Storage follows the house pattern for a versioned, tenant-owned record rather than a bespoke log, so the time series is queryable and the records are themselves subject to the history and audit behaviour the rest of the product has.
+
+A run's outcome is not only pass or fail: a check can be *skipped* because its preconditions do not hold, and reports must distinguish that from a pass, or a battery that silently stopped running anything will look green.
+
+* Pass criteria
+
+"We ran for ten minutes" is not a pass. Every check states its own threshold before it runs:
+
+- A creation check passes when the record reads back as written and the expected event is observed within a stated time.
+- A load check passes below a stated error rate and above a stated throughput floor, or it is not measuring the system.
+- A soak check passes when the grid reaches a settled state within the duration and the error rate stays under a stated ceiling.
+
+Thresholds live with the check, in the model, so the surface can show what a check promises and a change to the promise is reviewable.
+
+* Acceptance
+
+- A super administrator can create an RFB tenant that starts blank, and no check writes outside it.
+- A single backend operation runs the whole battery, and a named subset of it, with the knob values supplied by the caller.
+- The suite catalogue is data: a check declares its name, its knobs, its variations, its threshold and what it asserts, and adding one requires no change to =ores.web= or =ores.shell=.
+- The battery covers the variations above across the subsystems, including at least one refusal check per guarded surface.
+- =ores.shell= can list the suites, start a run, report progress, print the result and list past runs, with no browser involved.
+- =ores.web=, under =Development= and visible only to a super administrator, can do the same and additionally charts a check's outcome and measurements over time.
+- Every run is recorded with the version and environment it ran on, and past runs are queryable per check.
+- A failed check names the step that failed and the reason, and a skipped check is reported as skipped and never as a pass.
+- The battery is excluded from the CI gate: no GitHub workflow runs it, and =compass check= does not classify into it.
+- A check that mutates leaves its tenant inspectable, and tearing the tenant down is an explicit operation.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Proposed decomposition
+
+The tasks below are the intended shape of the work; each is scaffolded as it starts, so the table above fills in as they are raised.
+
+1. *Model the RFB tenant and its lifecycle.* A tenant kind that starts blank, owned by the installation rather than a customer, created and torn down by a super administrator, with the checks' writes confined to it by construction rather than by convention.
+2. *Design the suite catalogue and the run protocol.* The model behind a check: its name, description, knobs with types and defaults, variations, threshold, and what it asserts; and the messages to list suites, start a run, report progress, report a result, and list past runs.
+3. *Model the run record.* The versioned, tenant-owned record of a run and its checks, so the time series is a query and not a log, with the measurements a check reports.
+4. *Implement the check runner.* The backend functionality that takes a suite selection and knob values, executes the steps, enforces the thresholds, records the outcomes and reports progress.
+5. *Implement the first suite: package generation.* Build a report's ORE packages off the grid and assert the package's layout, ending in the ORE schema validation. This is the vertical slice that proves the shape, and it is the durable form of the one-off script described under *Related work*.
+6. *Implement the creation and refusal suites.* One of a thing and many of a thing across the core entities, and the refusal cases for the guarded surfaces.
+7. *Implement the load suites.* Parties, counterparties and trades at a controlled rate against a stated ceiling, with the throughput and error-rate thresholds.
+8. *Implement the feed and grid soak suites.* Configure and start feeds and assert observations arrive and publish; run the grid for a stated duration and assert it settles within the error ceiling.
+9. *Surface the checks in =ores.shell=.* List, start, progress, result and history, usable with no browser.
+10. *Surface the checks and the time series in =ores.web=.* A super-administrator-only =Development= section that lists suites and knobs, starts and stops runs, shows live progress and the last result, and charts a check over time.
+11. *Keep the battery out of CI.* State and enforce the exclusion, so a change to the battery cannot silently enter the gate.
+
+* Decisions
+
+- *Execution is backend functionality.* =ores.web= and =ores.shell= trigger checks and show results and hold no check logic, so the surfaces cannot disagree and a check is testable like the rest of the backend.
+- *The battery is not a CI gate.* GitHub cannot host a soak or a load run, and a check that runs in CI would be redesigned until it no longer measured the system. It is a local validation, run deliberately.
+- *Mutation is contained in a tenant created blank for the purpose*, and the containment is enforced by the construction of the tenant rather than by the discipline of the checks.
+- *A check is data, not code in a surface.* The catalogue declares the knobs and the threshold, so both surfaces render whatever the suite asks for and neither knows what a soak test is.
+- *Formats and time series are modelled*, following the house pattern for a versioned tenant-owned record, rather than written to a bespoke log.
+
+* Related work
+
+The task /Build the ORE packages of a report locally/ needs a one-off proof that a package built for an ACME report has the documents the run document names and validates against the ORE schema. That proof is the first suite in this story, so the interim form of it is a standalone script that drives the shell once and validates the result — deliberately small, and replaced by task 5 above rather than grown into the framework.
+
+* Out of scope
+
+- Holding the environment to a standard on behalf of a customer, or any contractual or regulatory attestation. This story produces evidence; what an organisation does with it is theirs.
+- Performance benchmarking as a discipline: the load and soak checks state thresholds the system must hold, and are not a benchmark suite for comparing hardware or tuning.
+- Running the battery on a schedule automatically. Operations run it at the times they choose; scheduling a run is a later convenience, not a precondition.
+- Reproducing a production environment's data or scale. The RFB tenant is blank by design.
+- Replacing the unit and integration suites. This story is the layer above them, for questions a component suite cannot answer.

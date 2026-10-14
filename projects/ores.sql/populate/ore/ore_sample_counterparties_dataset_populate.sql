@@ -176,5 +176,5 @@ begin
 
     -- The aliases resolve against counterparties published from GLEIF.
     perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.counterparty_aliases', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'ore.counterparty_aliases', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
 end $$;

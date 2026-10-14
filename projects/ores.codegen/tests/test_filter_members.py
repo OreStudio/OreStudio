@@ -166,3 +166,10 @@ def test_a_default_filter_on_a_column_the_filter_lacks_is_refused():
                columns=[{'name': 'status', 'cpp_type': 'std::string'}])
     with pytest.raises(ValueError, match="widget: list_default_filter names 'status'"):
         _parse_list_default_filter(e)
+
+
+def test_only_the_key_one_of_member_is_marked_as_the_key():
+    e = entity(extra_list_requests=[{'filter_column': 'owner_id'}])
+    members = by_member(filter_members(e))
+    assert members['id_one_of']['is_key']
+    assert not members['owner_id_one_of']['is_key']

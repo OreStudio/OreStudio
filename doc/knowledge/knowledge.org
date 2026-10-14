@@ -40,6 +40,7 @@ one, start there rather than here.
 | [[id:338DCC6D-4913-4FDC-9078-1F0B0486A9E5][MASD]] | The methodology the code generator implements |
 | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | The order an entity's layers must be built in |
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
+| [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] | How a service must use the bus: the call each situation requires, its rationale, and the failure without it |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
 | [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] | How a report is scheduled, prepared, run on the compute grid, and recorded |
 | [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] | How a screen looks, what its marks mean, where it lives, and how it behaves for a record and for an entity |

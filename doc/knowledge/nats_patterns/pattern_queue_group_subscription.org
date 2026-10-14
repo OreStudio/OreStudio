@@ -56,10 +56,18 @@ subs.push_back(nats.queue_subscribe(
     [h](ores::nats::message msg) { h->list_accounts(msg); }));
 #+end_src
 
-The rule is total: a service-side subscription is always a queue
-subscription, and the group is the service name. A plain `subscribe()` is for a
-reader that is not a service — a test, or a client watching a subject — because
-fan-out would make every replica handle every message.
+The rule is total for a *handler*: a subject the service answers is a queue
+subscription, and the group is the service name. Three kinds of reader are
+deliberately not queue-subscribed, and each names its reason:
+
+| Reader | Why not a queue group |
+|--------|-----------------------|
+| A broadcast every replica must see, such as a work-available nudge or a worker heartbeat | The point is that every peer receives it |
+| A per-instance cache invalidator | Each instance keeps its own copy, so each must be told |
+| A client watching a subject, or a test observing a pipeline | It is not a service serving work |
+
+A request/reply subject is never in that list: every replica answering the same
+request is a defect, because the caller reads one reply.
 
 * Failure handling
 
@@ -76,8 +84,9 @@ fan-out would make every replica handle every message.
 
 - *Two queue-group names for one service.* Each group receives every message
   and the work runs twice.
-- *A plain `subscribe()` for a service subject.* Every replica handles every
-  message.
+- *A plain `subscribe()` for a subject the service answers.* Every replica
+  handles every message, which for a request/reply subject means the caller
+  receives whichever reply arrives first.
 - *State in one replica's memory.* The next message may land on another
   replica, which does not have it.
 

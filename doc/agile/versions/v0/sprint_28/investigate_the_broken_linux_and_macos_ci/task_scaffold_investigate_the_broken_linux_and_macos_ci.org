@@ -8,7 +8,7 @@
 #+filetags: :investigate_the_broken_linux_and_macos_ci:sprint_28:v0:
 #+owner: marco
 #+branch: feature/investigate-the-broken-linux-and-macos-ci
-#+pr:
+#+pr: 3285
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3285][#3285]] | [agile] Scaffold the broken Linux and macOS CI investigation |
 
 * Review
 

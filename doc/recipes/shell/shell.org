@@ -1633,3 +1633,7 @@ tangled into the runnable script library
 * Lei Bic
 
 - [[id:71427B36-E7A6-5D10-A08C-D2775BF14ED5][How do I run the lei_bic commands from the shell?]]
+
+* Report Trigger Types
+
+- [[id:D6C4EBEA-012F-59E6-9CBC-FDC7FDE47B7D][How do I run the report_trigger_types commands from the shell?]]

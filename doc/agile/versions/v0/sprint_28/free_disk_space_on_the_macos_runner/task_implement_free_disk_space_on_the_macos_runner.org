@@ -8,7 +8,7 @@
 #+filetags: :free_disk_space_on_the_macos_runner:sprint_28:v0:
 #+owner: marco
 #+branch: feature/free-disk-space-on-the-macos-runner
-#+pr:
+#+pr: 3304
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3304][#3304]] | [ci] Free disk space on the macOS runner |
 
 * Review
 

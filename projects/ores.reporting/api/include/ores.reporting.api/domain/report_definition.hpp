@@ -112,10 +112,12 @@ struct report_definition final {
     std::optional<boost::uuids::uuid> scheduler_job_id;
 
     /**
-     * @brief The IAM run grant the definition's scheduled runs act under. Created when a person
-     * schedules the definition, with their consent, and revoked when it is unscheduled. It is not a
-     * credential: a step exchanges it for a run token. IAM owns the grant, so this column is not a
-     * checked foreign key.
+     * @brief The report's standing consent to run. It is the IAM run grant every run of this
+     * definition acts under, whatever admitted the run, and it is created at admission by whichever
+     * act needs it first, scheduling or a person asking, so a definition that has never been
+     * scheduled can still run on demand. A trigger carries no grant of its own and reuses this one.
+     * It is not a credential: a step exchanges it for a run token. IAM owns the grant, so this
+     * column is not a checked foreign key.
      */
     std::optional<boost::uuids::uuid> run_grant_id;
 

@@ -60,6 +60,8 @@
 \ir ./reporting_concurrency_policies_validate_fn_create.sql
 \ir ./reporting_report_instance_kinds_create.sql
 \ir ./reporting_report_instance_kinds_notify_trigger_create.sql
+\ir ./reporting_report_trigger_types_create.sql
+\ir ./reporting_report_trigger_types_notify_trigger_create.sql
 
 \ir ./reporting_report_definitions_create.sql
 \ir ./reporting_report_definitions_notify_trigger_create.sql
@@ -67,6 +69,7 @@
 \ir ./reporting_risk_report_configs_notify_trigger_create.sql
 \ir ./reporting_risk_report_config_portfolios_create.sql
 \ir ./reporting_risk_report_config_books_create.sql
+\ir ./reporting_report_trigger_events_create.sql
 \ir ./reporting_report_instances_create.sql
 \ir ./reporting_report_instances_fsm_guard_create.sql
 \ir ./reporting_report_instances_notify_trigger_create.sql

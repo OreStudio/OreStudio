@@ -38,6 +38,7 @@
 \ir ./reporting_parameter_definitions_populate.sql
 \ir ./reporting_concurrency_policies_populate.sql
 \ir ./reporting_report_instance_kinds_populate.sql
+\ir ./reporting_report_trigger_types_populate.sql
 
 \echo ''
 \echo '--- FSM Machines ---'

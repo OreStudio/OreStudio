@@ -93,10 +93,11 @@ struct report_instance final {
     std::string kind = "production";
 
     /**
-     * @brief The IAM run grant that this run acts under. Copied from the definition when the
-     * scheduler trigger admits the run. The instance records the grant id so that a later change to
-     * the definition's consent cannot change the authority of a run that is already in flight. IAM
-     * owns the grant, so this column is not a checked foreign key.
+     * @brief The IAM run grant that this run acts under, copied from the definition whatever
+     * admitted the run: an on-demand trigger and a scheduled one reach the same admission. The
+     * instance records the grant id so that a later change to the report's consent cannot change
+     * the authority of a run that is already in flight. IAM owns the grant, so this column is not a
+     * checked foreign key.
      */
     std::optional<boost::uuids::uuid> run_grant_id;
 
@@ -106,9 +107,13 @@ struct report_instance final {
     std::optional<boost::uuids::uuid> fsm_state_id;
 
     /**
-     * @brief Scheduler trigger run ID that caused this instance to be created.
+     * @brief The trigger that admitted this run. Every instance has one: a run a person asks for
+     * and a run a schedule asks for are admitted the same way, and the database enforces that this
+     * names a trigger. The generated instance names its own uuid as the trigger, so the trigger it
+     * points at is derived from the instance rather than minted beside it, and a fixture that
+     * writes one can write the trigger row it names from the instance alone.
      */
-    std::int64_t trigger_run_id;
+    boost::uuids::uuid trigger_id;
 
     /**
      * @brief Execution log or error message.

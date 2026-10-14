@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 5E202386-A853-4F09-8D3A-026ECE6DAD4D
+:END:
+#+title: ores.reporting.report_trigger_type
+#+description: Codegen entity model for the reporting =report_trigger_type= table. The types of report trigger: a run a person asks for, and a run a schedule asks for.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The type of a report trigger.
+#+entity_singular: report_trigger_type
+#+entity_plural: report_trigger_types
+#+entity_title: Report Trigger Type
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+Reference data naming the types of report trigger. A report run is admitted by
+a trigger, and a trigger is one of two types:
+
+- =on_demand= is a run a person asks for now, by naming the report within the
+  party they are signed in to.
+- =scheduled= is a run a schedule asks for later. The scheduler job publishes a
+  trigger event when it fires, and a scheduled trigger names the job.
+
+The type is deliberately named =_type= and not =_kind=, so it is not confused
+with =report_instance.kind=, which says what a run does, production or package,
+rather than what admitted it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_report_trigger_types_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code of the type: on_demand or scheduled.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The human-readable name of the type.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What admits a run of this type, in one line.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the type appears in a list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_trigger_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: report trigger type
+:entity_plural_words:   report trigger types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rt
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| code             | Code             |
+| name             | Name             |
+| modified_by      | Modified By      |
+| version          | Version          |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

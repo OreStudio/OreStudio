@@ -71,8 +71,9 @@ caller may act in it.
 :default: 0
 :END:
 
-The scheduler's job instance that caused this trigger, copied to the report
-instance's =trigger_run_id=. Zero when a caller triggers a report by hand.
+The scheduler's job instance that caused this trigger. It becomes the trigger's
+=schedule_job_run_id=, so a run can be traced back to the firing that asked for
+it. Zero when a caller triggers a report by hand, which no firing produced.
 
 *** kind
 :PROPERTIES:

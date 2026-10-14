@@ -54,7 +54,7 @@ generate_synthetic_report_instance(utility::generation::generation_context& ctx)
     r.kind = std::string("production");
     r.run_grant_id = std::nullopt;
     r.fsm_state_id = std::nullopt;
-    r.trigger_run_id = faker::number::integer<std::int64_t>(1, 1000000);
+    r.trigger_id = r.id;
     r.output_message = std::string();
     r.output_storage_key = std::string{};
     r.started_at = std::nullopt;

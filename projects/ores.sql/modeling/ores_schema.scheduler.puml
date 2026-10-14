@@ -37,6 +37,11 @@ Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
 
+note as OtherGroups
+Keys this group states reach into:
+- ores_reporting_report_trigger_events_tbl (reporting)
+end note
+
 '
 ' ==================== scheduler (Job Scheduler) ====================
 '

@@ -142,8 +142,8 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id> "
-        "<trigger_run_id> <output_message> <output_storage_key> <started_at> <completed_at> "
-        "<reason> <commentary>");
+        "<trigger_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +151,8 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id> "
-        "<trigger_run_id> <output_message> <output_storage_key> <started_at> <completed_at> "
-        "<reason> <commentary> [--version <n>]");
+        "<trigger_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -160,7 +160,7 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <name> <description> <definition_id> <kind> <run_grant_id> "
-        "<fsm_state_id> <trigger_run_id> <output_message> <output_storage_key> <started_at> "
+        "<fsm_state_id> <trigger_id> <output_message> <output_storage_key> <started_at> "
         "<completed_at> <reason> <commentary>");
 
     menu->Insert(
@@ -368,7 +368,7 @@ void report_instance_commands::process_add(std::ostream& out,
         read_token(req.change.write.kind, parsed->positionals[next++], "kind");
         read_token(req.change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
         read_token(req.change.write.fsm_state_id, parsed->positionals[next++], "fsm_state_id");
-        read_token(req.change.write.trigger_run_id, parsed->positionals[next++], "trigger_run_id");
+        read_token(req.change.write.trigger_id, parsed->positionals[next++], "trigger_id");
         read_token(req.change.write.output_message, parsed->positionals[next++], "output_message");
         read_token(
             req.change.write.output_storage_key, parsed->positionals[next++], "output_storage_key");
@@ -428,7 +428,7 @@ void report_instance_commands::process_set(std::ostream& out,
         read_token(req.change.write.kind, parsed->positionals[next++], "kind");
         read_token(req.change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
         read_token(req.change.write.fsm_state_id, parsed->positionals[next++], "fsm_state_id");
-        read_token(req.change.write.trigger_run_id, parsed->positionals[next++], "trigger_run_id");
+        read_token(req.change.write.trigger_id, parsed->positionals[next++], "trigger_id");
         read_token(req.change.write.output_message, parsed->positionals[next++], "output_message");
         read_token(
             req.change.write.output_storage_key, parsed->positionals[next++], "output_storage_key");
@@ -502,7 +502,7 @@ void report_instance_commands::process_put_many(std::ostream& out,
             read_token(change.write.kind, parsed->positionals[next++], "kind");
             read_token(change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
             read_token(change.write.fsm_state_id, parsed->positionals[next++], "fsm_state_id");
-            read_token(change.write.trigger_run_id, parsed->positionals[next++], "trigger_run_id");
+            read_token(change.write.trigger_id, parsed->positionals[next++], "trigger_id");
             read_token(change.write.output_message, parsed->positionals[next++], "output_message");
             read_token(
                 change.write.output_storage_key, parsed->positionals[next++], "output_storage_key");

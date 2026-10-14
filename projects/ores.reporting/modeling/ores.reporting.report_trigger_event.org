@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 47E6903C-DFA7-4D2F-B044-C1C74428F719
+:END:
+#+title: ores.reporting.report_trigger_event
+#+description: Codegen entity model for the reporting =report_trigger_event= table, one row per report trigger, on demand or scheduled.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+entity_singular: report_trigger_event
+#+entity_plural: report_trigger_events
+#+entity_title: Report Trigger Event
+#+brief: One report trigger, on demand or scheduled, that admitted a report run.
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+One row per report trigger. A trigger is how a run is admitted, and it is of two
+types: a person asks for the run now, or a schedule asks for it later. The
+scheduler does not write this table. Its job publishes a trigger event, and the
+reporting service records the trigger here and admits the run, so both types
+reach the same handler and differ only in the payload.
+
+The rows are append-only, so the model states =:current_state:=: an event is a
+fact about an instant, and the bi-temporal pair has no meaning on it. A
+current-state immutable table has no audit tail, so the actor and the time are
+columns of its own and there is no version and no validity window. The table is
+plain, not a hypertable: =ores.iam.auth_event= is one because logins are high
+volume, and triggers are a handful a day.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:read_only:     true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this trigger.
+
+** report_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The definition this trigger runs.
+
+** trigger_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What asked for the run: =on_demand= or =scheduled=. Refers to
+ores_reporting_report_trigger_types_tbl.
+
+** scheduler_job_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The scheduler job that fired, when the type is scheduled. The scheduler owns
+that job, so this is a soft foreign key and not a database constraint. It is a
+uuid because the job definition's key is one, and because the same reference on
+ores.reporting.report_definition is spelled scheduler_job_id and typed uuid.
+
+** schedule_job_run_id
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+The scheduler firing that produced this trigger, when the type is scheduled.
+Null for an on-demand trigger, which no firing produced.
+
+** triggered_by
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The person who asked for the run. For a scheduled trigger it is the person
+whose consent the schedule acts under.
+
+** triggered_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+When the trigger was recorded.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The party the run acts in.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_reporting_report_trigger_events_tbl
+:current_state:    true
+:immutable:        true
+:no_audit_columns: true
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+** Checks
+
+| expression                                                     |
+|----------------------------------------------------------------|
+| "trigger_type" <> 'scheduled' or "scheduler_job_id" is not null |
+
+* Foreign keys
+
+** trigger_type
+:PROPERTIES:
+:table:             ores_reporting_report_trigger_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid trigger_type: %. No active report trigger type found with this code.
+:END:
+
+Report trigger types are a system-wide lookup seeded for the system tenant only,
+so the check reads that tenant whatever tenant owns the trigger.
+
+** scheduler_job_id
+:PROPERTIES:
+:table:               ores_scheduler_job_definitions_tbl
+:use_no_tenant:       true
+:target_no_validity: true
+:nullable:            true
+:error_message:       Invalid scheduler_job_id: %. No scheduler job definition found with this id.
+:END:
+
+The scheduler owns its job definitions, so this is a soft foreign key validated
+here rather than a database constraint. Its table is hand-written and carries no
+validity window, so the check names its id alone. The key is a uuid, which is
+what the scheduler declares its job definition's id to be.
+
+** schedule_job_run_id
+:PROPERTIES:
+:table:               ores_scheduler_job_instances_tbl
+:use_no_tenant:       true
+:target_no_validity: true
+:nullable:            true
+:error_message:       Invalid schedule_job_run_id: %. No scheduler job instance found with this id.
+:END:
+
+The scheduler owns its job instances, so this is a soft foreign key validated
+here rather than a database constraint. Its table is hand-written and carries no
+validity window, so the check names its id alone. The key is a bigint, which is
+what the scheduler declares, so this reference is typed bigint and not uuid.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trigger
+:entity_plural_short:   triggers
+:entity_singular_words: report trigger event
+:entity_plural_words:   report trigger events
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rte
+:END:
+
+* Physical space
+
+The table is internal: the trigger handler that writes it is hand-written, so
+only the data layer and the SQL schema are generated here.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell-command              | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

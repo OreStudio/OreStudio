@@ -1,0 +1,131 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REPORTING_API_DOMAIN_REPORT_TRIGGER_EVENT_HPP
+#define ORES_REPORTING_API_DOMAIN_REPORT_TRIGGER_EVENT_HPP
+
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <string_view>
+
+namespace ores::reporting::domain {
+
+/**
+ * @brief One report trigger, on demand or scheduled, that admitted a report run.
+ *
+ * One row per report trigger. A trigger is how a run is admitted, and it is of two
+ * types: a person asks for the run now, or a schedule asks for it later. The
+ * scheduler does not write this table. Its job publishes a trigger event, and the
+ * reporting service records the trigger here and admits the run, so both types
+ * reach the same handler and differ only in the payload.
+ *
+ * The rows are append-only, so the model states :current_state:: an event is a
+ * fact about an instant, and the bi-temporal pair has no meaning on it. A
+ * current-state immutable table has no audit tail, so the actor and the time are
+ * columns of its own and there is no version and no validity window. The table is
+ * plain, not a hypertable: ores.iam.auth_event is one because logins are high
+ * volume, and triggers are a handful a day.
+ */
+struct report_trigger_event final {
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief UUID uniquely identifying this trigger.
+     */
+    boost::uuids::uuid id;
+
+    /**
+     * @brief The definition this trigger runs.
+     */
+    boost::uuids::uuid report_definition_id;
+
+    /**
+     * @brief What asked for the run: on_demand or scheduled. Refers to
+     * ores_reporting_report_trigger_types_tbl.
+     */
+    std::string trigger_type;
+
+    /**
+     * @brief The scheduler job that fired, when the type is scheduled. The scheduler owns that job,
+     * so this is a soft foreign key and not a database constraint. It is a uuid because the job
+     * definition's key is one, and because the same reference on ores.reporting.report_definition
+     * is spelled scheduler_job_id and typed uuid.
+     */
+    std::optional<boost::uuids::uuid> scheduler_job_id;
+
+    /**
+     * @brief The scheduler firing that produced this trigger, when the type is scheduled. Null for
+     * an on-demand trigger, which no firing produced.
+     */
+    std::optional<std::int64_t> schedule_job_run_id;
+
+    /**
+     * @brief The person who asked for the run. For a scheduled trigger it is the person whose
+     * consent the schedule acts under.
+     */
+    std::string triggered_by;
+
+    /**
+     * @brief When the trigger was recorded.
+     */
+    std::chrono::system_clock::time_point triggered_at;
+
+    /**
+     * @brief The party the run acts in.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const report_trigger_event&, const report_trigger_event&) = default;
+};
+
+/**
+ * @brief Dispatch-key identifier for report_trigger_event, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const report_trigger_event&) {
+    return "ores.reporting.report_trigger_event";
+}
+
+}
+
+#endif

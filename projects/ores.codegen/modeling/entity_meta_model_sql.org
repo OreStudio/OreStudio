@@ -229,6 +229,14 @@ a target with no =tenant_id= at all. Neither =:use_system_tenant:= nor
 =:system_tenant_visible:= combines with =:enforce:=, since a =REFERENCES=
 constraint can only match the row's own tenant.
 
+The check reads the target's current version by default, because a temporal
+target holds closed versions beside the live one. A target with no validity
+window at all -- a hand-written table with no modeling org -- states
+=:target_no_validity: true=, and the check then names the key column alone
+rather than filtering on a =valid_to= the target does not have. A target
+whose model states =:immutable:= needs no such flag: the generator reads its
+immutability itself.
+
 *A foreign key into an immutable entity can be enforced by the
 database.* A foreign key is normally a trigger check against the target's
 current row, because a temporal target holds closed versions that a

@@ -473,9 +473,9 @@ begin
            or tenant_id = ores_utility_system_tenant_id_fn())
           and {{/system_tenant_visible}}{{^use_system_tenant}}{{^system_tenant_visible}}tenant_id = NEW.tenant_id
           and {{/system_tenant_visible}}{{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
-{{^target_immutable}}
+{{^target_no_validity}}
           and valid_to = ores_utility_infinity_timestamp_fn()
-{{/target_immutable}}
+{{/target_no_validity}}
     ) then
         raise exception '{{error_message}}', NEW.{{column}}
             using errcode = '23503';
@@ -500,9 +500,9 @@ begin
                or tenant_id = ores_utility_system_tenant_id_fn())
               and {{/system_tenant_visible}}{{^use_system_tenant}}{{^system_tenant_visible}}tenant_id = NEW.tenant_id
               and {{/system_tenant_visible}}{{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
-{{^target_immutable}}
+{{^target_no_validity}}
               and valid_to = ores_utility_infinity_timestamp_fn()
-{{/target_immutable}}
+{{/target_no_validity}}
         ) then
             raise exception '{{error_message}}', NEW.{{column}}
                 using errcode = '23503';

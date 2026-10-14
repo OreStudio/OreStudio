@@ -24,6 +24,7 @@
 \ir ./reporting_report_instances_notify_trigger_drop.sql
 \ir ./reporting_report_instances_fsm_guard_drop.sql
 \ir ./reporting_report_instances_drop.sql
+\ir ./reporting_report_trigger_events_drop.sql
 \ir ./reporting_report_instance_kinds_notify_trigger_drop.sql
 \ir ./reporting_report_instance_kinds_drop.sql
 \ir ./reporting_risk_report_config_books_drop.sql
@@ -62,6 +63,9 @@
 
 \ir ./reporting_configuration_types_notify_trigger_drop.sql
 \ir ./reporting_configuration_types_drop.sql
+
+\ir ./reporting_report_trigger_types_notify_trigger_drop.sql
+\ir ./reporting_report_trigger_types_drop.sql
 
 \ir ./reporting_configuration_parameters_notify_trigger_drop.sql
 \ir ./reporting_configuration_parameters_drop.sql

@@ -122,11 +122,11 @@ std::string("production")
 :nullable: true
 :END:
 
-The IAM run grant that this run acts under. Copied from the definition when
-the scheduler trigger admits the run. The instance records the grant id so that
-a later change to the definition's consent cannot change the authority of a run
-that is already in flight. IAM owns the grant, so this column is not a checked
-foreign key.
+The IAM run grant that this run acts under, copied from the definition whatever
+admitted the run: an on-demand trigger and a scheduled one reach the same
+admission. The instance records the grant id so that a later change to the
+report's consent cannot change the authority of a run that is already in
+flight. IAM owns the grant, so this column is not a checked foreign key.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -145,17 +145,22 @@ Current FSM state (FK to ores_dq_fsm_states_tbl).
 std::nullopt
 #+end_src
 
-** trigger_run_id
+** trigger_id
 :PROPERTIES:
-:type:     bigint
-:cpp_type: std::int64_t
+:type:     uuid
+:cpp_type: boost::uuids::uuid
 :nullable: false
 :END:
 
-Scheduler trigger run ID that caused this instance to be created.
+The trigger that admitted this run. Every instance has one: a run a person asks
+for and a run a schedule asks for are admitted the same way, and the database
+enforces that this names a trigger. The generated instance names its own uuid as
+the trigger, so the trigger it points at is derived from the instance rather
+than minted beside it, and a fixture that writes one can write the trigger row
+it names from the instance alone.
 
 #+begin_src cpp :name generator
-faker::number::integer<std::int64_t>(1, 1000000)
+r.id
 #+end_src
 
 ** output_message
@@ -224,7 +229,6 @@ std::nullopt
 :PROPERTIES:
 :table:             ores_reporting_report_instance_kinds_tbl
 :target_column:     code
-:parent_entity:     report_instance_kind
 :use_system_tenant: true
 :nullable:          false
 :error_message:     Invalid kind: %. No active report instance kind found with this code.
@@ -232,6 +236,32 @@ std::nullopt
 
 Report instance kinds are a system-wide lookup seeded for the system tenant only, so
 the check reads that tenant whatever tenant owns the instance.
+
+** trigger_id
+:PROPERTIES:
+:table:             ores_reporting_report_trigger_events_tbl
+:enforce:           true
+:nullable:          false
+:error_message:     Invalid trigger_id: %. No report trigger found with this id.
+:END:
+
+A trigger row is immutable, so the database can hold this as a real foreign key
+rather than a trigger check, and it does: every instance names the trigger that
+admitted it.
+
+The eventing integration test writes the trigger the instance names before it
+writes the instance, because the constraint admits no instance without one. The
+seed asks the fixture for the trigger row a generated instance names, so the
+instance keeps the uuid the generator gave it and the trigger is derived from
+the instance rather than minted beside it.
+
+#+begin_src cpp :name parent_seed_includes
+#include "report_instance_test_fixture.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    v.trigger_id = ores::reporting::tests::write_trigger_for(party_ctx, ctx, v).id;
+#+end_src
 
 * C++
 
@@ -280,7 +310,7 @@ the check reads that tenant whatever tenant owns the instance.
 | name            | Name        |
 | kind            | Kind        |
 | definition_id   | Definition  |
-| trigger_run_id  | Trigger Run |
+| trigger_id      | Trigger     |
 | output_message  | Output      |
 | started_at      | Started At  |
 | completed_at    | Completed   |
@@ -323,7 +353,7 @@ the check reads that tenant whatever tenant owns the instance.
 | Name          | name           | Name        | string    | 200   |
 | Kind          | kind           | Kind        | string    | 100   |
 | DefinitionId  | definition_id  | Definition  | uuid      | 200   |
-| TriggerRunId  | trigger_run_id | Trigger Run | int       | 100   |
+| TriggerId     | trigger_id     | Trigger     | uuid      | 200   |
 | OutputMessage | output_message | Output      | string    | 250   |
 | StartedAt     | started_at     | Started At  | timestamp | 150   |
 | CompletedAt   | completed_at   | Completed   | timestamp | 150   |

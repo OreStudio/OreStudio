@@ -50,6 +50,7 @@ render_report_instance_fields(const domain::report_instance& v) {
     fields.push_back(
         {.name = "Fsm State ID",
          .value = v.fsm_state_id ? boost::uuids::to_string(*v.fsm_state_id) : std::string{}});
+    fields.push_back({.name = "Trigger ID", .value = boost::uuids::to_string(v.trigger_id)});
     fields.push_back({.name = "Output Message", .value = v.output_message});
     fields.push_back({.name = "Output Storage Key", .value = v.output_storage_key});
     fields.push_back({.name = "Started At",

@@ -194,13 +194,14 @@ via its "Verifies task" field.
 
 * Result
 
-Each of the nine has a recorded owner decision, and the four that moved took
+Each of the nine has a recorded owner decision, and the three that moved took
 their staging shape with them.
 
-Four stayed in =ores.dq=: =badge_definition=, =badge_severity=, =code_domain=
-and =coding_scheme= because DQ owns those registries and they are not staging,
-and =lei_entity=, =lei_relationship= and =lei_bic= because their artefact type
-row is terminal, which makes each staging table the entity's only store.
+Six of the nine stayed in =ores.dq=. =badge_definition=, =badge_severity=,
+=code_domain= and =coding_scheme= stayed because DQ owns those registries and
+they are not staging. =lei_entity= and =lei_relationship= stayed because their
+artefact type row is terminal, which makes the staging table the entity's only
+store, and =lei_bic= joined them as a model.
 
 Three models moved onto the model that owns their published rows:
 =counterparty_alias= onto =ores.refdata.counterparty_identifier=,

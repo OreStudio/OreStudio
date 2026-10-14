@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: AC63918F-6BAA-4AB2-BA1E-80AC7AF8B7B2
+:END:
+#+title: Story: Stop deleting the compiler cache before saving it
+#+description: Both cache-saving workflows delete the sccache entry and then save it, because actions/cache/save cannot overwrite an existing key. When the save then fails, the entry is gone: the cache service does fail, with 400 responses and outages in the logs, and the two Linux clang entries have now disappeared. Save under a run-unique key with a restore-keys prefix instead, so a failed save can never destroy the cache, and drop the delete.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:sccache:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A failed or interrupted cache save can never remove the compiler cache that already exists.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- Neither workflow deletes a cache entry.
+- Both restore from any recent entry and save under a run-unique key.
+- A run whose local cache is too small to help does not become the newest entry.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2FE9281D-11FA-475C-B030-F917F9F10EFB][Scaffold story: Stop deleting the compiler cache before saving it]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D5CEDD0F-8190-4DAA-90D1-5E858FC6BCEE][Save the compiler cache under a run-unique key]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Stop deleting the compiler cache before saving it |
+
+* Decisions
+
+- Saves use a run-unique key and restores match the key prefix. That removes
+  the delete step entirely, so no save failure can destroy a stored entry.
+- Old entries are left to the seven-day rule and LRU eviction rather than
+  being deleted in place.
+- The 1000 MB floor applies in both workflows, because prefix matching means
+  the newest entry wins and a run that failed early must not become it.
+
+* Out of scope
+
+- Caching the macOS and Windows compiler caches. They still do not fit: the
+  Linux variants alone approach the 10 GB repository cap.

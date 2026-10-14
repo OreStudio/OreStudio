@@ -183,7 +183,11 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          # Saves use a run-unique key, so restore by prefix and take the
+          # newest entry. Nothing deletes cache entries any more.
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          restore-keys: |
+            sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.24
@@ -324,22 +328,15 @@ jobs:
             echo "worth_saving=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Delete sccache entry
-        # Delete first: actions/cache/save cannot overwrite an existing key.
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --method DELETE \
-            "/repos/${{ github.repository }}/actions/caches?key=sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
-            || true
-
       - name: Save sccache
+        # The key is unique per run, so the save never collides and there is no
+        # delete step. A save that fails leaves the entries already stored
+        # untouched, where deleting first would have destroyed them.
         if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
 
       - name: Show sccache statistics
         # ccache-action installs sccache. If no build ran, it is absent, and

@@ -143,7 +143,11 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          # Saves use a run-unique key, so restore by prefix and take the
+          # newest entry. Nothing deletes cache entries any more.
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          restore-keys: |
+            sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.24
@@ -253,24 +257,31 @@ jobs:
           cmake_args="${cmake_args},code_coverage=1,with_memcheck=1"
           ctest -VV --timeout 12000 --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
-      - name: Delete sccache entry
-        # Only after a build. An earlier failure never touches the compiler
-        # cache, and deleting the entry then discards a warm cache nothing
-        # replaced.
-        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Check the compiler cache is worth saving
+        id: sccache_worth
+        # Restore takes the newest match, so a run that fails before it
+        # compiles much must not become the newest entry. Run this after any
+        # build the CTest step reached, cancelled or not.
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
         run: |
-          gh api --method DELETE \
-            "/repos/${{ github.repository }}/actions/caches?key=sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
-            || true
+          size_mb=$(du -sm "${SCCACHE_DIR}" 2>/dev/null | cut -f1)
+          size_mb=${size_mb:-0}
+          echo "local compiler cache: ${size_mb} MB"
+          if [ "$size_mb" -ge 1000 ]; then
+            echo "worth_saving=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "worth_saving=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Save sccache
-        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
+        # The key is unique per run, so the save never collides and there is no
+        # delete step. A save that fails leaves the entries already stored
+        # untouched, where deleting first would have destroyed them.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
 
       - name: Show sccache statistics
         # ccache-action installs sccache. If no build ran, it is absent, and

@@ -113,7 +113,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Hand-written artefact tables left | 0 | the census loop in [[id:F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1][Model the hand-written tables that have a codegen shape]] | f86f35ce60 |
+| Store columns | identical to the hand-written table, plus =primary key (ip_range)= | =git diff= on the create table body | f86f35ce60 |
+| Staging table body | byte-identical to the hand-written one | =git diff= on the create table body | f86f35ce60 |
+| Lookup, after =compass db recreate= | =0.0.0.1= and =0.255.255.255= answer GB, =1.0.0.0= is past the half-open end, an address outside every range and an IPv6 address answer nothing | =compass sql= against =ores_geo_ip2country_lookup_fn= | f86f35ce60 |
+| Local gate, non-heavy | 35 of 35 | =compass check --exclude-heavy= | fb84e8bbb3 |
 
 * Notes
 
@@ -141,3 +145,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores_geo_ip2country_tbl= and its DQ staging table both come from
+=ores.geo.ip2country=. The artefact table's body is byte-identical to the
+hand-written one; the store's columns, their order and both of its indexes are
+identical, and it gains a primary key on =ip_range=.
+
+Acceptance: =ores.geo= has the model, and it generates both tables. The publish
+function is unchanged and still compiles against them; the lookup function and
+=ores_geo_inet_to_bigint_fn= moved to a file of their own, unchanged, and answer
+correctly against a recreated database.
+
+Three things the work needed that the task did not name:
+
+- =ores.geo= was not in the codegen component catalogue at all, so no model of
+  it could be read. It is flat, so the model states =:no_subcomponent:=.
+- The index faces rendered =on tbl (columns)= and could not say =using gist=,
+  which is the only index that answers =ip_range @> address=. Both now take an
+  access method; the entity index table gained a =using= column.
+- A range has no C++ type, so the store cannot have a client surface. The new
+  [[id:5B0A3DD1-A705-439B-9FA8-E5FEB9C1B267][SQL-only store]] profile withdraws
+  one per technical space, which also takes the notify trigger: a per-row
+  =pg_notify= over a table loaded in bulk is the publish path's whole cost.
+
+The one shape change is the primary key. The current-state template asks a
+stored table for a key, and a range that appears twice is meaningless, so the
+key is the range. A dataset carrying the same range twice would now refuse at
+publish instead of storing it twice.
+
+The staging table's indexes follow the generated naming
+(=dq_ip2country_artefact_*_idx=) rather than the hand-written
+=ip2country_artefact_*_idx=, and it gains the key index the template emits. Its
+GiST index is kept as written.

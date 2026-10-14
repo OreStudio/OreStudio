@@ -52,6 +52,8 @@ Read these first on a new contact:
 * Architecture
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System model]] — four-layer architecture and component inventory.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — read this before
+  authoring or changing any model, and pick one pattern from the library.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — cross-cutting reference: entity patterns, SQL schema,
   presentation patterns, CLI/shell patterns, unit-test conventions.
 

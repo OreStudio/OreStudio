@@ -1558,6 +1558,11 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                     "nulls_not_distinct": _parse_typed(
                         r.get("nulls_not_distinct", "false")
                     ),
+                    # The access method, for an index that is not a btree: a
+                    # range column is looked up by containment, which only a
+                    # GiST or SP-GiST index answers. Empty means btree, so the
+                    # templates emit no `using` clause at all.
+                    "using": r.get("using", "") or None,
                 }
                 for r in rows if r.get("name")
             ]

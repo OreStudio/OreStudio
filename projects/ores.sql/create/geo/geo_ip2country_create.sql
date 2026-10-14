@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,65 +17,52 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * IP to Country Table
+ *
+ * An IPv4 address range and the country code it resolves to, one row per range
+ * per tenant. The ranges are found by containment -- ip_range @> address -- so
+ * the range is the key and the index over it is a GiST index; a btree cannot
+ * answer a containment test.
+ *
+ * The store holds no history. A publish truncates it and loads the ranges the
+ * dataset carries, because ip2country reissues its whole table rather than
+ * amending rows.
+ */
 
--- =============================================================================
--- IP range to country code mapping.
--- Uses GiST index for fast lookups.
--- =============================================================================
-
-create table if not exists ores_geo_ip2country_tbl (
+create table if not exists "ores_geo_ip2country_tbl" (
     "ip_range" int8range not null,
     "tenant_id" uuid not null,
-    "country_code" text not null
+    "country_code" text not null,
+    primary key (ip_range)
 );
 
+
+
 create index if not exists ip2country_range_idx
-on ores_geo_ip2country_tbl using gist (ip_range);
+on "ores_geo_ip2country_tbl" using gist (ip_range);
 
 create index if not exists ip2country_tenant_idx
-on ores_geo_ip2country_tbl (tenant_id);
+on "ores_geo_ip2country_tbl" (tenant_id);
 
-create or replace function ores_geo_inet_to_bigint_fn(ip_address inet)
-returns bigint as $$
-begin
-    if family(ip_address) <> 4 then
-        return null;
-    end if;
-
-    -- The inet difference operator yields the address as an integer, which is
-    -- the space the ip2country ranges are stored in.
-    return ip_address - '0.0.0.0'::inet;
-end;
-$$ language plpgsql immutable strict;
-
--- The ranges are published per tenant, so the lookup is per tenant too: the
--- same address resolves to a country in the tenant whose ranges cover it,
--- and to nothing in a tenant that has published none.
-create or replace function ores_geo_ip2country_lookup_fn(
-    p_tenant_id uuid,
-    p_ip_address inet
-)
-returns table (
-    country_code text
-) as $$
+create or replace function ores_geo_ip2country_insert_fn()
+returns trigger as $$
 declare
-    ip_as_bigint bigint;
 begin
-    if p_tenant_id is null then
-        return;
-    end if;
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    ip_as_bigint := ores_geo_inet_to_bigint_fn(p_ip_address);
 
-    if ip_as_bigint is null then
-        return;
-    end if;
 
-    return query
-    select c.country_code
-    from ores_geo_ip2country_tbl c
-    where c.tenant_id = p_tenant_id
-      and c.ip_range @> ip_as_bigint
-    limit 1;
+    return NEW;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger ores_geo_ip2country_insert_trg
+before insert on "ores_geo_ip2country_tbl"
+for each row execute function ores_geo_ip2country_insert_fn();
+

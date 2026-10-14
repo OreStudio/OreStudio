@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: A6CA5E44-D28C-498A-911E-AD426B74B57D
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.geo.ip2country
+#+description: Codegen entity model for the geo =ip2country= table. Drives the SQL schema generation for the IPv4 range store and the DQ staging table it is published from.
+#+type: ores.codegen.entity
+#+component: geo
+#+filetags: :model:entity:geo:
+#+brief: An IPv4 address range and the country code it resolves to.
+#+entity_singular: ip2country
+#+entity_plural: ip2country
+#+entity_title: IP to Country
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+An IPv4 address range and the country code it resolves to, one row per range
+per tenant. The ranges are found by containment -- =ip_range @> address= -- so
+the range is the key and the index over it is a GiST index; a btree cannot
+answer a containment test.
+
+The store holds no history. A publish truncates it and loads the ranges the
+dataset carries, because ip2country reissues its whole table rather than
+amending rows.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: geo
+:profile:   read-only-current-state, sql-only-store
+:END:
+
+* Columns
+
+** ip_range
+:PROPERTIES:
+:type:         int8range
+:primary_key:  true
+:END:
+
+The addresses this row covers, as the integers IPv4 addresses are counted in.
+
+The range is half-open: it covers its lower bound and not its upper, so the
+publish function makes it from the first address and the last address plus
+one. Ranges that touch share a boundary rather than overlapping.
+
+** country_code
+:PROPERTIES:
+:type: text
+:END:
+
+The ISO 3166-1 alpha-2 country the addresses in this range belong to.
+
+* Artefact columns
+:PROPERTIES:
+:key: range_start
+:END:
+
+The dataset states a range by its first and last address rather than by the
+range itself, so the staging row carries the two ends and the publish function
+makes the range.
+
+** range_start
+:PROPERTIES:
+:type: bigint
+:END:
+
+** range_end
+:PROPERTIES:
+:type: bigint
+:END:
+
+** country_code
+:PROPERTIES:
+:type: text
+:END:
+
+* Artefact indexes
+
+** range
+:PROPERTIES:
+:columns: int8range(range_start, range_end + 1, '[)')
+:using:   gist
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_geo_ip2country_tbl
+:END:
+
+** Indexes
+
+The tenant index is declared here rather than left to the template: a
+current-state entity whose tenant is not in its key emits no tenant index of its
+own, and the lookup filters by tenant on every call.
+
+| name   | columns   | unique | current_only | where_extra | using |
+|--------+-----------+--------+--------------+-------------+-------|
+| range  | ip_range  | false  | false        |             | gist  |
+| tenant | tenant_id | false  | false        |             |       |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:no_subcomponent: true
+:END:
+
+=ores.geo= keeps its headers at its own include root, so there is no directory
+between the component and =domain/= for this model to name. The flag is stated
+even though =sql-only-store= withdraws the C++ space, because it describes the
+component rather than the surface.
+
+* Notes
+
+Bound to [[id:5B0A3DD1-A705-439B-9FA8-E5FEB9C1B267][SQL-only store]] (alongside its shape profile): the only reader of this table is =ores_geo_ip2country_lookup_fn=, which answers in SQL, so the model generates the schema and no client surface. Its key is an =int8range=, which no C++ type maps, so a domain class could not be generated for it in any case.
+
+The range index is one of the few indexes in the tree that is not a btree.
+
+* See also
+
+- [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]] — component overview.

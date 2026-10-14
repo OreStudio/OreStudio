@@ -56,7 +56,7 @@ on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.artefac
 {{#domain_entity.artefact_indexes}}
 
 create {{#unique}}unique {{/unique}}index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{name}}_idx
-on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{columns}});
+on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl{{#using}} using {{{using}}}{{/using}} ({{{columns}}});
 {{/domain_entity.artefact_indexes}}
 {{#domain_entity.has_artefact_insert_fn}}
 

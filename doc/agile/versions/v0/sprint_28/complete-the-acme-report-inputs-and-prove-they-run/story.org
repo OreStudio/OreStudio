@@ -48,6 +48,7 @@ Add the analytic and exposure input documents the reports read through DQ, add a
 | [[id:DFB92E3F-3722-4534-AD48-B830DA1D22C2][Prove the ACME reports are ready to run]] | BACKLOG | | | Add a readiness check that states, for each definition, what it lacks to run, and show it passes for every ACME definition after a clean provision. |
 | [[id:6C76E6D4-7E07-45F1-A2E9-7B68696E4558][Resolve the curve quote names against the synthetic feeds]] | BACKLOG | | | Check that the quote keys of the ACME curve configurations match the series that the synthetic feeds produce, once the feed naming refactor lands. |
 | [[id:750A7C23-BFB5-4E7E-82F4-99EA337A27B4][Split an ORE file by a key]] | BACKLOG | | | Let the export write one file for each value of a key, such as one portfolio file for each book, using the name pattern of the file types table. |
+| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | BACKLOG | | | A manual run of a definition that has no schedule cannot act: triggering copies the definition's run grant, and an unscheduled definition has none, so the run fails with 'the report instance records no run grant'. The design says a manual run creates a one-run grant from the person who asked for it; create it at admission so building a report's packages works on any definition, scheduled or not. |
 
 * Decisions
 

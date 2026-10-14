@@ -55,6 +55,15 @@ apart:
 Neither spelling is wrong yet, because no page states a rule. The sweep should
 settle it.
 
+** Names that claim to be generated and are not
+
+Found while reading the templates for the naming page.
+
+| Name | Problem |
+|------+---------|
+| =output/{entity}_er.puml= from the archetype =ores.plantuml.er.diagram= | The archetype is referenced by no code, so the name is dead. The live diagrams are =ores_schema.{component}.puml= |
+| =domain_{entity}_tests.cpp= | Exists for =report_instance= but has no archetype and no generated banner. It is hand-written under a name that reads as generated |
+
 * Scope to decide before starting
 
 - Whether the sweep covers only table and entity names, or the protocol

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :bring_the_service_code_onto_the_nats_patterns:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bring-the-service-code-onto-the-nats-patterns
 #+pr:
 #+blocked_on:
 +#+blocked_since:
@@ -51,7 +51,7 @@ A pattern the code proves wrong is amended rather than the code bent to fit it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6B5E348B-6B7A-46BF-AB56-33E4D5327AE4][Bring the service code onto the NATS patterns]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -136,3 +136,4 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+#+environment: brave_hopper

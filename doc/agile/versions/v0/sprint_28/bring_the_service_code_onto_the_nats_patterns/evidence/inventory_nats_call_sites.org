@@ -246,17 +246,23 @@ which states the exception:
   that no translation unit wires, so they never exist at runtime. Dead
   generated code, not a deviation.
 
-* Proposed fix order
+* Fix order and progress
 
-1. *D3* — the one correctness bug. A stalled run with a clean log.
-2. *D2* — acknowledgement discipline and the attempt bound. One change,
-   because the guard and the bound are the same mechanism.
-3. *D8* — the generated receipt line. One template edit, ~3600 methods.
-4. *D5* and *D6* — the hand-written error paths, per handler, triaged by
-   whether the handler has a reply subject.
-5. *D4* — message identity, now that D2 has made redelivery reachable.
-6. *D1* — one site, after confirming its kind.
-7. *D7* — two comments.
+| # | Deviation | State | What was done |
+|---+-----------+-------+---------------|
+| D3 | Completion published without an acknowledgement | *fixed* | =js_publish=, so the throw skips the link removal and the poll retries |
+| D2 | Durable subscriptions acknowledge automatically | *fixed* | Explicit policy and a required delivery bound; =ack_guard=, and the transport retries an undecided delivery; the three durable handlers answer explicitly |
+| D8 | Receipt line missing on most handlers | *fixed* | One template edit; all 400 generated handlers now log subject, correlation id, session id and tenant |
+| D5 | A decode failure that is not answered | *fixed* | =crm_handler= refuses with =bad_request=, and its bridge calls are guarded |
+| D1 | Request/reply subject without a queue group | *fixed* | =get_http_info= is now queue-subscribed as =ores.http.server= |
+| D6 | Thirty handlers that can let an exception escape | *partial* | =crm_handler= and =workflow_query_handler::list_instances= guarded. The remaining 28 need per-handler triage |
+| D4 | No message identity on a retryable message | *not started* | Now reachable, because D2 makes redelivery happen |
+| D7 | Two explicit deadlines without their reason | *not started* | Two comments |
+
+D6 remains the substantial item and must be done per handler rather than in
+bulk: a =publish_from_dq= consumer has no reply subject, so catching and logging
+is correct there and a reply is impossible, while a =*_query_handler= serves
+request/reply and must answer. Each of the 28 states which kind it is.
 
 * See also
 

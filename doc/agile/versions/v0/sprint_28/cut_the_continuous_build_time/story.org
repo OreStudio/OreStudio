@@ -39,7 +39,7 @@ The continuous linux-clang jobs finish inside the six-hour limit on a cold runne
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D7F7AB28-1CED-4F0F-9CAF-E62A8CA17B37][Scaffold story: Cut the continuous build time]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:2D3E420F-8C52-413F-8ADA-0C2F2FC89066][Trial a unity build and precompiled headers]] | BACKLOG | | | Initial task for: Cut the continuous build time |
+| [[id:2D3E420F-8C52-413F-8ADA-0C2F2FC89066][Trial a unity build and precompiled headers]] | STARTED | 2026-10-14 | | Initial task for: Cut the continuous build time |
 
 * Decisions
 

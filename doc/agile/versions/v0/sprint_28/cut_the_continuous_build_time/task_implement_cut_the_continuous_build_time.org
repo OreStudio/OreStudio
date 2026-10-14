@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :cut_the_continuous_build_time:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/cut-the-continuous-build-time
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The continuous linux-clang jobs finish inside the six-hour limit on a cold runne
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,10 @@ The continuous linux-clang jobs finish inside the six-hour limit on a cold runne
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measure before changing anything. The linker is already measured out.
+Trial a whole-tree unity build against a non-unity baseline. If unity is
+blocked, trial precompiled headers instead. Adopt the lever that pays,
+behind an option, or record every lever as measured out.
 
 * Measurements
 
@@ -57,9 +58,47 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Steps completed before the six-hour limit | 5422 of 7187, in 5h39m | =gh run view --job 115624055025= | 3446f45cae |
+| Link steps in the whole build | 53 of 7187 | same log | 3446f45cae |
+| Largest gap between step completions | 36.9 s (ores.ore/core) | same log | 3446f45cae |
+| Median gap between step completions | 1.96 s | same log | 3446f45cae |
+| Whole-tree unity build outcome | fails in 19 s on a symbol collision | =cmake --build build/output/unity-trial= | this branch |
 
 * Notes
+
+** There is no hotspot to split
+
+The largest gap between two step completions in the failing run is 36.9 s
+and the median is 1.96 s. The time is spread across all 5422 steps, with a
+long tail of 20 to 30 s translation units in =ores.shell/refdata=,
+=ores.ore/core=, =ores.reporting/core= and =ores.trading/core=. Splitting
+one oversized translation unit therefore buys little.
+
+** The linker is measured out
+
+The build has 53 link steps out of 7187. Link time cannot be a
+significant share of a six-hour build, so a faster linker is not the lever.
+
+** The unity build is blocked on symbol hygiene
+
+Merging translation units fails immediately. Four files in
+=ores.analytics.quant= each define a file-local =small_kappa_threshold= at
+namespace scope, so one unity translation unit redefines it:
+
+=black_karasinski_process.cpp:33=, =ornstein_uhlenbeck_process.cpp:30=,
+=quadratic_gaussian_process.cpp:37=, =two_factor_gaussian_process.cpp:29=.
+
+The build stops in 19 s. A unity build therefore needs a sweep first:
+every file-local constant and helper becomes =static= or moves into an
+anonymous namespace. The sweep's size is unknown, because the build stops
+at the first collision.
+
+** What is left
+
+Precompiled headers, which do not change translation-unit boundaries and
+so carry no collision risk, and the sweep that would unblock unity. The
+non-unity baseline build runs in =build/output/nounity-trial= for the
+comparison.
 
 * Test Scenarios
 

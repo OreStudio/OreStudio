@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 68D196A8-B335-437D-806A-581546034558
+:END:
+#+title: Story: Report the nightly platform builds under the CDash Nightly group
+#+description: macOS and Windows moved off the continuous tier, but their workflows still pass build_group=Continuous to CTest.cmake, so CDash files every macOS and Windows build under Continuous. Nightly Build already reports under Nightly. Move both to Nightly so CDash matches the schedule the workflows now run on.
+#+type: story
+#+level: s2
+#+filetags: :ci:cdash:macos:windows:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every macOS and Windows build appears under the CDash Nightly group, and every Linux clang continuous build under Continuous.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- nightly-macos.yml and nightly-windows.yml pass build_group=Nightly.
+- continuous-linux.yml still passes build_group=Continuous.
+- No workflow passes the unsupported group Site to CTest.cmake.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D39FE222-F89F-43DC-AC74-AD988C5F0E96][Scaffold story: Report the nightly platform builds under the CDash Nightly group]] | STARTED | 2026-10-14 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6B6F19EC-7658-437F-8636-E3CE6998FCD9][Switch the macOS and Windows build group to Nightly]] | BACKLOG | | | Initial task for: Report the nightly platform builds under the CDash Nightly group |
+
+* Decisions
+
+* Out of scope
+
+-

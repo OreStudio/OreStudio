@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-13
-#+updated: 2026-10-13
+#+updated: 2026-10-14
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Move the fifteen lookup-template artefact tables onto domain models and retire t
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-13                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-14                               |
 
 * Acceptance
 
@@ -66,6 +66,51 @@ Move the fifteen lookup-template artefact tables onto domain models and retire t
   dataset stages it beside the definitions. It moved onto
   =ores.reporting.report_configuration= all the same, because the rows are
   reporting's once published.
+- *A store whose only reader is a SQL function gets no client surface.* A range
+  has no C++ type, so =ores.geo.ip2country= could not render a domain class
+  whatever else was true of it, and nothing in the tree would call one: the
+  country of an address is answered by =ores_geo_ip2country_lookup_fn= inside the
+  database. The [[id:5B0A3DD1-A705-439B-9FA8-E5FEB9C1B267][SQL-only store]]
+  profile withdraws one row per technical space, which takes the C++, TypeScript
+  and shell facets together, and the notify trigger with them -- its subscriber
+  is the eventing pipeline the profile removes, and a per-row =pg_notify= over a
+  table loaded in bulk is the publish path's whole cost.
+- *The index faces state an access method.* =ip_range @> address= is a
+  containment test, which only a GiST index answers, and neither index face could
+  say =using gist=. Both take one now, so a model whose index is not a btree can
+  say so rather than shipping an index the query cannot use.
+- *A stored table takes a key, even when the hand-written one had none.* The
+  current-state template asks a stored table for a key. =ip_range= is the honest
+  one: a range that appears twice in a store means nothing. A dataset that
+  carries the same range twice now refuses at publish instead of storing it
+  twice.
+
+* Result
+
+Every acceptance criterion holds, and no hand-written artefact table is left in
+the tree: =grep -rL 'Template: ' projects/ores.sql/create --include='*_artefact_create.sql'=
+returns nothing.
+
+- No DQ artefact table comes from the older lookup template. The template and
+  its literate source are deleted, and nothing renders from it.
+- Each remaining =ores.dq= artefact model has a recorded owner decision: six
+  stayed and four moved onto the component that owns the published rows, each
+  owning model stating the staging shape it took on.
+- The geo ip2country store is modelled, and it generates both the store and its
+  staging table. Its columns, order and both indexes match the hand-written
+  table; it gains a primary key on the range.
+- The hand-written =lei_bic= table moved with the other GLEIF tables and is
+  generated from =ores.dq.lei_bic=.
+
+The work also left three pieces of codegen infrastructure that outlive the
+story: the =using= access method on both index faces, the SQL-only store profile,
+and =ores.geo= itself registered in the component catalogue so its models are
+read at all.
+
+One gap is recorded and not this story's: the three GLEIF
+=*_artefact_insert_fn= functions have no callers, and
+=projects/ores.dq/core/modeling/ores.dq.protocol.org= does not list the GLEIF
+subjects. See the owner task's Notes.
 
 * Out of scope
 

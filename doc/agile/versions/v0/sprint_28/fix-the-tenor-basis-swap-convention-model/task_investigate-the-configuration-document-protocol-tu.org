@@ -8,7 +8,7 @@
 #+filetags: :msvc:c1202:refdata:investigation:fix-the-tenor-basis-swap-convention-model:sprint_28:v0:
 #+owner: marco
 #+branch: feature/investigate-the-configuration-document-protocol-tu
-#+pr:
+#+pr: 3282
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3282][#3282]] | [doc] Record why the configuration document unit fails C1202 |
 
 * Review
 

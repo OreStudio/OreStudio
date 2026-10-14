@@ -20,7 +20,6 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
-    "account_type_commands_tests.cpp"
     "asset_class_code_commands_tests.cpp"
     "asset_class_commands_tests.cpp"
     "asset_measure_commands_tests.cpp"
@@ -110,6 +109,7 @@ set(files
     "equity_curve_config_commands_tests.cpp"
     "equity_volatility_config_commands_tests.cpp"
     "floating_index_type_commands_tests.cpp"
+    "fpml_account_type_commands_tests.cpp"
     "fra_convention_commands_tests.cpp"
     "future_convention_commands_tests.cpp"
     "fx_option_convention_commands_tests.cpp"

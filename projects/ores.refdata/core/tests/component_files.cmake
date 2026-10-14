@@ -20,7 +20,6 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
-    "account_type_eventing_integration_tests.cpp"
     "asset_class_code_eventing_integration_tests.cpp"
     "asset_class_eventing_integration_tests.cpp"
     "asset_measure_eventing_integration_tests.cpp"
@@ -106,6 +105,7 @@ set(files
     "equity_curve_config_eventing_integration_tests.cpp"
     "equity_volatility_config_eventing_integration_tests.cpp"
     "floating_index_type_eventing_integration_tests.cpp"
+    "fpml_account_type_eventing_integration_tests.cpp"
     "fra_convention_eventing_integration_tests.cpp"
     "future_convention_eventing_integration_tests.cpp"
     "fx_option_convention_eventing_integration_tests.cpp"

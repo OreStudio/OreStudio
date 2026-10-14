@@ -91,7 +91,7 @@
 
 -- FPML artefact families. The staging table goes before the functions that
 -- publish from it, so a failed drop leaves nothing that reads a dead table.
-\ir ./dq_account_types_artefact_drop.sql
+\ir ./dq_fpml_account_types_artefact_drop.sql
 \ir ./dq_asset_classes_artefact_drop.sql
 \ir ./dq_asset_measures_artefact_drop.sql
 \ir ./dq_benchmark_rates_artefact_drop.sql

@@ -623,7 +623,7 @@ begin
     end if;
 
     if p_mode = 'replace_all' then
-        update ores_refdata_account_types_tbl
+        update ores_refdata_fpml_account_types_tbl
         set valid_to = current_timestamp
         where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -636,12 +636,12 @@ begin
             dq.coding_scheme_code,
             dq.source,
             dq.description
-        from ores_dq_account_types_artefact_tbl dq
+        from ores_dq_fpml_account_types_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
     loop
         select exists (
-            select 1 from ores_refdata_account_types_tbl existing
+            select 1 from ores_refdata_fpml_account_types_tbl existing
             where existing.code = r.code
               and existing.coding_scheme_code = r.coding_scheme_code
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
@@ -652,7 +652,7 @@ begin
             continue;
         end if;
 
-        insert into ores_refdata_account_types_tbl (
+        insert into ores_refdata_fpml_account_types_tbl (
             tenant_id,
             code, version, coding_scheme_code, source, description,
             modified_by, performed_by, change_reason_code, change_commentary

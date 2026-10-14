@@ -53,26 +53,6 @@ end note
 ' ==================== refdata (Reference Data) ====================
 '
 package "refdata" #FFF3E0 {
-    entity ores_refdata_account_types_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        * coding_scheme_code : text <<PK, FK>>
-        --
-        * version : integer
-          source : text
-          description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_refdata_account_types_tbl
-    Contains a code representing the type of an account, for example in a clearing or exchange model.
-    end note
-
     entity ores_refdata_asset_class_codes_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -123,7 +103,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_asset_classes_tbl
-    Defines a simple asset class categorization. Used for classification of the risk class of the trade.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Asset Class Table
+    Defines a simple asset class categorisation, used to classify the risk class of a trade. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_asset_measures_tbl <<temporal>> #C6F0D8 {
@@ -143,7 +129,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_asset_measures_tbl
-    The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Asset Measure Table
+    The measure an asset is reported against, such as a valuation, a sensitivity or a risk measure. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_average_ois_conventions_tbl <<temporal>> #C6F0D8 {
@@ -243,7 +235,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_benchmark_rates_tbl
-    FpML Benchmark rates
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Benchmark Rate Table
+    The benchmark rates an instrument or a trade may reference, as FpML names them. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_bma_basis_swap_conventions_tbl <<temporal>> #C6F0D8 {
@@ -582,7 +580,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_business_processes_tbl
-    Contains a code representing the type of business process a message (e.g. a status request) applies to.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Business Process Table
+    Contains a code representing the type of business process a message, such as a status request, applies to. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_business_unit_types_tbl <<temporal>> #C6F0D8 {
@@ -995,7 +999,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_cashflow_types_tbl
-    The type of cash flows associated with OTC derivatives contracts and their lifecycle events.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cashflow Type Table
+    The type of cash flows associated with OTC derivatives contracts and their lifecycle events. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_cds_conventions_tbl <<temporal>> #C6F0D8 {
@@ -3123,7 +3133,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_entity_classifications_tbl
-    Financial Entity Indicator as defined by the CFTC.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Entity Classification Table
+    The Financial Entity Indicator as defined by the CFTC. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_equity_curve_configs_tbl <<temporal>> #C6F0D8 {
@@ -3237,6 +3253,32 @@ package "refdata" #FFF3E0 {
     already lived in the removed client's RefdataPlugin, hand-wired
     outside codegen; the backend followed to match, same direction as
     Book/BusinessCentre's own moves to ores.refdata.
+    end note
+
+    entity ores_refdata_fpml_account_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        * coding_scheme_code : text <<PK, FK>>
+        --
+        * version : integer
+          source : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fpml_account_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FpML Account Type Table
+    Contains a code representing the type of an account, for example in a clearing or exchange model. Named for FpML because the IAM component already owns the account type of a login account. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_fra_conventions_tbl <<temporal>> #C6F0D8 {
@@ -3887,7 +3929,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_local_jurisdictions_tbl
-    This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Local Jurisdiction Table
+    Overrides the country scheme. Specifies the local jurisdiction that applies to a transaction, for example for the purposes of defining which local taxes apply. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_monetary_natures_tbl <<temporal>> #C6F0D8 {
@@ -4352,7 +4400,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_party_relationships_tbl
-    Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Party Relationship Table
+    Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 -- Intragroup. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_party_roles_tbl <<temporal>> #C6F0D8 {
@@ -4503,7 +4557,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_person_roles_tbl
-    Indicates the role of a person in a transaction.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Person Role Table
+    Indicates the role of a person in a transaction. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_portfolio_rights_tbl <<temporal>> #C6F0D8 {
@@ -4681,7 +4741,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_regulatory_corporate_sectors_tbl
-    Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Regulatory Corporate Sector Table
+    Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 -- Nature of Counterparty 1 -- and 191 -- Nature of Counterparty 2. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_reporting_regimes_tbl <<temporal>> #C6F0D8 {
@@ -4701,7 +4767,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_reporting_regimes_tbl
-    Contains a code representing a reporting regime under which this transaction may be reported.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Reporting Regime Table
+    Contains a code representing a reporting regime under which a transaction may be reported. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_rounding_types_tbl <<temporal>> #C6F0D8 {
@@ -4890,7 +4962,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_supervisory_bodies_tbl
-    Contains a code representing a supervisory-body that may be supervising this transaction.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Supervisory Body Table
+    Contains a code representing a supervisory body that may be supervising a transaction. Each row is one value of an FpML coding scheme: a
+    code, unique within its coding scheme, with the source that defines it and
+    a description. The rows arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_swap_conventions_tbl <<temporal>> #C6F0D8 {

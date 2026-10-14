@@ -131,5 +131,4 @@ $$ language plpgsql;
 * See also
 
 - Parent facet: [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]
-- [[id:23A3DE1F-0C2F-46B4-9D52-36261F209C6C][sql_schema_artefact_create.mustache]] — the lookup_entity-only sibling this was ported from.
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -72,7 +72,6 @@ Digital Assets
 end note
 
 entity "refdata" as refdata {
-  ores_refdata_account_types_tbl
   ores_refdata_asset_class_codes_tbl
   ores_refdata_asset_classes_tbl
   ores_refdata_asset_measures_tbl
@@ -162,6 +161,7 @@ entity "refdata" as refdata {
   ores_refdata_equity_curve_configs_tbl
   ores_refdata_equity_volatility_configs_tbl
   ores_refdata_floating_index_types_tbl
+  ores_refdata_fpml_account_types_tbl
   ores_refdata_fra_conventions_tbl
   ores_refdata_future_conventions_tbl
   ores_refdata_fx_option_conventions_tbl
@@ -238,7 +238,6 @@ end note
 
 entity "dq_staging" as dq_staging {
   ores_dq_account_contact_informations_artefact_tbl
-  ores_dq_account_types_artefact_tbl
   ores_dq_accounts_artefact_tbl
   ores_dq_asset_classes_artefact_tbl
   ores_dq_asset_measures_artefact_tbl
@@ -306,6 +305,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_entity_classifications_artefact_tbl
   ores_dq_equity_curve_configs_artefact_tbl
   ores_dq_equity_volatility_configs_artefact_tbl
+  ores_dq_fpml_account_types_artefact_tbl
   ores_dq_fra_conventions_artefact_tbl
   ores_dq_future_conventions_artefact_tbl
   ores_dq_fx_option_conventions_artefact_tbl

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/fpml_account_types/fpml_account_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fpml_account_types list --limit 1

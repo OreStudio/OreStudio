@@ -383,8 +383,8 @@
 -- Entities missing from this teardown list entirely until now (found while
 -- fixing rounding_type's missing notify trigger) -- no dependents reference
 -- them, safe to drop last.
-\ir ./refdata_account_types_notify_trigger_drop.sql
-\ir ./refdata_account_types_drop.sql
+\ir ./refdata_fpml_account_types_notify_trigger_drop.sql
+\ir ./refdata_fpml_account_types_drop.sql
 \ir ./refdata_asset_classes_notify_trigger_drop.sql
 \ir ./refdata_asset_classes_drop.sql
 \ir ./refdata_asset_measures_notify_trigger_drop.sql

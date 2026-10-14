@@ -172,7 +172,7 @@ BEGIN
     FROM ores_dq_ip2country_artefact_tbl
     UNION ALL
     SELECT 'Catalogues', 'Artefact: Account Types', count(*)
-    FROM ores_dq_account_types_artefact_tbl
+    FROM ores_dq_fpml_account_types_artefact_tbl
     UNION ALL
     SELECT 'Catalogues', 'Artefact: Asset Classes', count(*)
     FROM ores_dq_asset_classes_artefact_tbl
@@ -243,7 +243,7 @@ BEGIN
     WHERE valid_to = ores_utility_infinity_timestamp_fn()
     UNION ALL
     SELECT 'Production', 'Account Types', count(*)
-    FROM ores_refdata_account_types_tbl
+    FROM ores_refdata_fpml_account_types_tbl
     WHERE valid_to = ores_utility_infinity_timestamp_fn()
     UNION ALL
     SELECT 'Production', 'Asset Classes', count(*)

@@ -148,10 +148,6 @@ tangled into the runnable script library
 
 - [[id:C21B8496-BA73-5BCF-8E1D-FD61A605239A][How do I run the account_parties commands from the shell?]]
 
-* Account Types
-
-- [[id:F0750C59-6970-5B39-B128-DF15FD358585][How do I run the account_types commands from the shell?]]
-
 * Authorization
 
 - [[id:788B9C8F-08A8-5B70-9794-3447973C6090][How do I run the authorization commands from the shell?]]
@@ -1633,3 +1629,7 @@ tangled into the runnable script library
 * Supervisory Bodies
 
 - [[id:B779FBB8-B50F-5E44-84EC-34ED49897D65][How do I run the supervisory_bodies commands from the shell?]]
+
+* Fpml Account Types
+
+- [[id:084E786F-6F42-5138-9E68-2118EF68745E][How do I run the fpml_account_types commands from the shell?]]

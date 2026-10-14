@@ -20,7 +20,6 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
-    "app/commands/refdata/account_type_commands.cpp"
     "app/commands/refdata/asset_class_code_commands.cpp"
     "app/commands/refdata/asset_class_commands.cpp"
     "app/commands/refdata/asset_measure_commands.cpp"
@@ -110,6 +109,7 @@ set(files
     "app/commands/refdata/equity_curve_config_commands.cpp"
     "app/commands/refdata/equity_volatility_config_commands.cpp"
     "app/commands/refdata/floating_index_type_commands.cpp"
+    "app/commands/refdata/fpml_account_type_commands.cpp"
     "app/commands/refdata/fra_convention_commands.cpp"
     "app/commands/refdata/future_convention_commands.cpp"
     "app/commands/refdata/fx_option_convention_commands.cpp"
@@ -181,7 +181,6 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/account_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/asset_class_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/asset_measure_commands.hpp"
@@ -271,6 +270,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/equity_curve_config_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/equity_volatility_config_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/fpml_account_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/fra_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/future_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/fx_option_convention_commands.hpp"

@@ -133,7 +133,7 @@
 \ir ./dq_ip2country_artefact_create.sql
 
 -- FPML artefact tables
-\ir ./dq_account_types_artefact_create.sql
+\ir ./dq_fpml_account_types_artefact_create.sql
 \ir ./dq_asset_classes_artefact_create.sql
 \ir ./dq_asset_measures_artefact_create.sql
 \ir ./dq_benchmark_rates_artefact_create.sql

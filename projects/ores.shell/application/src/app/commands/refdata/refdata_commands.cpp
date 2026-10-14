@@ -1,17 +1,10 @@
-#include "ores.shell/app/commands/refdata/account_type_commands.hpp"
-#include "ores.shell/app/commands/refdata/asset_class_commands.hpp"
-#include "ores.shell/app/commands/refdata/asset_measure_commands.hpp"
-#include "ores.shell/app/commands/refdata/benchmark_rate_commands.hpp"
-#include "ores.shell/app/commands/refdata/business_process_commands.hpp"
-#include "ores.shell/app/commands/refdata/cashflow_type_commands.hpp"
-#include "ores.shell/app/commands/refdata/entity_classification_commands.hpp"
-#include "ores.shell/app/commands/refdata/local_jurisdiction_commands.hpp"
-#include "ores.shell/app/commands/refdata/party_relationship_commands.hpp"
-#include "ores.shell/app/commands/refdata/person_role_commands.hpp"
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/asset_class_commands.hpp"
+#include "ores.shell/app/commands/refdata/asset_measure_commands.hpp"
 #include "ores.shell/app/commands/refdata/average_ois_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/base_correlation_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/benchmark_rate_commands.hpp"
 #include "ores.shell/app/commands/refdata/bma_basis_swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/bond_future_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/bond_yield_convention_commands.hpp"
@@ -21,6 +14,7 @@
 #include "ores.shell/app/commands/refdata/book_status_commands.hpp"
 #include "ores.shell/app/commands/refdata/business_centre_commands.hpp"
 #include "ores.shell/app/commands/refdata/business_day_convention_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/business_process_commands.hpp"
 #include "ores.shell/app/commands/refdata/business_unit_commands.hpp"
 #include "ores.shell/app/commands/refdata/business_unit_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_commands.hpp"
@@ -31,6 +25,7 @@
 #include "ores.shell/app/commands/refdata/calendar_rule_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/cap_floor_volatility_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/cashflow_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/cds_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/cds_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/cds_volatility_term_commands.hpp"
@@ -89,9 +84,11 @@
 #include "ores.shell/app/commands/refdata/deposit_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/derivation_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/diary_entry_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/entity_classification_commands.hpp"
 #include "ores.shell/app/commands/refdata/equity_curve_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/equity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/fpml_account_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/future_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/fx_option_convention_commands.hpp"
@@ -108,6 +105,7 @@
 #include "ores.shell/app/commands/refdata/ir_curve_bootstrap_pillar_commands.hpp"
 #include "ores.shell/app/commands/refdata/ledger_feed_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/leg_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/local_jurisdiction_commands.hpp"
 #include "ores.shell/app/commands/refdata/monetary_nature_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_agreement_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_set_commands.hpp"
@@ -122,10 +120,12 @@
 #include "ores.shell/app/commands/refdata/party_currency_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_id_scheme_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_identifier_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_relationship_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_role_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_status_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/payment_frequency_commands.hpp"
+#include "ores.shell/app/commands/refdata/person_role_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_right_commands.hpp"
 #include "ores.shell/app/commands/refdata/producer_kind_commands.hpp"
@@ -161,7 +161,7 @@ namespace ores::shell::app::commands {
 
 void refdata_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session) {
-    account_type_commands::register_commands(root_menu, session);
+    fpml_account_type_commands::register_commands(root_menu, session);
     asset_class_code_commands::register_commands(root_menu, session);
     asset_class_commands::register_commands(root_menu, session);
     asset_measure_commands::register_commands(root_menu, session);

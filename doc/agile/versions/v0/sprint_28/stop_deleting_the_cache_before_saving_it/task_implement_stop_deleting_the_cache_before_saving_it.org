@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: D5CEDD0F-8190-4DAA-90D1-5E858FC6BCEE
+:END:
+#+title: Task: Save the compiler cache under a run-unique key
+#+description: Initial task for: Stop deleting the compiler cache before saving it
+#+type: task
+#+level: s1
+#+filetags: :stop_deleting_the_cache_before_saving_it:sprint_28:v0:
+#+owner: marco
+#+branch: feature/stop-deleting-the-cache-before-saving-it
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC63918F-6BAA-4AB2-BA1E-80AC7AF8B7B2][Stop deleting the compiler cache before saving it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A failed or interrupted cache save can never remove the compiler cache that already exists.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC63918F-6BAA-4AB2-BA1E-80AC7AF8B7B2][Stop deleting the compiler cache before saving it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- Neither workflow deletes a cache entry.
+- Both restore from any recent entry and save under a run-unique key.
+- A run whose local cache is too small to help does not become the newest entry.
+
+* Plan
+
+Save under a run-unique key, restore by key prefix, and remove the delete
+step from both workflows that persist the compiler cache. Give
+nightly-linux.yml the same size floor continuous-linux.yml already has.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Linux clang sccache entries, earlier in the session | 2.50 GB debug (created 2026-10-08) and 1.22 GB release (created 2026-10-12) | =gh api /repos/OreStudio/OreStudio/actions/caches= | - |
+| Linux clang sccache entries, now | none | same | - |
+| Repository cache total | 2.95 GB of 10 GB, across 16 entries | same | - |
+| Workflows deleting before saving, before | 2: continuous-linux, nightly-linux | =grep -rn "Delete sccache" .github/workflows= | ea6945aeb8 |
+| Workflows deleting before saving, after | 0 | same | this branch |
+
+* Notes
+
+** Why the delete was there
+
+=actions/cache/save= refuses to overwrite an existing key, so the entry was
+deleted immediately before the save.
+
+** Why that is destructive
+
+The window between the delete and a successful save has nothing in it. The
+cache service fails: these very run logs carry =Failed to restore: Cache
+service responded with 400= and =Failed to save: Our services aren't
+available right now=. A failed save after a successful delete removes the
+entry for good, and both Linux clang entries are now gone. The repository
+total fell, so this was not eviction under the 10 GB cap.
+
+** The replacement
+
+Saves go to =sccache-<variant>-${{ github.run_id }}=, unique per run, so they
+never collide and nothing has to be deleted. Restores use
+=restore-keys= prefix matching and take the newest entry. Old entries age
+out through the seven-day rule and LRU, which never destroys the newest.
+
+** The floor still matters
+
+With prefix matching the newest entry wins, so a run that failed early must
+not save. The 1000 MB floor is kept, and nightly-linux.yml now has it too.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Neither workflow deletes a cache entry. Both restore by key prefix and save
+under =sccache-<variant>-${{ github.run_id }}=, so a failed or interrupted
+save can no longer remove what is already stored. nightly-linux.yml also
+gained the 1000 MB floor, so a run that failed early cannot become the
+newest entry that the next run restores.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: the Linux clang caches are now empty, so the next few
+runs rebuild them. The signal is entries appearing under
+=sccache-linux-clang-*-ninja-<run_id>= and the runs after that hitting them.

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: C33D9683-A295-4552-B3EC-D6B60E6DA01A
+:END:
+#+title: Story: Remove the unused CodeQL workflow
+#+description: CodeQL is not in use. The workflow triggers only on workflow_dispatch, its schedule is commented out, and nothing depends on it. Delete it and drop its row from the CI workflows page, which counts the workflows that keep their own triggers.
+#+type: story
+#+level: s2
+#+filetags: :ci:docs:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No CodeQL workflow remains, and the CI workflows page describes the workflows that actually run.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- codeql-analysis.yml is gone.
+- The CI workflows page no longer lists it and its count is right.
+- No workflow depends on CodeQL.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B3F88C25-F2F9-4FA4-B46E-FDB925F96152][Scaffold story: Remove the unused CodeQL workflow]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5EA8CED3-CAAE-4BE0-8E99-F9E86E759DBD][Delete the CodeQL workflow and its documentation row]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Remove the unused CodeQL workflow |
+
+* Decisions
+
+- The workflow is deleted rather than left disabled. It was already
+  dormant, with only manual dispatch and the schedule commented out, so
+  keeping a disabled file bought nothing.
+- The =CodeQL= directory in the disk-cleanup steps stays. It belongs to
+  the runner image, not to the workflow, and freeing that space is still
+  useful.
+
+* Out of scope
+
+- Replacing CodeQL with another static-analysis service. The local checks
+  and the nightly include hygiene job cover what the team runs.

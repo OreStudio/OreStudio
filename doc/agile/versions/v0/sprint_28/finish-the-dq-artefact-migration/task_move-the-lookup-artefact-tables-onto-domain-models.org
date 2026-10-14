@@ -121,21 +121,23 @@ via its "Verifies task" field.
 Delivered: no DQ artefact table comes from the lookup template, and the
 template is gone.
 
-Measured at =5518313880=, with
+Measured at =c55e014e49=, with
 =cd projects/ores.sql/create/dq && grep -h "Template:" *_artefact_create.sql | sed 's/.*Template: //' | sort | uniq -c=:
 119 tables from =sql_schema_domain_entity_artefact_create=, 9 from the
 junction template, and 0 from =sql_schema_artefact_create=. The template,
 its literate source, its entry in =get_schema_template_mappings= and the
 four codegen tests that rendered it are deleted.
 
-Verification, all at =5518313880=:
+Verification, all at =c55e014e49=, after merging main:
 
 - =./compass.sh build= with the =linux-clang-release-ninja= preset:
-  4254 of 4254 targets, exit 0.
+  exit 0.
 - =./compass.sh test run --preset linux-clang-release-ninja=:
-  93 of 93 suites passed, 0 failed, 1096 s.
-- =./projects/ores.sql/test/run_tests.sh=: 51 files, 507 tests, PASS.
-- =./compass.sh check --exclude-heavy=: 41 of 41.
+  93 of 93 suites passed, 0 failed, 825 s.
+- =./projects/ores.sql/test/run_tests.sh=: 52 files, 512 tests, PASS.
+- =./compass.sh check --exclude-heavy=: 40 of 41. The failure is the
+  =web= class's agile-tree read timing out under parallel load; it passes
+  alone in under a second.
 
 The pgTAP run needs an active tenant that people set up. A =db recreate=
 leaves only the system tenant, and CLI provisioning leaves the Acme tenant

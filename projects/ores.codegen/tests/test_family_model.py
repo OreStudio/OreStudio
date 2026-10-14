@@ -403,8 +403,8 @@ def test_resolve_targets_reaches_both_protocol_facets(tmp_path):
     path = _modeling_dir(tmp_path)
     units, model_type, _ = resolve_targets(path, BASE_DIR)
     assert model_type == "family"
-    assert sorted(unit["template"] for unit in units) == [
-        "cpp_protocol.hpp.mustache", "ts_protocol.ts.mustache"]
+    templates = {unit["template"] for unit in units}
+    assert {"cpp_protocol.hpp.mustache", "ts_protocol.ts.mustache"} <= templates
     outputs = {unit["template"]: unit["output"] for unit in units}
     # The family writes its own protocol file, never the central entity's.
     assert outputs["cpp_protocol.hpp.mustache"].endswith(

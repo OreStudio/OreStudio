@@ -2605,6 +2605,211 @@ def shell_command_surface(projects_dir, component):
     return enabled, local_units
 
 
+# The templates whose body reads the composite family's service view. The
+# protocol twins read the family records alone, so the view is built only for
+# the templates that state a service method, a handler dispatch or a
+# subscription -- and a family whose central row is outside the shape the
+# service can render still generates its protocol.
+_FAMILY_SERVICE_TEMPLATES = frozenset({
+    "cpp_service.hpp.mustache",
+    "cpp_service.cpp.mustache",
+    "cpp_nats_handler.hpp.mustache",
+    "cpp_nats_registrar.hpp.mustache",
+    "cpp_nats_registrar.cpp.mustache",
+})
+
+
+def _family_text_expr(expression: str, column: dict[str, Any]) -> str:
+    """One key column's value in the text form a key parameter takes it in.
+
+    The part repositories take every key parameter as text, so a member of any
+    other type converts here. The raw entity model a family names carries its
+    columns with ``type``/``cpp_type`` rather than the enriched flags the
+    entity templates read, so this reads the raw spelling.
+    """
+    if (column.get("type") == "uuid"
+            or "boost::uuids::uuid" in (column.get("cpp_type") or "")):
+        return f"boost::uuids::to_string({expression})"
+    if (column.get("type") in ("timestamp", "timestamptz",
+                               "timestamp with time zone")
+            or "time_point" in (column.get("cpp_type") or "")):
+        return f"ores::platform::time::datetime::to_db_string({expression})"
+    if (column.get("cpp_type") or "") in _NUMERIC_CPP_TYPES:
+        return f"std::to_string({expression})"
+    return expression
+
+
+def _family_entity_view(model, role, owner):
+    """The facts the family service reads for one central row or part.
+
+    Deliberately a subset of the entity enrichment. The family service
+    addresses a row by exactly one key column, builds flat domain objects from
+    the write records and reads a part by its parent, so a model outside that
+    shape is refused here rather than rendered into code that cannot work.
+    """
+    from .org_loader import (  # deferred to avoid a circular import
+        _column_name,
+        declared_key_field,
+        key_is_primary,
+        key_record_fields,
+        write_record_columns,
+        write_record_for,
+    )
+    entity = model.get("entity_singular", "")
+    component = model.get("component", "")
+    sql = model.get("sql") or {}
+    current_state = bool(sql.get("current_state"))
+    has_audit = not sql.get("no_audit_columns", False) and not current_state
+    if model.get("domain_groups"):
+        raise ValueError(
+            f"{owner}: the {role} '{entity}' is a grouped entity; the composite "
+            f"family service writes flat domain objects")
+    primary_key = model.get("primary_key") or {}
+    columns = primary_key.get("columns") or []
+    if len(columns) != 1:
+        raise ValueError(
+            f"{owner}: the {role} '{entity}' has {len(columns)} primary-key "
+            f"columns; the composite family service addresses a row by one key "
+            f"column")
+    pk = columns[0]
+    pk_column = _column_name(pk)
+    pk_cpp = pk.get("cpp_type") or (
+        "boost::uuids::uuid" if pk.get("type") == "uuid" else "std::string")
+    pk_is_uuid = (pk.get("type") == "uuid"
+                  or "boost::uuids::uuid" in pk_cpp)
+    pk_member = (pk.get("group_prefix") or "") + pk_column
+
+    key_fields = key_record_fields(model)
+    key_field = key_fields[0] if key_fields else {
+        "name": pk_column, "cpp_type": pk_cpp}
+    declared = declared_key_field(model)
+    by_primary = key_is_primary(model) or not declared
+    if by_primary:
+        read_method = "read_latest"
+        read_key_expr = _family_text_expr(f"key.{key_field['name']}", pk)
+        key_member = pk_member
+    else:
+        declared_column = next(
+            (column for column in write_record_columns(model)
+             if _column_name(column) == declared),
+            {"type": "text", "cpp_type": "std::string"})
+        read_method = f"read_latest_by_{declared}"
+        read_key_expr = _family_text_expr(f"key.{declared}", declared_column)
+        key_member = (declared_column.get("group_prefix") or "") + declared
+
+    write_fields = write_record_for(model)
+    model["write_fields"] = write_fields
+    _prepare_enum_write_fields(model)
+    _prepare_date_write_fields(model)
+
+    return {
+        "entity": entity,
+        "entity_plural": model.get("entity_plural", entity + "s"),
+        "domain": f"ores::{component}::domain::{entity}",
+        "key_record": f"{entity}_key",
+        "write_record": f"{entity}_write",
+        "change_record": f"{entity}_change",
+        "key_fields": key_fields,
+        "key_field": key_field,
+        "key_is_primary": by_primary,
+        "declared_key": declared or pk_column,
+        "read_method": read_method,
+        "read_key_expr": read_key_expr,
+        "key_member": key_member,
+        "pk_column": pk_column,
+        "pk_member": pk_member,
+        "pk_cpp_type": pk_cpp,
+        "pk_is_uuid": pk_is_uuid,
+        "pk_text_expr": _family_text_expr(f"row.{pk_member}", pk),
+        "write_fields": write_fields,
+        "has_audit_columns": has_audit,
+        "version_member": "version" if has_audit else pk_column,
+        "commentary_member": "change_commentary" if has_audit else "",
+    }
+
+
+def _family_service_view(family, model_path):
+    """Derive the family's service operations and per-entity facts.
+
+    A family read needs the central entity's read code and a family write its
+    write code, so the permission prefix is the central row's own, not the
+    family's -- a family is not a resource anyone was granted.
+    """
+    from .org_loader import (  # deferred to avoid a circular import
+        _column_name,
+        _family_entity_model,
+        operations_by_verb,
+        protocol_operations,
+        write_record_columns,
+    )
+    owner = family.get("entity_singular") or Path(model_path).name
+    model_dir = Path(model_path).resolve().parent
+    central_entity = family.get("central_entity", "")
+    _, central_model = _family_entity_model(model_dir, central_entity, owner)
+    central = _family_entity_view(central_model, "central row", owner)
+    family["central"] = central
+
+    for part in family.get("parts") or []:
+        _, part_model = _family_entity_model(model_dir, part["entity"], owner)
+        view = _family_entity_view(
+            part_model, f"part '{part['part']}'", owner)
+        foreign_key = next(
+            (fk for fk in (part_model.get("foreign_keys") or [])
+             if fk.get("parent_entity") == central_entity),
+            None)
+        if foreign_key is None:
+            raise ValueError(
+                f"{owner}: the part '{part['part']}' ({part['entity']}) has no "
+                f"foreign key whose :parent_entity: is '{central_entity}'")
+        fk_column = foreign_key.get("column", "")
+        fk_dict = next(
+            (column for column in write_record_columns(part_model)
+             if _column_name(column) == fk_column),
+            {"type": "uuid", "cpp_type": "boost::uuids::uuid"})
+        fk_is_uuid = (fk_dict.get("type") == "uuid"
+                      or "boost::uuids::uuid" in (fk_dict.get("cpp_type") or ""))
+        if fk_is_uuid and not central["pk_is_uuid"]:
+            raise ValueError(
+                f"{owner}: the part '{part['part']}' foreign key '{fk_column}' "
+                f"is a uuid but the central key is not; the family service "
+                f"cannot join them")
+        # The repository takes every key parameter as text, so the parent id
+        # converts here whatever the column's own type is. The uuid overload on
+        # the service is a service-level spelling, not a repository one.
+        if central["pk_is_uuid"]:
+            fk_read_expr = (
+                f"boost::uuids::to_string(central.{central['pk_member']})")
+        elif central["pk_cpp_type"] in _NUMERIC_CPP_TYPES:
+            fk_read_expr = f"std::to_string(central.{central['pk_member']})"
+        else:
+            fk_read_expr = f"central.{central['pk_member']}"
+        fk_assign_expr = (
+            f"central.{central['pk_member']}" if fk_is_uuid else fk_read_expr)
+        view.update({
+            "part": part["part"],
+            "fk_column": fk_column,
+            "fk_member": (fk_dict.get("group_prefix") or "") + fk_column,
+            "fk_is_uuid": fk_is_uuid,
+            "fk_list_by_uuid": bool(foreign_key.get("list_by_uuid")) and fk_is_uuid,
+            "fk_read_expr": fk_read_expr,
+            "fk_assign_expr": fk_assign_expr,
+        })
+        part.update(view)
+
+    operations = protocol_operations(family.get("messages") or [], frozenset())
+    permission_prefix = f"{family.get('component', '')}::{central['entity_plural']}"
+    for operation in operations:
+        operation["permission_code"] = (
+            f"{permission_prefix}:{operation['permission']}")
+    family["operations"] = operations
+    for verb, verb_operations in operations_by_verb(operations).items():
+        family[f"{verb}_operations"] = verb_operations
+    family["permission_prefix"] = permission_prefix
+    family["entity_singular_words"] = family.get("entity_singular", "").replace("_", " ")
+    family["entity_plural_words"] = family.get("entity_plural", "").replace("_", " ")
+    return family
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -6100,6 +6305,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 family[path_var].replace('.', '_').upper())
         if 'entity_singular' in family:
             family['entity_singular_upper'] = family['entity_singular'].upper()
+        # The operations and the per-entity facts the family service and its
+        # handler read. Built only for the templates that state them; the
+        # protocol twins ignore it.
+        if target_template in _FAMILY_SERVICE_TEMPLATES:
+            _family_service_view(family, model_path)
         # A field the protocol projection cannot express would render an
         # interface with the field missing. Only the TypeScript twin refuses
         # the model; the C++ header has no such gap, so the check is scoped to

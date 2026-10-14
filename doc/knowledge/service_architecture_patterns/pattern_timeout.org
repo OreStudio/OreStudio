@@ -93,6 +93,14 @@ Requests default to 30 seconds in =ores.nats/service/timeouts.hpp=. Steps read t
 - [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — a timed-out step stops the run instead of compensating it.
 - [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — every request carries one.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]] — the one default deadline every request shares.
+- [[id:5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8][Classify Transport Failure]] — telling an expired deadline from no responders.
+
 * Sources
 
 - Michael T. Nygard, /Release It!/, second edition, Pragmatic Bookshelf, 2018, chapter 5, "Stability Patterns" — Timeouts.

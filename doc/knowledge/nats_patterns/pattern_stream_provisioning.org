@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293
+:END:
+#+title: Stream Provisioning at Start
+#+description: The service that owns a durable subject ensures its stream before it registers a handler, with a filter that covers the subject and everything below it.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:subscription:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+pattern_group: subscription
+
+This page defines the NATS pattern *Stream Provisioning at Start* in the
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]]
+language. A service that reads durably creates its stream during startup,
+before it subscribes, and a failure to do so stops the service.
+
+* Also known as
+
+- /Idempotent stream bootstrap/, /declarative stream creation/.
+
+* Context
+
+A durable subscription needs a stream to exist. The publisher is the workflow
+engine or another service, which cannot create the consumer's stream without
+taking over a resource it does not own, and the publisher may run first.
+
+* Problem
+
+Which process creates the stream a durable subscription needs, and when?
+
+* Forces
+
+- A message published while no subscriber exists is lost unless a stream holds
+  it.
+- The service that reads the subject owns the data in it, so it owns the
+  stream.
+- Several replicas start at once, so creation must be idempotent.
+- `ensure_stream()` *updates* a stream whose filter differs, so the call also
+  repairs drift.
+- A stream that cannot be created means no message is ever delivered.
+
+* Solution
+
+The owning service ensures the stream in its startup path, before it registers
+handlers, from the subject constants that name the subjects it reads:
+
+#+begin_src cpp :results verbatim
+try {
+    const auto stream = nats.make_stream_name("iam_steps");
+    nats.make_admin().ensure_stream(
+        stream,
+        nats.covering_subjects({provision_tenant_step_subject}));
+} catch (const std::exception& e) {
+    // No stream means no step is delivered, so fail rather than run
+    // looking healthy and dropping every step addressed to it.
+    BOOST_LOG_SEV(lg(), error) << "Failed to ensure stream: " << e.what();
+    throw;
+}
+#+end_src
+
+Three rules make it correct:
+
+- *Ensure, do not create.* `ensure_stream()` is idempotent, so every replica
+  calls it and the second finds rather than fails.
+- *Fail the start.* The stream is a precondition for the service working at
+  all, so a failure to create it is fatal, not a warning.
+- *Cover the subject's children.* `covering_subjects({...})` returns the bare
+  subject and its `>` wildcard, prefixed. A filter on the bare subject alone
+  matches none of its children, so the stream would hold nothing.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed ensure stops the service, so the absence is a failed unit rather than a silent service. |
+| Timeouts | Not applicable: the call is synchronous at startup. |
+| Retries | The process supervisor's restart is the retry; `ensure_stream()` is safe to repeat. |
+| Idempotency | Guaranteed by the server: create-or-update, keyed by stream name. |
+| Observability | The service logs the stream name it ensured. |
+
+* Pitfalls
+
+- *Creating the stream on the publishing side.* The publisher owns no part of
+  the reader's data and cannot know its retention.
+- *A filter on the bare subject.* The stream is created, the service starts,
+  and it receives nothing.
+- *Logging the failure and continuing.* The service looks healthy and drops
+  every message addressed to it.
+- *Renaming a subject without the stream name passed to the subscribe.* The
+  stream is reconciled and the durable is not; see
+  [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]].
+
+* Resulting context
+
+- Benefits :: The reader owns its persistence, and a start is either complete
+  or refused.
+- Liabilities :: A service now depends on JetStream being enabled on the
+  server.
+
+* In ORE Studio
+
+`ores.iam.service` ensures `iam_steps`; `ores.workflow.service` ensures
+`workflow`; `ores.marketdata.service` and `ores.synthetic.service` share
+`synthetic_ticks` deliberately, because the ingest loop must read ticks whether
+or not the synthetic service has run. The catalogue is
+[[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
+consumers]].
+
+* Related patterns
+
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — what needs the stream.
+- [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the Stream]] — the publisher on the other side.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/jetstream/your-first-stream][NATS documentation, Your first stream]].
+- [[https://beta-docs.nats.io/learn/jetstream/shaping-the-stream][NATS documentation, Shaping the stream]] — retention and filters.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

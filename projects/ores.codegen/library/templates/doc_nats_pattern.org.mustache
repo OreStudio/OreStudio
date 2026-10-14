@@ -1,0 +1,117 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: nats_pattern
+#+level: cross
+#+filetags: {{filetags}}
+#+created: {{date}}
+#+updated: {{date}}
+#+pattern_group: {{pattern_group}}
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]]
+{{title}} in the [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] language.
+(Second sentence: the intent of the pattern in one line, in the words of its
+source.) (Third sentence: the problem it solves in ORE Studio, and where the
+platform uses it.) (Keep the whole blurb to two to four sentences. It is the
+summary; the page carries no =* Summary= heading.)
+
+* Also known as
+
+(The other names of the pattern, each with the source that uses it, and any name
+ORE Studio used for it before this page existed. The page title is the
+established name; a local name is an alias here, never the title.)
+
+* Context
+
+(The situation in which the problem arises: the architecture around it, and what
+is already in place. A reader who is not in this context does not need the
+pattern.)
+
+* Problem
+
+(One question the pattern answers. Write it as a question.)
+
+* Forces
+
+(What pulls in opposite directions, one force per item: what makes the obvious
+solution wrong, and what any solution must keep.)
+
+-
+
+* Solution
+
+(The pattern itself: who takes part, what each one does, and in what order.
+This language states its patterns in =ores.nats= calls, not diagrams, so the
+call below is the mechanism the pattern governs. Name the caller, the subject
+and the payload, and show the call in the order the participants make it.)
+
+#+begin_src cpp :results verbatim
+// (The ores.nats call this pattern governs. Replace with the real call.)
+ores.nats::<call>(<subject>, <payload>);
+#+end_src
+
+(Add a second block when one call does not show the point: the reply, the error
+path, or the lifetime a subscription must have.)
+
+* Failure handling
+
+(How each participant fails, and what the pattern does about it. Cover every row;
+write "does not apply" with a reason rather than deleting a row.)
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | |
+| Timeouts | |
+| Retries | |
+| Idempotency | |
+| Observability | |
+
+* Pitfalls
+
+(The known ways the pattern goes wrong, one per item: the symptom a person sees,
+and the cause. Include the ones ORE Studio has met, with a link to the task or
+investigation that found each.)
+
+-
+
+* Security
+
+(The trust boundaries the pattern crosses, what a leaked credential or a forged
+message costs, and what bounds that cost. Write "No security consequence" with a
+reason when the pattern carries none.)
+
+* Resulting context
+
+(What is true after the pattern is applied.)
+
+- Benefits ::
+- Liabilities ::
+
+* In ORE Studio
+
+(Where the platform uses the pattern: the components, the subjects, the code,
+and one worked example. Link the architecture page that owns each use. A use
+belongs to that page; this section names it and links it.)
+
+* Related patterns
+
+(Other patterns of the language, each with how it relates: uses, used by, or an
+alternative to this one.)
+
+-
+
+* Sources
+
+(The authoritative references that define the pattern: the book, the catalogue
+or the standard, with the section. At least one source is required. A blog post
+is not a source unless its author defined the pattern.)
+
+-
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

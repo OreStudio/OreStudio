@@ -171,6 +171,14 @@ engine's own contract stays in that cluster.
 grammar and the message contract. The communication group names the patterns
 the bus carries.
 
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] owns how
+each pattern is *written* on this bus: the =ores.nats= call, its arguments and
+the failure without it. The two hubs divide the work, and each states the
+boundary. Read a pattern here to choose the mechanism; read its NATS page to
+write it. A page here reaches the NATS page it specialises from its
+=* NATS patterns= section, and a NATS page names the pattern here it
+specialises.
+
 * See also
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.

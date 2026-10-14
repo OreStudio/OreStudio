@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 6B12C3D4-E5F6-4A71-8C93-A4B5C6D7E8F9
+:END:
+#+title: Report a Refusal Off the Body
+#+description: A request refused before it was handled is answered with an empty body and an X-Error header, so a refusal is never mistaken for a malformed payload.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:error-handling:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: error-handling
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Report a Refusal Off the Body* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language.
+
+* Also known as
+
+- NATS: a header reply; the =X-Error= envelope.
+
+* Context
+
+A handler can fail before it has any domain answer to give: the caller has no
+credential, the credential expired, the caller lacks the permission, or the
+payload will not decode. None of these is a statement about the data the
+service owns.
+
+* Problem
+
+How does a service tell a caller that its request was refused, when the reply
+envelope is a body the caller will try to decode?
+
+* Forces
+
+- A refusal has no meaningful body: no record was read and none was written.
+- A caller that decodes the reply as though it were a response reports "the
+  payload did not match" for what is really an authorization failure.
+- Some refusals are actionable by the client (log in again) and some are not.
+- An answer the service *decided* is a different thing from a refusal, and the
+  two must not be conflated.
+
+* Solution
+
+Refuse with an empty body and a named code in the =X-Error= header:
+
+#+begin_src cpp :results verbatim
+error_reply(nats_, msg, ores::service::error_code::forbidden);
+// publishes: reply subject, empty body, X-Error: forbidden
+#+end_src
+
+The codes are a closed set, and each has a meaning the caller can act on:
+
+| Code | Meaning | The caller should |
+|------+---------+-------------------|
+| =unauthorized= | No credential, malformed credential, or bad signature | Log in |
+| =token_expired= | A well-formed credential past its expiry | Refresh the token, then retry once |
+| =forbidden= | Authenticated, but the permission is not granted | Ask for the permission; do not retry |
+| =bad_request= | The payload did not decode | Fix the payload; do not retry |
+
+Three rules:
+
+- *A refusal carries no body.* The header is the whole message. A caller that
+  reads only the body must check the header first.
+- *A refusal is not a decision.* What the service decided — missing, conflict,
+  denied by a business rule — is an answer, and travels in the body; see
+  [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
+- *The two expiry codes get their own handling.* They are not refusals to a
+  caller that can renew; the client layer turns them into a refresh-and-retry
+  or a session error, so the refusal helper deliberately ignores them.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | The refusal is a successful transport reply carrying a named code. |
+| Timeouts | A refusal arrives long before a deadline, so a caller never waits on one. |
+| Retries | Only =token_expired= is retried, and only once, after a forced refresh. |
+| Idempotency | A refused request was not handled, so re-sending it changes nothing. |
+| Observability | The handler logs the code and the subject; the reply itself carries no detail beyond the code. |
+
+* Pitfalls
+
+- *A refusal with a body.* The caller decodes it and reports a schema error.
+- *A refusal for a business decision.* "The row is missing" is an outcome, not a
+  refusal, and a caller cannot act on it as one.
+- *A missing refusal.* A handler that returns without replying leaves the
+  caller to time out; see [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let
+  an Exception Cross the Bus]].
+- *A new code invented at a call site.* The set is closed so callers can be
+  exhaustive.
+
+* Security
+
+This pattern is the refusal path, so it must not leak why beyond the code: no
+distinction between "no such account" and "wrong password", no permission names
+in the reply. See [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and
+Access]].
+
+* Resulting context
+
+- Benefits :: A caller can tell a refusal from a payload error from a business
+  outcome, and acts correctly on each.
+- Liabilities :: Two reply shapes exist, so every caller must check the header
+  before decoding.
+
+* In ORE Studio
+
+`error_reply()` in `ores.service` publishes the empty body with the header, and
+`make_request_context` and `has_permission` produce the authorization codes. On
+the caller side, `throw_if_refused()` converts a refusal into a typed error so a
+decoder never sees one, while the HTTP routes inspect the header directly and
+map it to an HTTP status.
+
+* Related patterns
+
+- [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]] — the other, opposite report.
+- [[id:5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8][Classify Transport Failure]] — how a caller tells this from a timeout.
+
+* Sources
+
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the error model on the wire.
+- [[https://beta-docs.nats.io/learn/core-nats/headers][NATS documentation, Headers]] — the header mechanism the refusal uses.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

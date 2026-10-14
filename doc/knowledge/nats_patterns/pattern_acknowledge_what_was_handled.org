@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4
+:END:
+#+title: Acknowledge What Was Handled
+#+description: A durable handler acknowledges a message only after the work it did is committed, so a failure leaves the message unacknowledged and redeliverable.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:subscription:
+#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: nats
+
+This page defines the NATS pattern *Acknowledge What Was Handled* in the
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]]
+language. A durable subscription acknowledges a message only once the handler
+has finished the work, and every exit from the handler answers the message —
+ack, nak or term — rather than relying on an implicit acknowledgement.
+
+* Also known as
+
+- NATS: /explicit acknowledgement/, `AckPolicy=explicit`.
+- The pattern language: [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] is the property this pattern preserves.
+
+* Context
+
+A durable consumer holds a message until its reader acknowledges it. The
+server's default is to acknowledge when the handler returns, whatever the
+handler decided.
+
+* Problem
+
+How does a durable consumer make the acknowledgement mean "the work is done",
+rather than "the handler returned"?
+
+* Forces
+
+- The server cannot know whether the work succeeded; only the handler can.
+- A handler that fails still returns normally, unless something stops it.
+- A message left unacknowledged is redelivered, which is the desired outcome of
+  a failure and the wrong outcome of a success.
+- A message that can never be handled must not be redelivered forever.
+
+* Solution
+
+Two things together: the subscription is created with an explicit
+acknowledgement policy, and the handler states the outcome on every path. A
+guard tied to the message makes the statement impossible to forget:
+
+#+begin_src cpp :results verbatim
+// Created with an explicit ack policy and an attempt bound.
+nats.js_queue_subscribe(subject, durable, queue_group, handler, stream_name);
+
+// In the handler: the guard holds the ack until the work is committed.
+void provision_step(ores::nats::message msg) {
+    nats_ack_guard ack(msg);              // answers nak if nothing else answers
+
+    auto req = decode<provision_step_request>(msg);
+    if (!req) {
+        ack.reject();                     // term: never deliverable
+        return;
+    }
+    if (!try_provision(*req)) {
+        ack.retry();                      // nak: deliver again later
+        return;
+    }
+    ack.accept();                         // ack: the work is committed
+}
+#+end_src
+
+The four answers map to four outcomes, and the guard's destructor covers the
+path that forgets:
+
+| Outcome | Answer | Meaning |
+|---------+--------+---------|
+| The work is committed | ack | Delivered no more |
+| A transient failure | nak | Delivered again, after a delay |
+| Not deliverable ever (malformed, unknown kind) | term | Dropped; recorded as such |
+| The handler threw, or returned without deciding | nak | The safe default: assume not done |
+
+Two further rules complete the pattern:
+
+- *The acknowledgement follows the commit, never precedes it.* Acknowledging
+  before the write turns a crash between the two into lost work.
+- *The attempt count is bounded.* A message that always fails must stop being
+  delivered; an unbounded redelivery of a poison message is a crash loop.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed message is nak'd and redelivered rather than acknowledged as done. |
+| Timeouts | AckWait bounds how long a handler may hold a message before the server assumes it died. |
+| Retries | Redelivery is the retry; the bound decides when it ends. |
+| Idempotency | Required, because a nak causes a second delivery; the handler must be safe to run twice. |
+| Observability | Each answer is logged with the subject and the correlation id, so a redelivered message can be followed. |
+
+* Pitfalls
+
+- *Relying on the implicit acknowledgement.* A handler that catches its own
+  exception and returns acknowledges work it never did.
+- *Acknowledging on the error path.* The failure is recorded as success and the
+  message is gone.
+- *No attempt bound.* A poison message is redelivered forever, restarting the
+  consumer each time.
+- *A hostile message acknowledged instead of discarded.* A malformed payload is
+  a `term`, not an ack and not an endless nak.
+- *A long job with no progress signal.* The job is redelivered while it still
+  runs; a message that takes longer than AckWait must extend its own deadline.
+
+* Security
+
+A malformed or unauthenticated message must never be acknowledged as handled.
+It is rejected with a named code, and the refusal is logged; see
+[[id:6B12C3D4-E5F6-4A71-8C93-A4B5C6D7E8F9][Report a Refusal Off the Body]].
+
+* Resulting context
+
+- Benefits :: The acknowledgement becomes a statement about the work, so
+  at-least-once delivery is real rather than nominal.
+- Liabilities :: The handler must now decide explicitly, and a wrong `ack` still
+  loses work — the guard can default safely but cannot judge.
+
+* In ORE Studio
+
+`ores.nats` creates JetStream subscriptions through `js_queue_subscribe()`, and
+the acknowledgement policy and attempt bound are part of the options that call
+takes. The guard lives beside the transport so that a handler written without
+one is visible as an omission.
+
+* Related patterns
+
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — the consumer this pattern answers.
+- [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — why a redelivery is safe to repeat.
+- [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let an Exception Cross the Bus]] — what happens to a handler that throws.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/jetstream/acknowledgment][NATS documentation, Ack responses and redelivery]] — the four answers, and the poison-message path.
+- [[https://beta-docs.nats.io/learn/jetstream/delivery-and-acknowledgment][NATS documentation, Delivery and acknowledgment]].
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

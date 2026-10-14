@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8
+:END:
+#+title: Classify Transport Failure
+#+description: A caller tells a timeout from a no-responders signal and from a refusal, because each means something different and each is acted on differently.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:request:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: request
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Classify Transport Failure* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It is bus-specific: no outer pattern covers the distinction, because
+the no-responders signal is a property of NATS.
+
+* Also known as
+
+- NATS: /no responders/ (a 503 with no body).
+- The pattern language: [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] depends on the distinction.
+
+* Context
+
+A request can fail in ways that look alike from a distance and are not alike:
+the responder did not answer in time, the responder does not exist, the server
+refused the request, or the responder answered with a failure of its own.
+
+* Problem
+
+Which of several unlike failures has occurred, so that the caller can do the
+right thing about each?
+
+* Forces
+
+- A timeout means someone is there and is slow.
+- No responders means nobody is there at all, and the server knows it at once.
+- A refusal is an answer: the request was understood and rejected.
+- A body carrying a failed outcome is also an answer, and the request was
+  handled.
+- Retrying all four the same way is wrong in at least two of them.
+
+* Solution
+
+Branch on the signal, and keep the four apart:
+
+#+begin_src cpp :results verbatim
+try {
+    const auto reply = session.authenticated_request(subject, payload, timeout);
+    throw_if_refused(reply, subject);           // refused, not answered
+    // ... decode the body; a failed outcome is the service's own answer.
+} catch (const ores::nats::service::request_refused_error& e) {
+    // Understood and rejected: act on the code (forbidden, bad_request, ...).
+} catch (const ores::nats::service::nats_connect_error& e) {
+    if (e.kind() == ores::nats::service::nats_error_kind::services_unavailable) {
+        // Nobody is listening: the service is down or the subject is wrong.
+    }
+} catch (const std::runtime_error& e) {
+    // Everything else, including a request that timed out.
+}
+#+end_src
+
+The four outcomes, and what each licenses:
+
+| Signal | Means | The caller may |
+|--------+-------+----------------|
+| Reply, no error | Answered | Decode the body and act on the outcome |
+| Empty body + =X-Error= | Refused before handling | Log in, ask for permission, fix the payload |
+| No responders | No subscription exists | Wait for the service to start; do not hammer |
+| Timeout | Subscribed, no answer in the deadline | Retry if the work is idempotent |
+| Thrown store error | The responder failed after starting | Report it; the work may be half done |
+
+The distinction is preserved by keeping the transport's signals distinct all
+the way out: the refusal is its own exception type, and no-responders carries a
+kind, so neither is flattened into "the request failed".
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | Each failure reaches the caller as itself, not as a generic transport error. |
+| Timeouts | A timeout is distinguishable from no responders, so the retry timing differs. |
+| Retries | A timeout may be retried at once; no responders should back off; a refusal must not be retried unchanged. |
+| Idempotency | A retry after a timeout re-sends the request; the responder must absorb it. |
+| Observability | The caller logs which of the outcomes it saw, so a fleet-wide absence is visible as such. |
+
+* Pitfalls
+
+- *One catch for everything.* A refused request is retried as though the service
+  were down.
+- *Retrying a refusal.* The credential, permission or payload is still wrong.
+- *Treating no responders as a timeout.* The caller waits out a deadline to
+  learn what the first round trip already said, then retries in a tight loop.
+- *Decoding an empty refusal body.* It reports a malformed payload for what is
+  really an authorization failure.
+
+* Resulting context
+
+- Benefits :: The caller's reaction matches the fault, and an operational fault
+  is legible in the log as its own thing.
+- Liabilities :: Every caller must handle four cases rather than one.
+
+* In ORE Studio
+
+`request_sync` throws `nats_connect_error` with
+`nats_error_kind::services_unavailable` for no responders and a distinct
+runtime error for a timeout; `throw_if_refused` raises `request_refused_error`
+for a refusal and deliberately excludes the two session-expiry codes, which
+have their own handling.
+
+* Related patterns
+
+- [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]] — the deadline this pattern interprets.
+- [[id:6B12C3D4-E5F6-4A71-8C93-A4B5C6D7E8F9][Report a Refusal Off the Body]] — the producer of the refusal signal.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/resilient-clients/request-reply-resilience][NATS documentation, Request-Reply Resilience]] — the two failures and why they differ.
+- [[https://beta-docs.nats.io/learn/core-nats/request-reply][NATS documentation, Request-Reply]] — the `_INBOX` mechanism and the no-responders signal.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

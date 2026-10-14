@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5
+:END:
+#+title: Commit Through the Stream
+#+description: A message that must outlive the publisher, or that a consumer must not miss, is sent with js_publish so the server acknowledges storage before the sender proceeds.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:publication:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: publication
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Commit Through the Stream* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It specialises
+[[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] and
+[[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] for a
+publisher that cannot afford to lose a message.
+
+* Also known as
+
+- NATS: /JetStream publish/, /publish acknowledgement/.
+
+* Context
+
+A service publishes a message that is a fact in its own right: a workflow step
+command, a market tick, a completion event another service acts on. The
+consumer may be restarting, and the publisher then does something it cannot
+undo — deletes a retry record, advances a state machine, forgets the work.
+
+* Problem
+
+How does a publisher know that a message it must not lose has actually been
+stored, before it acts as though the work were handed over?
+
+* Forces
+
+- Core NATS `publish()` is fire-and-forget: it returns as soon as the bytes are
+  buffered, with no confirmation from the server and no subscriber required.
+- A publisher that proceeds on an unconfirmed send destroys the only record
+  that the work is outstanding.
+- A stream holds a message for a consumer that is not running.
+- A publish acknowledgement costs a round trip, which a message whose loss is
+  harmless does not warrant.
+
+* Solution
+
+Send with `js_publish()` when the message's loss would be a defect, and let the
+call's failure change what the publisher does next:
+
+#+begin_src cpp :results verbatim
+try {
+    nats.js_publish(
+        step_completed_event::nats_subject,
+        ores::nats::default_wire_codec().encode(evt),
+        forwarded_caller_headers(msg));
+} catch (const std::exception& e) {
+    // The completion was not stored. Do NOT clear the retry record:
+    // leave it so the poll that owns this work tries again.
+    BOOST_LOG_SEV(lg(), error) << "step completion not stored: " << e.what();
+    return;
+}
+clear_batch_link(step_id);
+#+end_src
+
+Three rules define the pattern:
+
+- *The durable message is the one whose loss is a defect.* A workflow
+  completion, a step command, a tick a corpus must not lose. A liveness
+  heartbeat, a cache-invalidation hint or a "something changed" nudge is not,
+  and stays on `publish()`.
+- *The subject must be covered by a stream.* A JS publish to an uncovered
+  subject fails, so the stream is a precondition; see
+  [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]].
+- *The failure changes behaviour.* The throw is not decoration. Whatever the
+  publisher does after the send — clearing state, reporting success, moving on —
+  must not happen when the send failed.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | `js_publish()` throws when the server does not acknowledge storage. |
+| Timeouts | The publish is synchronous; a server that does not acknowledge blocks the caller until the client's timeout. |
+| Retries | The caller retries, or leaves its own retry record in place so a later poll does. |
+| Idempotency | A retry may store the message twice; give it an identity so the consumer can discard the duplicate. |
+| Observability | The publisher logs the prefixed subject, and the failure when the send throws. |
+
+* Pitfalls
+
+- *A core `publish()` for a durable message.* The call succeeds with no
+  consumer, no stream and no server confirmation, and the publisher then
+  destroys its own retry path. This is the failure the pattern exists to
+  prevent.
+- *Catching the throw and proceeding.* The error is logged, the state is
+  cleared, and the work is lost with a clean-looking log.
+- *`js_publish` for everything.* Every telemetry and liveness message now costs
+  a round trip and a stream entry, and the streams grow without purpose.
+- *A JS publish to an uncovered subject.* It throws, which is correct, but the
+  reason is a provisioning gap rather than a transport fault.
+
+* Resulting context
+
+- Benefits :: "Sent" means stored, so the publisher can safely forget the work.
+- Liabilities :: A synchronous round trip per message, and a dependency on a
+  stream existing.
+
+* In ORE Studio
+
+The workflow step command is committed with `js_publish` by the engine, and
+`workflow_helpers.hpp` commits the step completion the same way. The
+`start_workflow` message is committed by every service that begins a run.
+
+* Related patterns
+
+- [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — what makes the retry safe.
+- [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — the stream the publish needs.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — the consumer half of the guarantee.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/jetstream/publishing][NATS documentation, Publishing]] — the publish acknowledgement.
+- [[https://beta-docs.nats.io/learn/jetstream/delivery-and-acknowledgment][NATS documentation, Delivery and acknowledgment]] — at-least-once from the reader's side.
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/GuaranteedMessaging.html][Guaranteed Messaging]].
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

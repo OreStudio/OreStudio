@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 6B5E348B-6B7A-46BF-AB56-33E4D5327AE4
+:END:
+#+title: Story: Bring the service code onto the NATS patterns
+#+description: Audit every NATS call site against the NATS service pattern library, and fix each deviation from it.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it. The standard it audits against is the [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] library.
+
+* Goal
+
+The NATS service pattern library states how a service must address, subscribe, publish, request, fail and log on the bus. This story establishes whether the service code does that, and closes the gap. The audit is exhaustive over the four consumer variants and the publisher, requester and stream-provisioning call sites; it names each deviation, the pattern it breaks, and the change that fixes it. The fixes make a deviation unrepresentable where a codegen template generates the call site, and correct the hand-written ones directly. A deviation that is deliberate and correct stays, and the pattern page is amended to say so, so the library and the code agree at the end.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- Every NATS call site in projects/ is classified against the pattern library, and the inventory is recorded on the story.
+- Each deviation names the pattern it breaks, the file and line, and the fix; each non-deviation is recorded as deliberate with the pattern page that licenses it.
+- The fixes are made: generated call sites through their codegen templates, hand-written ones directly, with no compatibility shim left behind.
+- A pattern that the code proves wrong is amended, so the library and the code agree.
+- The full local gate is green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C68D6FDE-E82F-4E7C-BD13-646D8FA347B6][Scaffold story: Bring the service code onto the NATS patterns]] | STARTED | 2026-10-14 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:11F9A445-13B3-43E0-A674-BE8C5E9E9A79][Audit the NATS call sites against the pattern library]] | STARTED | 2026-10-14 | | Classify every NATS call site against the pattern library, record the inventory, and fix the deviations. |
+
+* Decisions
+
+* Out of scope
+
+-

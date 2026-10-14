@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071
+:END:
+#+title: Queue-Group Subscription
+#+description: Every service subscribes each of its subjects in a queue group named for the service, so several replicas share the work and one message is handled once.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:subscription:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+pattern_group: subscription
+
+This page defines the NATS pattern *Queue-Group Subscription* in the
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]]
+language. It is the mechanism
+[[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] takes over
+NATS. A service subscribes with `queue_subscribe()` and the queue group is the
+service name.
+
+* Also known as
+
+- NATS: /queue group/.
+- The pattern language: [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]].
+
+* Context
+
+A service runs as one or more replicas behind a load balancer that knows
+nothing about NATS. Its subjects are shared by every replica and the bus
+delivers to whichever subscription matches.
+
+* Problem
+
+How do several replicas share one subject so that each message is handled once,
+not once per replica?
+
+* Forces
+
+- A write must happen once, however many replicas are running.
+- A replica may be added for capacity with no change to any caller.
+- A replica may die while it holds a message.
+- A caller cannot know which replica will answer, and must not need to.
+
+* Solution
+
+Subscribe with `queue_subscribe()`, with the service's own name as the queue
+group. The server delivers each message to exactly one member of the group:
+
+#+begin_src cpp :results verbatim
+namespace {
+constexpr std::string_view queue_group = "ores.iam.service";
+}
+
+subs.push_back(nats.queue_subscribe(
+    list_accounts_request::nats_subject,
+    queue_group,
+    [h](ores::nats::message msg) { h->list_accounts(msg); }));
+#+end_src
+
+The rule is total for a *handler*: a subject the service answers is a queue
+subscription, and the group is the service name. Three kinds of reader are
+deliberately not queue-subscribed, and each names its reason:
+
+| Reader | Why not a queue group |
+|--------|-----------------------|
+| A broadcast every replica must see, such as a work-available nudge or a worker heartbeat | The point is that every peer receives it |
+| A per-instance cache invalidator | Each instance keeps its own copy, so each must be told |
+| A client watching a subject, or a test observing a pipeline | It is not a service serving work |
+
+A request/reply subject is never in that list: every replica answering the same
+request is a defect, because the caller reads one reply.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A member that fails replies with the failure; the others are unaffected. |
+| Timeouts | Core NATS delivers at most once, so a member that dies mid-message loses it. Use [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] where that matters. |
+| Retries | A caller's retry re-sends to the group, so any member may serve it. |
+| Idempotency | Unaffected by the group itself; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]]. |
+| Observability | Each member logs the prefixed subject, so the handler is found by subject rather than by replica. |
+
+* Pitfalls
+
+- *Two queue-group names for one service.* Each group receives every message
+  and the work runs twice.
+- *A plain `subscribe()` for a subject the service answers.* Every replica
+  handles every message, which for a request/reply subject means the caller
+  receives whichever reply arrives first.
+- *State in one replica's memory.* The next message may land on another
+  replica, which does not have it.
+
+* Security
+
+Every member verifies the request context on every message; membership of the
+group grants no identity. See [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]].
+
+* Resulting context
+
+- Benefits :: Capacity grows by adding a replica, and a caller is unchanged.
+- Liabilities :: No ordering, and per-replica state diverges.
+
+* In ORE Studio
+
+The generated per-entity registrar declares the group as a constant and pushes
+each subscription into a `std::vector<subscription>`; the hand-written
+registrars follow the same shape. The convention is stated on
+`client::queue_subscribe()`.
+
+* Related patterns
+
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — the same group with persistence.
+- [[id:C178293A-4B5C-40D7-82F9-011223344556][Own the Subscription Handle]] — how the group's membership is kept alive and drained.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/core-nats/queue-groups][NATS documentation, Queue Groups]].
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html][Competing Consumers]].
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

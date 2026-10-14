@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 8D34E5F6-0718-4C93-8EB5-C6D7E8F90112
+:END:
+#+title: Never Let an Exception Cross the Bus
+#+description: A handler contains every exception, because the callback runs on a library thread across a C frame and an escaped exception terminates the whole service.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:error-handling:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: error-handling
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Never Let an Exception Cross the Bus* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It is bus-specific: it follows from how a message callback is
+delivered, not from any pattern in the literature.
+
+* Also known as
+
+- The callback boundary; the C-frame rule.
+
+* Context
+
+Every subscription is delivered by one callback that the NATS client library
+invokes on its own thread. In C++, that callback is invoked across a C frame,
+and the library knows nothing of exceptions.
+
+* Problem
+
+What happens to an exception that leaves a message handler?
+
+* Forces
+
+- An exception crossing a C frame is undefined behaviour and in practice calls
+  `std::terminate`, killing the process.
+- The process death leaves no line in the service's log, so the cause is
+  invisible.
+- A handler does real work — decoding, a database call — and all of that can
+  throw.
+- A message that kills its consumer also takes every other subscription with
+  it.
+
+* Solution
+
+The handler reports and returns; nothing escapes. The transport provides the
+outermost catch, and each handler provides its own inner one:
+
+#+begin_src cpp :results verbatim
+// The transport's callback: the last line of defence, on a library thread.
+void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
+    // read the subject first, cheaply, so the catch below can name it
+    try {
+        cl->handler(extract_message(msg));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Unhandled exception in handler for '" << subject << "': " << e.what();
+    } catch (...) {
+        BOOST_LOG_SEV(lg(), error) << "Unknown exception in handler for '" << subject << "'";
+    }
+}
+#+end_src
+
+Three rules:
+
+- *A handler reports a failure, it does not throw.* An exception from the
+  service layer becomes a =failed= answer in the body; see
+  [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
+- *A caught exception is never simply swallowed.* The handler replies with the
+  failure, or — where there is no reply subject — logs it as the whole account
+  of what happened.
+- *A durable handler must not acknowledge by escaping.* Under an auto-ack
+  subscription, returning normally acknowledges the message; see
+  [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]].
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | The exception is caught at the boundary and recorded, and the process survives. |
+| Timeouts | A caller whose handler threw and did not reply waits out its deadline; the reply is the handler's responsibility. |
+| Retries | A core-NATS message is lost; a durable one is redelivered only if it was not acknowledged. |
+| Idempotency | Retrying after a throw requires the handler to be safe to run again. |
+| Observability | The boundary logs the subject and the exception text, so a crash is replaced by a line. |
+
+* Pitfalls
+
+- *An exception escaping a handler.* The service dies with no log line for the
+  cause, taking every other subscription with it.
+- *Catching and returning silently.* The caller waits out its deadline and the
+  log says nothing.
+- *A catch that acknowledges.* On a durable subscription, a caught failure that
+  returns normally is acknowledged as done.
+- *Reading the message after destroying it.* State read in the catch must be
+  captured before the message is freed.
+
+* Resulting context
+
+- Benefits :: One bad message costs one message, not the whole service.
+- Liabilities :: The handler must be written so every path either replies or
+  deliberately does not.
+
+* In ORE Studio
+
+The callback in `ores.nats` destroys the cnats message before invoking the
+handler and catches every exception, logging the subject and the text. Every
+generated handler wraps the service call in its own try/catch and replies with
+a =failed= body. Hand-written handlers follow the same shape.
+
+* Related patterns
+
+- [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]] — what the handler replies instead of throwing.
+- [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled Message]] — the log line that replaces a silent crash.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — why a caught failure must not be acknowledged.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/core-nats/events][NATS documentation, Events and callbacks]] — a message callback runs on a library thread.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -88,6 +88,15 @@ No security consequence beyond availability.
 - [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — the members that drain it.
 - [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — the alternative when work cannot wait.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — the durable consumer that holds work for an absent service.
+- [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — the stream that has to exist before the queue can hold anything.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — how the reader drains the queue without losing work.
+
 * Sources
 
 - Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling][Queue-Based Load Leveling pattern]].

@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901
+:END:
+#+title: Report a Failure in the Body
+#+description: A request the service handled is answered with a normal body whose result carries the outcome, so the service's own decision never needs a separate error channel.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:error-handling:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: error-handling
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Report a Failure in the Body* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language.
+
+* Also known as
+
+- The canonical response envelope.
+
+* Context
+
+A handler reached the service layer and the service reached a decision: the
+row is missing, the version conflicts, a business rule denies the write, or the
+store threw. Every one of those is a legitimate answer to a well-formed
+request.
+
+* Problem
+
+How does a service report what it decided, when "denied" and "failed" and
+"succeeded" are all normal outcomes of a request it handled?
+
+* Forces
+
+- A refusal is about the caller's right to ask; a decision is about the request
+  itself, and the caller must be able to tell them apart.
+- A caller needs enough structure to branch, not a prose message to parse.
+- An exception from the store is a real fault and must not read as a business
+  rule declining.
+- The same envelope must serve every entity, so a new entity invents nothing.
+
+* Solution
+
+Answer with the response type, whose `result` carries the outcome:
+
+#+begin_src cpp :results verbatim
+auto response = svc.update(*req);      // fills result.outcome / code / message
+reply(nats_, msg, response);
+
+// An exception from the store is not a decision: report it as a failure.
+catch (const std::exception& e) {
+    UpdateResponse failure;
+    failure.result.outcome = ores::utility::domain::outcome::failed;
+    failure.result.code = "internal_error";
+    failure.result.message = e.what();
+    reply(nats_, msg, failure);
+}
+#+end_src
+
+The outcome is a closed set, so a caller can be exhaustive:
+
+| Outcome | Means |
+|---------+-------|
+| =ok= | The request succeeded |
+| =invalid= | The request is well-formed but its content is not acceptable |
+| =denied= | A business rule refused it |
+| =missing= | The addressed record does not exist |
+| =conflict= | The version precondition failed |
+| =unavailable= | A dependency the operation needs is not available |
+| =failed= | The operation ran and could not complete |
+
+Two rules:
+
+- *The handler decides nothing.* It proves the request, checks the permission,
+  decodes the payload, calls the service and carries the answer back. The
+  outcome the caller reads is the service's, so the two cannot disagree.
+- *A thrown exception becomes =failed=, never a business outcome.* A store
+  error is not "denied"; collapsing the two hides an outage inside normal
+  answers.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | Every decided outcome is an answer; the transport reports success. |
+| Timeouts | Unaffected: the reply arrives as soon as the service decides. |
+| Retries | =conflict= and =unavailable= are the outcomes that may be retried; the others will not change. |
+| Idempotency | A retry re-runs the service, so the operation's idempotency governs safety. |
+| Observability | The handler logs the subject and the outcome, so a decision and its reason are in the log. |
+
+* Pitfalls
+
+- *A failed outcome for a refusal.* An authorization failure is reported as
+  =failed=, and the caller diagnoses the payload.
+- *A prose message with no code.* The caller cannot branch, so it either
+  ignores the failure or parses text.
+- *An empty message on failure.* The log has the outcome and nothing about
+  which field or rule produced it.
+- *A new outcome value at one call site.* The set is closed so callers can be
+  exhaustive; a fresh string breaks that.
+
+* Resulting context
+
+- Benefits :: One reply shape for every entity, and a caller that can branch on
+  a closed set.
+- Liabilities :: "Denied" and "failed" can be confused by a careless handler.
+
+* In ORE Studio
+
+`ores::utility::domain::result` carries `outcome`, `code`, `message` and
+`fields`; every generated handler replies with the response type and maps an
+exception to =internal_error= with outcome =failed=. See
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol
+specification]].
+
+* Related patterns
+
+- [[id:6B12C3D4-E5F6-4A71-8C93-A4B5C6D7E8F9][Report a Refusal Off the Body]] — the report for what was not handled.
+- [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let an Exception Cross the Bus]] — where the failure report is produced.
+
+* Sources
+
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the response envelope and its outcome set.
+- [[https://beta-docs.nats.io/learn/core-nats/request-reply][NATS documentation, Request-Reply]] — the reply mechanism the answer travels on.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

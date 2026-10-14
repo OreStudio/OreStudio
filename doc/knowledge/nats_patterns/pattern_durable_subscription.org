@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182
+:END:
+#+title: Durable Subscription
+#+description: A message that must survive the service being down is read from a named durable consumer on a stream, so the server holds it until a member reads it.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:subscription:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+pattern_group: subscription
+
+This page defines the NATS pattern *Durable Subscription* in the
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]]
+language. A subscription a service must not miss while it restarts is created
+with `js_queue_subscribe()` against a named durable consumer.
+
+* Also known as
+
+- NATS: /durable consumer/, /push consumer/.
+- The pattern language: [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]].
+
+* Context
+
+A message arrives that is the only record of a fact: a workflow step command,
+a market tick. The consumer may be restarting, redeploying or briefly
+overloaded, and the publisher has already moved on.
+
+* Problem
+
+How does a message survive the moment when no member of the queue group is
+listening?
+
+* Forces
+
+- Core NATS delivers to whoever is subscribed at that instant and forgets the
+  message otherwise.
+- A restart is routine, so losing work to one is not acceptable.
+- The consumer's position must survive the restart too, not only the message.
+- The publisher must not have to know whether the consumer is up.
+
+* Solution
+
+Publish to a subject a stream covers, and read it from a durable consumer:
+
+#+begin_src cpp :results verbatim
+const std::string engine_stream(nats.make_stream_name("workflow"));
+
+nats.js_queue_subscribe(
+    messaging::step_completed_event::nats_subject,
+    "workflow-engine-step-completed",   // durable name: this reader's position
+    queue_group,
+    handler,
+    engine_stream);                     // reconciles the durable before attaching
+#+end_src
+
+Three properties define the pattern:
+
+- The *durable name* is the reader's identity. Restarting attaches to the same
+  position, so nothing between the last ack and now is skipped.
+- The *queue group* still applies: a durable consumer scales across replicas
+  exactly as [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] does.
+- The *stream name* is passed. The subscribe then reconciles a durable whose
+  stored filter differs from the subject asked for, which is what a renamed
+  subject leaves behind; see [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]].
+
+A durable consumer reads at-least-once. The handler must therefore be safe to
+run twice; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]].
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed delivery is redelivered after AckWait, to the same or another member. |
+| Timeouts | AckWait is the redelivery timer; a member that dies holding a message loses it back to the consumer. |
+| Retries | Redelivery is the retry. A message that fails forever must be bounded or discarded; see [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]]. |
+| Idempotency | Required: a redelivered message may reach a member that already started it. |
+| Observability | Redelivery is visible on the consumer; see [[id:B0671829-3A4B-4FC6-91E8-F90112233445][Observe the Connection State]] for the connection side. |
+
+* Pitfalls
+
+- *Omitting the stream name.* The durable is never reconciled, so a renamed
+  subject leaves a consumer the server refuses to attach and the service does
+  not start.
+- *One durable name for two readers.* They share a position and split the work
+  between them.
+- *A durable for everything.* A request whose answer is in the reply needs no
+  history; durability is for messages that outlive the publisher's interest.
+- *An unbounded redelivery of a poison message.* Without an attempt bound it is
+  an endless loop.
+
+* Resulting context
+
+- Benefits :: A restart costs no work, and the reader's position is durable
+  state held by the server rather than the process.
+- Liabilities :: The subscription now depends on server-side state, which a
+  subject rename can strand.
+
+* In ORE Studio
+
+The workflow engine reads `start_workflow` and `step_completed` from the
+`workflow` stream; IAM reads the tenant-provisioning step from `iam_steps`; the
+marketdata ingest loop reads ticks. The streams and consumers are catalogued in
+[[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
+consumers]].
+
+* Related patterns
+
+- [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] — the load-sharing half.
+- [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — the stream that has to exist first.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — what a durable consumer must do.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/jetstream/delivery-and-acknowledgment][NATS documentation, Delivery and acknowledgment]] — the delivery lifecycle and at-least-once.
+- [[https://beta-docs.nats.io/learn/jetstream/pull-consumers][NATS documentation, Pull consumers in depth]].
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

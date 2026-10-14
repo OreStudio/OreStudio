@@ -65,12 +65,28 @@ TYPE_TO_TEMPLATE = {
     "workflow": "doc_workflow.org.mustache",
     "report": "doc_report.org.mustache",
     "service_architecture_pattern": "doc_service_architecture_pattern.org.mustache",
+    "nats_pattern": "doc_nats_pattern.org.mustache",
 }
 
-# The groups of the pattern language, in the order the pattern hub reads them.
-PATTERN_GROUPS = (
-    "identity", "communication", "coordination", "resilience", "load", "data",
-    "observability",
+# Each pattern type has its own group vocabulary, in the order its hub reads
+# them. A group from one vocabulary is never valid for the other type, so the
+# dict is the single source of truth for both the union argparse accepts and
+# the per-type validation main() applies.
+PATTERN_GROUPS = {
+    "service_architecture_pattern": (
+        "identity", "communication", "coordination", "resilience", "load",
+        "data", "observability",
+    ),
+    "nats_pattern": (
+        "addressing", "subscription", "publication", "request",
+        "error-handling", "diagnostics", "ownership",
+    ),
+}
+
+# Every group any pattern type accepts, for argparse's union choices. The
+# per-type validation narrows this to the chosen type's vocabulary.
+ALL_PATTERN_GROUPS = tuple(
+    group for groups in PATTERN_GROUPS.values() for group in groups
 )
 
 # entity_org --shape presets: knob bundles sampled from a known-good
@@ -146,6 +162,7 @@ DEFAULT_INITIAL_STATE = {
     "workflow": "",
     "report": "",
     "service_architecture_pattern": "",
+    "nats_pattern": "",
     "entity_org": "",
     "field_group": "",
     "junction": "",
@@ -175,6 +192,7 @@ PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
     "workflow", "report", "service_architecture_pattern",
+    "nats_pattern",
     "entity_org", "field_group", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
     "facet", "facet_group", "technical_space", "archetype", "profile", "feature",
@@ -417,11 +435,12 @@ def parse_args(argv=None):
                              "known by, written to #+report_code:. Defaults to "
                              "the slug.")
     parser.add_argument("--pattern-group", dest="pattern_group", default="",
-                        choices=("",) + PATTERN_GROUPS,
-                        help="For --type service_architecture_pattern: the "
-                             "group of the pattern language the pattern "
-                             "belongs to, written to #+pattern_group:. "
-                             "Required for a pattern.")
+                        choices=("",) + ALL_PATTERN_GROUPS,
+                        help="For --type service_architecture_pattern or "
+                             "nats_pattern: the group of the pattern language "
+                             "the pattern belongs to, written to "
+                             "#+pattern_group:. Each type accepts only its own "
+                             "groups. Required for a pattern.")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
                              "(e.g. acme_corporation). Drives the output path "
@@ -703,10 +722,18 @@ def main(argv=None):
 
     # A pattern belongs to exactly one group of the pattern language, and the
     # hub orders its reading by group, so a pattern with no group has no place.
-    if args.type == "service_architecture_pattern":
+    # Each pattern type has its own vocabulary; a group from another type's
+    # vocabulary is refused.
+    if args.type in PATTERN_GROUPS:
+        allowed_groups = PATTERN_GROUPS[args.type]
+        type_label = args.type.replace("_", " ")
         if not args.pattern_group:
-            sys.exit("error: --pattern-group is required for a service "
-                     "architecture pattern: " + ", ".join(PATTERN_GROUPS))
+            sys.exit(f"error: --pattern-group is required for a {type_label}: "
+                     + ", ".join(allowed_groups))
+        if args.pattern_group not in allowed_groups:
+            sys.exit(f"error: --pattern-group '{args.pattern_group}' is not a "
+                     f"valid group for a {type_label}: "
+                     + ", ".join(allowed_groups))
         pattern_group = args.pattern_group
     else:
         pattern_group = ""
@@ -814,6 +841,10 @@ def main(argv=None):
     #              <parent-dir>/pattern_<slug>.org (flat file under
     #              doc/knowledge/service_architecture_patterns, prefixed for
     #              the same reason)
+    # - nats_pattern:
+    #              <parent-dir>/pattern_<slug>.org (flat file under
+    #              doc/knowledge/nats_patterns, prefixed so the pattern pages
+    #              sort apart from their hub)
     # - task:      <parent-dir>/task_<slug>.org   (prefix groups tasks under
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
@@ -909,7 +940,7 @@ def main(argv=None):
         leaf = args.slug if args.slug.startswith("report_") else f"report_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
-    elif args.type == "service_architecture_pattern":
+    elif args.type in ("service_architecture_pattern", "nats_pattern"):
         # Every pattern page shares one folder with its hub, so the prefix
         # groups the patterns and keeps the hub apart from them.
         leaf = args.slug if args.slug.startswith("pattern_") else f"pattern_{args.slug}"

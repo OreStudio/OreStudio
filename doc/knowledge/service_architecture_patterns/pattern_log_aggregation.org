@@ -85,6 +85,15 @@ The store holds every service's lines, so reading it is a privileged act: the lo
 - [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — the key that joins lines.
 - [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]] — adds the call tree.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled Message]] — the one receipt line per handled message.
+- [[id:AF560718-293A-4EB5-80D7-E8F901122334][Propagate the Correlation Id]] — the key that joins one request across services.
+- [[id:B0671829-3A4B-4FC6-91E8-F90112233445][Observe the Connection State]] — the connection transitions that explain a gap in a service's log.
+
 * Sources
 
 - Chris Richardson, [[https://microservices.io/patterns/observability/application-logging.html][Pattern: Log aggregation]], microservices.io.

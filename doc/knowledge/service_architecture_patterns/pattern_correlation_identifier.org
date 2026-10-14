@@ -144,6 +144,14 @@ prevents. The id may be stored, unlike a token, because it is not a credential.
 - [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] — travels the same hops, with the same rule: forward what the inbound request carried.
 - [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — the firing is the origin of a scheduled run, and the run id is in its token.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:AF560718-293A-4EB5-80D7-E8F901122334][Propagate the Correlation Id]] — the =Nats-Correlation-Id= header, generated once and forwarded by every hop.
+- [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled Message]] — the receipt line the key is written on.
+
 * Sources
 
 - Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/CorrelationIdentifier.html][Correlation Identifier]].

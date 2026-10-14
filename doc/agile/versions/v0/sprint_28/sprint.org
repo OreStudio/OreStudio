@@ -54,6 +54,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |-------+-------+-------+-----+-------|
 | [[id:161BBE37-BBAE-46DB-A4E8-FDDE0F064583][Open sprint 28]] | DONE | 2026-10-13 | 2026-10-13 | Scaffold sprint 28, wire the version manifest and the agile index, bump the project version to 0.0.28, and update the vcpkg submodule. |
 | [[id:06C289CA-29DF-415B-BC9D-CAF61B94695C][Populate sprint 28 with the carried stories]] | DONE | 2026-10-13 | 2026-10-13 | Move sprint 27's carried stories and their successors from the product backlog inbox into sprint 28, and wire them into the sprint table. |
+| [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] | BACKLOG | | | Make a trigger the only way a run is admitted, so a person can run a report without a schedule and both paths share one handler. |
 
 ** Hotfixes
 

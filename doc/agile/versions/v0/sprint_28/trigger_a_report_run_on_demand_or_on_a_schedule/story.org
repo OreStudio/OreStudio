@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 822CEF08-980C-4548-9C7B-04CFF433CEFB
+:END:
+#+title: Story: Trigger a report run on demand or on a schedule
+#+description: A report run is admitted by a trigger, and a trigger is either on demand or scheduled. Today only the scheduler can admit a run, so a run a person asks for has no consent and cannot act.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:reporting:scheduler:iam:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report runs in one of two ways: a person asks for it now, or a schedule asks
+for it later. Both are triggers, both are recorded as events, and both admit a
+run the same way.
+
+Today only a schedule can admit a run. The run grant is created when a definition
+is scheduled and copied onto the instance at admission, so a run a person asks
+for by hand has no consent behind it and fails with "the report instance records
+no run grant". Building a report's ORE packages is the first caller to hit this,
+and it cannot work until the trigger exists.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The design is settled; no code is written. |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- A report instance always has a trigger, and the database enforces it: the
+  trigger is a real foreign key, not a convention.
+- A trigger records its type (on demand or scheduled), the definition it is for,
+  the party the run acts in, the person who asked, and when.
+- A scheduled trigger names the scheduler job and the firing that produced it. An
+  on-demand trigger names neither, and the schema refuses a scheduled trigger
+  that names no job.
+- The scheduler does not write the reporting schema. Its job publishes a trigger
+  event, and the reporting service records the trigger and admits the run.
+- An on-demand trigger and a scheduled trigger reach the same handler. The only
+  difference between the two paths is the payload.
+- The consent to run is the report's, held on the definition, and every trigger
+  reuses it. It is created by whichever act needs it first, scheduling or a
+  person asking, and a definition that has never been scheduled can still run on
+  demand.
+- A person triggers a report by naming it, within the party they are signed in
+  to. They do not supply a schedule to get a run.
+- A report that has been triggered on demand produces the same run it would have
+  produced had a schedule triggered it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | BACKLOG | | | Create the report's consent at admission rather than only at schedule time |
+|      |       |       |     |             |
+
+* Decisions
+
+** A trigger is an event, so it has no bitemporality
+
+The trigger table records a fact about an instant. It states =:current_state:=
+and =:immutable:=: no validity window, no version, no audit tail, and rows are
+written once. This follows =ores.iam.auth_event=, which opens by saying that "an
+event is a fact about an instant, and the bi-temporal pair has no meaning on it".
+
+Because a current-state immutable table has no audit tail, the actor and the time
+are columns of its own. It is a plain table, not a hypertable: =auth_event= is
+one because logins are high volume, and triggers are a handful a day.
+
+** The table is named =report_trigger_event=
+
+Following [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]], an
+append-only record of a fact about an instant takes the =_event= suffix. The
+lookup is =report_trigger_type=, not =_kind=, so the trigger's type is not
+confused with =report_instance.kind=, which means production or package.
+
+** The trigger is the only way a run is admitted
+
+The scheduler job publishes a trigger event instead of writing SQL or calling an
+admission operation directly. The scheduler already has a =nats_publish= action
+type beside =execute_sql= and =send_mq_message=, so this adds a handler and
+changes no other part of the scheduler.
+
+Both triggers publish to the same subject. The reporting service has one handler:
+it writes the trigger row and admits the run. That is what keeps the two paths
+from diverging.
+
+** Consent belongs to the report, not to the trigger
+
+A trigger does not carry a grant. The definition holds the report's standing
+consent to run, and an instance copies it at admission, as it does today. The
+defect was never that the grant was in the wrong place; it was that only
+scheduling ever created one.
+
+The consequence to be aware of: consent is standing, so once a definition has it,
+a later run asked for by a different person acts under whoever consented first.
+That is what "the report's consent to run" means, and it replaces the earlier
+wording of a one-run grant minted from the person who asked.
+
+* Out of scope
+
+- How a screen triggers a report. This story makes the operation exist; the
+  screen follows it.
+- Splitting one run into several packages. The trigger admits one run, and the
+  number of packages that run produces is a later task.

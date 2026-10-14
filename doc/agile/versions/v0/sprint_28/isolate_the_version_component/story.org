@@ -1,0 +1,200 @@
+:PROPERTIES:
+:ID: 90132573-0DE8-4EF7-A2FA-ED2266488651
+:END:
+#+title: Story: Move the version stamp out of the binaries
+#+description: The build's git hash is compiled into ores.utility.lib, a shared library that 179 targets link, so the stamp changes on every commit and relinks all of them. The commit moves out of every binary into a manifest read at runtime, so a commit changes no compiled file and relinks nothing.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Know which commit produced a running binary, without a commit changing
+any compiled artifact.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- A commit changes no compiled file, so the build after a commit relinks
+  no target.
+- A running service, the shell and the web server report the commit that
+  produced them, wherever they run.
+- The same mechanism serves a local build, a package and a deployed
+  image.
+- A missing or unreadable manifest degrades to the release version with a
+  clear marker. It never stops a service starting.
+- The relink set a commit causes is measured before and after.
+
+* Design
+
+Agreed 2026-10-14, revised the same day after the analysis.
+
+** Nothing is embedded in a binary. =version.cpp.in= loses
+=@ORES_BUILD_INFO@=. =version.hpp= keeps only the release numbers and the
+platform triplet, which change at release time, not per commit. The
+generator keeps writing =version.cpp=, but its content no longer depends on
+the commit, so =copy_if_different= leaves it alone and nothing recompiles or
+relinks when a commit lands.
+
+** No new component. The stamp stays in =ores.utility=. Once nothing is
+embedded, the relink cascade disappears on its own: =libores.utility.so=
+changes only when utility code changes, which it has to. Isolating version
+into =ores.version= was a means of shrinking the cascade, and with the
+cascade gone the means buys nothing. It would also cost a whole shared
+library and a codegen ceremony for one translation unit, at a time when
+=LINK_DEPENDS_NO_SHARED= cannot be scoped to a single dependency anyway.
+
+** A manifest carries the fast-changing facts. A =key=value= file written
+beside the binaries:
+
+#+begin_example
+format=1
+version=1.8.17.0
+build_info=local bdf73e1d24
+commit=bdf73e1d24
+commit_full=bdf73e1d24...
+dirty=false
+branch=main
+triplet=x64-linux
+checkout_label=brave_hopper
+#+end_example
+
+=key=value= rather than JSON because the only reader is one C++ function
+that wants one field, and a line-oriented file needs no parser, no schema
+tolerance rules and no library. It is readable with =cat= and searchable
+with =grep=. If a JSON consumer ever appears, the format can move.
+
+There is deliberately no =built_at=. The wall-clock time was already
+available at runtime from the executable's own mtime, and writing it here
+would change the file on every build for no gain.
+
+=checkout_label= is empty in a local build, because compass reads
+=ORES_CHECKOUT_LABEL= from the environment file but does not export it into
+the build. The =branch= field identifies the worktree today. Populating the
+label is a small compass change if it turns out to be worth having.
+
+** Lookup order, first hit wins:
+
+1. =$ORES_VERSION_MANIFEST=
+2. =version.manifest= beside the running executable
+3. =/usr/local/share/ores/version.manifest=
+4. =/etc/ores/version.manifest=
+
+Resolving "beside the running executable" reuses the existing
+=ores.platform::process::executable_path()=. Keeping the stamp in
+=ores.utility= introduces no new dependency edge, since that library
+already links =ores.platform=.
+
+** Why each target works, and what it cost. A local build writes the
+manifest into =publish/bin= next to the binaries. A package and a deployed
+image do not copy =publish/= wholesale: they stage a curated subset, so each
+stager has to carry the manifest explicitly or the image silently reports an
+unknown commit. Both were taught to. =docker/stage-runtime.sh=, which feeds
+the compute image, copies it into its flat =bin/=. And
+=library_partition.stage_for_build()=, which feeds the base and runtime
+images, copies it beside each service in =services/<svc>/bin/=.
+
+Copying it into the flat =bin/= before the =ldd= walk is a trap worth
+recording. =ldd= fails on anything that is not an ELF binary, and
+=stage-runtime.sh= runs under =set -euo pipefail=, so a single failing
+=ldd= aborted the staging in silence and produced an image carrying no
+libraries at all. The walk is now tolerant of a non-binary, and the manifest
+is copied after it.
+
+** Nothing may depend on the manifest. This is the one way to reintroduce
+the bug. The manifest must not appear in =BYPRODUCTS=, in =DEPENDS=, in
+=configure_file=, or in any command that produces a compiled input. It is
+written as an undeclared side effect of a target that runs every build. A
+build input that changes every commit is exactly what relinks the tree.
+
+** Reading it. =build_info()= reads the first manifest that carries
+=build_info= and caches it in a function-local static, so the file is read
+once per process. =full_version_string()= and =format_startup_message()=
+keep their shape and their output. =build_info()= returns ="unknown"= when
+no manifest can be read, and the reader skips a manifest that is readable
+but lacks the field, so a damaged record can never stop a service starting.
+
+** No signing yet. This is a development traceability mechanism, so the
+manifest binds to nothing and a stale manifest beside a new binary is
+possible. Signing, and binding the artifact digest into the manifest,
+are deferred.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A84BB0EA-AB3A-4573-9B9B-9CE87119A66F][Scaffold story: Isolate the version stamp into its own component]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7660979A-0C33-424D-9C83-AFCF535DEAF4][Analyse how version is used and size the relink blast radius]] | DONE | | 2026-10-14 | Initial task for: Isolate the version stamp into its own component |
+| [[id:62961970-2A27-43AB-AC13-835A8E6438E9][Move the version stamp out of the binaries]] | DONE | 2026-10-14 | 2026-10-14 | The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Move the commit out of every binary into a manifest read at runtime, so a commit changes no compiled file. No new component: with nothing embedded the cascade disappears on its own. |
+
+* Decisions
+
+- Nothing is embedded in a binary; a manifest is the only carrier of the
+  commit. Chosen over a linker-owned stamp and over
+  =LINK_DEPENDS_NO_SHARED=, which cannot be scoped to a single dependency
+  and would blunt ABI-change detection for every shared library of a
+  target it is set on.
+- No separate =ores.version= component. With nothing embedded, the cascade
+  the component was meant to shrink no longer exists, so it would buy a
+  shared library and a codegen ceremony for one translation unit and no
+  benefit. Revisit only if a second reason to split appears.
+- The manifest is not signed yet. It is for development traceability.
+- The manifest is =key=value=, not JSON, because the only reader wants one
+  field and a line-oriented file needs no parser or schema tolerance rules.
+- The manifest carries no build timestamp. Runtime already reads the
+  executable's mtime for that, and a timestamp would rewrite the file on
+  every build for no gain.
+
+* Out of scope
+
+- Signing the manifest, and binding the artifact digest into it.
+- =LINK_DEPENDS_NO_SHARED=. Considered and rejected for this work.
+- The separate =ores.version= component. Considered and dropped.
+- The wider observation that relinking dependents of a changed shared
+  library is not required for correctness, so most of the 179 relinks are
+  wasted work. Worth a separate decision.
+
+* Result
+
+Landing a commit no longer recompiles or relinks anything.
+
+The commit left every binary for a =version.manifest= read at runtime, so
+=version.cpp= is byte-identical on every build and =libores.utility.so=
+changes only when utility code changes, which it has to. A commit-only build
+now does 0 compiles and 0 links, where it previously relinked all 179 direct
+dependents of that library. A real change to =version.cpp= still costs 1
+compile and 177 links, so the relink is now driven by content rather than by
+the stamp.
+
+The work is verified where it runs, not only where it is built. The compute
+image was built and deployed to goedel, and its three nodes report the commit
+from the manifest inside the container. The local environment was stopped and
+started and reports the same commit. That mattered: the first attempt staged
+the manifest into the flat =bin/= before the =ldd= walk, and =ldd= failing on
+a non-binary under =set -euo pipefail= aborted the staging in silence,
+producing an image with no libraries. Only running the stager found it.
+
+No separate =ores.version= component, deliberately. The cascade it was meant
+to shrink is gone, so it would have been a shared library and a codegen
+ceremony for one translation unit and no benefit.
+
+Open, and worth a decision later: the manifest records the commit of the last
+build, while the image tag records the checkout at image-build time. A C++
+commit without a rebuild would make the tag claim more than the binary can
+back.

@@ -280,6 +280,38 @@ class TestStageForBuild:
             sym.symlink_to(real.name)
         return real
 
+    def test_carries_the_build_manifest_beside_the_service(self):
+        """A service reads the manifest from its own executable path.
+
+        Without it beside the binary, every deployed image reports an unknown
+        commit, so the staging step has to carry it.
+        """
+        self._make_binary("ores.iam.service")
+        manifest = self.bin_dir / "version.manifest"
+        manifest.write_text("commit=abc123\n", encoding="utf-8")
+
+        stage_for_build(self.stage, self.bin_dir, self.lib_dir,
+                        ["ores.iam.service"], set(), {})
+
+        staged = self.stage / "services/ores.iam.service/bin/version.manifest"
+        assert staged.is_file()
+        assert staged.read_text(encoding="utf-8") == "commit=abc123\n"
+
+    def test_survives_a_missing_build_manifest(self):
+        """A build with no manifest must still stage.
+
+        The manifest is a record, so its absence may degrade what a container
+        reports but must never fail the image build.
+        """
+        self._make_binary("ores.iam.service")
+
+        stage_for_build(self.stage, self.bin_dir, self.lib_dir,
+                        ["ores.iam.service"], set(), {})
+
+        bin_dir = self.stage / "services/ores.iam.service/bin"
+        assert (bin_dir / "ores.iam.service").is_file()
+        assert not (bin_dir / "version.manifest").exists()
+
     def test_creates_base_and_service_dirs(self):
         self._make_binary("ores.iam.service")
         self._make_lib("libores.service.so.0", "libores.service.so.0.1.0")

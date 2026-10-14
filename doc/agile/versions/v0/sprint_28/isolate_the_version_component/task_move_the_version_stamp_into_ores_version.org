@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 62961970-2A27-43AB-AC13-835A8E6438E9
+:END:
+#+title: Task: Move the version stamp out of the binaries
+#+description: The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Move the commit out of every binary into a manifest read at runtime, so a commit changes no compiled file.
+#+type: task
+#+level: s1
+#+filetags: :isolate_the_version_component:sprint_28:v0:
+#+owner: marco
+#+branch: feature/isolate-the-version-component
+#+pr: 3290
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Move the version stamp out of the binaries]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take the per-commit build stamp out of every compiled artifact and carry it in a manifest read at runtime, so landing a commit changes no compiled file and relinks no target.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Isolate the version stamp into its own component]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- The stamp compiles into its own component, not ores.utility.
+- The relink set a stamp change causes is smaller, and the count is measured before and after.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3290][#3290]] | [ores.utility,docker,compass] Read the build stamp from a manifest |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The commit is out of every binary and in a manifest read at runtime, so a
+commit changes no compiled file.
+
+=version.cpp= no longer contains the commit, so =copy_if_different= leaves it
+alone and nothing recompiles or relinks when a commit lands. The commit,
+branch and dirty flag are written to =version.manifest= beside the binaries
+by the same generator, and =build_info()= reads the first manifest that
+carries =build_info=, caching it in a function-local static. The manifest is
+not a BYPRODUCT or a dependency of anything, because a build input that
+changes every commit is what relinks the tree.
+
+No =ores.version= component was created. With nothing embedded the cascade
+disappears on its own, so a separate shared library would have bought a
+codegen ceremony for one translation unit and no benefit.
+
+Measured:
+
+| Build | Compiles | Links |
+|-------+----------+-------|
+| A commit lands, nothing compiled changed | 0 | 0 |
+| A genuine change to =version.cpp= | 1 | 177 |
+
+The first row is the case that used to recompile =version.cpp= and relink
+all 179 targets. The second is the mechanism working as designed: a real
+content change still costs a real relink, and the stamp is no longer what
+drives it.
+
+Staging was the part the design first got wrong. Neither stager copies
+=publish/= wholesale, so both had to carry the manifest explicitly:
+=docker/stage-runtime.sh= into its flat =bin/=, and
+=library_partition.stage_for_build()= beside each service in
+=services/<svc>/bin/=. Copying it into the flat =bin/= before the =ldd= walk
+is a trap: =ldd= fails on a non-binary and that script runs under
+=set -euo pipefail=, so the staging aborted in silence and produced an image
+carrying no libraries at all. The walk is now tolerant and the copy happens
+after it.
+
+Verified end to end:
+
+- =build_info()= returns =local 797a4d893e= with a manifest beside the test
+  executable and =unknown= with none, so absence degrades rather than
+  failing.
+- The compute image =localhost/ores-compute-wrapper:0.0.28-5ac7b42e16=
+  deployed to goedel, three nodes healthy, logging
+  =Starting ores.compute.wrapper v0.0.28 [x64-linux] Protocol 0.1 (local
+  3e33987ffc ...)=.
+- The local environment stopped and started, 24 units active, logging the
+  same commit from =ores.ore.service= and =ores.compute.wrapper=.
+- The compass suite is at 401 passing, including two new tests for the
+  manifest being staged and its absence being survivable.

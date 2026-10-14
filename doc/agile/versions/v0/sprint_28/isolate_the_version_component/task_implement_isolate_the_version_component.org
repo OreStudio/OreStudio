@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 7660979A-0C33-424D-9C83-AFCF535DEAF4
+:END:
+#+title: Task: Analyse how version is used and size the relink blast radius
+#+description: Initial task for: Isolate the version stamp into its own component
+#+type: task
+#+level: s1
+#+filetags: :isolate_the_version_component:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Isolate the version stamp into its own component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Contain the relink cost of the per-commit version stamp so a commit stops relinking targets that never report a version.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Isolate the version stamp into its own component]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- The consumers of version are known and each is classified as reporting it or merely carrying it.
+- The relink set a version change causes is measured before and after.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The relink blast radius is the version stamp, not the version API.
+
+=cmake/generate_version.cmake= stamped =version.cpp= with the git hash and
+compiled it into =ores.utility.lib=, alongside all of utility
+(=set(lib_files ${files} "${version_cpp_out}")=). With =BUILD_SHARED_LIBS= on
+that is a 12.7 MB =libores.utility.so=, and =ninja -t query= gives **179
+targets** that hold it as a direct link input, from **154**
+=target_link_libraries= sites naming =ores.utility.lib=. **45** translation
+units include =version.hpp=.
+
+So a commit had this shape: new hash, =version.cpp= recompiles, the library
+relinks, and every target that links it relinks. With shared libraries that
+relink is not required for correctness, but ninja does it because the =.so=
+is a link input whose timestamp moved.
+
+Two facts made the extraction clean, and both were checked rather than
+assumed: nothing inside =ores.utility= uses version, so it is an orphan
+there; and =ores.platform='s library does not link =ores.utility=, so
+depending on =ores.platform= for the executable path creates no cycle.
+
+The stale stamp was already as cheap as it could be before the work started:
+=copy_if_different= meant the file was only rewritten when git state changed,
+and the wall-clock time was never stamped. The cost was per commit, not per
+build.
+
+179 is the direct dependents. The transitive set is larger, because many of
+the 179 are themselves shared libraries with dependents of their own; the
+closure script did not finish, so treat 179 as a floor.

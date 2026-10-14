@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: D2893A4B-5C6D-41E8-930A-112233445566
+:END:
+#+title: Bind Before You Call Your Own Service
+#+description: A service registers every subscription before it makes any request, including its own, because a subject is not callable until its handler is registered.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:ownership:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: ownership
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Bind Before You Call Your Own Service* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It is the mechanism that makes
+[[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] safe.
+
+* Also known as
+
+- The two-phase bootstrap; wiring before readiness activities.
+
+* Context
+
+A service's startup does two different kinds of thing: it wires subjects to
+handlers, and it does work that itself needs a subject — minting its service
+token, warming a cache, reading a bootstrap status. The second kind calls a
+subject, and some of those subjects belong to the service itself.
+
+* Problem
+
+In what order may a service register handlers and call subjects, when some of
+the subjects it calls are its own?
+
+* Forces
+
+- Dispatch is on its own thread, so a subject is callable the instant it is
+  subscribed.
+- A service that calls its own subject before registering the handler waits
+  out a timeout.
+- With several replicas, another replica may answer; a single-replica
+  development environment has no one else to answer.
+- The failure looks like a hung service, not an ordering bug.
+
+* Solution
+
+Two phases, in this order: register every subscription, then do everything that
+calls a subject.
+
+#+begin_src cpp :results verbatim
+// Phase 1 — wire every subject. Nothing here calls a subject.
+auto subs = messaging::registrar::register_handlers(nats, ctx, signer);
+
+// Phase 2 — everything that calls a subject, including our own.
+warm_the_cache(nats);           // safe only because phase 1 finished
+mint_the_service_token(nats);
+announce_ready();
+// ... run until signalled ...
+nats.drain();
+#+end_src
+
+Three rules:
+
+- *Register first, call second.* No call to any subject before the last
+  subscription is registered.
+- *A self-call is still a call.* A subject the service itself answers obeys the
+  same rule as a subject another service answers.
+- *The order is the structure, not a comment.* Phase 1 is one call that returns
+  the handles; phase 2 is what follows it.
+
+* Failure handling
+
+#+ATTR_HTML
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A self-call in the wrong phase does not error; it waits out the request deadline and reports a timeout. |
+| Timeouts | The symptom of the wrong order is a request timeout at startup, with a subscriber that looks healthy. |
+| Retries | Retrying does not help: the handler will never be registered yet. |
+| Idempotency | Registration is idempotent per process; the phases are about order, not repetition. |
+| Observability | The handler registration lines precede any request line, so the order is visible in the log. |
+
+* Pitfalls
+
+- *Warming a cache before registering.* The service waits out a deadline
+  against itself and may exit as unhealthy.
+- *Working in development, failing under load.* Another replica answers the
+  self-call, so the bug hides until a single-replica environment.
+- *Minting a token inside the registration path.* The registration is now a
+  call, and the phases have merged.
+- *Registering after readiness.* A caller that reaches the service in between
+  gets no responders.
+
+* Resulting context
+
+- Benefits :: Startup has no ordering hazard, and a subject is either not
+  advertised or callable.
+- Liabilities :: Anything that needs a subject must be expressed as phase 2
+  work rather than as part of wiring.
+
+* In ORE Studio
+
+The service runner registers handlers and keeps the returned handles, then
+performs readiness activities such as minting the service token or warming a
+cache, then drains on shutdown. The party-cache self-login case is the worked
+example of the order mattering.
+
+* Related patterns
+
+- [[id:C178293A-4B5C-40D7-82F9-011223344556][Own the Subscription Handle]] — the handles phase 1 returns.
+- [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] — what a self-call races against.
+
+* Sources
+
+- [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — the ORE Studio statement of this ordering.
+- [[https://microservices.io/patterns/deployment/service-instance-per-host.html][microservices.io, Service Instance per Host]] and the microservices.io catalogue on service startup and discovery.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

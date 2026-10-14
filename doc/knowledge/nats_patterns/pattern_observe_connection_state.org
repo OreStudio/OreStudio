@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: B0671829-3A4B-4FC6-91E8-F90112233445
+:END:
+#+title: Observe the Connection State
+#+description: A service records losing its connection to the bus and regaining it, so a gap in the log is attributable to the bus rather than to nothing arriving.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:diagnostics:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: diagnostics
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Observe the Connection State* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It is bus-specific: the state it observes is the client library's
+own, and no outer pattern covers it.
+
+* Also known as
+
+- Reconnection callbacks; connection events.
+
+* Context
+
+A connection can be lost and regained without the process noticing. The client
+library reconnects on its own, the subscriptions are re-established, and the
+service looks as though nothing happened — while messages published during the
+gap were never delivered to it.
+
+* Problem
+
+How does a reader tell "no messages arrived" from "this service was not
+connected to the bus when they arrived"?
+
+* Forces
+
+- A reconnection is silent by default: the service resumes and its log shows
+  nothing.
+- A gap in a service's log is otherwise indistinguishable from a quiet period.
+- Only the sender's log records what was published during the gap, and a person
+  investigating has one log.
+- The bus reports errors on its own thread, where a logging call can fault.
+
+* Solution
+
+Install callbacks for the connection's state and write one line for each
+transition, plus one for an asynchronous transport error:
+
+#+begin_src cpp :results verbatim
+natsOptions_SetDisconnectedCB(opts, [](natsConnection*, void*) {
+    BOOST_LOG_SEV(lg(), warn) << "NATS disconnected: the server is unreachable "
+                                 "and subscriptions are not receiving.";
+}, nullptr);
+
+natsOptions_SetReconnectedCB(opts, [](natsConnection*, void*) {
+    BOOST_LOG_SEV(lg(), warn) << "NATS reconnected: subscriptions are receiving "
+                                 "again. Anything published while disconnected was "
+                                 "delivered only if its subject is on a stream.";
+}, nullptr);
+#+end_src
+
+Three rules:
+
+- *Warn, not info.* A transition is an event worth finding in a log that is
+  otherwise at info level.
+- *Say what the gap cost.* The reconnected line states the consequence: messages
+  on a stream were kept, messages on core NATS were not.
+- *Never let a logging call fault.* These callbacks run on a library thread and
+  the logging system may already be shutting down, so each is guarded.
+
+A transport error is reported the same way, through the error handler, rather
+than being printed to standard error by the library.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | An asynchronous transport error is logged instead of reaching stderr unlabelled. |
+| Timeouts | A dropped connection can surface to a caller as a request timeout; these lines explain it. |
+| Retries | The library reconnects on its own; the lines record that it did. |
+| Idempotency | Unaffected. |
+| Observability | This pattern *is* the bus-side observability rule. |
+
+* Pitfalls
+
+- *No callbacks installed.* A service that lost and regained its connection is
+  indistinguishable from one that never lost it.
+- *A reconnected line with no consequence stated.* The reader does not know
+  whether anything was missed.
+- *A callback that can throw.* A logging call that faults on a library thread
+  terminates the service.
+- *Logging every transport event at info.* Routine disconnects fill the log and
+  the ones that matter are lost.
+
+* Resulting context
+
+- Benefits :: A gap in a service's log is attributable, and an unexplained
+  caller timeout has a candidate cause in the log.
+- Liabilities :: Warnings appear for connections that recovered harmlessly,
+  which a reader must learn to read as context rather than as a fault.
+
+* In ORE Studio
+
+`ores.nats` installs a disconnected callback, a reconnected callback and an
+error handler when it connects, each logging at warn and each guarded against a
+torn-down logging system. The orderly connection loss during shutdown is
+deliberately suppressed so a clean stop does not read as a fault.
+
+* Related patterns
+
+- [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled Message]] — the per-message line these connection lines frame.
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — why a message survives the gap described here.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/resilient-clients/connection-events][NATS documentation, Connection Events]] — the disconnected, reconnected and error callbacks.
+- [[https://beta-docs.nats.io/learn/resilient-clients/reconnection][NATS documentation, Reconnection]] — the reconnect buffer and what survives a drop.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -98,6 +98,18 @@ The default timeout is 30 seconds, set once in =ores.nats/service/timeouts.hpp= 
 - [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — chooses which replica answers.
 - [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the alternative for work that outlives a request.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]] — every service operation is a bounded request with a stated deadline.
+- [[id:5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8][Classify Transport Failure]] — a timeout, a no-responders signal and a refusal are three different outcomes.
+- [[id:6B12C3D4-E5F6-4A71-8C93-A4B5C6D7E8F9][Report a Refusal Off the Body]] — a refused request is answered off the body, with an =X-Error= code.
+- [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]] — a request the service handled is answered in the body.
+- [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let an Exception Cross the Bus]] — no exception may cross the reply boundary.
+- [[id:C1D2E3F4-A5B6-4C7D-8E9F-0A1B2C3D4E5F][Prefix Every Subject With make_subject]] — the request subject is environment-relative in code.
+
 * Sources
 
 - Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/RequestReply.html][Request-Reply]] and [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/ReturnAddress.html][Return Address]].

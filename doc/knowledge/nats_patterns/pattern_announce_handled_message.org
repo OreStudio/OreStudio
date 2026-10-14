@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 9E45F607-1829-4DA4-9FC6-D7E8F9011223
+:END:
+#+title: Announce Every Handled Message
+#+description: Every handler writes one line at entry carrying the subject, the trace key and the acting tenant, so a reader of the service log can establish what happened without the sender's log.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:diagnostics:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: diagnostics
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Announce Every Handled Message* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It is the first half of what the pattern language calls
+[[id:EC792BCB-EB4B-47E8-B279-9929A83C8949][Log Aggregation]].
+
+* Also known as
+
+- Handler entry logging; the message receipt line.
+
+* Context
+
+A message crosses a process boundary and the sender and receiver log into
+different files. A person investigating a request has one of the two logs, at
+best, and the failure they are looking for was logged by the side they do not
+have.
+
+* Problem
+
+What must a handler write so that its own service's log is sufficient to
+establish what the service was asked to do and what it did?
+
+* Forces
+
+- Duplicate delivery means a handler may run twice for one logical request, and
+  that must be visible.
+- A failure line without the subject cannot be tied to the request that caused
+  it.
+- A tenant-scoped system needs to know whose work a line describes.
+- Logging at entry on every message is cheap; logging in detail on success is
+  not.
+
+* Solution
+
+One line at entry, at info, carrying the receipt fields; the outcome on the way
+out at debug:
+
+#+begin_src cpp :results verbatim
+void provision_step(ores::nats::message msg) {
+    [[maybe_unused]] const auto cid = log_handler_entry(lg(), msg);
+    // "iam.v1.ops.provision_tenant_step correlation_id=<id> session_id=<id>"
+
+    // ... work ...
+    BOOST_LOG_SEV(lg(), debug) << "Completed " << msg.subject;
+}
+#+end_src
+
+The receipt line carries four things, each answering one question:
+
+| Field | Answers |
+|-------+---------|
+| The subject | Which operation was asked for |
+| =correlation_id= | Which top-level request this is part of |
+| =session_id= | Which login session it belongs to, when there is one |
+| The tenant and actor | Whose data the operation acts on |
+
+Three rules:
+
+- *Exactly one line per handled message, at info.* Not one per field, and not
+  one per retry of the containing loop.
+- *At entry, before the work.* A line written after the work is a line that a
+  crash never writes.
+- *The subject is the prefixed one.* The same string the sender logged, so one
+  grep finds both sides.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failure line follows the receipt line, so the request it belongs to is already established. |
+| Timeouts | A receipt with no completion line is itself the signal that the handler did not finish. |
+| Retries | A redelivery writes a second receipt line with the same correlation id, so a duplicate is visible. |
+| Idempotency | Seeing two receipts for one request is how a duplicate is found rather than guessed. |
+| Observability | This pattern *is* the observability rule for messages. |
+
+* Pitfalls
+
+- *No entry line.* A failure is an orphan in the log, with no request around it.
+- *The tenant absent.* The line names the operation but not whose data it
+  touched, which is the first question in a multi-tenant system.
+- *Logging the payload.* A request can carry a credential. Log the receipt, not
+  the body.
+- *Info-level lines per field or per success.* The log fills with noise and the
+  receipt is lost in it.
+
+* Security
+
+The receipt line names the tenant and the actor but never the token. A rejected
+request is logged by its subject and reason, and its payload is deliberately
+not logged, because a rejected request is exactly the one that may carry a
+credential.
+
+* Resulting context
+
+- Benefits :: One service's log is enough to establish what it was asked and
+  what it did, without the sender's log.
+- Liabilities :: Every handler must be written to write the line; a handler
+  that omits it is invisible.
+
+* In ORE Studio
+
+`log_handler_entry()` extracts or generates the correlation id and logs the
+subject, the correlation id and the session id at info. Hand-written handlers
+call it; generated handlers are the place it is added next, so that every
+subject has a receipt line.
+
+* Related patterns
+
+- [[id:AF560718-293A-4EB5-80D7-E8F901122334][Propagate the Correlation Id]] — the key the receipt line carries.
+- [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let an Exception Cross the Bus]] — the failure the receipt line makes findable.
+
+* Sources
+
+- [[https://microservices.io/patterns/observability/application-logging.html][microservices.io, Application Logging]] — one record per event, with the context needed to correlate it.
+- [[https://beta-docs.nats.io/learn/core-nats/headers][NATS documentation, Headers]] — where the correlation and session keys travel.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

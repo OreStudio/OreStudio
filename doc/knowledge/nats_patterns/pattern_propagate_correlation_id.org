@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: AF560718-293A-4EB5-80D7-E8F901122334
+:END:
+#+title: Propagate the Correlation Id
+#+description: A handler reads the trace key from the inbound headers and forwards it on every outbound call, so all the work of one request is joinable from the logs.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:diagnostics:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: diagnostics
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Propagate the Correlation Id* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It is the mechanism behind
+[[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] on
+this bus.
+
+* Also known as
+
+- NATS: the =Nats-Correlation-Id= header.
+- The pattern language: [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]].
+
+* Context
+
+One top-level action fans out across services: a request is served, the handler
+calls another service, that service writes a row whose trigger publishes an
+event, and a fourth service reacts. Each hop is in a different log file with
+nothing in common but a timestamp.
+
+* Problem
+
+How does a person join the log lines of one request when no process can see the
+whole request?
+
+* Forces
+
+- No transaction spans the services, and no shared memory exists.
+- A request may be served by any replica of each service.
+- The trace key must exist from the first hop, before any service has seen the
+  request.
+- The key must not be confused with a message's own identity, which serves a
+  different purpose.
+
+* Solution
+
+One key per top-level request, carried in a header, generated at the entry
+point if absent and forwarded by every hop:
+
+#+begin_src cpp :results verbatim
+// At the entry of every handler: read the key, or make one.
+[[maybe_unused]] const auto cid = log_handler_entry(lg(), msg);
+
+// On every outbound call the handler makes.
+return session.with_correlation_id(cid)
+    .authenticated_request(subject, payload);
+#+end_src
+
+Three rules:
+
+- *Generate once, at the entry point.* A key present in the headers is reused; a
+  missing one is created. A hop must never replace a key it was given.
+- *Forward on every outbound call.* A single hop that drops the key breaks the
+  trail at exactly the place it is needed.
+- *Do not reuse it for anything else.* It is distinct from a message's
+  deduplication identity; one identifies a request, the other a message.
+
+The session id is a second, coarser key: one per login session rather than one
+per request, so all activity of a user session can be grouped. It travels the
+same way and is recorded on the same receipt line.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | The key is on the failure line, so a failure is tied to its request. |
+| Timeouts | A request that timed out leaves its key on the last line written before the wait. |
+| Retries | A retry carries the same key, so the first attempt and the retry read as one request. |
+| Idempotency | The key is not the duplicate guard; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]]. |
+| Observability | This pattern *is* the join key for the logs. |
+
+* Pitfalls
+
+- *Generating a new key at every hop.* Each service's lines are their own trail
+  and none of them join.
+- *Not forwarding the key.* The trail stops at the first call the handler makes.
+- *A key only on the success path.* Failures are the case that needs it most.
+- *Confusing the two keys.* A session id is not a request key, and a message
+  identity is neither.
+
+* Resulting context
+
+- Benefits :: One grep on the key returns every line every service wrote for one
+  request, in order.
+- Liabilities :: The key must be threaded through every call the handler makes,
+  which is easy to forget at a new call site.
+
+* In ORE Studio
+
+`extract_or_generate_correlation_id` reads or creates the key;
+`nats_client::with_correlation_id` forwards it, as `with_session_id` does for
+the session key. The engine forwards the key on every step command with the
+step and instance identity as sibling headers.
+
+* Related patterns
+
+- [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled Message]] — the line the key is written on.
+- [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]] in the pattern language — the fuller form this is the first step of.
+
+* Sources
+
+- [[https://microservices.io/patterns/observability/distributed-tracing.html][microservices.io, Distributed tracing]] — a trace id propagated across service calls.
+- [[https://www.w3.org/TR/trace-context/][W3C, Trace Context]] — the standard header for carrying a trace identity.
+- [[https://beta-docs.nats.io/learn/core-nats/headers][NATS documentation, Headers]].
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: C178293A-4B5C-40D7-82F9-011223344556
+:END:
+#+title: Own the Subscription Handle
+#+description: The value a subscription returns is a live registration that must be stored for as long as the service runs, and drained when it stops.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:ownership:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: ownership
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Own the Subscription Handle* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It specialises graceful shutdown for this bus: the lifetime of a
+subscription, and the drain that ends it.
+
+* Also known as
+
+- RAII subscription; the subscription lifetime.
+
+* Context
+
+Subscribing returns a handle whose destructor unsubscribes. A registrar creates
+many subscriptions and returns them to the service runner, which keeps them for
+the life of the process.
+
+* Problem
+
+Who keeps a subscription alive, and how does it end without losing the messages
+already delivered to it?
+
+* Forces
+
+- A handle destroyed at the end of the statement that created it unsubscribes
+  immediately, and the subject goes silent with no error.
+- The service must not stop receiving until it is ready to stop.
+- A handler may be mid-message when shutdown begins.
+- A service with hundreds of subjects must not manage each one by hand.
+
+* Solution
+
+The handle is a value with a lifetime, returned by the registrar and held by
+the runner:
+
+#+begin_src cpp :results verbatim
+std::vector<ores::nats::service::subscription>
+register_entity_handlers(ores::nats::service::client& nats,
+                         ores::database::context ctx,
+                         std::optional<ores::security::jwt::jwt_authenticator> v) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(subject, queue_group, handler));
+    return subs;                      // the caller owns them from here
+}
+
+// The runner keeps the whole vector for the service's lifetime.
+auto subs = register_fn();
+// ... and drains before it exits.
+nats.drain();
+#+end_src
+
+Three rules:
+
+- *Store every handle.* A handle not stored is a subscription that ends when
+  the statement does.
+- *One owner.* The registrar returns them and the runner holds them; nothing
+  copies or discards them.
+- *Drain, do not close.* Drain stops new deliveries, lets in-flight handlers
+  finish, flushes pending publishes and only then closes.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A dropped handle fails silently: the subject is simply never delivered. |
+| Timeouts | Drain is bounded; a handler that hangs must not hang the shutdown forever. |
+| Retries | Unaffected. |
+| Idempotency | A drained subscription delivers each in-flight message exactly once. |
+| Observability | Registration and drain are logged, so a subject that stopped being served can be tied to a restart. |
+
+* Pitfalls
+
+- *A temporary handle.* `nats.queue_subscribe(...)` with no assignment
+  subscribes and immediately unsubscribes. Nothing errors.
+- *A handle destroyed before the client.* The client must outlive its
+  subscriptions.
+- *Closing instead of draining.* In-flight handlers are abandoned and their
+  messages are lost.
+- *Draining then publishing.* A publish issued after drain races the shutdown
+  and may be refused; drain belongs last.
+
+* Resulting context
+
+- Benefits :: Hundreds of subjects are managed as one value, and a restart is
+  clean.
+- Liabilities :: A subscriber that is not stored is invisible, because the
+  failure is silence rather than an error.
+
+* In ORE Studio
+
+Every registrar returns a `std::vector<subscription>`; the service runner keeps
+it and calls `drain()` on shutdown. A single-subscription handle, such as a
+client's watch, is a named local or a member so it lives as long as the work
+needs it.
+
+* Related patterns
+
+- [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] — the subscription being owned.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — why draining rather than closing matters to a durable consumer.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/resilient-clients/drain-and-shutdown][NATS documentation, Drain & Shutdown]] — close against drain, and the per-subscription drain.
+- [[https://beta-docs.nats.io/learn/resilient-clients/slow-consumers][NATS documentation, Slow Consumers]] — what an unattended subscription does under load.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

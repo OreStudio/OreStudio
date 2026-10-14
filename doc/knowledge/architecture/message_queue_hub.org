@@ -105,6 +105,12 @@ subject becomes callable, and the ordering that follows for anything that calls
 back into its own service. Read last of the three, because it only bites once
 subscriptions exist.
 
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the
+rulebook for the binding: which =ores.nats= call a service must use to address,
+subscribe, publish, request and fail, the rationale for each, and the failure
+without it. Read it alongside the three pages above, and read it before
+reviewing NATS code against the standard.
+
 ** State kept from the bus
 
 [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache

@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: D2E3F4A5-B6C7-4D8E-9F0A-1B2C3D4E5F60
+:END:
+#+title: Name a Subject With a Codegen Constant
+#+description: A subject appears in the generation input and in no other source file; every call site names the generated nats_subject constant of its request or event type.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:addressing:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+pattern_group: addressing
+
+This page defines the NATS pattern *Name a Subject With a Codegen Constant* in
+the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]]
+language. A subject is written once, in the entity model that the code
+generator reads, and every producer and consumer refers to it by the constant
+the generator emits.
+
+* Also known as
+
+- /Single source of truth for the subject/, /generated subject constant/.
+
+* Context
+
+A subject is the only contract between a publisher and a subscriber, and the
+two are in different components that never share a symbol. The codegen
+pipeline reads an entity model and emits the protocol, the handler, the
+registrar, the shell commands and the HTTP routes from it.
+
+* Problem
+
+How does one subject string stay identical across a producer, a consumer, a
+stream filter and a test, when each is generated from the model at a different
+time?
+
+* Forces
+
+- A subject that differs by one token between two ends fails with no error on
+  either side.
+- A subject is part of the wire contract, so it must be reviewable as a change
+  and diffable.
+- The same subject is needed in C++, in a stream filter, in a shell command
+  and in a test.
+- A hand-written literal is easy to introduce and hard to find again.
+
+* Solution
+
+The subject belongs to the model. The generator emits it as a constant beside
+the request or event type it addresses:
+
+#+begin_src cpp :results verbatim
+// Generated, in the protocol header.
+struct list_accounts_request {
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.list";
+};
+
+// Everywhere else: the constant, never the literal.
+nats.queue_subscribe(list_accounts_request::nats_subject, queue_group, handler);
+nats.covering_subjects({start_workflow_message::nats_subject});
+#+end_src
+
+The rule has three parts:
+
+- A call site names `T::nats_subject` for the type it is sending or serving.
+- A stream filter is built from those constants with `covering_subjects()`,
+  never from a literal.
+- A test names the same constant, so a rename moves the test with the code.
+
+Changing a subject is therefore a change to the model, which regenerates every
+use at once.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A mismatch is impossible when both ends are regenerated; a component built from a stale model fails to link or links to the old subject. |
+| Timeouts | Not applicable. |
+| Retries | Not applicable: a subject is not a runtime value. |
+| Idempotency | Unaffected. |
+| Observability | The generated constant is the term to grep the logs for. |
+
+* Pitfalls
+
+- *A hand-written subject at a call site.* It drifts from the model and no
+  regeneration corrects it.
+- *A stream filter written as a literal.* The stream stops covering a renamed
+  subject while every call site looks right.
+- *Editing a generated header.* The next generation overwrites it.
+
+* Resulting context
+
+- Benefits :: One subject string per operation, reviewable in the model diff.
+- Liabilities :: A subject change requires regeneration and a rebuild.
+
+* In ORE Studio
+
+`cpp_protocol.hpp.mustache` emits `nats_subject` on each protocol type; the
+nats registrar, the shell commands and the HTTP routes all consume it.
+`covering_subjects()` is the only sanctioned way to widen a constant into a
+stream filter.
+
+* Related patterns
+
+- [[id:C1D2E3F4-A5B6-4C7D-8E9F-0A1B2C3D4E5F][Prefix Every Subject With make_subject]] — what the constant is relative to.
+- [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — the pattern that widens it.
+
+* Sources
+
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the subject grammar the model obeys.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — how the generated constant reaches a handler.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: C1D2E3F4-A5B6-4C7D-8E9F-0A1B2C3D4E5F
+:END:
+#+title: Prefix Every Subject With make_subject
+#+description: Code names a subject relative to its environment and the transport prepends the configured prefix, so the same source addresses a different bus in every deployment.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:addressing:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+pattern_group: addressing
+
+This page defines the NATS pattern *Prefix Every Subject With make_subject* in
+the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]]
+language. Every subject that crosses the bus is the configured environment
+prefix joined to a relative subject, and the join happens inside
+`ores.nats::service::client` rather than at the call site.
+
+* Also known as
+
+- /Subject prefixing/, /namespacing/.
+- NATS documentation calls the mechanism subject-based addressing plus
+  account isolation.
+
+* Context
+
+One built binary runs in several deployments at once — a developer's local
+environment, a test environment and a production environment — and they may
+share a NATS cluster or reach separate ones. A subject is a flat global string
+with no hierarchy beyond its dots.
+
+* Problem
+
+How does one piece of code address the right stream of messages when the
+environment it runs in is not known at compile time?
+
+* Forces
+
+- A subject written in code must be stable; a subject on the wire must be
+  unique per environment.
+- Two environments on one cluster must not see each other's messages.
+- A request/reply inbox is created by the server and belongs to no
+  environment.
+- A wrong subject fails silently: nothing is listening, so nothing answers.
+
+* Solution
+
+Code passes a *relative* subject and the client prepends
+`nats_options::subject_prefix`. `make_subject()` performs the join, and every
+publish, request and subscribe method calls it internally, so a caller never
+builds an absolute subject by hand:
+
+#+begin_src cpp :results verbatim
+// Relative in code. ores.dev.local2 on the wire.
+nats.queue_subscribe(
+    ores::iam::messaging::list_accounts_request::nats_subject,
+    "ores.iam.service",
+    handler);
+#+end_src
+
+Two consequences follow, and both are rules:
+
+- A caller passes what it holds. A relative subject goes straight to the
+  client, which prefixes it. An already-prefixed subject must use the
+  absolute helpers described below, never `make_subject()`.
+- An `_INBOX` subject is exempt. The server creates it for request/reply and
+  a prefix would break the reply path, so `make_subject()` returns it
+  unchanged.
+
+A JetStream stream name is the same prefix under different syntax:
+`make_stream_name()` replaces the dots with underscores, because a stream name
+may not contain one.
+
+| Need | Call |
+|------+------|
+| A subject to publish or subscribe on | pass the relative subject; the client prefixes it |
+| The subject a *stream filter* must cover | `subjects_below(relative)`, which appends `>` |
+| Filters covering a set of subjects and their children | `covering_subjects({...})` |
+| A stream name for this environment | `make_stream_name("workflow")` |
+
+`subjects_below()` and `covering_subjects()` return *absolute* subjects for
+stream filters. Do not pass their result to `subscribe()`, which would prefix
+it a second time and match nothing.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A subject that matches nothing produces a no-responders signal on a request, which the caller reports; see [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]]. |
+| Timeouts | Not applicable: prefixing cannot fail at run time. |
+| Retries | A prefix mismatch is not retried away; it is a configuration error. |
+| Idempotency | Unaffected. |
+| Observability | Every producer and consumer logs the *prefixed* subject, so one grep on the absolute subject finds both sides. |
+
+* Pitfalls
+
+- *Prefixing an `_INBOX` subject by hand.* The reply arrives nowhere and the
+  request waits out its whole timeout.
+- *A hardcoded absolute subject.* It works in one environment and reaches the
+  wrong bus, or none, in another.
+- *Passing an absolute subject to `subscribe()`.* The prefix is applied twice
+  and the subscription is silent.
+- *A stream filter built from the bare relative subject.* It misses the
+  subject's children; see [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]].
+
+* Security
+
+The prefix is an addressing mechanism, not an isolation boundary. Real
+isolation is the NATS account and its permissions, and the tenant a request
+acts for. See [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]].
+
+* Resulting context
+
+- Benefits :: One binary is deployable to any environment with no rebuild, and
+  two environments on one cluster stay independent.
+- Liabilities :: The subject in the log differs from the subject in the code,
+  so a reader must know the prefix is prepended.
+
+* In ORE Studio
+
+`make_subject()` is in `ores.nats/service/client.cpp` and is called by
+`publish()`, `request_sync()`, `request()`, `subscribe()`, `subscribe_buffered()`,
+`queue_subscribe()` and `js_queue_subscribe()`. The prefix itself is resolved at
+startup into `nats_options::subject_prefix`. `make_stream_name()`,
+`subjects_below()` and `covering_subjects()` are the absolute forms.
+
+* Related patterns
+
+- [[id:D2E3F4A5-B6C7-4D8E-9F0A-1B2C3D4E5F60][Name a Subject With a Codegen Constant]] — where the relative subject comes from.
+- [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — the pattern that consumes the absolute forms.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/core-nats/subjects][NATS documentation, Subjects and wildcards]] — the subject grammar and account isolation.
+- [[https://docs.nats.io/nats-concepts/subjects][NATS documentation, Subject-Based Messaging]] — the naming rules a prefix must obey.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

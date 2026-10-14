@@ -92,6 +92,16 @@ The convention is in =ores.nats/service/client.hpp=: the queue group is the serv
 - [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — the pools the members belong to.
 - [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] — the queue the members drain.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] — the queue group that shares one subject across replicas.
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — a durable consumer holds the message when no member is up.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — what a member acknowledges, and what it lets be redelivered.
+- [[id:C178293A-4B5C-40D7-82F9-011223344556][Own the Subscription Handle]] — how the group's subscriptions are kept alive and drained.
+
 * Sources
 
 - Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html][Competing Consumers]].

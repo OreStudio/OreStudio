@@ -92,6 +92,14 @@ No security consequence: the identity decides repetition, not access.
 - [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — safe only against an idempotent receiver.
 - [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — redelivery to another member.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — the message identity and the receiver's own duplicate guard.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — the redelivery that makes a receiver see a repeat.
+
 * Sources
 
 - Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html][Idempotent Receiver]].

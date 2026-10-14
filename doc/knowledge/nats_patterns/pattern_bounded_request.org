@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7
+:END:
+#+title: Bounded Request
+#+description: Every request states a deadline, and a caller that gets no reply within it reports a timeout rather than waiting indefinitely.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:request:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: request
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Bounded Request* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It specialises [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]]
+for request/reply on this bus.
+
+* Also known as
+
+- NATS: /request timeout/.
+- The pattern language: [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]].
+
+* Context
+
+A caller sends a request to a subject and waits for the reply on a private
+inbox. The responder may be absent, slow, or dead, and the bus reports none of
+those as an error by itself.
+
+* Problem
+
+How long does a caller wait for an answer that may never come?
+
+* Forces
+
+- A responder that is up but slow and a responder that does not exist look the
+  same to a caller with no deadline: both wait forever.
+- A deadline shorter than the responder's real latency turns healthy answers
+  into failures.
+- A request holds a thread, a connection and often a user's attention.
+- The default must be one value, or the same call behaves differently
+  depending on which overload it bound to.
+
+* Solution
+
+Every request passes a deadline, directly or by the single shared default. The
+client throws when it expires, and the caller reports it:
+
+#+begin_src cpp :results verbatim
+// The default lives in one place, so no overload is quietly different.
+inline constexpr std::chrono::milliseconds default_request_timeout =
+    std::chrono::seconds(30);
+
+// A caller that must wait longer, or fail faster, says so.
+const auto reply = session.authenticated_request(
+    subject, payload, provision_request_timeout);   // 120s
+#+end_src
+
+Three rules:
+
+- *One default for the whole platform.* `default_request_timeout` is the single
+  source, so a caller cannot get a different deadline by accident.
+- *A stated exception is deliberate.* A call that passes its own timeout says
+  why in the code beside it: a long provisioning step, a snapshot query.
+- *The timeout is set against the responder's real latency*, not a round
+  number, so a slow-but-healthy answer is not reported as a fault.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | An expired deadline throws; the caller must report it, not swallow it. |
+| Timeouts | This pattern *is* the timeout. Distinguish it from no-responders; see [[id:5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8][Classify Transport Failure]]. |
+| Retries | A timeout may be retried, but only where the work is idempotent. |
+| Idempotency | A retry re-sends; the responder must absorb the duplicate. |
+| Observability | The subject and the timeout value are logged, so a deadline can be matched to a responder's latency. |
+
+* Pitfalls
+
+- *An unbounded wait.* One absent responder hangs the caller forever.
+- *A deadline below the responder's p99.* Healthy answers are reported as
+  failures and retried, adding load to an already busy service.
+- *A per-call magic number.* The same logical call behaves differently in two
+  places, and neither is wrong on its own.
+- *Retrying a timed-out write.* The first attempt may have succeeded; the
+  retry must be safe. See
+  [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]].
+
+* Resulting context
+
+- Benefits :: A caller always terminates, and its failure names which deadline
+  it hit.
+- Liabilities :: A deadline is a guess about the responder; a wrong one either
+  hangs or gives up early.
+
+* In ORE Studio
+
+`default_request_timeout` is 30 seconds and is the default of every client and
+helper overload. Exception sites pass their own: 120 seconds for a provisioning
+request, shorter for a step-result fetch.
+
+* Related patterns
+
+- [[id:5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8][Classify Transport Failure]] — telling a timeout from no responders.
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] in the pattern language — what a timeout may lead to.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/resilient-clients/request-reply-resilience][NATS documentation, Request-Reply Resilience]] — the deadline and its sizing.
+- Michael Nygard, /Release It!/, Pragmatic Bookshelf, 2nd edition, 2018 — timeouts and the cost of waiting.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

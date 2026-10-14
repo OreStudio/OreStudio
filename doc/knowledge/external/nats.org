@@ -134,7 +134,11 @@ older distro base). See =external/nats/manifest.json= and
 
 * See also
 
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the
+  rulebook for writing NATS code in this codebase: the =ores.nats= call each
+  situation requires, its rationale, and the failure without it.
 - [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the patterns of service interaction that travel over NATS.
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the ORE Studio C++ transport library wrapping =nats.c=.

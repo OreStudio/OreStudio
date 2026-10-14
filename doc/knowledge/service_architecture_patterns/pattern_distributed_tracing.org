@@ -121,6 +121,13 @@ untrusted and must be bounded.
 - [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — the first step: the same propagation, with no tree and no timings.
 - [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — a scheduled run is a trace whose root is the firing.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:AF560718-293A-4EB5-80D7-E8F901122334][Propagate the Correlation Id]] — the trace key as it travels on this bus today.
+
 * Sources
 
 - Chris Richardson, [[https://microservices.io/patterns/observability/distributed-tracing.html][Pattern: Distributed tracing]], microservices.io.

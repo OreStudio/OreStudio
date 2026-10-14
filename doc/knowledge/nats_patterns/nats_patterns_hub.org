@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B
+:END:
+#+title: NATS service patterns
+#+description: The pattern language for speaking on the bus: nineteen patterns a service must use for addressing, subscribing, publishing, requesting, error handling, diagnostics and subscription ownership, with the mechanism that enforces each and the failure it prevents.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:nats:patterns:structure_note:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+* Summary
+
+Every ORE Studio service is a set of subjects it answers and messages it sends.
+[[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] is the substrate and
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] is the wrapper, but
+neither says how a service must *use* them. This hub is the answer: the
+patterns that govern writing NATS code in this codebase, what each one
+requires, why it is required, and what breaks without it.
+
+A pattern here is a rule about a call site, not a general architectural idea.
+It states the shape of the code — which `ores.nats` call, with which arguments,
+in which place — and the guarantee that shape buys. The rule is a contract: a
+service that does not follow it is wrong, even when it compiles and appears to
+work, because the failure it invites is silent and arrives later.
+
+Three rules govern the language:
+
+- *One call site, one pattern.* A pattern answers one question about one
+  interface, and its page names the exact call that must appear.
+- *Every pattern states its rationale and its failure.* A rule with no
+  named failure is a style preference, and does not belong here. Each page's
+  =* Failure handling= and =* Pitfalls= say what goes wrong without it.
+- *The pattern owns the mechanism; the architecture page owns the design.*
+  A pattern page states the call and the guarantee. The page that designs a
+  service links the pattern and states only its own choices.
+
+* Scope
+
+The hub covers how a service speaks on the bus. It does not cover what it says:
+the subject grammar, the verbs, the envelopes and the error model on the wire
+belong to the NATS entity protocol specification, and the encoded payload
+belongs to the NATS Wire Format; both are ordered by
+[[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]], not here. It does
+not cover who a caller is or how a token travels; that is
+[[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]].
+# aside — the subjects and the encoding these patterns are written against.
+
+** The division of responsibility with the service architecture patterns
+
+The two pattern languages answer different questions about the same bus. A
+reader must land on the right one, so the boundary is stated here and in the
+other hub.
+
+| | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] | This hub |
+|---+---------------------------------+----------|
+| The question | Which mechanism should this interaction use, and why? | How must this code use the mechanism? |
+| The unit | An interaction between two services | A call site in `ores.nats` |
+| Grounded in | microservices.io, /Enterprise Integration Patterns/, Azure Architecture Center, the RFCs | the NATS documentation, and the `ores.nats` API |
+| Scope | Platform-wide, transport-independent in principle | NATS and JetStream specifically |
+| Lives in | =doc/knowledge/service_architecture_patterns/=, type =service_architecture_pattern= | =doc/knowledge/nats_patterns/=, type =nats_pattern= |
+| Stated as | Forces, competing solutions, consequences | The exact call, its arguments, and the failure without it |
+
+Read the outer page first. The design decision — this interaction is a
+[[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]], that work is
+[[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]], this failure
+wants a [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — is taken in the
+service architecture language and argued from its sources. Once the decision is
+made, a page here says how that decision is written in NATS code.
+
+The relationship is one of *specialisation*, and a page states which kind it is:
+
+- *Specialising.* The outer pattern exists and NATS makes it concrete:
+  [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] becomes
+  [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]];
+  [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]] becomes
+  [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]]. The page cites
+  the outer pattern's source and the NATS document.
+- *Bus-specific.* No outer pattern covers it, because the question is a
+  property of NATS:
+  [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]]
+  answers a question only a durable consumer has. The page cites the NATS
+  document alone.
+- *Substrate.* The page names a NATS concept the groups below rest on:
+  [[id:C1D2E3F4-A5B6-4C7D-8E9F-0A1B2C3D4E5F][Prefix Every Subject With
+  make_subject]]. Cited to the NATS documentation, with no outer pattern.
+
+Why these are not service architecture patterns: that type requires an
+authoritative external source and a group from its closed seven-value
+vocabulary, and its =pattern-uses= check requires a link from an architecture
+page for every use. A rule about a call site cannot meet that contract, and
+forcing one into a group such as =resilience= would say something untrue. The
+two types therefore stand apart and reference each other.
+
+* Reading order
+
+Read the groups in order. A later group assumes the guarantees the earlier
+groups establish: a publish is only as durable as the subscription that reads
+it, and an error is only reportable once the message carrying it is
+acknowledged.
+
+** The addressing group
+
+/How does a subject mean the same thing in every environment?/ A subject is
+environment-relative in code and fully-qualified on the wire, and the
+translation happens in exactly one place. Read this group first, because every
+subject in the groups below is written in its terms.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:C1D2E3F4-A5B6-4C7D-8E9F-0A1B2C3D4E5F][Prefix Every Subject With make_subject]] | NATS documentation, Subject-Based Messaging |
+| [[id:D2E3F4A5-B6C7-4D8E-9F0A-1B2C3D4E5F60][Name a Subject With a Codegen Constant]] | ORE Studio: ores.codegen protocol facets |
+
+** The subscription group
+
+/How does a service receive a message exactly once per intended reader?/ Every
+subscription is a queue group so replicas share the load. A message that must
+survive the service being down is read from a durable consumer, and a durable
+consumer acknowledges what it handled. Read this group before writing any
+handler.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] | NATS documentation, Queue Groups; Hohpe and Woolf |
+| [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] | NATS documentation, JetStream Consumers |
+| [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] | NATS documentation, JetStream Streams |
+| [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] | NATS documentation, Ack responses and redelivery |
+
+** The publication group
+
+/How does a message that must not be lost leave the process?/ A domain event
+that outlives the publisher commits through the stream; a message whose current
+value is all that matters does not. Read this group before publishing anything.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the Stream]] | NATS documentation, JetStream Publishing |
+| [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] | Hohpe and Woolf; NATS documentation, Nats-Msg-Id |
+
+** The request group
+
+/How does a caller that asks a question behave when the answer does not come?/
+A request is bounded in time and its two failures are distinguishable. Read
+this group when writing a caller rather than a handler.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]] | Nygard, /Release It!/; NATS documentation, Request-Reply |
+| [[id:5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8][Classify Transport Failure]] | NATS documentation, Request-Reply Resilience |
+
+** The error-handling group
+
+/What happens when the work fails?/ A failure is reported, never swallowed,
+and never acknowledged as done. Read this group before writing a handler,
+because it decides what the handler must return.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:6B12C3D4-E5F6-4A71-8C93-A4B5C6D7E8F9][Report a Refusal Off the Body]] | ORE Studio: ores.service error contract |
+| [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]] | ORE Studio: canonical response envelope |
+| [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let an Exception Cross the Bus]] | ORE Studio: the cnats callback boundary |
+
+** The diagnostics group
+
+/How does a reader of one service's log establish what happened?/ Every
+handled message announces itself once, the trace key travels with the work, and
+every connection state change is recorded. Read this group last, because it
+observes the guarantees the groups above establish.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled Message]] | microservices.io, Log Aggregation |
+| [[id:AF560718-293A-4EB5-80D7-E8F901122334][Propagate the Correlation Id]] | Hohpe and Woolf; W3C Trace Context |
+| [[id:B0671829-3A4B-4FC6-91E8-F90112233445][Observe the Connection State]] | NATS documentation, Connection Events |
+
+** The ownership group
+
+/Who keeps the subscription alive, and how does it end?/ A subscription handle
+is a live registration, so something must own it and something must drain it.
+Read this group when the question is the service's lifetime rather than a
+message.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:C178293A-4B5C-40D7-82F9-011223344556][Own the Subscription Handle]] | NATS documentation, Drain & Shutdown |
+| [[id:D2893A4B-5C6D-41E8-930A-112233445566][Bind Before You Call Your Own Service]] | microservices.io, Self-Contained Service |
+
+* Choosing a pattern
+
+Start from the question, not the call. Find the group whose question your code
+faces, then read its pages. Each page's =* Context= says when the pattern
+applies and =* Related patterns= names the alternatives. When no pattern fits,
+write the code without one and record the gap on the story. Do not stretch a
+pattern to fit.
+
+To add a pattern, run
+=compass add nats_pattern --pattern-group <group>=, fill in every section, name
+the =ores.nats= call it governs, and add it to its group above. See
+[[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
+
+* What this cluster does not cover
+
+[[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] owns the
+structure of the messaging cluster: the bus, the namespace, the message
+contract and the binding. This hub is the rulebook for the binding half of it.
+
+[[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]]
+owns the vocabulary two services share: Request-Reply, Competing Consumers,
+Retry, Idempotent Receiver, Log Aggregation. Each page here names the pattern
+there it specialises and states only the mechanism this codebase requires. The
+division of responsibility between the two hubs is stated under =* Scope= above.
+
+[[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] owns how
+a service is assembled: its components, its registry entry, its certificates,
+its accounts. This hub owns how the assembled service speaks.
+
+* See also
+
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the library every pattern here is stated in terms of.
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — the substrate: subjects, pub/sub, request/reply, queue groups, JetStream.
+- [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable consumers]] — the streams this deployment creates and what a subject rename strands.
+- [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — when a subject becomes callable, and why that order matters.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is, and why its order is authored rather than computed.
+- [[https://beta-docs.nats.io/learn/jetstream/delivery-and-acknowledgment][NATS documentation, Delivery and acknowledgment]] — the ack/redeliver loop the subscription group rests on.
+- [[https://beta-docs.nats.io/learn/resilient-clients/request-reply-resilience][NATS documentation, Request-Reply Resilience]] — the two request failures and how to retry them.
+- [[https://beta-docs.nats.io/learn/resilient-clients/drain-and-shutdown][NATS documentation, Drain & Shutdown]] — close against drain, and why drain belongs last.

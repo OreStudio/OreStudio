@@ -96,6 +96,16 @@ identity to get round it.
 - [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — what makes a retry safe.
 - [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — renew, then retry once.
 
+* NATS patterns
+
+The [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] hub states how each of these is written in
+=ores.nats= code:
+
+- [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]] — what the caller waits on before it retries.
+- [[id:5A01B2C3-D4E5-4F60-9B82-93A4B5C6D7E8][Classify Transport Failure]] — the two failures that call for different retry timing.
+- [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — what makes a re-sent request safe to send twice.
+- [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the Stream]] — a retried send that must be confirmed as stored.
+
 * Sources
 
 - Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/retry][Retry pattern]].

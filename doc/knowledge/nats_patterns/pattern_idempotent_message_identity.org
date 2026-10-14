@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6
+:END:
+#+title: Idempotent Message Identity
+#+description: A message that may be delivered or sent more than once carries an identity, and the receiver discards a repeat so the work happens once.
+#+type: nats_pattern
+#+level: cross
++#+filetags: :pattern:nats:publication:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+pattern_group: publication
+
+This page defines the [[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats
+pattern]] *Idempotent Message Identity* in the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+language. It is the concrete form, on this bus, of
+[[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]].
+
+* Also known as
+
+- NATS: /`Nats-Msg-Id`/, /duplicate window/.
+- The pattern language: [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]].
+
+* Context
+
+At-least-once delivery means a message can arrive twice: a durable consumer
+redelivers an unacknowledged message, and a publisher retries an unacknowledged
+send. Both are correct behaviour that the receiver must survive.
+
+* Problem
+
+How does a receiver do the work once when the same message may reach it two or
+more times?
+
+* Forces
+
+- The transport guarantees at-least-once, never exactly-once.
+- The work is often a write, which is not naturally repeatable.
+- The receiver may see the repeat minutes later, on another replica.
+- A server-side deduplication window is bounded in time; the receiver cannot
+  rely on it alone.
+
+* Solution
+
+Give the message a stable identity derived from the work, and make the write
+idempotent on it. Two mechanisms are available and they compose:
+
+#+begin_src cpp :results verbatim
+// 1. The identity the server can dedupe on: Nats-Msg-Id on a JS publish.
+std::unordered_map<std::string, std::string> hdrs{
+    {"Nats-Msg-Id", std::string(step_id)}};
+nats.js_publish(subject, payload, hdrs);
+
+// 2. The receiver's own guard, which outlives the server's window.
+if (store.has_completed(step_id))
+    return;                       // already done: discard the duplicate
+store.record_completion(step_id, result);
+#+end_src
+
+Three rules:
+
+- *The identity comes from the work, not the send.* A fresh id per attempt
+  defeats the pattern.
+- *The receiver's own guard is authoritative.* `Nats-Msg-Id` and the server's
+  duplicate window help, but the window is finite and a redelivery may fall
+  outside it, so the receiver must be able to recognise a repeat itself.
+- *The guard is checked in the same transaction as the write.* A check followed
+  by a separate write is a race between two replicas.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A duplicate is discarded, not reported as a failure. |
+| Timeouts | A redelivery after AckWait is exactly the repeat this pattern absorbs. |
+| Retries | Retrying is safe by construction; that is the point. |
+| Idempotency | This pattern *is* the idempotency rule. |
+| Observability | The discarded repeat is logged at debug with its identity, so a duplicate storm is visible without being an error. |
+
+* Pitfalls
+
+- *An identity generated at send time.* Each retry looks like new work.
+- *Relying on the server's duplicate window alone.* A repeat outside the window
+  is applied twice.
+- *A check and a write in separate transactions.* Two replicas both pass the
+  check.
+- *Treating a duplicate as an error.* It inflates the error rate for correct
+  transport behaviour and hides the real failures.
+
+* Resulting context
+
+- Benefits :: At-least-once delivery becomes effectively-once processing
+  without the transport pretending to guarantee it.
+- Liabilities :: The receiver must store the identity of completed work, which
+  is durable state it would not otherwise need.
+
+* In ORE Studio
+
+Workflow step commands carry the step id, which is the run's own record of the
+work, and the completion path is keyed by it. The engine's dispatch headers
+carry the step and instance identity on every `js_publish`.
+
+* Related patterns
+
+- [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the Stream]] — the send that may be retried.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — the redelivery this pattern absorbs.
+
+* Sources
+
+- [[https://beta-docs.nats.io/learn/jetstream/advanced-publishing][NATS documentation, Advanced publishing]] — `Nats-Msg-Id` and the duplicate window.
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html][Idempotent Receiver]].
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

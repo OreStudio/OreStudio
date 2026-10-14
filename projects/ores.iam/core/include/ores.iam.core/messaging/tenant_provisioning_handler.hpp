@@ -588,8 +588,21 @@ public:
         const auto correlation_id = log_handler_entry(tenant_provisioning_handler_lg(), msg);
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
-        if (!wf)
+        if (!wf) {
+            // The engine can only see that no answer came back, so a command
+            // discarded here in silence is indistinguishable from one that was
+            // never delivered. Say so where the discard happens: the engine has
+            // no other way to learn that the command did reach a service.
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << "provision_step: the step command could not be read, so the step is left "
+                   "unanswered and the run will expire it. subject="
+                << msg.subject;
             return;
+        }
+
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "provision_step: step_id=" << wf->step_id << " instance=" << wf->instance_id
+            << " tenant=" << wf->tenant_id;
 
         try {
             if (const auto cached = ores::service::messaging::check_step_idempotency(

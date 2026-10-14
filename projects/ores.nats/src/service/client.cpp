@@ -175,6 +175,34 @@ void on_conn_error(natsConnection* nc,
     }
 }
 
+/**
+ * @brief Reports losing the connection, and getting it back.
+ *
+ * Without these two lines a service that dropped its connection and
+ * recovered is indistinguishable in the journal from one that never
+ * dropped it. That is the question an unanswered message leaves behind,
+ * and no other line in any log answers it.
+ */
+void on_conn_disconnected(natsConnection* /*nc*/, void* /*closure*/) {
+    try {
+        BOOST_LOG_SEV(lg(), warn)
+            << "NATS disconnected: the server is unreachable and subscriptions are not "
+               "receiving.";
+    } catch (...) {
+        // Boost.Log may already be torn down on a NATS internal thread.
+    }
+}
+
+void on_conn_reconnected(natsConnection* /*nc*/, void* /*closure*/) {
+    try {
+        BOOST_LOG_SEV(lg(), warn)
+            << "NATS reconnected: subscriptions are receiving again. Anything published "
+               "while disconnected was delivered only if its subject is on a stream.";
+    } catch (...) {
+        // Boost.Log may already be torn down on a NATS internal thread.
+    }
+}
+
 message extract_message(natsMsg* msg) {
     message m;
 
@@ -388,6 +416,8 @@ void client::connect() {
     natsOptions_Create(&opts);
     natsOptions_SetURL(opts, impl_->opts.url.c_str());
     natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
+    natsOptions_SetDisconnectedCB(opts, on_conn_disconnected, nullptr);
+    natsOptions_SetReconnectedCB(opts, on_conn_reconnected, nullptr);
 
     if (!impl_->opts.tls_ca_cert.empty()) {
         // Validate TLS files exist before attempting connection so we can log

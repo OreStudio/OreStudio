@@ -257,7 +257,7 @@ which states the exception:
 | D1 | Request/reply subject without a queue group | *fixed* | =get_http_info= is now queue-subscribed as =ores.http.server= |
 | D6 | Thirty handlers that can let an exception escape | *fixed* | Every replying entry point is guarded, in six groups: history, marketdata, iam, synthetic preview, feed control, and the ORE import dispatch |
 | D4 | No message identity on a retryable message | *not started* | Now reachable, because D2 makes redelivery happen |
-| D7 | Two explicit deadlines without their reason | *not started* | Two comments |
+| D7 | Two explicit deadlines without their reason | *fixed* | Both sites state why they depart from the 30s default, and the provisioning value is pinned above it with a static_assert |
 
 D6 needed per-handler triage rather than a bulk edit, and the triage changed
 what the count meant. Of the 29 hand-written handler headers with no catch,

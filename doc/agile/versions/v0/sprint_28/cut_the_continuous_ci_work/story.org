@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 08D7D3FE-007C-4491-89BC-329D5D2997B8
+:END:
+#+title: Story: Cut the work the continuous CI jobs carry
+#+description: Continuous Linux exists to prove the tree builds and the suites pass. It does not need coverage instrumentation or a package: the Nightly Build already runs coverage and memcheck, and the nightly and tag runs publish the packages. Take both off the continuous run and leave them where the archive is the deliverable.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:build:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Continuous Linux builds and tests the tree without coverage instrumentation and without building a package. Coverage and packaging stay on the nightly and tag runs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- Continuous Linux no longer enables code coverage.
+- Continuous Linux no longer builds the package target.
+- The Nightly Build still runs coverage and memcheck.
+- The nightly and tag runs still produce their packages.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8B97A3B1-F907-4FC3-8028-AA7CBE08B444][Scaffold story: Cut the work the continuous CI jobs carry]] | STARTED | 2026-10-14 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:36856431-DA44-49EC-AD62-60270158CB70][Take coverage and packaging off the continuous runs]] | STARTED | 2026-10-14 | | Initial task for: Cut the work the continuous CI jobs carry |
+
+* Decisions
+
+- Continuous Linux carries neither coverage nor a package. Coverage adds
+  =-fprofile-arcs -ftest-coverage= to every translation unit and then
+  walks the tree with gcov, and the Nightly Build already runs it
+  together with memcheck.
+- The package is the deliverable of the nightly and tag runs. Nothing
+  consumed the continuous artifact, so dropping it costs nothing.
+- =CTest.cmake= gains a =package= flag that defaults to on, so only the
+  continuous workflow changes and every other caller keeps packaging.
+
+* Out of scope
+
+- Further compile-time work. The tier change already puts the continuous
+  clang jobs at about 2h50m against a six-hour limit, so unity builds, a
+  faster linker and precompiled headers wait on a measurement that says
+  they are needed.
+- Splitting continuous into a build job and separate sharded test jobs.

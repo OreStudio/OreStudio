@@ -8,7 +8,7 @@
 #+filetags: :rebalance_the_ci_tiers:sprint_28:v0:
 #+owner: marco
 #+branch: feature/rebalance-the-ci-tiers
-#+pr:
+#+pr: 3287
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3287][#3287]] | [agile] Scaffold the CI tier rebalance story |
 
 * Review
 

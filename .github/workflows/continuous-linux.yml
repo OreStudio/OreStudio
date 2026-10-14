@@ -299,11 +299,28 @@ jobs:
           export cmake_args="build_group=Continuous,preset=${preset},package=0"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Check the compiler cache is worth saving
+        id: sccache_worth
+        # A job that hits the six-hour limit is cancelled. The old guard,
+        # !cancelled(), then skipped both steps below, so every object the run
+        # compiled was thrown away and the cache could never warm: the next run
+        # restored the same stale entry, missed, and timed out again. Run this
+        # after any build that produced a cache worth keeping, and leave the
+        # existing entry alone when it did not.
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
+        run: |
+          size_mb=$(du -sm "${SCCACHE_DIR}" 2>/dev/null | cut -f1)
+          size_mb=${size_mb:-0}
+          echo "local compiler cache: ${size_mb} MB"
+          if [ "$size_mb" -ge 1000 ]; then
+            echo "worth_saving=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "worth_saving=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Delete sccache entry
-        # Only after a build. An earlier failure never touches the compiler
-        # cache, and deleting the entry then discards a warm cache nothing
-        # replaced.
-        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
+        # Delete first: actions/cache/save cannot overwrite an existing key.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -312,7 +329,7 @@ jobs:
             || true
 
       - name: Save sccache
-        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}

@@ -33,6 +33,26 @@ BEGIN
 
     -- --- GLEIF LEI Datasets ---
 
+    -- GLEIF LEI Entities (Tiny)
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_entities.tiny',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'LEI',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI Entities (Tiny)',
+        '',
+        'GLEIF',
+        'GLEIF golden copy data',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_entities'
+    );
+
     -- GLEIF LEI Entities (Small)
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_entities.small',
@@ -73,104 +93,24 @@ BEGIN
         'lei_entities'
     );
 
-    -- GLEIF LEI Parties (Small)
+    -- GLEIF LEI Relationships (Tiny)
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'gleif.lei_parties.small',
+        'gleif.lei_relationships.tiny',
         'GLEIF Standards',
         'Parties',
         'Reference Data',
-        'LEI',
+        'NONE',
         'Primary',
         'Actual',
         'Raw',
         'GLEIF Golden Copy Extraction',
-        'GLEIF LEI Parties (Small)',
-        '',
-        'GLEIF',
-        'Parties derived from GLEIF LEI entity data',
-        '2026-01-23'::date,
-        'Open Data',
-        'lei_parties'
-    );
-
-    -- GLEIF LEI Parties (Large)
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'gleif.lei_parties.large',
-        'GLEIF Standards',
-        'Parties',
-        'Reference Data',
-        'LEI',
-        'Primary',
-        'Actual',
-        'Raw',
-        'GLEIF Golden Copy Extraction',
-        'GLEIF LEI Parties (Large)',
-        '',
-        'GLEIF',
-        'Parties derived from GLEIF LEI entity data',
-        '2026-01-23'::date,
-        'Open Data',
-        'lei_parties'
-    );
-
-    -- GLEIF LEI BIC Mappings
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'gleif.lei_bic',
-        'GLEIF Standards',
-        'Parties',
-        'Reference Data',
-        'BIC',
-        'Primary',
-        'Actual',
-        'Raw',
-        'GLEIF Golden Copy Extraction',
-        'GLEIF LEI BIC Mappings',
+        'GLEIF LEI Relationships (Tiny)',
         '',
         'GLEIF',
         'GLEIF golden copy data',
         '2026-01-23'::date,
         'Open Data',
-        'lei_bic'
-    );
-
-    -- GLEIF LEI Counterparties (Small)
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'gleif.lei_counterparties.small',
-        'GLEIF Standards',
-        'Parties',
-        'Reference Data',
-        'LEI',
-        'Primary',
-        'Actual',
-        'Raw',
-        'GLEIF Golden Copy Extraction',
-        'GLEIF LEI Counterparties (Small)',
-        '',
-        'GLEIF',
-        'Counterparties derived from GLEIF LEI entity data',
-        '2026-01-23'::date,
-        'Open Data',
-        'lei_counterparties'
-    );
-
-    -- GLEIF LEI Counterparties (Large)
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'gleif.lei_counterparties.large',
-        'GLEIF Standards',
-        'Parties',
-        'Reference Data',
-        'LEI',
-        'Primary',
-        'Actual',
-        'Raw',
-        'GLEIF Golden Copy Extraction',
-        'GLEIF LEI Counterparties (Large)',
-        '',
-        'GLEIF',
-        'Counterparties derived from GLEIF LEI entity data',
-        '2026-01-23'::date,
-        'Open Data',
-        'lei_counterparties'
+        'lei_relationships'
     );
 
     -- GLEIF LEI Relationships (Small)
@@ -212,5 +152,145 @@ BEGIN
         'Open Data',
         'lei_relationships'
     );
-END $$;
 
+    -- GLEIF LEI BIC Mappings
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_bic',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'BIC',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI BIC Mappings',
+        '',
+        'GLEIF',
+        'GLEIF golden copy data',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_bic'
+    );
+
+    -- GLEIF LEI Parties (Tiny)
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_parties.tiny',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'LEI',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI Parties (Tiny)',
+        '',
+        'GLEIF',
+        'GLEIF LEI entities published as parties',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_parties'
+    );
+
+    -- GLEIF LEI Parties (Small)
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_parties.small',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'LEI',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI Parties (Small)',
+        '',
+        'GLEIF',
+        'GLEIF LEI entities published as parties',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_parties'
+    );
+
+    -- GLEIF LEI Parties (Large)
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_parties.large',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'LEI',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI Parties (Large)',
+        '',
+        'GLEIF',
+        'GLEIF LEI entities published as parties',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_parties'
+    );
+
+    -- GLEIF LEI Counterparties (Tiny)
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_counterparties.tiny',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'LEI',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI Counterparties (Tiny)',
+        '',
+        'GLEIF',
+        'GLEIF LEI entities published as counterparties',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_counterparties'
+    );
+
+    -- GLEIF LEI Counterparties (Small)
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_counterparties.small',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'LEI',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI Counterparties (Small)',
+        '',
+        'GLEIF',
+        'GLEIF LEI entities published as counterparties',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_counterparties'
+    );
+
+    -- GLEIF LEI Counterparties (Large)
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'gleif.lei_counterparties.large',
+        'GLEIF Standards',
+        'Parties',
+        'Reference Data',
+        'LEI',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'GLEIF LEI Counterparties (Large)',
+        '',
+        'GLEIF',
+        'GLEIF LEI entities published as counterparties',
+        '2026-01-23'::date,
+        'Open Data',
+        'lei_counterparties'
+    );
+
+END $$;

@@ -13,6 +13,14 @@
     },
     "datasets": [
         {
+            "code": "gleif.lei_entities.tiny",
+            "name": "GLEIF LEI Entities (Tiny)",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "LEI",
+            "artefact_type": "lei_entities"
+        },
+        {
             "code": "gleif.lei_entities.small",
             "name": "GLEIF LEI Entities (Small)",
             "subject_area": "Parties",
@@ -27,6 +35,13 @@
             "domain": "Reference Data",
             "coding_scheme": "LEI",
             "artefact_type": "lei_entities"
+        },
+        {
+            "code": "gleif.lei_relationships.tiny",
+            "name": "GLEIF LEI Relationships (Tiny)",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "artefact_type": "lei_relationships"
         },
         {
             "code": "gleif.lei_relationships.small",
@@ -51,6 +66,15 @@
             "artefact_type": "lei_bic"
         },
         {
+            "code": "gleif.lei_parties.tiny",
+            "name": "GLEIF LEI Parties (Tiny)",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "LEI",
+            "artefact_type": "lei_parties",
+            "business_context": "GLEIF LEI entities published as parties"
+        },
+        {
             "code": "gleif.lei_parties.small",
             "name": "GLEIF LEI Parties (Small)",
             "subject_area": "Parties",
@@ -60,8 +84,35 @@
             "business_context": "GLEIF LEI entities published as parties"
         },
         {
+            "code": "gleif.lei_parties.large",
+            "name": "GLEIF LEI Parties (Large)",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "LEI",
+            "artefact_type": "lei_parties",
+            "business_context": "GLEIF LEI entities published as parties"
+        },
+        {
+            "code": "gleif.lei_counterparties.tiny",
+            "name": "GLEIF LEI Counterparties (Tiny)",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "LEI",
+            "artefact_type": "lei_counterparties",
+            "business_context": "GLEIF LEI entities published as counterparties"
+        },
+        {
             "code": "gleif.lei_counterparties.small",
             "name": "GLEIF LEI Counterparties (Small)",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "LEI",
+            "artefact_type": "lei_counterparties",
+            "business_context": "GLEIF LEI entities published as counterparties"
+        },
+        {
+            "code": "gleif.lei_counterparties.large",
+            "name": "GLEIF LEI Counterparties (Large)",
             "subject_area": "Parties",
             "domain": "Reference Data",
             "coding_scheme": "LEI",
@@ -70,6 +121,11 @@
         }
     ],
     "dependencies": [
+        {
+            "dataset_code": "gleif.lei_relationships.tiny",
+            "dependency_code": "gleif.lei_entities.tiny",
+            "role": "entity_reference"
+        },
         {
             "dataset_code": "gleif.lei_relationships.small",
             "dependency_code": "gleif.lei_entities.small",
@@ -81,9 +137,24 @@
             "role": "entity_reference"
         },
         {
+            "dataset_code": "gleif.lei_parties.tiny",
+            "dependency_code": "fpml.business_center",
+            "role": "business_centres"
+        },
+        {
             "dataset_code": "gleif.lei_parties.small",
             "dependency_code": "fpml.business_center",
             "role": "business_centres"
+        },
+        {
+            "dataset_code": "gleif.lei_parties.large",
+            "dependency_code": "fpml.business_center",
+            "role": "business_centres"
+        },
+        {
+            "dataset_code": "gleif.lei_parties.tiny",
+            "dependency_code": "gleif.lei_entities.tiny",
+            "role": "entity_reference"
         },
         {
             "dataset_code": "gleif.lei_parties.small",
@@ -91,9 +162,29 @@
             "role": "entity_reference"
         },
         {
+            "dataset_code": "gleif.lei_parties.large",
+            "dependency_code": "gleif.lei_entities.large",
+            "role": "entity_reference"
+        },
+        {
+            "dataset_code": "gleif.lei_parties.tiny",
+            "dependency_code": "gleif.lei_relationships.tiny",
+            "role": "hierarchy"
+        },
+        {
             "dataset_code": "gleif.lei_parties.small",
             "dependency_code": "gleif.lei_relationships.small",
             "role": "hierarchy"
+        },
+        {
+            "dataset_code": "gleif.lei_parties.large",
+            "dependency_code": "gleif.lei_relationships.large",
+            "role": "hierarchy"
+        },
+        {
+            "dataset_code": "gleif.lei_parties.tiny",
+            "dependency_code": "gleif.lei_bic",
+            "role": "bic_reference"
         },
         {
             "dataset_code": "gleif.lei_parties.small",
@@ -101,9 +192,29 @@
             "role": "bic_reference"
         },
         {
+            "dataset_code": "gleif.lei_parties.large",
+            "dependency_code": "gleif.lei_bic",
+            "role": "bic_reference"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.tiny",
+            "dependency_code": "fpml.business_center",
+            "role": "business_centres"
+        },
+        {
             "dataset_code": "gleif.lei_counterparties.small",
             "dependency_code": "fpml.business_center",
             "role": "business_centres"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.large",
+            "dependency_code": "fpml.business_center",
+            "role": "business_centres"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.tiny",
+            "dependency_code": "gleif.lei_entities.tiny",
+            "role": "entity_reference"
         },
         {
             "dataset_code": "gleif.lei_counterparties.small",
@@ -111,9 +222,29 @@
             "role": "entity_reference"
         },
         {
+            "dataset_code": "gleif.lei_counterparties.large",
+            "dependency_code": "gleif.lei_entities.large",
+            "role": "entity_reference"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.tiny",
+            "dependency_code": "gleif.lei_relationships.tiny",
+            "role": "hierarchy"
+        },
+        {
             "dataset_code": "gleif.lei_counterparties.small",
             "dependency_code": "gleif.lei_relationships.small",
             "role": "hierarchy"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.large",
+            "dependency_code": "gleif.lei_relationships.large",
+            "role": "hierarchy"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.tiny",
+            "dependency_code": "gleif.lei_parties.tiny",
+            "role": "party_reference"
         },
         {
             "dataset_code": "gleif.lei_counterparties.small",
@@ -121,7 +252,22 @@
             "role": "party_reference"
         },
         {
+            "dataset_code": "gleif.lei_counterparties.large",
+            "dependency_code": "gleif.lei_parties.large",
+            "role": "party_reference"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.tiny",
+            "dependency_code": "gleif.lei_bic",
+            "role": "bic_reference"
+        },
+        {
             "dataset_code": "gleif.lei_counterparties.small",
+            "dependency_code": "gleif.lei_bic",
+            "role": "bic_reference"
+        },
+        {
+            "dataset_code": "gleif.lei_counterparties.large",
             "dependency_code": "gleif.lei_bic",
             "role": "bic_reference"
         }

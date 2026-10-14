@@ -283,6 +283,12 @@ jobs:
 
       - name: Run CTest workflow
         id: ctest
+        # The job limit is 360 minutes. A job that reaches it is torn down about
+        # thirty seconds later, which is nowhere near enough to upload a
+        # multi-gigabyte compiler cache, so the cache steps below never finish.
+        # Cap this step instead, leaving the rest of the job free for the cache
+        # delete and save.
+        timeout-minutes: 320
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
           export CTEST_PARALLEL_LEVEL=$(nproc)

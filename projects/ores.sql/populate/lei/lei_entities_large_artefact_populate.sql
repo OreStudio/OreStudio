@@ -52,7 +52,7 @@ begin
     delete from ores_dq_lei_entities_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise debug 'Populating artefacts for dataset: GLEIF LEI Entities (Large)';
+    raise notice 'Populating artefacts for dataset: GLEIF LEI Entities (Large)';
 
     -- Insert artefact data
     insert into ores_dq_lei_entities_artefact_tbl (
@@ -22858,5 +22858,5 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise debug 'Successfully populated % artefacts for dataset: GLEIF LEI Entities (Large)', v_count;
+    raise notice 'Successfully populated % artefacts for dataset: GLEIF LEI Entities (Large)', v_count;
 end $$;

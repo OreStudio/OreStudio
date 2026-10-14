@@ -66,10 +66,11 @@ BEGIN
     -- token carries it, narrowed to what the grantor still holds.
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'Report run - what a scheduled report run reads and writes in its party');
 
-    -- ReportRun: the run document and the owners' configuration documents it
-    -- reads, the trades and market data it gathers, the storage objects it
-    -- writes and reads, and its compute batch.
+    -- ReportRun: the run document, the file types it names every file from, and
+    -- the owners' configuration documents it reads, the trades and market data
+    -- it gathers, the storage objects it writes and reads, and its compute batch.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::run_documents:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::file_types:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::curve_configurations:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'analytics::pricing_model_configs:read');

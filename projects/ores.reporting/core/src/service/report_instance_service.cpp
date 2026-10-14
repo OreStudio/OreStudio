@@ -139,9 +139,11 @@ messaging::list_report_instances_response report_instance_service::list_report_i
         return response;
     }
     // A list narrows to kind unless the caller states one, so the default view is
-    // the common case and the others are asked for by name.
+    // the common case and the others are asked for by name. A caller that named the
+    // rows it wants has already been specific, and narrowing a lookup by a default
+    // would answer nothing about a row that exists.
     auto filter = request.filter.value_or(messaging::report_instances_filter{});
-    if (!filter.kind)
+    if (!filter.kind && !filter.id_one_of)
         filter.kind = std::string("production");
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the

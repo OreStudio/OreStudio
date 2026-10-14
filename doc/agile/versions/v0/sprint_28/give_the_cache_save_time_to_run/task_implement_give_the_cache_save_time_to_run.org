@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: E940828B-69F9-4E48-90B1-53B5A00DF88F
+:END:
+#+title: Task: Cap the CTest step below the six-hour job limit
+#+description: Initial task for: Give the cache save time to run after the build stops
+#+type: task
+#+level: s1
+#+filetags: :give_the_cache_save_time_to_run:sprint_28:v0:
+#+owner: marco
+#+branch: feature/give-the-cache-save-time-to-run
+#+pr: 3296
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C6C5C34E-B695-4E81-B8C3-F07BE04B63CC][Give the cache save time to run after the build stops]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run that overruns the build still has time to save its compiler cache before the job limit ends it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C6C5C34E-B695-4E81-B8C3-F07BE04B63CC][Give the cache save time to run after the build stops]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- The CTest step has a timeout-minutes well below the job's 360.
+- The remaining job budget covers the cache delete and save steps.
+- A normal, fast run is unaffected.
+
+* Plan
+
+Give the CTest step its own timeout, well below the job's 360 minutes, so
+the cache steps after it have room to finish.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| GitHub-hosted job limit | 360 minutes | GitHub Actions limits page | - |
+| Margin the =always()= steps got past it | about 30 s: =Show sccache statistics= logged 09:51:47, the job ended around 09:51:30 | =gh run view --job 115624055025= | 3446f45cae |
+| Setup before the CTest step | about 8 minutes (job start 03:51, CTest step 03:58:55) | =gh run view --job 115624055025= | 3446f45cae |
+| New CTest step timeout | 320 minutes, leaving about 30 minutes of job | this workflow | this branch |
+
+* Notes
+
+** Why the guard alone was not enough
+
+Changing the cache steps to =always()= makes them run after a cancelled
+job, and the step statuses prove they do. It does not give them time. The
+job is torn down roughly thirty seconds after it exceeds the limit, and
+uploading a two-gigabyte compiler cache takes minutes. The save would
+start and be killed.
+
+** The arithmetic
+
+The job limit is 360 minutes, setup takes about 8, and the cache delete
+and upload need a few minutes. Capping the CTest step at 320 leaves about
+30 minutes for them, which is ample, and still lets a cold build compile
+roughly six sevenths of the tree before it is cut.
+
+** Once warm, it never binds
+
+A warm build finishes in about an hour, so the timeout only ever applies
+to the runs that are still filling the cache -- exactly the runs whose
+partial cache has to be kept.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3296][#3296]] | [ci] Cap the build step so the cache save has time to run |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The CTest step is capped at 320 minutes. A run whose build overruns now
+stops with roughly thirty minutes of job left, enough for the guard, the
+delete and the cache upload to finish. Before this, the job was torn down
+about thirty seconds after the limit and nothing was saved.
+
+A warm run finishes in about an hour, far inside the cap, so the timeout
+only ever applies to the runs still filling the cache -- the ones whose
+partial cache has to be kept.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: no run has yet been cut by the new cap. The first run
+that overruns is the proof, and its cache entry growing is the signal.

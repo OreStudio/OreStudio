@@ -189,6 +189,8 @@ sequences and the names must not be read as one number.
 
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the rule this page applies, and
   the C1202 ceiling the atomised shape relieves.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — the composite pattern that
+  builds this shape, and the field-group patterns it replaces.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the bump
   mechanism, the row lock and the window join this page assumes.
 - [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal

@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: 87E3F021-1C69-48DE-9139-32C44C99B3B9
+:END:
+#+title: Codegen patterns: choosing a model shape
+#+description: The library of codegen patterns, to be consulted at the start of any task that touches a model. What each pattern is for, the syntax it uses, what it generates, and the neighbouring pattern it is mistaken for. Includes the composition patterns, since a model that holds an entity's facts is the choice that goes wrong most often.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:codegen:modeling:patterns:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+* Summary
+
+Choose the pattern before writing a model. Every pattern here generates a
+different shape of table, type, message and read, and a task that starts
+from the wrong one produces work that is thrown away.
+
+The patterns are grouped by the question they answer. What am I authoring,
+how are the entity's facts held, what does the entity opt into, and what
+does the wire carry. Each entry names the pattern it is mistaken for,
+because the mistakes cluster.
+
+The syntax for each is in
+[[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]]. This page owns the choice, the
+schema owns the flags.
+
+* Detail
+
+** How to choose
+
+1. Name the data shape first. What is keyed, what varies on its own, what
+   is shared, what is optional, what is many. The shape decides the
+   pattern, and a shape that is not yet decided has no pattern.
+2. Find the row below that answers the shape.
+3. If two patterns both seem to fit, the shape is not settled. Settle the
+   shape, or split the work, rather than composing both.
+4. If no pattern fits, stop. Do not invent a flag combination. Report the
+   gap, because a shape the generator cannot express is a finding, and a
+   hand-composed model that no facet consumes generates nothing.
+
+** What am I authoring
+
+| Pattern | Use when | Generates |
+|---|---|---|
+| =ores.codegen.entity= | a table with a key, a lifecycle and a protocol | table, entity, domain type, mapper, repository, service, protocol, events and UI hooks |
+| =ores.codegen.lookup_entity= | a coded, seeded reference table with no lifecycle | the table and its seed path, loaded in bulk |
+| =ores.codegen.junction= | a many-to-many link between two entities | the join table, its struct, and the reads from both sides |
+| =ores.codegen.field_group= | a value shape reused by several entities, with no table of its own | a C++ header, composed into the entities that name it |
+| =ores.codegen.operation= | messages that are not an entity's derived CRUD, such as a document or a domain operation | the protocol messages and the handler |
+| =ores.codegen.module= | an index that groups a namespace's entity documents | no output of its own |
+
+The compass scaffolder names each one: =compass add entity_org=,
+=lookup_entity=, =junction=, =field_group=, and so on.
+
+** How are the entity's facts held
+
+This is the group that goes wrong. The question is whether the entity is
+one table, several tables, or one table with nested C++ members.
+
+| Pattern | Use when | Syntax | Generates |
+|---|---|---|---|
+| One table | the entity's facts change together and are read together | a plain =entity= | one table, one type |
+| Composite parent and parts | the entity's facts split by their own change reason, multiplicity or reader, and share one identity | a child FK with =:bump_parent_version:=, =:list_by:=, =:list_by_uuid:= and =:list_by_as_of:= | the child tables, the parent version bump on any part write, the list-by-parent, and the as-of list |
+| Associated entity | the other side has its own key and its own lifecycle | a second =entity= with a foreign key, no bump | a table and a protocol of its own |
+| Field group member | a value shape is nested in a C++ struct for a compile-time reason and has no table | =domain_identity_group=, =domain_audit_group=, or a =** Domain groups= table | nested C++ members |
+
+The composite pattern is the target for an entity and its parts. A write to
+any part bumps the parent's version in the same transaction, so the
+parent's windows partition time into spans in which the parts are stable,
+and a read assembles the entity from the timeline with no link table. The
+mechanism is in
+[[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] and the target model
+in [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]].
+
+*Do not use a field group member for an entity's facts.* A field group
+nests the parts inside one struct, which is the aggregate shape
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] rules out, and it puts the members on
+the wire as nested objects. The field-group patterns exist for a reused
+value shape and for the C1202 ceiling, not for storage.
+
+*Do not split a field set that fails the part test.* A set with one row per
+entity, one change reason and one reader is a column group in a table's
+clothes. A part would buy a join, a message and a lookup for nothing.
+
+** What does the entity opt into
+
+| Pattern | Use when | Syntax |
+|---|---|---|
+| Tenant and party isolation | every entity | =:rls_tenant_isolation:= and =:rls_party_isolation:= |
+| Audit and versioning | every entity with a lifecycle | the audit columns and the version, generated by default |
+| History | the entity's changes must be reviewable over time | the temporal columns and the versions sub-resource |
+| Change events | another part of the system watches the entity | the event registrar annotation |
+| Presentation | the entity has screens | =Table display=, =Detail fields= and the =view_group= cell |
+| Custom repository methods | a read the derived set does not cover | the literate fragment mechanism |
+| Insert-trigger validations | a rule the database must enforce on write | the =Insert trigger= section and its validation table |
+| Variation | a family of entities states its variation | the profiles and features of the
+  [[id:D773166D-0C91-8CB4-3323-42166BC07687][system model]] |
+| Batched reads | a list is read alongside its children | =:has_batch_read:= |
+
+These are additions to a pattern, not patterns of their own. Each one is
+declared on the model and is never inferred from a column's presence, per
+[[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] and the
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]].
+
+** What does the wire carry
+
+| Pattern | Use when | Shape |
+|---|---|---|
+| Derived entity verbs | an ordinary entity | =get= and =get_many=, =list= and =list_by_<relation>=, =put= and =put_many=, =delete= and =delete_many=, all generated |
+| Domain operation | a message that is not an entity's CRUD | declared messages and a handler |
+| Composite family get and put | an entity whose facts are parts | the family's read and write, below |
+| Read model | a screen whose rows span several entities | an entity derived from others, with =list= and =get= and no write |
+
+A heterogeneous result set carries one typed array per concrete type,
+joined by key, per
+[[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]]. A screen whose rows span several
+entities is a read model, never a client join.
+
+*** The generic put and the family put
+
+Both exist, and they do different jobs. A composite entity has a derived
+protocol for its central row and a family protocol for the whole entity.
+
+| Shape | Generic | Family |
+|---|---|---|
+| Get one | =get= | =get_<kind>_convention= |
+| Get many | =get_many= | =get_many_<kind>_conventions= |
+| Put one | =put= | =put_<kind>_convention= |
+| Put many | =put_many= | =put_many_<kind>_conventions= |
+
+- The *generic* =put= writes the central row alone. It is the derived verb
+  of the central entity and it is what a rename, a market-data rebind or an
+  audit-only change uses.
+- The *family* =put= writes the central row and that kind's parts in one
+  transaction. It is a domain operation, because it spans several tables.
+  Its =put_many= is one transaction for the whole batch, and the version
+  precondition stays a property of each element.
+- The family =get= mirrors the family =put= field for field. =get_many=
+  returns the same shape for a set of keys.
+
+A part that no family declares never appears in a family message. A kind
+is the set of parts its family protocol names.
+
+** Anti-patterns
+
+- Nesting an entity's parts in one struct with a =** Domain groups= table
+  or =domain_identity_group=. Nesting is a wire and compile-time shape, not
+  a storage shape.
+- Using a field group where a table is needed, so the data has no key and
+  no row-level security.
+- Composing flags that no facet consumes, which generates nothing and
+  reads as if it did.
+- Splitting a part with one row per entity, one change reason and one
+  reader, which adds a join and a message for no access benefit.
+- Reaching a part's column from a list filter or an order. The list reads
+  the central row, so that is a read model.
+
+* See also
+
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the syntax for every pattern
+  here, per model kind.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the generator itself, its facets and its addressing.
+- [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — the operational recipe.
+- [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][Paste blocks: injecting custom code into generated files]] — how
+  hand-written C++ survives regeneration.
+- [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]] — the target model
+  the composite pattern builds.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the bump and the
+  window join behind the composite pattern.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the rule that rules out the
+  nested aggregate.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the verb set, the read model and
+  the as-of guarantee.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]] — one typed array per concrete type,
+  joined by key.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the checks a component passes to be clean.
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] — the review that walks a component's
+  models against these patterns.

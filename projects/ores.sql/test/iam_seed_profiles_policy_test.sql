@@ -37,14 +37,16 @@ begin;
 
 select plan(8);
 
+-- The assertions need a tenant that people set up, and a rebuilt database has
+-- none: provisioning is a runtime act, not part of the build. Provision one
+-- here and let the transaction roll it back, so the suite owns its fixture
+-- instead of depending on out-of-band setup.
+select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
 create temporary table t_other on commit drop as
-select id from ores_iam_tenants_tbl
-where id <> ores_utility_system_tenant_id_fn()
-  and valid_to = ores_utility_infinity_timestamp_fn()
-  and status = 'active'
-  and type <> 'automation'
-order by id
-limit 1;
+select tenant_id as id from ores_iam_provision_tenant_fn(
+    'production', 'test_seed_profile_policy', 'Seed Profile Policy Fixture',
+    'test_seed_profile_policy');
 
 select ok(exists (select 1 from t_other), 'A tenant that people set up exists');
 

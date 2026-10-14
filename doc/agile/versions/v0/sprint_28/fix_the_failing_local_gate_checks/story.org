@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 40D4C718-6D87-439D-8816-7BF6428C9977
+:END:
+#+title: Story: Fix the failing local gate checks
+#+description: Three checks are red on main. The compass suite chmods the user's persona cache, which a sandbox makes read-only. Four IAM pgTAP suites need a tenant that only a provisioned environment has. And a marketdata case keys a manual point it never clears, which the suite's own non-declaration order turns into a failure of the case before it. Each check is fixed where it runs.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Get the local gate green for reasons that hold on any machine, not just this
+one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- The compass suite passes with a read-only home directory.
+- The IAM pgTAP suites pass on a freshly rebuilt database, with nothing
+  provisioned beforehand.
+- Each suite and test leaves the shared database as it found it, so a check
+  passes on a database it has already run against.
+
+* What was actually wrong
+
+** The compass suite wrote outside its working directory. The persona cache
+was rooted at =Path.home() / ".cache" / "ores-personas"=, so
+=prepare_profile= chmod'd the user's home. A sandbox makes that read-only, and
+two tests died on the chmod. A tool that writes outside its working directory
+cannot run in a sandbox at all, so the cache now lives under the checkout.
+
+** Four pgTAP suites needed a tenant that nobody provisioned. They searched
+for "a tenant that people set up" and found none, because provisioning is a
+runtime act and the gate only rebuilds the database. The failure then
+cascaded in a way worth recording: with nothing found, =t_other= was empty,
+=set_config('app.current_tenant_id', ...)= set a NULL tenant, and row-level
+security stopped restricting. That is why the seed profile suite appeared to
+show a tenant deleting every seed profile, and why the counts were zero. The
+suites were failing on their missing fixture, not on the policies they test.
+
+Note that the gate's own comment claimed the corpus was self-sufficient --
+"every suite writes the reference data it reads and rolls it back" -- and that
+was true of 48 suites and false of these four.
+
+** A marketdata case polluted the suite that ran after it. The plus-value case
+keyed a manual point and never cleared it. The suite does not run in
+declaration order, so the plus case ran first and the leftover point shadowed
+the imported value that the refusal case asserts on, which reported a
+mismatch of "+0.09" against "0.080". The value was written during the same
+run, not left by an earlier one -- the database had been rebuilt minutes
+before -- so nothing outside the suite was at fault.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6A906BCE-0428-41CD-AD78-1F4F692B4D5A][Scaffold story: Fix the failing local gate checks]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9D4D10F4-1FD0-4DD1-8D4E-7D05E3C27D7B][Make every failing check pass where it runs]] | DONE | 2026-10-14 | 2026-10-14 | Move the persona cache into the checkout, give the four tenant suites their own provisioned fixture, and clear the manual point the plus-value case keys. |
+
+* Decisions
+
+- The persona cache moves rather than the tests being patched. Pointing each
+  test at a temporary directory would have hidden the real defect: a tool that
+  writes to the user's home cannot run in a sandbox.
+- The pgTAP suites provision their own tenant instead of the gate provisioning
+  one. Provisioning through the application needs a running fleet, which a
+  database check must not require.
+
+* Out of scope
+
+- The other paths that leave the checkout are deliberate and stay:
+  =~/.config/systemd/user= holds the user units =compass services= installs,
+  =~/.claude= receives deployed skills, and =/tmp/ores-build.lock.*= is
+  host-wide on purpose so two worktrees cannot build at once.
+
+* Result
+
+All three checks pass, and they pass for reasons that hold anywhere.
+
+The persona suite runs as the gate runs it, with no writable-home workaround:
+398 passed, 1 skipped. Previously two tests failed on a read-only home.
+
+The pgTAP corpus is green on a freshly rebuilt database with nothing
+provisioned: 52 files, 512 tests. The count rises from 510 because the actor
+suite had been aborting after two of its four planned tests.
+
+The marketdata core suite is green and stays green on a database it has
+already run against, run twice at 114.69s and 114.05s. It had been failing on
+the state its own previous case left behind.
+
+No fix needed another, and none needed ACME.

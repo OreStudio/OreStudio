@@ -233,6 +233,13 @@ TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling", tags
         ctx, key_request(identity, {"1Y", "ATM"}, "+0.09"), instant("2017-09-10T12:00:00Z"));
     REQUIRE(keyed.success);
     CHECK(snapshot(h, identity).values == std::vector<std::string>{"+0.09"});
+
+    // Leave the series as it was found. The suite shares a database, and a
+    // manual point that outlives its test shadows the imported value the test
+    // before this one asserts on, so the suite fails on the next run and
+    // blames a policy it does not touch.
+    const auto cleared = manual_point_service::clear(ctx, clear_request(identity, {"1Y", "ATM"}));
+    REQUIRE(cleared.success);
 }
 
 TEST_CASE("clearing_a_node_with_no_manual_point_says_so", tags) {

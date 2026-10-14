@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FEED_CONFIG_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FEED_CONFIG_HANDLER_HPP
 
-#include "feed_controller.hpp"
 #include "client_message.hpp"
+#include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -117,10 +117,11 @@ public:
 
         if (target->container_scope == ores::synthetic::domain::scope::system &&
             !feed_kind_registry::is_system_caller(req_ctx)) {
-            reply(nats_,
-                  msg,
-                  start_feed_response{.success = false,
-                                      .message = "A system feed starts only in the system tenant."});
+            reply(
+                nats_,
+                msg,
+                start_feed_response{.success = false,
+                                    .message = "A system feed starts only in the system tenant."});
             return;
         }
 
@@ -197,8 +198,7 @@ public:
         if (source_name.empty() && !feed_kind_registry::is_system_caller(req_ctx)) {
             reply(nats_,
                   msg,
-                  stop_feed_response{.success = false,
-                                     .message = "Name the feed to stop."});
+                  stop_feed_response{.success = false, .message = "Name the feed to stop."});
             return;
         }
 
@@ -211,9 +211,9 @@ public:
                     system.contains(row.candidate.container_id)) {
                     reply(nats_,
                           msg,
-                          stop_feed_response{
-                              .success = false,
-                              .message = "A system feed stops only in the system tenant."});
+                          stop_feed_response{.success = false,
+                                             .message =
+                                                 "A system feed stops only in the system tenant."});
                     return;
                 }
             }

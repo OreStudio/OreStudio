@@ -147,7 +147,8 @@ TEST_CASE("feed_filter names only the picked feeds and ignores the filter", tags
 TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and stopped", tags) {
     feed_filter f;
     f.should_run = true;
-    CHECK_THAT(where_clause(f, {"synthetic.a"}, true), ContainsSubstring("and enabled and auto_start"));
+    CHECK_THAT(where_clause(f, {"synthetic.a"}, true),
+               ContainsSubstring("and enabled and auto_start"));
     CHECK_THAT(where_clause(f, {"synthetic.a"}, true),
                ContainsSubstring("source_name not in (E'synthetic.a')"));
     f.state = "started";

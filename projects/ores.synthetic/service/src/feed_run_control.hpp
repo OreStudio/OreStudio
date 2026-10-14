@@ -128,9 +128,8 @@ inline stop_outcome stop_feeds(const feed_kind_registry& registry,
     stop_outcome out;
     for (const auto* k : registry.all())
         out.by_kind.emplace(k->kind, 0);
-    const auto system = feed_kind_registry::is_system_caller(ctx)
-                            ? std::set<boost::uuids::uuid>{}
-                            : registry.system_containers(ctx);
+    const auto system = feed_kind_registry::is_system_caller(ctx) ? std::set<boost::uuids::uuid>{} :
+                                                                    registry.system_containers(ctx);
     for (const auto& row : registry.rows(ctx)) {
         if (!wanted(row))
             continue;

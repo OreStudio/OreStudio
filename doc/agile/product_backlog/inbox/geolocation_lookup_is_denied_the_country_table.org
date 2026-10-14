@@ -11,6 +11,39 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Resolution
+
+It was a missing grant, not a policy. The read policy on the table is correct and
+was applied; what the iam service lacked was the table privilege, and PostgreSQL
+reports that as =permission denied for table= rather than as a policy refusal,
+which is why the first reading looked like either.
+
+=ores.iam= is the caller: =auth_handler.hpp= resolves the signing-in person's
+country through =ores_geo_ip2country_lookup_fn= on the login path, and
+=geo_handler.hpp= does the same for the geolocation screen. Neither is one of the
+prefixes the iam service is granted, and =ores_geo_= was granted to no service
+user at all, so every lookup was refused:
+
+#+begin_example
+select has_table_privilege('ores_swift_curie_iam_service',
+                           'ores_geo_ip2country_tbl', 'select');  -- f
+#+end_example
+
+The iam service's =select_prefixes= in =projects/modeling/service_registry.org=
+now carries =ores_geo_=, the grants file is regenerated from it, and the lookup
+answers as that role:
+
+#+begin_example
+set role ores_swift_curie_iam_service;
+select country_code from
+  ores_geo_ip2country_lookup_fn(ores_utility_system_tenant_id_fn(), '0.0.0.1'::inet);
+--  GB
+#+end_example
+
+The read grant is the whole surface the service needs: an insert as that role is
+still refused, which is the intent. The login path also still logs and discards
+a lookup failure, which is a separate matter and is not fixed here.
+
 * What
 
 (One paragraph: the idea.)

@@ -81,6 +81,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -129,6 +131,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -177,6 +181,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -225,6 +231,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -273,6 +281,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -321,6 +331,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -369,6 +381,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -417,6 +431,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -465,6 +481,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            curve_parametric_smile_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::curve_parametric_smiles:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

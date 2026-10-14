@@ -81,6 +81,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -127,6 +129,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -173,6 +177,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -219,6 +225,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -265,6 +273,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -311,6 +321,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -357,6 +369,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -403,6 +417,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -449,6 +465,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            trade_activity_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "trading::trade_activities:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

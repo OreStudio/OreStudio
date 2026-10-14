@@ -63,6 +63,13 @@ static auto& lg() {
 
 struct sub_closure {
     message_handler handler;
+    /**
+     * @brief Whether deliveries on this subscription must be acknowledged.
+     *
+     * A durable subscription answers its deliveries; a core one has nothing to
+     * answer and its message is destroyed by the callback, as it always was.
+     */
+    bool durable = false;
 };
 
 // ---------------------------------------------------------------------------
@@ -203,8 +210,68 @@ void on_conn_reconnected(natsConnection* /*nc*/, void* /*closure*/) {
     }
 }
 
-message extract_message(natsMsg* msg) {
+/**
+ * @brief Answers a JetStream delivery on the cnats message it arrived on.
+ *
+ * The three verbs are the whole reply to a durable delivery: ack for committed
+ * work, nak for work to try again, term for a message that can never be
+ * handled. Only the first answer counts, so a handler that answers and then
+ * unwinds does not double-answer.
+ *
+ * The handle owns the cnats message, so the message outlives every copy of the
+ * C++ view that carries this handle and dies exactly when the last of them
+ * does. A delivery without a handle -- every core NATS message -- is destroyed
+ * by the callback instead, as it always was.
+ *
+ * Not thread-safe by itself; the transport answers each delivery once, on the
+ * thread that delivered it.
+ */
+class ack_sink final : public ack_handle {
+public:
+    explicit ack_sink(natsMsg* msg) noexcept
+        : msg_(msg, &natsMsg_Destroy) {}
+
+    void accept() override {
+        answer([this] { natsMsg_Ack(msg_.get(), nullptr); });
+    }
+
+    void retry() override {
+        answer([this] { natsMsg_Nak(msg_.get(), nullptr); });
+    }
+
+    void reject() override {
+        answer([this] { natsMsg_Term(msg_.get(), nullptr); });
+    }
+
+    /// @return true once the handler, or the transport's backstop, answered.
+    [[nodiscard]] bool answered() const noexcept {
+        return answered_;
+    }
+
+private:
+    void answer(const std::function<void()>& verb) {
+        if (answered_)
+            return;
+        answered_ = true;
+        verb();
+    }
+
+    std::unique_ptr<natsMsg, decltype(&natsMsg_Destroy)> msg_;
+    bool answered_ = false;
+};
+
+/**
+ * @brief True when a delivery is JetStream and must be answered.
+ *
+ * A core NATS message has no JetStream metadata and nothing to acknowledge, so
+ * the callback destroys it rather than answering it. The message type's
+ * internals are private to the nats.c library, so the answer is not read off
+ * the delivery but supplied by the subscription that created it: only
+ * @c js_queue_subscribe makes the sink below.
+ */
+message extract_message(natsMsg* msg, std::shared_ptr<ack_sink> ack = {}) {
     message m;
+    m.ack = std::move(ack);
 
     if (const char* s = natsMsg_GetSubject(msg))
         m.subject = s;
@@ -236,7 +303,6 @@ message extract_message(natsMsg* msg) {
 }
 
 // cnats message callback used by all subscribe variants.
-// JetStream subscriptions auto-ack by default (ManualAck is false).
 //
 // IMPORTANT: This is a C callback running on a NATS library thread.
 // Exceptions must NOT propagate out — they would cross a C frame boundary
@@ -253,22 +319,32 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
     // log line for what would otherwise be a single droppable bad message.
     const char* s = natsMsg_GetSubject(msg);
     const std::string subject = s ? s : std::string();
+    // A durable delivery is answered by the handler, through this handle; the
+    // transport answers it only if the handler left it undecided. The handle
+    // owns the cnats message, so a delivery that carries one is freed when the
+    // last copy of the handler's message is. Held outside the try so the catch
+    // blocks can answer a delivery whose handler threw.
+    auto ack = cl->durable ? std::make_shared<ack_sink>(msg) : nullptr;
     try {
-        message m = extract_message(msg);
-        natsMsg_Destroy(msg);
-        msg = nullptr;
-        cl->handler(std::move(m));
+        cl->handler(extract_message(msg, ack));
     } catch (const std::exception& e) {
-        if (msg)
+        if (!ack && msg)
             natsMsg_Destroy(msg);
+        msg = nullptr;
         BOOST_LOG_SEV(lg(), error) << "Unhandled exception in NATS message handler for subject '"
                                    << subject << "': " << e.what();
     } catch (...) {
-        if (msg)
+        if (!ack && msg)
             natsMsg_Destroy(msg);
+        msg = nullptr;
         BOOST_LOG_SEV(lg(), error)
             << "Unknown exception in NATS message handler for subject '" << subject << "'";
     }
+    // The backstop. A handler that answered the delivery itself has nothing
+    // left to do; one that returned without deciding, or threw before
+    // deciding, is asked for a retry rather than left acknowledged.
+    if (ack && !ack->answered())
+        ack->retry();
 }
 
 // Build a natsMsg* with data and optional headers.
@@ -795,17 +871,20 @@ subscription client::js_queue_subscribe(std::string_view subject,
                                         std::string_view durable_name,
                                         std::string_view queue_group,
                                         message_handler handler,
-                                        std::string_view stream_name) {
+                                        std::string_view stream_name,
+                                        int max_deliver) {
 
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
+    cl->durable = true;
 
     const std::string subj_str(make_subject(subject));
     const std::string durable_str(durable_name);
     const std::string queue_str(queue_group);
 
     BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe: " << subj_str
-                              << " (durable: " << durable_str << ", group: " << queue_str << ")";
+                              << " (durable: " << durable_str << ", group: " << queue_str
+                              << ", max-deliver: " << max_deliver << ")";
 
     if (!stream_name.empty())
         reconcile_durable(impl_->js, std::string(stream_name), durable_str, subj_str);
@@ -813,6 +892,8 @@ subscription client::js_queue_subscribe(std::string_view subject,
     jsSubOptions sub_opts;
     jsSubOptions_Init(&sub_opts);
     sub_opts.Config.Durable = durable_str.c_str();
+    sub_opts.Config.AckPolicy = js_AckExplicit;
+    sub_opts.Config.MaxDeliver = max_deliver;
     sub_opts.Queue = queue_str.c_str();
 
     natsSubscription* sub = nullptr;

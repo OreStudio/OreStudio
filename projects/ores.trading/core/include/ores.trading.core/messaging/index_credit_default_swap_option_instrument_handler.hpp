@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -133,6 +137,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -183,6 +191,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -233,6 +245,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -283,6 +299,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -333,6 +353,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -383,6 +407,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -433,6 +461,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -483,6 +515,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            index_credit_default_swap_option_instrument_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx,
                             "trading::index_credit_default_swap_option_instruments:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);

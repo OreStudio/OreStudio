@@ -147,6 +147,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.iam.service";
+    // A step command that always fails must stop being delivered. The bound is
+    // high enough that a transient fault is retried well past any restart, and
+    // low enough that a poison command cannot cycle forever.
+    constexpr auto step_max_deliver = 10;
 
     // === Phase 1: Wiring & Readiness ===
     // Construct and subscribe every handler, including this service's own
@@ -495,7 +499,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         "iam-provisioning-step",
         qg,
         [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); },
-        nats.make_stream_name("iam_steps")));
+        nats.make_stream_name("iam_steps"),
+        step_max_deliver));
     // The account-picture reconcile the attach_photos step runs is also a
     // subject, so an operator can re-run it from a client and a scope that is
     // not a provisioning run can be reconciled.

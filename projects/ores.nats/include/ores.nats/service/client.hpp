@@ -201,12 +201,20 @@ public:
      *        refuses to attach one whose stored filter differs from @p subject,
      *        which is what a subject rename leaves behind. Pass an empty name
      *        to subscribe without that check.
+     * @param max_deliver How many times a message may be delivered before the
+     *        server stops. Every delivery is explicit, so the handler must
+     *        answer it -- with @c ack_guard, or by answering the message's own
+     *        handle -- and the transport asks for a retry when it does not.
+     *        The bound is what keeps a message that always fails from being
+     *        redelivered forever; it is required, and there is no unlimited
+     *        setting.
      */
     [[nodiscard]] subscription js_queue_subscribe(std::string_view subject,
                                                   std::string_view durable_name,
                                                   std::string_view queue_group,
                                                   message_handler handler,
-                                                  std::string_view stream_name = {});
+                                                  std::string_view stream_name,
+                                                  int max_deliver);
 
     /**
      * @brief Create a JetStream admin handle for provisioning streams.

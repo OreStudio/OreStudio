@@ -82,6 +82,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -128,6 +130,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -174,6 +178,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -220,6 +226,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -266,6 +274,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -312,6 +322,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -358,6 +370,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -404,6 +418,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -450,6 +466,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -496,6 +514,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            business_unit_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::business_units:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

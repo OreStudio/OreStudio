@@ -25,6 +25,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <exception>
@@ -112,8 +113,21 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
     }
     const int limit = std::clamp(req->limit, 1, 1000);
 
-    // read_latest uses ctx.tenant_id() for RLS filtering.
-    auto instances = instance_repo_.read_latest(req_ctx);
+    // The read is a database call, which can throw. An exception leaving this
+    // handler reaches the transport, which contains it but sends no reply, so
+    // the caller would wait out its deadline for an answer this handler could
+    // have given.
+    std::vector<ores::workflow::domain::workflow_instance> instances;
+    try {
+        // read_latest uses ctx.tenant_id() for RLS filtering.
+        instances = instance_repo_.read_latest(req_ctx);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+        reply(nats_,
+              msg,
+              list_workflow_instance_summaries_response{.success = false, .message = e.what()});
+        return;
+    }
 
     // Every filter is applied here rather than in the repository, so the read
     // stays one method. The rows in flight bound the work, and a filter that

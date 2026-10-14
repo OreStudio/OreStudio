@@ -100,6 +100,13 @@ jobs:
       # this step uses the interpreter requirements.txt was installed into. No
       # plantuml render runs, so the diagram tool is not needed.
       #
+      # Both of the generator's templates are repeated too. ores_schema.puml is
+      # the index of the group diagrams, not one of them, so it renders from
+      # plantuml_er_index.mustache. Without --index-template the renderer falls
+      # back to the diagram template and compares 18,000 lines of whole schema
+      # against the committed 745-line index, which reads as a stale diagram
+      # that regenerating never clears.
+      #
       # The parser runs --strict, so any warning it reports fails the step: a
       # schema file no root script includes (WIRE_001), a tenant table with no
       # row-level security (RLS_001), and the rest of its rules. A deliberate
@@ -115,6 +122,7 @@ jobs:
           python3 projects/ores.codegen/src/plantuml_er_generate.py \
             --model build/output/codegen/plantuml_er_model.json \
             --template projects/ores.codegen/library/templates/plantuml_er.mustache \
+            --index-template projects/ores.codegen/library/templates/plantuml_er_index.mustache \
             --output projects/ores.sql/modeling/ores_schema.puml \
             --check
       # The drift step proves a committed file matches its model; it cannot see

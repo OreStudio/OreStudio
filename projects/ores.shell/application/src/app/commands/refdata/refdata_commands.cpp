@@ -1,3 +1,13 @@
+#include "ores.shell/app/commands/refdata/account_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/asset_class_commands.hpp"
+#include "ores.shell/app/commands/refdata/asset_measure_commands.hpp"
+#include "ores.shell/app/commands/refdata/benchmark_rate_commands.hpp"
+#include "ores.shell/app/commands/refdata/business_process_commands.hpp"
+#include "ores.shell/app/commands/refdata/cashflow_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/entity_classification_commands.hpp"
+#include "ores.shell/app/commands/refdata/local_jurisdiction_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_relationship_commands.hpp"
+#include "ores.shell/app/commands/refdata/person_role_commands.hpp"
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/average_ois_convention_commands.hpp"
@@ -121,11 +131,14 @@
 #include "ores.shell/app/commands/refdata/producer_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/regulatory_corporate_sector_commands.hpp"
+#include "ores.shell/app/commands/refdata/reporting_regime_commands.hpp"
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/sandbox_commands.hpp"
 #include "ores.shell/app/commands/refdata/sandbox_member_commands.hpp"
 #include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/sub_periods_coupon_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/supervisory_body_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/swaption_volatility_config_commands.hpp"
@@ -148,9 +161,13 @@ namespace ores::shell::app::commands {
 
 void refdata_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session) {
+    account_type_commands::register_commands(root_menu, session);
     asset_class_code_commands::register_commands(root_menu, session);
+    asset_class_commands::register_commands(root_menu, session);
+    asset_measure_commands::register_commands(root_menu, session);
     average_ois_convention_commands::register_commands(root_menu, session);
     base_correlation_config_commands::register_commands(root_menu, session);
+    benchmark_rate_commands::register_commands(root_menu, session);
     bma_basis_swap_convention_commands::register_commands(root_menu, session);
     bond_future_volatility_config_commands::register_commands(root_menu, session);
     bond_yield_convention_commands::register_commands(root_menu, session);
@@ -160,6 +177,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     book_status_commands::register_commands(root_menu, session);
     business_centre_commands::register_commands(root_menu, session);
     business_day_convention_type_commands::register_commands(root_menu, session);
+    business_process_commands::register_commands(root_menu, session);
     business_unit_commands::register_commands(root_menu, session);
     business_unit_type_commands::register_commands(root_menu, session);
     calendar_commands::register_commands(root_menu, session);
@@ -170,6 +188,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     calendar_rule_commands::register_commands(root_menu, session);
     calendar_type_commands::register_commands(root_menu, session);
     cap_floor_volatility_config_commands::register_commands(root_menu, session);
+    cashflow_type_commands::register_commands(root_menu, session);
     cds_convention_commands::register_commands(root_menu, session);
     cds_volatility_config_commands::register_commands(root_menu, session);
     cds_volatility_term_commands::register_commands(root_menu, session);
@@ -228,6 +247,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     deposit_convention_commands::register_commands(root_menu, session);
     derivation_kind_commands::register_commands(root_menu, session);
     diary_entry_type_commands::register_commands(root_menu, session);
+    entity_classification_commands::register_commands(root_menu, session);
     equity_curve_config_commands::register_commands(root_menu, session);
     equity_volatility_config_commands::register_commands(root_menu, session);
     floating_index_type_commands::register_commands(root_menu, session);
@@ -247,6 +267,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     ir_curve_bootstrap_pillar_commands::register_commands(root_menu, session);
     ledger_feed_type_commands::register_commands(root_menu, session);
     leg_type_commands::register_commands(root_menu, session);
+    local_jurisdiction_commands::register_commands(root_menu, session);
     monetary_nature_commands::register_commands(root_menu, session);
     netting_agreement_commands::register_commands(root_menu, session);
     netting_set_commands::register_commands(root_menu, session);
@@ -261,20 +282,25 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     party_currency_commands::register_commands(root_menu, session);
     party_id_scheme_commands::register_commands(root_menu, session);
     party_identifier_commands::register_commands(root_menu, session);
+    party_relationship_commands::register_commands(root_menu, session);
     party_role_commands::register_commands(root_menu, session);
     party_status_commands::register_commands(root_menu, session);
     party_type_commands::register_commands(root_menu, session);
     payment_frequency_commands::register_commands(root_menu, session);
+    person_role_commands::register_commands(root_menu, session);
     portfolio_commands::register_commands(root_menu, session);
     portfolio_right_commands::register_commands(root_menu, session);
     producer_kind_commands::register_commands(root_menu, session);
     purpose_type_commands::register_commands(root_menu, session);
     regulatory_book_type_commands::register_commands(root_menu, session);
+    regulatory_corporate_sector_commands::register_commands(root_menu, session);
+    reporting_regime_commands::register_commands(root_menu, session);
     rounding_type_commands::register_commands(root_menu, session);
     sandbox_commands::register_commands(root_menu, session);
     sandbox_member_commands::register_commands(root_menu, session);
     series_subclass_code_commands::register_commands(root_menu, session);
     sub_periods_coupon_type_commands::register_commands(root_menu, session);
+    supervisory_body_commands::register_commands(root_menu, session);
     swap_convention_commands::register_commands(root_menu, session);
     swap_index_convention_commands::register_commands(root_menu, session);
     swaption_volatility_config_commands::register_commands(root_menu, session);

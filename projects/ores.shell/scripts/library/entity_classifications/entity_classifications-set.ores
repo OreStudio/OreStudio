@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/entity_classifications/entity_classification.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+entity_classifications set __none__ __none__ __none__ __none__ system.new_record generated_script

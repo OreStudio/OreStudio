@@ -1,0 +1,6 @@
+# =delete-many=
+#
+# GENERATED from doc/recipes/shell/supervisory_bodies/supervisory_body.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+supervisory_bodies delete-many __none__ __none__ system.new_record generated_script

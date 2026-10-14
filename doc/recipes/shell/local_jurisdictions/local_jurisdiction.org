@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 516332BD-59DE-5F77-82B5-7C930913505C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the local_jurisdictions commands from the shell?
+#+description: Every command the local_jurisdictions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:local_jurisdictions:
+
+This file documents the local_jurisdictions resource at the shell, one section per command. Every command is a subcommand of =local_jurisdictions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 90EA8184-D9E2-5149-ACC9-96E3DFEE2E54
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.list=.
+
+#+name: local_jurisdictions-list
+#+begin_src ores-shell :tangle local_jurisdictions-list.ores :exports none
+local_jurisdictions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7176357F-2D0A-539E-A96A-445B1FB44BED
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.get=.
+
+#+name: local_jurisdictions-get
+#+begin_src ores-shell :tangle local_jurisdictions-get.ores :exports none
+local_jurisdictions get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9E6DB54B-8616-5032-98BC-9FCEEF65BFFE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.get_many=.
+
+#+name: local_jurisdictions-get-many
+#+begin_src ores-shell :tangle local_jurisdictions-get-many.ores :exports none
+local_jurisdictions get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C43F08ED-3F18-58FC-8EFC-C1CCC5D1B939
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.put=.
+
+#+name: local_jurisdictions-add
+#+begin_src ores-shell :tangle local_jurisdictions-add.ores :exports none
+local_jurisdictions add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F8F1214C-0D6C-5E50-82E9-A763FC758122
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.put=.
+
+#+name: local_jurisdictions-set
+#+begin_src ores-shell :tangle local_jurisdictions-set.ores :exports none
+local_jurisdictions set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: AEBDEAF9-19C4-599D-AF92-615EDAD4EDAB
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.put_many=.
+
+#+name: local_jurisdictions-put-many
+#+begin_src ores-shell :tangle local_jurisdictions-put-many.ores :exports none
+local_jurisdictions put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4CA00033-78C0-5895-B5EE-FE9E18272984
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.delete=.
+
+#+name: local_jurisdictions-delete
+#+begin_src ores-shell :tangle local_jurisdictions-delete.ores :exports none
+local_jurisdictions delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 38246F4E-D821-5D3C-8D4A-946B16D9F145
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions.delete_many=.
+
+#+name: local_jurisdictions-delete-many
+#+begin_src ores-shell :tangle local_jurisdictions-delete-many.ores :exports none
+local_jurisdictions delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 14A62A32-E1F4-54F8-B08E-33826690FC46
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions_versions.list=.
+
+#+name: local_jurisdictions-versions
+#+begin_src ores-shell :tangle local_jurisdictions-versions.ores :exports none
+local_jurisdictions versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7797B0DE-84A4-52A6-A293-ECE4751D74A8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+local_jurisdictions version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.local_jurisdictions_versions.get=.
+
+#+name: local_jurisdictions-version
+#+begin_src ores-shell :tangle local_jurisdictions-version.ores :exports none
+local_jurisdictions version __none__ __none__ --version 1
+#+end_src
+

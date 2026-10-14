@@ -25,32 +25,65 @@
 #ifndef ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/asset_class.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-/**
- * @brief An asset class entry from the refdata catalogue.
- *
- * Carries the code, human-readable description and coding scheme so
- * callers can build display labels and filter values without
- * hard-coding them.
- */
-struct asset_class_info {
+struct asset_class_key {
     std::string code;
-    std::string description;
     std::string coding_scheme_code;
 };
 
-/**
- * @brief Request published asset class entries from the refdata service.
- *
- * An optional coding_scheme_code filter narrows the result to a single
- * coding scheme. If empty, all schemes are returned.
- */
-struct get_asset_classes_request {
-    using response_type = struct get_asset_classes_response;
+struct asset_class_write {
+    std::string code;
+    std::string coding_scheme_code;
+    std::string source;
+    std::string description;
+};
+
+struct asset_class_change {
+    asset_class_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct asset_class_removal {
+    asset_class_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct asset_class_lookup {
+    asset_class_key key;
+    std::optional<ores::refdata::domain::asset_class> asset_class;
+};
+
+struct asset_class_event {
+    boost::uuids::uuid event_id;
+    asset_class_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct asset_class_version_key {
+    asset_class_key asset_class;
+    std::uint32_t version;
+};
+
+struct asset_class_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_asset_classes_request {
+    using response_type = struct list_asset_classes_response;
     static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.list";
     /**
      * @brief Whether the caller must have established a session first.
@@ -59,17 +92,182 @@ struct get_asset_classes_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::string coding_scheme_code;
-    int offset = 0;
-    int limit = 200;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<std::string> as_of;
 };
 
-struct get_asset_classes_response {
-    std::vector<asset_class_info> asset_classes;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+struct list_asset_classes_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::asset_class> classes;
+    std::uint64_t total;
 };
+
+struct get_asset_class_request {
+    using response_type = struct get_asset_class_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    asset_class_key key;
+};
+
+struct get_asset_class_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::asset_class> asset_class;
+};
+
+struct get_many_asset_classes_request {
+    using response_type = struct get_many_asset_classes_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<asset_class_key> keys;
+};
+
+struct get_many_asset_classes_response {
+    ores::utility::domain::result result;
+    std::vector<asset_class_lookup> entries;
+};
+
+struct put_asset_class_request {
+    using response_type = struct put_asset_class_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    asset_class_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_asset_class_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::asset_class> asset_class;
+};
+
+struct put_many_asset_classes_request {
+    using response_type = struct put_many_asset_classes_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<asset_class_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_asset_classes_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::asset_class> classes;
+};
+
+struct delete_asset_class_request {
+    using response_type = struct delete_asset_class_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    asset_class_removal removal;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_asset_class_response {
+    ores::utility::domain::result result;
+};
+
+struct delete_many_asset_classes_request {
+    using response_type = struct delete_many_asset_classes_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<asset_class_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_asset_classes_response {
+    ores::utility::domain::result result;
+};
+
+struct list_asset_class_versions_request {
+    using response_type = struct list_asset_class_versions_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    asset_class_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<asset_class_versions_filter> filter;
+};
+
+struct list_asset_class_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::asset_class> versions;
+    std::uint64_t total;
+};
+
+struct get_asset_class_version_request {
+    using response_type = struct get_asset_class_version_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    asset_class_version_key key;
+};
+
+struct get_asset_class_version_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::asset_class> version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace asset_class_event_subjects {
+inline constexpr std::string_view created = "refdata.v1.asset_classes_events.created";
+inline constexpr std::string_view updated = "refdata.v1.asset_classes_events.updated";
+inline constexpr std::string_view deleted = "refdata.v1.asset_classes_events.deleted";
+}
 
 }
 

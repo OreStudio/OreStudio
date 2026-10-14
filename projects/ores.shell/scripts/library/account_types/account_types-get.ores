@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/account_types/account_type.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-account_types get __none__
+account_types get __none__ __none__

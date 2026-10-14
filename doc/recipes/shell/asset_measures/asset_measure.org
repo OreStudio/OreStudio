@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 72078A7C-1876-50DB-90D6-E6184AC25E87
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the asset_measures commands from the shell?
+#+description: Every command the asset_measures submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:asset_measures:
+
+This file documents the asset_measures resource at the shell, one section per command. Every command is a subcommand of =asset_measures=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7273757D-896D-58CD-B0BC-2709B647521A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.list=.
+
+#+name: asset_measures-list
+#+begin_src ores-shell :tangle asset_measures-list.ores :exports none
+asset_measures list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: DCF44F84-B949-58DA-A2B3-70A092C50347
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.get=.
+
+#+name: asset_measures-get
+#+begin_src ores-shell :tangle asset_measures-get.ores :exports none
+asset_measures get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 29F1BDC5-DBEA-596E-81E2-C3F2399CD9F8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.get_many=.
+
+#+name: asset_measures-get-many
+#+begin_src ores-shell :tangle asset_measures-get-many.ores :exports none
+asset_measures get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8A195C5B-1E41-53DB-96F5-D5868FDD2877
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.put=.
+
+#+name: asset_measures-add
+#+begin_src ores-shell :tangle asset_measures-add.ores :exports none
+asset_measures add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 164FD785-27AC-5206-B8AF-2A98BAA957E0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.put=.
+
+#+name: asset_measures-set
+#+begin_src ores-shell :tangle asset_measures-set.ores :exports none
+asset_measures set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2F38991C-C5C8-5E8F-A618-3EE0EDFD4D2B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.put_many=.
+
+#+name: asset_measures-put-many
+#+begin_src ores-shell :tangle asset_measures-put-many.ores :exports none
+asset_measures put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1D54F16F-312E-5C74-BE6A-9A1A0CE517B6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.delete=.
+
+#+name: asset_measures-delete
+#+begin_src ores-shell :tangle asset_measures-delete.ores :exports none
+asset_measures delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 592D602D-1543-5955-9E12-B9E5E224E988
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures.delete_many=.
+
+#+name: asset_measures-delete-many
+#+begin_src ores-shell :tangle asset_measures-delete-many.ores :exports none
+asset_measures delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: CA8A320A-7A0C-59B9-BBF3-A57D04EA59C4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures_versions.list=.
+
+#+name: asset_measures-versions
+#+begin_src ores-shell :tangle asset_measures-versions.ores :exports none
+asset_measures versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 720C616B-B8F7-592F-8667-8531C0B99EEF
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_measures version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.asset_measures_versions.get=.
+
+#+name: asset_measures-version
+#+begin_src ores-shell :tangle asset_measures-version.ores :exports none
+asset_measures version __none__ __none__ --version 1
+#+end_src
+

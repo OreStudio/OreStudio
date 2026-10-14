@@ -150,7 +150,7 @@ tangled into the runnable script library
 
 * Account Types
 
-- [[id:60803D77-F933-54BA-9E26-F559A3863A91][How do I run the account_types commands from the shell?]]
+- [[id:F0750C59-6970-5B39-B128-DF15FD358585][How do I run the account_types commands from the shell?]]
 
 * Authorization
 
@@ -1585,3 +1585,51 @@ tangled into the runnable script library
 * Party Roles
 
 - [[id:43C79CCF-3B45-5B98-AA26-830F163D5BFE][How do I run the party_roles commands from the shell?]]
+
+* Asset Classes
+
+- [[id:5916767B-131B-53C7-9DA5-DBDC6BE9BAF1][How do I run the asset_classes commands from the shell?]]
+
+* Asset Measures
+
+- [[id:72078A7C-1876-50DB-90D6-E6184AC25E87][How do I run the asset_measures commands from the shell?]]
+
+* Benchmark Rates
+
+- [[id:43D9258A-ABB7-57DA-9D8A-643CCB5553F7][How do I run the benchmark_rates commands from the shell?]]
+
+* Business Processes
+
+- [[id:55427808-14D6-5E6A-B9FE-579B706B4CA9][How do I run the business_processes commands from the shell?]]
+
+* Cashflow Types
+
+- [[id:AF07A2B6-FC54-5AB6-8C8D-6EABB4A638F8][How do I run the cashflow_types commands from the shell?]]
+
+* Entity Classifications
+
+- [[id:DA297D57-B8F4-5258-AC83-D535261F0969][How do I run the entity_classifications commands from the shell?]]
+
+* Local Jurisdictions
+
+- [[id:516332BD-59DE-5F77-82B5-7C930913505C][How do I run the local_jurisdictions commands from the shell?]]
+
+* Party Relationships
+
+- [[id:E962F696-339C-5AEB-80F7-62D3C2F28BB2][How do I run the party_relationships commands from the shell?]]
+
+* Person Roles
+
+- [[id:540A8A39-F6BE-5D43-B81C-6CA7A173706A][How do I run the person_roles commands from the shell?]]
+
+* Regulatory Corporate Sectors
+
+- [[id:D4E479F5-911F-572E-BAD5-B0C8F3DBB8A3][How do I run the regulatory_corporate_sectors commands from the shell?]]
+
+* Reporting Regimes
+
+- [[id:922A5B48-21FA-54F9-8924-F29F867B9832][How do I run the reporting_regimes commands from the shell?]]
+
+* Supervisory Bodies
+
+- [[id:B779FBB8-B50F-5E44-84EC-34ED49897D65][How do I run the supervisory_bodies commands from the shell?]]

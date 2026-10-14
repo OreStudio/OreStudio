@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: AF07A2B6-FC54-5AB6-8C8D-6EABB4A638F8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cashflow_types commands from the shell?
+#+description: Every command the cashflow_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cashflow_types:
+
+This file documents the cashflow_types resource at the shell, one section per command. Every command is a subcommand of =cashflow_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2827A71D-F4EB-545A-BBBC-E38A9D1399E3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.list=.
+
+#+name: cashflow_types-list
+#+begin_src ores-shell :tangle cashflow_types-list.ores :exports none
+cashflow_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 224DCEB0-B37B-5A4D-95F2-0F615E32F5B3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.get=.
+
+#+name: cashflow_types-get
+#+begin_src ores-shell :tangle cashflow_types-get.ores :exports none
+cashflow_types get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8C957329-AC0F-5E1B-A1B1-4F8C2A35963F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.get_many=.
+
+#+name: cashflow_types-get-many
+#+begin_src ores-shell :tangle cashflow_types-get-many.ores :exports none
+cashflow_types get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4A0A44ED-9BCF-5ED1-8CCB-466B764FE3F1
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.put=.
+
+#+name: cashflow_types-add
+#+begin_src ores-shell :tangle cashflow_types-add.ores :exports none
+cashflow_types add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 86104AF1-92D0-530A-8932-CE9129F31F8B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.put=.
+
+#+name: cashflow_types-set
+#+begin_src ores-shell :tangle cashflow_types-set.ores :exports none
+cashflow_types set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: DCF1C209-FFBE-5300-BBD6-8632102C1ED8
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.put_many=.
+
+#+name: cashflow_types-put-many
+#+begin_src ores-shell :tangle cashflow_types-put-many.ores :exports none
+cashflow_types put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 76561802-8EE1-5C0D-94A4-590F6324A17C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.delete=.
+
+#+name: cashflow_types-delete
+#+begin_src ores-shell :tangle cashflow_types-delete.ores :exports none
+cashflow_types delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 64107E08-8477-5958-BD48-20A0259D136E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types.delete_many=.
+
+#+name: cashflow_types-delete-many
+#+begin_src ores-shell :tangle cashflow_types-delete-many.ores :exports none
+cashflow_types delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D9A121EB-BB27-5366-923A-D6BAABF94E03
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types_versions.list=.
+
+#+name: cashflow_types-versions
+#+begin_src ores-shell :tangle cashflow_types-versions.ores :exports none
+cashflow_types versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B11B2FF9-5BD1-5D5B-B2B2-45635C7FCC9A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cashflow_types version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cashflow_types_versions.get=.
+
+#+name: cashflow_types-version
+#+begin_src ores-shell :tangle cashflow_types-version.ores :exports none
+cashflow_types version __none__ __none__ --version 1
+#+end_src
+

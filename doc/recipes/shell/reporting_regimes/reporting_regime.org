@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 922A5B48-21FA-54F9-8924-F29F867B9832
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the reporting_regimes commands from the shell?
+#+description: Every command the reporting_regimes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:reporting_regimes:
+
+This file documents the reporting_regimes resource at the shell, one section per command. Every command is a subcommand of =reporting_regimes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3266A41B-217F-5ADC-AD7C-314EF165B13C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.list=.
+
+#+name: reporting_regimes-list
+#+begin_src ores-shell :tangle reporting_regimes-list.ores :exports none
+reporting_regimes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 18807F27-D00E-536A-A7C3-60681828636A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.get=.
+
+#+name: reporting_regimes-get
+#+begin_src ores-shell :tangle reporting_regimes-get.ores :exports none
+reporting_regimes get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E3298BC9-8453-5A6E-B56C-25C7E51E3040
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.get_many=.
+
+#+name: reporting_regimes-get-many
+#+begin_src ores-shell :tangle reporting_regimes-get-many.ores :exports none
+reporting_regimes get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 19A237CF-29BB-58C5-9A80-2E5476E4242C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.put=.
+
+#+name: reporting_regimes-add
+#+begin_src ores-shell :tangle reporting_regimes-add.ores :exports none
+reporting_regimes add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: C5B63AD0-18D4-57D7-974B-825F937471B9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.put=.
+
+#+name: reporting_regimes-set
+#+begin_src ores-shell :tangle reporting_regimes-set.ores :exports none
+reporting_regimes set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6D2F9C20-9383-52BC-9D68-399A925EEFE4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.put_many=.
+
+#+name: reporting_regimes-put-many
+#+begin_src ores-shell :tangle reporting_regimes-put-many.ores :exports none
+reporting_regimes put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0855EEE0-8590-5CDE-A021-C08CAFF481EB
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.delete=.
+
+#+name: reporting_regimes-delete
+#+begin_src ores-shell :tangle reporting_regimes-delete.ores :exports none
+reporting_regimes delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 4A31D9BB-4803-5461-8D17-46B117651CBB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes.delete_many=.
+
+#+name: reporting_regimes-delete-many
+#+begin_src ores-shell :tangle reporting_regimes-delete-many.ores :exports none
+reporting_regimes delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C15D2FD9-7FEF-51EA-8F33-7BBBD1F27A39
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes_versions.list=.
+
+#+name: reporting_regimes-versions
+#+begin_src ores-shell :tangle reporting_regimes-versions.ores :exports none
+reporting_regimes versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C5E0D917-60A0-5720-97E9-3C19E7B3412B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+reporting_regimes version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.reporting_regimes_versions.get=.
+
+#+name: reporting_regimes-version
+#+begin_src ores-shell :tangle reporting_regimes-version.ores :exports none
+reporting_regimes version __none__ __none__ --version 1
+#+end_src
+

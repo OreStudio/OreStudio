@@ -19,12 +19,12 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_artefact_create.mustache
+ * Template: sql_schema_domain_entity_artefact_create.mustache
  * To modify, update the template and regenerate.
  */
 
 -- =============================================================================
--- Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table
+-- Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 -- Nature of Counterparty 1 -- and 191 -- Nature of Counterparty 2. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_regulatory_corporate_sectors_artefact_tbl" (
@@ -33,8 +33,8 @@ create table if not exists "ores_dq_regulatory_corporate_sectors_artefact_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
-    "description" text null
-    ,"coding_scheme_code" text not null
+    "description" text null,
+    "coding_scheme_code" text not null
 );
 
 create index if not exists dq_regulatory_corporate_sectors_artefact_dataset_idx

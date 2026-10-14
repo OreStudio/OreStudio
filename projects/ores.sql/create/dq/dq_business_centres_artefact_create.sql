@@ -19,12 +19,12 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_artefact_create.mustache
+ * Template: sql_schema_domain_entity_artefact_create.mustache
  * To modify, update the template and regenerate.
  */
 
 -- =============================================================================
--- The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets. - Artefact Table
+-- Business centres identify financial trading locations used for holiday calendar determination (e.g. "USNY" for New York, "GBLO" for London), using FpML-style codes. Each code is unique per tenant regardless of coding scheme (e.g. FpML vs ISDA) -- matching party_id_scheme's code-only primary key -- and optionally linked to a country for flag-icon display in the UI. Referenced by business_unit as a soft FK. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_business_centres_artefact_tbl" (
@@ -33,9 +33,9 @@ create table if not exists "ores_dq_business_centres_artefact_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
-    "description" text null
-    ,"image_id" uuid
-    ,"coding_scheme_code" text not null
+    "description" text null,
+    "image_id" uuid null,
+    "coding_scheme_code" text not null
 );
 
 create index if not exists dq_business_centres_artefact_dataset_idx

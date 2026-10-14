@@ -20,22 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story, wire it into Sprint 28, and raise one pull request
+carrying both the work and this record.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FDDA1BCF-5CC4-4DE4-84AD-6B33E159E80C][Unblock the unity build by hoisting the small-kappa threshold]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
 
--
+- The story, the scaffold task, and the work task exist and are wired into Sprint 28.
+- The scaffold rides the work pull request.
 
 * Plan
 
@@ -83,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its scaffold task, and its work task exist and are wired into
+Sprint 28. The scaffold rides the work pull request.

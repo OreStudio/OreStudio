@@ -8,7 +8,7 @@
 #+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
-#+pr: 3313
+#+pr: 3315
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3315][#3315]] | [reporting] Admit a report run through the trigger that records it |
 | [[https://github.com/OreStudio/OreStudio/pull/3313][#3313]] | [agile] Open the story for the report trigger model |
 | [[https://github.com/OreStudio/OreStudio/pull/3309][#3309]] | [doc] Capture the names found that claim to be generated |
 | [[https://github.com/OreStudio/OreStudio/pull/3308][#3308]] | [doc] Standardise every name an entity derives |

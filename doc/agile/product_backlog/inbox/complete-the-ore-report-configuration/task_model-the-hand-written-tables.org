@@ -2,7 +2,7 @@
 :ID: F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1
 :END:
 #+title: Task: Model the hand-written tables that have a codegen shape
-#+description: Twenty-five tables have no model: junctions such as iam account roles and role permissions and the reporting risk report config books and portfolios, time series such as iam auth events and session samples, DQ publication logs and seven DQ artefact staging tables. Model the ones a codegen shape covers and record why the rest, such as mq and telemetry, stay hand-written.
+#+description: Twenty-three tables have no model: junctions such as iam account roles and role permissions and the reporting risk report config books and portfolios, time series such as iam auth events and session samples, DQ publication logs and one DQ artefact staging table. Model the ones a codegen shape covers and record why the rest, such as mq and telemetry, stay hand-written.
 #+type: task
 #+level: s1
 #+filetags: :complete-the-ore-report-configuration:sprint_26:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-14
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -55,9 +55,8 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| Whatever creates a table without a model, in =projects/ores.sql/create= | 23 | =for f in $(grep -rL 'Template: ' projects/ores.sql/create --include='*_create.sql'); do grep -q 'create table if not exists' "$f" && echo "$f"; done | wc -l= | 9c0b211616 |
+| The same census, before the two DQ clean-up tasks | 25 | as above, at the base of the branch | 5e185399d4 |
 
 * Notes
 
@@ -70,6 +69,22 @@ the telemetry samples; DQ publication logs; =compute_batch_dependencies=,
 =scheduler_job_instances=, =workspace_trade_scope= and others) and 7 DQ artefact
 staging tables. =mq= and =telemetry= are infrastructure and likely stay
 hand-written; =mq_messages= holds the only hard =REFERENCES= in the tree.
+
+** What the two DQ clean-up tasks took off the census
+
+The census is 23 now, not 25. The DQ artefact sharing of it was 7 and is 1.
+
+- [[id:A31257E3-7495-46CD-B36D-10AA6D55CB09][Move the lookup artefact tables onto domain models]] (sprint 28) modelled
+  fifteen refdata coded-scheme tables and their DQ artefact tables, which were
+  the largest single group.
+- [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]] (sprint 28) modelled
+  =dq_lei_bic_artefact_create.sql= and moved the report configuration binding
+  onto =ores.reporting.report_configuration=, so
+  =dq_report_configurations_artefact_create.sql= is generated too.
+
+The one DQ artefact staging table left is =dq_ip2country_artefact_create.sql=,
+which waits on its geo store by
+[[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][Model the geo ip2country store]].
 
 * Test Scenarios
 

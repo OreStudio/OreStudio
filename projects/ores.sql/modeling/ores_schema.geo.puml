@@ -42,15 +42,24 @@ end note
 '
 package "geo" #FFF9C4 {
     entity ores_geo_ip2country_tbl  #F7E5FF {
+        * ip_range : int8range <<PK>>
         --
-        * ip_range : int8range
         * tenant_id : uuid <<FK>>
         * country_code : text <<FK>>
     }
 
     note right of ores_geo_ip2country_tbl
-    IP range to country code mapping.
-    Uses GiST index for fast lookups.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IP to Country Table
+    An IPv4 address range and the country code it resolves to, one row per range
+    per tenant. The ranges are found by containment -- ip_range @> address -- so
+    the range is the key and the index over it is a GiST index; a btree cannot
+    answer a containment test.
+    The store holds no history. A publish truncates it and loads the ranges the
+    dataset carries, because ip2country reissues its whole table rather than
+    amending rows.
     end note
 
 }

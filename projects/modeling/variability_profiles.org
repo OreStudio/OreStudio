@@ -38,6 +38,7 @@ abstract.
 | [[id:FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE][Trading instrument]] | =equity_position_instrument= | Flat ORE instrument sub-type: identity + audit field groups, tenant+workspace scope, =party_id= from session, no UI surface. |
 | [[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Table-less record]] | =diff_span= | Never stored, only carried: a payload type with no table, no key, no repository, no service and no subject. The C++ domain class and its TypeScript twin, and nothing else. |
 | [[id:0AB24790-8CF2-466A-9B49-257A1A49C75B][Read-only current-state]] | =login_info= | One row per key and no history, written by the system and read over the wire: =list=, =get= and =get_many=, with no write verb and no version read. |
+| [[id:5B0A3DD1-A705-439B-9FA8-E5FEB9C1B267][SQL-only store]] | =ip2country= | Enablement-only: the table is generated and the client surface is not -- no C++, no TypeScript and no shell recipe. For a store whose only reader is a SQL function. Carries no feature Assignments -- bind it *alongside* a shape profile (=:profile: read-only-current-state, sql-only-store=). |
 
 * See also
 

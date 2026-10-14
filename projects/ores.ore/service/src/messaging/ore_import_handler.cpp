@@ -132,8 +132,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
                          ores::nats::default_wire_codec().encode(swm),
                          ores::nats::service::forwarded_caller_headers(msg));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "ore.import dispatch failed | corr=" << correlation_id
-                                   << " error=" << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "ore.import dispatch failed | corr=" << correlation_id << " error=" << e.what();
         reply(nats_,
               msg,
               ore_import_response{.success = false,

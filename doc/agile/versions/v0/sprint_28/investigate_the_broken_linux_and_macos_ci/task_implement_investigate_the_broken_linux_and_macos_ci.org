@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :investigate_the_broken_linux_and_macos_ci:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-investigate-the-broken-linux-and-macos-ci
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9DEE02A-64D8-438B-B330-67ACB1D5FFEA][Investigate the broken Linux and macOS CI]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Continuous Linux and Continuous macOS pass on main again. This story records the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D9DEE02A-64D8-438B-B330-67ACB1D5FFEA][Investigate the broken Linux and macOS CI]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Read the CI run history and name the root cause of each failing job. |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -41,9 +41,10 @@ Continuous Linux and Continuous macOS pass on main again. This story records the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the run history with =gh=. Capture the failing step and its error
+line for every red job. Then compare the sccache statistics of a job
+that passed against the jobs that failed. The comparison separates a
+cold rebuild from a compiler or test defect.
 
 * Measurements
 
@@ -57,9 +58,63 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| sccache hit rate, linux-gcc-release-ninja (passed, 4h05m53s) | 17.96 % (1645 hits of 9515 requests) | =gh run view --job 115624054502 --log= | 3446f45cae |
+| sccache hit rate, linux-clang-release-ninja (6h limit) | 3.21 % (243 hits of 7932 requests) | =gh run view --job 115624055025 --log= | 3446f45cae |
+| sccache hit rate, macos-clang-debug-ninja (disk full) | 0.00 % (0 hits of 5539 requests) | =gh run view --job 115471769287 --log= | 5418a8db |
 
 * Notes
+
+** The runs
+
+Run 38493477495 (Continuous Linux, 2026-10-14, commit =3446f45cae=):
+
+- =linux-gcc-release-ninja= passed in 4h05m53s.
+- =linux-clang-debug-ninja= (job 115624054844) and
+  =linux-clang-release-ninja= (job 115624055025) stopped at the 6h0m0s
+  job limit.
+- =linux-gcc-debug-ninja= (job 115624053929) received a runner shutdown
+  signal at 2h31m38s and exited 143. Its log holds no compile or test
+  error. This is infrastructure, not a defect.
+
+Run 38448024207 (Continuous MacOS, 2026-10-13, commit =5418a8db=):
+
+- =macos-clang-debug-ninja= (job 115471769287) failed at 5h33m46s.
+  =ranlib= could not write =publish/lib/libores.shell.refdata.a=:
+  =can't write to output file (No space left on device)=.
+- =macos-clang-release-ninja= (job 115471769503) stopped at the 6h0m0s
+  job limit. The annotation reads
+  =The job has exceeded the maximum execution time of 6h0m0s=.
+
+** The jobs build cold
+
+The measured sccache hit rate is 17.96 % on the one job that passed,
+3.21 % on the Linux clang job, and 0.00 % on the macOS debug job. A
+cold build executes 5539 to 9515 compile requests. That work, not a
+compiler or test defect, is what fills the six hours.
+
+** The workflow facts behind the cold builds
+
+- =.github/workflows/continuous-linux.yml= has a =Free disk space= step
+  (lines 103-142). =.github/workflows/continuous-macos.yml= has no such
+  step.
+- The macOS workflow deliberately does not persist sccache across runs,
+  because GitHub's =actions/cache= is capped at 10 GB per repository
+  and shared by every variant (comment at
+  =.github/workflows/continuous-macos.yml= lines 125-132). The macOS
+  cache is empty at the start of every run.
+- The Linux clang jobs install LLVM 19 before the build. That adds wall
+  clock and does not raise the hit rate.
+- The Linux debug jobs add =code_coverage=1=, which makes the build
+  larger. The macOS debug job does not.
+- The macOS workflow sets =CMAKE_BUILD_PARALLEL_LEVEL=2=.
+
+** An existing capture already diagnoses the cache
+
+[[id:86E3CEA4-B44D-498A-90EB-88CBCE440C70][sccache's cache is on
+GitHub's built-in actions/cache, capped at a fixed 10 GB]] names the
+shared quota and the cross-variant eviction, and recommends an external
+sccache backend. This task shows that the same cause now pushes the
+jobs past the runner time limit.
 
 * Test Scenarios
 
@@ -82,6 +137,34 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local check gate failed on =component-drift=, which reported the dirty =vcpkg= submodule (19780d9cdf, main expects e456309491) as a changed component. | vcpkg | Fixed | Ran =git submodule update --init vcpkg=. The change is docs-only, so the re-run runs six checks and passes 6/6. |
+| 2 | Misspell check: the changed files are clean. | story.org, task_implement_*.org | Accepted | =misspell-fixer <story dir>= reports "nothing to replace", exit 0. The repo-wide exit 1 is pre-existing. |
+| 3 | No generated-code drift. Regeneration reproduces every generated file; the two changed files are prose. | - | Accepted | Verified by the =component-drift= re-run and by =git status= after the full check. |
 
 * Result
+
+No compiler and no test defect caused these failures. The jobs build
+almost entirely from cold, and a cold build no longer fits in the
+runner's six-hour budget or on the macOS runner's disk.
+
+| Job | Root cause | Change that clears it |
+|-----+------------+-----------------------|
+| =linux-clang-debug-ninja=, =linux-clang-release-ninja= | Cold rebuild. The sccache hit rate is 3.21 %, so the job compiles 7932 requests and reaches the 6h0m0s limit. | Move sccache to an external backend, so eviction by the shared 10 GB quota stops discarding the clang cache. |
+| =linux-gcc-debug-ninja= | The runner sent a shutdown signal and the job exited 143. The log holds no build or test error. | None. This is infrastructure. Re-run the job. |
+| =linux-gcc-release-ninja= | Not a cause of failure. It passed in 4h05m53s at a 17.96 % hit rate. | Keep it. It is the closest job to the limit that still passes. |
+| =macos-clang-debug-ninja= | Disk exhaustion. A 0.00 % hit rate forces all 5539 requests to compile, and the runner fills before the link of =libores.shell.refdata.a=. | Add the Linux =Free disk space= step to the macOS workflow. Persist or externalise the macOS sccache. |
+| =macos-clang-release-ninja= | The 6h0m0s job limit, from the same cold build. | The same changes as the debug job. |
+
+Recommended order:
+
+1.  Add the =Free disk space= step to
+    =.github/workflows/continuous-macos.yml=. This is cheap and clears
+    the disk failure on its own.
+2.  Move sccache to an external backend, per capture
+    [[id:86E3CEA4-B44D-498A-90EB-88CBCE440C70][86E3CEA4]]. This is the
+    root fix, because it keeps the caches warm on every platform.
+3.  Revisit the macOS decision not to persist sccache, now that a cold
+    macOS build exceeds the job limit.
+
+The fix itself is out of scope for this story. It belongs in its own
+story, with the external cache backend as its first candidate.

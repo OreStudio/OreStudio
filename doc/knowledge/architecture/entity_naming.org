@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 471815CD-A377-4101-A4F8-E6962CD8469D
+:END:
+#+title: Entity naming
+#+description: The naming patterns every entity follows, taken from what the codebase actually does, and the conventions that are still undecided.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:entity:naming:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+* Summary
+
+An entity has one name, and the layers spell it three ways: the C++ type is
+the singular in snake case, the table and the repository are the plural, and
+every table ends in =_tbl=. A suffix then says what a record is: =_event= for
+a fact about an instant, and =_kind= or =_type= for a lookup.
+
+This page states the patterns the code already follows. It is a census, not a
+policy: where the code does two things, it says so rather than choosing. The
+overall naming policy is deferred, so keep new names inside these patterns
+until it is settled.
+
+* Detail
+
+** The table
+
+A table is =ores_<component>_<plural>_tbl=.
+
+#+begin_example
+ores_reporting_report_definitions_tbl
+ores_iam_run_grants_tbl
+ores_dq_datasets_tbl
+#+end_example
+
+The component segment names the component that owns the table. It repeats the
+subject when the entity's own name already carries it, as in
+=ores_reporting_report_definitions_tbl=.
+
+=_tbl= is on every table and says nothing about the shape. A bi-temporal table
+and a current-state table both take it, so the suffix is not a signal for
+whether the table has a validity window.
+
+** The entity and its repository
+
+The C++ type is the singular in snake case. The repository, the collection and
+the wire entity take the plural.
+
+| Singular | Plural |
+|----------+--------|
+| =file_type= | =file_types= |
+| =report_instance= | =report_instances= |
+| =report_definition= | =report_definitions= |
+
+** Lookups
+
+A lookup names the thing it classifies, and takes =_kind= or =_type=.
+
+| Suffix | Example | What it classifies |
+|--------+---------+--------------------|
+| =_kind= | =report_instance_kind= | the kind of a report instance |
+| =_type= | =analytic_type= | a kind of analytic |
+| =_type= | =configuration_type= | a kind of configuration |
+| =_type= | =file_type= | a kind of file |
+
+*Undecided.* One job, two spellings. Nothing in the code distinguishes them,
+so a new lookup may take either until the policy is settled.
+
+** Events
+
+The =_event= suffix names a fact about an instant: a row written once and
+never changed. Such an entity states =:current_state:= and =:immutable:=, so
+it has no validity window and no audit tail. Because it has no audit tail, the
+actor and the time are columns of its own rather than the generated audit
+stamps.
+
+=ores.iam.auth_event= is the worked example: it records who signed in, and it
+carries =event_time=, =account_id= and =username= for that reason.
+
+A record of this shape answers "what happened", so name it =<subject>_event=:
+the subject is what the fact is about, not who caused it.
+
+** Where the code does not agree
+
+Two append-only logs record a fact about an instant and do not take =_event=.
+
+| Entity | What it records | Name under this page |
+|--------+-----------------+----------------------|
+| =ores.iam.run_token_issue= | one run grant exchange, issued or refused | =run_token_issue_event= |
+| =ores.dq.publication= | one dataset publication | =publication_event= |
+
+=ores.dq.publication= also states its table name rather than letting the
+generator derive it, because the entity is a publication and the table is
+=ores_dq_dataset_publications_tbl=. See the capture
+[[id:3DC569DA-A2B1-40CF-92AB-A745FC842FFA][Ensure all entities follow the entity
+naming convention]] for the review this opens.
+
+** Not naming, but visible in names
+
+Three more things shape an entity and are not suffixes:
+
+- Whether the table is bi-temporal or current-state, which
+  [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] and
+  [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] own.
+- Whether =tenant_id= is generated, ordinary text, or absent, which changes
+  how the table is isolated.
+- Which patterns a model opts into, which
+  [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][the codegen input org-file
+  schema reference]] owns.
+
+* See also
+
+- [[id:D70D7244-13F2-4D40-9351-C94920F4FC57][Entities]] — the hub this page
+  belongs to, and the way in to every other page about entities.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] — the layer
+  order and the per-transport patterns of a full-stack entity.
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema
+  reference]] — the syntax a model is written in, including the flags a
+  current-state or immutable entity states.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — why every page
+  carries an id and links by it rather than by path.

@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: D70D7244-13F2-4D40-9351-C94920F4FC57
+:END:
+#+title: Entities
+#+description: Hub for every page about entities: what an entity is, how it is named, addressed and written, and how its layers are generated.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:entity:index:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+* Summary
+
+An entity is one record the system keeps: a row, the C++ type that carries it,
+the repository that reads and writes it, the protocol that moves it, and the
+screen that shows it. One name runs through all of them.
+
+This hub gathers the pages that describe those layers. Read
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] first if you are
+building one, and [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] if
+you are only choosing a name.
+
+* Where to start
+
+| Page | Read it for |
+|------+-------------|
+| [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | The order the layers must be built in, and the per-transport patterns |
+| [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] | The table, entity, lookup and event names every entity follows |
+| [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] | The syntax of a model, and every pattern a model opts into |
+
+* Choosing the shape
+
+An entity is authored as a model, not as code, and the shape must be chosen
+before anything is written. The shape decides what the generator produces.
+
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the syntax for every pattern.
+- [[id:3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D][Adding a flagged combo field to a codegen entity]] — a worked change to a model.
+- [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] — the end-to-end recipe.
+
+A codegen pattern library — the page that says which shape to pick, and which
+neighbouring shape it is mistaken for — is being written on another branch.
+Link it here once it merges.
+
+* Naming, storing and addressing
+
+| Page | What it owns |
+|------+--------------|
+| [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] | The name of the table, the type, the lookup and the event |
+| [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, and the bi-temporal design |
+| [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] | The three regimes, and how to review a model against them |
+| [[id:E2521A56-E053-4FDC-A9F3-AAE47918241B][Entity Addressing]] | How one record is named so a screen, a request and a stream all reach the same row |
+| [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] | The subject grammar, verbs and envelopes every entity message follows |
+
+* Writing one
+
+Three rules a change must keep, each with its own page because each is easy to
+break in passing.
+
+| Page | The rule |
+|------+----------|
+| [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes]] | A write goes through the repository, so the claim and the audit stamps are made once |
+| [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] | A registrar composes the entity's own rather than restating it |
+| [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] | Placement of a cache that mirrors an entity |
+
+* The component an entity lives in
+
+| Page | What it covers |
+|------+----------------|
+| [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component Architecture]] | The api/core/service split, and where each layer goes |
+| [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] | The checklist a component passes to join the codegen gates |
+| [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] | The manual chapter and screenshot names for a new entity |
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this hub
+  is listed under.

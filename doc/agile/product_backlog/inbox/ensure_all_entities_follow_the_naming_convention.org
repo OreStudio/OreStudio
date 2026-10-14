@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 3DC569DA-A2B1-40CF-92AB-A745FC842FFA
+:END:
+#+title: Ensure all entities follow the entity naming convention
+#+description: The entity naming page now states the patterns the code follows. Review every entity against it and bring the ones that disagree into line, or record why they are exceptions.
+#+type: capture
+#+level: cross
+#+filetags: :naming:entities:codegen:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Sweep every modelled entity and check its name against
+[[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]]. Bring the ones that
+disagree into line, and record a reason for each one that stays as it is.
+
+The page is a census of what the code does today, so it cannot enforce
+anything. Enforcing it means either a check that fails a name outside the
+patterns, or a decision that the patterns are description rather than policy.
+Decide which, then act on the list below.
+
+* Why
+
+A name that is chosen freely is a name no reader can predict, and the codegen
+gates compare names across the layers, so a shape that disagrees with the
+convention tends to disagree in more than one place. The naming page found
+these disagreements while it was being written:
+
+** Append-only logs that do not take =_event=
+
+Both record a fact about an instant and are written once, which is what
+=_event= names, yet neither takes the suffix.
+
+| Entity | What it records | Name under the convention |
+|--------+-----------------+---------------------------|
+| =ores.iam.run_token_issue= | one run grant exchange, issued or refused; append-only, =:current_state:= | =run_token_issue_event= |
+| =ores.dq.publication= | one dataset publication, append-only | =publication_event= |
+
+=ores.dq.publication= also states its own table name. The entity is a
+publication and the table it generates is =ores_dq_dataset_publications_tbl=,
+so the model carries the table name rather than deriving it. That is a second
+disagreement on the same entity.
+
+** One job, two lookup spellings**
+
+=_kind= and =_type= both name a lookup, with nothing in the code to tell them
+apart:
+
+- =_kind=: =report_instance_kind=
+- =_type=: =analytic_type=, =configuration_type=, =file_type=
+
+Neither spelling is wrong yet, because no page states a rule. The sweep should
+settle it.
+
+* Scope to decide before starting
+
+- Whether the sweep covers only table and entity names, or the protocol
+  subjects, shell verbs and screen names that derive from them.
+- Whether =_event= is required for every append-only log, or only for one that
+  records an external act. =run_token_issue= and =publication= both look like
+  events, but =grid_sample= and =node_sample= are append-only without being
+  events, which is where the line has to be drawn.
+
+* References
+
+- [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] — the patterns this
+  sweep enforces, and the source of the list above.
+- [[id:D70D7244-13F2-4D40-9351-C94920F4FC57][Entities]] — the hub the naming
+  page belongs to.
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema
+  reference]] — where a flag that changes an entity's shape, such as
+  =:current_state:=, is declared.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture
+  is, and when it becomes a story.

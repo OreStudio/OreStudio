@@ -122,9 +122,25 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     swm.correlation_id = correlation_id;
     swm.instance_id = instance_id_str;
 
-    nats_.js_publish(start_workflow_message::nats_subject,
-                     ores::nats::default_wire_codec().encode(swm),
-                     ores::nats::service::forwarded_caller_headers(msg));
+    // The dispatch commits through the stream and can throw, both on the
+    // serialisation and on the publish. An exception leaving this handler
+    // reaches the transport, which contains it but sends no reply, so the
+    // caller would wait out its deadline for an answer this handler could
+    // have given — and would not learn that the run never started.
+    try {
+        nats_.js_publish(start_workflow_message::nats_subject,
+                         ores::nats::default_wire_codec().encode(swm),
+                         ores::nats::service::forwarded_caller_headers(msg));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "ore.import dispatch failed | corr=" << correlation_id
+                                   << " error=" << e.what();
+        reply(nats_,
+              msg,
+              ore_import_response{.success = false,
+                                  .message = std::string("The run was not started: ") + e.what(),
+                                  .correlation_id = correlation_id});
+        return;
+    }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
                               << " instance_id=" << instance_id_str;

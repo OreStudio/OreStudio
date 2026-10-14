@@ -118,40 +118,28 @@ task and name that file in the Command column.
 | Staging table body | byte-identical to the hand-written one | =git diff= on the create table body | f86f35ce60 |
 | Lookup, after =compass db recreate= | =0.0.0.1= and =0.255.255.255= answer GB, =1.0.0.0= is past the half-open end, an address outside every range and an IPv6 address answer nothing | =compass sql= against =ores_geo_ip2country_lookup_fn= | f86f35ce60 |
 | Local gate, non-heavy | 35 of 35 | =compass check --exclude-heavy= | fb84e8bbb3 |
+| ctest | 93 of 93 | =compass check --only ctest= | this branch |
+| pgTAP | 52 files, all pass | =compass check --only pgtap= | this branch |
 
 * Notes
 
-** Not done: the primary key breaks a dependent test
+** The primary key's dependent test, and how it was settled
 
-=compass check --only ctest= fails =ores.database.tests= on
-=unit_of_work_tests.cpp=, four cases, all with
+=compass check --only ctest= caught what the non-heavy gate cannot: it runs no
+C++ suite, so the primary key this task added reached a consumer the gate does
+not see. =ores.database.tests= failed four =unit_of_work_tests.cpp= cases with
 =duplicate key value violates unique constraint "ores_geo_ip2country_tbl_pkey"=.
+The suite uses =ores_geo_ip2country_tbl= as a generic probe, inserting ='[1,2)'=
+under a fresh random =country_code= per case to exercise rollback and
+visibility; the hand-written table was keyless and accepted that.
 
-That suite uses =ores_geo_ip2country_tbl= as a generic probe table: it inserts
-='[1,2)'= under a fresh random =country_code= in each case to exercise rollback
-and visibility through a unit of work. It picked the table because it was a
-trivial keyless store, and it has used it that way since before this task. The
-hand-written table had no key, so the inserts were fine; the generated one has
-=primary key (ip_range)=, so the second case's insert is a duplicate.
+Settled by keeping the key and moving the probe. The key is honest -- a range
+that appears twice is meaningless -- and the suite wants a table of the right
+shape rather than this table. Each probe now draws its range from the same
+random source as its code, so no case can collide with another however many are
+added. The invalid-range probe keeps its literal: it is meant to fail.
 
-The key is this task's own addition, not a property of the table it models. The
-non-heavy gate cannot see this -- nothing in it runs the C++ suites -- which is
-why the task was closed before the failure surfaced.
-
-Two ways out, and the choice is a design one:
-
-- *Make a stored table able to have no key.* The validator already accepts
-  =:no_primary_key:=, but the create template does not honour it, and it cannot
-  be a one-line guard: the column list ends every column with a comma and relies
-  on the =primary key= clause to close the body, so the last column's separator
-  has to become conditional, plus the key checks and the key indexes. The rule
-  the meta-model states -- a key is required of a *stored* record -- would need
-  restating for a store whose rows have no identity.
-- *Keep the key and move the probe.* The suite wants a table of the right shape,
-  not this table; varying the range per case fixes it in two lines. That accepts
-  the key as a real constraint on the store.
-
-Until one is chosen the story is not complete, whatever its State says.
+ctest is 93 of 93 afterwards, and pgTAP 52 files.
 
 * Test Scenarios
 
@@ -203,7 +191,11 @@ Three things the work needed that the task did not name:
 The one shape change is the primary key. The current-state template asks a
 stored table for a key, and a range that appears twice is meaningless, so the
 key is the range. A dataset carrying the same range twice would now refuse at
-publish instead of storing it twice.
+publish instead of storing it twice, and the =ores.database.tests= suite, which
+used the table as a keyless probe, now draws a fresh range per case.
+
+Heavy phase: ctest 93 of 93 and pgTAP 52 files, against a database recreated
+from this branch.
 
 The staging table's indexes follow the generated naming
 (=dq_ip2country_artefact_*_idx=) rather than the hand-written

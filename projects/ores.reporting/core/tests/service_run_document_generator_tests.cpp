@@ -55,6 +55,17 @@ ores::reporting::domain::file_type setup_file(const std::string& parameter,
     return t;
 }
 
+ores::reporting::domain::file_type setup_data_file(const std::string& parameter,
+                                                   const std::string& name) {
+    ores::reporting::domain::file_type t;
+    t.code = "setup." + parameter;
+    t.ore_parameter = parameter;
+    t.kind = "data_file";
+    t.direction = "input";
+    t.name_pattern = name;
+    return t;
+}
+
 ores::reporting::domain::file_type analytic_file(const std::string& analytic,
                                                  const std::string& parameter,
                                                  const std::string& kind,
@@ -172,6 +183,31 @@ TEST_CASE("the run names a file for each bound type and none for the others", ta
     CHECK(files[0].name == "curveconfig.xml");
     CHECK(files[1].parameter == "marketConfigFile");
     CHECK(files[1].name == "todaysmarket.xml");
+}
+
+TEST_CASE("the run names the data files that belong to no configuration", tags) {
+    auto in = inputs();
+    in.file_types.push_back(setup_data_file("portfolioFile", "portfolio.xml"));
+    in.file_types.push_back(setup_data_file("marketDataFile", "market.txt"));
+    in.file_types.push_back(setup_data_file("fixingDataFile", "fixings.txt"));
+
+    const auto& files = generate_run_document(in).files;
+    REQUIRE(files.size() == 7);
+    CHECK(files[4].parameter == "portfolioFile");
+    CHECK(files[4].name == "portfolio.xml");
+    CHECK(files[5].parameter == "marketDataFile");
+    CHECK(files[5].name == "market.txt");
+    CHECK(files[6].parameter == "fixingDataFile");
+    CHECK(files[6].name == "fixings.txt");
+}
+
+TEST_CASE("the run names a data file of an analytic once, by the analytic", tags) {
+    auto in = inputs();
+    in.file_types.push_back(analytic_file("curves", "curvesOutputFile", "data_file", "curves.csv"));
+
+    const auto& files = generate_run_document(in).files;
+    for (const auto& f : files)
+        CHECK(f.parameter != "curvesOutputFile");
 }
 
 TEST_CASE("the run carries the choices of the configuration as they are", tags) {

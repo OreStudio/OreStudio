@@ -25,6 +25,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <map>
 #include <stdexcept>
 #include <string>
 
@@ -94,7 +95,15 @@ TEST_CASE("a run document reads back as it was saved", tags) {
     CHECK(back->settings.market_data_type == "date");
     CHECK(back->settings.market_data_date == "2016-02-05");
     CHECK(back->settings.base_currency == std::optional<std::string>("EUR"));
-    CHECK(back->files.empty());
+    // The names are never stored. The run is named for the files it reads out of the
+    // file types table, so a document that names none still reads back named.
+    std::map<std::string, std::string> named;
+    for (const auto& f : back->files)
+        named[f.parameter] = f.name;
+    REQUIRE(named.size() == 3);
+    CHECK(named["portfolioFile"] == "portfolio.xml");
+    CHECK(named["marketDataFile"] == "market.txt");
+    CHECK(named["fixingDataFile"] == "fixings.txt");
     REQUIRE(back->analytics.size() == 1);
     CHECK(back->analytics[0].analytic.analytic_type_code == "npv");
     // The stored parameter, and the file the npv analytic writes, named from the file types table.

@@ -42,6 +42,28 @@ inline const file_type* setup_file_type_of(const std::vector<file_type>& types,
     return it == types.end() ? nullptr : &*it;
 }
 
+/// The kind of file that holds a run's own data rather than a configuration.
+inline constexpr std::string_view data_file_kind = "data_file";
+
+/// The direction of a file the run reads.
+inline constexpr std::string_view input_direction = "input";
+
+/**
+ * @brief The file types that name the run's own data files in the Setup block: the
+ * portfolio, the market data and the fixings.
+ *
+ * These files belong to the run rather than to a configuration, so no
+ * configuration type names them. The table still states their names, so a run
+ * document is built without a file name written in code.
+ */
+inline std::vector<const file_type*> setup_data_file_types(const std::vector<file_type>& types) {
+    std::vector<const file_type*> out;
+    for (const auto& t : types)
+        if (!t.analytic_type_code && t.kind == data_file_kind && t.direction == input_direction)
+            out.push_back(&t);
+    return out;
+}
+
 }
 
 #endif

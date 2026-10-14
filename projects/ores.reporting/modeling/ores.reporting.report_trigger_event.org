@@ -66,15 +66,17 @@ The definition this trigger runs.
 What asked for the run: =on_demand= or =scheduled=. Refers to
 ores_reporting_report_trigger_types_tbl.
 
-** schedule_job_id
+** scheduler_job_id
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
 :nullable: true
 :END:
 
 The scheduler job that fired, when the type is scheduled. The scheduler owns
-that job, so this is a soft foreign key and not a database constraint.
+that job, so this is a soft foreign key and not a database constraint. It is a
+uuid because the job definition's key is one, and because the same reference on
+ores.reporting.report_definition is spelled scheduler_job_id and typed uuid.
 
 ** schedule_job_run_id
 :PROPERTIES:
@@ -130,7 +132,7 @@ The party the run acts in.
 
 | expression                                                     |
 |----------------------------------------------------------------|
-| "trigger_type" <> 'scheduled' or "schedule_job_id" is not null |
+| "trigger_type" <> 'scheduled' or "scheduler_job_id" is not null |
 
 * Foreign keys
 
@@ -146,23 +148,23 @@ The party the run acts in.
 Report trigger types are a system-wide lookup seeded for the system tenant only,
 so the check reads that tenant whatever tenant owns the trigger.
 
-** schedule_job_id
+** scheduler_job_id
 :PROPERTIES:
 :table:               ores_scheduler_job_definitions_tbl
 :use_no_tenant:       true
 :target_no_validity: true
 :nullable:            true
-:error_message:       Invalid schedule_job_id: %. No scheduler job definition found with this id.
+:error_message:       Invalid scheduler_job_id: %. No scheduler job definition found with this id.
 :END:
 
 The scheduler owns its job definitions, so this is a soft foreign key validated
 here rather than a database constraint. Its table is hand-written and carries no
-validity window, so the check names its id alone.
+validity window, so the check names its id alone. The key is a uuid, which is
+what the scheduler declares its job definition's id to be.
 
 ** schedule_job_run_id
 :PROPERTIES:
 :table:               ores_scheduler_job_instances_tbl
-:target_column:       id
 :use_no_tenant:       true
 :target_no_validity: true
 :nullable:            true
@@ -171,7 +173,8 @@ validity window, so the check names its id alone.
 
 The scheduler owns its job instances, so this is a soft foreign key validated
 here rather than a database constraint. Its table is hand-written and carries no
-validity window, so the check names its id alone.
+validity window, so the check names its id alone. The key is a bigint, which is
+what the scheduler declares, so this reference is typed bigint and not uuid.
 
 * C++
 

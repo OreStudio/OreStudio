@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -51,7 +52,10 @@ report_trigger_event_mapper::map(const report_trigger_event_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
     r.trigger_type = v.trigger_type;
-    r.schedule_job_id = v.schedule_job_id;
+    r.scheduler_job_id =
+        v.scheduler_job_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scheduler_job_id)) :
+            std::nullopt;
     r.schedule_job_run_id = v.schedule_job_run_id;
     r.triggered_by = v.triggered_by;
     r.triggered_at = timestamp_to_timepoint(std::string_view{v.triggered_at});
@@ -70,7 +74,9 @@ report_trigger_event_mapper::map(const domain::report_trigger_event& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
     r.trigger_type = v.trigger_type;
-    r.schedule_job_id = v.schedule_job_id;
+    r.scheduler_job_id = v.scheduler_job_id.has_value() ?
+                             std::optional(boost::uuids::to_string(*v.scheduler_job_id)) :
+                             std::nullopt;
     r.schedule_job_run_id = v.schedule_job_run_id;
     r.triggered_by = v.triggered_by;
     r.triggered_at = ores::platform::time::datetime::to_iso8601_utc(v.triggered_at);

@@ -30,6 +30,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "report_instance_test_fixture.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -111,6 +112,12 @@ TEST_CASE("a list shows production instances unless the caller asks for a kind",
     package.kind = package_kind;
 
     REQUIRE(production.id != package.id);
+
+    // An instance names the trigger that admitted it, and the database holds
+    // that as a real foreign key, so the trigger each instance names is written
+    // first.
+    ores::reporting::tests::write_trigger_for(party_ctx, ctx, production);
+    ores::reporting::tests::write_trigger_for(party_ctx, ctx, package);
 
     report_instance_repository repo;
     repo.write(party_ctx, production);

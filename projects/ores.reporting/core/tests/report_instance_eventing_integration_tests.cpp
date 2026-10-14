@@ -54,13 +54,12 @@
 // Parent-seed snippet includes (ores_reporting_report_trigger_events_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
-#include "ores.reporting.api/generators/report_trigger_event_generator.hpp"
-#include "ores.reporting.core/repository/report_trigger_event_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "report_instance_test_fixture.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -170,15 +169,7 @@ TEST_CASE("write_report_instance_publishes_an_event", tags) {
         REQUIRE_FALSE(kind_catalogue.empty());
         v.kind = kind_catalogue.front().code;
     }
-    {
-        auto trigger = generate_synthetic_report_trigger_event(ctx);
-        trigger.report_definition_id = v.definition_id;
-        trigger.trigger_type = "on_demand";
-        trigger.party_id = *party_ctx.party_id();
-        ores::reporting::repository::report_trigger_event_repository trigger_repo;
-        trigger_repo.write(party_ctx, trigger);
-        v.trigger_id = trigger.id;
-    }
+    v.trigger_id = ores::reporting::tests::write_trigger_for(party_ctx, ctx, v).id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Report Instance: " << v;
 

@@ -109,7 +109,9 @@ struct report_instance final {
     /**
      * @brief The trigger that admitted this run. Every instance has one: a run a person asks for
      * and a run a schedule asks for are admitted the same way, and the database enforces that this
-     * names a trigger.
+     * names a trigger. The generated instance names its own uuid as the trigger, so the trigger it
+     * points at is derived from the instance rather than minted beside it, and a fixture that
+     * writes one can write the trigger row it names from the instance alone.
      */
     boost::uuids::uuid trigger_id;
 

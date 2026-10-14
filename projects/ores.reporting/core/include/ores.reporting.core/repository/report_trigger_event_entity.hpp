@@ -47,7 +47,7 @@ struct report_trigger_event_entity {
     std::string tenant_id;
     std::string report_definition_id;
     std::string trigger_type;
-    std::optional<std::string> schedule_job_id;
+    std::optional<std::string> scheduler_job_id;
     std::optional<std::int64_t> schedule_job_run_id;
     std::string triggered_by;
     std::string triggered_at;

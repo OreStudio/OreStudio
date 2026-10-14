@@ -75,9 +75,11 @@ struct report_trigger_event final {
 
     /**
      * @brief The scheduler job that fired, when the type is scheduled. The scheduler owns that job,
-     * so this is a soft foreign key and not a database constraint.
+     * so this is a soft foreign key and not a database constraint. It is a uuid because the job
+     * definition's key is one, and because the same reference on ores.reporting.report_definition
+     * is spelled scheduler_job_id and typed uuid.
      */
-    std::optional<std::string> schedule_job_id;
+    std::optional<boost::uuids::uuid> scheduler_job_id;
 
     /**
      * @brief The scheduler firing that produced this trigger, when the type is scheduled. Null for

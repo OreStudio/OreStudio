@@ -569,7 +569,7 @@ package "reporting" #E0F7FA {
         --
         * report_definition_id : uuid <<FK>>
         * trigger_type : text <<FK>>
-          schedule_job_id : text <<FK>>
+          scheduler_job_id : uuid <<FK>>
           schedule_job_run_id : bigint <<FK>>
         * triggered_by : text
         * triggered_at : timestamptz

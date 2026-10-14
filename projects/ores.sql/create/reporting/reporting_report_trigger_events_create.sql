@@ -43,14 +43,14 @@ create table if not exists "ores_reporting_report_trigger_events_tbl" (
     "tenant_id" uuid not null,
     "report_definition_id" uuid not null,
     "trigger_type" text not null,
-    "schedule_job_id" text null,
+    "scheduler_job_id" uuid null,
     "schedule_job_run_id" bigint null,
     "triggered_by" text not null,
     "triggered_at" timestamp with time zone not null,
     "party_id" uuid not null,
     primary key (tenant_id, id),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("trigger_type" <> 'scheduled' or "schedule_job_id" is not null)
+    check ("trigger_type" <> 'scheduled' or "scheduler_job_id" is not null)
 );
 
 
@@ -73,13 +73,13 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate schedule_job_id (optional soft FK to ores_scheduler_job_definitions_tbl)
-    if NEW.schedule_job_id is not null then
+    -- Validate scheduler_job_id (optional soft FK to ores_scheduler_job_definitions_tbl)
+    if NEW.scheduler_job_id is not null then
         if not exists (
             select 1 from ores_scheduler_job_definitions_tbl
-            where id = NEW.schedule_job_id
+            where id = NEW.scheduler_job_id
         ) then
-            raise exception 'Invalid schedule_job_id: %. No scheduler job definition found with this id.', NEW.schedule_job_id
+            raise exception 'Invalid scheduler_job_id: %. No scheduler job definition found with this id.', NEW.scheduler_job_id
                 using errcode = '23503';
         end if;
     end if;

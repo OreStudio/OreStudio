@@ -132,6 +132,9 @@ TEST_CASE("report_instance_generator_produces_valid_instance", tags) {
 
     CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
+    // The trigger a generated instance names is the instance's own uuid, so a
+    // fixture writes the trigger row it points at from the instance alone.
+    CHECK(sut.trigger_id == sut.id);
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.test");
 }

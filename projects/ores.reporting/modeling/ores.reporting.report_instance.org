@@ -154,10 +154,13 @@ std::nullopt
 
 The trigger that admitted this run. Every instance has one: a run a person asks
 for and a run a schedule asks for are admitted the same way, and the database
-enforces that this names a trigger.
+enforces that this names a trigger. The generated instance names its own uuid as
+the trigger, so the trigger it points at is derived from the instance rather
+than minted beside it, and a fixture that writes one can write the trigger row
+it names from the instance alone.
 
 #+begin_src cpp :name generator
-ctx.generate_uuid()
+r.id
 #+end_src
 
 ** output_message
@@ -248,24 +251,16 @@ admitted it.
 
 The eventing integration test writes the trigger the instance names before it
 writes the instance, because the constraint admits no instance without one. The
-seed names the instance's own definition, and the seeded trigger type, so the
-trigger's own insert checks pass.
+seed asks the fixture for the trigger row a generated instance names, so the
+instance keeps the uuid the generator gave it and the trigger is derived from
+the instance rather than minted beside it.
 
 #+begin_src cpp :name parent_seed_includes
-#include "ores.reporting.api/generators/report_trigger_event_generator.hpp"
-#include "ores.reporting.core/repository/report_trigger_event_repository.hpp"
+#include "report_instance_test_fixture.hpp"
 #+end_src
 
 #+begin_src cpp :name parent_seed
-    {
-        auto trigger = generate_synthetic_report_trigger_event(ctx);
-        trigger.report_definition_id = v.definition_id;
-        trigger.trigger_type = "on_demand";
-        trigger.party_id = *party_ctx.party_id();
-        ores::reporting::repository::report_trigger_event_repository trigger_repo;
-        trigger_repo.write(party_ctx, trigger);
-        v.trigger_id = trigger.id;
-    }
+    v.trigger_id = ores::reporting::tests::write_trigger_for(party_ctx, ctx, v).id;
 #+end_src
 
 * C++

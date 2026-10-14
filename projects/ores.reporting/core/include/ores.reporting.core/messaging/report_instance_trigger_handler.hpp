@@ -34,7 +34,7 @@
 #include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
 #include "ores.reporting.core/service/report_configuration_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
-#include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.reporting.core/service/report_run_admission_service.hpp"
 #include "ores.reporting.core/service/report_type_service.hpp"
 #include "ores.reporting.core/service/run_requirements.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -319,48 +319,61 @@ private:
         }
 
         boost::uuids::random_generator rg;
-        domain::report_instance inst;
-        inst.id = rg();
-        inst.tenant_id = def->tenant_id;
-        inst.party_id = def->party_id;
-        inst.definition_id = def->id;
-        // The run's authority is fixed at admission: the instance records the
-        // grant the definition held now, so a later schedule or unschedule
-        // cannot change the authority of this run.
-        inst.run_grant_id = def->run_grant_id;
+
+        // The scheduler's firing is what makes this a scheduled trigger: a
+        // request that names a job instance was published by the scheduler, and
+        // one that names none was sent by hand. The job itself comes from the
+        // definition, which is where the scheduler set it when it activated the
+        // definition.
+        const auto scheduled = req.job_instance_id != 0;
+        if (scheduled && !def->scheduler_job_id) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "unscheduled_definition";
+            response.result.message =
+                std::format("Report definition {} was fired by scheduler job instance {}, but the "
+                            "definition names no scheduler job.",
+                            definition_id,
+                            req.job_instance_id);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+
         // An instance is one occurrence of the definition, and the natural key
         // is unique per tenant, so two runs of one definition cannot share a
         // name. The run's start is what distinguishes them.
-        inst.name = std::format(
+        const auto now = std::chrono::system_clock::now();
+        service::report_run_admission_service::plan plan;
+        plan.definition_id = def->id;
+        plan.tenant_id = def->tenant_id;
+        plan.party_id = def->party_id;
+        plan.name = std::format(
             "{}{} {}",
             def->name,
             kind == workflow::instance_kind_package ? " (package)" : "",
-            ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now()));
-        inst.kind = kind;
-        inst.description = def->description;
-        inst.fsm_state_id = initial_state;
-        // Every instance names the trigger that admitted it, and the database
-        // enforces that the trigger exists. The scheduler's firing is carried
-        // on the trigger, and the trigger row is written by the reporting
-        // service's trigger handler.
-        inst.trigger_id = rg();
-        inst.output_message = note;
-        inst.modified_by = ctx_.service_account();
-        inst.performed_by = ctx_.service_account();
-        // The seeded change reason the validator accepts for a system insert.
-        inst.change_reason_code = "system.new_record";
-        inst.change_commentary = note.empty() ? "Created by report trigger" : note;
-
+            ores::platform::time::datetime::to_db_string(now));
+        plan.description = def->description;
+        plan.trigger_type =
+            scheduled ? std::string("scheduled") : std::string("on_demand");
+        plan.scheduler_job_id = scheduled ? def->scheduler_job_id : std::nullopt;
+        plan.schedule_job_run_id =
+            scheduled ? std::optional<std::int64_t>(req.job_instance_id) : std::nullopt;
+        plan.kind = kind;
+        plan.output_message = note;
+        // The run's authority is fixed at admission: the instance records the
+        // grant the definition held now, so a later schedule or unschedule
+        // cannot change the authority of this run.
+        plan.run_grant_id = def->run_grant_id;
+        plan.fsm_state_id = initial_state;
         // Only an instance that will run states when it started. One that is
         // queued, skipped or failed never began.
         if (dispatch) {
-            inst.started_at = std::chrono::system_clock::now();
+            plan.started_at = now;
         }
 
-        service::report_instance_service inst_svc(tenant_ctx);
-        inst_svc.save_instance(inst);
+        service::report_run_admission_service admission(tenant_ctx);
+        const auto receipt = admission.admit(plan);
 
-        const auto inst_id_str = boost::uuids::to_string(inst.id);
+        const auto inst_id_str = boost::uuids::to_string(receipt.instance_id);
         BOOST_LOG_SEV(report_instance_trigger_handler_lg(), info)
             << "Created report instance " << inst_id_str << " for definition " << definition_id
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");

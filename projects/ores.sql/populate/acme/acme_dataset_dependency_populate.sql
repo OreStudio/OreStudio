@@ -60,7 +60,7 @@ BEGIN
     -- needs its counterparty (a bank from the GLEIF set, or another ACME
     -- entity), a netting set needs its agreement, a CSA needs its set.
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_group.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_group.netting_agreements', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_group.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -69,7 +69,7 @@ BEGIN
         'acme.acme_group.csas', 'acme.acme_group.netting_sets', 'netting_set_reference');
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_uk.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_uk.netting_agreements', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -78,7 +78,7 @@ BEGIN
         'acme.acme_uk.csas', 'acme.acme_uk.netting_sets', 'netting_set_reference');
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_us.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_us.netting_agreements', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_us.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -87,7 +87,7 @@ BEGIN
         'acme.acme_us.csas', 'acme.acme_us.netting_sets', 'netting_set_reference');
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_hk.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_hk.netting_agreements', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -95,19 +95,19 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.csas', 'acme.acme_hk.netting_sets', 'netting_set_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_group.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_group.party_counterparties', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_group.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_uk.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_uk.party_counterparties', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_us.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_us.party_counterparties', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_us.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme.acme_hk.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'acme.acme_hk.party_counterparties', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
 

@@ -35,6 +35,20 @@
 \ir lei_dataset_dependency_populate.sql
 
 -- =============================================================================
+-- GLEIF LEI Entity Artefacts (Tiny)
+-- =============================================================================
+
+\echo '--- GLEIF LEI Entity Artefacts (Tiny) ---'
+\ir lei_entities_tiny_artefact_populate.sql
+
+-- =============================================================================
+-- GLEIF LEI Relationship Artefacts (Tiny)
+-- =============================================================================
+
+\echo '--- GLEIF LEI Relationship Artefacts (Tiny) ---'
+\ir lei_relationships_tiny_artefact_populate.sql
+
+-- =============================================================================
 -- GLEIF LEI Entity Artefacts (Small)
 -- =============================================================================
 
@@ -42,18 +56,18 @@
 \ir lei_entities_small_artefact_populate.sql
 
 -- =============================================================================
--- GLEIF LEI Entity Artefacts (Large)
--- =============================================================================
-
-\echo '--- GLEIF LEI Entity Artefacts (Large) ---'
-\ir lei_entities_large_artefact_populate.sql
-
--- =============================================================================
 -- GLEIF LEI Relationship Artefacts (Small)
 -- =============================================================================
 
 \echo '--- GLEIF LEI Relationship Artefacts (Small) ---'
 \ir lei_relationships_small_artefact_populate.sql
+
+-- =============================================================================
+-- GLEIF LEI Entity Artefacts (Large)
+-- =============================================================================
+
+\echo '--- GLEIF LEI Entity Artefacts (Large) ---'
+\ir lei_entities_large_artefact_populate.sql
 
 -- =============================================================================
 -- GLEIF LEI Relationship Artefacts (Large)

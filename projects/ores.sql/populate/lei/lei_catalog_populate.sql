@@ -39,4 +39,3 @@ BEGIN
         'Reference Data Team'
     );
 END $$;
-

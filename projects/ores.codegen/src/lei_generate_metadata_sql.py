@@ -145,18 +145,20 @@ def parse_as_of_date(filename: str) -> str:
 
 
 def find_csv_files(lei_dir: Path) -> dict:
-    """Find LEI CSV subset files and return them grouped by type and size."""
+    """Find LEI CSV subset files and return them grouped by type and size.
+
+    Tiny is optional: it is cut for the ACME provisioning, and a checkout that
+    holds only the larger rungs still generates everything else.
+    """
     files = {}
     for csv_file in sorted(lei_dir.glob('*.csv')):
-        name = csv_file.name
-        if 'lei2' in name.lower() and 'subset-small' in name:
-            files['lei2_small'] = csv_file
-        elif 'lei2' in name.lower() and 'subset-large' in name:
-            files['lei2_large'] = csv_file
-        elif 'rr' in name.lower() and 'subset-small' in name:
-            files['rr_small'] = csv_file
-        elif 'rr' in name.lower() and 'subset-large' in name:
-            files['rr_large'] = csv_file
+        name = csv_file.name.lower()
+        if 'lei2' not in name and 'rr' not in name:
+            continue
+        kind = 'lei2' if 'lei2' in name else 'rr'
+        for size in ('tiny', 'small', 'large'):
+            if f'subset-{size}' in name:
+                files[f'{kind}_{size}'] = csv_file
     return files
 
 
@@ -222,17 +224,20 @@ def generate_catalog_sql(manifest: dict, output_file: Path):
  * This script is idempotent.
  */
 
--- =============================================================================
--- GLEIF LEI Catalog
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- GLEIF LEI Catalog
+    -- =============================================================================
 
-\\echo '--- GLEIF LEI Catalog ---'
+    -- --- GLEIF LEI Catalog ---
 
-select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
-    '{name}',
-    '{description}',
-    '{owner}'
-);
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{name}',
+        '{description}',
+        '{owner}'
+    );
+END $$;
 """)
 
     print(f"  Generated catalog: {catalog['name']}")
@@ -264,18 +269,21 @@ def generate_methodology_sql(manifest: dict, output_file: Path):
  * This script is idempotent.
  */
 
--- =============================================================================
--- GLEIF LEI Methodology
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- GLEIF LEI Methodology
+    -- =============================================================================
 
-\\echo '--- GLEIF LEI Methodology ---'
+    -- --- GLEIF LEI Methodology ---
 
-select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    '{name}',
-    '{description}',
-    '{url}',
-    '{methodology_steps}'
-);
+    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{name}',
+        '{description}',
+        '{url}',
+        '{methodology_steps}'
+    );
+END $$;
 """)
 
     print(f"  Generated methodology: {methodology['name']}")
@@ -301,11 +309,13 @@ def generate_dataset_sql(manifest: dict, as_of_date: str, output_file: Path):
  * This script is idempotent.
  */
 
--- =============================================================================
--- GLEIF LEI Datasets
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- GLEIF LEI Datasets
+    -- =============================================================================
 
-\\echo '--- GLEIF LEI Datasets ---'
+    -- --- GLEIF LEI Datasets ---
 
 """)
 
@@ -317,27 +327,29 @@ def generate_dataset_sql(manifest: dict, as_of_date: str, output_file: Path):
             coding_scheme = dataset.get('coding_scheme', 'NONE')
             artefact_type = dataset['artefact_type']
 
-            f.write(f"""-- {name}
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    '{code}',
-    '{catalog_name}',
-    '{subject_area}',
-    '{domain}',
-    '{coding_scheme}',
-    'Primary',
-    'Actual',
-    'Raw',
-    '{methodology_name}',
-    '{name}',
-    '{escape_sql(dataset.get("description", ""))}',
-    'GLEIF',
-    '{escape_sql(dataset.get("business_context", "GLEIF golden copy data"))}',
-    '{as_of_date}'::date,
-    'Open Data',
-    '{artefact_type}'
-);
+            f.write(f"""    -- {name}
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{code}',
+        '{catalog_name}',
+        '{subject_area}',
+        '{domain}',
+        '{coding_scheme}',
+        'Primary',
+        'Actual',
+        'Raw',
+        '{methodology_name}',
+        '{name}',
+        '{escape_sql(dataset.get("description", ""))}',
+        'GLEIF',
+        '{escape_sql(dataset.get("business_context", "GLEIF golden copy data"))}',
+        '{as_of_date}'::date,
+        'Open Data',
+        '{artefact_type}'
+    );
 
 """)
+
+        f.write("END $$;\n")
 
     print(f"  Generated {len(datasets)} dataset entries")
 
@@ -358,11 +370,13 @@ def generate_dataset_dependency_sql(manifest: dict, output_file: Path):
  * This script is idempotent.
  */
 
--- =============================================================================
--- GLEIF LEI Dataset Dependencies
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- GLEIF LEI Dataset Dependencies
+    -- =============================================================================
 
-\\echo '--- GLEIF LEI Dataset Dependencies ---'
+    -- --- GLEIF LEI Dataset Dependencies ---
 
 """)
 
@@ -371,13 +385,15 @@ def generate_dataset_dependency_sql(manifest: dict, output_file: Path):
             dependency_code = dep['dependency_code']
             role = dep['role']
 
-            f.write(f"""select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    '{dataset_code}',
-    '{dependency_code}',
-    '{role}'
-);
+            f.write(f"""    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{dataset_code}',
+        '{dependency_code}',
+        '{role}'
+    );
 
 """)
+
+        f.write("END $$;\n")
 
     print(f"  Generated {len(dependencies)} dataset dependency entries")
 
@@ -443,7 +459,7 @@ begin
     )
     select
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         v.{sql_columns[0]},
         0,
         {', '.join(f'v.{c}' for c in sql_columns[1:])}
@@ -467,8 +483,12 @@ end $$;
     print(f"  Generated {len(rows)} rows")
 
 
-def generate_master_sql(output_file: Path):
-    """Generate the lei_populate.sql master include file."""
+def generate_master_sql(output_file: Path, sizes: Tuple[str, ...] = ('small', 'large')):
+    """Generate the lei_populate.sql master include file.
+
+    Only the rungs this checkout cut are included, so a checkout without the tiny
+    subset does not include a file that is not there.
+    """
     print(f"Generating {output_file.name}...")
 
     with open(output_file, 'w', encoding='utf-8', newline='\n') as f:
@@ -508,35 +528,28 @@ def generate_master_sql(output_file: Path):
 \\echo '--- GLEIF LEI Dataset Dependencies ---'
 \\ir lei_dataset_dependency_populate.sql
 
--- =============================================================================
--- GLEIF LEI Entity Artefacts (Small)
+""")
+
+        # The artefact rungs, smallest first, and only the ones this checkout cut.
+        for size in sizes:
+            title = size.capitalize()
+            f.write(f"""-- =============================================================================
+-- GLEIF LEI Entity Artefacts ({title})
 -- =============================================================================
 
-\\echo '--- GLEIF LEI Entity Artefacts (Small) ---'
-\\ir lei_entities_small_artefact_populate.sql
+\\echo '--- GLEIF LEI Entity Artefacts ({title}) ---'
+\\ir lei_entities_{size}_artefact_populate.sql
 
 -- =============================================================================
--- GLEIF LEI Entity Artefacts (Large)
+-- GLEIF LEI Relationship Artefacts ({title})
 -- =============================================================================
 
-\\echo '--- GLEIF LEI Entity Artefacts (Large) ---'
-\\ir lei_entities_large_artefact_populate.sql
+\\echo '--- GLEIF LEI Relationship Artefacts ({title}) ---'
+\\ir lei_relationships_{size}_artefact_populate.sql
 
--- =============================================================================
--- GLEIF LEI Relationship Artefacts (Small)
--- =============================================================================
+""")
 
-\\echo '--- GLEIF LEI Relationship Artefacts (Small) ---'
-\\ir lei_relationships_small_artefact_populate.sql
-
--- =============================================================================
--- GLEIF LEI Relationship Artefacts (Large)
--- =============================================================================
-
-\\echo '--- GLEIF LEI Relationship Artefacts (Large) ---'
-\\ir lei_relationships_large_artefact_populate.sql
-
--- =============================================================================
+        f.write("""-- =============================================================================
 -- GLEIF LEI BIC Artefacts
 -- =============================================================================
 
@@ -619,6 +632,29 @@ def main():
     datasets = manifest.get('datasets', [])
     dataset_map = {d['code']: d for d in datasets}
 
+    # The tiny rung is optional; a checkout that holds only the larger ones skips it.
+    if 'lei2_tiny' in csv_files:
+        generate_artefact_populate_sql(
+            csv_file=csv_files['lei2_tiny'],
+            dataset_name='GLEIF LEI Entities (Tiny)',
+            dataset_code='gleif.lei_entities.tiny',
+            table_name='dq_lei_entities_artefact_tbl',
+            column_map=LEI2_COLUMN_MAP,
+            timestamp_cols=LEI2_TIMESTAMP_COLS,
+            output_file=output_dir / 'lei_entities_tiny_artefact_populate.sql',
+        )
+
+    if 'rr_tiny' in csv_files:
+        generate_artefact_populate_sql(
+            csv_file=csv_files['rr_tiny'],
+            dataset_name='GLEIF LEI Relationships (Tiny)',
+            dataset_code='gleif.lei_relationships.tiny',
+            table_name='dq_lei_relationships_artefact_tbl',
+            column_map=RR_COLUMN_MAP,
+            timestamp_cols=RR_TIMESTAMP_COLS,
+            output_file=output_dir / 'lei_relationships_tiny_artefact_populate.sql',
+        )
+
     generate_artefact_populate_sql(
         csv_file=csv_files['lei2_small'],
         dataset_name='GLEIF LEI Entities (Small)',
@@ -677,7 +713,9 @@ def main():
               file=sys.stderr)
 
     # Generate master include
-    generate_master_sql(output_dir / 'lei_populate.sql')
+    generate_master_sql(output_dir / 'lei_populate.sql',
+                        sizes=tuple(s for s in ('tiny', 'small', 'large')
+                                    if f'lei2_{s}' in csv_files))
 
     print()
     print("Generation complete!")

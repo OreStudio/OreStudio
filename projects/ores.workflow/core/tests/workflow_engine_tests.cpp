@@ -131,9 +131,9 @@ struct fixture {
         // run rolls back, to a stream. One has to cover both subjects these
         // cases use, exactly as the service ensures at start; without it the
         // publish times out and the engine refuses to dispatch.
-        nats.make_admin().ensure_stream(nats.make_stream_name("workflow_test"),
-                                        nats.covering_subjects(
-                                            {step_subject, compensation_subject}));
+        nats.make_admin().ensure_stream(
+            nats.make_stream_name("workflow_test"),
+            nats.covering_subjects({step_subject, compensation_subject}));
         // The machine's states are dq's seed data, in the system tenant. The
         // run's rows are this case's own, in the test tenant.
         const auto engine_context = [&] {

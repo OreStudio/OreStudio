@@ -8,7 +8,7 @@
 #+filetags: :dq:codegen:cleanup:lookup-entity:finish-the-dq-artefact-migration:sprint_28:v0:
 #+owner: marco
 #+branch: feature/move-the-lookup-artefact-tables-onto-domain-models
-#+pr:
+#+pr: 3294
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3294][#3294]] | [refdata] Move the lookup artefact tables onto domain models |
 
 * Review
 

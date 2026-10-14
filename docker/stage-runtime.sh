@@ -56,9 +56,12 @@ fi
 
 # A single `ldd` call on a binary resolves its FULL transitive closure (the
 # dynamic linker's own view), not just direct links — no recursion needed
-# even though our libraries depend on one another.
+# even though our libraries depend on one another. The `|| true` matters:
+# `ldd` fails on anything in bin/ that is not an ELF binary, and this script
+# runs under `set -euo pipefail`, so a single failing ldd aborts the staging
+# in silence and ships an image carrying no libraries at all.
 needed_libs=$(for b in "$stage"/bin/*; do
-    ldd "$b" 2>/dev/null | awk -v p="$publish/" 'index($3, p) == 1 {print $1}'
+    ldd "$b" 2>/dev/null | awk -v p="$publish/" 'index($3, p) == 1 {print $1}' || true
 done | sort -u)
 
 for lib in $needed_libs; do
@@ -67,6 +70,17 @@ for lib in $needed_libs; do
     cp -a "$publish/lib/$lib" "$stage/lib/"
     cp -a "$real" "$stage/lib/"
 done
+
+# The build manifest travels beside the binaries, and is copied only now, so
+# that it is not in bin/ while the ldd walk above runs. A service resolves it
+# relative to its own executable, so leaving it behind makes every deployed
+# container report an unknown commit.
+if [[ -f "$publish/bin/version.manifest" ]]; then
+    cp -a "$publish/bin/version.manifest" "$stage/bin/"
+else
+    echo "Warning: $publish/bin/version.manifest not found -- deployed" \
+         "containers will report an unknown commit" >&2
+fi
 
 # Strip debug symbols on the host BEFORE podman ever sees the files.
 # This eliminates the dedicated strip Dockerfile stage: the build context

@@ -188,6 +188,7 @@ def stage_for_build(
         base/run/         ← empty, mode 777
         base/storage/     ← empty, mode 777
         services/<svc>/bin/<svc>       ← service binary
+        services/<svc>/bin/version.manifest ← the build record it reads
         services/<svc>/lib/<soname>…   ← extra libs (if any)
 
     Each lib is copied as both the unversioned SONAME symlink **and** its
@@ -221,6 +222,12 @@ def stage_for_build(
         (svc_dir / "bin").mkdir(parents=True, exist_ok=True)
         # Service binary
         _copy_file(bin_dir / svc, svc_dir / "bin" / svc)
+        # The build record goes beside the binary that reads it. A service
+        # resolves the manifest from its own executable path, so an image
+        # without it reports an unknown commit.
+        manifest = bin_dir / "version.manifest"
+        if manifest.is_file():
+            _copy_file(manifest, svc_dir / "bin" / "version.manifest")
         # Entrypoint symlink — relative, resolves inside /app/bin at
         # runtime.  COPY <dir>/ /app/bin/ preserves the symlink as-is.
         entrypoint = svc_dir / "bin" / "entrypoint"

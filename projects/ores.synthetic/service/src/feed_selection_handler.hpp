@@ -99,7 +99,8 @@ private:
         }
         if (!registry_.permits_all_configs(*ctx) || !feed_kind_registry::permits_run(*ctx)) {
             BOOST_LOG_SEV(feed_selection_handler_lg(), warn)
-                << "Rejecting " << msg.subject << ": missing a feed config read permission or the run permission.";
+                << "Rejecting " << msg.subject
+                << ": missing a feed config read permission or the run permission.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

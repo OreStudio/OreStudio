@@ -688,11 +688,11 @@ TEST_CASE("feed_verbs_refuse_a_caller_who_may_read_the_feeds_but_not_run_them", 
                                    {"synthetic::fx_spot_generation_configs:read",
                                     "synthetic::ir_curve_generation_configs:read"});
     const auto forbidden = [&](const std::string& subject, auto body) {
-        const auto reply = f.nats.request_sync(
-            subject,
-            std::move(body),
-            {{std::string(ores::nats::headers::authorization),
-              std::string(ores::nats::headers::bearer_prefix) + reader}});
+        const auto reply =
+            f.nats.request_sync(subject,
+                                std::move(body),
+                                {{std::string(ores::nats::headers::authorization),
+                                  std::string(ores::nats::headers::bearer_prefix) + reader}});
         REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
         CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
     };
@@ -703,11 +703,11 @@ TEST_CASE("feed_verbs_refuse_a_caller_who_may_read_the_feeds_but_not_run_them", 
     forbidden(test_stop_subject,
               ores::nats::default_wire_codec().encode(
                   stop_feeds_under_folder_request{.folder_id = folder}));
-    forbidden(test_select_start_subject,
-              ores::nats::default_wire_codec().encode(
-                  start_selected_feeds_request{.folder_id = folder}));
-    forbidden(test_select_stop_subject,
-              ores::nats::default_wire_codec().encode(
-                  stop_selected_feeds_request{.folder_id = folder}));
+    forbidden(
+        test_select_start_subject,
+        ores::nats::default_wire_codec().encode(start_selected_feeds_request{.folder_id = folder}));
+    forbidden(
+        test_select_stop_subject,
+        ores::nats::default_wire_codec().encode(stop_selected_feeds_request{.folder_id = folder}));
     CHECK(f.ctrl->running_count() == 0);
 }

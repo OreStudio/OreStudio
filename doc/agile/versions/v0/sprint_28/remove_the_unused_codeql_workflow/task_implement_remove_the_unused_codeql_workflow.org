@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 5EA8CED3-CAAE-4BE0-8E99-F9E86E759DBD
+:END:
+#+title: Task: Delete the CodeQL workflow and its documentation row
+#+description: Initial task for: Remove the unused CodeQL workflow
+#+type: task
+#+level: s1
+#+filetags: :remove_the_unused_codeql_workflow:sprint_28:v0:
+#+owner: marco
+#+branch: feature/remove-the-unused-codeql-workflow
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C33D9683-A295-4552-B3EC-D6B60E6DA01A][Remove the unused CodeQL workflow]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No CodeQL workflow remains, and the CI workflows page describes the workflows that actually run.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C33D9683-A295-4552-B3EC-D6B60E6DA01A][Remove the unused CodeQL workflow]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- codeql-analysis.yml is gone.
+- The CI workflows page no longer lists it and its count is right.
+- No workflow depends on CodeQL.
+
+* Plan
+
+Delete the workflow file, and remove its row from the CI workflows page
+whose intro counts the workflows that keep their own triggers.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| CodeQL workflow triggers, before | =workflow_dispatch= only; the schedule is commented out | =.github/workflows/codeql-analysis.yml= | 33cea4b828 |
+| Workflows keeping their own triggers, before | 11 | =ci-workflows-and-local-checks.org= line 120 | 33cea4b828 |
+| Workflows keeping their own triggers, after | 10 | same | this branch |
+| Dependants of the workflow | none | =grep -rn -i codeql .github/workflows= | 33cea4b828 |
+
+* Notes
+
+** It was already dormant
+
+The workflow triggered on =workflow_dispatch= alone, and its nightly
+schedule is commented out. Nothing in the repository calls it.
+
+** The remaining mentions are not dependencies
+
+=continuous-linux.yml=, =nightly-linux.yml= and =site-cdash.yml= mention
+CodeQL only as =sudo rm -rf /opt/hostedtoolcache/CodeQL=, part of the
+runner-image disk cleanup. That directory belongs to the image rather than
+to us, so the line stays even though we do not run CodeQL.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=codeql-analysis.yml= is deleted. The CI workflows page now lists ten
+workflows instead of eleven and no longer carries the CodeQL row.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Nothing was left broken: the workflow was reachable only by manual
+dispatch, and no other workflow or job referenced it.

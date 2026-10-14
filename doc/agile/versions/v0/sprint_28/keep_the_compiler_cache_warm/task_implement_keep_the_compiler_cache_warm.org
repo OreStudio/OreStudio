@@ -8,7 +8,7 @@
 #+filetags: :keep_the_compiler_cache_warm:sprint_28:v0:
 #+owner: marco
 #+branch: feature/keep-the-compiler-cache-warm
-#+pr:
+#+pr: 3291
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3291][#3291]] | [ci] Save the compiler cache when a continuous job is cancelled |
 
 * Review
 

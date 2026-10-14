@@ -39,7 +39,7 @@ Continuous Linux carries only the two linux-clang jobs and runs as often as thei
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:5921932D-AF34-46B9-8DC5-9B72A61A3EF7][Scaffold story: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] | STARTED | 2026-10-14 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5921932D-AF34-46B9-8DC5-9B72A61A3EF7][Scaffold story: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:9DCD40BB-AA17-4F99-9C3B-434BDAC831F2][Rebalance the continuous and nightly schedules]] | BACKLOG | | | Initial task for: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly |
 
 * Decisions

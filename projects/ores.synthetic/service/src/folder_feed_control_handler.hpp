@@ -104,40 +104,52 @@ public:
             return;
         }
 
-        const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
+        // The subtree walk reads the registry and start_feeds builds and starts
+        // each feed, so either can throw. An exception leaving this handler
+        // reaches the transport, which contains it but sends no reply, and the
+        // caller waits out its deadline for an answer this handler owed it.
+        try {
+            const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
-        // Forwarded so delegated service-to-service lookups (vintage
-        // resolution inside the IR producer builder) run in the caller's
-        // own tenant/party context — without it, the lookups silently run
-        // as this service's own system-tenant identity, which cannot see
-        // another tenant's market_observation rows (RLS).
-        const auto bearer = ores::nats::service::extract_bearer(msg);
-        const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
+            // Forwarded so delegated service-to-service lookups (vintage
+            // resolution inside the IR producer builder) run in the caller's
+            // own tenant/party context — without it, the lookups silently run
+            // as this service's own system-tenant identity, which cannot see
+            // another tenant's market_observation rows (RLS).
+            const auto bearer = ores::nats::service::extract_bearer(msg);
+            const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
 
-        const auto outcome = start_feeds(
-            registry_,
-            *ctrl_,
-            ctx,
-            bctx,
-            bearer,
-            [&](const feed_start_target& t) {
-                const auto& c = t.row.candidate;
-                return c.folder_id && folder_ids.contains(*c.folder_id);
-            },
-            "folder " + req->folder_id);
+            const auto outcome = start_feeds(
+                registry_,
+                *ctrl_,
+                ctx,
+                bctx,
+                bearer,
+                [&](const feed_start_target& t) {
+                    const auto& c = t.row.candidate;
+                    return c.folder_id && folder_ids.contains(*c.folder_id);
+                },
+                "folder " + req->folder_id);
 
-        start_feeds_under_folder_response resp;
-        resp.success = true;
-        resp.started = outcome.started;
-        resp.already_running = outcome.already_running;
-        resp.skipped = outcome.skipped;
-        resp.by_kind = outcome.by_kind;
-        resp.message = std::to_string(resp.started) + " started, " +
-                       std::to_string(resp.already_running) + " already running, " +
-                       std::to_string(resp.skipped) + " skipped";
-        BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
-            << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;
-        reply(nats_, msg, resp);
+            start_feeds_under_folder_response resp;
+            resp.success = true;
+            resp.started = outcome.started;
+            resp.already_running = outcome.already_running;
+            resp.skipped = outcome.skipped;
+            resp.by_kind = outcome.by_kind;
+            resp.message = std::to_string(resp.started) + " started, " +
+                           std::to_string(resp.already_running) + " already running, " +
+                           std::to_string(resp.skipped) + " skipped";
+            BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
+                << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(folder_feed_control_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  start_feeds_under_folder_response{.success = false, .message = e.what()});
+        }
     }
 
     void stop(ores::nats::message msg) {
@@ -159,21 +171,29 @@ public:
             return;
         }
 
-        const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
+        try {
+            const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
-        const auto outcome = stop_feeds(registry_, *ctrl_, ctx, [&](const feed_kind_row& row) {
-            const auto& c = row.candidate;
-            return c.folder_id && folder_ids.contains(*c.folder_id);
-        });
+            const auto outcome = stop_feeds(registry_, *ctrl_, ctx, [&](const feed_kind_row& row) {
+                const auto& c = row.candidate;
+                return c.folder_id && folder_ids.contains(*c.folder_id);
+            });
 
-        stop_feeds_under_folder_response resp;
-        resp.success = true;
-        resp.stopped = outcome.stopped;
-        resp.stopped_by_kind = outcome.by_kind;
-        resp.message = std::to_string(resp.stopped) + " feed(s) stopped";
-        BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
-            << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;
-        reply(nats_, msg, resp);
+            stop_feeds_under_folder_response resp;
+            resp.success = true;
+            resp.stopped = outcome.stopped;
+            resp.stopped_by_kind = outcome.by_kind;
+            resp.message = std::to_string(resp.stopped) + " feed(s) stopped";
+            BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
+                << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(folder_feed_control_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  stop_feeds_under_folder_response{.success = false, .message = e.what()});
+        }
     }
 
 private:

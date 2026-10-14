@@ -178,55 +178,66 @@ public:
             return;
         }
 
-        std::string source_name = req->source_name;
-        if (!req->config_id.empty()) {
-            // The registry resolves the config_id to its source_name server-side
-            // so the client never needs the naming conventions.
-            const auto target = registry_.resolve(req_ctx, req->config_id);
-            if (!target) {
-                reply(nats_,
-                      msg,
-                      stop_feed_response{.success = false,
-                                         .message = "Feed config not found: " + req->config_id});
-                return;
-            }
-            source_name = target->row.candidate.source_name;
-        }
-
-        // Naming no feed stops every feed the service runs, those of other tenants included,
-        // so only the system tenant may ask for it.
-        if (source_name.empty() && !feed_kind_registry::is_system_caller(req_ctx)) {
-            reply(nats_,
-                  msg,
-                  stop_feed_response{.success = false, .message = "Name the feed to stop."});
-            return;
-        }
-
-        // A system feed runs once for every tenant, so only the system tenant stops it,
-        // whether the caller names it by its config or by its source.
-        if (!feed_kind_registry::is_system_caller(req_ctx)) {
-            const auto system = registry_.system_containers(req_ctx);
-            for (const auto& row : registry_.rows(req_ctx)) {
-                if (row.candidate.source_name == source_name &&
-                    system.contains(row.candidate.container_id)) {
-                    reply(nats_,
-                          msg,
-                          stop_feed_response{.success = false,
-                                             .message =
-                                                 "A system feed stops only in the system tenant."});
+        // The registry reads the configured feeds and the controller runs them,
+        // so either can throw. An exception leaving this handler reaches the
+        // transport, which contains it but sends no reply, and the caller then
+        // waits out its deadline for an answer this handler could have given.
+        try {
+            std::string source_name = req->source_name;
+            if (!req->config_id.empty()) {
+                // The registry resolves the config_id to its source_name server-side
+                // so the client never needs the naming conventions.
+                const auto target = registry_.resolve(req_ctx, req->config_id);
+                if (!target) {
+                    reply(
+                        nats_,
+                        msg,
+                        stop_feed_response{.success = false,
+                                           .message = "Feed config not found: " + req->config_id});
                     return;
                 }
+                source_name = target->row.candidate.source_name;
             }
-        }
 
-        const auto stopped = ctrl_->stop(source_name);
-        stop_feed_response resp;
-        resp.success = true; // idempotent — 0 stopped means it was already stopped
-        resp.message = std::to_string(stopped) + " feed(s) stopped";
-        BOOST_LOG_SEV(feed_config_handler_lg(), info)
-            << msg.subject << " — " << resp.message
-            << (source_name.empty() ? " (all)" : " (" + source_name + ")");
-        reply(nats_, msg, resp);
+            // Naming no feed stops every feed the service runs, those of other tenants included,
+            // so only the system tenant may ask for it.
+            if (source_name.empty() && !feed_kind_registry::is_system_caller(req_ctx)) {
+                reply(nats_,
+                      msg,
+                      stop_feed_response{.success = false, .message = "Name the feed to stop."});
+                return;
+            }
+
+            // A system feed runs once for every tenant, so only the system tenant stops it,
+            // whether the caller names it by its config or by its source.
+            if (!feed_kind_registry::is_system_caller(req_ctx)) {
+                const auto system = registry_.system_containers(req_ctx);
+                for (const auto& row : registry_.rows(req_ctx)) {
+                    if (row.candidate.source_name == source_name &&
+                        system.contains(row.candidate.container_id)) {
+                        reply(nats_,
+                              msg,
+                              stop_feed_response{
+                                  .success = false,
+                                  .message = "A system feed stops only in the system tenant."});
+                        return;
+                    }
+                }
+            }
+
+            const auto stopped = ctrl_->stop(source_name);
+            stop_feed_response resp;
+            resp.success = true; // idempotent — 0 stopped means it was already stopped
+            resp.message = std::to_string(stopped) + " feed(s) stopped";
+            BOOST_LOG_SEV(feed_config_handler_lg(), info)
+                << msg.subject << " — " << resp.message
+                << (source_name.empty() ? " (all)" : " (" + source_name + ")");
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, stop_feed_response{.success = false, .message = e.what()});
+        }
     }
 
     void list(ores::nats::message msg) {
@@ -248,13 +259,21 @@ public:
             return;
         }
 
-        list_feeds_response resp;
-        // The empty kind scopes to nothing: every running feed, every kind.
-        resp.running_source_names = ctrl_->list();
-        resp.success = true;
-        BOOST_LOG_SEV(feed_config_handler_lg(), info)
-            << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";
-        reply(nats_, msg, resp);
+        try {
+            list_feeds_response resp;
+            // The empty kind scopes to nothing: every running feed, every kind.
+            resp.running_source_names = ctrl_->list();
+            resp.success = true;
+            BOOST_LOG_SEV(feed_config_handler_lg(), info)
+                << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            // This response carries no message field, so the reason is only in
+            // the log; success=false is what the caller can act on.
+            reply(nats_, msg, list_feeds_response{.success = false});
+        }
     }
 
 private:

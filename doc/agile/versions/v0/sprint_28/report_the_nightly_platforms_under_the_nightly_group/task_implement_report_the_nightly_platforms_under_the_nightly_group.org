@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 6B6F19EC-7658-437F-8636-E3CE6998FCD9
+:END:
+#+title: Task: Switch the macOS and Windows build group to Nightly
+#+description: Initial task for: Report the nightly platform builds under the CDash Nightly group
+#+type: task
+#+level: s1
+#+filetags: :report_the_nightly_platforms_under_the_nightly_group:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:68D196A8-B335-437D-806A-581546034558][Report the nightly platform builds under the CDash Nightly group]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every macOS and Windows build appears under the CDash Nightly group, and every Linux clang continuous build under Continuous.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:68D196A8-B335-437D-806A-581546034558][Report the nightly platform builds under the CDash Nightly group]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- nightly-macos.yml and nightly-windows.yml pass build_group=Nightly.
+- continuous-linux.yml still passes build_group=Continuous.
+- No workflow passes the unsupported group Site to CTest.cmake.
+
+* Plan
+
+The tier move renamed the macOS and Windows workflows but left their CDash
+group behind. Point both at Nightly, and check no other caller passes a
+group that CTest.cmake does not accept.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Workflows passing =build_group=Continuous=, before | 3: continuous-linux, nightly-macos, nightly-windows | =grep -rn build_group .github/workflows= | 28b6d95758 |
+| Workflows passing =build_group=Continuous=, after | 1: continuous-linux | same | this branch |
+| The =Site= group | accepted by =CTestSite.cmake=, not =CTest.cmake= | =site-cdash.yml= line 141 | 28b6d95758 |
+
+* Notes
+
+** Why it was wrong
+
+=build_group= is handed to =ctest_start()=, which decides the CDash group
+the build lands in. macOS and Windows were continuous when that value was
+written, and renaming the workflows to nightly left it behind, so CDash
+filed nightly platform builds under Continuous.
+
+** The Site group is not a defect
+
+=site-cdash.yml= passes =build_group=Site=, but to =CTestSite.cmake=, which
+accepts it. =CTest.cmake= would reject it, and nothing passes Site to that
+script.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=nightly-macos.yml= and =nightly-windows.yml= now pass
+=build_group=Nightly=, so CDash files the macOS and Windows builds under
+the Nightly group alongside the Nightly Build. =continuous-linux.yml=
+still passes =Continuous=, and the =Site= group belongs to
+=CTestSite.cmake=, so it is untouched.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: no macOS or Windows run has been submitted since the
+change. Their first runs after this merge are the proof, and they land in
+the CDash Nightly group.

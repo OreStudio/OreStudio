@@ -230,7 +230,7 @@ jobs:
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          export cmake_args="build_group=Continuous,preset=${preset}"
+          export cmake_args="build_group=Nightly,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Show sccache statistics

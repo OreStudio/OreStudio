@@ -485,10 +485,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Every step of a provisioning run is dispatched here, whatever kind it is,
     // because the payload names the kind. The engine sends a step with no caller
     // token, so the handler mints its own from the run's administrator.
-    subs.push_back(nats.queue_subscribe(
+    //
+    // The subscription is durable, on the stream the service ensures at start.
+    // A step dispatched while this service is restarting now waits on the
+    // server for a consumer; as a core subscription it was discarded, with no
+    // trace on either side, and the run expired twenty minutes later.
+    subs.push_back(nats.js_queue_subscribe(
         std::string(ores::iam::workflow::provision_tenant_step_subject),
+        "iam-provisioning-step",
         qg,
-        [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); }));
+        [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); },
+        nats.make_stream_name("iam_steps")));
     // The account-picture reconcile the attach_photos step runs is also a
     // subject, so an operator can re-run it from a client and a scope that is
     // not a provisioning run can be reconciled.

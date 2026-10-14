@@ -255,16 +255,33 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
     const auto data = std::as_bytes(std::span{step.command_json.data(), step.command_json.size()});
 
     using namespace ores::workflow::messaging;
+    // The command goes to a stream rather than to core NATS, so the server
+    // holds it until the serving service acknowledges it. A step dispatched
+    // while that service was restarting used to be discarded with no trace,
+    // and the run expired twenty minutes later; on a stream it waits instead.
+    //
     // The step id travels as the correlation id as well as its own header, so
     // the handler's entry line carries the same key this dispatch logs and the
     // two can be joined by one grep. with_correlation_id() only applies to
-    // request/reply, so a fire-and-forget command has to set it here.
-    nats_.publish(step.command_subject,
-                  data,
-                  {{std::string(step_id_header), step_id_str},
-                   {std::string(instance_id_header), inst_id_str},
-                   {std::string(tenant_id_header), tenant_id_str},
-                   {std::string(ores::nats::headers::nats_correlation_id), step_id_str}});
+    // request/reply, so a command has to set it here.
+    try {
+        nats_.js_publish(step.command_subject,
+                         data,
+                         {{std::string(step_id_header), step_id_str},
+                          {std::string(instance_id_header), inst_id_str},
+                          {std::string(tenant_id_header), tenant_id_str},
+                          {std::string(ores::nats::headers::nats_correlation_id), step_id_str}});
+    } catch (const std::exception& e) {
+        // Nothing was accepted, so nothing will answer and the step would sit
+        // awaiting until its deadline. Say why here rather than leave the
+        // deadline text to guess at it.
+        BOOST_LOG_SEV(lg(), error)
+            << "Step command could not be published to a stream, so no service was asked to "
+               "act: workflow="
+            << inst_id_str << " step=" << step.name << " step_id=" << step_id_str
+            << " subject=" << step.command_subject << " error=" << e.what();
+        throw;
+    }
 }
 
 void workflow_engine::publish_status_event(const boost::uuids::uuid& instance_id,

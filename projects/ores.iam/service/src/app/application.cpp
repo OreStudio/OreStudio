@@ -19,6 +19,7 @@
  */
 #include "ores.iam.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.core/messaging/registrar.hpp"
@@ -69,6 +70,25 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
+
+    // The provisioning step command is dispatched by the workflow engine and
+    // served here, on a durable subscription, so the stream that holds it must
+    // exist before the handlers are registered. A step published while this
+    // service was restarting used to be discarded with no trace on either side;
+    // on a stream the server keeps it until a consumer acknowledges it.
+    try {
+        const auto step_stream = nats.make_stream_name("iam_steps");
+        nats.make_admin().ensure_stream(
+            step_stream,
+            nats.covering_subjects({ores::iam::workflow::provision_tenant_step_subject}));
+        BOOST_LOG_SEV(lg(), info) << "IAM step JetStream stream ready: " << step_stream;
+    } catch (const std::exception& e) {
+        // Without the stream no step can be delivered, so fail loudly rather
+        // than run as a service that looks healthy and drops every step
+        // addressed to it.
+        BOOST_LOG_SEV(lg(), error) << "Failed to ensure the IAM step stream: " << e.what();
+        throw;
+    }
 
     // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY -> NATS publish.
     // The per-entity registrars are composed in event_registrar.cpp. Without

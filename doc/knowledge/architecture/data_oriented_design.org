@@ -132,9 +132,14 @@ written:
   wrapper in sprint 19, and the bond export carrier
   =bond_instrument_data= on main in October 2026.
 
-The limit is per literal, not per struct or per translation unit, so
-moving a type between headers does not help, and no compiler flag
-raises it on MSVC.
+The limit reaches C1202 by two paths. One is the width of a single
+literal, which is why moving a type between headers does not help and no
+compiler flag raises it on MSVC. The other is accumulation across a
+unit: a unit that reflects many individually safe literals can still
+fail. Measured 2026-10-13, the 24-member =tenor_basis_swap_convention=
+literal built in a unit of twelve repository headers and failed inside
+the configuration document handler, which reaches 58 document element
+types through 103 repository headers.
 
 The rule: *keep the names reachable from one tagged write small, by
 writing the parts of a large carrier separately rather than as one
@@ -142,6 +147,13 @@ tagged aggregate.* Splitting a wide entity into =field_group= members
 shapes its JSON and keeps each group readable, but no direct-member
 count is the C1202 limit; the nine-member figure this page once gave
 was a margin, not a measured ceiling.
+
+The accumulation path gives a second rule for document models. A model
+that aggregates several entity families hands its unit a literal width
+equal to the sum of them, so name one family per document model and
+split a document that covers two. A component's per-entity protocols do
+not help here, because a document protocol includes the domain headers
+directly and re-aggregates what the per-entity split separated.
 
 ** The data model of a component
 

@@ -1,0 +1,75 @@
+root      /home/marco/Development/OreStudio/ores_dev_festive_dijkstra
+unit      projects/ores.refdata/core/src/messaging/configuration_document_handler.cpp
+
+include closure
+  repository headers reached   103
+  third-party include sites    371
+  third-party roots            algorithm, atomic, boost, chrono, compare, cstddef, cstdint, exception, expected, functional, initializer_list, magic_enum, memory, mutex, optional, ostream, rfl, rfl.hpp, span, sqlgen, sstream, stdexcept, string_view, thread, type_traits, unordered_map, utility, vector
+
+control unit (same struct, unit of its own)
+  unit                         projects/ores.refdata/api/src/domain/tenor_basis_swap_convention_json_io.cpp
+  repository headers reached   12
+  third-party include sites    37
+
+conventions_document: 25 reflected element types
+    60  commodity_future_convention
+    34  cross_currency_basis_convention
+    27  cross_currency_fix_float_convention
+    26  inflation_swap_convention
+    24  tenor_basis_swap_convention
+    22  ois_convention
+    21  bma_basis_swap_convention
+    20  average_ois_convention
+    20  tenor_basis_two_swap_convention
+    20  cds_convention
+    19  zero_convention
+    18  fx_option_convention
+    17  deposit_convention
+    17  swap_convention
+    17  cms_spread_option_convention
+    17  commodity_forward_convention
+    16  zero_inflation_index_convention
+    16  bond_yield_convention
+    15  future_convention
+    14  ibor_index_convention
+    12  swap_index_convention
+    12  intraday_power_load_convention
+    12  overnight_index_convention
+    11  fra_convention
+     4  fx_convention
+
+curve_configuration_document: 33 reflected element types
+    46  cap_floor_volatility_config
+    40  curve_segment
+    39  curve_volatility_config
+    34  swaption_volatility_config
+    34  default_curve_configuration
+    31  commodity_curve_config
+    29  fx_volatility_config
+    29  inflation_cap_floor_volatility_config
+    27  inflation_curve_config
+    26  base_correlation_config
+    25  curve_global_report
+    24  curve_correlation_config
+    23  equity_curve_config
+    23  commodity_volatility_config
+    22  yield_curve_config
+    22  curve_report_configuration
+    21  equity_volatility_config
+    20  curve_bootstrap_config
+    19  yield_volatility_config
+    19  bond_future_volatility_config
+    19  curve_quote
+    18  commodity_price_segment
+    16  cds_volatility_config
+    15  curve_security_config
+    15  curve_segment_curve
+    14  curve_definition
+    14  cds_volatility_term
+    14  curve_parametric_smile
+    14  curve_parametric_smile_parameter
+    14  intraday_power_curve_config
+    12  inflation_seasonality_factor
+    11  curve_configuration_section
+    11  default_curve_config
+

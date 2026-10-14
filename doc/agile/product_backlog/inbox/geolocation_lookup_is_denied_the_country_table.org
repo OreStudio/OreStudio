@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: E9C675BD-4C5D-4D7A-A908-DE2FCC197976
+:END:
+#+title: On login geolocation the country lookup fails with a genuine…
+#+description: On login geolocation the country lookup fails with a genuine grant or row-level-security defect, and the failure is logged and then discarded. Observed 2026-10-14 10:59:12 in the iam service journal under component ores.geo.service.geolocation_service: ERROR: permission denied for table ores_geo_ip2country_tbl. The error is raised inside PL/pgSQL function ores_geo_ip2country_lookup_fn(uuid,inet) at line 15 of its RETURN QUERY, which selects c.country_code from ores_geo_ip2country_tbl c where c.tenant_id = p_tenant_id and c.ip_range @> ip_as_bigint limit 1. The login succeeds and continues, so the caller silently loses the country; the surrounding workflow never learns that anything failed, and the workflow step that was running at the time did not use the geolocation at all, so this is an independent defect rather than the cause of that step's silence. It is either a missing grant on the table or a policy that was never applied to this database.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

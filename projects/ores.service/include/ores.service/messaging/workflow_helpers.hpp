@@ -20,6 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -154,7 +155,13 @@ private:
                                                               .log = log};
 
         const auto data = ores::nats::default_wire_codec().encode(event);
-        nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject, data);
+        // The step id identifies the work, so the stream stores one completion
+        // for it however many times the publish is attempted. The engine's own
+        // duplicate guard remains the second line, because the stream's window
+        // is finite.
+        nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject,
+                         data,
+                         ores::nats::headers::publish_identity_headers(step_id));
     }
 };
 

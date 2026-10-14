@@ -21,6 +21,7 @@
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/asio/steady_timer.hpp>
@@ -92,9 +93,13 @@ void batch_workflow_bridge::poll_once() {
             // returns without a server acknowledgement: it succeeds with no
             // subscriber and no stream, so a completion published while the
             // workflow service is down would be discarded in silence.
+            //
+            // The step id is the identity of the work, so a retry after a
+            // failed publish stores one completion rather than two.
             nats_.js_publish(
                 std::string(ores::workflow::messaging::step_completed_event::nats_subject),
-                ores::nats::default_wire_codec().encode(evt));
+                ores::nats::default_wire_codec().encode(evt),
+                ores::nats::headers::publish_identity_headers(link.workflow_step_id));
 
             BOOST_LOG_SEV(lg(), info) << "Fired step_completed for batch " << batch_id
                                       << " (step=" << link.workflow_step_id

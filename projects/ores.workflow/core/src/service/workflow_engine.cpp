@@ -265,11 +265,15 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
     // two can be joined by one grep. with_correlation_id() only applies to
     // request/reply, so a command has to set it here.
     try {
+        // The step id is the identity of this piece of work, so the stream can
+        // deduplicate a re-dispatch of it: a retry after a lost publish ack
+        // stores one command, not two.
         nats_.js_publish(step.command_subject,
                          data,
                          {{std::string(step_id_header), step_id_str},
                           {std::string(instance_id_header), inst_id_str},
                           {std::string(tenant_id_header), tenant_id_str},
+                          {std::string(ores::nats::headers::nats_msg_id), step_id_str},
                           {std::string(ores::nats::headers::nats_correlation_id), step_id_str}});
     } catch (const std::exception& e) {
         // Nothing was accepted, so nothing will answer and the step would sit

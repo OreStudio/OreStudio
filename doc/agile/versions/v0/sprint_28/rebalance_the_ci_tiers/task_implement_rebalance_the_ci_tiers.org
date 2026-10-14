@@ -8,7 +8,7 @@
 #+filetags: :rebalance_the_ci_tiers:sprint_28:v0:
 #+owner: marco
 #+branch: feature/implement-rebalance-the-ci-tiers
-#+pr:
+#+pr: 3288
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3288][#3288]] | [ci] Rebalance the CI tiers onto a three-hour clang cadence |
 
 * Review
 

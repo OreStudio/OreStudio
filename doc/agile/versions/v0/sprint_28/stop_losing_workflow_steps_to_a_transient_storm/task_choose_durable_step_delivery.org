@@ -26,11 +26,11 @@ Decide and record how a step command is delivered so that a subscriber that is m
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:03F84BC2-3F45-43EA-8924-FEA9246A1A9C][Stop the workflow from losing steps to a transient storm]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -85,3 +85,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The command goes to a stream, and the serving service consumes it durably.
+
+** The decision. Publish step commands with =js_publish= and serve the subject
+from a =js_queue_subscribe= durable. The alternative was an engine-side outbox
+that re-publishes unacknowledged commands; it lost because it needs the engine
+to track per-command acknowledgement itself, which is the delivery guarantee a
+stream already provides, and because the transport is the layer that can
+actually keep a message.
+
+** What made this small. The codebase had already made the choice for the
+messages that surround a run: =start_workflow_message=, the synthetic feeds
+and =marketdata_ticks= all publish through JetStream, and the client already
+had =js_publish=, =js_queue_subscribe= and =ensure_stream=. What was missing
+was carrying it to the steps.
+
+** Queue-group semantics are preserved. The durable is
+=iam-provisioning-step= in queue group =ores.iam.service= with explicit
+acknowledgement, which is the same one-of-N delivery the fleet had, plus
+persistence.
+
+** Proof, on the live server. With =ores.iam.service= stopped, a message was
+published to =iam.v1.ops.provision_tenant_step=. The stream held it
+(=messages=1=) with no consumer connected, and delivered it on restart, where
+the handler logged its entry line and the new error for a command it could not
+read. Under core NATS that message was discarded; this is the same shape as the
+step that started this story.
+
+** Left open. The consumer had no =inactive_threshold=, so it is recreated on
+restart and its =deliver_policy= is =all=: a command that arrives while the
+service is down is delivered, which is what the story needs. Redelivery of a
+command whose handler dies before acknowledging has not been exercised, and
+=max_deliver= is unlimited, so that is the next thing to decide.

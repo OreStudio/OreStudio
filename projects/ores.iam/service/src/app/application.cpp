@@ -19,9 +19,9 @@
  */
 #include "ores.iam.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.core/messaging/registrar.hpp"
 #include "ores.iam.core/service/role_grant_applier.hpp"
 #include "ores.iam.service/app/application_exception.hpp"

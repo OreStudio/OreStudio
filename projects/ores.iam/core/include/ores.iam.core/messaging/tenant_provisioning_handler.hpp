@@ -595,7 +595,8 @@ public:
             // no other way to learn that the command did reach a service.
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step: the step command could not be read, so the step is left "
-                   "unanswered and the run will expire it. subject=" << msg.subject;
+                   "unanswered and the run will expire it. subject="
+                << msg.subject;
             return;
         }
 

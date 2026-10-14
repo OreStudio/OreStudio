@@ -93,12 +93,31 @@ every file-local constant and helper becomes =static= or moves into an
 anonymous namespace. The sweep's size is unknown, because the build stops
 at the first collision.
 
+** The cache, not the compile work, is the whole story
+
+Run 37097859492 on 2026-10-03 built at an 85.72 % sccache hit rate. Its
+=linux-clang-release-ninja= job finished the whole build in about 49
+minutes, ran the suites in 340.30 s, and failed only one of 89 tests. The
+job took 1h0m1s in total. The same job needs more than six hours at the
+3 to 10 per cent hit rate it sees now, which is why it times out. The
+tree is not too big to build; the cache is cold.
+
+** Why it cannot recover on its own
+
+A job that hits the six-hour limit is cancelled, so it never reaches
+=Save sccache= and the entry is never refreshed. The next run restores
+the same stale entry, misses again, and times out again. The cache size
+follows the same trap: the clang-release entry is 1.22 GB against its
+2.5 GB ceiling, because it takes several completing runs to fill.
+
 ** What is left
 
-Precompiled headers, which do not change translation-unit boundaries and
-so carry no collision risk, and the sweep that would unblock unity. The
-non-unity baseline build runs in =build/output/nounity-trial= for the
-comparison.
+Cutting compile work is needed only to break that deadlock once, because
+a low-hit run has to complete before the cache can be refreshed. Unity is
+blocked on the symbol sweep; precompiled headers are the open lever. The
+other route is to let the two remaining variants hold a larger share of
+the 10 GB cache, so one refresh survives. A non-unity baseline build runs
+in =build/output/nounity-trial= for the comparison.
 
 * Test Scenarios
 

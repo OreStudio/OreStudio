@@ -233,8 +233,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Report instance trigger (hand-crafted handler — not codegen)
     // ----------------------------------------------------------------
     {
-        auto rith =
-            std::make_shared<report_instance_trigger_handler>(nats, ctx, verifier, instance_states);
+        auto rith = std::make_shared<report_instance_trigger_handler>(
+            nats, ctx, verifier, instance_states, svc_nats);
         subs.push_back(nats.queue_subscribe(
             trigger_report_instance_request::nats_subject, group, [rith](ores::nats::message msg) {
                 rith->trigger(std::move(msg));

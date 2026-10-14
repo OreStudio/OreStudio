@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 5802E374-3FE3-471B-BE03-D1FFD25F418E
+:END:
+#+title: Task: Add a Free disk space step to nightly-macos.yml
+#+description: Initial task for: Free disk space on the macOS runner
+#+type: task
+#+level: s1
+#+filetags: :free_disk_space_on_the_macos_runner:sprint_28:v0:
+#+owner: marco
+#+branch: feature/free-disk-space-on-the-macos-runner
+#+pr: 3304
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CDC3925A-CDE3-4861-8835-4CABB4138CFD][Free disk space on the macOS runner]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The macOS build starts with the runner's unused toolchains and simulator runtimes removed, and still finds its Xcode.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CDC3925A-CDE3-4861-8835-4CABB4138CFD][Free disk space on the macOS runner]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- nightly-macos.yml frees disk before the checkout and reports df before and after.
+- The Xcode version the workflow selects is not removed.
+- One custom SDK, toolchain or simulator runtime is deleted, plus Homebrew caches.
+
+* Plan
+
+Add a Free disk space step before the checkout, freeing the SDKs, simulator
+runtimes and package caches a C++ build never uses, while keeping the Xcode
+installation the next step selects.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| macOS workflows with a disk-cleanup step, before | 0 | =grep -n "Free disk" .github/workflows/nightly-macos.yml= | 5e185399d4 |
+| Linux workflow with one | yes; its debug job failed linking with "No space left on device" | =grep -n "Free disk" .github/workflows/continuous-linux.yml= | 5e185399d4 |
+| Xcode installations kept | those matching =Xcode_16*= | the step's =case= | this branch |
+
+* Notes
+
+** Why the macOS job runs out of room
+
+The runner image carries several Xcode installations, simulator runtimes
+and language SDKs that a ctest run never loads, and the macOS workflow
+never freed any of it. The Linux workflow has freed disk before its build
+since its own debug job failed linking with "No space left on device".
+
+** What is removed, and what is kept
+
+Xcode applications whose name does not contain =Xcode_16=, CoreSimulator
+runtimes, Xcode DerivedData and device support, the Android SDK, the
+dotnet and Haskell toolchains, and Homebrew's download cache. The Xcode 16
+installation is kept, because the next step selects it, and the step prints
+=df= before and after so a run states what it reclaimed.
+
+** Not a substitute for the memory question
+
+A =Killed: 9= from clang is SIGKILL, which on macOS is usually the
+out-of-memory killer rather than a full disk. This step addresses the disk
+failure observed in this repository, not that one.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3304][#3304]] | [ci] Free disk space on the macOS runner |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+nightly-macos.yml frees disk before the checkout: Xcode installations that
+are not Xcode 16, CoreSimulator runtimes, Xcode DerivedData and device
+support, the Android SDK, the dotnet and Haskell toolchains, and Homebrew's
+caches. The step prints =df= before and after, so a run states what it
+reclaimed. Xcode 16 is kept, and the step after it still selects that
+installation.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: no macOS run has taken the new step yet. Its first run
+prints the before and after sizes, which is the measurement to read.

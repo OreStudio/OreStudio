@@ -240,6 +240,7 @@ generator still derives for the widget column types.
 | =explorer_interface=  | Authored knob (companion to =has_explorer_api=): name of an abstract interface (hand-authored elsewhere, e.g. a component's =api= include tree) the generated Controller additionally implements, for a cross-component explorer window that must drive =openEdit=/=openHistory= without linking against this entity's concrete Controller header. Unset for same-component explorers. | =IBusinessUnitBrowser= |
 | =has_explorer_interface= | Derived: true iff =explorer_interface= is set. Adds the =#include=, the extra base class, and =override= on =openEdit=/=openHistory=. | =true= |
 | =list_filter_column=  | Column used for live filtering in list views.            | =name=              |
+| =list_default_filter= | Authored knob (C++ =** Flags= drawer), read as =<column> = <cpp expression>=: the value a list narrows that filter member to when the caller states none, so the default view is the common case and the others are asked for by name. The column must be a filter member, which means marking it =:filterable: true=. | =kind = std::string("production")= |
 | =filter_column=       | Alias for list filter column.                            | =name=              |
 | =lookup_column=       | Column used as the display key in lookups.               | =code=              |
 | =order_column=        | Column used for default sort order.                      | =name=              |

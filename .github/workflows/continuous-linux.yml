@@ -23,7 +23,11 @@ env:
 
 on:  # yamllint disable-line rule:truthy
   schedule:
-    - cron: '0 */2 * * *'
+    # The matrix is linux-clang debug and release only. The slower job ran in
+    # 2h54m on the last green run (2026-09-08, run 34218351651), so three hours
+    # is the tightest interval that does not queue a run behind its predecessor.
+    # The relevance-guard below skips runs when no code changed.
+    - cron: '0 */3 * * *'
   push:
     tags:
       - '*'
@@ -90,12 +94,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [linux-gcc, linux-clang]
+        name: [linux-clang]
         buildtype: [debug, release]
         include:
-          - name: linux-gcc
-            family: linux
-            compiler: gcc
           - name: linux-clang
             family: linux
             compiler: clang
@@ -292,17 +293,34 @@ jobs:
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          export cmake_args="build_group=Continuous,preset=${preset}"
-          if [[ "${{matrix.buildtype}}" == "debug" ]]; then
-              cmake_args="${cmake_args},code_coverage=1"
-          fi
+          # Continuous proves the tree builds and the suites pass. Coverage
+          # belongs to the Nightly Build, and cpack belongs to the runs that
+          # publish a package.
+          export cmake_args="build_group=Continuous,preset=${preset},package=0"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Check the compiler cache is worth saving
+        id: sccache_worth
+        # A job that hits the six-hour limit is cancelled. The old guard,
+        # !cancelled(), then skipped both steps below, so every object the run
+        # compiled was thrown away and the cache could never warm: the next run
+        # restored the same stale entry, missed, and timed out again. Run this
+        # after any build that produced a cache worth keeping, and leave the
+        # existing entry alone when it did not.
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
+        run: |
+          size_mb=$(du -sm "${SCCACHE_DIR}" 2>/dev/null | cut -f1)
+          size_mb=${size_mb:-0}
+          echo "local compiler cache: ${size_mb} MB"
+          if [ "$size_mb" -ge 1000 ]; then
+            echo "worth_saving=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "worth_saving=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Delete sccache entry
-        # Only after a build. An earlier failure never touches the compiler
-        # cache, and deleting the entry then discards a warm cache nothing
-        # replaced.
-        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
+        # Delete first: actions/cache/save cannot overwrite an existing key.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -311,7 +329,7 @@ jobs:
             || true
 
       - name: Save sccache
-        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
@@ -323,8 +341,3 @@ jobs:
         if: ${{ always() && steps.ctest.outcome != 'skipped' }}
         run: sccache --show-stats
 
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/orestudio_0.0.28_amd64.deb

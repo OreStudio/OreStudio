@@ -42,8 +42,8 @@ Edit them as a single commit.
    [[proj:.github/workflows][=.github/workflows/=]]:
 
    - =continuous-linux.yml= — =orestudio_0.0.<OLD>_amd64.deb=
-   - =continuous-macos.yml= — =OreStudio-0.0.<OLD>-Darwin.dmg=
-   - =continuous-windows.yml= — =OreStudio-0.0.<OLD>-win64.*=
+   - =nightly-macos.yml= — =OreStudio-0.0.<OLD>-Darwin.dmg=
+   - =nightly-windows.yml= — =OreStudio-0.0.<OLD>-win64.*=
 
    Each is a single =sed=-able substitution.
 

@@ -15,7 +15,7 @@
 #
 # yamllint disable rule:line-length
 ---
-name: Continuous MacOS
+name: Nightly Windows
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
@@ -23,7 +23,10 @@ env:
 
 on:  # yamllint disable-line rule:truthy
   schedule:
-    - cron: '0 */3 * * *'
+    # Windows left the continuous tier: the matrix (msvc/clang x debug/release)
+    # takes 5-8h, which cannot fit GitHub's six-hour job limit on a continuous
+    # cadence. It runs once a night, an hour after the Nightly Build.
+    - cron: '0 1 * * *'
   push:
     tags:
       - '*'
@@ -73,18 +76,6 @@ jobs:
             echo "should_build=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Annotate when the build matrix is skipped
-        if: steps.check.outputs.should_build == 'false'
-        run: |
-          {
-            echo "### :warning: macOS build matrix skipped"
-            echo
-            echo "No relevant code changes since the last build — the"
-            echo "\`build\` job did not run. This workflow's overall"
-            echo "**Success** reflects the guard's decision to skip, not"
-            echo "a verified macOS build."
-          } | tee -a "$GITHUB_STEP_SUMMARY"
-
   build:
     needs: guard
     if: needs.guard.outputs.should_build == 'true'
@@ -92,54 +83,73 @@ jobs:
     concurrency:
       group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
       cancel-in-progress: false
-    runs-on: macos-14
+    runs-on: windows-latest
     environment: CI
+    # Default GitHub Actions job timeout (360m) has been observed cutting
+    # windows-msvc-release-ninja off at ~89% built with a cold sccache (run
+    # 29757071366: 5h55m spent still compiling, cancelled mid-build, not a
+    # real failure). sccache is deliberately not persisted across runs here
+    # (see the Ccache step's comment), so a cold-cache Release build needs
+    # real headroom beyond 6h.
+    timeout-minutes: 480
     strategy:
       fail-fast: false
       matrix:
-        name: [macos-clang]
+        name: [windows-msvc, windows-clang]
         buildtype: [debug, release]
         include:
-          - name: macos-clang
-            family: macos
+          - name: windows-msvc
+            family: windows
+            compiler: msvc
+          - name: windows-clang
+            family: windows
             compiler: clang
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: true
 
-      - name: Select Xcode 16
-        # Xcode 15.4 (macos-14 default) has a broken std::expected destructor
-        # constraint (fixed in Xcode 16.0+). Select the newest Xcode 16.x
-        # available on the image to get the fixed libc++.
-        run: |
-          xcode16=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
-          if [[ -z "$xcode16" ]]; then
-            echo "No Xcode 16.x found — keeping default"
-          else
-            echo "Selecting $xcode16"
-            sudo xcode-select -s "$xcode16"
-            xcodebuild -version
-          fi
-
       # sccache is NOT cached across runs on this platform (deliberately —
       # see story canary_ctest_ignores_cancellation): GitHub's actions/cache
       # is capped at a fixed 10 GB per repository, shared across every
       # OS/compiler/buildtype variant. Linux CI jobs run on every PR, so
-      # they get the shared quota; macOS only runs on a schedule/tag push and
-      # doesn't need to compete for it. Revisit if/when sccache moves to an
-      # external cache backend (see the sccache_external_cache_backend
+      # they get the shared quota; Windows only runs on a schedule/tag push
+      # and doesn't need to compete for it. Revisit if/when sccache moves to
+      # an external cache backend (see the sccache_external_cache_backend
       # backlog capture) that isn't quota-shared.
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.24
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 2000M
+          max-size: 1000M
           save: false
+
+      - name: Install Clang
+        uses: KyleMayes/install-llvm-action@v2
+        if: ${{ matrix.compiler == 'clang' }}
+        with:
+          version: "20"
+          arch: x64
+
+      - name: Install NSIS
+        if: ${{ matrix.compiler == 'clang' }}
+        run: choco install nsis
+
+      - name: Setup NATS server
+        # Same setup on every CI platform: unpack the vendored nats-server
+        # release (external/nats, pinned v2.14.3) and put it on PATH, so
+        # every platform runs the same binary instead of its package
+        # manager's version -- no brew, no apt, no GitHub download.
+        # PowerShell equivalent of setup_nats_server.sh.
+        run: ./build/scripts/setup_nats_server.ps1
+
+      - name: Enable Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1.13.0
 
       - name: Generate postgres password
         id: pg_password
+        shell: bash
         run: |
           PG_PASS="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
           echo "admin_password=${PG_PASS}" >> $GITHUB_OUTPUT
@@ -156,6 +166,7 @@ jobs:
         id: postgres
 
       - name: Init environment
+        shell: bash
         env:
           ORES_DATABASE_NAME: ores_ci
           PGPASSWORD: ${{ steps.pg_password.outputs.admin_password }}
@@ -164,19 +175,13 @@ jobs:
           grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
             | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
 
-      - name: Setup NATS server
-        # Same setup on every CI platform: unpack the vendored nats-server
-        # release (external/nats, pinned v2.14.3) and put it on PATH, so
-        # every platform runs the same binary instead of its package
-        # manager's version -- no brew, no apt, no GitHub download.
-        run: ./build/scripts/setup_nats_server.sh
-
       - name: Start NATS server
         # env configure already generated the per-checkout TLS certs and
         # nats-<label>.conf (compass nats certs / compass nats init) --
         # start it with that config, matching local dev exactly, so tests
         # that need a live NATS (eventing integration tests) don't hang or
         # fail with a connection error.
+        shell: bash
         run: |
           nats_conf="$(ls build/config/nats-*.conf | head -n1)"
           nats-server --config "$nats_conf" &
@@ -195,6 +200,7 @@ jobs:
           fi
 
       - name: Setup Database
+        shell: bash
         run: |
           ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
 
@@ -217,18 +223,14 @@ jobs:
       - name: Run CTest workflow
         id: ctest
         run: |
-          brew install autoconf automake libtool autoconf-archive
-          export CMAKE_BUILD_PARALLEL_LEVEL=2
-          export CTEST_PARALLEL_LEVEL=$(sysctl -n hw.logicalcpu)
-          export CTEST_MAX_PARALLELISM=2
-          export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
-          export ORES_BUILD_PROVIDER="github"
-          export ORES_BUILD_COMMIT="${GITHUB_SHA}"
-          export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
-          export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
-          export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          export cmake_args="build_group=Continuous,preset=${preset}"
-          ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+          $env:VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
+          $env:ORES_BUILD_PROVIDER="github"
+          $env:ORES_BUILD_COMMIT="$env:GITHUB_SHA"
+          $env:ORES_BUILD_NUMBER="$env:GITHUB_RUN_NUMBER"
+          $env:ORES_BUILD_TIMESTAMP=Get-Date -format "yyyy/MM/dd HH:mm:ss"
+          $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja"
+          $cmake_args="build_group=Continuous,preset=$preset"
+          ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
       - name: Show sccache statistics
         # ccache-action installs sccache. If no build ran, it is absent, and
@@ -236,8 +238,16 @@ jobs:
         if: ${{ always() && steps.ctest.outcome != 'skipped' }}
         run: sccache --show-stats
 
-      - name: Upload a Build Artifact
+      - name: Upload WiX log on failure
+        if: failure() && matrix.compiler == 'msvc'
+        uses: actions/upload-artifact@v7
+        with:
+          name: wix-log-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/_CPack_Packages/win64/WIX/wix.log
+          if-no-files-found: ignore
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-0.0.28-Darwin.dmg
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-0.0.28-win64.*

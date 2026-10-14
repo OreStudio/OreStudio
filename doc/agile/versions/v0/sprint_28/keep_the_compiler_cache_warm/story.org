@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 81FB2F93-7210-4E2F-BE4D-7B432A32BB63
+:END:
+#+title: Story: Keep the compiler cache warm when a continuous job is cancelled
+#+description: The continuous clang jobs ran in about an hour at an 85.72 % sccache hit rate on 2026-10-03, and need more than six hours at the 3 to 10 per cent they see now. A job that hits the six-hour limit is cancelled, and the Save sccache step is gated on !cancelled(), so every object that run compiled is thrown away. The cache can therefore never warm and the job can never finish. Save the cache whenever the CTest step ran and the local cache grew past a floor.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:build:sccache:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A continuous run that is cancelled or times out still persists the compiler objects it produced, so the cache warms across runs instead of resetting.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- The delete and save steps run when the CTest step ran, even if the job was cancelled.
+- A run whose local cache is too small to help leaves the existing entry untouched.
+- A normal completed run still replaces its entry as it does today.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D061094B-E738-41F3-80AA-5A3BDF32626F][Scaffold story: Keep the compiler cache warm when a continuous job is cancelled]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:3B54E5B3-CBF7-4511-AF56-8776F00B121D][Save the compiler cache on a cancelled or timed-out run]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Keep the compiler cache warm when a continuous job is cancelled |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 7AF0E20A-1107-409B-ACA3-40FE4B3C3486
+:END:
+#+title: Story: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly
+#+description: No continuous job fits GitHub's six-hour limit. On the last green run linux-clang ran in about 2h50m, linux-gcc in about 4h10m, and macOS in 4h40m to 5h40m. Make linux-clang debug and release the only continuous builds and schedule them from their measured run time, and move macOS and Windows to nightly.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:macos:windows:build:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Continuous Linux carries only the two linux-clang jobs and runs as often as their measured run time allows. macOS and Windows build nightly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- Continuous Linux's matrix holds linux-clang debug and release only.
+- Continuous Linux's cron matches the slower clang job's measured run time.
+- macOS and Windows run on a nightly cron, and tag pushes still build them.
+- macOS builds on macos-15, not the retiring macos-14.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5921932D-AF34-46B9-8DC5-9B72A61A3EF7][Scaffold story: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9DCD40BB-AA17-4F99-9C3B-434BDAC831F2][Rebalance the continuous and nightly schedules]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly |
+
+* Decisions
+
+- Continuous CI keeps linux-clang debug and release only. They were the
+  only jobs that finished well inside the six-hour limit: 2h46m and
+  2h54m on the last green run. The gcc jobs ran about 4h10m, and macOS
+  4h40m to 5h40m.
+- Continuous Linux runs every three hours, the tightest interval that
+  does not queue a run behind its predecessor. The relevance-guard makes
+  that a ceiling rather than a promise.
+- macOS and Windows move to the nightly tier. macOS moves to =macos-15=
+  because GitHub retires =macos-14= on 2026-11-02.
+- Shrinking the matrix to two variants also fits their sccache inside
+  GitHub's 10 GB repository cap, so a run can finish and reach its
+  =Save sccache= step.
+
+* Out of scope
+
+- Coverage and packaging still run on the continuous clang jobs.
+- The Windows run time is unmeasured. Its last run reported success with
+  the build matrix skipped, so its cadence rests on an inherited figure.

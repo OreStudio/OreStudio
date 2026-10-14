@@ -42,6 +42,7 @@ create table if not exists "ores_reporting_report_instances_tbl" (
     "description" text not null,
     "party_id" uuid not null,
     "definition_id" uuid not null,
+    "kind" text not null default 'production',
     "run_grant_id" uuid null,
     "fsm_state_id" uuid null,
     "trigger_run_id" bigint not null,
@@ -90,6 +91,17 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate kind (soft FK to ores_reporting_report_instance_kinds_tbl)
+    if not exists (
+        select 1 from ores_reporting_report_instance_kinds_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.kind
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid kind: %. No active report instance kind found with this code.', NEW.kind
+            using errcode = '23503';
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

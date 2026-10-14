@@ -83,7 +83,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_trigger_report_instance(std::ref(out), std::ref(session), std::move(args));
         },
-        "trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>]");
+        "trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>] "
+        "[--kind <v>]");
 
     menu->Insert(
         "schedule-report-definitions",
@@ -196,6 +197,7 @@ void report_operations_operations_commands::process_trigger_report_instance(
 
     const std::vector<flag_spec> specs{
         {.name = "job_instance_id", .requires_value = true, .default_value = ""},
+        {.name = "kind", .requires_value = true, .default_value = ""},
     };
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -221,6 +223,9 @@ void report_operations_operations_commands::process_trigger_report_instance(
             !raw_job_instance_id.empty()) {
             req.job_instance_id =
                 ores::shell::app::from_token<std::int64_t>(raw_job_instance_id, "job_instance_id");
+        }
+        if (const auto& raw_kind = parsed->flag("kind"); !raw_kind.empty()) {
+            req.kind = raw_kind;
         }
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;

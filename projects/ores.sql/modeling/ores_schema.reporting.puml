@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 20
+Tables: 21
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -485,6 +485,40 @@ package "reporting" #E0F7FA {
     a tarball for the compute grid.
     end note
 
+    entity ores_reporting_report_instance_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_instance_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Instance Kind Table
+    Reference data naming the kinds of report instance. A report instance is one
+    execution of a report definition, and its kind says what that execution does:
+    - production prepares the engine's input, computes it on the grid and records the
+    results. It is the kind of every instance the scheduler creates.
+    - package prepares the engine's input and stops. It produces the packages that the
+    compute grid would receive for the report and computes nothing, so a developer can
+    inspect a report's packages and run them in ORE on their own machine.
+    The kind is a property of the run and not of the definition: one definition has
+    instances of both kinds. A package instance is a real instance, with its own run
+    token scope, storage keys and lifecycle, so the steps that prepare the input work for
+    it unchanged. The concurrency policy of a definition counts production instances only.
+    end note
+
     entity ores_reporting_report_instances_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -494,6 +528,7 @@ package "reporting" #E0F7FA {
         * description : text
         * party_id : uuid <<FK>>
         * definition_id : uuid <<FK>>
+        * kind : text <<FK>>
           run_grant_id : uuid <<FK>>
           fsm_state_id : uuid <<FK>>
         * trigger_run_id : bigint <<FK>>
@@ -686,6 +721,7 @@ ores_reporting_report_definitions_tbl ||--o{ ores_reporting_report_configuration
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_definitions_tbl : "has"
+ores_reporting_report_instance_kinds_tbl ||--o{ ores_reporting_report_instances_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_risk_report_configs_tbl : "has"

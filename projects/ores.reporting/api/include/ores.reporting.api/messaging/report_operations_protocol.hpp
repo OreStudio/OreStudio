@@ -28,6 +28,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -46,10 +47,12 @@ struct trigger_report_instance_request {
     boost::uuids::uuid report_definition_id;
     boost::uuids::uuid tenant_id;
     std::int64_t job_instance_id = 0;
+    std::string kind = "production";
 };
 
 struct trigger_report_instance_response {
     ores::utility::domain::result result;
+    std::string report_instance_id;
 };
 
 struct schedule_report_definitions_request {
@@ -349,6 +352,7 @@ struct report_execution_request {
     std::string pre_processing;
     std::string prepared_input_key;
     std::string post_processing;
+    std::optional<std::string> kind;
 };
 
 struct resolve_prepared_input_request {

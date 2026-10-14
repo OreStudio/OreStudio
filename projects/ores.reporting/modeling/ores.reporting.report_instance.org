@@ -94,6 +94,27 @@ The report definition that produced this instance.
 ctx.generate_uuid()
 #+end_src
 
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  production
+:default_value: "production"
+:filterable: true
+:END:
+
+What this instance does: =production= prepares the input, computes it on the grid and
+records the results, and =package= prepares the input and stops, so that its packages
+can be inspected and run locally. Refers to ores_reporting_report_instance_kinds_tbl.
+The scheduler creates =production= instances only, the concurrency policy of the
+definition counts them only, and a list shows them unless the caller asks for another
+kind.
+
+#+begin_src cpp :name generator
+std::string("production")
+#+end_src
+
 ** run_grant_id
 :PROPERTIES:
 :type:     uuid
@@ -197,11 +218,27 @@ std::nullopt
 :tablename:        ores_reporting_report_instances_tbl
 :END:
 
+* Foreign keys
+
+** kind
+:PROPERTIES:
+:table:             ores_reporting_report_instance_kinds_tbl
+:target_column:     code
+:parent_entity:     report_instance_kind
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid kind: %. No active report instance kind found with this code.
+:END:
+
+Report instance kinds are a system-wide lookup seeded for the system tenant only, so
+the check reads that tenant whatever tenant owns the instance.
+
 * C++
 
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:list_default_filter: kind = std::string("production")
 :END:
 
 ** Repository
@@ -241,6 +278,7 @@ std::nullopt
 | column          | header      |
 |-----------------+-------------|
 | name            | Name        |
+| kind            | Kind        |
 | definition_id   | Definition  |
 | trigger_run_id  | Trigger Run |
 | output_message  | Output      |
@@ -275,6 +313,7 @@ std::nullopt
 |----------------+-------------+-----------------+-----------+--------+-------------+--------------------------------|
 | name           | Name        | line_edit | true   | true        | Report instance name           |
 | description    | Description | text_edit |        |             | Description                    |
+| kind           | Kind        | line_edit |        | true        | production or package          |
 | output_message | Output      | text_edit |        |             | Execution log or error message |
 
 *** Columns
@@ -282,6 +321,7 @@ std::nullopt
 | enum_name     | field          | header      | type      | width |
 |---------------+----------------+-------------+-----------+-------|
 | Name          | name           | Name        | string    | 200   |
+| Kind          | kind           | Kind        | string    | 100   |
 | DefinitionId  | definition_id  | Definition  | uuid      | 200   |
 | TriggerRunId  | trigger_run_id | Trigger Run | int       | 100   |
 | OutputMessage | output_message | Output      | string    | 250   |

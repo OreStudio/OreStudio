@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: D9DEE02A-64D8-438B-B330-67ACB1D5FFEA
+:END:
+#+title: Story: Investigate the broken Linux and macOS CI
+#+description: Continuous Linux and Continuous macOS are red on main. The Linux clang jobs and the macOS release job exceed the six-hour runner limit, and the macOS debug job stops with 'No space left on device'.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:macos:build:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Continuous Linux and Continuous macOS pass on main again. This story records the root cause of each failing job and names the change that clears it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Scaffolded and wired into Sprint 28. The failing jobs are triaged from the CI run history. |
+| Waiting on    | Nothing.                               |
+| Next          | Start the investigation task.          |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- Every red continuous job on main has a recorded root cause.
+- The story names the fix for each root cause.
+- The evidence cites the CI run and job identifiers.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6CDD2839-66E9-454A-945E-7B396F4DA474][Scaffold story: Investigate the broken Linux and macOS CI]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F5B17D78-5226-406F-89FA-39AB41FAB338][Find why the continuous Linux and macOS jobs run out of time and disk]] | BACKLOG | | | Initial task for: Investigate the broken Linux and macOS CI |
+
+* Decisions
+
+* Out of scope
+
+- The red Continuous Windows job.
+- The fix itself. This story ends with an evidenced root cause and a named change per job.

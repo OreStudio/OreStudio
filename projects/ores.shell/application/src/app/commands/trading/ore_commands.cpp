@@ -23,12 +23,15 @@
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/http_base_url.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
+#include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -44,6 +47,8 @@
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <thread>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
@@ -66,6 +71,69 @@ parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
         fail(out) << "Invalid " << what << ": " << value << std::endl;
         return std::nullopt;
     }
+}
+
+
+constexpr std::chrono::seconds default_build_packages_timeout(600);
+constexpr std::chrono::seconds package_poll_interval(2);
+constexpr std::chrono::seconds list_request_timeout(30);
+
+/**
+ * @brief The folder a package unpacks into: its file name without the archive suffix.
+ */
+std::string package_folder(const std::string& key) {
+    auto name = std::filesystem::path(key).filename().string();
+    for (const std::string_view suffix : {".tar.gz", ".tgz"}) {
+        if (name.size() > suffix.size() && name.ends_with(suffix)) {
+            name.resize(name.size() - suffix.size());
+            break;
+        }
+    }
+    return name;
+}
+
+/**
+ * @brief Downloads and unpacks every package stored for an instance.
+ *
+ * @return the folders written, or nothing when the request failed. An empty list means
+ * the instance stored no package.
+ */
+std::optional<std::vector<std::filesystem::path>>
+fetch_packages_into(std::ostream& out,
+                    nats_client& session,
+                    const std::string& report_instance_id,
+                    const std::filesystem::path& out_dir) {
+    ores::storage::messaging::list_objects_request list;
+    list.bucket = std::string(ores::ore::net::ore_storage::bucket);
+    list.prefix = ores::ore::net::ore_storage::package_prefix(report_instance_id);
+    list.limit = 1000;
+
+    const auto listing = do_auth_request<ores::storage::messaging::list_objects_response>(
+        out, session, list.nats_subject, list, list_request_timeout);
+    if (!listing)
+        return std::nullopt;
+    if (!listing->success) {
+        fail(out) << "Cannot list the packages: " << listing->message << std::endl;
+        return std::nullopt;
+    }
+
+    std::vector<std::filesystem::path> folders;
+    if (listing->objects.empty())
+        return folders;
+
+    ores::storage::net::storage_transfer transfer(default_http_base_url(), session.bearer_token());
+    for (const auto& object : listing->objects) {
+        const auto folder = out_dir / package_folder(object.key);
+        try {
+            std::filesystem::create_directories(folder);
+            transfer.fetch_and_unpack(list.bucket, object.key, folder);
+        } catch (const std::exception& e) {
+            fail(out) << "Cannot fetch " << object.key << ": " << e.what() << std::endl;
+            return std::nullopt;
+        }
+        folders.push_back(folder);
+    }
+    return folders;
 }
 
 }
@@ -213,6 +281,59 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                      },
                      "Write a report definition's run configuration into a directory",
                      {"report_definition_id out_dir"});
+
+    ore_menu->Insert(
+        "build-packages",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            auto parsed = parse_args(
+                args,
+                {{.name = "timeout",
+                  .requires_value = true,
+                  .default_value = std::to_string(default_build_packages_timeout.count())}});
+            if (!parsed) {
+                fail(out) << parsed.error() << std::endl;
+                return;
+            }
+            if (parsed->positionals.size() != 2) {
+                fail(out) << "Usage: ore build-packages <report_definition_id> <out_dir> "
+                             "[--timeout <seconds>]"
+                          << std::endl;
+                return;
+            }
+            const auto timeout = parse_positive_seconds(parsed->flag("timeout"));
+            if (!timeout) {
+                fail(out) << "Timeout must be a positive number of seconds: "
+                          << parsed->flag("timeout") << std::endl;
+                return;
+            }
+            process_build_packages(std::ref(out),
+                                   std::ref(session),
+                                   parsed->positionals.at(0),
+                                   parsed->positionals.at(1),
+                                   *timeout);
+        },
+        "Build the packages the compute grid would receive for a report, and unpack them",
+        {"report_definition_id out_dir [--timeout <seconds>]"});
+
+    ore_menu->Insert("fetch-packages",
+                     [&session](std::ostream& out, std::vector<std::string> args) {
+                         auto parsed = parse_args(args, {});
+                         if (!parsed) {
+                             fail(out) << parsed.error() << std::endl;
+                             return;
+                         }
+                         if (parsed->positionals.size() != 2) {
+                             fail(out) << "Usage: ore fetch-packages <report_instance_id> <out_dir>"
+                                       << std::endl;
+                             return;
+                         }
+                         process_fetch_packages(std::ref(out),
+                                                std::ref(session),
+                                                parsed->positionals.at(0),
+                                                parsed->positionals.at(1));
+                     },
+                     "Download and unpack the packages a report instance stored",
+                     {"report_instance_id out_dir"});
 
     ores::shell::app::insert_menu(root_menu, std::move(ore_menu));
 }
@@ -440,6 +561,108 @@ void ore_commands::process_import_run(std::ostream& out,
     if (!workflow_run_commands::wait_for_instance(
             out, session, result->workflow_instance_id, default_import_timeout, 1))
         fail(out) << "Run configuration import did not complete: see the steps above." << std::endl;
+}
+
+void ore_commands::process_fetch_packages(std::ostream& out,
+                                          nats_client& session,
+                                          const std::string& report_instance_id,
+                                          const std::string& out_dir) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+    if (!parse_uuid(out, report_instance_id, "report instance id"))
+        return;
+
+    const auto folders = fetch_packages_into(out, session, report_instance_id, out_dir);
+    if (!folders)
+        return;
+    if (folders->empty()) {
+        fail(out) << "Report instance " << report_instance_id
+                  << " stored no package. Either it has not prepared its input, or it never "
+                     "will: a failed instance stores none."
+                  << std::endl;
+        return;
+    }
+    out << "✓ Fetched " << folders->size() << " package(s) for report instance "
+        << report_instance_id << ":" << std::endl;
+    for (const auto& f : *folders)
+        out << "    " << f.string() << std::endl;
+}
+
+void ore_commands::process_build_packages(std::ostream& out,
+                                          nats_client& session,
+                                          const std::string& report_definition_id,
+                                          const std::string& out_dir,
+                                          std::chrono::seconds timeout) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+    const auto definition = parse_uuid(out, report_definition_id, "report definition id");
+    const auto tenant = parse_uuid(out, session.auth().tenant_id, "tenant id of the session");
+    if (!definition || !tenant)
+        return;
+
+    ores::reporting::messaging::trigger_report_instance_request trigger;
+    trigger.report_definition_id = *definition;
+    trigger.tenant_id = *tenant;
+    trigger.kind = std::string("package");
+
+    const auto triggered =
+        do_auth_request<ores::reporting::messaging::trigger_report_instance_response>(
+            out, session, trigger.nats_subject, trigger, import_request_timeout);
+    if (!triggered)
+        return;
+    if (triggered->result.outcome != ores::utility::domain::outcome::ok ||
+        triggered->report_instance_id.empty()) {
+        fail(out) << "The package build was refused: " << triggered->result.message << std::endl;
+        return;
+    }
+    const auto instance_id = triggered->report_instance_id;
+    out << "Building the packages with report instance " << instance_id << " ..." << std::endl;
+
+    // The instance is terminal once it records when it completed, whether it completed
+    // or failed.
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+    std::optional<ores::reporting::domain::report_instance> finished;
+    while (std::chrono::steady_clock::now() < deadline) {
+        ores::reporting::messaging::list_report_instances_request poll;
+        poll.limit = 1;
+        poll.filter = ores::reporting::messaging::report_instances_filter{
+            .id_one_of =
+                std::vector<boost::uuids::uuid>{boost::uuids::string_generator()(instance_id)}};
+        const auto reply =
+            do_auth_request<ores::reporting::messaging::list_report_instances_response>(
+                out, session, poll.nats_subject, poll, import_request_timeout);
+        if (!reply)
+            return;
+        if (!reply->instances.empty() && reply->instances.front().completed_at) {
+            finished = reply->instances.front();
+            break;
+        }
+        std::this_thread::sleep_for(package_poll_interval);
+    }
+    if (!finished) {
+        fail(out) << "Report instance " << instance_id << " did not finish within "
+                  << timeout.count() << " seconds. It may still be running; fetch its packages "
+                  << "later with: ore fetch-packages " << instance_id << " " << out_dir
+                  << std::endl;
+        return;
+    }
+
+    const auto folders = fetch_packages_into(out, session, instance_id, out_dir);
+    if (!folders)
+        return;
+    if (folders->empty()) {
+        fail(out) << "The build stored no package. The instance says: " << finished->output_message
+                  << std::endl;
+        return;
+    }
+    out << "✓ Built " << folders->size() << " package(s) with report instance " << instance_id
+        << ":" << std::endl;
+    for (const auto& f : *folders)
+        out << "    " << f.string() << std::endl;
 }
 
 void ore_commands::process_export_run(std::ostream& out,

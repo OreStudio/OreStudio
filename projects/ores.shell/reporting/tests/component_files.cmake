@@ -34,6 +34,7 @@ set(files
     "report_configuration_commands_tests.cpp"
     "report_definition_commands_tests.cpp"
     "report_instance_commands_tests.cpp"
+    "report_instance_kind_commands_tests.cpp"
     "report_operations_operations_commands_tests.cpp"
     "report_type_commands_tests.cpp"
     "report_type_configuration_type_commands_tests.cpp"

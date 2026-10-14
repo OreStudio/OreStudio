@@ -37,6 +37,7 @@ export interface ReportInstanceWrite {
     name: string;
     description: string;
     definition_id: string;
+    kind: string;
     run_grant_id: string | null;
     fsm_state_id: string | null;
     trigger_run_id: number;
@@ -62,7 +63,9 @@ export interface ReportInstanceLookup {
 }
 
 export interface ReportInstancesFilter {
+    kind: string | null;
     id_one_of: string[] | null;
+    kind_one_of: string[] | null;
 }
 
 export interface ReportInstanceEvent {

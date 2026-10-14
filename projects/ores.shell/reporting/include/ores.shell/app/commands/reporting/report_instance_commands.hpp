@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <name> <description> <definition_id> <run_grant_id> <fsm_state_id>
+     * @brief add <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id>
      * <trigger_run_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason>
      * <commentary>
      */
@@ -96,7 +96,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <name> <description> <definition_id> <run_grant_id> <fsm_state_id>
+     * @brief set <id> <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id>
      * <trigger_run_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason>
      * <commentary> [--version <n>]
      */
@@ -105,7 +105,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <name> <description> <definition_id> <run_grant_id>
+     * @brief put-many --count <n> <id> <name> <description> <definition_id> <kind> <run_grant_id>
      * <fsm_state_id> <trigger_run_id> <output_message> <output_storage_key> <started_at>
      * <completed_at> <reason> <commentary>
      */

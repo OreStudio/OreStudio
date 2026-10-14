@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 5921932D-AF34-46B9-8DC5-9B72A61A3EF7
+:END:
+#+title: Task: Scaffold story: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :rebalance_the_ci_tiers:sprint_28:v0:
+#+owner: marco
+#+branch: feature/rebalance-the-ci-tiers
+#+pr: 3287
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7AF0E20A-1107-409B-ACA3-40FE4B3C3486][Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the story, wire it into Sprint 28, and raise the scaffold PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7AF0E20A-1107-409B-ACA3-40FE4B3C3486][Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- The story, the scaffold task, and the first task exist and are wired into Sprint 28.
+- The scaffold PR is merged and this task is DONE.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3287][#3287]] | [agile] Scaffold the CI tier rebalance story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story, its scaffold task, and its rebalance task exist and are wired
+into Sprint 28. Scaffold PR
+[[https://github.com/OreStudio/OreStudio/pull/3287][#3287]] carries this
+record.

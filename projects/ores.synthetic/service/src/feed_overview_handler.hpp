@@ -315,17 +315,18 @@ private:
         // A system feed is the system tenant's to start, so another tenant does not count it
         // among the feeds that should run.
         const std::string runnable =
-            feed_kind_registry::is_system_caller(ctx)
-                ? std::string()
-                : " and config_id not in (select id from ores_synthetic_market_data_generation_configs_tbl"
-                  " where scope = 'system' and valid_to = ores_utility_infinity_timestamp_fn())";
+            feed_kind_registry::is_system_caller(ctx) ?
+                std::string() :
+                " and config_id not in (select id from "
+                "ores_synthetic_market_data_generation_configs_tbl"
+                " where scope = 'system' and valid_to = ores_utility_infinity_timestamp_fn())";
         for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
                                   "ores_synthetic_ir_curve_generation_configs_tbl"}) {
             add(query(ctx,
                       std::string("select folder_id::text, count(*) from ") + table +
                           " where valid_to = ores_utility_infinity_timestamp_fn()"
-                          " and folder_id is not null and enabled and auto_start" + runnable +
-                          " group by folder_id"),
+                          " and folder_id is not null and enabled and auto_start" +
+                          runnable + " group by folder_id"),
                 tally::auto_start);
         }
 
@@ -345,8 +346,8 @@ private:
                 add(query(ctx,
                           std::string("select folder_id::text, count(*) from ") + table +
                               " where valid_to = ores_utility_infinity_timestamp_fn()"
-                              " and folder_id is not null and enabled and auto_start" + runnable +
-                              " and source_name in (" + names + ") group by folder_id"),
+                              " and folder_id is not null and enabled and auto_start" +
+                              runnable + " and source_name in (" + names + ") group by folder_id"),
                     tally::auto_running);
             }
         }

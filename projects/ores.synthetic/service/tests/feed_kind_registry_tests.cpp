@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "../src/client_message.hpp"
 #include "../src/feed_config_handler.hpp"
 #include "../src/feed_controller.hpp"
-#include "../src/client_message.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "../src/feed_kind_registry.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "../src/simulate_handler.hpp"
 #include "../src/vintage_validity_handler.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"

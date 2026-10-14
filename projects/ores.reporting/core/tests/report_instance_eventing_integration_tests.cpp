@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -42,6 +46,11 @@
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+// Soft-FK parent seeding (ores_reporting_report_instance_kinds_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+#include "ores.reporting.core/repository/report_instance_kind_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -144,6 +153,18 @@ TEST_CASE("write_report_instance_publishes_an_event", tags) {
     auto v = generate_synthetic_report_instance(ctx);
     v.change_reason_code = "system.test";
     v.party_id = *party_ctx.party_id();
+    // report_instance_kind is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::reporting::repository::report_instance_kind_repository kind_catalogue_repo;
+        const auto kind_catalogue = kind_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(kind_catalogue.empty());
+        v.kind = kind_catalogue.front().code;
+    }
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Report Instance: " << v;
 

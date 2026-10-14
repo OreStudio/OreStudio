@@ -46,13 +46,13 @@ std::string convert_to_table(const std::vector<report_instance>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Definition" << "Trigger Run" << "Output" << "Started At"
-          << "Completed" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Name" << "Kind" << "Definition" << "Trigger Run" << "Output"
+          << "Started At" << "Completed" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ri : v) {
-        table << ri.name << boost::uuids::to_string(ri.definition_id) << ri.trigger_run_id
-              << ri.output_message << opt_str(ri.started_at) << opt_str(ri.completed_at)
-              << ri.modified_by << ri.version << fort::endr;
+        table << ri.name << ri.kind << boost::uuids::to_string(ri.definition_id)
+              << ri.trigger_run_id << ri.output_message << opt_str(ri.started_at)
+              << opt_str(ri.completed_at) << ri.modified_by << ri.version << fort::endr;
     }
     return table.to_string();
 }

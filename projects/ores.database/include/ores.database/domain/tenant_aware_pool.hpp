@@ -20,7 +20,6 @@
 #ifndef ORES_DATABASE_TENANT_AWARE_POOL_HPP
 #define ORES_DATABASE_TENANT_AWARE_POOL_HPP
 
-#include "ores.database/domain/session_utilities.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -219,32 +218,34 @@ public:
             (*session_result)->execute("ROLLBACK");
         }
 
-        // Force UTC for all timestamp operations on this connection.
-        // PostgreSQL returns timestamptz values as "YYYY-MM-DD HH:MM:SS+00"
-        // when the session timezone is UTC, which from_iso8601_utc accepts.
-        auto tz_result = domain::force_session_utc(**session_result);
-        if (!tz_result) {
-            return sqlgen::error("Failed to set session timezone to UTC: " +
-                                 std::string(tz_result.error().what()));
-        }
-
-        const auto tenant_id_str = tenant_id_.to_string();
-        const std::string sql =
-            "SELECT set_config('app.current_tenant_id', '" + tenant_id_str + "', false)";
-
-        auto exec_result = (*session_result)->execute(sql);
-        if (!exec_result) {
-            return sqlgen::error("Failed to set tenant context: " +
-                                 std::string(exec_result.error().what()));
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Set tenant context to: " << tenant_id_str;
-
+        // Every session setting is written on every acquire, in one round trip.
+        //
         // A pooled connection keeps the settings of whichever context used it
-        // last, so every setting is written on every acquire. A context without
-        // a party, visible parties, actor or service writes the empty string,
-        // which the session functions read as null; skipping the write would
-        // hand this context the last user's party and visibility.
+        // last, so each must be rewritten here. A context without a party,
+        // visible parties, actor or service writes the empty string, which the
+        // session functions read as null; skipping the write would hand this
+        // context the last user's party and visibility.
+        //
+        // They go in one statement because a statement per setting cost six
+        // round trips per acquire, and a path that acquires per message paid
+        // that far more often than it did any real work.
+        //
+        // UTC is set here too: PostgreSQL returns timestamptz values as
+        // "YYYY-MM-DD HH:MM:SS+00" when the session timezone is UTC, which
+        // from_iso8601_utc accepts.
+        const auto quote_setting = [](const std::string& value) {
+            std::string quoted;
+            for (const char c : value) {
+                if (c == '\'')
+                    quoted += '\'';
+                quoted += c;
+            }
+            return quoted;
+        };
+
+        const std::string utc = "UTC";
+        const std::string tenant_id_str = tenant_id_.to_string();
+
         std::string party_str;
         if (party_id_.has_value())
             party_str = boost::uuids::to_string(*party_id_);
@@ -261,30 +262,34 @@ public:
         }
 
         const std::pair<std::string_view, const std::string*> settings[] = {
+            {"TimeZone", &utc},
+            {"app.current_tenant_id", &tenant_id_str},
             {"app.current_party_id", &party_str},
             {"app.visible_party_ids", &visible_str},
             {"app.current_actor", &actor_},
             {"app.current_service", &service_account_},
         };
+
+        std::string sql = "SELECT ";
+        bool first_setting = true;
         for (const auto& [name, value] : settings) {
-            std::string quoted;
-            for (const char c : *value) {
-                if (c == '\'')
-                    quoted += '\'';
-                quoted += c;
-            }
-            const std::string setting_sql =
-                "SELECT set_config('" + std::string(name) + "', '" + quoted + "', false)";
-            auto setting_result = (*session_result)->execute(setting_sql);
-            if (!setting_result) {
-                return sqlgen::error("Failed to set " + std::string(name) + ": " +
-                                     std::string(setting_result.error().what()));
-            }
+            if (!first_setting)
+                sql += ", ";
+            first_setting = false;
+            sql +=
+                "set_config('" + std::string(name) + "', '" + quote_setting(*value) + "', false)";
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Set session context | party=" << party_str
-                                   << " visible_parties=" << visible_party_ids_.size()
-                                   << " actor=" << actor_ << " service=" << service_account_;
+        auto exec_result = (*session_result)->execute(sql);
+        if (!exec_result) {
+            return sqlgen::error("Failed to set the session context: " +
+                                 std::string(exec_result.error().what()));
+        }
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Set session context | tenant=" << tenant_id_str << " party=" << party_str
+            << " visible_parties=" << visible_party_ids_.size() << " actor=" << actor_
+            << " service=" << service_account_;
 
         return session_result;
     }

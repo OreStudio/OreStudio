@@ -694,7 +694,12 @@ def run(argv, project_root: Path) -> int:
     readonly_pw = _get_or_gen(existing, "ORES_DB_READONLY_PASSWORD")
     test_ddl_pw = _get_or_gen(existing, "ORES_TEST_DB_DDL_PASSWORD")
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
-    web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "0.0.0.0")
+    # Not _env_value: the bind address is a deployment default rather than
+    # checkout identity, so it does not take the ".env wins" precedence the
+    # rest of these entries take. An environment provisioned when the default
+    # was loopback-only would otherwise keep it forever and the change would
+    # never reach it. Only an explicit process-environment value overrides it.
+    web_bff_host = os.environ.get("ORES_WEB_BFF_HOST") or "0.0.0.0"
     service_log_level = _env_value(existing, "ORES_SERVICE_LOG_LEVEL", "info")
     web_log_level = _env_value(existing, "ORES_WEB_LOG_LEVEL", "info")
     use_busctl = _busctl_setting(existing, args.use_busctl)

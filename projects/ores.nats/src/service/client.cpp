@@ -131,13 +131,14 @@ struct client::impl {
 // across all service logs shows both sides of every subject: publishers log
 // "NATS publish"/"NATS js-publish", listeners log "NATS subscribe" variants.
 // The full (prefixed) subject is always logged, so one grep term matches both
-// sides. Publishes are throttled: the first publish on a subject logs at info
-// (establishing the publisher side); later publishes log at trace so
-// high-frequency feeds don't flood the log.
+// sides. Every one of these is a per-message notice, so all of them are debug:
+// at info a caller that publishes or asks on a loop writes a line per call
+// forever, and a caller whose subject is a fresh request/reply inbox cannot be
+// throttled at all, because no two of its subjects are ever the same.
 void client::log_publish(impl& impl, std::string_view op, const std::string& full_subject) {
     std::lock_guard lock(impl.publish_log_mu);
     if (impl.logged_publish_subjects.insert(full_subject).second)
-        BOOST_LOG_SEV(lg(), info) << op << ": " << full_subject;
+        BOOST_LOG_SEV(lg(), debug) << op << ": " << full_subject;
     else
         BOOST_LOG_SEV(lg(), trace) << op << ": " << full_subject;
 }
@@ -557,7 +558,7 @@ message client::request_sync(std::string_view subject,
                              std::chrono::milliseconds timeout) {
 
     const std::string full_subject(make_subject(subject));
-    BOOST_LOG_SEV(lg(), info) << "NATS request: " << full_subject;
+    BOOST_LOG_SEV(lg(), debug) << "NATS request: " << full_subject;
 
     natsMsg* req = make_msg(full_subject, data, headers);
     natsMsg* reply = nullptr;

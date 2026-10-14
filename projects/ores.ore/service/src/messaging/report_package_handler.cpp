@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
+#include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/store/run_store.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
@@ -47,8 +48,7 @@ namespace {
 constexpr std::string_view platform_bucket = ores::storage::api::object_keys::ores_bucket;
 
 std::string tarball_storage_key(const std::string& instance_id) {
-    return ores::storage::api::object_keys::make(
-        "ore", "packages", instance_id, "ore_package.tar.gz");
+    return ores::ore::net::ore_storage::package_key(instance_id);
 }
 
 } // namespace

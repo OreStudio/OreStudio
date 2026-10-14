@@ -47,9 +47,9 @@ sub("CMakeLists.txt", "VERSION 0.0.19", "VERSION 0.0.20")
 sub("vcpkg.json", '"version-string": "0.0.19"', '"version-string": "0.0.20"')
 sub(".github/workflows/continuous-linux.yml",
     "orestudio_0.0.19_amd64.deb", "orestudio_0.0.20_amd64.deb")
-sub(".github/workflows/continuous-windows.yml",
+sub(".github/workflows/nightly-windows.yml",
     "OreStudio-0.0.19-win64.*", "OreStudio-0.0.20-win64.*")
-sub(".github/workflows/continuous-macos.yml",
+sub(".github/workflows/nightly-macos.yml",
     "OreStudio-0.0.19-Darwin.dmg", "OreStudio-0.0.20-Darwin.dmg")
 sub("readme.org", "sprint_19/sprint.html", "sprint_20/sprint.html")
 sub("readme.org", "Sprint-19-blue.svg", "Sprint-20-blue.svg")

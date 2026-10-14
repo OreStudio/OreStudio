@@ -23,6 +23,7 @@
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
@@ -46,14 +47,16 @@ namespace svc = ores::workflow::service;
  */
 std::string run_request(std::string pre_processing,
                         std::string prepared_input_key,
-                        std::string post_processing) {
+                        std::string post_processing,
+                        std::optional<std::string> kind = std::nullopt) {
     const msg::report_execution_request req{.report_instance_id = "instance",
                                             .definition_id = "definition",
                                             .tenant_id = "tenant",
                                             .correlation_id = "corr",
                                             .pre_processing = std::move(pre_processing),
                                             .prepared_input_key = std::move(prepared_input_key),
-                                            .post_processing = std::move(post_processing)};
+                                            .post_processing = std::move(post_processing),
+                                            .kind = std::move(kind)};
     return rfl::json::write(req);
 }
 
@@ -209,4 +212,59 @@ TEST_CASE("a configuration nobody implements builds no chain", tags) {
 
 TEST_CASE("substituting without naming an input fails at chain build", tags) {
     CHECK_THROWS_AS(steps_for(run_request("substitute", "", "execute")), std::runtime_error);
+}
+
+TEST_CASE("a package instance prepares the input and stops before the grid", tags) {
+    const auto steps = steps_for(run_request("execute", "", "execute", "package"));
+
+    CHECK(names_of(steps) == std::vector<std::string>{"gather_trades",
+                                                      "gather_market_data",
+                                                      "assemble_bundle",
+                                                      "prepare_ore_package",
+                                                      "finalise"});
+}
+
+TEST_CASE("the post-processing of a package instance changes nothing, because nothing computes",
+          tags) {
+    CHECK(names_of(steps_for(run_request("execute", "", "ignore", "package"))) ==
+          names_of(steps_for(run_request("execute", "", "execute", "package"))));
+}
+
+TEST_CASE("a package instance runs the very steps a production instance runs", tags) {
+    const auto package = steps_for(run_request("execute", "", "execute", "package"));
+    const auto production = steps_for(run_request("execute", "", "execute", "production"));
+
+    REQUIRE(package.size() == 5);
+    REQUIRE(production.size() == 7);
+    // The package steps are the first four of the production chain, and finalise: none
+    // of them is a variant made for the package.
+    for (std::size_t i = 0; i < 4; ++i) {
+        CHECK(package[i].name == production[i].name);
+        CHECK(package[i].command_subject == production[i].command_subject);
+        CHECK(package[i].compensation_subject == production[i].compensation_subject);
+    }
+    CHECK(package[4].name == production[6].name);
+}
+
+TEST_CASE("an instance that names no kind is a production instance", tags) {
+    CHECK(names_of(steps_for(run_request("execute", "", "execute", std::nullopt))) ==
+          names_of(steps_for(run_request("execute", "", "execute", "production"))));
+}
+
+TEST_CASE("a report that substitutes its input has no packages to build", tags) {
+    CHECK_THROWS_AS(
+        steps_for(run_request("substitute", "prepared/input.tar.gz", "execute", "package")),
+        std::runtime_error);
+}
+
+TEST_CASE("an instance kind nobody implements is refused before a step is dispatched", tags) {
+    CHECK_THROWS_AS(steps_for(run_request("execute", "", "execute", "rehearsal")),
+                    std::runtime_error);
+}
+
+TEST_CASE("the instance kinds this component implements are production and package", tags) {
+    CHECK(wf::is_known_instance_kind("production"));
+    CHECK(wf::is_known_instance_kind("package"));
+    CHECK_FALSE(wf::is_known_instance_kind("rehearsal"));
+    CHECK_FALSE(wf::is_known_instance_kind(""));
 }

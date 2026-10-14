@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 47720564-A6F1-4FCD-81A0-495794CB5168
+:END:
+#+title: Task: Write the session context in one round trip
+#+description: Initial task for: Cut the feed ingest round trips
+#+type: task
+#+level: s1
+#+filetags: :cut_the_feed_ingest_round_trips:sprint_28:v0:
+#+owner: marco
+#+branch: feature/cut-the-feed-ingest-round-trips
+#+pr: 3280
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47945343-4077-428A-8ADA-CF13629395B3][Cut the feed ingest round trips]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Reduce the database round trips the feed ingest pays per stored tick, and prove the reduction by measurement.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:47945343-4077-428A-8ADA-CF13629395B3][Cut the feed ingest round trips]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- The session context is written in one round trip per acquisition.
+- Transactions per stored tick fall well below the old cost.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3280][#3280]] | [database,nats,compass] Cut the feed ingest round trips |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The session context is now one round trip per acquisition instead of six.
+
+Every connection acquisition used to write its session settings one
+statement at a time — TimeZone, the tenant, the party, the visible
+parties, the actor and the service — so a path that acquired a
+connection per message paid six round trips before it did any work. The
+six =set_config= calls are now one =SELECT=, and nothing about the
+settings changed: each is still written on every acquire, because a
+pooled connection keeps whichever context used it last.
+
+Measured on the market data ingest at about 100 ticks a second, against
+the same service built from the commit before the change:
+
+| Measure                     | Before   | After   |
+|-----------------------------+----------+---------|
+| Transactions a second       | 3,258    | 986     |
+| Buffer hits a second        | 33,292   | 19,516  |
+| Stored rows a second        | 95       | 99      |
+| Transactions per stored tick | ~50     | ~9.8    |
+| Buffer hits per stored tick  | ~512    | ~193    |
+
+The tick rate differs between the two runs (about 65 a second before and
+about 101 after), so the per-tick figures are the meaningful comparison;
+the idle floor was about 57 transactions a second.

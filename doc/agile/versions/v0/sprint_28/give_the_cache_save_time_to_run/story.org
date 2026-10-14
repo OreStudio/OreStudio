@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: C6C5C34E-B695-4E81-B8C3-F07BE04B63CC
+:END:
+#+title: Story: Give the cache save time to run after the build stops
+#+description: The cache-save guard only helps if the save finishes. A job that hits the six-hour limit is cancelled and its always() steps get roughly thirty seconds before the job is torn down, which is nowhere near enough to upload a multi-gigabyte compiler cache. Cap the CTest step far below the job limit so the build stops with time to spare and the cache actually reaches the store.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:sccache:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A run that overruns the build still has time to save its compiler cache before the job limit ends it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- The CTest step has a timeout-minutes well below the job's 360.
+- The remaining job budget covers the cache delete and save steps.
+- A normal, fast run is unaffected.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0773AD7D-5340-490C-9997-BD727B9DC1AC][Scaffold story: Give the cache save time to run after the build stops]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E940828B-69F9-4E48-90B1-53B5A00DF88F][Cap the CTest step below the six-hour job limit]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Give the cache save time to run after the build stops |
+
+* Decisions
+
+- The build step is capped rather than the job. A job-level timeout is
+  already 360 minutes and cannot be raised, so the only way to keep room
+  for the cache steps is to stop the build before the job limit is near.
+- The cap is 320 minutes. Setup takes about eight and the cache work a
+  few more, which leaves roughly thirty minutes of slack.
+- The saving is deliberately given up on a run that is nowhere near the
+  cache: the guard below it still refuses to replace a good entry with a
+  small one.
+
+* Out of scope
+
+- The same cap for the nightly workflows. Their jobs have the same limit
+  and the same shape, but they are not the ones blocking continuous.

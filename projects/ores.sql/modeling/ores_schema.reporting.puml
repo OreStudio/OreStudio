@@ -32,9 +32,15 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 21
+Tables: 23
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
+end note
+
+note as OtherGroups
+Keys this group states reach into:
+- ores_scheduler_job_definitions_tbl (scheduler)
+- ores_scheduler_job_instances_tbl (scheduler)
 end note
 
 '
@@ -531,7 +537,7 @@ package "reporting" #E0F7FA {
         * kind : text <<FK>>
           run_grant_id : uuid <<FK>>
           fsm_state_id : uuid <<FK>>
-        * trigger_run_id : bigint <<FK>>
+        * trigger_id : uuid <<FK>>
         * output_message : text
           output_storage_key : text
           started_at : timestamptz
@@ -555,6 +561,69 @@ package "reporting" #E0F7FA {
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
     started_at is NULL when the instance is cancelled or skipped before execution
     begins. completed_at is NULL while running or in a terminal-before-start state.
+    end note
+
+    entity ores_reporting_report_trigger_events_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * report_definition_id : uuid <<FK>>
+        * trigger_type : text <<FK>>
+          schedule_job_id : text <<FK>>
+          schedule_job_run_id : bigint <<FK>>
+        * triggered_by : text
+        * triggered_at : timestamptz
+        * party_id : uuid <<FK>>
+    }
+
+    note right of ores_reporting_report_trigger_events_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Trigger Event Table
+    One row per report trigger. A trigger is how a run is admitted, and it is of two
+    types: a person asks for the run now, or a schedule asks for it later. The
+    scheduler does not write this table. Its job publishes a trigger event, and the
+    reporting service records the trigger here and admits the run, so both types
+    reach the same handler and differ only in the payload.
+    The rows are append-only, so the model states :current_state:: an event is a
+    fact about an instant, and the bi-temporal pair has no meaning on it. A
+    current-state immutable table has no audit tail, so the actor and the time are
+    columns of its own and there is no version and no validity window. The table is
+    plain, not a hypertable: ores.iam.auth_event is one because logins are high
+    volume, and triggers are a handful a day.
+    end note
+
+    entity ores_reporting_report_trigger_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_trigger_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Trigger Type Table
+    Reference data naming the types of report trigger. A report run is admitted by
+    a trigger, and a trigger is one of two types:
+    - on_demand is a run a person asks for now, by naming the report within the
+    party they are signed in to.
+    - scheduled is a run a schedule asks for later. The scheduler job publishes a
+    trigger event when it fires, and a scheduled trigger names the job.
+    The type is deliberately named _type and not _kind, so it is not confused
+    with report_instance.kind, which says what a run does, production or package,
+    rather than what admitted it.
     end note
 
     entity ores_reporting_report_type_configuration_types_tbl <<temporal>> #C6F0D8 {
@@ -722,6 +791,7 @@ ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configuratio
 ores_reporting_configurations_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_definitions_tbl : "has"
 ores_reporting_report_instance_kinds_tbl ||--o{ ores_reporting_report_instances_tbl : "has"
+ores_reporting_report_trigger_types_tbl ||--o{ ores_reporting_report_trigger_events_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_risk_report_configs_tbl : "has"

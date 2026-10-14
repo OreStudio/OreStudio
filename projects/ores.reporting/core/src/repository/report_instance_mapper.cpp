@@ -61,7 +61,7 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
     r.fsm_state_id = v.fsm_state_id.has_value() ?
                          std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) :
                          std::nullopt;
-    r.trigger_run_id = v.trigger_run_id;
+    r.trigger_id = boost::lexical_cast<boost::uuids::uuid>(v.trigger_id);
     r.output_message = v.output_message;
     r.output_storage_key = v.output_storage_key.value_or("");
     r.started_at = v.started_at.has_value() ? std::optional(timestamp_to_timepoint(*v.started_at)) :
@@ -99,7 +99,7 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
     r.fsm_state_id = v.fsm_state_id.has_value() ?
                          std::optional(boost::uuids::to_string(*v.fsm_state_id)) :
                          std::nullopt;
-    r.trigger_run_id = v.trigger_run_id;
+    r.trigger_id = boost::uuids::to_string(v.trigger_id);
     r.output_message = v.output_message;
     r.output_storage_key =
         v.output_storage_key.empty() ? std::nullopt : std::optional(v.output_storage_key);

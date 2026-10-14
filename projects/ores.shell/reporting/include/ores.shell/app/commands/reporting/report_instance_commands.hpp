@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id>
-     * <trigger_run_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason>
+     * <trigger_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason>
      * <commentary>
      */
     static void process_add(std::ostream& out,
@@ -97,7 +97,7 @@ public:
 
     /**
      * @brief set <id> <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id>
-     * <trigger_run_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason>
+     * <trigger_id> <output_message> <output_storage_key> <started_at> <completed_at> <reason>
      * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -106,8 +106,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <name> <description> <definition_id> <kind> <run_grant_id>
-     * <fsm_state_id> <trigger_run_id> <output_message> <output_storage_key> <started_at>
-     * <completed_at> <reason> <commentary>
+     * <fsm_state_id> <trigger_id> <output_message> <output_storage_key> <started_at> <completed_at>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

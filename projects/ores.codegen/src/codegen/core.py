@@ -4168,6 +4168,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # An immutable target keeps no history, so a trigger check
                 # finds its row without a current-version filter.
                 fk['target_immutable'] = bool(parent and parent['immutable'])
+                if fk['target_immutable']:
+                    fk['target_no_validity'] = True
                 if not fk.get('enforce'):
                     continue
                 if not parent:

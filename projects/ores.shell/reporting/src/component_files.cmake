@@ -35,6 +35,7 @@ set(files
     "app/commands/reporting/report_instance_commands.cpp"
     "app/commands/reporting/report_instance_kind_commands.cpp"
     "app/commands/reporting/report_operations_operations_commands.cpp"
+    "app/commands/reporting/report_trigger_type_commands.cpp"
     "app/commands/reporting/report_type_commands.cpp"
     "app/commands/reporting/report_type_configuration_type_commands.cpp"
 )
@@ -56,6 +57,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_instance_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_instance_kind_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_trigger_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_type_configuration_type_commands.hpp"
 )

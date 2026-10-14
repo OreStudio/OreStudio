@@ -50,6 +50,7 @@ select (select id from ores_refdata_parties_tbl
        '00000000-0000-0000-0000-0000000b1002'::uuid as default_kind_id,
        '00000000-0000-0000-0000-0000000b1003'::uuid as package_id,
        '00000000-0000-0000-0000-0000000b1004'::uuid as production_id,
+       '00000000-0000-0000-0000-0000000b1005'::uuid as trigger_id,
        (select s.id from ores_dq_fsm_states_tbl s
          join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
           and m.valid_to = ores_utility_infinity_timestamp_fn()
@@ -74,14 +75,23 @@ select c.definition_id, ores_utility_system_tenant_id_fn(), 0,
     false, current_user, current_user, 'system.test', 'Instance kinds pgTAP fixture'
 from t_ctx c;
 
+-- Every instance names the trigger that admitted it, and the database enforces
+-- that the trigger exists, so the fixture writes one before any instance.
+insert into ores_reporting_report_trigger_events_tbl (
+    id, tenant_id, report_definition_id, trigger_type, triggered_by,
+    triggered_at, party_id)
+select c.trigger_id, ores_utility_system_tenant_id_fn(), c.definition_id,
+    'on_demand', current_user, now(), c.party_id
+from t_ctx c;
+
 create or replace function pg_temp.add_instance(
     p_id uuid, p_name text, p_kind text, p_state uuid) returns void as $$
     insert into ores_reporting_report_instances_tbl (
         id, tenant_id, version, party_id, name, description, definition_id, kind,
-        fsm_state_id, trigger_run_id, output_message, output_storage_key,
+        fsm_state_id, trigger_id, output_message, output_storage_key,
         modified_by, performed_by, change_reason_code, change_commentary)
     select p_id, ores_utility_system_tenant_id_fn(), 0, c.party_id, p_name,
-           'Instance kinds pgTAP fixture', c.definition_id, p_kind, p_state, 0, '', '',
+           'Instance kinds pgTAP fixture', c.definition_id, p_kind, p_state, c.trigger_id, '', '',
            current_user, current_user, 'system.test', 'Instance kinds pgTAP fixture'
     from t_ctx c;
 $$ language sql;
@@ -98,11 +108,11 @@ select results_eq(
 -- the machine lets an instance start in.
 insert into ores_reporting_report_instances_tbl (
     id, tenant_id, version, party_id, name, description, definition_id,
-    fsm_state_id, trigger_run_id, output_message, output_storage_key,
+    fsm_state_id, trigger_id, output_message, output_storage_key,
     modified_by, performed_by, change_reason_code, change_commentary)
 select c.default_kind_id, ores_utility_system_tenant_id_fn(), 0, c.party_id,
        'KINDS-FIXTURE-DEFAULT', 'Instance kinds pgTAP fixture', c.definition_id,
-       c.failed_id, 0, '', '',
+       c.failed_id, c.trigger_id, '', '',
        current_user, current_user, 'system.test', 'Instance kinds pgTAP fixture'
 from t_ctx c;
 

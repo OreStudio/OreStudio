@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D6C4EBEA-012F-59E6-9CBC-FDC7FDE47B7D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the report_trigger_types commands from the shell?
+#+description: Every command the report_trigger_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_trigger_types:
+
+This file documents the report_trigger_types resource at the shell, one section per command. Every command is a subcommand of =report_trigger_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9D63A2CB-64A4-5E69-8222-ABED7A6855B3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.list=.
+
+#+name: report_trigger_types-list
+#+begin_src ores-shell :tangle report_trigger_types-list.ores :exports none
+report_trigger_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FAE8E297-82C3-59F8-AE95-09736B7E021C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types get <code>
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.get=.
+
+#+name: report_trigger_types-get
+#+begin_src ores-shell :tangle report_trigger_types-get.ores :exports none
+report_trigger_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 898C14A9-0F90-554D-AC36-DEA237EEED54
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.get_many=.
+
+#+name: report_trigger_types-get-many
+#+begin_src ores-shell :tangle report_trigger_types-get-many.ores :exports none
+report_trigger_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C35C3236-85BC-5058-AE45-3F99E86692AD
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.put=.
+
+#+name: report_trigger_types-add
+#+begin_src ores-shell :tangle report_trigger_types-add.ores :exports none
+report_trigger_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E6DBA234-3738-5460-A3EE-6AE62867C683
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.put=.
+
+#+name: report_trigger_types-set
+#+begin_src ores-shell :tangle report_trigger_types-set.ores :exports none
+report_trigger_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B92A15B2-5840-5F27-BBC6-F1292491D6C6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.put_many=.
+
+#+name: report_trigger_types-put-many
+#+begin_src ores-shell :tangle report_trigger_types-put-many.ores :exports none
+report_trigger_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B7781591-AFF3-5ED0-9102-07823DA22B97
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.delete=.
+
+#+name: report_trigger_types-delete
+#+begin_src ores-shell :tangle report_trigger_types-delete.ores :exports none
+report_trigger_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 95CC992D-9052-518F-9574-7F2AD3640830
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types.delete_many=.
+
+#+name: report_trigger_types-delete-many
+#+begin_src ores-shell :tangle report_trigger_types-delete-many.ores :exports none
+report_trigger_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 11A411A2-318F-525D-A4F6-100EC0928452
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types_versions.list=.
+
+#+name: report_trigger_types-versions
+#+begin_src ores-shell :tangle report_trigger_types-versions.ores :exports none
+report_trigger_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 196D0966-6009-57BB-ADDE-9028CB39E9AB
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_trigger_types version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.report_trigger_types_versions.get=.
+
+#+name: report_trigger_types-version
+#+begin_src ores-shell :tangle report_trigger_types-version.ores :exports none
+report_trigger_types version __none__ --version 1
+#+end_src
+

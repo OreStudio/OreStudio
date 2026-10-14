@@ -45,7 +45,7 @@ create table if not exists "ores_reporting_report_instances_tbl" (
     "kind" text not null default 'production',
     "run_grant_id" uuid null,
     "fsm_state_id" uuid null,
-    "trigger_run_id" bigint not null,
+    "trigger_id" uuid not null,
     "output_message" text not null,
     "output_storage_key" text null,
     "started_at" timestamp with time zone null,
@@ -63,7 +63,8 @@ create table if not exists "ores_reporting_report_instances_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    constraint ores_reporting_report_instances_trigger_id_fk foreign key ("tenant_id", "trigger_id") references "ores_reporting_report_trigger_events_tbl" ("tenant_id", "id")
 );
 
 -- Unique name for active records

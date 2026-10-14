@@ -1042,6 +1042,8 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     the real ``target_column`` key, and the template silently ignored it
     -- their soft-FK checks against ``calendars.code`` never worked
     despite looking overridden. Keep this a single, unambiguous key.
+    ``target_no_validity`` states that the referenced table carries no
+    validity window, so the check drops the predicate.
     """
     out: dict[str, Any] = {"column": node.title}
     for k, v in node.properties.items():
@@ -1053,6 +1055,14 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     # target with a differently-named PK (e.g. ores_assets_images_tbl's
     # image_id).
     out.setdefault("target_column", "id")
+    # The check reads the target's current version by default, which is the
+    # shape every modelled soft-FK target has. A target with no validity
+    # window at all -- a hand-written table with no modeling org, such as the
+    # scheduler's -- states :target_no_validity: true, and the check then
+    # names the key column alone rather than filtering on a valid_to the
+    # target does not have. core.py adds the same flag for a target whose
+    # model states :immutable:, which keeps no closed versions to filter out.
+    out["target_no_validity"] = bool(out.pop("target_no_validity", False))
     existence = EXISTENCE_FUNCTIONS.get(out.get("table"))
     if existence is not None and out.get("target_column") == "id":
         out.setdefault("exists_function", existence)

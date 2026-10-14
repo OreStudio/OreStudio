@@ -42,7 +42,7 @@ report_instance make_report_instance(const std::string& name) {
     ri.description = name + " instance";
     ri.party_id = boost::uuids::random_generator()();
     ri.definition_id = boost::uuids::random_generator()();
-    ri.trigger_run_id = 1;
+    ri.trigger_id = boost::uuids::random_generator()();
     ri.output_message = "";
     ri.modified_by = "system";
     ri.performed_by = "system";
@@ -60,6 +60,8 @@ using namespace ores::logging;
 TEST_CASE("create_report_instance_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
+    const auto trigger = boost::uuids::random_generator()();
+
     report_instance sut;
     sut.version = 1;
     sut.id = boost::uuids::random_generator()();
@@ -67,7 +69,7 @@ TEST_CASE("create_report_instance_with_valid_fields", tags) {
     sut.description = "Execution of daily risk report";
     sut.party_id = boost::uuids::random_generator()();
     sut.definition_id = boost::uuids::random_generator()();
-    sut.trigger_run_id = 42;
+    sut.trigger_id = trigger;
     sut.output_message = "";
     sut.modified_by = "system";
     sut.performed_by = "system";
@@ -80,7 +82,7 @@ TEST_CASE("create_report_instance_with_valid_fields", tags) {
     CHECK(!sut.id.is_nil());
     CHECK(sut.name == "Daily Risk Report");
     CHECK(!sut.definition_id.is_nil());
-    CHECK(sut.trigger_run_id == 42);
+    CHECK(sut.trigger_id == trigger);
     CHECK(!sut.fsm_state_id.has_value());
     CHECK(!sut.started_at.has_value());
     CHECK(!sut.completed_at.has_value());
@@ -100,7 +102,7 @@ TEST_CASE("create_report_instance_with_optional_fields", tags) {
     sut.party_id = boost::uuids::random_generator()();
     sut.definition_id = boost::uuids::random_generator()();
     sut.fsm_state_id = boost::uuids::random_generator()();
-    sut.trigger_run_id = 100;
+    sut.trigger_id = boost::uuids::random_generator()();
     sut.output_message = "Report generated successfully";
     sut.started_at = now - std::chrono::minutes(5);
     sut.completed_at = now;
@@ -128,7 +130,7 @@ TEST_CASE("report_instance_insertion_operator", tags) {
     sut.description = "Test description";
     sut.party_id = boost::uuids::random_generator()();
     sut.definition_id = boost::uuids::random_generator()();
-    sut.trigger_run_id = 1;
+    sut.trigger_id = boost::uuids::random_generator()();
     sut.modified_by = "system";
     sut.performed_by = "system";
     sut.change_reason_code = "system.new";
@@ -156,7 +158,7 @@ TEST_CASE("create_report_instance_with_faker", tags) {
     sut.description = std::string(faker::lorem::sentence());
     sut.party_id = boost::uuids::random_generator()();
     sut.definition_id = boost::uuids::random_generator()();
-    sut.trigger_run_id = faker::number::integer(1, 1000);
+    sut.trigger_id = boost::uuids::random_generator()();
     sut.output_message = "";
     sut.modified_by = std::string(faker::internet::username());
     sut.performed_by = std::string(faker::internet::username());
@@ -238,7 +240,7 @@ TEST_CASE("report_instance_table_with_faker_data", tags) {
         ri.description = std::string(faker::lorem::sentence());
         ri.party_id = boost::uuids::random_generator()();
         ri.definition_id = boost::uuids::random_generator()();
-        ri.trigger_run_id = i + 1;
+        ri.trigger_id = boost::uuids::random_generator()();
         ri.output_message = "";
         ri.modified_by = "system";
         ri.performed_by = "system";

@@ -339,7 +339,11 @@ private:
         inst.kind = kind;
         inst.description = def->description;
         inst.fsm_state_id = initial_state;
-        inst.trigger_run_id = req.job_instance_id;
+        // Every instance names the trigger that admitted it, and the database
+        // enforces that the trigger exists. The scheduler's firing is carried
+        // on the trigger, and the trigger row is written by the reporting
+        // service's trigger handler.
+        inst.trigger_id = rg();
         inst.output_message = note;
         inst.modified_by = ctx_.service_account();
         inst.performed_by = ctx_.service_account();

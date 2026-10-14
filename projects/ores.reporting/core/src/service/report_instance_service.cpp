@@ -107,7 +107,7 @@ domain::report_instance to_domain(const messaging::report_instance_write& write)
     v.kind = write.kind;
     v.run_grant_id = write.run_grant_id;
     v.fsm_state_id = write.fsm_state_id;
-    v.trigger_run_id = write.trigger_run_id;
+    v.trigger_id = write.trigger_id;
     v.output_message = write.output_message;
     v.output_storage_key = write.output_storage_key;
     v.started_at = write.started_at;

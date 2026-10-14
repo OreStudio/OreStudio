@@ -35,6 +35,7 @@ set(files
     "report_definition_eventing_integration_tests.cpp"
     "report_instance_eventing_integration_tests.cpp"
     "report_instance_kind_eventing_integration_tests.cpp"
+    "report_trigger_type_eventing_integration_tests.cpp"
     "report_type_eventing_integration_tests.cpp"
     "repository_report_definition_repository_tests.cpp"
     "repository_report_input_bundle_repository_tests.cpp"

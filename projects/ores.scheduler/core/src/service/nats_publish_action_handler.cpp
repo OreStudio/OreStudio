@@ -49,13 +49,21 @@ struct nats_publish_payload {
 // The body published to the subject on each firing.
 //
 // Its field order and types are the reporting operation's
-// trigger_report_instance_request: the definition, the tenant, then the run.
-// A report trigger and its receiver are two ends of one contract, and the
-// codec is positional, so the order is the contract.
+// trigger_report_instance_request: the definition, the tenant, the run, then
+// the kind. A report trigger and its receiver are two ends of one contract,
+// and the codec is positional, so the order is the contract -- a field the
+// receiver declares and this does not send fails the whole decode, not just
+// that field, and the run the firing asked for is never admitted.
+//
+// The scheduler cannot depend on the reporting API to have this checked where
+// the type is defined, so the contract is pinned from the receiving end:
+// ores.reporting.core.tests states this shape and reads it back as the
+// reporting request type.
 struct nats_trigger_body {
     std::string report_definition_id;
     std::string tenant_id;
     std::int64_t job_instance_id = 0;
+    std::string kind;
 };
 
 } // anonymous namespace
@@ -85,10 +93,13 @@ nats_publish_action_handler::execute(const action_context& ctx) {
             co_return std::unexpected(msg);
         }
 
+        // The scheduler always asks for a production run: a package is what a
+        // developer asks for by hand.
         const nats_trigger_body body{.report_definition_id =
                                          parsed->report_definition_id.value_or(""),
                                      .tenant_id = parsed->tenant_id.value_or(""),
-                                     .job_instance_id = ctx.inst_id};
+                                     .job_instance_id = ctx.inst_id,
+                                     .kind = "production"};
 
         // A job that names no report definition is a notification nothing
         // answers, so it stays fire-and-forget.

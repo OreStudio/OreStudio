@@ -33,6 +33,7 @@ target_link_libraries(${tests_target_name}
         ores.eventing.core.lib
         ores.nats.lib
         ores.refdata.core.lib
+        ores.scheduler.core.lib
         ores.storage.api.lib
         ores.utility.lib
         ores.workflow.core.lib

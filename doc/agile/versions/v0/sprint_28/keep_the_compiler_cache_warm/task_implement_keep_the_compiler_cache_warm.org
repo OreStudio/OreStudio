@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 3B54E5B3-CBF7-4511-AF56-8776F00B121D
+:END:
+#+title: Task: Save the compiler cache on a cancelled or timed-out run
+#+description: Initial task for: Keep the compiler cache warm when a continuous job is cancelled
+#+type: task
+#+level: s1
+#+filetags: :keep_the_compiler_cache_warm:sprint_28:v0:
+#+owner: marco
+#+branch: feature/keep-the-compiler-cache-warm
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:81FB2F93-7210-4E2F-BE4D-7B432A32BB63][Keep the compiler cache warm when a continuous job is cancelled]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A continuous run that is cancelled or times out still persists the compiler objects it produced, so the cache warms across runs instead of resetting.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:81FB2F93-7210-4E2F-BE4D-7B432A32BB63][Keep the compiler cache warm when a continuous job is cancelled]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- The delete and save steps run when the CTest step ran, even if the job was cancelled.
+- A run whose local cache is too small to help leaves the existing entry untouched.
+- A normal completed run still replaces its entry as it does today.
+
+* Plan
+
+Persist the local sccache directory whenever the build produced enough of
+it to be worth keeping, whether or not the job was cancelled, and leave
+the existing entry alone otherwise.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| sccache hit rate, 2026-10-03 run | 85.72 % | =gh run view --job 111131478610 --log= | 4670a9d8 |
+| That job's cost | 1h0m1s: build done at ~49 min, tests 340.30 s | =gh run view 37097859492 --json jobs= | 4670a9d8 |
+| sccache hit rate, 2026-10-14 run | 3.21 % | =gh run view --job 115624055025 --log= | 3446f45cae |
+| clang-release cache entry | 1.22 GB against a 2.5 GB ceiling | =gh api /repos/OreStudio/OreStudio/actions/caches= | - |
+
+* Notes
+
+** The guard was the defect
+
+Both steps ran only when the job was not cancelled. A job that hits the
+six-hour limit is cancelled, so it saved nothing, and the next run
+restored the same stale entry. The cache could never warm, and the job
+could never finish. That is the whole of the failure.
+
+** Why a floor
+
+A run that fails before it compiles much must not replace a good entry,
+because the save cannot overwrite a key and the delete comes first. Below
+1000 MB the local cache is not worth that deletion, so the steps are
+skipped and the existing entry survives.
+
+** Trade-off
+
+The floor compares an uncompressed local directory against a compressed
+remote entry, so it is a proxy rather than a measurement. It only has to
+hold until one run completes; after that runs save normally.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Continuous Linux now saves its compiler cache after any run whose local
+cache grew past 1000 MB, whether or not the job was cancelled, and leaves
+the existing entry alone otherwise. That is what lets the cache warm
+across runs instead of resetting on every six-hour timeout.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: no run has yet exercised the new guard. The first
+scheduled run after this merges is the proof, and the hit rate of the run
+after that is the number that matters.

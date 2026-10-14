@@ -89,9 +89,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Consumer call sites | 3871 queue, 19 fan-out, 338 buffered, 3 durable | balanced-paren extraction over projects/ | =4fcab4aeed= |
+| Generated handler headers | 400, every one with a try/catch | scan for the AUTO-GENERATED marker | =4fcab4aeed= |
+| Hand-written handler headers with no catch | 30 of 89 | same scan, hand-written subset | =4fcab4aeed= |
+| Files calling log_handler_entry | 23 | grep -rl | =4fcab4aeed= |
+| Acknowledgment settings anywhere | 0 (=AckPolicy=, =AckWait=, =MaxDeliver=, =ManualAck=) | grep over projects/ | =4fcab4aeed= |
+| =Nats-Msg-Id= uses | 0 | grep over projects/ | =4fcab4aeed= |
 
 * Notes
+
+The inventory is at =evidence/inventory_nats_call_sites.org= beside this
+task. It classifies every call site against the library and names eight
+deviations (D1–D8) with the fix each needs.
 
 A starting lead from the pattern library's own reconnaissance, each to be
 re-derived and confirmed by the audit rather than trusted:

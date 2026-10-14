@@ -422,7 +422,7 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_refdata_publish_account_types_from_dq_fn",
+      "name": "ores_refdata_publish_trading_account_types_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "predates the check"
     },

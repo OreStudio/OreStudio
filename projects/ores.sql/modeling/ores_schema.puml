@@ -161,7 +161,6 @@ entity "refdata" as refdata {
   ores_refdata_equity_curve_configs_tbl
   ores_refdata_equity_volatility_configs_tbl
   ores_refdata_floating_index_types_tbl
-  ores_refdata_fpml_account_types_tbl
   ores_refdata_fra_conventions_tbl
   ores_refdata_future_conventions_tbl
   ores_refdata_fx_option_conventions_tbl
@@ -226,6 +225,7 @@ entity "refdata" as refdata {
   ores_refdata_tenor_schedules_tbl
   ores_refdata_tenor_units_tbl
   ores_refdata_tenors_tbl
+  ores_refdata_trading_account_types_tbl
   ores_refdata_yield_curve_configs_tbl
   ores_refdata_yield_volatility_configs_tbl
   ores_refdata_zero_conventions_tbl
@@ -305,7 +305,6 @@ entity "dq_staging" as dq_staging {
   ores_dq_entity_classifications_artefact_tbl
   ores_dq_equity_curve_configs_artefact_tbl
   ores_dq_equity_volatility_configs_artefact_tbl
-  ores_dq_fpml_account_types_artefact_tbl
   ores_dq_fra_conventions_artefact_tbl
   ores_dq_future_conventions_artefact_tbl
   ores_dq_fx_option_conventions_artefact_tbl
@@ -365,6 +364,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_todays_market_configuration_bindings_artefact_tbl
   ores_dq_todays_market_configurations_artefact_tbl
   ores_dq_todays_market_entries_artefact_tbl
+  ores_dq_trading_account_types_artefact_tbl
   ores_dq_yield_curve_configs_artefact_tbl
   ores_dq_zero_conventions_artefact_tbl
   ores_dq_zero_inflation_index_conventions_artefact_tbl

@@ -2,7 +2,7 @@
 :ID: A31257E3-7495-46CD-B36D-10AA6D55CB09
 :END:
 #+title: Task: Move the lookup artefact tables onto domain models
-#+description: Fifteen artefact tables come from the older lookup template, sql_schema_artefact_create, through ores.codegen.lookup_entity models: account_types, asset_classes, asset_measures, benchmark_rates, business_centres, business_processes, cashflow_types, entity_classifications, local_jurisdictions, party_relationships, party_roles, person_roles, regulatory_corporate_sectors, reporting_regimes and supervisory_bodies. Move their models to domain_entity with the flag, so the canonical template generates the tables, and retire the lookup artefact template once nothing uses it. Overlaps the capture Migrate remaining lookup_entity/table models (28F6B7B2).
+#+description: Fifteen artefact tables come from the older lookup template, sql_schema_artefact_create, through ores.codegen.lookup_entity models: trading_account_types, asset_classes, asset_measures, benchmark_rates, business_centres, business_processes, cashflow_types, entity_classifications, local_jurisdictions, party_relationships, party_roles, person_roles, regulatory_corporate_sectors, reporting_regimes and supervisory_bodies. Move their models to domain_entity with the flag, so the canonical template generates the tables, and retire the lookup artefact template once nothing uses it. Overlaps the capture Migrate remaining lookup_entity/table models (28F6B7B2).
 #+type: task
 #+level: s1
 #+filetags: :dq:codegen:cleanup:lookup-entity:finish-the-dq-artefact-migration:sprint_28:v0:
@@ -83,8 +83,9 @@ task and name that file in the Command column.
 - The refdata =account_types= codelist collides with the IAM account type
   of a login account: the shell menu name is the entity plural and has no
   override, so two components generated a menu named =account_types=. The
-  codelist takes the =fpml_= prefix, which is also what its dataset is
-  called.
+  codelist is renamed =trading_account_type=, which names what it
+  classifies -- a trading account, by whose activity it carries -- and
+  clears the menu.
 - The first pass overwrote the IAM =account_types= shell recipe, because
   the codelist briefly claimed the same menu. Regeneration restored it from
   the IAM model; the drift check is what caught it.

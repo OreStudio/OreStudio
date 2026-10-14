@@ -158,8 +158,8 @@ union all
 select 'Artefact: IP Ranges', count(*)
 from ores_dq_ip2country_artefact_tbl
 union all
-select 'Artefact: Account Types', count(*)
-from ores_dq_fpml_account_types_artefact_tbl
+select 'Artefact: Trading Account Types', count(*)
+from ores_dq_trading_account_types_artefact_tbl
 union all
 select 'Artefact: Asset Classes', count(*)
 from ores_dq_asset_classes_artefact_tbl

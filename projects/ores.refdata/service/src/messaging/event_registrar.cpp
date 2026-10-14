@@ -24,13 +24,13 @@
 #include "ores.refdata.service/messaging/business_process_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cashflow_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/entity_classification_event_registrar.hpp"
-#include "ores.refdata.service/messaging/fpml_account_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/local_jurisdiction_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_relationship_event_registrar.hpp"
 #include "ores.refdata.service/messaging/person_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_corporate_sector_event_registrar.hpp"
 #include "ores.refdata.service/messaging/reporting_regime_event_registrar.hpp"
 #include "ores.refdata.service/messaging/supervisory_body_event_registrar.hpp"
+#include "ores.refdata.service/messaging/trading_account_type_event_registrar.hpp"
 // Per-entity generated event-mapping registrars.
 //
 // Every ores.refdata domain_entity that generates a registrar is composed
@@ -197,7 +197,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // ----------------------------------------------------------------
     subs.push_back(
         register_counterparty_business_centre_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_fpml_account_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_trading_account_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_asset_class_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_asset_measure_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_benchmark_rate_event_mapping(event_source, event_bus, nats));

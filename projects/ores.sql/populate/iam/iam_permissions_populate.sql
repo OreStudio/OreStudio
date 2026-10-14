@@ -166,9 +166,9 @@ BEGIN
     -- =============================================================================
 
     -- Currency permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fpml_account_types:delete', 'Delete FpML account types');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fpml_account_types:read', 'View FpML account types');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fpml_account_types:write', 'Create and modify FpML account types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::trading_account_types:delete', 'Delete Trading account types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::trading_account_types:read', 'View Trading account types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::trading_account_types:write', 'Create and modify Trading account types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_classes:delete', 'Delete asset classs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_classes:read', 'View asset classs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_classes:write', 'Create and modify asset classs');
@@ -1636,7 +1636,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::report_definitions:read', 'View report definitions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::synthetic_fx_spot_configs:read', 'View synthetic fx spot configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_statuses:read', 'View account statuses');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_types:read', 'View FpML account types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_types:read', 'View Trading account types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenant_statuses:read', 'View tenant statuses');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenant_types:read', 'View tenant types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::delivery_outcome_types:read', 'View delivery outcome types');

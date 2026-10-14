@@ -1630,10 +1630,10 @@ tangled into the runnable script library
 
 - [[id:B779FBB8-B50F-5E44-84EC-34ED49897D65][How do I run the supervisory_bodies commands from the shell?]]
 
-* Fpml Account Types
-
-- [[id:084E786F-6F42-5138-9E68-2118EF68745E][How do I run the fpml_account_types commands from the shell?]]
-
 * Account Types
 
 - [[id:60803D77-F933-54BA-9E26-F559A3863A91][How do I run the account_types commands from the shell?]]
+
+* Trading Account Types
+
+- [[id:F6DA1902-CC4B-5BFA-834F-DDFF748BE852][How do I run the trading_account_types commands from the shell?]]

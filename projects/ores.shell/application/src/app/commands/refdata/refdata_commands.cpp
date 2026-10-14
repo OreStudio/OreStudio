@@ -88,7 +88,6 @@
 #include "ores.shell/app/commands/refdata/equity_curve_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/equity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
-#include "ores.shell/app/commands/refdata/fpml_account_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/future_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/fx_option_convention_commands.hpp"
@@ -152,6 +151,7 @@
 #include "ores.shell/app/commands/refdata/tenor_resolution_algorithm_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_schedule_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_unit_commands.hpp"
+#include "ores.shell/app/commands/refdata/trading_account_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/yield_curve_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/yield_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/zero_convention_commands.hpp"
@@ -161,7 +161,7 @@ namespace ores::shell::app::commands {
 
 void refdata_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session) {
-    fpml_account_type_commands::register_commands(root_menu, session);
+    trading_account_type_commands::register_commands(root_menu, session);
     asset_class_code_commands::register_commands(root_menu, session);
     asset_class_commands::register_commands(root_menu, session);
     asset_measure_commands::register_commands(root_menu, session);

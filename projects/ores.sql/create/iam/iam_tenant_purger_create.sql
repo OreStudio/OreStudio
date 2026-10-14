@@ -133,7 +133,7 @@ begin
 
     delete from ores_refdata_currencies_tbl where tenant_id = p_tenant_id;
     delete from ores_refdata_countries_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_fpml_account_types_tbl where tenant_id = p_tenant_id;
+    delete from ores_refdata_trading_account_types_tbl where tenant_id = p_tenant_id;
     delete from ores_refdata_asset_classes_tbl where tenant_id = p_tenant_id;
     delete from ores_refdata_asset_measures_tbl where tenant_id = p_tenant_id;
     delete from ores_refdata_benchmark_rates_tbl where tenant_id = p_tenant_id;

@@ -55,8 +55,8 @@ auto& lg() {
 /**
  * @brief Derives the SQL function name from the NATS subject.
  *
- * Converts "refdata.v1.ops.publish_account_types_from_dq" to
- * "ores_refdata_publish_account_types_from_dq_fn".
+ * Converts "refdata.v1.ops.publish_trading_account_types_from_dq" to
+ * "ores_refdata_publish_trading_account_types_from_dq_fn".
  */
 std::string subject_to_fn(std::string_view subject) {
     // The operation is the last segment of a reserved-namespace subject,

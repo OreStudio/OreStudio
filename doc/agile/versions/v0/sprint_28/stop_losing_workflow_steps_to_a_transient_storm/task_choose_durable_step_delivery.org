@@ -8,7 +8,7 @@
 #+filetags: :stop_losing_workflow_steps_to_a_transient_storm:sprint_28:v0:
 #+owner: marco
 #+branch: feature/stop-losing-workflow-steps-to-a-transient-storm
-#+pr:
+#+pr: 3305
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3305][#3305]] | [workflow,iam,nats] Deliver step commands durably |
 
 * Review
 

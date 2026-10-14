@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 811B54CD-8A63-5C41-B60B-F85A0C753E50
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the tenor_basis_swap_pay_receives commands from the shell?
+#+description: Every command the tenor_basis_swap_pay_receives submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_basis_swap_pay_receives:
+
+This file documents the tenor_basis_swap_pay_receives resource at the shell, one section per command. Every command is a subcommand of =tenor_basis_swap_pay_receives=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D81FABBB-2FB2-5FF9-A0C8-B07160BA159F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.list=.
+
+#+name: tenor_basis_swap_pay_receives-list
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-list.ores :exports none
+tenor_basis_swap_pay_receives list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: CA6790C9-CA90-5F06-A086-111B88860D84
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives get <id>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.get=.
+
+#+name: tenor_basis_swap_pay_receives-get
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-get.ores :exports none
+tenor_basis_swap_pay_receives get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5724E5F5-3CD0-5269-BF0B-5ECA0DE57D65
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.get_many=.
+
+#+name: tenor_basis_swap_pay_receives-get-many
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-get-many.ores :exports none
+tenor_basis_swap_pay_receives get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1D058FD4-E96C-5F43-BAFA-928189906892
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives add <convention_id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.put=.
+
+#+name: tenor_basis_swap_pay_receives-add
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-add.ores :exports none
+tenor_basis_swap_pay_receives add 00000000-0000-0000-0000-000000000000 - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 68854EDA-F048-571A-8731-10358A986376
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives set <id> <convention_id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.put=.
+
+#+name: tenor_basis_swap_pay_receives-set
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-set.ores :exports none
+tenor_basis_swap_pay_receives set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 43957857-A9AD-5B79-AAF7-0C8F463C6396
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives put-many --count <n> <id> <convention_id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.put_many=.
+
+#+name: tenor_basis_swap_pay_receives-put-many
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-put-many.ores :exports none
+tenor_basis_swap_pay_receives put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 967D7460-675E-5C00-AD89-3375527FBDD1
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.delete=.
+
+#+name: tenor_basis_swap_pay_receives-delete
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-delete.ores :exports none
+tenor_basis_swap_pay_receives delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DAF51ADB-CEDC-52E2-A0C6-6BD74F4D5DAF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.delete_many=.
+
+#+name: tenor_basis_swap_pay_receives-delete-many
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-delete-many.ores :exports none
+tenor_basis_swap_pay_receives delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: FB31F5BD-BBA8-590C-B115-69F502FA9127
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives.list_by_convention_id=.
+
+#+name: tenor_basis_swap_pay_receives-by-convention-id
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-by-convention-id.ores :exports none
+tenor_basis_swap_pay_receives by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 06DD08E3-C299-54A8-BE53-2124335749FC
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives_versions.list=.
+
+#+name: tenor_basis_swap_pay_receives-versions
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-versions.ores :exports none
+tenor_basis_swap_pay_receives versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 62DA50C4-6BDE-5E1E-8904-DF3E26539D97
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_pay_receives version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_pay_receives_versions.get=.
+
+#+name: tenor_basis_swap_pay_receives-version
+#+begin_src ores-shell :tangle tenor_basis_swap_pay_receives-version.ores :exports none
+tenor_basis_swap_pay_receives version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

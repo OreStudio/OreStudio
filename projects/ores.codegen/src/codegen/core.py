@@ -2723,6 +2723,7 @@ def _family_entity_view(model, role, owner):
         "pk_text_expr": _family_text_expr(f"row.{pk_member}", pk),
         "write_fields": write_fields,
         "has_audit_columns": has_audit,
+        "has_party_id": "party_id" in _declared_columns(model),
         "version_member": "version" if has_audit else pk_column,
         "commentary_member": "change_commentary" if has_audit else "",
     }
@@ -2793,6 +2794,11 @@ def _family_service_view(family, model_path):
             "fk_list_by_uuid": bool(foreign_key.get("list_by_uuid")) and fk_is_uuid,
             "fk_read_expr": fk_read_expr,
             "fk_assign_expr": fk_assign_expr,
+            # A part and the central row both carrying the owning party is the
+            # rule, not a hard-coded member name: the part's policy reads its
+            # own column, so the write copies the central row's value when
+            # both declare one.
+            "copy_party_id": central["has_party_id"] and view["has_party_id"],
         })
         part.update(view)
 

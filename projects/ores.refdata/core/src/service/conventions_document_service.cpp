@@ -27,6 +27,7 @@
 #include "ores.refdata.core/repository/cms_spread_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/commodity_forward_convention_repository.hpp"
 #include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/cross_currency_basis_convention_repository.hpp"
 #include "ores.refdata.core/repository/cross_currency_fix_float_convention_repository.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
@@ -40,12 +41,15 @@
 #include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
 #include "ores.refdata.core/repository/swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/swap_index_convention_repository.hpp"
-#include "ores.refdata.core/repository/tenor_basis_swap_convention_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/zero_convention_repository.hpp"
 #include "ores.refdata.core/repository/zero_inflation_index_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/name_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <map>
 #include <set>
 #include <string>
@@ -76,6 +80,54 @@ void replace_party_rows(const ores::database::context& ctx,
     repo.write(ctx, rows);
 }
 
+// A row's version comes from the live row with the same key, so an import
+// replaces the row it names rather than colliding with it. The central row and
+// its parts are keyed by a uuid, so the id alone is the key.
+template <typename Repository, typename Row>
+void replace_rows_by_id(const ores::database::context& ctx,
+                        Repository repo,
+                        std::vector<Row> rows) {
+    if (rows.empty())
+        return;
+    std::map<std::string, int> held;
+    for (const auto& r : repo.read_latest(ctx))
+        held[boost::uuids::to_string(r.id)] = r.version;
+    for (auto& r : rows) {
+        const auto it = held.find(boost::uuids::to_string(r.id));
+        r.version = it == held.end() ? 0 : it->second;
+    }
+    repo.write(ctx, rows);
+}
+
+// The ORE id is not a natural key, so the store derives the central row's key
+// from the party, the kind and the ORE id. The derivation is deterministic, so
+// importing one document twice replaces the row rather than duplicating it.
+boost::uuids::uuid derived_uuid(const std::string& name) {
+    boost::uuids::name_generator gen(boost::uuids::uuid{});
+    return gen(name);
+}
+
+// The mapper derives the central key from the kind and the ORE id alone,
+// because it does not know the party. Two parties that import one document
+// would then collide on the key, so re-derive it from the party the session
+// stamped and carry the new key onto the parts.
+void rekey_tenor_basis_swap(messaging::conventions_document& v) {
+    for (auto& c : v.convention) {
+        if (c.kind_code != "TENOR_BASIS_SWAP")
+            continue;
+        const auto previous = c.id;
+        c.id = derived_uuid(boost::uuids::to_string(c.party_id) + ":" + c.kind_code + ":" +
+                            c.ores_id.value_or(""));
+        for (auto& p : v.tenor_basis_swap_pay_receive)
+            if (p.convention_id == previous)
+                p.convention_id = c.id;
+        for (auto& l : v.tenor_basis_swap_long_short)
+            if (l.convention_id == previous)
+                l.convention_id = c.id;
+    }
+}
+
+
 // A world convention is the tenant's, whoever imports a document naming it, so
 // one the tenant holds is never replaced by an import.
 template <typename Repository, typename Row>
@@ -104,6 +156,7 @@ conventions_document_service::conventions_document_service(context ctx)
 
 conventions_save_result conventions_document_service::save(messaging::conventions_document v) {
     ores::service::messaging::stamp_document(v, ctx_);
+    rekey_tenor_basis_swap(v);
     conventions_save_result r;
     replace_party_rows(ctx_, zero_convention_repository(), std::move(v.zero));
     replace_party_rows(ctx_, average_ois_convention_repository(), std::move(v.average_ois));
@@ -113,8 +166,13 @@ conventions_save_result conventions_document_service::save(messaging::convention
     replace_party_rows(ctx_,
                        cross_currency_fix_float_convention_repository(),
                        std::move(v.cross_currency_fix_float));
-    replace_party_rows(
-        ctx_, tenor_basis_swap_convention_repository(), std::move(v.tenor_basis_swap));
+    replace_rows_by_id(ctx_, convention_repository(), std::move(v.convention));
+    replace_rows_by_id(
+        ctx_, tenor_basis_swap_pay_receive_repository(),
+        std::move(v.tenor_basis_swap_pay_receive));
+    replace_rows_by_id(
+        ctx_, tenor_basis_swap_long_short_repository(),
+        std::move(v.tenor_basis_swap_long_short));
     replace_party_rows(
         ctx_, tenor_basis_two_swap_convention_repository(), std::move(v.tenor_basis_two_swap));
     replace_party_rows(ctx_, deposit_convention_repository(), std::move(v.deposit));
@@ -153,7 +211,22 @@ messaging::conventions_document conventions_document_service::get() {
     r.bma_basis_swap = bma_basis_swap_convention_repository().read_latest(ctx_);
     r.cross_currency_basis = cross_currency_basis_convention_repository().read_latest(ctx_);
     r.cross_currency_fix_float = cross_currency_fix_float_convention_repository().read_latest(ctx_);
-    r.tenor_basis_swap = tenor_basis_swap_convention_repository().read_latest(ctx_);
+    // The central row is shared by every kind, so only the rows whose kind is a
+    // family this document carries are read, and each part joins by its key.
+    const auto conventions = convention_repository().read_latest(ctx_);
+    const auto pay_receives = tenor_basis_swap_pay_receive_repository().read_latest(ctx_);
+    const auto long_shorts = tenor_basis_swap_long_short_repository().read_latest(ctx_);
+    for (const auto& c : conventions) {
+        if (c.kind_code != "TENOR_BASIS_SWAP")
+            continue;
+        r.convention.push_back(c);
+        for (const auto& p : pay_receives)
+            if (p.convention_id == c.id)
+                r.tenor_basis_swap_pay_receive.push_back(p);
+        for (const auto& l : long_shorts)
+            if (l.convention_id == c.id)
+                r.tenor_basis_swap_long_short.push_back(l);
+    }
     r.tenor_basis_two_swap = tenor_basis_two_swap_convention_repository().read_latest(ctx_);
     r.deposit = deposit_convention_repository().read_latest(ctx_);
     r.swap = swap_convention_repository().read_latest(ctx_);

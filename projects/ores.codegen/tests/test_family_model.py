@@ -32,7 +32,18 @@ PARTS = (("pay_receive", "tenor_basis_swap_pay_receive"),
          ("long_short", "tenor_basis_swap_long_short"))
 
 
-def _central_model() -> str:
+def _central_model(*, party_id: bool = False) -> str:
+    party = ""
+    if party_id:
+        party = """
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The party that owns the central row.
+"""
     return """\
 :PROPERTIES:
 :ID: 00000000-0000-0000-0000-000000000001
@@ -63,13 +74,13 @@ def _central_model() -> str:
 :END:
 
 Key.
-"""
+""" + party
 
 
 def _part_model(name: str, entity_plural: str, *, parent: str = CENTRAL,
                 bump: str = "true", list_by: str = "true",
                 list_by_uuid: str = "true", list_by_as_of: str = "true",
-                foreign_keys: bool = True) -> str:
+                foreign_keys: bool = True, party_id: bool = False) -> str:
     fk = ""
     if foreign_keys:
         fk = f"""\
@@ -86,6 +97,17 @@ def _part_model(name: str, entity_plural: str, *, parent: str = CENTRAL,
 :bump_parent_version: {bump}
 :list_by_as_of:       {list_by_as_of}
 :END:
+"""
+    party = ""
+    if party_id:
+        party = """
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The party that owns the central row this part belongs to.
 """
     return f"""\
 :PROPERTIES:
@@ -124,7 +146,7 @@ Key.
 :END:
 
 The central row this part belongs to.
-
+{party}
 {fk}"""
 
 
@@ -161,19 +183,22 @@ Prose.
 
 
 def _modeling_dir(tmp_path: Path, *, part_overrides=None,
-                  central: str | None = None) -> Path:
+                  central: str | None = None, party_id: bool = False) -> Path:
     """Write a central entity, two parts and the family into a modeling dir.
 
     ``part_overrides`` maps a part entity name to the part model text to write
-    instead of the default, so one part can be made defective.
+    instead of the default, so one part can be made defective. ``party_id``
+    adds a party_id column to the central entity and to both parts, so the
+    family service's copy rule can be exercised on both shapes.
     """
     overrides = part_overrides or {}
     (tmp_path / f"ores.refdata.{CENTRAL}.org").write_text(
-        central if central is not None else _central_model(), encoding="utf-8")
+        central if central is not None else _central_model(party_id=party_id),
+        encoding="utf-8")
     for _, entity in PARTS:
         text = overrides.get(entity)
         if text is None:
-            text = _part_model(entity, entity + "s")
+            text = _part_model(entity, entity + "s", party_id=party_id)
         (tmp_path / f"ores.refdata.{entity}.org").write_text(text, encoding="utf-8")
     family_path = tmp_path / "ores.refdata.tenor_basis_swap_convention.org"
     family_path.write_text(_family_model(), encoding="utf-8")

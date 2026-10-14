@@ -191,7 +191,6 @@ set(files
     "swap_index_convention_eventing_integration_tests.cpp"
     "swaption_volatility_config_eventing_integration_tests.cpp"
     "tenor_anchor_eventing_integration_tests.cpp"
-    "tenor_basis_swap_convention_eventing_integration_tests.cpp"
     "tenor_basis_two_swap_convention_eventing_integration_tests.cpp"
     "tenor_convention_eventing_integration_tests.cpp"
     "tenor_eventing_integration_tests.cpp"

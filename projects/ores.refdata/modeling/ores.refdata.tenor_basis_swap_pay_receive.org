@@ -1,0 +1,312 @@
+:PROPERTIES:
+:ID: 26F8B022-84E9-41CD-BA89-6881DF4369DB
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.refdata.tenor_basis_swap_pay_receive
+#+description: Codegen entity model for the refdata =tenor_basis_swap_pay_receive= part. The paying and receiving leg form of a tenor basis swap convention.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: tenor_basis_swap_pay_receive
+#+entity_plural: tenor_basis_swap_pay_receives
+#+entity_title: Tenor Basis Swap Pay Receive
+#+brief: The paying and receiving leg form of a tenor basis swap convention.
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+The paying and receiving leg form of a tenor basis swap. ORE writes a tenor
+basis swap as =PayIndex= and =ReceiveIndex= with an optional frequency each,
+plus the averaging and sub-periods fields. A row of this part holds that form.
+The long and short form lives in =tenor_basis_swap_long_short=, and a
+convention fills exactly one of the two.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The central convention row this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join, and stamped from the session that
+writes the document.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** pay_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Index the paying leg references, in the paying and receiving form.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** pay_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Payment frequency of the paying leg, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** receive_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Index the receiving leg references, in the paying and receiving form.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** receive_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Payment frequency of the receiving leg, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_on_rec
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the quoted spread is added to the receiving leg rather than the paying one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** include_spread
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread is included in the coupon that carries it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+How a coupon built from sub-periods is combined, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** pay_is_averaged
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the paying leg's coupons are averaged rather than compounded.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rec_is_averaged
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the receiving leg's coupons are averaged rather than compounded.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_tenor_basis_swap_pay_receives_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: tenor_basis_swap_pay_receive
+:entity_plural_short:   tenor_basis_swap_pay_receives
+:entity_singular_words: tenor basis swap pay receive
+:entity_plural_words:   tenor basis swap pay receives
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pr
+:END:
+
+** Table display
+
+| column                  | header            |
+|-------------------------+-------------------|
+| pay_index               | Pay Index         |
+| receive_index           | Receive Index     |
+| sub_periods_coupon_type | Sub Periods Type  |
+| modified_by             | Modified By       |
+| version                 | Version           |
+
+** Presentation
+:PROPERTIES:
+:domain_include:           ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp
+:domain_class:             refdata::domain::tenor_basis_swap_pay_receive
+:protocol_include:         ores.refdata.api/messaging/tenor_basis_swap_pay_receive_protocol.hpp
+:collection_name:          tenor_basis_swap_pay_receives
+:key_field:                id
+:delete_request_id_field:  ids
+:save_request_item_field:  tenor_basis_swap_pay_receive
+:END:
+
+*** Detail fields
+
+| field                   | label             | widget                   | type      | is_key | is_required | placeholder         |
+|-------------------------+-------------------+--------------------------+-----------+--------+-------------+---------------------|
+| id                      | Id                | idEdit                   | line_edit | true   | true        | Enter part id       |
+| pay_index               | Pay Index         | payIndexEdit             | line_edit | false  | false       | e.g. EUR-EURIBOR-6M |
+| pay_frequency           | Pay Frequency     | payFrequencyEdit         | line_edit | false  | false       | e.g. 6M             |
+| receive_index           | Receive Index     | receiveIndexEdit         | line_edit | false  | false       | e.g. EUR-EURIBOR-3M |
+| receive_frequency       | Receive Frequency | receiveFrequencyEdit     | line_edit | false  | false       | e.g. 3M             |
+| spread_on_rec           | Spread On Rec     | spreadOnRecEdit          | checkbox  | false  | false       |                     |
+| include_spread          | Include Spread    | includeSpreadEdit        | checkbox  | false  | false       |                     |
+| sub_periods_coupon_type | Sub Periods Type  | subPeriodsCouponTypeEdit | line_edit | false  | false       | e.g. Compounding    |
+| pay_is_averaged         | Pay Is Averaged   | payIsAveragedEdit        | checkbox  | false  | false       |                     |
+| rec_is_averaged         | Rec Is Averaged   | recIsAveragedEdit        | checkbox  | false  | false       |                     |
+
+*** Columns
+
+| enum_name            | field                   | header            | type      | width |
+|----------------------+-------------------------+-------------------+-----------+-------|
+| PayIndex             | pay_index               | Pay Index         | string    | 180   |
+| PayFrequency         | pay_frequency           | Pay Frequency     | string    | 120   |
+| ReceiveIndex         | receive_index           | Receive Index     | string    | 180   |
+| ReceiveFrequency     | receive_frequency       | Receive Frequency | string    | 120   |
+| SpreadOnRec          | spread_on_rec           | Spread On Rec     | bool      | 80    |
+| IncludeSpread        | include_spread          | Include Spread    | bool      | 80    |
+| SubPeriodsCouponType | sub_periods_coupon_type | Sub Periods Type  | string    | 140   |
+| PayIsAveraged        | pay_is_averaged         | Pay Is Averaged   | bool      | 80    |
+| RecIsAveraged        | rec_is_averaged         | Rec Is Averaged   | bool      | 80    |
+| Version              | version                 | Version           | int       | 80    |
+| ModifiedBy           | modified_by             | Modified By       | string    | 120   |
+| RecordedAt           | recorded_at             | Recorded At       | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part belongs to.

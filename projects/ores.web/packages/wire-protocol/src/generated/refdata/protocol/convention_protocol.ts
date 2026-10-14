@@ -1,0 +1,211 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: ts_protocol.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+import type { Convention } from '../domain/convention.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+
+export interface ConventionKey {
+    id: string;
+}
+
+export interface ConventionWrite {
+    id: string;
+    kind_code: string;
+    ores_id: string | null;
+    oresmd_uri: string | null;
+}
+
+export interface ConventionChange {
+    write: ConventionWrite;
+    precondition: Precondition;
+}
+
+export interface ConventionRemoval {
+    key: ConventionKey;
+    precondition: Precondition;
+}
+
+export interface ConventionLookup {
+    key: ConventionKey;
+    convention: Convention | null;
+}
+
+export interface ConventionsFilter {
+    id_one_of: string[] | null;
+}
+
+export interface ConventionEvent {
+    event_id: string;
+    key: ConventionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ConventionVersionKey {
+    convention: ConventionKey;
+    version: number;
+}
+
+export interface ConventionVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListConventionsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: ConventionsFilter | null;
+    as_of: string | null;
+}
+
+export interface ListConventionsResponse {
+    result: Result;
+    conventions: Convention[];
+    total: number;
+}
+
+export interface GetConventionRequest {
+    key: ConventionKey;
+}
+
+export interface GetConventionResponse {
+    result: Result;
+    convention: Convention | null;
+}
+
+export interface GetManyConventionsRequest {
+    keys: ConventionKey[];
+}
+
+export interface GetManyConventionsResponse {
+    result: Result;
+    entries: ConventionLookup[];
+}
+
+export interface PutConventionRequest {
+    change: ConventionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutConventionResponse {
+    result: Result;
+    convention: Convention | null;
+}
+
+export interface PutManyConventionsRequest {
+    changes: ConventionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyConventionsResponse {
+    result: Result;
+    conventions: Convention[];
+}
+
+export interface DeleteConventionRequest {
+    removal: ConventionRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteConventionResponse {
+    result: Result;
+}
+
+export interface DeleteManyConventionsRequest {
+    removals: ConventionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyConventionsResponse {
+    result: Result;
+}
+
+export interface ListConventionVersionsRequest {
+    key: ConventionKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: ConventionVersionsFilter | null;
+}
+
+export interface ListConventionVersionsResponse {
+    result: Result;
+    versions: Convention[];
+    total: number;
+}
+
+export interface GetConventionVersionRequest {
+    key: ConventionVersionKey;
+}
+
+export interface GetConventionVersionResponse {
+    result: Result;
+    version: Convention | null;
+}
+
+export const subjects = {
+    list_conventions_request: 'refdata.v1.conventions.list',
+    get_convention_request: 'refdata.v1.conventions.get',
+    get_many_conventions_request: 'refdata.v1.conventions.get_many',
+    put_convention_request: 'refdata.v1.conventions.put',
+    put_many_conventions_request: 'refdata.v1.conventions.put_many',
+    delete_convention_request: 'refdata.v1.conventions.delete',
+    delete_many_conventions_request: 'refdata.v1.conventions.delete_many',
+    list_convention_versions_request: 'refdata.v1.conventions_versions.list',
+    get_convention_version_request: 'refdata.v1.conventions_versions.get',
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_conventions_request: true,
+    get_convention_request: true,
+    get_many_conventions_request: true,
+    put_convention_request: true,
+    put_many_conventions_request: true,
+    delete_convention_request: true,
+    delete_many_conventions_request: true,
+    list_convention_versions_request: true,
+    get_convention_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: 'refdata.v1.conventions_events.created',
+    updated: 'refdata.v1.conventions_events.updated',
+    deleted: 'refdata.v1.conventions_events.deleted',
+} as const;

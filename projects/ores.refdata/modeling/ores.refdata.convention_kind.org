@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 31412676-338C-482C-9476-B902E6F81B02
+:END:
+#+title: ores.refdata.convention_kind
+#+description: Codegen lookup model for the refdata =convention_kind= table. The coded catalogue of the convention kinds the central =convention= row may name.
+#+type: ores.codegen.lookup_entity
+#+component: refdata
+#+filetags: :model:lookup_entity:refdata:
+#+product: ores
+#+schema: public
+#+entity_singular: convention_kind
+#+entity_plural: convention_kinds
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: false
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+The coded catalogue of convention kinds, one row per convention an ORE
+conventions document can carry. A central =convention= row names its kind with
+this code, and the kind selects the family whose parts the row carries.
+
+The rows are ORE's own convention category names, upper-cased: the kind of
+=tenor_basis_swap_convention= is =TENOR_BASIS_SWAP=. A kind that is modelled
+beside this table in =ores.refdata= owns a family of parts; this table is the
+closed set that says which kinds the central row may be.
+
+Batch-loaded reference data, refreshed from ORE's =ore_types.xsd= alongside the
+other coded refdata lookups.
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+The kind code, upper snake case. It is the value a =convention= row holds in
+=kind_code=.
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name of the convention kind (e.g. "Tenor Basis Swap").
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+One-line description of the convention kind.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Ordinal position for dropdown/list display.
+
+* Artefact indexes
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this catalogue codes.

@@ -2060,6 +2060,13 @@ ores::utility::domain::result
         if (result.outcome != outcome::ok)
             return result;
         row.{{fk_member}} = {{fk_assign_expr}};
+{{#copy_party_id}}
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.party_id;
+{{/copy_party_id}}
         wanted.push_back(std::move(row));
         claims.push_back(change.precondition);
     }

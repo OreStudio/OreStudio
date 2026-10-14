@@ -36,8 +36,8 @@ REGISTRAR = "cpp_nats_registrar.hpp.mustache"
 REGISTRAR_IMPL = "cpp_nats_registrar.cpp.mustache"
 
 
-def _render(tmp_path: Path, out_name: str, template: str) -> str:
-    path = family_model._modeling_dir(tmp_path)
+def _render(tmp_path: Path, out_name: str, template: str, **model_kwargs) -> str:
+    path = family_model._modeling_dir(tmp_path, **model_kwargs)
     out = tmp_path / "out"
     out.mkdir(exist_ok=True)
     core.generate_from_model(
@@ -135,6 +135,30 @@ def test_the_body_does_not_duplicate_the_parent_version_bump(tmp_path):
     body = _render(tmp_path, "svc.cpp", SERVICE_IMPL)
     assert "touch_version" not in body
     assert "central.version =" not in body
+
+
+def test_the_part_takes_the_central_rows_party_when_both_carry_one(tmp_path):
+    """A part table has its own party isolation policy, which reads the part's
+    own column, so the write copies the central row's party."""
+    body = _render(tmp_path, "svc.cpp", SERVICE_IMPL, party_id=True)
+    assert body.count("row.party_id = central.party_id;") == 2
+
+
+def test_a_part_without_its_own_party_column_is_not_stamped_from_the_central_row(tmp_path):
+    """The rule is the column's presence, not a hard-coded name: a part with no
+    party_id of its own has nothing to copy into."""
+    body = _render(tmp_path, "svc.cpp", SERVICE_IMPL)
+    assert "row.party_id = central.party_id;" not in body
+
+
+def test_only_a_part_that_carries_a_party_copies_it(tmp_path):
+    """A central row with no party column leaves a part that has one alone."""
+    part_with_party = family_model._part_model(
+        "tenor_basis_swap_pay_receive",
+        "tenor_basis_swap_pay_receives", party_id=True)
+    body = _render(tmp_path, "svc.cpp", SERVICE_IMPL, part_overrides={
+        "tenor_basis_swap_pay_receive": part_with_party})
+    assert "row.party_id = central.party_id;" not in body
 
 
 def test_the_put_many_is_one_transaction_for_the_whole_batch(tmp_path):

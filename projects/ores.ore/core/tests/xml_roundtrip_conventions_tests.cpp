@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.testing/project_root.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -830,20 +831,29 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
 
         ++files_with_basis_swap;
         const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.tenor_basis_swap.size() == document.TenorBasisSwap.size());
+        REQUIRE(mapped.convention.size() == document.TenorBasisSwap.size());
 
         for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
             const auto& in = document.TenorBasisSwap[i];
-            const auto& out = mapped.tenor_basis_swap[i];
-            CHECK(out.id == std::string(in.Id));
+            const auto& central = mapped.convention[i];
+            CHECK(central.kind_code == "TENOR_BASIS_SWAP");
+            REQUIRE(central.ores_id.has_value());
+            CHECK(*central.ores_id == std::string(in.Id));
+
+            const auto pay_receive = std::ranges::find_if(
+                mapped.tenor_basis_swap_pay_receive,
+                [&](const auto& p) { return p.convention_id == central.id; });
+            const auto long_short = std::ranges::find_if(
+                mapped.tenor_basis_swap_long_short,
+                [&](const auto& l) { return l.convention_id == central.id; });
             if (in.PayIndex)
-                CHECK(out.pay_index == std::string(*in.PayIndex));
+                CHECK(pay_receive->pay_index == std::string(*in.PayIndex));
             if (in.ReceiveIndex)
-                CHECK(out.receive_index == std::string(*in.ReceiveIndex));
+                CHECK(pay_receive->receive_index == std::string(*in.ReceiveIndex));
             if (in.LongIndex)
-                CHECK(out.long_index == std::string(*in.LongIndex));
+                CHECK(long_short->long_index == std::string(*in.LongIndex));
             if (in.ShortIndex)
-                CHECK(out.short_index == std::string(*in.ShortIndex));
+                CHECK(long_short->short_index == std::string(*in.ShortIndex));
         }
 
         const std::string exported = save_data(conventions_mapper::reverse(mapped));
@@ -864,7 +874,11 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
         const auto remapped = conventions_mapper::map(reparsed);
         for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
             INFO(path.string() + ": TenorBasisSwap element " + std::to_string(i));
-            CHECK(remapped.tenor_basis_swap[i] == mapped.tenor_basis_swap[i]);
+            CHECK(remapped.convention[i] == mapped.convention[i]);
+            CHECK(remapped.tenor_basis_swap_pay_receive ==
+                  mapped.tenor_basis_swap_pay_receive);
+            CHECK(remapped.tenor_basis_swap_long_short ==
+                  mapped.tenor_basis_swap_long_short);
         }
     }
 

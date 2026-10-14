@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: C4AB07FD-F765-516E-AA91-FC971A3276D6
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the tenor_basis_swap_long_shorts commands from the shell?
+#+description: Every command the tenor_basis_swap_long_shorts submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_basis_swap_long_shorts:
+
+This file documents the tenor_basis_swap_long_shorts resource at the shell, one section per command. Every command is a subcommand of =tenor_basis_swap_long_shorts=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 60166DE8-C651-565E-B672-02E69FDFE775
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.list=.
+
+#+name: tenor_basis_swap_long_shorts-list
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-list.ores :exports none
+tenor_basis_swap_long_shorts list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 844B4D52-07F9-5C2D-B3F7-A38A6402CDDC
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts get <id>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.get=.
+
+#+name: tenor_basis_swap_long_shorts-get
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-get.ores :exports none
+tenor_basis_swap_long_shorts get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3D9C3B05-48A8-5A40-85A9-3EFD14FCE7E9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.get_many=.
+
+#+name: tenor_basis_swap_long_shorts-get-many
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-get-many.ores :exports none
+tenor_basis_swap_long_shorts get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: EB4BA10D-E5C9-5042-89BB-816ABBD3C021
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts add <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.put=.
+
+#+name: tenor_basis_swap_long_shorts-add
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-add.ores :exports none
+tenor_basis_swap_long_shorts add 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F2E1A059-23DD-5E93-BAF0-CF8187F1BCCA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts set <id> <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.put=.
+
+#+name: tenor_basis_swap_long_shorts-set
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-set.ores :exports none
+tenor_basis_swap_long_shorts set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4CBCC0B8-CBF4-590F-BBD7-464E229A24D9
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts put-many --count <n> <id> <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.put_many=.
+
+#+name: tenor_basis_swap_long_shorts-put-many
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-put-many.ores :exports none
+tenor_basis_swap_long_shorts put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D95B49EF-22CF-529E-9D93-9101751349E4
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.delete=.
+
+#+name: tenor_basis_swap_long_shorts-delete
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-delete.ores :exports none
+tenor_basis_swap_long_shorts delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 661E9694-2365-5B86-9FAB-2E000BB52C00
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.delete_many=.
+
+#+name: tenor_basis_swap_long_shorts-delete-many
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-delete-many.ores :exports none
+tenor_basis_swap_long_shorts delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: A4ADB55E-CA34-5A55-9F9C-7D0A6DCEC25D
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.list_by_convention_id=.
+
+#+name: tenor_basis_swap_long_shorts-by-convention-id
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-by-convention-id.ores :exports none
+tenor_basis_swap_long_shorts by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8C837CE6-3F7F-5F5F-A620-1CB7585025A8
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts_versions.list=.
+
+#+name: tenor_basis_swap_long_shorts-versions
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-versions.ores :exports none
+tenor_basis_swap_long_shorts versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 5C6B5F04-6E02-5773-87FF-2CBC7B983968
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_long_shorts version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_long_shorts_versions.get=.
+
+#+name: tenor_basis_swap_long_shorts-version
+#+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-version.ores :exports none
+tenor_basis_swap_long_shorts version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

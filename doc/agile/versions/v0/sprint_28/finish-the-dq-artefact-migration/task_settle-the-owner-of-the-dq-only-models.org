@@ -83,7 +83,7 @@ task and name that file in the Command column.
 | Files from the retired lookup template | 0 | =grep -rl 'Template: sql_schema_artefact_create.mustache' projects/ | wc -l= | 9c0b211616 |
 | Hand-written files that create a table | 23, down from 25 at the branch base | the census loop in [[id:F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1][Model the hand-written tables that have a codegen shape]] | 9c0b211616 |
 | Codegen suite | 1,425 passed | =python3 -m pytest projects/ores.codegen/tests= | 9c0b211616 |
-| Local gate, non-heavy | 40 of 40 | =compass check --exclude-heavy= | f5892aaf08 |
+| Local gate, non-heavy | 40 of 40 at f5892aaf08; the =web= class flakes under parallel load, see Notes | =compass check --exclude-heavy= | this branch |
 | pgTAP | 52 files, all pass | =compass check --only pgtap= after =compass db recreate -y -k= | f5892aaf08 |
 | ctest | 93 of 93 | =compass check --only ctest= | this branch |
 
@@ -166,6 +166,15 @@ gathered market data and fixings where the exported run document says they are,
 and warns when it names none. So the test's expectation was the stale half, and
 the fix is the test. It now asserts the exported =Setup= equals the imported one,
 with a comment saying why the names come from the catalogue. ctest is 93 of 93.
+
+** The web class flakes under parallel load
+
+One =--exclude-heavy= run ends 39 of 40: =web= fails on
+=src/agile/file-agile-store.test.ts > the real agile tree=, "Test timed out in
+5000ms". It reads the whole agile tree, which is a big corpus, and the class runs
+it beside every other check. Run alone it passes: 893 ms for that case, 1.67 s
+for the file, and 765 of 765 across the =bff= package. The same flake is recorded
+on the previous task in this story. It is not this branch's.
 
 * Test Scenarios
 

@@ -123,7 +123,6 @@
 \ir ./dq_overnight_index_conventions_artefact_create.sql
 \ir ./dq_swap_conventions_artefact_create.sql
 \ir ./dq_swap_index_conventions_artefact_create.sql
-\ir ./dq_tenor_basis_swap_conventions_artefact_create.sql
 \ir ./dq_tenor_basis_two_swap_conventions_artefact_create.sql
 \ir ./dq_zero_conventions_artefact_create.sql
 \ir ./dq_zero_inflation_index_conventions_artefact_create.sql

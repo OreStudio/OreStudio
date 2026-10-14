@@ -6136,7 +6136,10 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
 
     body = _strip_body(doc.root)
     if body:
-        e["description"] = body
+        # The table-create template embeds the description in a one-line SQL
+        # comment between two rule lines, so a multi-line body would break out
+        # of the comment and corrupt the DDL. Collapse it to one physical line.
+        e["description"] = " ".join(body.split())
 
     # Lookup entities declare their single-column key via a dedicated
     # ``* Primary key`` heading (:column:/:type:/:is_text: on the heading

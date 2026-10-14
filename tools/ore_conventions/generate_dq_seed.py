@@ -419,22 +419,6 @@ KINDS = {
         ("Conventions", "conventions", "text"),
         ("FixingCalendar", "fixing_calendar", "text"),
     ]),
-    "TenorBasisSwap": ("tenor_basis_swap", [
-        ("PayIndex", "pay_index", "text"),
-        ("PayFrequency", "pay_frequency", "text"),
-        ("ReceiveIndex", "receive_index", "text"),
-        ("ReceiveFrequency", "receive_frequency", "text"),
-        ("SpreadOnRec", "spread_on_rec", "bool"),
-        ("IncludeSpread", "include_spread", "bool"),
-        ("SubPeriodsCouponType", "sub_periods_coupon_type", "text"),
-        ("PayIsAveraged", "pay_is_averaged", "bool"),
-        ("RecIsAveraged", "rec_is_averaged", "bool"),
-        ("LongIndex", "long_index", "text"),
-        ("LongPayTenor", "long_pay_tenor", "text"),
-        ("ShortIndex", "short_index", "text"),
-        ("ShortPayTenor", "short_pay_tenor", "text"),
-        ("SpreadOnShort", "spread_on_short", "bool"),
-    ]),
     "TenorBasisTwoSwap": ("tenor_basis_two_swap", [
         ("Calendar", "calendar", "text"),
         ("LongFixedFrequency", "long_fixed_frequency", "frequency"),
@@ -476,6 +460,11 @@ CUT_KINDS = {
     "IntradayPowerLoad": "the PowerLoadProfileData field is a nested load "
           "profile whose stored form is a bespoke encoding; mapping it is a "
           "task of its own.",
+    "TenorBasisSwap": "the tenor basis swap convention is atomised: its live "
+          "shape is the central convention row plus two part tables, and the "
+          "family model generates no DQ artefact table for it. The publish "
+          "function resolves one artefact table to one live table by name, so "
+          "it cannot stage or publish this kind without codegen work.",
 }
 
 # Columns that are world data: the live table has no party_id.
@@ -514,7 +503,6 @@ PRIMARY_INDEX = {
     "InflationSwap": ("Index",),
     "OIS": ("Index",),
     "Swap": ("Index",),
-    "TenorBasisSwap": ("PayIndex", "ReceiveIndex", "LongIndex", "ShortIndex"),
     "TenorBasisTwoSwap": ("LongIndex", "ShortIndex"),
 }
 

@@ -236,6 +236,12 @@
 \ir ./refdata_book_change_parties_fn_create.sql
 \ir ./refdata_counterparty_change_parties_fn_create.sql
 
+-- The atomised convention: the kind catalogue, the central row every kind
+-- shares, and the parts each kind's family names.
+\ir ./refdata_convention_kinds_create.sql
+\ir ./refdata_conventions_create.sql
+\ir ./refdata_conventions_notify_trigger_create.sql
+
 -- ORE conventions (curve-building conventions imported from conventions.xml)
 \ir ./refdata_zero_conventions_create.sql
 \ir ./refdata_zero_conventions_notify_trigger_create.sql
@@ -255,8 +261,10 @@
 \ir ./refdata_cross_currency_basis_conventions_notify_trigger_create.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_create.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_notify_trigger_create.sql
-\ir ./refdata_tenor_basis_swap_conventions_create.sql
-\ir ./refdata_tenor_basis_swap_conventions_notify_trigger_create.sql
+\ir ./refdata_tenor_basis_swap_pay_receives_create.sql
+\ir ./refdata_tenor_basis_swap_pay_receives_notify_trigger_create.sql
+\ir ./refdata_tenor_basis_swap_long_shorts_create.sql
+\ir ./refdata_tenor_basis_swap_long_shorts_notify_trigger_create.sql
 \ir ./refdata_ois_conventions_create.sql
 \ir ./refdata_ois_conventions_notify_trigger_create.sql
 \ir ./refdata_fra_conventions_create.sql

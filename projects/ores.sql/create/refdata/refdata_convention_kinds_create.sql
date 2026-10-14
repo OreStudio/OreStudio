@@ -24,17 +24,7 @@
  */
 
 -- =============================================================================
--- The coded catalogue of convention kinds, one row per convention an ORE
-conventions document can carry. A central convention row names its kind with
-this code, and the kind selects the family whose parts the row carries.
-
-The rows are ORE's own convention category names, upper-cased: the kind of
-tenor_basis_swap_convention is TENOR_BASIS_SWAP. A kind that is modelled
-beside this table in ores.refdata owns a family of parts; this table is the
-closed set that says which kinds the central row may be.
-
-Batch-loaded reference data, refreshed from ORE's ore_types.xsd alongside the
-other coded refdata lookups.
+-- The coded catalogue of convention kinds, one row per convention an ORE conventions document can carry. A central convention row names its kind with this code, and the kind selects the family whose parts the row carries. The rows are ORE's own convention category names, upper-cased: the kind of tenor_basis_swap_convention is TENOR_BASIS_SWAP. A kind that is modelled beside this table in ores.refdata owns a family of parts; this table is the closed set that says which kinds the central row may be. Batch-loaded reference data, refreshed from ORE's ore_types.xsd alongside the other coded refdata lookups.
 -- =============================================================================
 
 create table if not exists "ores_refdata_convention_kinds_tbl" (

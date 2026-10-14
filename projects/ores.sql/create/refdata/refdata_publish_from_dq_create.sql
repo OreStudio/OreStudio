@@ -5133,12 +5133,17 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- =============================================================================
 
 -- One dataset owns every convention kind: one artefact table per live
--- convention table, 24 of them. There is no per-kind publish body. The
+-- convention table, 23 of them. There is no per-kind publish body. The
 -- function walks the kind list and dispatches by name transform,
 -- ores_dq_<x>_conventions_artefact_tbl to ores_refdata_<x>_conventions_tbl,
 -- so a new kind costs one array entry and one artefact table, not a function.
 -- The copied column list is read from the live table itself, so there is no
 -- second per-kind list to keep in step either.
+--
+-- The atomised tenor basis swap kind is absent: its live shape is the central
+-- ores_refdata_conventions_tbl plus two part tables, which the one-artefact-
+-- to-one-live-table transform cannot express. It has no artefact table and is
+-- not published from DQ.
 --
 -- Rows the target party already carries are skipped, so a republish converges
 -- on the same set. Ids the engine does not ask for are inert: the engine
@@ -5176,7 +5181,7 @@ declare
         'cross_currency_basis', 'cross_currency_fix_float', 'deposit', 'fra',
         'future', 'fx_option', 'ibor_index', 'inflation_swap',
         'intraday_power_load', 'ois', 'overnight_index', 'swap', 'swap_index',
-        'tenor_basis_swap', 'tenor_basis_two_swap', 'zero',
+        'tenor_basis_two_swap', 'zero',
         'zero_inflation_index'];
 begin
     perform ores_utility_allow_version_replace_fn();

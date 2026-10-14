@@ -34,6 +34,7 @@ this row by its key. The central row carries no kind-specific column.
 :product:          ores
 :component:        refdata
 :has_tenant_id:    true
+:generate_touch_function: true
 :END:
 
 * Columns

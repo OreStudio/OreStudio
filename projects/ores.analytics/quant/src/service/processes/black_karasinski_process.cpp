@@ -18,20 +18,13 @@
  *
  */
 #include "ores.analytics.quant/service/processes/black_karasinski_process.hpp"
+#include "ores.analytics.quant/service/processes/small_kappa_threshold.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
 namespace math = ores::analytics::quant::math;
-
-namespace {
-// Mirrors ornstein_uhlenbeck_process's own threshold and QuantLib's
-// OrnsteinUhlenbeckProcess::variance() branch point: kappa positive but
-// too small to divide by safely still needs the algebraic small-kappa
-// limit, not just kappa == 0 exactly.
-const double small_kappa_threshold = std::sqrt(std::numeric_limits<double>::epsilon());
-}
 
 math::rate_tree build_black_karasinski_tree(
     double log_rate, double kappa, double theta, double sigma, double dt, std::size_t steps) {

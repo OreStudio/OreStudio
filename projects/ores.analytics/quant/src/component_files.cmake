@@ -103,6 +103,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/processes/ornstein_uhlenbeck_process.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/processes/quadratic_gaussian_params.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/processes/quadratic_gaussian_process.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/processes/small_kappa_threshold.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/processes/two_factor_gaussian_params.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/processes/two_factor_gaussian_process.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/processes/vasicek_params.hpp"

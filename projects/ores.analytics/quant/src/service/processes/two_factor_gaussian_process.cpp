@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/two_factor_gaussian_process.hpp"
+#include "ores.analytics.quant/service/processes/small_kappa_threshold.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -25,8 +26,6 @@
 namespace ores::analytics::quant::service {
 
 namespace {
-
-const double small_kappa_threshold = std::sqrt(std::numeric_limits<double>::epsilon());
 
 /**
  * @brief Exact OU transition variance factor: (1 - exp(-2*kappa*dt)) / (2*kappa).

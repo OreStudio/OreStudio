@@ -421,6 +421,34 @@ This writes =doc/knowledge/service_architecture_patterns/pattern_token_exchange.
 section, cite at least one source, then add the page to its group in
 [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]].
 
+** New NATS pattern
+:PROPERTIES:
+:ID: F037700E-650B-436E-BEB0-14683904F256
+:END:
+
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][NATS pattern pages]] live in
+[[proj:doc/knowledge/nats_patterns][=doc/knowledge/nats_patterns/=]], one page per
+established pattern, as =pattern_<slug>.org=. =--parent-dir= is optional and
+defaults to that folder. =--pattern-group= is required, and it names one group of
+the language: =addressing=, =subscription=, =publication=, =request=,
+=error-handling=, =diagnostics= or =ownership=. A group from the
+service-architecture vocabulary is refused. Title the page with the pattern's
+name in its source.
+
+#+begin_src sh :results verbatim
+compass add nats_pattern \
+  --slug durable_subscription \
+  --title "Durable Subscription" \
+  --description "A subscription keeps its position on the stream across a restart, so a consumer resumes where it stopped." \
+  --pattern-group subscription \
+  --tags "pattern,nats,subscription"
+#+end_src
+
+This writes =doc/knowledge/nats_patterns/pattern_durable_subscription.org=. State
+the pattern in the =ores.nats= call it governs, fill in every section, cite at
+least one source, then add the page to its group in
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]].
+
 ** New capture
 :PROPERTIES:
 :ID: 978E0A8F-197C-48DA-A405-457E0AEE91D9

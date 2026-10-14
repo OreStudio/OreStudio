@@ -341,6 +341,29 @@ contract.
 | How to generate | =compass add service_architecture_pattern=                       |
 | Inventory       | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] |
 
+* NATS pattern
+:PROPERTIES:
+:ID: EF74FB4D-FB8B-4AFE-AC4C-7EF83B2B859C
+:END:
+
+A named, established solution to a recurring problem of speaking on the NATS
+bus, written in the pattern-language form: its context, the problem, the forces,
+the solution, how it handles errors, timeouts and retries, its pitfalls, its
+security, its use in ORE Studio, and the authoritative sources that define it.
+A pattern page is named for the pattern in its source, so a design can say "use
+pattern X" and inherit what is known about X. It is stated in =ores.nats= calls
+rather than diagrams. Lives under
+[[proj:doc/knowledge/nats_patterns][=doc/knowledge/nats_patterns/=]]. See
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][Document type: nats_pattern]] for the
+contract.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Value                                       |
+|-----------------+---------------------------------------------|
+| Owner           | cross-cutting                               |
+| How to generate | =compass add nats_pattern=                       |
+| Inventory       | [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] |
+
 * Knowledge document
 :PROPERTIES:
 :ID: BD1F3458-F991-46BE-ABEB-5F06C2633375

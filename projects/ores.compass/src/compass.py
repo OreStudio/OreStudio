@@ -3067,6 +3067,8 @@ _STATIC_PARENT = {
     "workflow": "doc/knowledge/workflows",
     # Service architecture pattern pages share one folder with their hub.
     "service_architecture_pattern": "doc/knowledge/service_architecture_patterns",
+    # NATS pattern pages share one folder with their hub.
+    "nats_pattern": "doc/knowledge/nats_patterns",
     # Report pages share one folder for the same reason.
     "report": "doc/knowledge/reports",
 }
@@ -3680,6 +3682,7 @@ def cmd_add(argv):
               "         facet facet_group technical_space archetype profile\n"
               "         feature user_journey workflow report\n"
               "         service_architecture_pattern\n"
+              "         nats_pattern\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), doc/llm/skills (skill),\n"
               "  doc/manual/user_guide (manual), doc/llm/memory (memory),\n"
@@ -3687,6 +3690,7 @@ def cmd_add(argv):
               "  doc/knowledge/reports (report),\n"
               "  doc/knowledge/service_architecture_patterns\n"
               "    (service_architecture_pattern),\n"
+              "  doc/knowledge/nats_patterns (nats_pattern),\n"
               "  or doc/agile/product_backlog/inbox (capture); required\n"
               "  otherwise.\n"
               "  diagram: scaffolds a .puml file with the standard licence header.\n"

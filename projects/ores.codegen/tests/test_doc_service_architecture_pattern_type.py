@@ -124,12 +124,13 @@ def test_the_template_links_the_glossary_entry_and_the_hub(tmp_path):
 
 def test_the_hub_reads_the_groups_in_order():
     text = HUB.read_text(encoding="utf-8")
-    positions = [text.find(f"\n** The {g} group") for g in doc_generate.PATTERN_GROUPS]
+    groups = doc_generate.PATTERN_GROUPS["service_architecture_pattern"]
+    positions = [text.find(f"\n** The {g} group") for g in groups]
     assert -1 not in positions, positions
     assert positions == sorted(positions)
 
 
 def test_the_contract_names_every_group():
     text = CONTRACT.read_text(encoding="utf-8")
-    for group in doc_generate.PATTERN_GROUPS:
+    for group in doc_generate.PATTERN_GROUPS["service_architecture_pattern"]:
         assert f"={group}=" in text, group

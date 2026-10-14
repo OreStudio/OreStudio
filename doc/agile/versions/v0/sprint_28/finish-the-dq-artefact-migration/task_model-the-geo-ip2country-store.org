@@ -121,6 +121,38 @@ task and name that file in the Command column.
 
 * Notes
 
+** Not done: the primary key breaks a dependent test
+
+=compass check --only ctest= fails =ores.database.tests= on
+=unit_of_work_tests.cpp=, four cases, all with
+=duplicate key value violates unique constraint "ores_geo_ip2country_tbl_pkey"=.
+
+That suite uses =ores_geo_ip2country_tbl= as a generic probe table: it inserts
+='[1,2)'= under a fresh random =country_code= in each case to exercise rollback
+and visibility through a unit of work. It picked the table because it was a
+trivial keyless store, and it has used it that way since before this task. The
+hand-written table had no key, so the inserts were fine; the generated one has
+=primary key (ip_range)=, so the second case's insert is a duplicate.
+
+The key is this task's own addition, not a property of the table it models. The
+non-heavy gate cannot see this -- nothing in it runs the C++ suites -- which is
+why the task was closed before the failure surfaced.
+
+Two ways out, and the choice is a design one:
+
+- *Make a stored table able to have no key.* The validator already accepts
+  =:no_primary_key:=, but the create template does not honour it, and it cannot
+  be a one-line guard: the column list ends every column with a comma and relies
+  on the =primary key= clause to close the body, so the last column's separator
+  has to become conditional, plus the key checks and the key indexes. The rule
+  the meta-model states -- a key is required of a *stored* record -- would need
+  restating for a store whose rows have no identity.
+- *Keep the key and move the probe.* The suite wants a table of the right shape,
+  not this table; varying the range per case fixes it in two lines. That accepts
+  the key as a real constraint on the store.
+
+Until one is chosen the story is not complete, whatever its State says.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -24,7 +24,7 @@
  *
  * DQ Artefact FpML Account Type Population Script
  *
- * Populates the dq_account_types_artefact_tbl with reference data.
+ * Populates the dq_fpml_account_types_artefact_tbl with reference data.
  * Dataset: fpml.account_type
  *
  * This script is idempotent - clears and repopulates for the dataset.
@@ -95,7 +95,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise debug 'Populated % records into dq_account_types_artefact_tbl', v_count;
+    raise debug 'Populated % records into dq_fpml_account_types_artefact_tbl', v_count;
 end;
 $$;
 

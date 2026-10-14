@@ -54,7 +54,7 @@ values
      'dq_coding_schemes_artefact_tbl', 'dq_coding_schemes_tbl', 'dq.v1.ops.publish_coding_schemes_from_dq', 5,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'account_types', 0, 'Account Types', 'FpML account type codes',
-     'dq_account_types_artefact_tbl', 'refdata_account_types_tbl', 'refdata.v1.ops.publish_account_types_from_dq', 10,
+     'dq_fpml_account_types_artefact_tbl', 'refdata_fpml_account_types_tbl', 'refdata.v1.ops.publish_account_types_from_dq', 10,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'asset_classes', 0, 'Asset Classes', 'FpML asset class codes',
      'dq_asset_classes_artefact_tbl', 'refdata_asset_classes_tbl', 'refdata.v1.ops.publish_asset_classes_from_dq', 11,

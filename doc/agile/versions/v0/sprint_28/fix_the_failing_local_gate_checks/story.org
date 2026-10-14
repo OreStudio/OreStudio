@@ -2,7 +2,7 @@
 :ID: 40D4C718-6D87-439D-8816-7BF6428C9977
 :END:
 #+title: Story: Fix the failing local gate checks
-#+description: Two checks are red on main. The compass suite fails because it chmods the user's persona cache, which a sandbox makes read-only. Four IAM pgTAP suites fail on a fresh test database because they read data only a provisioned environment has: they assert a provisioned tenant exists and then insert into it. They roll back, so nothing is left behind and the gap is fixtures, not leftovers.
+#+description: Three checks are red on main. The compass suite chmods the user's persona cache, which a sandbox makes read-only. Four IAM pgTAP suites need a tenant that only a provisioned environment has. And a marketdata case keys a manual point it never clears, which the suite's own non-declaration order turns into a failure of the case before it. Each check is fixed where it runs.
 #+type: story
 #+level: s2
 #+filetags: :sprint_28:v0:
@@ -34,6 +34,8 @@ one.
 - The compass suite passes with a read-only home directory.
 - The IAM pgTAP suites pass on a freshly rebuilt database, with nothing
   provisioned beforehand.
+- Each suite and test leaves the shared database as it found it, so a check
+  passes on a database it has already run against.
 
 * What was actually wrong
 
@@ -56,12 +58,20 @@ Note that the gate's own comment claimed the corpus was self-sufficient --
 "every suite writes the reference data it reads and rolls it back" -- and that
 was true of 48 suites and false of these four.
 
+** A marketdata case polluted the suite that ran after it. The plus-value case
+keyed a manual point and never cleared it. The suite does not run in
+declaration order, so the plus case ran first and the leftover point shadowed
+the imported value that the refusal case asserts on, which reported a
+mismatch of "+0.09" against "0.080". The value was written during the same
+run, not left by an earlier one -- the database had been rebuilt minutes
+before -- so nothing outside the suite was at fault.
+
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6A906BCE-0428-41CD-AD78-1F4F692B4D5A][Scaffold story: Fix the failing local gate checks]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:9D4D10F4-1FD0-4DD1-8D4E-7D05E3C27D7B][Make both failing checks pass where they run]] | DONE | 2026-10-14 | 2026-10-14 | Move the persona cache into the checkout, and give the four tenant suites their own provisioned fixture. |
+| [[id:9D4D10F4-1FD0-4DD1-8D4E-7D05E3C27D7B][Make every failing check pass where it runs]] | DONE | 2026-10-14 | 2026-10-14 | Move the persona cache into the checkout, give the four tenant suites their own provisioned fixture, and clear the manual point the plus-value case keys. |
 
 * Decisions
 
@@ -81,7 +91,7 @@ was true of 48 suites and false of these four.
 
 * Result
 
-Both checks pass, and they pass for reasons that hold anywhere.
+All three checks pass, and they pass for reasons that hold anywhere.
 
 The persona suite runs as the gate runs it, with no writable-home workaround:
 398 passed, 1 skipped. Previously two tests failed on a read-only home.
@@ -90,4 +100,8 @@ The pgTAP corpus is green on a freshly rebuilt database with nothing
 provisioned: 52 files, 512 tests. The count rises from 510 because the actor
 suite had been aborting after two of its four planned tests.
 
-Neither fix needed the other, and neither needed ACME.
+The marketdata core suite is green and stays green on a database it has
+already run against, run twice at 114.69s and 114.05s. It had been failing on
+the state its own previous case left behind.
+
+No fix needed another, and none needed ACME.

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 9D4D10F4-1FD0-4DD1-8D4E-7D05E3C27D7B
 :END:
-#+title: Task: Make both failing checks pass where they run
-#+description: Move the persona cache out of the user's home and into the checkout, and give the four tenant policy suites their own provisioned fixture instead of one they must find.
+#+title: Task: Make every failing check pass where it runs
+#+description: Move the persona cache out of the user's home and into the checkout, give the four tenant policy suites their own provisioned fixture, and clear the manual point the marketdata plus-value case keys.
 #+type: task
 #+level: s1
 #+filetags: :fix_the_failing_local_gate_checks:sprint_28:v0:
@@ -94,3 +94,8 @@ NULL tenant through set_config, which stopped row-level security from
 restricting and made them fail for reasons unrelated to the policies they
 test. Each now provisions its own tenant through ores_iam_provision_tenant_fn
 and rolls it back. The corpus is green: 52 files, 512 tests.
+
+The marketdata core suite left a manual point behind that its own later
+case read, so it failed on the state of the run before it. The case now
+clears what it keys, and the suite passes twice in a row on a database it
+has already run against.

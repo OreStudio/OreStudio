@@ -48,6 +48,7 @@
 \ir ./dq_coding_schemes_create.sql
 \ir ./dq_coding_schemes_notify_trigger_create.sql
 \ir ./dq_coding_schemes_artefact_create.sql
+\ir ./dq_coding_scheme_functions_create.sql
 
 -- Badge system (severities and code domains before definitions, mappings last)
 \ir ./dq_badge_severities_create.sql
@@ -132,7 +133,7 @@
 \ir ./dq_ip2country_artefact_create.sql
 
 -- FPML artefact tables
-\ir ./dq_account_types_artefact_create.sql
+\ir ./dq_trading_account_types_artefact_create.sql
 \ir ./dq_asset_classes_artefact_create.sql
 \ir ./dq_asset_measures_artefact_create.sql
 \ir ./dq_benchmark_rates_artefact_create.sql

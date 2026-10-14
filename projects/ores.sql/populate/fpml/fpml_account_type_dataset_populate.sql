@@ -53,7 +53,7 @@ BEGIN
         'Reference data for FpML Account Type (version 1-1)',
         '2016-06-13'::date,
         'FpML Public License 2.0',
-        'account_types'
+        'trading_account_types'
     );
 END $$;
 

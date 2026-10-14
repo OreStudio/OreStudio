@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 97786EC5-123C-45AA-9CB9-5BCCC218FF78
+:END:
+#+title: Gate a change with compass check, not a bare site page
+#+description: A bare compass site page republishes every stale page and gates nothing. Gate a change with compass check, which runs only the checks its class needs; for a documentation change it publishes just the changed pages.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+A bare =./compass.sh site page= publishes every page whose source is newer than its published HTML. It is a publish command, not a gate. Gate a change with =./compass.sh check=, which classifies the diff and runs only the checks that class needs.
+
+*Why:* On a two-file documentation change the agent ran =./compass.sh lint= alone, started a bare =./compass.sh site page= as a background job, never read its output, and merged on the strength of lint. The bare command republishes the whole corpus, the full-build behaviour that is wrong for a trivial change, while the actual gate was never run. =./compass.sh check= selects the =docs= class for that change: six checks, about twenty seconds, and its =site-page= check publishes only the changed pages.
+
+*How to apply:* Before raising or merging, run =./compass.sh check=, or =./compass.sh check --exclude-heavy= when the change needs no build, and read =build/output/local_checks/report.md=. Never substitute a bare =./compass.sh site page= for it. The compass-pr-raise skill makes this step mandatory; the check is what keeps the gate proportionate to the change.

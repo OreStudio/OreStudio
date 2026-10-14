@@ -2,18 +2,18 @@
 :ID: A31257E3-7495-46CD-B36D-10AA6D55CB09
 :END:
 #+title: Task: Move the lookup artefact tables onto domain models
-#+description: Fifteen artefact tables come from the older lookup template, sql_schema_artefact_create, through ores.codegen.lookup_entity models: account_types, asset_classes, asset_measures, benchmark_rates, business_centres, business_processes, cashflow_types, entity_classifications, local_jurisdictions, party_relationships, party_roles, person_roles, regulatory_corporate_sectors, reporting_regimes and supervisory_bodies. Move their models to domain_entity with the flag, so the canonical template generates the tables, and retire the lookup artefact template once nothing uses it. Overlaps the capture Migrate remaining lookup_entity/table models (28F6B7B2).
+#+description: Fifteen artefact tables come from the older lookup template, sql_schema_artefact_create, through ores.codegen.lookup_entity models: trading_account_types, asset_classes, asset_measures, benchmark_rates, business_centres, business_processes, cashflow_types, entity_classifications, local_jurisdictions, party_relationships, party_roles, person_roles, regulatory_corporate_sectors, reporting_regimes and supervisory_bodies. Move their models to domain_entity with the flag, so the canonical template generates the tables, and retire the lookup artefact template once nothing uses it. Overlaps the capture Migrate remaining lookup_entity/table models (28F6B7B2).
 #+type: task
 #+level: s1
 #+filetags: :dq:codegen:cleanup:lookup-entity:finish-the-dq-artefact-migration:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-the-lookup-artefact-tables-onto-domain-models
+#+pr: 3294
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-13
-#+environment:
+#+updated: 2026-10-14
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ No artefact table comes from the lookup template, and the template is retired.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] |
-| Now          | Not yet started.                       |
+| Now          | Done. The build, the suites and the SQL tests are green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-14                               |
 
 * Acceptance
 
@@ -40,9 +40,19 @@ No artefact table comes from the lookup template, and the template is retired.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The table belongs to the model of the data it stages, so each of the
+fifteen gets an owning model in the component that owns its rows, with
+=:ores.sql.schema.domain_entity_artefact_create.enabled: true= and an
+=* Artefact columns= section, because the staging shape is not a
+projection of the entity. Twelve had no model at all and are new;
+=party_roles= and =asset_classes= are the two that needed more than the
+flag.
+
+The task description says these tables came through
+=ores.codegen.lookup_entity= models. They did not: no =*_lookup_entity.org=
+file exists in the tree or in its history under these names, so the
+tables were orphaned output that no run rewrote. The files were the real
+target and the premise was stale.
 
 * Measurements
 
@@ -56,9 +66,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| DQ artefact tables on the lookup template | 0, from 15 | =cd projects/ores.sql/create/dq && grep -h "Template:" *_artefact_create.sql \| sed 's/.*Template: //' \| sort \| uniq -c= | 52ea31c788 |
+| DQ artefact tables on the canonical template | 119 | as above | 52ea31c788 |
+| DQ artefact tables on the junction template | 9 | as above | 52ea31c788 |
+| New refdata owning models | 13 in this pass, =party_role= earlier | =git diff --name-only --diff-filter=A 70d29d475a -- projects/ores.refdata/modeling= | 52ea31c788 |
+| Local checks green | 41 of 41 non-heavy | =./compass.sh check --exclude-heavy= | 52ea31c788 |
 
 * Notes
+
+- =asset_classes= was the one table that needed a redesign rather than a
+  flag. It had no entity but did have an =asset_class_messages= operation
+  model over a hand-written repository and service, and the joined list it
+  served had no consumer outside its own handler. The hand-written pair and
+  the operation model are retired; the entity generates the table, its
+  staging table and the read and write stacks in their place.
+- The refdata =account_types= codelist collides with the IAM account type
+  of a login account: the shell menu name is the entity plural and has no
+  override, so two components generated a menu named =account_types=. The
+  codelist is renamed =trading_account_type=, which names what it
+  classifies -- a trading account, by whose activity it carries -- and
+  clears the menu.
+- The first pass overwrote the IAM =account_types= shell recipe, because
+  the codelist briefly claimed the same menu. Regeneration restored it from
+  the IAM model; the drift check is what caught it.
+- The per-entity =ores_refdata_validate_<entity>_fn= functions the orphan
+  tables carried are not generated by the entity template. Nothing called
+  them, so they go with the orphans.
 
 * Test Scenarios
 
@@ -75,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3294][#3294]] | [refdata] Move the lookup artefact tables onto domain models |
 
 * Review
 
@@ -84,3 +117,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered: no DQ artefact table comes from the lookup template, and the
+template is gone.
+
+Measured at =c55e014e49=, with
+=cd projects/ores.sql/create/dq && grep -h "Template:" *_artefact_create.sql | sed 's/.*Template: //' | sort | uniq -c=:
+119 tables from =sql_schema_domain_entity_artefact_create=, 9 from the
+junction template, and 0 from =sql_schema_artefact_create=. The template,
+its literate source, its entry in =get_schema_template_mappings= and the
+four codegen tests that rendered it are deleted.
+
+Verification, all at =c55e014e49=, after merging main:
+
+- =./compass.sh build= with the =linux-clang-release-ninja= preset:
+  exit 0.
+- =./compass.sh test run --preset linux-clang-release-ninja=:
+  93 of 93 suites passed, 0 failed, 825 s.
+- =./projects/ores.sql/test/run_tests.sh=: 52 files, 512 tests, PASS.
+- =./compass.sh check --exclude-heavy=: 40 of 41. The failure is the
+  =web= class's agile-tree read timing out under parallel load; it passes
+  alone in under a second.
+
+The pgTAP run needs an active tenant that people set up. A =db recreate=
+leaves only the system tenant, and CLI provisioning leaves the Acme tenant
+in =bootstrapping= until the provisioning wizard runs its
+=complete_provisioning= step, so the four isolation files fail on their own
+fixture before it is activated. Completing it the way the wizard does, with
+=ores_iam_mark_tenant_active_fn=, is what they need; this branch touches
+none of the tables they assert on.

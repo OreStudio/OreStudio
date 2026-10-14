@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: E962F696-339C-5AEB-80F7-62D3C2F28BB2
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the party_relationships commands from the shell?
+#+description: Every command the party_relationships submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_relationships:
+
+This file documents the party_relationships resource at the shell, one section per command. Every command is a subcommand of =party_relationships=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DE50A4C2-B7C3-5D47-BFCC-79EE78A17092
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.list=.
+
+#+name: party_relationships-list
+#+begin_src ores-shell :tangle party_relationships-list.ores :exports none
+party_relationships list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F8779DF6-DCE8-5548-8A12-0E073C078C99
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.get=.
+
+#+name: party_relationships-get
+#+begin_src ores-shell :tangle party_relationships-get.ores :exports none
+party_relationships get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4B76FF40-96B7-5FE6-86DF-5BC21E0D17C6
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.get_many=.
+
+#+name: party_relationships-get-many
+#+begin_src ores-shell :tangle party_relationships-get-many.ores :exports none
+party_relationships get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: EC5433FE-6914-5ED6-871F-F113ACCC4B40
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.put=.
+
+#+name: party_relationships-add
+#+begin_src ores-shell :tangle party_relationships-add.ores :exports none
+party_relationships add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 1FC95D39-9F86-5FC0-896F-AE9FC5141C6E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.put=.
+
+#+name: party_relationships-set
+#+begin_src ores-shell :tangle party_relationships-set.ores :exports none
+party_relationships set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 81BD7512-4911-556F-9B13-51451A1CD84B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.put_many=.
+
+#+name: party_relationships-put-many
+#+begin_src ores-shell :tangle party_relationships-put-many.ores :exports none
+party_relationships put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 21684535-586A-5477-95D2-4FBC3C7E4A79
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.delete=.
+
+#+name: party_relationships-delete
+#+begin_src ores-shell :tangle party_relationships-delete.ores :exports none
+party_relationships delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 18784778-6210-5872-B80B-3AD57F9064C1
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships.delete_many=.
+
+#+name: party_relationships-delete-many
+#+begin_src ores-shell :tangle party_relationships-delete-many.ores :exports none
+party_relationships delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8437F5CA-4DD7-5326-8465-E4FAB5F2E416
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships_versions.list=.
+
+#+name: party_relationships-versions
+#+begin_src ores-shell :tangle party_relationships-versions.ores :exports none
+party_relationships versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F3FD4EF9-26BE-55AD-9A3B-33DD0F815371
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_relationships version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.party_relationships_versions.get=.
+
+#+name: party_relationships-version
+#+begin_src ores-shell :tangle party_relationships-version.ores :exports none
+party_relationships version __none__ __none__ --version 1
+#+end_src
+

@@ -323,7 +323,8 @@ def test_checks_on_a_lookup_entity_are_refused(tmp_path):
     ) + FLAGS + COLUMNS + ARTEFACT_COLUMNS_WITH_CHECKS
 
     with pytest.raises(ValueError, match="this lookup entity declares check"):
-        _render(tmp_path, body, "sql_schema_artefact_create.mustache", "lookup_checks")
+        _render(tmp_path, body, "sql_schema_domain_entity_artefact_create.mustache",
+                "lookup_checks")
 
 
 def test_a_check_table_under_another_header_is_refused(tmp_path):
@@ -359,66 +360,6 @@ def test_a_section_alongside_the_insert_helper_is_refused(tmp_path):
             "sql_schema_domain_entity_artefact_create.mustache",
             "insert_fn",
         )
-
-
-def test_the_lookup_entity_template_honours_the_section_too(tmp_path):
-    """The FpML JSON models reach the other archetype, so it needs the
-    same switch."""
-    body = HEADER.replace(
-        "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
-    ) + FLAGS + COLUMNS + ARTEFACT_COLUMNS
-
-    sql = _render(
-        tmp_path,
-        body,
-        "sql_schema_artefact_create.mustache",
-        "lookup_artefact",
-    )
-
-    assert '    "tag_id" uuid not null,' in sql
-    assert (
-        "create index if not exists dq_test_entities_artefact_tag_id_idx\n"
-        "on ores_dq_test_entities_artefact_tbl (tag_id);"
-    ) in sql
-
-
-def test_the_lookup_entity_template_marks_a_unique_index_too(tmp_path):
-    """The loader decodes the flag for both archetypes, so a template that
-    ignored it would render a plain index and say nothing about it."""
-    body = HEADER.replace(
-        "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
-    ) + FLAGS + COLUMNS + ARTEFACT_INDEXES
-
-    sql = _render(
-        tmp_path,
-        body,
-        "sql_schema_artefact_create.mustache",
-        "lookup_artefact_unique",
-    )
-
-    assert (
-        "create unique index if not exists dq_test_entities_artefact_tag_identity_idx\n"
-        "on ores_dq_test_entities_artefact_tbl (tenant_id, dataset_id, name);"
-    ) in sql
-
-
-def test_the_lookup_entity_template_is_unchanged_without_the_section(tmp_path):
-    body = HEADER.replace(
-        "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
-    ) + FLAGS + COLUMNS
-
-    sql = _render(
-        tmp_path,
-        body,
-        "sql_schema_artefact_create.mustache",
-        "lookup_default",
-    )
-
-    assert '    "code" text not null,\n    "version" integer not null,\n' in sql
-    assert (
-        "create index if not exists dq_test_entities_artefact_code_idx\n"
-        "on ores_dq_test_entities_artefact_tbl (code);"
-    ) in sql
 
 
 # --- natural keys -----------------------------------------------------------
@@ -514,16 +455,4 @@ def test_an_entity_whose_only_key_is_natural_has_no_trailing_comma(tmp_path):
         '    "name" text not null\n'
         ");"
     ) in sql
-
-
-def test_the_lookup_template_renders_the_natural_key_too(tmp_path):
-    body = HEADER.replace(
-        "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
-    ) + FLAGS + COLUMNS_WITH_NATURAL_KEY
-
-    sql = _render(
-        tmp_path, body, "sql_schema_artefact_create.mustache", "lookup_nat_key"
-    )
-
-    assert '    "name" text not null,\n' in sql
 

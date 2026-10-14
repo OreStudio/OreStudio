@@ -1,0 +1,212 @@
+:PROPERTIES:
+:ID: 30250A55-1935-4C3F-BFCD-3E53CE2D105C
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.regulatory_corporate_sector
+#+description: Codegen entity model for the refdata regulatory_corporate_sector table, an FpML coded scheme.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:fpml:
+#+entity_singular: regulatory_corporate_sector
+#+entity_plural: regulatory_corporate_sectors
+#+entity_title: Regulatory Corporate Sector
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+brief: The corporate sector of a counterparty.
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 -- Nature of Counterparty 1 -- and 191 -- Nature of Counterparty 2. Each row is one value of an FpML coding scheme: a
+code, unique within its coding scheme, with the source that defines it and
+a description. The rows arrive through DQ from the FpML codelists.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:is_text:     true
+:primary_key: true
+:END:
+
+The value's code within its coding scheme.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_sector"
+#+end_src
+
+** coding_scheme_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:is_text:     true
+:primary_key: true
+:END:
+
+Code of the coding scheme the value belongs to. Soft FK to
+=ores_dq_coding_schemes_tbl=, validated by =ores_dq_validate_coding_scheme_fn=.
+
+#+begin_src cpp :name generator
+// "NONE" is the coding scheme the base bootstrap always seeds.
+std::string("NONE")
+#+end_src
+
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The body that defines the value, such as FpML.
+
+#+begin_src cpp :name generator
+std::string("FpML")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Human-readable description of the value.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: code
+:END:
+
+The import carries the FpML codelist: the code, its source and
+description, and the coding scheme.
+
+** code
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** source
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** coding_scheme_code
+:PROPERTIES:
+:type: text
+:END:
+
+* Artefact indexes
+
+** coding_scheme
+:PROPERTIES:
+:columns: coding_scheme_code
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_regulatory_corporate_sectors_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Indexes
+
+| name          | columns            | unique | current_only | where_extra |
+|---------------+--------------------+--------+--------------+-------------|
+| coding_scheme | coding_scheme_code | false  | true         |             |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: tenant
+:order_by:     code
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| coding_scheme_code | ores_dq_validate_coding_scheme_fn |
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: sector
+:entity_plural_short:   sectors
+:entity_singular_words: regulatory corporate sector
+:entity_plural_words:   regulatory corporate sectors
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rcs
+:END:
+
+** Table display
+
+| column             | header        |
+|--------------------+---------------|
+| code               | Code          |
+| coding_scheme_code | Coding Scheme |
+| source             | Source        |
+| description        | Description   |
+| modified_by        | Modified By   |
+| version            | Version       |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

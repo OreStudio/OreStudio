@@ -19,12 +19,12 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_artefact_create.mustache
+ * Template: sql_schema_domain_entity_artefact_create.mustache
  * To modify, update the template and regenerate.
  */
 
 -- =============================================================================
--- Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table
+-- Contains a code representing a reporting regime under which a transaction may be reported. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_reporting_regimes_artefact_tbl" (
@@ -33,8 +33,8 @@ create table if not exists "ores_dq_reporting_regimes_artefact_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
-    "description" text null
-    ,"coding_scheme_code" text not null
+    "description" text null,
+    "coding_scheme_code" text not null
 );
 
 create index if not exists dq_reporting_regimes_artefact_dataset_idx

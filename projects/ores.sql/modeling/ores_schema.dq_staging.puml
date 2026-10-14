@@ -63,20 +63,6 @@ package "dq_staging" #F3E5F5 {
     An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). The record is personal data, so the generated reads are not open to every signed-in caller: iam.v1.account_contact_informations.list, get and list_by_account_id require iam::account_contact_informations:read, as every generated read requires its resource's read code. A person reads their own record through iam.v1.ops.get_my_account_contact_information, which takes no account id, and writes it through update-self; both are in [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. - Artefact Table
     end note
 
-    entity ores_dq_account_types_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
-        * version : integer
-          source : text
-          description : text
-    }
-
-    note right of ores_dq_account_types_artefact_tbl
-    Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table
-    end note
-
     entity ores_dq_accounts_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -107,10 +93,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_asset_classes_artefact_tbl
-    Defines a simple asset class categorization. Used for classification of the risk class of the trade. - Artefact Table
+    Defines a simple asset class categorisation, used to classify the risk class of a trade. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_asset_measures_artefact_tbl  #F7E5FF {
@@ -121,10 +108,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_asset_measures_artefact_tbl
-    The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures. - Artefact Table
+    The measure an asset is reported against, such as a valuation, a sensitivity or a risk measure. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_average_ois_conventions_artefact_tbl  #F7E5FF {
@@ -237,10 +225,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_benchmark_rates_artefact_tbl
-    FpML Benchmark rates - Artefact Table
+    The benchmark rates an instrument or a trade may reference, as FpML names them. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_bma_basis_swap_conventions_artefact_tbl  #F7E5FF {
@@ -342,10 +331,12 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+          image_id : uuid <<FK>>
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_business_centres_artefact_tbl
-    The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets. - Artefact Table
+    Business centres identify financial trading locations used for holiday calendar determination (e.g. "USNY" for New York, "GBLO" for London), using FpML-style codes. Each code is unique per tenant regardless of coding scheme (e.g. FpML vs ISDA) -- matching party_id_scheme's code-only primary key -- and optionally linked to a country for flag-icon display in the UI. Referenced by business_unit as a soft FK. - Artefact Table
     end note
 
     entity ores_dq_business_processes_artefact_tbl  #F7E5FF {
@@ -356,10 +347,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_business_processes_artefact_tbl
-    Contains a code representing the type of business process a message (e.g. a status request) applies to. - Artefact Table
+    Contains a code representing the type of business process a message, such as a status request, applies to. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_business_units_artefact_tbl  #F7E5FF {
@@ -489,10 +481,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_cashflow_types_artefact_tbl
-    The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table
+    The type of cash flows associated with OTC derivatives contracts and their lifecycle events. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_cds_conventions_artefact_tbl  #F7E5FF {
@@ -1474,10 +1467,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_entity_classifications_artefact_tbl
-    Financial Entity Indicator as defined by the CFTC. - Artefact Table
+    The Financial Entity Indicator as defined by the CFTC. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_equity_curve_configs_artefact_tbl  #F7E5FF {
@@ -1970,10 +1964,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_local_jurisdictions_artefact_tbl
-    This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table
+    Overrides the country scheme. Specifies the local jurisdiction that applies to a transaction, for example for the purposes of defining which local taxes apply. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_market_data_providers_artefact_tbl  #F7E5FF {
@@ -2168,10 +2163,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_party_relationships_artefact_tbl
-    Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table
+    Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 -- Intragroup. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_party_roles_artefact_tbl  #F7E5FF {
@@ -2182,10 +2178,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_party_roles_artefact_tbl
-    Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table
+    A party role is the part a party plays in a transaction or a relationship, such as the guarantor or the beneficiary. The scheme can be extended with custom roles. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_payment_frequencies_artefact_tbl  #F7E5FF {
@@ -2213,10 +2210,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_person_roles_artefact_tbl
-    Indicates the role of a person in a transaction. - Artefact Table
+    Indicates the role of a person in a transaction. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_portfolios_artefact_tbl  #F7E5FF {
@@ -2299,10 +2297,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_regulatory_corporate_sectors_artefact_tbl
-    Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table
+    Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 -- Nature of Counterparty 1 -- and 191 -- Nature of Counterparty 2. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_report_configurations_artefact_tbl  #F7E5FF {
@@ -2353,10 +2352,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_reporting_regimes_artefact_tbl
-    Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table
+    Contains a code representing a reporting regime under which a transaction may be reported. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_risk_report_configs_artefact_tbl  #F7E5FF {
@@ -2412,10 +2412,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_supervisory_bodies_artefact_tbl
-    Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table
+    Contains a code representing a supervisory body that may be supervising a transaction. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_swap_conventions_artefact_tbl  #F7E5FF {
@@ -2687,6 +2688,21 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_todays_market_entries_artefact_tbl
     One entry of one collection. Twenty-three of the document's twenty-four collections are this shape: an entry identifying itself by one attribute and carrying a reference as its text, in a position. The attribute is not one name. It is name for nineteen collections, currency for DiscountingCurves, pair for the two FX collections and the literal string key for SwaptionVolatilities and CapFloorVolatilities. Which one is a fact about the collection's kind, so it is held once on todays_market_collection_kind rather than repeated on every entry. SwaptionVolatilities and CapFloorVolatilities identify by two attributes at once, so key_value_2 carries the second. SwapIndexCurves is the only collection whose entry nests, and discounting carries its one child. - Artefact Table
+    end note
+
+    entity ores_dq_trading_account_types_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+        * coding_scheme_code : text <<FK>>
+    }
+
+    note right of ores_dq_trading_account_types_artefact_tbl
+    Classifies a trading account by whose activity it carries: a client's, the firm's own, or pooled client positions. The rows arrive from the FpML account type codelist through DQ. Named for the trading account because the IAM component owns the type of a login account. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_yield_curve_configs_artefact_tbl  #F7E5FF {

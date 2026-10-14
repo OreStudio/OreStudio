@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D4E479F5-911F-572E-BAD5-B0C8F3DBB8A3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the regulatory_corporate_sectors commands from the shell?
+#+description: Every command the regulatory_corporate_sectors submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:regulatory_corporate_sectors:
+
+This file documents the regulatory_corporate_sectors resource at the shell, one section per command. Every command is a subcommand of =regulatory_corporate_sectors=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1E64B782-7C55-545D-9B51-C2CB15A363B9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.list=.
+
+#+name: regulatory_corporate_sectors-list
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-list.ores :exports none
+regulatory_corporate_sectors list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3DBD3651-8B5F-52E3-8822-202CF08EFB51
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.get=.
+
+#+name: regulatory_corporate_sectors-get
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-get.ores :exports none
+regulatory_corporate_sectors get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8D1C33BC-841A-5536-916E-8A11EBEFC431
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.get_many=.
+
+#+name: regulatory_corporate_sectors-get-many
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-get-many.ores :exports none
+regulatory_corporate_sectors get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: DD8F77B7-D8DE-50DB-BDF8-FD4FD37DFF7D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.put=.
+
+#+name: regulatory_corporate_sectors-add
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-add.ores :exports none
+regulatory_corporate_sectors add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2FC52A57-B602-5E58-82C6-A018DB6903EE
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.put=.
+
+#+name: regulatory_corporate_sectors-set
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-set.ores :exports none
+regulatory_corporate_sectors set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3D0FB4A3-127C-5DF5-A6E7-FC8EDD7DDFF4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.put_many=.
+
+#+name: regulatory_corporate_sectors-put-many
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-put-many.ores :exports none
+regulatory_corporate_sectors put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: CAC80E02-318F-56ED-A776-CE78769FE0BC
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.delete=.
+
+#+name: regulatory_corporate_sectors-delete
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-delete.ores :exports none
+regulatory_corporate_sectors delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: CA542192-9033-50EF-AED4-90D95CF0D22E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors.delete_many=.
+
+#+name: regulatory_corporate_sectors-delete-many
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-delete-many.ores :exports none
+regulatory_corporate_sectors delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: AAA13043-3237-5891-8A46-E1C611953768
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors_versions.list=.
+
+#+name: regulatory_corporate_sectors-versions
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-versions.ores :exports none
+regulatory_corporate_sectors versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A4F4C842-754E-5BDA-A8CB-B2675C0139C0
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+regulatory_corporate_sectors version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.regulatory_corporate_sectors_versions.get=.
+
+#+name: regulatory_corporate_sectors-version
+#+begin_src ores-shell :tangle regulatory_corporate_sectors-version.ores :exports none
+regulatory_corporate_sectors version __none__ __none__ --version 1
+#+end_src
+

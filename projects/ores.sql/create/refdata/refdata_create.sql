@@ -74,8 +74,8 @@
 \ir ./refdata_currency_pair_convention_calendars_notify_trigger_create.sql
 
 -- FPML Reference data tables
-\ir ./refdata_account_types_create.sql
-\ir ./refdata_account_types_notify_trigger_create.sql
+\ir ./refdata_trading_account_types_create.sql
+\ir ./refdata_trading_account_types_notify_trigger_create.sql
 \ir ./refdata_asset_classes_create.sql
 \ir ./refdata_asset_classes_notify_trigger_create.sql
 \ir ./refdata_asset_measures_create.sql

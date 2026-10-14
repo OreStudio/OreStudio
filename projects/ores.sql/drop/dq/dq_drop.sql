@@ -91,7 +91,7 @@
 
 -- FPML artefact families. The staging table goes before the functions that
 -- publish from it, so a failed drop leaves nothing that reads a dead table.
-\ir ./dq_account_types_artefact_drop.sql
+\ir ./dq_trading_account_types_artefact_drop.sql
 \ir ./dq_asset_classes_artefact_drop.sql
 \ir ./dq_asset_measures_artefact_drop.sql
 \ir ./dq_benchmark_rates_artefact_drop.sql
@@ -196,6 +196,7 @@
 \ir ./dq_population_functions_drop.sql
 
 -- Change reasons (dropped last - other tables reference these)
+\ir ./dq_coding_scheme_functions_drop.sql
 \ir ./dq_change_reason_functions_drop.sql
 \ir ./dq_change_reasons_notify_trigger_drop.sql
 \ir ./dq_change_reasons_drop.sql

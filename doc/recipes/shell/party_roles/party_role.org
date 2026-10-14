@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 43C79CCF-3B45-5B98-AA26-830F163D5BFE
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the party_roles commands from the shell?
+#+description: Every command the party_roles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_roles:
+
+This file documents the party_roles resource at the shell, one section per command. Every command is a subcommand of =party_roles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BA31DE53-753A-5C7B-A568-9CD130135660
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.list=.
+
+#+name: party_roles-list
+#+begin_src ores-shell :tangle party_roles-list.ores :exports none
+party_roles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FDB0FEBB-41FE-5099-8A97-E7D82FC852E4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.get=.
+
+#+name: party_roles-get
+#+begin_src ores-shell :tangle party_roles-get.ores :exports none
+party_roles get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 57F76E32-9B91-58BD-AD9B-07128D864636
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.get_many=.
+
+#+name: party_roles-get-many
+#+begin_src ores-shell :tangle party_roles-get-many.ores :exports none
+party_roles get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FDD76943-86F8-5D01-89A0-03026283B42F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.put=.
+
+#+name: party_roles-add
+#+begin_src ores-shell :tangle party_roles-add.ores :exports none
+party_roles add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A3244A12-C6EC-51BD-BA2A-33D6D376D6C5
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.put=.
+
+#+name: party_roles-set
+#+begin_src ores-shell :tangle party_roles-set.ores :exports none
+party_roles set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D9ED4A41-568D-541A-9DFD-08556296E98C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.put_many=.
+
+#+name: party_roles-put-many
+#+begin_src ores-shell :tangle party_roles-put-many.ores :exports none
+party_roles put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4B3F9DAA-E6C2-5384-AB4D-102797F8892D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.delete=.
+
+#+name: party_roles-delete
+#+begin_src ores-shell :tangle party_roles-delete.ores :exports none
+party_roles delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 0512F57C-E878-5572-BB8F-9B8528067A88
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_roles.delete_many=.
+
+#+name: party_roles-delete-many
+#+begin_src ores-shell :tangle party_roles-delete-many.ores :exports none
+party_roles delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9DB57E00-866F-5AD7-BF83-ABC421CDCB8F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_roles_versions.list=.
+
+#+name: party_roles-versions
+#+begin_src ores-shell :tangle party_roles-versions.ores :exports none
+party_roles versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E95C6341-1708-557E-8F7D-0B36879C7544
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_roles version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.party_roles_versions.get=.
+
+#+name: party_roles-version
+#+begin_src ores-shell :tangle party_roles-version.ores :exports none
+party_roles version __none__ __none__ --version 1
+#+end_src
+

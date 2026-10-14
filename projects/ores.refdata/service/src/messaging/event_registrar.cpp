@@ -18,7 +18,19 @@
  *
  */
 #include "ores.refdata.service/messaging/event_registrar.hpp"
-
+#include "ores.refdata.service/messaging/asset_class_event_registrar.hpp"
+#include "ores.refdata.service/messaging/asset_measure_event_registrar.hpp"
+#include "ores.refdata.service/messaging/benchmark_rate_event_registrar.hpp"
+#include "ores.refdata.service/messaging/business_process_event_registrar.hpp"
+#include "ores.refdata.service/messaging/cashflow_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/entity_classification_event_registrar.hpp"
+#include "ores.refdata.service/messaging/local_jurisdiction_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_relationship_event_registrar.hpp"
+#include "ores.refdata.service/messaging/person_role_event_registrar.hpp"
+#include "ores.refdata.service/messaging/regulatory_corporate_sector_event_registrar.hpp"
+#include "ores.refdata.service/messaging/reporting_regime_event_registrar.hpp"
+#include "ores.refdata.service/messaging/supervisory_body_event_registrar.hpp"
+#include "ores.refdata.service/messaging/trading_account_type_event_registrar.hpp"
 // Per-entity generated event-mapping registrars.
 //
 // Every ores.refdata domain_entity that generates a registrar is composed
@@ -137,6 +149,7 @@
 #include "ores.refdata.service/messaging/party_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_identifier_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_status_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/payment_frequency_event_registrar.hpp"
@@ -184,6 +197,12 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // ----------------------------------------------------------------
     subs.push_back(
         register_counterparty_business_centre_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_trading_account_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_asset_class_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_asset_measure_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_benchmark_rate_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_business_process_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_cashflow_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_calendar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_currency_group_event_mapping(event_source, event_bus, nats));
@@ -214,20 +233,28 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_currency_pair_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_day_count_fraction_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_diary_entry_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_entity_classification_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_floating_index_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_instrument_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ledger_feed_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_leg_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_local_jurisdiction_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_monetary_nature_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_id_scheme_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_party_relationship_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_payment_frequency_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_person_role_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_portfolio_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_regulatory_book_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_regulatory_corporate_sector_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_reporting_regime_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_rounding_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_series_subclass_code_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_supervisory_body_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_anchor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_convention_event_mapping(event_source, event_bus, nats));
@@ -334,6 +361,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_party_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_currency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_identifier_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_party_role_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_status_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_portfolio_right_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_producer_kind_event_mapping(event_source, event_bus, nats));

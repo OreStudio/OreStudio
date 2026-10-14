@@ -72,7 +72,6 @@ Digital Assets
 end note
 
 entity "refdata" as refdata {
-  ores_refdata_account_types_tbl
   ores_refdata_asset_class_codes_tbl
   ores_refdata_asset_classes_tbl
   ores_refdata_asset_measures_tbl
@@ -226,6 +225,7 @@ entity "refdata" as refdata {
   ores_refdata_tenor_schedules_tbl
   ores_refdata_tenor_units_tbl
   ores_refdata_tenors_tbl
+  ores_refdata_trading_account_types_tbl
   ores_refdata_yield_curve_configs_tbl
   ores_refdata_yield_volatility_configs_tbl
   ores_refdata_zero_conventions_tbl
@@ -238,7 +238,6 @@ end note
 
 entity "dq_staging" as dq_staging {
   ores_dq_account_contact_informations_artefact_tbl
-  ores_dq_account_types_artefact_tbl
   ores_dq_accounts_artefact_tbl
   ores_dq_asset_classes_artefact_tbl
   ores_dq_asset_measures_artefact_tbl
@@ -365,6 +364,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_todays_market_configuration_bindings_artefact_tbl
   ores_dq_todays_market_configurations_artefact_tbl
   ores_dq_todays_market_entries_artefact_tbl
+  ores_dq_trading_account_types_artefact_tbl
   ores_dq_yield_curve_configs_artefact_tbl
   ores_dq_zero_conventions_artefact_tbl
   ores_dq_zero_inflation_index_conventions_artefact_tbl

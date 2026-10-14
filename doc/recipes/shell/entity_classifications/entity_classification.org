@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: DA297D57-B8F4-5258-AC83-D535261F0969
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the entity_classifications commands from the shell?
+#+description: Every command the entity_classifications submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:entity_classifications:
+
+This file documents the entity_classifications resource at the shell, one section per command. Every command is a subcommand of =entity_classifications=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2E54D553-B2E9-5A29-B569-E936FBF492F5
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.list=.
+
+#+name: entity_classifications-list
+#+begin_src ores-shell :tangle entity_classifications-list.ores :exports none
+entity_classifications list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 491FD7C3-0E33-5D19-8CAB-A611490C0C67
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.get=.
+
+#+name: entity_classifications-get
+#+begin_src ores-shell :tangle entity_classifications-get.ores :exports none
+entity_classifications get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F297A11A-0034-5449-81D4-0C8C2D58C3C0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.get_many=.
+
+#+name: entity_classifications-get-many
+#+begin_src ores-shell :tangle entity_classifications-get-many.ores :exports none
+entity_classifications get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 07DC5DEB-2AB4-5F31-B39C-0F72B81F903F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.put=.
+
+#+name: entity_classifications-add
+#+begin_src ores-shell :tangle entity_classifications-add.ores :exports none
+entity_classifications add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 61C2C319-A17D-5045-BAF7-72D0911B264B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.put=.
+
+#+name: entity_classifications-set
+#+begin_src ores-shell :tangle entity_classifications-set.ores :exports none
+entity_classifications set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: AC02D8DD-369B-50A3-B55F-66C1F8F2E444
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.put_many=.
+
+#+name: entity_classifications-put-many
+#+begin_src ores-shell :tangle entity_classifications-put-many.ores :exports none
+entity_classifications put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 3E136DD1-B99F-5E32-9C08-A77BC091A474
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.delete=.
+
+#+name: entity_classifications-delete
+#+begin_src ores-shell :tangle entity_classifications-delete.ores :exports none
+entity_classifications delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F98AA835-04AB-5FBD-B8EE-076986851C0F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications.delete_many=.
+
+#+name: entity_classifications-delete-many
+#+begin_src ores-shell :tangle entity_classifications-delete-many.ores :exports none
+entity_classifications delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1528101D-0941-585D-A8A8-97713388FE5C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications_versions.list=.
+
+#+name: entity_classifications-versions
+#+begin_src ores-shell :tangle entity_classifications-versions.ores :exports none
+entity_classifications versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7E6F7E1C-4054-5052-ABD5-C2761BF59E78
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+entity_classifications version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.entity_classifications_versions.get=.
+
+#+name: entity_classifications-version
+#+begin_src ores-shell :tangle entity_classifications-version.ores :exports none
+entity_classifications version __none__ __none__ --version 1
+#+end_src
+

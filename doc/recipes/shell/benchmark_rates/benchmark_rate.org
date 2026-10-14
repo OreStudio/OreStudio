@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 43D9258A-ABB7-57DA-9D8A-643CCB5553F7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the benchmark_rates commands from the shell?
+#+description: Every command the benchmark_rates submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:benchmark_rates:
+
+This file documents the benchmark_rates resource at the shell, one section per command. Every command is a subcommand of =benchmark_rates=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C80A2AFC-63AC-5441-8C2F-D2155CFDD41D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.list=.
+
+#+name: benchmark_rates-list
+#+begin_src ores-shell :tangle benchmark_rates-list.ores :exports none
+benchmark_rates list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B0871F46-D2D0-5F1E-8007-966B5BAF1BAE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates get <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.get=.
+
+#+name: benchmark_rates-get
+#+begin_src ores-shell :tangle benchmark_rates-get.ores :exports none
+benchmark_rates get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1F2E209E-FEB4-5D58-ABCF-42CB60C6EDDF
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates get-many <code> <coding_scheme_code>
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.get_many=.
+
+#+name: benchmark_rates-get-many
+#+begin_src ores-shell :tangle benchmark_rates-get-many.ores :exports none
+benchmark_rates get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 9EC4A9F3-0D96-5F3D-97B5-35C23F38B38E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates add <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.put=.
+
+#+name: benchmark_rates-add
+#+begin_src ores-shell :tangle benchmark_rates-add.ores :exports none
+benchmark_rates add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FF0444E3-71CA-5880-BAB9-90649673A365
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates set <code> <coding_scheme_code> <source> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.put=.
+
+#+name: benchmark_rates-set
+#+begin_src ores-shell :tangle benchmark_rates-set.ores :exports none
+benchmark_rates set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2702E6AA-767E-5056-BE26-8A1CBB4C3342
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates put-many --count <n> <code> <coding_scheme_code> <source> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.put_many=.
+
+#+name: benchmark_rates-put-many
+#+begin_src ores-shell :tangle benchmark_rates-put-many.ores :exports none
+benchmark_rates put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 707D2131-238F-5C8E-8A00-C23EC5170CAF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates delete <code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.delete=.
+
+#+name: benchmark_rates-delete
+#+begin_src ores-shell :tangle benchmark_rates-delete.ores :exports none
+benchmark_rates delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 4A29C0E1-240C-5F04-BDFE-1A2F6B0847D4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates delete-many <code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates.delete_many=.
+
+#+name: benchmark_rates-delete-many
+#+begin_src ores-shell :tangle benchmark_rates-delete-many.ores :exports none
+benchmark_rates delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DCEB18C1-81BC-57D9-8218-726C763CBFEF
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates versions <code> <coding_scheme_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates_versions.list=.
+
+#+name: benchmark_rates-versions
+#+begin_src ores-shell :tangle benchmark_rates-versions.ores :exports none
+benchmark_rates versions __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7C89B3E5-F601-5F2F-865C-BA71D4737AE6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+benchmark_rates version <code> <coding_scheme_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.benchmark_rates_versions.get=.
+
+#+name: benchmark_rates-version
+#+begin_src ores-shell :tangle benchmark_rates-version.ores :exports none
+benchmark_rates version __none__ __none__ --version 1
+#+end_src
+

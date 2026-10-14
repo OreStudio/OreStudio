@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/reporting_regimes/reporting_regime.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+reporting_regimes list --limit 1

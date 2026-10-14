@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/local_jurisdictions/local_jurisdiction.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+local_jurisdictions version __none__ __none__ --version 1

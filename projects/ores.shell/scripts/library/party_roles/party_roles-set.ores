@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/party_roles/party_role.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+party_roles set __none__ __none__ __none__ __none__ system.new_record generated_script

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 9D908DC5-72C6-4F92-9B06-9A99AA1D639A
+:END:
+#+title: Story: Cut the continuous build time
+#+description: The continuous clang jobs no longer fit the six-hour limit. The 2026-10-14 linux-clang-release job reached only 5422 of 7187 build steps in 5h39m, against about 1.4 s per step for the whole build on the last green run. Linking is 53 of those 7187 steps, so a faster linker is out. This story trials the levers that cut total compile work, and raises the sccache ceiling for the two remaining variants if the measurement supports it.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:build:sccache:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The continuous linux-clang jobs finish inside the six-hour limit on a cold runner.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- A measured A/B build shows what a unity build, or precompiled headers, changes in compile work.
+- The lever that pays is adopted behind an option, or every lever is measured out and recorded.
+- The continuous clang jobs complete inside the six-hour limit.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D7F7AB28-1CED-4F0F-9CAF-E62A8CA17B37][Scaffold story: Cut the continuous build time]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2D3E420F-8C52-413F-8ADA-0C2F2FC89066][Trial a unity build and precompiled headers]] | BACKLOG | | | Initial task for: Cut the continuous build time |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 2D3E420F-8C52-413F-8ADA-0C2F2FC89066
+:END:
+#+title: Task: Trial a unity build and precompiled headers
+#+description: Initial task for: Cut the continuous build time
+#+type: task
+#+level: s1
+#+filetags: :cut_the_continuous_build_time:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The continuous linux-clang jobs finish inside the six-hour limit on a cold runner.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- A measured A/B build shows what a unity build, or precompiled headers, changes in compile work.
+- The lever that pays is adopted behind an option, or every lever is measured out and recorded.
+- The continuous clang jobs complete inside the six-hour limit.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

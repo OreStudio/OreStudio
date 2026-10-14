@@ -62,6 +62,8 @@ task and name that file in the Command column.
 | Workflows passing =code_coverage=1=, before | 2: Continuous Linux (debug), Nightly Build | =grep -rn code_coverage .github/workflows= | b818ca68 |
 | Workflows passing =code_coverage=1=, after | 1: Nightly Build | =grep -rn code_coverage .github/workflows= | this branch |
 | Consumers of the continuous .deb artifact | 0 | =grep -rn "download-artifact\|orestudio_0.0.28_amd64.deb" .github= | b818ca68 |
+| package-flag decision cases passing | 7 of 7 | =cmake -P build/output/pkg-flag-check.cmake= | this branch |
+| Test phase of the last green linux-clang-release job | 309.26 s, 71 of 71 suites, in a 2h54m13s job | =gh run view --job 102035498062 --log= | 625f0ba0 |
 
 * Notes
 
@@ -86,6 +88,23 @@ CTest.cmake turns every =key=value= in its script argument into a CMake
 variable. The new =package= flag defaults to on, so the nightly and tag
 runs are unchanged. =continuous-linux.yml= passes =package=0=, which
 switches the build target to =all=.
+
+** The decision block is verified on its own
+
+=build/output/pkg-flag-check.cmake= copies the decision block and asserts
+the target it selects for seven callers. All seven pass. The continuous
+jobs select =all=, the nightly and tag callers still select =package=,
+and the Windows and macOS debug path still selects =all=. The script is
+a scratch file, so rerun it before the check on a fresh tree.
+
+** Where the continuous job's time actually goes
+
+The last green linux-clang-release job ran 2h54m13s and reports
+=Total Test time (real) = 309.26 sec=, with 71 of 71 suites passing. The
+configure and the build take the other 2h49m. The suites are about three
+per cent of the job, so sharding them across jobs, or moving them out of
+the build job entirely, cannot recover meaningful time. That measurement
+closes the third item of the objective this story was raised against.
 
 * Test Scenarios
 

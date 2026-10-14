@@ -60,3 +60,7 @@ Continuous Linux builds and tests the tree without coverage instrumentation and 
   faster linker and precompiled headers wait on a measurement that says
   they are needed.
 - Splitting continuous into a build job and separate sharded test jobs.
+  Measured and rejected: the last green linux-clang-release job reports
+  a total test time of 309.26 s inside a 2h54m13s job, so the suites are
+  three per cent of it. Sharding them, or moving them out of the build
+  job, cannot recover meaningful time.

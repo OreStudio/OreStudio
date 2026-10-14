@@ -24,6 +24,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -508,7 +509,8 @@ private:
             .instance_id = boost::uuids::to_string(rg())};
         nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
                          ores::nats::default_wire_codec().encode(swm),
-                         ores::nats::service::forwarded_caller_headers(msg));
+                         ores::nats::headers::with_publish_identity(
+                             ores::nats::service::forwarded_caller_headers(msg), swm.instance_id));
     }
 
     ores::nats::service::client& nats_;

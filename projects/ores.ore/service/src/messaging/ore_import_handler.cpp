@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
 #include "ores.nats/domain/correlation.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
@@ -130,7 +131,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     try {
         nats_.js_publish(start_workflow_message::nats_subject,
                          ores::nats::default_wire_codec().encode(swm),
-                         ores::nats::service::forwarded_caller_headers(msg));
+                         ores::nats::headers::with_publish_identity(
+                             ores::nats::service::forwarded_caller_headers(msg), swm.instance_id));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "ore.import dispatch failed | corr=" << correlation_id << " error=" << e.what();

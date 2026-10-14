@@ -33,7 +33,9 @@ nats_apply_engine::nats_apply_engine(ores::nats::service::client& nats,
 void nats_apply_engine::start(const ores::workflow::messaging::start_workflow_message& start) {
     nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
                      ores::nats::default_wire_codec().encode(start),
-                     ores::nats::service::forwarded_caller_headers(svc_nats_.bearer_token()));
+                     ores::nats::headers::with_publish_identity(
+                         ores::nats::service::forwarded_caller_headers(svc_nats_.bearer_token()),
+                         start.instance_id));
 }
 
 ores::workflow::messaging::retry_workflow_instance_response

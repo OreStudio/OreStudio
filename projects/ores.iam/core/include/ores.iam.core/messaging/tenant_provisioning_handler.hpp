@@ -287,9 +287,11 @@ public:
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;
 
-            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                             ores::nats::default_wire_codec().encode(start),
-                             ores::nats::service::forwarded_caller_headers(msg));
+            nats_.js_publish(
+                ores::workflow::messaging::start_workflow_message::nats_subject,
+                ores::nats::default_wire_codec().encode(start),
+                ores::nats::headers::with_publish_identity(
+                    ores::nats::service::forwarded_caller_headers(msg), start.instance_id));
 
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "Started " << start.type << " for tenant " << req->tenant_code
@@ -552,9 +554,11 @@ public:
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;
 
-            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                             ores::nats::default_wire_codec().encode(start),
-                             ores::nats::service::forwarded_caller_headers(msg));
+            nats_.js_publish(
+                ores::workflow::messaging::start_workflow_message::nats_subject,
+                ores::nats::default_wire_codec().encode(start),
+                ores::nats::headers::with_publish_identity(
+                    ores::nats::service::forwarded_caller_headers(msg), start.instance_id));
 
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "Started " << start.type << " for party " << found.front() << " of tenant "
@@ -1219,7 +1223,9 @@ private:
         // child's own steps then act as.
         auto client =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-        client.publish(ores::workflow::messaging::start_workflow_message::nats_subject, start);
+        client.publish(ores::workflow::messaging::start_workflow_message::nats_subject,
+                       start,
+                       start.instance_id);
 
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Started " << start.type << " for tenant " << run.tenant_code

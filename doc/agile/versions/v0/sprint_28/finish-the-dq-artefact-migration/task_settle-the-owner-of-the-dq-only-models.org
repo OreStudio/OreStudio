@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :dq:codegen:cleanup:finish-the-dq-artefact-migration:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/settle-the-owner-of-the-dq-only-models
+#+pr: 3312
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-13
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every ores.dq artefact model is the owner of its data, or has moved to its owner
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -40,9 +40,29 @@ Every ores.dq artefact model is the owner of its data, or has moved to its owner
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Decide each of the nine by the rule the DQ guide states: the owning model is
+   the model of the entity the artefact stages, in the component that owns the
+   published rows. The artefact type row settles it. A terminal row -- its
+   =target_table= and =target_subject= both null -- means the staging table is
+   the entity's only store, so DQ owns the model and it stays. A row that
+   publishes onward means the rows are the publishing component's data in
+   transit, and the staging shape moves to that component's model.
+2. For each model that moves, set the artefact hook on the owning model and
+   write an =* Artefact columns= section read off the current artefact table,
+   so the regenerated table keeps every column, type, nullability, default and
+   index. Carry the DQ model's =* Artefact indexes= over.
+3. Put the report configuration binding through the same move. Its artefact
+   type is not its own -- the =report_definitions= dataset stages the bindings
+   beside the definitions -- but =ores.reporting.report_configuration= owns the
+   rows once published.
+4. Model the hand-written =lei_bic= table in =ores.dq=, beside the two GLEIF
+   models it belongs to, then delete the hand-written create and drop scripts.
+5. Delete each moved model with its DQ API, core, shell and TypeScript stack,
+   and the registrar wiring, shell command, recipe and read permission that
+   only it used.
+6. Follow each renamed staging table through the publish functions, artefact
+   types, drop scripts, populates, pgTAP tests and the ORE sample dataset.
+7. Regenerate, build, and run the local gate and the codegen suite.
 
 * Measurements
 
@@ -56,9 +76,105 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Branch diff | 144 files, 1,832 insertions, 7,953 deletions | =git show --shortstat 9c0b211616= | 9c0b211616 |
+| Files deleted | 70: 48 under =ores.dq=, 15 under =ores.shell=, 3 shell recipes | =git show --diff-filter=D --name-only --format="" 9c0b211616 | wc -l= | 9c0b211616 |
+| Files renamed | 29, the staging tables and their drop scripts | =git show -M --diff-filter=R --name-status --format="" 9c0b211616 | wc -l= | 9c0b211616 |
+| DQ artefact tables, total | 131; 130 generated, 1 hand-written (=ip2country=) | =find projects/ores.sql/create -name '*_artefact_create.sql' | wc -l= and =grep -rL 'Template: ' ... | wc -l= | 9c0b211616 |
+| Files from the retired lookup template | 0 | =grep -rl 'Template: sql_schema_artefact_create.mustache' projects/ | wc -l= | 9c0b211616 |
+| Hand-written files that create a table | 23, down from 25 at the branch base | the census loop in [[id:F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1][Model the hand-written tables that have a codegen shape]] | 9c0b211616 |
+| Codegen suite | 1,425 passed | =python3 -m pytest projects/ores.codegen/tests= | 9c0b211616 |
+| Local gate, non-heavy | 40 of 40 at f5892aaf08; the =web= class flakes under parallel load, see Notes | =compass check --exclude-heavy= | this branch |
+| pgTAP | 52 files, all pass | =compass check --only pgtap= after =compass db recreate -y -k= | f5892aaf08 |
+| ctest | 93 of 93 | =compass check --only ctest= | this branch |
 
 * Notes
+
+** The rule, and why the guides already stated it
+
+=doc/knowledge/architecture/dq_artefacts.org= said the owning model is "the
+model of the entity the artefact stages, in the component that owns the
+published rows", and =projects/modeling/variability_artefact_staging_only.org=
+said the profile covers an entity "queried directly from the DQ artefact/staging
+table with no publish step at all (its own =ores_dq_artefact_types_tbl= row has
+null =target_table=/=target_subject=), or its artefact-type row publishes onward
+to a table owned by a *different* component". Both said it; neither had been
+applied to the nine. The artefact type row is the test, and it is a row anyone
+can read: =grep "null, null" dq_artefact_types_populate.sql= listed exactly the
+three GLEIF models.
+
+** What stayed, and why
+
+=badge_definition=, =badge_severity=, =code_domain= and =coding_scheme= are not
+staging at all: they have their own store tables and the artefact table is a
+second projection of the same entity. DQ owns those concepts, so DQ owns the
+models.
+
+=lei_entity=, =lei_relationship= and =lei_bic= are staging-only and terminal.
+The =lei_entities= type row publishes nowhere, and DQ queries the artefact table
+directly through =dq_lei_entities_query_functions_create.sql=. The published
+rows that two *other* type rows make (=lei_counterparties=, =lei_parties=) are
+refdata's, but the entity the artefact stages is a GLEIF entity, and no refdata
+model stages one. So the model stays with the entity it describes.
+
+** The insert functions have no callers
+
+=has_artefact_insert_fn: true= on =lei_entity= and =lei_relationship=, and the
+new =lei_bic= model, generates =ores_dq_<plural>_artefact_insert_fn= into the
+create script and drops it in the drop script. Nothing calls any of the three:
+the only references in the tree are the definition and the drop. The GLEIF loader
+writes its rows through the populate scripts. Kept for now because the task is
+about ownership, not about what the models generate; worth a capture.
+
+** The messaging reference does not list the GLEIF subjects
+
+=projects/ores.dq/core/modeling/ores.dq.protocol.org= is hand-maintained and
+lists neither =lei_entities= nor =lei_relationships= nor =lei_bic=, although all
+three answer =list=/=get=/=get_many=. That gap predates this task, and the three
+have no =_events= subjects, because =artefact-staging-only= withdraws the notify
+trigger that would raise them. The three removed =dq.v1.synthetic_fx_spot_configs=
+subject rows were the only ones this task had to take out.
+
+** One table is still hand-written
+
+=dq_ip2country_artefact_create.sql= is the last DQ artefact table with no model.
+It waits on its geo store, which has no model either and whose =int8range= with
+a GiST index no entity template can express, by
+[[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][Model the geo ip2country store]].
+
+** A test needed a new fixture
+
+=test_staging_only_eventing_gate.py= used =synthetic_fx_spot_config= as its
+"staging shim that is not current-state". Every staging shim the repo still
+carries is also current-state now, so the test builds that fixture from
+=lei_entity= with the shape profile removed, rather than dropping the case.
+
+** A stale test in ores.ore, fixed here
+
+=ores.ore.core.tests= failed on =run_store_database_tests.cpp:144=: the exported
+run document names 14 =Setup= parameters where the test expects 11, the three
+extra being =portfolioFile=, =marketDataFile= and =fixingDataFile=.
+
+The test was right until 2026-10-14 15:36, when =e1d3cb74bc= made
+=generate_run_document= name the run's own data files from the file types table,
+to fix a package that stored nothing because the prepare step failed with "the
+run document names no portfolio file". That commit is on this branch's base and
+after the last green ctest. It updated the reporting suites and missed this one,
+so the suite has been red on any database that has run the file types seed.
+
+The names are load-bearing, not cosmetic: =report_package_handler= places the
+gathered market data and fixings where the exported run document says they are,
+and warns when it names none. So the test's expectation was the stale half, and
+the fix is the test. It now asserts the exported =Setup= equals the imported one,
+with a comment saying why the names come from the catalogue. ctest is 93 of 93.
+
+** The web class flakes under parallel load
+
+One =--exclude-heavy= run ends 39 of 40: =web= fails on
+=src/agile/file-agile-store.test.ts > the real agile tree=, "Test timed out in
+5000ms". It reads the whole agile tree, which is a big corpus, and the class runs
+it beside every other check. Run alone it passes: 893 ms for that case, 1.67 s
+for the file, and 765 of 765 across the =bff= package. The same flake is recorded
+on the previous task in this story. It is not this branch's.
 
 * Test Scenarios
 
@@ -75,7 +191,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3312][#3312]] | [dq] Settle the owner of the DQ-only artefact models |
 
 * Review
 
@@ -84,3 +200,52 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Each of the nine has a recorded owner decision, and the three that moved took
+their staging shape with them.
+
+Six of the nine stayed in =ores.dq=. =badge_definition=, =badge_severity=,
+=code_domain= and =coding_scheme= stayed because DQ owns those registries and
+they are not staging. =lei_entity= and =lei_relationship= stayed because their
+artefact type row is terminal, which makes the staging table the entity's only
+store, and =lei_bic= joined them as a model.
+
+Three models moved onto the model that owns their published rows:
+=counterparty_alias= onto =ores.refdata.counterparty_identifier=,
+=netting_set_alias= onto =ores.refdata.netting_set_identifier=, and
+=synthetic_fx_spot_config= onto =ores.synthetic.fx_spot_generation_config=.
+Each owning model carries the artefact hook, an =* Artefact columns= section
+stating the staging shape and the artefact indexes the DQ model carried. Their
+staging tables are renamed for their owning model --
+=ores_dq_counterparty_identifiers_artefact_tbl=,
+=ores_dq_netting_set_identifiers_artefact_tbl= and
+=ores_dq_fx_spot_generation_configs_artefact_tbl= -- and the publish functions,
+artefact types, drop scripts, populates, pgTAP tests and the ORE sample dataset
+followed the rename.
+
+The report configuration binding moved the same way, onto
+=ores.reporting.report_configuration=, so
+=dq_report_configurations_artefact_create.sql= is generated. Its table body is
+byte-identical to the hand-written file and it gains one index on =report_name=.
+The hand-written =dq_lei_bic_artefact_create.sql= became =ores.dq.lei_bic=; its
+table body and all four indexes are byte-identical and the generated insert
+function differs only in line wrapping. Its drop script and the create script's
+file name are unchanged.
+
+The three moved models' DQ stacks are deleted: 48 files under =ores.dq= and 15
+under =ores.shell=, with three shell recipes, the registrar wiring, the shell
+command registrations, and the three read permissions only those handlers
+checked. One permission was added, =dq::lei_bic:read=.
+
+Acceptance: the decisions are recorded above and in the DQ guide, the models
+whose owner is elsewhere have moved, and the DQ stacks are deleted. The build is
+clean, the codegen suite passes 1,425 tests, and the non-heavy local gate passes
+40 of 40. pgTAP passes all 52 files against a database recreated from this
+branch, which is the check that exercises the three table renames. ctest is 93 of
+93, after the stale =ores.ore= test this branch also fixes (Notes). One
+hand-written artefact table is left, =ip2country=, which is the other task in
+this story.
+
+The three GLEIF insert functions have no callers, and the DQ messaging reference
+does not list the GLEIF subjects; both are recorded in Notes and neither is work
+this task owed.

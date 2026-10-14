@@ -17,17 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-/**
- * Report configuration bindings: the staging table
- *
- * A report definition binds the configuration documents it reads, one per
- * configuration type its report type requires. A dataset that stages definitions
- * stages their bindings in this table beside them. A binding names its definition
- * and its configuration by name, never by id, because the ids of both are made
- * when they are published. The definitions publish resolves each name for the
- * target party, so the documents are published before the definitions.
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
  */
+
+-- =============================================================================
+-- This is how a report definition reaches its configuration: one row per configuration it binds, where the configuration type is the slot and the configuration fills it. Several reports may fill the same slot with the same configuration, so a configuration is never copied to be shared, and adding a slot is not a column on the report definition. - Artefact Table
+-- =============================================================================
 
 create table if not exists "ores_dq_report_configurations_artefact_tbl" (
     "dataset_id" uuid not null,
@@ -43,3 +41,6 @@ on ores_dq_report_configurations_artefact_tbl (dataset_id);
 
 create index if not exists dq_report_configurations_artefact_tenant_idx
 on ores_dq_report_configurations_artefact_tbl (tenant_id);
+
+create index if not exists dq_report_configurations_artefact_report_name_idx
+on ores_dq_report_configurations_artefact_tbl (report_name);

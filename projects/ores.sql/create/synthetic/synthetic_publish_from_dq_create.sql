@@ -135,7 +135,7 @@ begin
         -- one-dataset-one-unit design is that a future asset class is just
         -- another gated loop.
         if exists (
-            select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
+            select 1 from ores_dq_fx_spot_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
         ) then
             -- Capture the fx-config ids being replaced before voiding them, so
@@ -214,7 +214,7 @@ begin
     -- dataset names the same one.
     select min(p.provider_code) into v_provider_code
     from (
-        select provider_code from ores_dq_synthetic_fx_spot_configs_artefact_tbl
+        select provider_code from ores_dq_fx_spot_generation_configs_artefact_tbl
         where dataset_id = p_dataset_id
         union all
         select provider_code from ores_dq_ir_curve_generation_configs_artefact_tbl
@@ -317,7 +317,7 @@ begin
     -- =========================================================================
 
     if exists (
-        select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
+        select 1 from ores_dq_fx_spot_generation_configs_artefact_tbl a
         where a.dataset_id = p_dataset_id
     ) then
         select id into v_fx_asset_class_folder_id
@@ -371,7 +371,7 @@ begin
                 a.vintage_source,
                 a.vintage_date,
                 a.provider_code
-            from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
+            from ores_dq_fx_spot_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
             order by a.base_currency_code, a.quote_currency_code
         loop

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/lei_bic/lei_bic.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+lei_bic list --limit 1

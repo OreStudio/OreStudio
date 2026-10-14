@@ -9,24 +9,22 @@
 #include "ores.shell/app/commands/dq/code_domain_commands.hpp"
 #include "ores.shell/app/commands/dq/coding_scheme_authority_type_commands.hpp"
 #include "ores.shell/app/commands/dq/coding_scheme_commands.hpp"
-#include "ores.shell/app/commands/dq/counterparty_alias_commands.hpp"
 #include "ores.shell/app/commands/dq/data_domain_commands.hpp"
 #include "ores.shell/app/commands/dq/dataset_bundle_commands.hpp"
 #include "ores.shell/app/commands/dq/dataset_bundle_member_commands.hpp"
 #include "ores.shell/app/commands/dq/dataset_commands.hpp"
 #include "ores.shell/app/commands/dq/fsm_state_commands.hpp"
 #include "ores.shell/app/commands/dq/fsm_transition_commands.hpp"
+#include "ores.shell/app/commands/dq/lei_bic_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_entity_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_entity_summary_operations_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_relationship_commands.hpp"
 #include "ores.shell/app/commands/dq/methodology_commands.hpp"
 #include "ores.shell/app/commands/dq/nature_dimension_commands.hpp"
-#include "ores.shell/app/commands/dq/netting_set_alias_commands.hpp"
 #include "ores.shell/app/commands/dq/origin_dimension_commands.hpp"
 #include "ores.shell/app/commands/dq/publication_commands.hpp"
 #include "ores.shell/app/commands/dq/report_definition_template_operations_commands.hpp"
 #include "ores.shell/app/commands/dq/subject_area_commands.hpp"
-#include "ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
 #include "ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 
 namespace ores::shell::app::commands {
@@ -49,17 +47,15 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     dataset_bundle_commands::register_commands(root_menu, session);
     dataset_bundle_member_commands::register_commands(root_menu, session);
     dataset_commands::register_commands(root_menu, session);
+    lei_bic_commands::register_commands(root_menu, session);
     lei_entity_commands::register_commands(root_menu, session);
     lei_entity_summary_operations_commands::register_commands(root_menu, session);
-    counterparty_alias_commands::register_commands(root_menu, session);
-    netting_set_alias_commands::register_commands(root_menu, session);
     lei_relationship_commands::register_commands(root_menu, session);
     methodology_commands::register_commands(root_menu, session);
     nature_dimension_commands::register_commands(root_menu, session);
     origin_dimension_commands::register_commands(root_menu, session);
     publication_commands::register_commands(root_menu, session);
     report_definition_template_operations_commands::register_commands(root_menu, session);
-    synthetic_fx_spot_config_commands::register_commands(root_menu, session);
     subject_area_commands::register_commands(root_menu, session);
     treatment_dimension_commands::register_commands(root_menu, session);
 }

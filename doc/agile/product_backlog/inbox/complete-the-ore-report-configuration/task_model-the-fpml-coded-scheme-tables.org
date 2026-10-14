@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-14
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ again.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A93B2CA2-66AB-4AD2-84EB-B41964980C57][Complete the ORE report configuration]] |
-| Now          | Not yet started.                       |
+| Now          | Delivered elsewhere; this page records that and closes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-02                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-14                               |
 
 * Acceptance
 
@@ -59,7 +59,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The fifteen coded-scheme tables' artefact files | 0 come from =sql_schema_artefact_create=, the legacy lookup template; all 15 come from =sql_schema_domain_entity_artefact_create= | =grep -rl 'Template: sql_schema_artefact_create.mustache' projects/ | wc -l= | dcd80a4c74 |
+| Coded-scheme entity models | fifteen, one per table, under =projects/ores.refdata/modeling/= | =git show --stat dcd80a4c74 -- projects/ores.refdata/modeling/= | dcd80a4c74 |
 
 * Notes
 
@@ -85,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3294][#3294]] | [dq] Move the lookup artefact tables onto domain models |
 
 * Review
 
@@ -94,3 +95,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered by [[id:A31257E3-7495-46CD-B36D-10AA6D55CB09][Move the lookup artefact tables onto domain models]]
+in sprint 28, not here. That task found the fifteen tables worse off than
+this page recorded: they had no model at all, in any form, so nothing could
+regenerate them and the JSON models this page blamed had never been in the
+tree. It wrote all fifteen as =ores.codegen.entity= models under
+=projects/ores.refdata/modeling/=, with the artefact hook and an =* Artefact
+columns= section where the staging shape differs, and retired the legacy
+=sql_schema_artefact_create= template with its literate source.
+
+The acceptance holds as written: each of the fifteen has an entity model, its
+generated create, notify trigger, drop and DQ artefact files match the
+hand-written ones except the comment header and the model-stated staging
+prose, and the census reports none of them as another generator's output.
+
+This page's last open question was whether the tables belonged in refdata at
+all. They do: the artefacts are FpML coded schemes, which is refdata's data,
+and the fifteen publish into =ores.refdata= tables.
+
+Closed on the strength of the task above. No work is owed here.

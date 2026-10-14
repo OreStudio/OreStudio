@@ -1632,12 +1632,10 @@ BEGIN
 
     -- Read codes of resources that have no write code. Every generated read
     -- checks its resource's read code, so each needs one to be grantable.
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::counterparty_aliases:read', 'View counterparty aliases');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::lei_bic:read', 'View lei BIC mappings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::lei_entities:read', 'View lei entities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::lei_relationships:read', 'View lei relationships');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::netting_set_aliases:read', 'View netting set aliases');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::report_definitions:read', 'View report definitions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::synthetic_fx_spot_configs:read', 'View synthetic fx spot configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_statuses:read', 'View account statuses');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_types:read', 'View Trading account types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenant_statuses:read', 'View tenant statuses');

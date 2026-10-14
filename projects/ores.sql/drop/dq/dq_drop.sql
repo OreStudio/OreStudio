@@ -43,7 +43,7 @@
 \ir ./dq_ir_curve_template_entries_artefact_drop.sql
 \ir ./dq_ir_curve_generation_configs_artefact_drop.sql
 \ir ./dq_gmm_components_artefact_drop.sql
-\ir ./dq_synthetic_fx_spot_configs_artefact_drop.sql
+\ir ./dq_fx_spot_generation_configs_artefact_drop.sql
 \ir ./dq_market_data_providers_artefact_drop.sql
 \ir ./dq_market_observations_artefact_drop.sql
 \ir ./dq_crm_topology_configs_artefact_drop.sql
@@ -116,8 +116,8 @@
 \ir ./dq_lei_bic_artefact_drop.sql
 \ir ./dq_lei_entities_artefact_drop.sql
 \ir ./dq_lei_relationships_artefact_drop.sql
-\ir ./dq_counterparty_aliases_artefact_drop.sql
-\ir ./dq_netting_set_aliases_artefact_drop.sql
+\ir ./dq_counterparty_identifiers_artefact_drop.sql
+\ir ./dq_netting_set_identifiers_artefact_drop.sql
 \ir ./dq_csas_artefact_drop.sql
 \ir ./dq_netting_sets_artefact_drop.sql
 \ir ./dq_netting_agreements_artefact_drop.sql

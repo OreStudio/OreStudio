@@ -100,7 +100,7 @@ begin
     end if;
 
     if exists (
-        select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl
+        select 1 from ores_dq_fx_spot_generation_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
         raise debug 'Synthetic feeds (Bloomberg) artefact already populated for dataset %', v_dataset_id;
@@ -146,7 +146,7 @@ begin
         ('USD', 'CLP', 940.00,   13.0, false),
         ('USD', 'COP', 4100.0,   14.0, false);
 
-    insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
+    insert into ores_dq_fx_spot_generation_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
         base_currency_code, quote_currency_code,

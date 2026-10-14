@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.report_configuration
 #+description: Codegen entity model for the reporting =report_configuration= table. One configuration a report definition binds, in a named slot.
@@ -81,6 +82,36 @@ The slot. It must match the kind of the configuration on the same row.
 :END:
 
 The configuration that fills the slot.
+
+* Artefact columns
+:PROPERTIES:
+:key: report_name
+:END:
+
+A dataset stages definitions and their bindings together, and the ids of both
+are made when they publish, so the staging row names the definition and the
+configuration instead: by the definition's name, the configuration type's code
+and the configuration's name.
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** report_name
+:PROPERTIES:
+:type: text
+:END:
+
+** configuration_type_code
+:PROPERTIES:
+:type: text
+:END:
+
+** configuration_name
+:PROPERTIES:
+:type: text
+:END:
 
 * SQL
 

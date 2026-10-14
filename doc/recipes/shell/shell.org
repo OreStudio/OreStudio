@@ -628,10 +628,6 @@ tangled into the runnable script library
 
 - [[id:8F7DD182-B1ED-5933-B377-9C0066D96489][How do I run the report_definitions commands from the shell?]]
 
-* Synthetic Fx Spot Configs
-
-- [[id:433F316B-EEFE-5C37-B7C8-2C6DA4D0B817][How do I run the synthetic_fx_spot_configs commands from the shell?]]
-
 * Workflow
 
 - [[id:868CEEF2-F845-41D0-995D-90D93BF6E9B7][How do I run a workflow that compensates?]]
@@ -1338,17 +1334,9 @@ tangled into the runnable script library
 
 - [[id:6E6BC1D6-49C9-51CD-B678-A509660C6EEB][How do I run the trade_states commands from the shell?]]
 
-* Counterparty Aliases
-
-- [[id:F3534049-1E98-5474-B121-24A69AB6CC39][How do I run the counterparty_aliases commands from the shell?]]
-
 * Netting Set Identifiers
 
 - [[id:5906C072-05A5-5A3E-B9AB-5B34089834D4][How do I run the netting_set_identifiers commands from the shell?]]
-
-* Netting Set Aliases
-
-- [[id:759255D2-7920-5CA2-BCFF-DBD057DA8740][How do I run the netting_set_aliases commands from the shell?]]
 
 * Feed Bindings
 
@@ -1641,3 +1629,7 @@ tangled into the runnable script library
 * Trading Account Types
 
 - [[id:F6DA1902-CC4B-5BFA-834F-DDFF748BE852][How do I run the trading_account_types commands from the shell?]]
+
+* Lei Bic
+
+- [[id:71427B36-E7A6-5D10-A08C-D2775BF14ED5][How do I run the lei_bic commands from the shell?]]

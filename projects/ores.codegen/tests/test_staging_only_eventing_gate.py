@@ -19,6 +19,7 @@ profile's own Physical space supplies the withdrawn main table, and that only
 survives while a merge error is not swallowed into an empty override set. The
 swallow itself is pinned in ``test_profile_binding_error_is_loud.py``.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -46,11 +47,23 @@ MESSAGING_TEMPLATES = frozenset({
     "cpp_nats_registrar.cpp.mustache",
 })
 
-# A staging shim that is not current-state.
-STAGING = REPO_ROOT / "projects/ores.dq/modeling/ores.dq.synthetic_fx_spot_config.org"
-
 # A staging shim that is also current-state.
 STAGING_CURRENT_STATE = REPO_ROOT / "projects/ores.dq/modeling/ores.dq.lei_entity.org"
+
+# Every staging shim the repo still carries is also current-state, because each
+# one is the read surface of its staging table. The gate does not depend on
+# that, so the non-current-state case is built from the current-state model with
+# the shape profile removed rather than left untested.
+def _staging_shim_that_is_not_current_state(tmp_path: Path) -> Path:
+    modeling = tmp_path / "ores.dq" / "modeling"
+    modeling.mkdir(parents=True)
+    model = modeling / STAGING_CURRENT_STATE.name
+    model.write_text(re.sub(
+        r"(?m)^:profile:\s*simple-lookup, read-only-current-state, artefact-staging-only\s*$",
+        ":profile:   simple-lookup, artefact-staging-only",
+        STAGING_CURRENT_STATE.read_text(encoding="utf-8")))
+    return model
+
 
 # A dq entity on the standard stack, used as the positive control.
 NOT_STAGING = REPO_ROOT / "projects/ores.dq/modeling/ores.dq.badge_definition.org"
@@ -62,8 +75,8 @@ def _templates(model):
     return {u["template"] for u in units}
 
 
-def test_a_staging_shim_resolves_no_announcement():
-    templates = _templates(STAGING)
+def test_a_staging_shim_resolves_no_announcement(tmp_path):
+    templates = _templates(_staging_shim_that_is_not_current_state(tmp_path))
     assert not (ANNOUNCEMENT_TEMPLATES & templates)
     missing = MESSAGING_TEMPLATES - templates
     assert not missing, f"gate dropped facets the shim needs: {sorted(missing)}"
@@ -82,6 +95,6 @@ def test_an_entity_that_is_not_a_staging_shim_keeps_its_announcement():
 def test_a_staging_shim_still_withdraws_its_main_table():
     # The profile's own Physical space supplies this, and it survives only while
     # a merge error is not swallowed into an empty override set.
-    templates = _templates(STAGING)
+    templates = _templates(STAGING_CURRENT_STATE)
     assert "sql_schema_domain_entity_create.mustache" not in templates
     assert "sql_schema_domain_entity_artefact_create.mustache" in templates

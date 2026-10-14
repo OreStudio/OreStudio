@@ -767,7 +767,7 @@ package "dq_staging" #F3E5F5 {
     One Parameter of the Markets block in a run document: a market role, and the market configuration the run binds to it. The block belongs to the configuration that describes the run, so reports that share a configuration share its market roles. The role is a free string in ORE's schema, and the value names a configuration set built in todaysmarket.xml, which ores.analytics owns. This table holds the binding, not the configuration it names. - Artefact Table
     end note
 
-    entity ores_dq_counterparty_aliases_artefact_tbl  #F7E5FF {
+    entity ores_dq_counterparty_identifiers_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
@@ -778,8 +778,8 @@ package "dq_staging" #F3E5F5 {
           description : text
     }
 
-    note right of ores_dq_counterparty_aliases_artefact_tbl
-    A name a source system uses for a counterparty, such as the CPTY_A an ORE document puts in its envelope, staged with the identifier scheme it belongs to and the LEI of the counterparty it names. A counterparty's id differs from tenant to tenant, so the alias names it by LEI; publishing resolves the LEI to the tenant's counterparty and writes the alias as a counterparty identifier. - Artefact Table
+    note right of ores_dq_counterparty_identifiers_artefact_tbl
+    External identifiers for counterparties, such as LEI codes, BIC/SWIFT codes, national registration numbers, and tax identifiers. Each counterparty can have multiple identifiers across different schemes. - Artefact Table
     end note
 
     entity ores_dq_countries_artefact_tbl  #F7E5FF {
@@ -1582,6 +1582,31 @@ package "dq_staging" #F3E5F5 {
     Describes how ORE quotes an FX option: which strike counts as at the money, how the delta is measured, and what happens beyond a switch tenor. Corresponds to the <FxOption> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
     end note
 
+    entity ores_dq_fx_spot_generation_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          description : text
+        * enabled : boolean
+        * auto_start : boolean
+        * base_currency_code : text
+        * quote_currency_code : text
+        * gmm_initial_price : double
+        * ticks_per_hour : integer
+        * process_type : text
+        * price_source : text
+          vintage_source : text
+          vintage_date : text
+          provider_code : text
+    }
+
+    note right of ores_dq_fx_spot_generation_configs_artefact_tbl
+    A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise the tick stream for a single FX spot rate: which ORE market key it produces, the starting price, the tick cadence, and the price process. The price process is a Gaussian Mixture Model whose components are held separately as gmm_component rows. Scoped to a tenant and a party. - Artefact Table
+    end note
+
     entity ores_dq_fx_volatility_configs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1894,7 +1919,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_lei_bic_artefact_tbl
-    GLEIF LEI to BIC mapping data - Artefact Table
+    GLEIF LEI to BIC identifier mappings from golden copy files. Each row maps one LEI to one BIC, and a LEI may hold several BICs. - Artefact Table
     end note
 
     entity ores_dq_lei_entities_artefact_tbl  #F7E5FF {
@@ -2022,7 +2047,7 @@ package "dq_staging" #F3E5F5 {
     A netting agreement is the legal document, such as an ISDA Master Agreement, that lets one legal entity of the firm and one counterparty replace what each owes the other under it with a single net amount. It is the legal fact behind a [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][netting set]]: a set opened under an agreement belongs to the agreement's two parties, and a set with no agreement holds trades that do not net. The agreement's two parties never change across its versions: both columns are fixed, so a new version that changes either is refused. A netting set copies them and pins the copy to the agreement, so a set cannot be filed under another counterparty's agreement, and the copy stays true. Closing an agreement does not close its sets, as for every soft foreign key in the schema; a set's agreement is checked when the set is written. - Artefact Table
     end note
 
-    entity ores_dq_netting_set_aliases_artefact_tbl  #F7E5FF {
+    entity ores_dq_netting_set_identifiers_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
@@ -2033,8 +2058,8 @@ package "dq_staging" #F3E5F5 {
           description : text
     }
 
-    note right of ores_dq_netting_set_aliases_artefact_tbl
-    A name a source system uses for a netting set, such as the CPTY_A an ORE document puts in a trade's envelope, staged with the identifier scheme it belongs to and the code of the set it names. Publishing resolves the code in the target tenant and writes the alias as a netting set identifier. - Artefact Table
+    note right of ores_dq_netting_set_identifiers_artefact_tbl
+    Names a netting set answers to outside ORE Studio. An ORE document names a trade's netting set by its NettingSetId, such as CPTY_A, and an import resolves that id through the set's ORE identifier, as it resolves the document's CounterParty through a counterparty identifier. A set's own code stays the name the tenant gives it. A set may answer to several ORE ids. - Artefact Table
     end note
 
     entity ores_dq_netting_sets_artefact_tbl  #F7E5FF {
@@ -2315,13 +2340,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_report_configurations_artefact_tbl
-    Report configuration bindings: the staging table
-    A report definition binds the configuration documents it reads, one per
-    configuration type its report type requires. A dataset that stages definitions
-    stages their bindings in this table beside them. A binding names its definition
-    and its configuration by name, never by id, because the ids of both are made
-    when they are published. The definitions publish resolves each name for the
-    target party, so the documents are published before the definitions.
+    This is how a report definition reaches its configuration: one row per configuration it binds, where the configuration type is the slot and the configuration fills it. Several reports may fill the same slot with the same configuration, so a configuration is never copied to be shared, and adding a slot is not a column on the report definition. - Artefact Table
     end note
 
     entity ores_dq_report_definitions_artefact_tbl  #F7E5FF {
@@ -2492,31 +2511,6 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_swaption_volatility_configs_artefact_tbl
     The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix and smile, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so its fields are the proxy_ columns, and has_proxy_config says whether the entry wrote it. - Artefact Table
-    end note
-
-    entity ores_dq_synthetic_fx_spot_configs_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * id : uuid
-        * version : integer
-        * name : text
-          description : text
-        * enabled : boolean
-        * auto_start : boolean
-        * base_currency_code : text
-        * quote_currency_code : text
-        * gmm_initial_price : double
-        * ticks_per_hour : integer
-        * process_type : text
-        * price_source : text
-          vintage_source : text
-          vintage_date : text
-          provider_code : text
-    }
-
-    note right of ores_dq_synthetic_fx_spot_configs_artefact_tbl
-    Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config rows for the synthetic market data bundle. Each row is a complete FX config combining the parent market_data_generation_config fields (name, description, enabled) with the FX spot sub-config fields (currency pair, initial price, tick cadence, process type). - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {

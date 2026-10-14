@@ -141,9 +141,9 @@ begin
     where code = 'ore.counterparty_aliases'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
-    delete from ores_dq_counterparty_aliases_artefact_tbl where dataset_id = v_dataset_id;
+    delete from ores_dq_counterparty_identifiers_artefact_tbl where dataset_id = v_dataset_id;
 
-    insert into ores_dq_counterparty_aliases_artefact_tbl (
+    insert into ores_dq_counterparty_identifiers_artefact_tbl (
         dataset_id, tenant_id, id_value, version, id_scheme, lei, description
     )
     select v_dataset_id, ores_utility_system_tenant_id_fn(), a.alias, 0, 'ORE', a.lei,

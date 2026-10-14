@@ -159,6 +159,9 @@ is the set of parts its family protocol names.
 
 - [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the syntax for every pattern
   here, per model kind.
+- [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] — the name each
+  pattern gives the table, the type, the messages and the derived file, once the
+  shape is chosen.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the generator itself, its facets and its addressing.
 - [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — the operational recipe.
 - [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][Paste blocks: injecting custom code into generated files]] — how

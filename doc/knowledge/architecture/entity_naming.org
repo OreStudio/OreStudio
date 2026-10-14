@@ -2,44 +2,48 @@
 :ID: 471815CD-A377-4101-A4F8-E6962CD8469D
 :END:
 #+title: Entity naming
-#+description: The naming patterns every entity follows, taken from what the codebase actually does, and the conventions that are still undecided.
+#+description: Every name derived from an entity, and the pattern each one follows, taken from the code generator that emits them.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:entity:naming:
+#+filetags: :knowledge:architecture:entity:naming:codegen:
 #+created: 2026-10-14
 #+updated: 2026-10-14
 
 * Summary
 
-An entity has one name, and the layers spell it three ways: the C++ type is
-the singular in snake case, the table and the repository are the plural, and
-every table ends in =_tbl=. A suffix then says what a record is: =_event= for
-a fact about an instant, and =_kind= or =_type= for a lookup.
+An entity has one name, and the layers spell it in a fixed set of ways. The
+table is the plural with a =_tbl= suffix, the C++ type is the singular, and
+every function, trigger, index, policy, message, subject, command and test file
+derived from it follows a pattern stated here.
 
-This page states the patterns the code already follows. It is a census, not a
-policy: where the code does two things, it says so rather than choosing. The
-overall naming policy is deferred, so keep new names inside these patterns
-until it is settled.
+The patterns are not a convention someone chose for this page. They are what the
+code generator emits: 200 archetype pages and 153 tangled templates produce
+them, and this page is the index of that output. Where the generator does two
+things, this page says so rather than choosing.
 
-* Detail
+Read [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a
+model shape]] before you pick a shape, and this page before you name anything
+that comes out of it.
+
+* The base names
+
+Everything below is built from three strings: ={product}=, ={component}= and
+={plural}=, usually joined as ={product}_{component}_{plural}=. A model may
+override the table name with =:tablename:=, in which case that string is the
+base instead.
 
 ** The table
 
-A table is =ores_<component>_<plural>_tbl=.
+A table is ="{{product}}_{{component}}_{{plural}}_tbl"=.
 
 #+begin_example
-ores_reporting_report_definitions_tbl
+ores_reporting_report_instances_tbl
 ores_iam_run_grants_tbl
 ores_dq_datasets_tbl
 #+end_example
 
-The component segment names the component that owns the table. It repeats the
-subject when the entity's own name already carries it, as in
-=ores_reporting_report_definitions_tbl=.
-
-=_tbl= is on every table and says nothing about the shape. A bi-temporal table
-and a current-state table both take it, so the suffix is not a signal for
-whether the table has a validity window.
+=_tbl= is on every table and says nothing about the shape: a bi-temporal table
+and a current-state table both take it.
 
 ** The entity and its repository
 
@@ -56,31 +60,180 @@ the wire entity take the plural.
 
 A lookup names the thing it classifies, and takes =_kind= or =_type=.
 
-| Suffix | Example | What it classifies |
-|--------+---------+--------------------|
-| =_kind= | =report_instance_kind= | the kind of a report instance |
-| =_type= | =analytic_type= | a kind of analytic |
-| =_type= | =configuration_type= | a kind of configuration |
-| =_type= | =file_type= | a kind of file |
+| Suffix | Example |
+|--------+---------|
+| =_kind= | =report_instance_kind= |
+| =_type= | =analytic_type=, =configuration_type=, =file_type= |
 
-*Undecided.* One job, two spellings. Nothing in the code distinguishes them,
-so a new lookup may take either until the policy is settled.
+*Undecided.* One job, two spellings. Nothing in the generator distinguishes
+them, so a new lookup may take either until the policy is settled.
 
 ** Events
 
-The =_event= suffix names a fact about an instant: a row written once and
-never changed. Such an entity states =:current_state:= and =:immutable:=, so
-it has no validity window and no audit tail. Because it has no audit tail, the
-actor and the time are columns of its own rather than the generated audit
-stamps.
+The =_event= suffix names a fact about an instant: a row written once and never
+changed. Such an entity states =:current_state:= and =:immutable:=, so it has no
+validity window and no audit tail. Because it has no audit tail, the actor and
+the time are columns of its own.
 
-=ores.iam.auth_event= is the worked example: it records who signed in, and it
+=ores.iam.auth_event= is the worked example: it records who signed in, and
 carries =event_time=, =account_id= and =username= for that reason.
 
-A record of this shape answers "what happened", so name it =<subject>_event=:
-the subject is what the fact is about, not who caused it.
+* What an entity derives
 
-** Where the code does not agree
+Every row below is emitted by the generator. =sql_name_base= is
+={product}_{component}_{plural}= and =rls_table_base= is the same string with
+the leading ={product}_{component}_= removed.
+
+** SQL
+
+| Artefact | Pattern |
+|----------+---------|
+| Table | ={sql_name_base}_tbl= |
+| Primary key | =(tenant_id, {pk}, valid_from, valid_to)=, tenant first only when =has_tenant_in_pk= |
+| Exclusion constraint | Unnamed =exclude using gist= on =(tenant_id, {pk}, tstzrange(valid_from, valid_to))= |
+| Check constraints | Unnamed: =valid_from < valid_to=, one per uuid PK column, one per text PK column |
+| Foreign key | ={sql_name_base}_{fk_column}_fk=, overridable with =:constraint_name:= |
+| Unique index, composite natural key | ={index_name_prefix}_{keys}_uniq_idx= |
+| Unique index, single natural key | ={index_name_prefix}_{column}_uniq_idx= |
+| Version unique index | ={index_name_prefix}_version_uniq_idx= |
+| Id unique index | ={index_name_prefix}_id_uniq_idx= |
+| Tenant index | ={index_name_prefix}_tenant_idx= |
+| Model-declared index | ={index_name_prefix}_{index.name}_idx= |
+| Insert function | ={sql_name_base}_insert_fn()= |
+| Insert trigger | ={sql_name_base}_insert_trg= |
+| Delete function | ={sql_name_base}_delete_fn()= |
+| Delete trigger | ={sql_name_base}_delete_trg= |
+| Delete rule | ={sql_name_base}_delete_rule= |
+| Cascade-delete function | ={sql_name_base}_cascade_delete_fn()= |
+| Immutable function | ={sql_name_base}_immutable_fn()= |
+| Immutable trigger | ={sql_name_base}_immutable_trg= |
+| Immutable truncate trigger | ={sql_name_base}_immutable_truncate_trg= |
+| Touch-version function | ={sql_name_base}_touch_version_fn()= |
+| Hierarchy function | ={sql_name_base}_hierarchy_fn()= |
+| Notify function | ={sql_name_base}_notify_fn()= |
+| Notify trigger | ={sql_name_base}_notify_trg= |
+| pg_notify channel | ='{sql_name_base}'= |
+| RLS tenant-isolation policy | ={rls_table_base}_tbl_tenant_isolation_policy= |
+| RLS party-isolation policy | ={rls_table_base}_tbl_party_isolation_policy= |
+| Validation function | ={product}_{component}_validate_{singular}_fn()= |
+
+Note the RLS exception: =rls_table_base= deliberately drops the
+={product}_{component}_= prefix, so an RLS policy is the one SQL family named off
+the short base.
+
+** C++
+
+| Artefact | Pattern |
+|----------+---------|
+| Domain type | =struct {singular} final= in =ores::{component}::domain= |
+| Domain file | =include/ores.{component_include}/domain/{singular}.hpp= |
+| Entity type | =struct {singular}_entity= in =ores::{component}::repository= |
+| Entity file | =repository/{singular}_entity.hpp= |
+| Table renderer | =convert_to_table(const std::vector<{singular}>&)= |
+| Table IO | =operator<<(std::ostream&, const std::vector<{singular}>&)= |
+| JSON IO | =operator<<(std::ostream&, const {singular}&)= |
+| Mapper | =class ORES_{COMPONENT_CORE_UPPER}_EXPORT {singular}_mapper= |
+| History field mapper | =render_{singular}_fields(const domain::{singular}&)= |
+| Repository | =class ORES_{COMPONENT_CORE_UPPER}_EXPORT {singular}_repository= |
+| Generator | =generate_synthetic_{singular}()= and =generate_synthetic_{plural}(n, ...)= |
+| Service | =class ORES_{COMPONENT_CORE_UPPER}_EXPORT {singular}_service= |
+| Protocol header | =include/ores.{component_include}/messaging/{singular}_protocol.hpp= |
+| Event type | =struct entity_event_traits<...::{singular}_event>=, =subject_prefix = "{component}.v1.{plural}_events"= |
+| Event registrar | =register_{singular}_event_mapping(...)= |
+| Sub registrar | =register_{singular}_handlers(...)= |
+| History provider registrar | =register_{singular}_history_provider(...)= |
+| Event cache | =class {singular}_cache= |
+| Event cache registrar | =warm_and_subscribe_{singular}_cache(...)= |
+| HTTP route class | =class {singular}_routes= in =ores::http::routes::{component}= |
+| Shell command class | =class {singular}_commands= |
+| Operations command class | =class {singular}_operations_commands= |
+
+A grouped entity also puts ={group_prefix}= and ={audit_prefix}= in front of the
+member names. A grouped entity that omits =:entity_singular_short:= or
+=:entity_plural_short:= renders an empty segment rather than falling back, so the
+identifier silently collapses; declare both.
+
+** Protocol messages and subjects
+
+| Artefact | Pattern |
+|----------+---------|
+| Key, write, change, removal, lookup | ={singular}_key=, ={singular}_write=, ={singular}_change=, ={singular}_removal=, ={singular}_lookup= |
+| Filter | ={plural}_filter= |
+| Event | ={singular}_event= |
+| Version key, versions filter | ={facet_stem}_version_key=, ={facet_stem}_versions_filter= |
+| List | =list_{plural}_request= / =_response= on ={component}.v1.{plural}.list= |
+| Get | =get_{singular}_request= / =_response= on ={component}.v1.{plural}.get= |
+| Get many | =get_many_{plural}_request= / =_response= on ={component}.v1.{plural}.get_many= |
+| Put | =put_{singular}_request= / =_response= on ={component}.v1.{plural}.put= |
+| Put many | =put_many_{plural}_request= / =_response= on ={component}.v1.{plural}.put_many= |
+| Delete | =delete_{singular}_request= / =_response= on ={component}.v1.{plural}.delete= |
+| Delete many | =delete_many_{plural}_request= / =_response= on ={component}.v1.{plural}.delete_many= |
+| Scoped list | =list_by_{relation}_{plural}_request= / =_response= on ={component}.v1.{plural}.list_by_{relation}= |
+| Versions | =list_{facet_stem}_versions_request= / =_response= on ={component}.v1.{plural}_versions.list= |
+| Single version | =get_{facet_stem}_version_request= / =_response= on ={component}.v1.{plural}_versions.get= |
+| Event subjects | =namespace {singular}_event_subjects= with =created=, =updated=, =deleted= |
+
+The subject grammar is four segments: ={component}.v1.{plural}.{verb}=. See
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]
+for the grammar itself.
+
+** Shell, HTTP, TypeScript, docs and tests
+
+| Artefact | Pattern |
+|----------+---------|
+| Shell verbs | =list=, =get=, =get-many=, =add=, =set=, =put-many=, =delete=, =delete-many=, =versions=, =version=, =by-{relation}= |
+| Shell menu | ={plural}= |
+| Shell recipe script | =projects/ores.shell/scripts/library/{menu}/{menu}-{command}.ores= |
+| Shell recipe doc | =doc/recipes/shell/{menu}/{singular}.org= |
+| HTTP route paths | =/api/v1/{component}/{plural}= with =/{{{key}}}=, =/versions=, =/versions/{version}=, =/get-many=, =/put-many=, =/delete-many=, =/by-{relation}/{relation}= |
+| HTTP recipe doc | =doc/recipes/http/{plural}/{singular}.org= |
+| TypeScript domain interface | =export interface {Pascal}= in =.../generated/{component}/domain/{singular}.ts= |
+| TypeScript protocol interfaces | =export interface {Pascal(message_name)}= in =.../protocol/{singular}_protocol.ts= |
+| TypeScript maps | =subjects=, =requiresSession=, =eventSubjects= |
+| Entity model file | =projects/ores.{component}/modeling/ores.{component}.{entity}.org= |
+| CMake source list | =projects/{component_dir}/src/component_files.cmake= |
+| CMake test list | =projects/{component_dir}/tests/component_files.cmake= |
+| Eventing integration test | =tests/{singular}_eventing_integration_tests.cpp= |
+| Shell command test | =projects/ores.shell/{component}/tests/{singular}_commands_tests.cpp= |
+| HTTP route test | =projects/ores.http/{component}/tests/{singular}_routes_tests.cpp= |
+| ER diagram | =projects/ores.sql/modeling/ores_schema.{component}.puml= |
+
+Two dead or misleading names are worth knowing. The archetype
+=ores.plantuml.er.diagram= emits =output/{entity}_er.puml=, and no code
+references it; the live diagrams are the group =.puml= files above. And there is
+no generated =domain_{entity}_tests.cpp=: the file exists for =report_instance=
+but is hand-written.
+
+** Junctions
+
+A junction replaces ={plural}= with the junction's ={name}=.
+
+| Artefact | Pattern |
+|----------+---------|
+| Table | ={product}_{component}_{name}_tbl= |
+| Functions and triggers | ={product}_{component}_{name}_insert_fn=, =_insert_trg=, =_delete_rule= |
+| Indexes | ={name}_{column}_idx=, ={name}_uniq_idx=, ={name}_tenant_idx= |
+| RLS policies | ={name}_tbl_tenant_isolation_policy=, ={name}_tbl_party_isolation_policy= |
+| Notify | ={events_channel}_notify_fn=, =_notify_trg=, =_notify_close_trg= |
+| Messages | =get_{name_singular}_request= and the rest, on ={component}.v1.{name}.{verb}= |
+| History row | =struct {name_singular}_history_row= |
+
+* Where an entity's name is decided
+
+The generator is the authority, not this page. Each name above comes from one
+archetype page and its tangled template.
+
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema
+  reference]] — the syntax of a model, and the flags that change which names are
+  emitted at all.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model
+  shape]] — which shape to pick, and the neighbouring shape it is mistaken for.
+- [[id:3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D][Adding a flagged combo field to a
+  codegen entity]] — a worked change to a model, and the names it moves.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the generator
+  itself, its facets and its gates.
+
+* Where the code does not agree
 
 Two append-only logs record a fact about an instant and do not take =_event=.
 
@@ -95,27 +248,13 @@ generator derive it, because the entity is a publication and the table is
 [[id:3DC569DA-A2B1-40CF-92AB-A745FC842FFA][Ensure all entities follow the entity
 naming convention]] for the review this opens.
 
-** Not naming, but visible in names
-
-Three more things shape an entity and are not suffixes:
-
-- Whether the table is bi-temporal or current-state, which
-  [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] and
-  [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] own.
-- Whether =tenant_id= is generated, ordinary text, or absent, which changes
-  how the table is isolated.
-- Which patterns a model opts into, which
-  [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][the codegen input org-file
-  schema reference]] owns.
-
 * See also
 
 - [[id:D70D7244-13F2-4D40-9351-C94920F4FC57][Entities]] — the hub this page
-  belongs to, and the way in to every other page about entities.
+  belongs to.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] — the layer
   order and the per-transport patterns of a full-stack entity.
-- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema
-  reference]] — the syntax a model is written in, including the flags a
-  current-state or immutable entity states.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] — the
+  bi-temporal design the SQL names assume.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — why every page
   carries an id and links by it rather than by path.

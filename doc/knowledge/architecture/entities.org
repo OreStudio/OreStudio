@@ -34,12 +34,9 @@ An entity is authored as a model, not as code, and the shape must be chosen
 before anything is written. The shape decides what the generator produces.
 
 - [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the syntax for every pattern.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — which shape to pick, and the neighbouring shape it is mistaken for.
 - [[id:3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D][Adding a flagged combo field to a codegen entity]] — a worked change to a model.
 - [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] — the end-to-end recipe.
-
-A codegen pattern library — the page that says which shape to pick, and which
-neighbouring shape it is mistaken for — is being written on another branch.
-Link it here once it merges.
 
 * Naming, storing and addressing
 

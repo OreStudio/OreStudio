@@ -19,6 +19,7 @@
  */
 #include "ores.workflow.core/service/workflow_engine.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/domain/workflow_plan_dependency.hpp"
@@ -248,16 +249,22 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
 
     BOOST_LOG_SEV(lg(), info) << "Publishing step command:" << " workflow=" << inst_id_str
                               << " step_index=" << step.step_index << " step_name=" << step.name
-                              << " step_id=" << step_id_str << " subject=" << step.command_subject;
+                              << " step_id=" << step_id_str << " subject=" << step.command_subject
+                              << " (delivery unconfirmed: core NATS does not acknowledge)";
 
     const auto data = std::as_bytes(std::span{step.command_json.data(), step.command_json.size()});
 
     using namespace ores::workflow::messaging;
+    // The step id travels as the correlation id as well as its own header, so
+    // the handler's entry line carries the same key this dispatch logs and the
+    // two can be joined by one grep. with_correlation_id() only applies to
+    // request/reply, so a fire-and-forget command has to set it here.
     nats_.publish(step.command_subject,
                   data,
                   {{std::string(step_id_header), step_id_str},
                    {std::string(instance_id_header), inst_id_str},
-                   {std::string(tenant_id_header), tenant_id_str}});
+                   {std::string(tenant_id_header), tenant_id_str},
+                   {std::string(ores::nats::headers::nats_correlation_id), step_id_str}});
 }
 
 void workflow_engine::publish_status_event(const boost::uuids::uuid& instance_id,

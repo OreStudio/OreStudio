@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: CDC3925A-CDE3-4861-8835-4CABB4138CFD
+:END:
+#+title: Story: Free disk space on the macOS runner
+#+description: The Linux workflow frees disk before its build, and the macOS workflow does not. The macOS debug job has already died with 'No space left on device' while linking, and the macOS runner image carries toolchains and simulator runtimes a C++ build never touches. Add the macOS equivalent, keeping the Xcode version the workflow selects.
+#+type: story
+#+level: s2
+#+filetags: :ci:macos:build:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The macOS build starts with the runner's unused toolchains and simulator runtimes removed, and still finds its Xcode.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- nightly-macos.yml frees disk before the checkout and reports df before and after.
+- The Xcode version the workflow selects is not removed.
+- One custom SDK, toolchain or simulator runtime is deleted, plus Homebrew caches.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:378B6AFD-0E06-4901-83BF-10F01289B5AD][Scaffold story: Free disk space on the macOS runner]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5802E374-3FE3-471B-BE03-D1FFD25F418E][Add a Free disk space step to nightly-macos.yml]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Free disk space on the macOS runner |
+
+* Decisions
+
+- The step mirrors the Linux workflow's, placed as the first step of the
+  build job so the space is free before the checkout writes anything.
+- The Xcode 16 installation is deliberately kept: the next step selects it.
+  Every other Xcode is removed.
+- Simulator runtimes and Xcode DerivedData are the bulk of what a ctest run
+  never loads, so they are removed first.
+- The step prints =df= before and after, so each run records what it freed
+  instead of the saving being asserted.
+
+* Out of scope
+
+- The out-of-memory reading of clang's =Killed: 9=. This story fixes the
+  disk failure this repository has actually seen.

@@ -107,6 +107,37 @@ jobs:
             family: macos
             compiler: clang
     steps:
+      - name: Free disk space
+        # The macOS image ships several SDKs and simulator runtimes a C++ build
+        # never touches, and this workflow has no cleanup of its own, so the
+        # debug job has already died linking with "No space left on device".
+        # Xcode 16 is kept: the next step selects it.
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          for xcode in /Applications/Xcode_*.app; do
+            case "$xcode" in
+              *Xcode_16*) ;;
+              *) sudo rm -rf "$xcode" ;;
+            esac
+          done
+          # Simulator runtimes are the bulk that a ctest run never loads.
+          sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes
+          rm -rf ~/Library/Developer/CoreSimulator
+          rm -rf ~/Library/Developer/Xcode/DerivedData
+          rm -rf ~/Library/Developer/Xcode/iOS\ DeviceSupport
+          rm -rf ~/Library/Developer/Xcode/watchOS\ DeviceSupport
+          rm -rf ~/Library/Developer/Xcode/tvOS\ DeviceSupport
+          # Runtimes and SDKs for languages this build does not use.
+          sudo rm -rf ~/Library/Android/sdk
+          sudo rm -rf /usr/local/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/.ghcup
+          brew cleanup -s || true
+          rm -rf ~/Library/Caches/Homebrew || true
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - uses: actions/checkout@v7
         with:
           submodules: true

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 90132573-0DE8-4EF7-A2FA-ED2266488651
+:END:
+#+title: Story: Isolate the version stamp into its own component
+#+description: The build's git hash is compiled into ores.utility.lib, a shared library that 179 targets link, so the stamp changes on every commit and relinks all of them. Work out how version is used, size the blast radius, and move the stamp into a small component that only the code that reports the version links.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Contain the relink cost of the per-commit version stamp so a commit stops relinking targets that never report a version.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- The consumers of version are known and each is classified as reporting it or merely carrying it.
+- The relink set a version change causes is measured before and after.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A84BB0EA-AB3A-4573-9B9B-9CE87119A66F][Scaffold story: Isolate the version stamp into its own component]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7660979A-0C33-424D-9C83-AFCF535DEAF4][Analyse how version is used and size the relink blast radius]] | BACKLOG | | | Initial task for: Isolate the version stamp into its own component |
+| [[id:62961970-2A27-43AB-AC13-835A8E6438E9][Move the version stamp out of ores.utility]] | STARTED | 2026-10-14 | | The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Give the stamp its own small component and stop the code that never reports a version from relinking when it changes. |
+
+* Decisions
+
+* Out of scope
+
+-

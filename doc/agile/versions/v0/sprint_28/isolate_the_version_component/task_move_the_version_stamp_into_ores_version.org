@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 62961970-2A27-43AB-AC13-835A8E6438E9
+:END:
+#+title: Task: Move the version stamp out of ores.utility
+#+description: The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Give the stamp its own small component and stop the code that never reports a version from relinking when it changes.
+#+type: task
+#+level: s1
+#+filetags: :isolate_the_version_component:sprint_28:v0:
+#+owner: marco
+#+branch: feature/isolate-the-version-component
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Isolate the version stamp into its own component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take the per-commit build stamp out of the widely linked ores.utility library and put it where only the code that reports a version pays for it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Isolate the version stamp into its own component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- The stamp compiles into its own component, not ores.utility.
+- The relink set a stamp change causes is smaller, and the count is measured before and after.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:reporting:scheduler:iam:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -29,7 +29,7 @@ and it cannot work until the trigger exists.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | The design is settled; no code is written. |
 | Waiting on    | Nothing.                               |
@@ -62,7 +62,7 @@ and it cannot work until the trigger exists.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | BACKLOG | | | Create the report's consent at admission rather than only at schedule time |
+| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | STARTED | 2026-10-15 | | Create the report's consent at admission rather than only at schedule time |
 |      |       |       |     |             |
 
 * Decisions

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trigger_a_report_run_on_demand_or_on_a_schedule:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-up-and-prove-the-ore-packages
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,36 +33,61 @@ produced cannot act, which is why building a report's ORE packages fails today.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] |
-| Now          | Not yet started.                       |
+| Now          | Built; the reporting core and IAM suites are green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-14                               |
+| Next         | Close on merge.                        |
+| Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- A definition that holds no consent is admitted on demand, and the instance
+  that results records a run grant.
+- The consent is recorded on the definition and reused, so a later trigger
+  asks IAM for nothing.
+- The scheduled path still admits its runs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The consent is created in one place both acts reach:
+=report_run_grant_service::ensure= returns the grant the definition already
+holds and asks IAM for one when it holds none, then records its id on the
+definition.
+
+The reporting service reaches IAM on the person's own token. The trigger
+message carries that token in its Authorization header, whatever the scheduler
+does when it publishes its own firing, so the handler relays it with
+=nats_client::with_delegation= and IAM reads the person as the grantor. A
+trigger that carries no person -- the scheduler's firing, when reconciliation
+has already cleared the job's consent -- is refused by name rather than served
+by the service account, because a service account's consent is a different
+thing from a person's and the story says so.
+
+Two decisions:
+
+1. The consent is created once and written back to the definition. Every later
+   trigger reads it off the row and does not call IAM. A concurrent
+   double-admit needs no lock here: IAM enforces the natural key of party,
+   resource and grantor, answers a repeated create with the grant that already
+   exists, and catches its own insert race on that unique index. Both
+   admissions therefore record the same id, and the write-back is idempotent.
+2. Unscheduling keeps the consent. Consent belongs to the report and serves an
+   on-demand run as well as a schedule, so withdrawing it when the schedule is
+   removed would refuse a person's own runs after they turned their schedule
+   off. The consent is revoked by IAM's own revoke operation, not by
+   unscheduling. This removes =unschedule_one='s revoke call; =schedule_one=
+   still revokes a grant it created for a schedule it could not record.
 
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+and the commit it was measured at.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.reporting.core.tests | 91 cases, 400 assertions, all passing | =./compass.sh test run --preset linux-clang-release-ninja -- -R "ores.reporting.core.tests"= | cc61b5ceee + working tree |
+| ores.iam.core.tests | 296 cases, 1068 assertions, all passing | =./compass.sh test run --preset linux-clang-release-ninja -- -R "ores.iam.core.tests"= | cc61b5ceee + working tree |
 
 * Notes
 
@@ -90,3 +115,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Built. =report_run_grant_service= is the one place a definition's consent is
+settled, and the trigger path calls it before it admits. A definition that no
+schedule ever ran now runs on demand: =service_report_run_grant_tests.cpp=
+admits one and reads back both the definition's grant and the instance's.
+
+Unproven here: the end-to-end =ore build-packages= run, which needs the
+workflow stream and a live workflow service. The test admits a package instance
+and stops at the dispatch, because the test's subject prefix covers no stream.

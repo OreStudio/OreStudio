@@ -28,6 +28,7 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
+#include "ores.reporting.core/service/report_run_grant_service.hpp"
 #include "ores.reporting.core/service/scheduling_plan.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -58,12 +59,8 @@ struct report_trigger_action_payload {
 };
 
 // The role a report run acts with, and the services that exchange its grant,
-// named by the service role each one's account holds: reporting for collection
-// and finalisation, ORE for the input, compute for submission. IAM's exchange
-// reads the caller's service name from that role, so the audience carries role
-// names and not host names.
-constexpr std::string_view run_role = "ReportRun";
-constexpr std::string_view run_audience = "ReportingService,OreService,ComputeService";
+// are the ones the trigger path consents under as well, so the pair is stated
+// once, in report_run_grant_service.
 
 template <typename Request>
 std::expected<typename Request::response_type, std::string>
@@ -247,7 +244,7 @@ report_scheduling_service::revoke_runs(const boost::uuids::uuid& grant_id) {
         return std::unexpected("Revoking a run grant needs the person who acts.");
     ores::iam::messaging::revoke_run_grant_request req;
     req.grant_id = boost::uuids::to_string(grant_id);
-    req.reason = "unscheduled";
+    req.reason = "schedule not recorded";
     try {
         if (const auto revoked = call(*person_nats_, req); !revoked)
             return std::unexpected(revoked.error());
@@ -345,22 +342,12 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
                                "scheduler job was removed but the definition cannot record it.");
     }
 
-    // A grant that cannot be revoked here, because the person unscheduling is
-    // neither its grantor nor an administrator, serves no run once the job is
-    // gone; the definition keeps its id so the grant can still be found.
-    auto grant_to_keep = def.run_grant_id;
-    if (def.run_grant_id) {
-        if (const auto revoked = revoke_runs(*def.run_grant_id); revoked)
-            grant_to_keep = std::nullopt;
-        else
-            BOOST_LOG_SEV(lg(), warn) << "Run grant " << *def.run_grant_id << " of definition "
-                                      << def.id << " stays active: " << revoked.error();
-    }
-
-    // Clear scheduler_job_id and transition to suspended state.
+    // The consent stays. Unscheduling withdraws the schedule, not the report's
+    // consent to run: the same consent serves an on-demand run and a later
+    // schedule, so revoking it here would make a person's own runs refuse
+    // after they turned their schedule off.
     auto updated = def;
     updated.scheduler_job_id = std::nullopt;
-    updated.run_grant_id = grant_to_keep;
     updated.fsm_state_id = *suspended_state;
     updated.modified_by = actor;
     updated.performed_by = ctx_.service_account();

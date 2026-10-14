@@ -35,6 +35,7 @@
 #include "ores.reporting.core/service/report_configuration_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_run_admission_service.hpp"
+#include "ores.reporting.core/service/report_run_grant_service.hpp"
 #include "ores.reporting.core/service/report_type_service.hpp"
 #include "ores.reporting.core/service/run_requirements.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -102,11 +103,13 @@ public:
     report_instance_trigger_handler(ores::nats::service::client& nats,
                                     ores::database::context ctx,
                                     std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                                    ores::workflow::service::fsm_state_map instance_states)
+                                    ores::workflow::service::fsm_state_map instance_states,
+                                    ores::nats::service::nats_client& svc_nats)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
-        , instance_states_(std::move(instance_states)) {}
+        , instance_states_(std::move(instance_states))
+        , svc_nats_(svc_nats) {}
 
     void trigger(ores::nats::message msg) {
         BOOST_LOG_SEV(report_instance_trigger_handler_lg(), debug) << "Handling " << msg.subject;
@@ -338,6 +341,21 @@ private:
             return;
         }
 
+        // The run's authority is the report's consent to run, and a definition
+        // that no schedule ever ran holds none. A person asking for a run
+        // consents here, on their own token; a definition that already holds a
+        // consent returns it unchanged, so a schedule and a person share one.
+        // The scheduler's own firing relays no person, and by then the
+        // definition already holds the consent its schedule created.
+        const auto grant = ensure_run_grant(req_ctx, *def, msg);
+        if (!grant) {
+            response.result.outcome = ores::utility::domain::outcome::failed;
+            response.result.code = "no_run_grant";
+            response.result.message = grant.error();
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+
         // An instance is one occurrence of the definition, and the natural key
         // is unique per tenant, so two runs of one definition cannot share a
         // name. The run's start is what distinguishes them.
@@ -360,7 +378,7 @@ private:
         // The run's authority is fixed at admission: the instance records the
         // grant the definition held now, so a later schedule or unschedule
         // cannot change the authority of this run.
-        plan.run_grant_id = def->run_grant_id;
+        plan.run_grant_id = *grant;
         plan.fsm_state_id = initial_state;
         // Only an instance that will run states when it started. One that is
         // queued, skipped or failed never began.
@@ -372,15 +390,18 @@ private:
         const auto receipt = admission.admit(plan);
 
         const auto inst_id_str = boost::uuids::to_string(receipt.instance_id);
+        // The run is recorded before its workflow is asked for, and the answer
+        // names it, so a caller is told which run it asked for even when
+        // starting that run fails afterwards.
+        response.report_instance_id = inst_id_str;
         BOOST_LOG_SEV(report_instance_trigger_handler_lg(), info)
             << "Created report instance " << inst_id_str << " for definition " << definition_id
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");
 
         if (dispatch) {
-            dispatch_workflow(req, *def, kind, type->workflow_type, inst_id_str, rg, msg);
+            dispatch_workflow(req, *def, kind, type->workflow_type, inst_id_str, *grant, rg, msg);
         }
 
-        response.report_instance_id = inst_id_str;
         response.result.code = dispatch ? "triggered" : "not_dispatched";
         response.result.message = std::format("Report instance {} created.", inst_id_str);
     }
@@ -431,11 +452,37 @@ private:
         return rows.front();
     }
 
+    /**
+     * @brief The consent this run acts under, created from the person asking
+     * when the definition holds none.
+     *
+     * The person's own token is what carries their authority: IAM issues a run
+     * grant to the account the token names, and only that account's token can
+     * ask for it. The scheduled firing carries a service token and no
+     * delegated person, which is why its definition must already hold the
+     * consent its schedule created.
+     */
+    std::expected<boost::uuids::uuid, std::string>
+    ensure_run_grant(const ores::database::context& request_ctx,
+                     const ores::reporting::domain::report_definition& def,
+                     const ores::nats::message& msg) {
+        const auto token = ores::nats::service::extract_actor_bearer(msg);
+        if (token.empty())
+            return std::unexpected(
+                std::format("Report definition {} holds no consent to run, and this trigger "
+                            "carries no person to give one. Schedule it, or trigger it from a "
+                            "person's session.",
+                            boost::uuids::to_string(def.id)));
+        service::report_run_grant_service grants(request_ctx, svc_nats_.with_delegation(token));
+        return grants.ensure(def);
+    }
+
     void dispatch_workflow(const trigger_report_instance_request& req,
                            const ores::reporting::domain::report_definition& def,
                            const std::string& kind,
                            const std::string& workflow_type,
                            const std::string& instance_id,
+                           const boost::uuids::uuid& run_grant_id,
                            boost::uuids::random_generator& rg,
                            const ores::nats::message& msg) {
         // The run's configuration travels into the start message so the chain
@@ -443,18 +490,16 @@ private:
         // The workflow is the one the report type names, so a new kind of
         // report is a seeded type and a registered workflow, not a code change
         // here.
-        report_execution_request exec_req{
-            .report_instance_id = instance_id,
-            .definition_id = boost::uuids::to_string(def.id),
-            .tenant_id = boost::uuids::to_string(req.tenant_id),
-            .party_id = boost::uuids::to_string(def.party_id),
-            .run_grant_id =
-                def.run_grant_id ? boost::uuids::to_string(*def.run_grant_id) : std::string{},
-            .correlation_id = instance_id,
-            .pre_processing = def.pre_processing,
-            .prepared_input_key = def.prepared_input_key,
-            .post_processing = def.post_processing,
-            .kind = kind};
+        report_execution_request exec_req{.report_instance_id = instance_id,
+                                          .definition_id = boost::uuids::to_string(def.id),
+                                          .tenant_id = boost::uuids::to_string(req.tenant_id),
+                                          .party_id = boost::uuids::to_string(def.party_id),
+                                          .run_grant_id = boost::uuids::to_string(run_grant_id),
+                                          .correlation_id = instance_id,
+                                          .pre_processing = def.pre_processing,
+                                          .prepared_input_key = def.prepared_input_key,
+                                          .post_processing = def.post_processing,
+                                          .kind = kind};
         ores::workflow::messaging::start_workflow_message swm{
             .type = workflow_type,
             .tenant_id = boost::uuids::to_string(req.tenant_id),
@@ -470,6 +515,7 @@ private:
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     ores::workflow::service::fsm_state_map instance_states_;
+    ores::nats::service::nats_client& svc_nats_;
 };
 
 } // namespace ores::reporting::messaging

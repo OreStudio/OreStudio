@@ -48,6 +48,18 @@ def get_lei_data_dir() -> Path:
 
 # Subset size configurations
 SUBSET_SIZES = {
+    # Tiny: enough to exercise the whole system -- every region represented, so a
+    # party in any of them can find a counterparty next door -- while staying
+    # small enough that provisioning it is not a wait.
+    'tiny': {
+        'per_country': 2,
+        'per_depth': 1,
+        'per_sector': 2,
+        'per_category': 2,
+        'per_fund_type': 1,
+        'per_legal_form': 1,
+        'per_children': 1,
+    },
     'small': {
         'per_country': 20,
         'per_depth': 10,
@@ -507,6 +519,11 @@ class Config:
     per_category: int = 60
     per_fund_type: int = 30
     per_legal_form: int = 10
+    # How many children of a selected parent the closure takes. Zero takes every
+    # child, which is what the larger rungs want; a tiny rung bounds it, because
+    # one global bank parents thousands of entities and taking them all makes
+    # the set big without making it more representative.
+    per_children: int = 0
 
 
 class ProgressReporter:
@@ -566,20 +583,37 @@ def detect_fund_type(name: str) -> str:
 
 
 def find_data_files(directory: Path) -> Tuple[str, str]:
-    """Find the LEI and RR data files in the directory."""
-    lei_pattern = str(directory / "*-gleif-goldencopy-lei2-golden-copy.csv")
-    rr_pattern = str(directory / "*-gleif-goldencopy-rr-golden-copy.csv")
+    """Find the LEI and RR data files in the directory.
 
-    lei_files = sorted(glob_module.glob(lei_pattern))
-    rr_files = sorted(glob_module.glob(rr_pattern))
+    The golden copy is what the subsets are cut from, and it is 4.3 GB, so it is
+    not checked in. A checkout that holds only the subsets cuts a smaller rung
+    from the largest one it has instead; the samples stay diverse because the
+    subset it reads was already sampled across countries, sectors and depths.
+    """
+    def first_match(patterns: Tuple[str, ...]) -> str:
+        for pattern in patterns:
+            found = sorted(glob_module.glob(str(directory / pattern)))
+            if found:
+                return found[-1]
+        return ""
 
-    if not lei_files:
-        raise FileNotFoundError(f"No LEI file found matching: {lei_pattern}")
-    if not rr_files:
-        raise FileNotFoundError(f"No RR file found matching: {rr_pattern}")
+    lei = first_match(("*-gleif-goldencopy-lei2-golden-copy.csv",
+                       "*-gleif-goldencopy-lei2-golden-copy-subset-large.csv",
+                       "*-gleif-goldencopy-lei2-golden-copy-subset-small.csv",
+                       "*-gleif-goldencopy-lei2-golden-copy-subset-tiny.csv"))
+    rr = first_match(("*-gleif-goldencopy-rr-golden-copy.csv",
+                      "*-gleif-goldencopy-rr-golden-copy-subset-large.csv",
+                      "*-gleif-goldencopy-rr-golden-copy-subset-small.csv",
+                      "*-gleif-goldencopy-rr-golden-copy-subset-tiny.csv"))
 
-    # Return latest files (filenames start with YYYYMMDD, so sorted order gives chronological)
-    return lei_files[-1], rr_files[-1]
+    if not lei:
+        raise FileNotFoundError(
+            f"No LEI file found in {directory}: neither the golden copy nor a subset")
+    if not rr:
+        raise FileNotFoundError(
+            f"No RR file found in {directory}: neither the golden copy nor a subset")
+
+    return lei, rr
 
 
 def get_subset_filename(original: str, size: str) -> str:
@@ -830,9 +864,10 @@ def select_subset(
     children_to_add: Set[str] = set()
     for lei in list(selected_leis):
         if lei in parent_to_children:
-            for child in parent_to_children[lei]:
-                if child in entities:
-                    children_to_add.add(child)
+            children = sorted(c for c in parent_to_children[lei] if c in entities)
+            if config.per_children:
+                children = children[:config.per_children]
+            children_to_add.update(children)
 
     selected_leis.update(children_to_add)
     print(f"    Added {len(children_to_add):,} children")
@@ -981,9 +1016,10 @@ Examples:
     parser.add_argument(
         "--size", "-z",
         type=str,
-        choices=['small', 'large'],
+        choices=['tiny', 'small', 'large'],
         default='small',
-        help="Subset size preset: 'small' (~10k entities) or 'large' (~50k entities). Default: small"
+        help="Subset size preset: 'tiny' (~3k entities), 'small' (~10k entities) or "
+             "'large' (~50k entities). Default: small"
     )
 
     # Download options
@@ -1051,6 +1087,7 @@ Examples:
         per_category=args.per_category if args.per_category else size_config['per_category'],
         per_fund_type=args.per_fund_type if args.per_fund_type else size_config['per_fund_type'],
         per_legal_form=size_config['per_legal_form'],
+        per_children=size_config.get('per_children', 0),
     )
 
     # Get the data directory

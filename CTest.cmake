@@ -308,6 +308,16 @@ endif()
 # Only attempt build if configuration succeeded.
 set(build_result 0)
 if(configure_result EQUAL 0)
+    # A continuous run proves the tree builds and the suites pass, so it passes
+    # package=0 and builds the default target without invoking cpack. The
+    # package is the deliverable of the nightly and tag runs.
+    set(want_package ON)
+    if(DEFINED package)
+        if(${package} EQUAL 0)
+            set(want_package OFF)
+        endif()
+    endif()
+
     # On Windows Debug the static ores.trading.core.lib exceeds the WiX v3
     # 2 GB single-file limit and cpack has no chance of succeeding. Release
     # is the only Windows deliverable, so on Debug build the default target
@@ -316,7 +326,9 @@ if(configure_result EQUAL 0)
     # On macOS Debug, CPACK_STRIP_FILES is set unconditionally and Xcode 16.x
     # strip aborts when LC_DYLD_EXPORTS_TRIE grows after pruning. Debug DMGs
     # are not useful artifacts, so skip packaging the same way we do on Windows.
-    if((operative_system STREQUAL "windows" OR operative_system STREQUAL "macos")
+    if(NOT want_package)
+        set(CTEST_BUILD_TARGET "all")
+    elseif((operative_system STREQUAL "windows" OR operative_system STREQUAL "macos")
             AND configuration STREQUAL "debug")
         set(CTEST_BUILD_TARGET "all")
     else()

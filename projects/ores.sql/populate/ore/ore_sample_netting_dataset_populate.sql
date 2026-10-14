@@ -138,7 +138,7 @@ begin
     ) as a(agreement_number, lei, agreement_type, governing_law, description);
 
     perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.sample_netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+        'ore.sample_netting_agreements', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
 end $$;
 
 \echo '--- ORE Sample Netting Sets Dataset ---'

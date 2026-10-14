@@ -237,9 +237,11 @@ messaging::{{response}}
 {{/has_filter}}
 {{#domain_entity.list_default_filter}}
     // A list narrows to {{column}} unless the caller states one, so the default view is
-    // the common case and the others are asked for by name.
+    // the common case and the others are asked for by name. A caller that named the
+    // rows it wants has already been specific, and narrowing a lookup by a default
+    // would answer nothing about a row that exists.
     auto filter = request.filter.value_or({{domain_entity.filter_type}}{});
-    if (!filter.{{column}})
+    if (!filter.{{column}}{{#domain_entity.filter_members}}{{#is_key}}{{#is_one_of}} && !filter.{{member}}{{/is_one_of}}{{/is_key}}{{/domain_entity.filter_members}})
         filter.{{column}} = {{{expression}}};
 {{/domain_entity.list_default_filter}}
 {{#domain_entity.has_as_of_lookup}}

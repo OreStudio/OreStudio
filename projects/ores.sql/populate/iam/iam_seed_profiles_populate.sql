@@ -131,7 +131,7 @@ cross join (values
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
     ('acme_demo', 'system_provision', 5, '{}'::jsonb),
-    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "synthetic_bloomberg", "synthetic_ore_samples_2016", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.small", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "synthetic_bloomberg", "synthetic_ore_samples_2016", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{"parties": [
@@ -179,14 +179,20 @@ cross join (values
      'who has none yet leaves it empty: the import then has nothing to read and '
      'says so, and the parties are added later.', 10),
     ('empty_operational', 'counterparty_size', 'Counterparty set', 'choice',
-     '["small", "large"]'::jsonb, 'small', true,
-     'small is about 13k GLEIF counterparties; large is about 500k.', 20),
+     '["tiny", "small", "large"]'::jsonb, 'small', true,
+     'tiny is about 2.5k GLEIF counterparties and covers every region; small is '
+     'about 13k; large is about 500k.', 20),
     ('gleif_entity', 'root_lei', 'Parent legal entity', 'legal_entity', null, '', true,
      'Search the legal entities this deployment holds, and the one you choose becomes '
      'the tenant''s hierarchy.', 10),
     ('gleif_entity', 'counterparty_size', 'Counterparty set', 'choice',
-     '["small", "large"]'::jsonb, 'small', true,
-     'small is about 13k GLEIF counterparties; large is about 500k.', 20)
+     '["tiny", "small", "large"]'::jsonb, 'small', true,
+     'tiny is about 2.5k GLEIF counterparties and covers every region; small is '
+     'about 13k; large is about 500k.', 20),
+    ('acme_demo', 'counterparty_size', 'Counterparty set', 'choice',
+     '["tiny", "small", "large"]'::jsonb, 'tiny', true,
+     'ACME demonstrates the whole system, so it carries the tiny set: every region '
+     'is represented and provisioning stays quick. Pick a larger set to load it.', 15)
 ) as v(code, name, label, data_type, choices_json, default_value, is_required, description, display_order)
 where p.code = v.code
   and p.valid_to = ores_utility_infinity_timestamp_fn()

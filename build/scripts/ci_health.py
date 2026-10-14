@@ -22,8 +22,8 @@ from typing import Any
 CI_WORKFLOWS = [
     "Canary Linux",
     "Continuous Linux",
-    "Continuous Windows",
-    "Continuous MacOS",
+    "Nightly Windows",
+    "Nightly MacOS",
     "Nightly Build",
 ]
 

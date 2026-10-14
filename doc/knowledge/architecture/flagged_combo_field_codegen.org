@@ -112,6 +112,9 @@ of unrelated files needing manual discard. See
 
 - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — the
   entity-scoped regeneration recipe.
+- [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] — what the layers
+  this change moves are named, and why a grouped entity must declare its short
+  names.
 - [[id:758EE33B-3944-4875-813A-302BFF9EECD0][Extend dynamic combo codegen with optional per-item flag icons]] —
   the capture that introduced =flagged_combo= itself.
 - [[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] — related codegen

@@ -329,6 +329,8 @@ Uses MASD stereotypes throughout:
 - [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — which pattern to pick, and
   the neighbouring one it is mistaken for. The schema here gives each
   pattern's flags; that page gives the choice.
+- [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] — the name every
+  pattern gives the table, the type, the messages and the derived file.
 - [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] — profile → template/output mapping.
 - [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] — component discovery roots.
 - [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] — editor modeline strings.

@@ -121,7 +121,8 @@ Nothing on a pull request. Eleven workflows keep their own triggers:
 
 | Workflow | When | Why it stays |
 |----------+------+--------------|
-| =continuous-linux.yml=, =continuous-macos.yml=, =continuous-windows.yml= | every 2, 3 and 12 hours, and on a tag | the only multi-platform build, and the only Windows and macOS coverage; submits to CDash |
+| =continuous-linux.yml= | every 3 hours, and on a tag | linux-clang debug and release, the fastest pair the tree builds; submits to CDash |
+| =nightly-macos.yml=, =nightly-windows.yml= | daily, and on a tag | the only Windows and macOS coverage; submits to CDash |
 | =nightly-linux.yml= | daily | full build and =ctest= with coverage and memcheck, to CDash |
 | =nightly-format.yml= | daily | rewrites formatting drift and opens a fix PR |
 | =nightly-includes.yml= | daily | =misc-include-cleaner= fix PR |

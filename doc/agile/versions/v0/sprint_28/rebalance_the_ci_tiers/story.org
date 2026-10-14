@@ -21,11 +21,11 @@ Continuous Linux carries only the two linux-clang jobs and runs as often as thei
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-14                               |
 
 * Acceptance
@@ -40,10 +40,25 @@ Continuous Linux carries only the two linux-clang jobs and runs as often as thei
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5921932D-AF34-46B9-8DC5-9B72A61A3EF7][Scaffold story: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:9DCD40BB-AA17-4F99-9C3B-434BDAC831F2][Rebalance the continuous and nightly schedules]] | BACKLOG | | | Initial task for: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly |
+| [[id:9DCD40BB-AA17-4F99-9C3B-434BDAC831F2][Rebalance the continuous and nightly schedules]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly |
 
 * Decisions
 
+- Continuous CI keeps linux-clang debug and release only. They were the
+  only jobs that finished well inside the six-hour limit: 2h46m and
+  2h54m on the last green run. The gcc jobs ran about 4h10m, and macOS
+  4h40m to 5h40m.
+- Continuous Linux runs every three hours, the tightest interval that
+  does not queue a run behind its predecessor. The relevance-guard makes
+  that a ceiling rather than a promise.
+- macOS and Windows move to the nightly tier. macOS moves to =macos-15=
+  because GitHub retires =macos-14= on 2026-11-02.
+- Shrinking the matrix to two variants also fits their sccache inside
+  GitHub's 10 GB repository cap, so a run can finish and reach its
+  =Save sccache= step.
+
 * Out of scope
 
--
+- Coverage and packaging still run on the continuous clang jobs.
+- The Windows run time is unmeasured. Its last run reported success with
+  the build matrix skipped, so its cadence rests on an inherited figure.

@@ -23,7 +23,11 @@ env:
 
 on:  # yamllint disable-line rule:truthy
   schedule:
-    - cron: '0 */2 * * *'
+    # The matrix is linux-clang debug and release only. The slower job ran in
+    # 2h54m on the last green run (2026-09-08, run 34218351651), so three hours
+    # is the tightest interval that does not queue a run behind its predecessor.
+    # The relevance-guard below skips runs when no code changed.
+    - cron: '0 */3 * * *'
   push:
     tags:
       - '*'
@@ -90,12 +94,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [linux-gcc, linux-clang]
+        name: [linux-clang]
         buildtype: [debug, release]
         include:
-          - name: linux-gcc
-            family: linux
-            compiler: gcc
           - name: linux-clang
             family: linux
             compiler: clang

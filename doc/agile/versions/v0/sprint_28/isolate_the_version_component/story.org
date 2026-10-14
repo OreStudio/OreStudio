@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 90132573-0DE8-4EF7-A2FA-ED2266488651
 :END:
-#+title: Story: Isolate the version stamp into its own component
+#+title: Story: Move the version stamp out of the binaries
 #+description: The build's git hash is compiled into ores.utility.lib, a shared library that 179 targets link, so the stamp changes on every commit and relinks all of them. The commit moves out of every binary into a manifest read at runtime, so a commit changes no compiled file and relinks nothing.
 #+type: story
 #+level: s2
@@ -43,54 +43,81 @@ any compiled artifact.
 
 * Design
 
-Agreed 2026-10-14.
+Agreed 2026-10-14, revised the same day after the analysis.
 
 ** Nothing is embedded in a binary. =version.cpp.in= loses
 =@ORES_BUILD_INFO@=. =version.hpp= keeps only the release numbers and the
-platform triplet, which change at release time, not per commit. Nothing
-compiled changes when a commit lands, so the relink set is empty.
+platform triplet, which change at release time, not per commit. The
+generator keeps writing =version.cpp=, but its content no longer depends on
+the commit, so =copy_if_different= leaves it alone and nothing recompiles or
+relinks when a commit lands.
 
-** A manifest carries the fast-changing facts. A JSON document written at
-build time:
+** No new component. The stamp stays in =ores.utility=. Once nothing is
+embedded, the relink cascade disappears on its own: =libores.utility.so=
+changes only when utility code changes, which it has to. Isolating version
+into =ores.version= was a means of shrinking the cascade, and with the
+cascade gone the means buys nothing. It would also cost a whole shared
+library and a codegen ceremony for one translation unit, at a time when
+=LINK_DEPENDS_NO_SHARED= cannot be scoped to a single dependency anyway.
 
-#+begin_src json
-{
-  "format": 1,
-  "version": "1.8.17.0",
-  "commit": "bdf73e1d24",
-  "commit_full": "bdf73e1d24...",
-  "dirty": false,
-  "branch": "main",
-  "built_at": "2026-10-14T11:06:00Z",
-  "triplet": "x64-linux",
-  "checkout_label": "brave_hopper"
-}
-#+end_src
+** A manifest carries the fast-changing facts. A =key=value= file written
+beside the binaries:
 
-A build step writes it rather than =configure_file=, so regenerating it
-costs one file write and recompiles nothing.
+#+begin_example
+format=1
+version=1.8.17.0
+build_info=local bdf73e1d24
+commit=bdf73e1d24
+commit_full=bdf73e1d24...
+dirty=false
+branch=main
+triplet=x64-linux
+checkout_label=brave_hopper
+#+end_example
+
+=key=value= rather than JSON because the only reader is one C++ function
+that wants one field, and a line-oriented file needs no parser, no schema
+tolerance rules and no library. It is readable with =cat= and searchable
+with =grep=. If a JSON consumer ever appears, the format can move.
+
+There is deliberately no =built_at=. The wall-clock time was already
+available at runtime from the executable's own mtime, and writing it here
+would change the file on every build for no gain.
+
+=checkout_label= is empty in a local build, because compass reads
+=ORES_CHECKOUT_LABEL= from the environment file but does not export it into
+the build. The =branch= field identifies the worktree today. Populating the
+label is a small compass change if it turns out to be worth having.
 
 ** Lookup order, first hit wins:
 
 1. =$ORES_VERSION_MANIFEST=
-2. =version.json= beside the running executable
-3. =usr/local/share/ores/version.json=
-4. =etc/ores/version.json=
+2. =version.manifest= beside the running executable
+3. =/usr/local/share/ores/version.manifest=
+4. =/etc/ores/version.manifest=
 
 Resolving "beside the running executable" reuses the existing
-=ores.platform::process= executable path, so =ores.version= depends on
-=ores.platform=. Checked: no library cycle, because =ores.platform='s
-library does not link =ores.utility=.
+=ores.platform::process::executable_path()=. Keeping the stamp in
+=ores.utility= introduces no new dependency edge, since that library
+already links =ores.platform=.
 
 ** Why each target works. A local build writes the manifest into
-=publish/= next to the binaries. A package and a deployed image copy
+=publish/bin= next to the binaries. A package and a deployed image copy
 =publish/= wholesale, so the manifest travels with the binary and the
-executable-relative lookup finds it without knowing the working
-directory.
+executable-relative lookup finds it without knowing the working directory.
 
-** Reading it. =ores.version= reads and caches the manifest once, so the
-file is not read per call. =build_info()= returns the commit;
-=full_version_string()= and =format_startup_message()= keep their shape.
+** Nothing may depend on the manifest. This is the one way to reintroduce
+the bug. The manifest must not appear in =BYPRODUCTS=, in =DEPENDS=, in
+=configure_file=, or in any command that produces a compiled input. It is
+written as an undeclared side effect of a target that runs every build. A
+build input that changes every commit is exactly what relinks the tree.
+
+** Reading it. =build_info()= reads the first manifest that carries
+=build_info= and caches it in a function-local static, so the file is read
+once per process. =full_version_string()= and =format_startup_message()=
+keep their shape and their output. =build_info()= returns ="unknown"= when
+no manifest can be read, and the reader skips a manifest that is readable
+but lacks the field, so a damaged record can never stop a service starting.
 
 ** No signing yet. This is a development traceability mechanism, so the
 manifest binds to nothing and a stale manifest beside a new binary is
@@ -103,7 +130,7 @@ are deferred.
 |------+-------+-------+-----+-------------|
 | [[id:A84BB0EA-AB3A-4573-9B9B-9CE87119A66F][Scaffold story: Isolate the version stamp into its own component]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:7660979A-0C33-424D-9C83-AFCF535DEAF4][Analyse how version is used and size the relink blast radius]] | BACKLOG | | | Initial task for: Isolate the version stamp into its own component |
-| [[id:62961970-2A27-43AB-AC13-835A8E6438E9][Move the version stamp out of ores.utility]] | STARTED | 2026-10-14 | | The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Give the stamp its own small component and stop the code that never reports a version from relinking when it changes. |
+| [[id:62961970-2A27-43AB-AC13-835A8E6438E9][Move the version stamp out of the binaries]] | STARTED | 2026-10-14 | | The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Move the commit out of every binary into a manifest read at runtime, so a commit changes no compiled file. No new component: with nothing embedded the cascade disappears on its own. |
 
 * Decisions
 
@@ -112,14 +139,22 @@ are deferred.
   =LINK_DEPENDS_NO_SHARED=, which cannot be scoped to a single dependency
   and would blunt ABI-change detection for every shared library of a
   target it is set on.
+- No separate =ores.version= component. With nothing embedded, the cascade
+  the component was meant to shrink no longer exists, so it would buy a
+  shared library and a codegen ceremony for one translation unit and no
+  benefit. Revisit only if a second reason to split appears.
 - The manifest is not signed yet. It is for development traceability.
-- The manifest is JSON because the reader is C++ and the writers are a
-  build step and a packaging step.
+- The manifest is =key=value=, not JSON, because the only reader wants one
+  field and a line-oriented file needs no parser or schema tolerance rules.
+- The manifest carries no build timestamp. Runtime already reads the
+  executable's mtime for that, and a timestamp would rewrite the file on
+  every build for no gain.
 
 * Out of scope
 
 - Signing the manifest, and binding the artifact digest into it.
 - =LINK_DEPENDS_NO_SHARED=. Considered and rejected for this work.
+- The separate =ores.version= component. Considered and dropped.
 - The wider observation that relinking dependents of a changed shared
   library is not required for correctness, so most of the 179 relinks are
   wasted work. Worth a separate decision.

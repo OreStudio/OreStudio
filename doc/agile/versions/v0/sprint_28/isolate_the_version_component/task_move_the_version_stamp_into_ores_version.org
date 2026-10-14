@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 62961970-2A27-43AB-AC13-835A8E6438E9
 :END:
-#+title: Task: Move the version stamp out of ores.utility
-#+description: The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Give the stamp its own small component and stop the code that never reports a version from relinking when it changes.
+#+title: Task: Move the version stamp out of the binaries
+#+description: The per-commit git hash is compiled into ores.utility.lib, which 179 targets link, so every commit relinks all of them. Move the commit out of every binary into a manifest read at runtime, so a commit changes no compiled file.
 #+type: task
 #+level: s1
 #+filetags: :isolate_the_version_component:sprint_28:v0:
@@ -16,11 +16,11 @@
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Isolate the version stamp into its own component]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Move the version stamp out of the binaries]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Take the per-commit build stamp out of the widely linked ores.utility library and put it where only the code that reports a version pays for it.
+Take the per-commit build stamp out of every compiled artifact and carry it in a manifest read at runtime, so landing a commit changes no compiled file and relinks no target.
 
 * Status
 

@@ -45,6 +45,28 @@ Move the fifteen lookup-template artefact tables onto domain models and retire t
 
 * Decisions
 
+- *The artefact type row settles the owner.* A model whose artefact type row is
+  terminal -- =target_table= and =target_subject= both null -- stages data whose
+  only store is the staging table, so DQ owns the model and it stays. A row that
+  publishes onward means the rows are the publishing component's data in
+  transit, and the model moves to that component. The rule was already stated in
+  both the DQ guide and the =artefact-staging-only= profile; nothing had applied
+  it to these nine.
+- *A moved artefact keeps its shape.* The owning model states the old staging
+  columns in an =* Artefact columns= section, key, nullability, defaults and
+  indexes and all, so the regenerated table differs from the old one only in its
+  name and its comment header.
+- *The GLEIF tables are DQ's.* =lei_entity=, =lei_relationship= and =lei_bic=
+  are terminal: DQ queries the artefact table directly and the type row publishes
+  nowhere. The counterparties and parties that two other type rows make from the
+  same table are refdata's, but the entity staged is a GLEIF entity and no
+  refdata model stages one.
+- *A table at a component boundary is still a staging table.* The report
+  configuration binding has no artefact type of its own; the =report_definitions=
+  dataset stages it beside the definitions. It moved onto
+  =ores.reporting.report_configuration= all the same, because the rows are
+  reporting's once published.
+
 * Out of scope
 
 -

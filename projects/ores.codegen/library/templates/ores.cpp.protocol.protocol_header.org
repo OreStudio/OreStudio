@@ -222,6 +222,56 @@ struct {{name}} {
 
 #endif
 {{/operation}}
+{{#family}}
+#ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
+#define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
+
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/domain/protocol.hpp"
+{{#domain_includes}}
+#include "{{{.}}}"
+{{/domain_includes}}
+{{#protocol_includes}}
+#include "{{{.}}}"
+{{/protocol_includes}}
+
+namespace ores::{{component}}::messaging {
+
+{{#messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+struct {{name}} {
+{{#response_type}}
+    using response_type = struct {{response_type}};
+{{/response_type}}
+{{#subject}}
+    static constexpr std::string_view nats_subject = "{{subject}}";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = {{requires_session}};
+{{/subject}}
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+{{/fields}}
+};
+
+{{/messages}}
+}
+
+#endif
+{{/family}}
 #+end_src
 
 * See also

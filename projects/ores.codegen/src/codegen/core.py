@@ -43,6 +43,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.service_registry":  "service_registry",
     "ores.codegen.dataset":           "dataset",
     "ores.codegen.operation":         "operation",
+    "ores.codegen.family":            "family",
     "ores.codegen.asset_class_catalogue": "asset_class_catalogue",
     "ores.codegen.trade_type_catalogue": "trade_type_catalogue",
     "ores.codegen.outcome_catalogue": "outcome_catalogue",
@@ -639,7 +640,8 @@ def get_model_type(model_filename, model_path=None):
 
     Returns:
         str: The model type ('domain_entity', 'junction', 'enum', 'schema',
-             'component', 'field_group', 'service_registry', or 'unknown')
+             'component', 'field_group', 'service_registry', 'operation',
+             'family', or 'unknown')
 
     Raises:
         ValueError: if the file contains a #+type: header with an unrecognised value.
@@ -800,6 +802,18 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', junction_name)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('junction', model_data))
+
+    elif model_type == 'family' and 'family' in model_data:
+        family = model_data['family']
+        path_vars = _component_path_vars(family)
+        entity_singular = family.get('entity_singular', 'unknown')
+        entity_plural = family.get('entity_plural', entity_singular + 's')
+
+        for placeholder, value in path_vars.items():
+            result = result.replace('{' + placeholder + '}', value)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{EntityPascal}', snake_to_pascal(entity_singular))
 
     elif model_type == 'field_group' and 'field_group' in model_data:
         fg = model_data['field_group']
@@ -1163,6 +1177,7 @@ def load_model(model_path):
             load_org_component_overview_model,
             load_org_dataset_model,
             load_org_operation_model,
+            load_org_family_model,
             load_org_asset_class_catalogue_model,
             load_org_trade_type_catalogue_model,
             load_org_outcome_catalogue_model,
@@ -1187,6 +1202,8 @@ def load_model(model_path):
             return load_org_model(model_path)
         if org_type == 'operation':
             return load_org_operation_model(model_path)
+        if org_type == 'family':
+            return load_org_family_model(model_path)
         if org_type == 'asset_class_catalogue':
             return load_org_asset_class_catalogue_model(model_path)
         if org_type == 'trade_type_catalogue':
@@ -2663,6 +2680,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_service_registry = model_type == 'service_registry'
     is_field_group = model_type == 'field_group'
     is_operation = model_type == 'operation'
+    is_family = model_type == 'family'
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_')
@@ -2709,6 +2727,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             templates_to_process = [target_template]
         else:
             print(f"Operation model '{model_filename}' requires --address "
+                  "(ores.cpp.protocol for C++, ores.ts.protocol for TypeScript)")
+            return
+    elif is_family:
+        # A composite family only derives a protocol, so it too must be used
+        # via an address rather than a default template set.
+        if target_template:
+            templates_to_process = [target_template]
+        else:
+            print(f"Family model '{model_filename}' requires --address "
                   "(ores.cpp.protocol for C++, ores.ts.protocol for TypeScript)")
             return
     elif is_schema_model:
@@ -6060,6 +6087,27 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 op.get('entity_singular', ''),
                 _menu)
         data['operation'] = op
+
+    if is_family and isinstance(model, dict) and 'family' in model:
+        family = model['family']
+        # The same component/sub-component path variables every other model
+        # kind carries, derived here rather than in the loader because they are
+        # the renderer's addressing, not the model's content.
+        family.update(_component_path_vars(family))
+        for path_var in ('component', 'component_include', 'component_core',
+                         'component_service'):
+            family[f'{path_var}_upper'] = (
+                family[path_var].replace('.', '_').upper())
+        if 'entity_singular' in family:
+            family['entity_singular_upper'] = family['entity_singular'].upper()
+        # A field the protocol projection cannot express would render an
+        # interface with the field missing. Only the TypeScript twin refuses
+        # the model; the C++ header has no such gap, so the check is scoped to
+        # its render, exactly as the entity and junction blocks scope theirs.
+        if target_template == 'ts_protocol.ts.mustache':
+            from .org_loader import _reject_silent_ts_gap  # noqa: PLC0415
+            _reject_silent_ts_gap(model_path, family['messages'], {})
+        data['family'] = family
 
     # Special processing for enum models
     if is_enum and isinstance(model, dict) and 'enum' in model:

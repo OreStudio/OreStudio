@@ -3891,6 +3891,108 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
             and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)]
 
 
+# The composite family's readable and writable shape. A family is one central
+# row plus its parts, so its get mirrors its put field for field: the item
+# carries the central domain row and one typed array per part, and the write
+# record carries the central change and one typed array of part changes per
+# part. A part's shim is the member name the family names it by.
+def family_protocol_messages(
+        family: dict[str, Any],
+        central_entity_model: dict[str, Any]) -> dict[str, Any]:
+    """Derive a composite family's records and message pairs.
+
+    The central row's own derived key record is copied verbatim, so the family
+    addresses its central row by exactly the key the central entity's generic
+    operations address it by. Each part is carried as one typed array, so the
+    wire shape stays one array per concrete type rather than a nested object
+    per part.
+    """
+    component = family.get("component", "")
+    singular = family.get("entity_singular", "")
+    plural = family.get("entity_plural", singular + "s")
+    central = family.get("central_entity", "")
+    parts = family.get("parts") or []
+    domain = f"ores::{component}::domain::"
+    key = f"{singular}_key"
+    item = f"{singular}_item"
+    write = f"{singular}_write"
+
+    item_fields = [
+        _ts_field("key", key),
+        _ts_field(central, f"std::optional<{domain}{central}>"),
+    ]
+    for part in parts:
+        item_fields.append(
+            _ts_field(part["part"], f"std::vector<{domain}{part['entity']}>"))
+
+    write_fields = [_ts_field("change", f"{central}_change")]
+    for part in parts:
+        write_fields.append(
+            _ts_field(part["part"], f"std::vector<{part['entity']}_change>"))
+
+    messages = [
+        _ts_message(key, fields=key_record_fields(central_entity_model)),
+        _ts_message(item, fields=item_fields),
+        _ts_message(write, fields=write_fields),
+        _ts_message(f"get_{singular}_request",
+                    response_type=f"get_{singular}_response",
+                    subject=request_subject(component, plural, "get"),
+                    fields=[_ts_field("key", key)]),
+        _ts_message(f"get_{singular}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field("item", f"std::optional<{item}>")]),
+        _ts_message(f"get_many_{plural}_request",
+                    response_type=f"get_many_{plural}_response",
+                    subject=request_subject(component, plural, "get_many"),
+                    fields=[_ts_field("keys", f"std::vector<{key}>")]),
+        _ts_message(f"get_many_{plural}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field("items", f"std::vector<{item}>")]),
+        _ts_message(f"put_{singular}_request",
+                    response_type=f"put_{singular}_response",
+                    subject=request_subject(component, plural, "put"),
+                    fields=[_ts_field("item", write),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"put_{singular}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field("item", f"std::optional<{item}>")]),
+        _ts_message(f"put_many_{plural}_request",
+                    response_type=f"put_many_{plural}_response",
+                    subject=request_subject(component, plural, "put_many"),
+                    fields=[_ts_field("items", f"std::vector<{write}>"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"put_many_{plural}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field("items", f"std::vector<{item}>")]),
+    ]
+    for message in messages:
+        if message.get("subject"):
+            message.setdefault("requires_session", "true")
+
+    # One entry per distinct entity, in the order the family names them: the
+    # central row first, then the parts. A family that backs two shims with one
+    # entity names that entity once, so its header is included and its interface
+    # imported once.
+    entities = list(dict.fromkeys([central] + [p["entity"] for p in parts]))
+    subcomponent = family.get("subcomponent", "")
+    component_include = (f"{component}.{subcomponent}" if subcomponent
+                         else component)
+    return {
+        "key_fields": messages[0]["fields"],
+        "item_fields": item_fields,
+        "write_fields": write_fields,
+        "messages": messages,
+        "domain_includes": [
+            f"ores.{component_include}/domain/{name}.hpp" for name in entities],
+        "protocol_includes": [
+            f"ores.{component_include}/messaging/{name}_protocol.hpp"
+            for name in entities],
+        "protocol_imports": [
+            {"entity": name, "entity_pascal": _to_pascal_case(name)}
+            for name in entities],
+    }
+
+
 # Which verb a derived request states, from the request's own name. A request
 # that answers a sub-resource states its verb where it is built instead, because
 # its name cannot carry it: an entity whose plural ends in "_versions" names its
@@ -4337,6 +4439,167 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     _reject_silent_shell_gap(path, op["shell_commands"], doc.file_properties)
 
     return {"operation": op}
+
+
+# The composite flags a family part's foreign key to its central row must set.
+# Each is a fact the family protocol and the composite read rely on, so a part
+# missing one is refused at load time rather than silently left out of the
+# family's read and write.
+_FAMILY_PART_FLAGS = (
+    ("bump_parent_version", ":bump_parent_version:"),
+    ("list_by", ":list_by:"),
+    ("list_by_uuid", ":list_by_uuid:"),
+    ("list_by_as_of", ":list_by_as_of:"),
+)
+
+
+def _frontmatter_scalar(text: str, key: str) -> str:
+    """One ``#+key:`` scalar from an org file's frontmatter, or an empty string."""
+    match = re.search(
+        rf"^#\+{re.escape(key)}:\s*(\S.*?)\s*$", text[:4096],
+        re.MULTILINE | re.IGNORECASE)
+    return match.group(1) if match else ""
+
+
+@lru_cache(maxsize=None)
+def _entity_model_paths(model_dir: str) -> dict[str, str]:
+    """Map every ``ores.codegen.entity`` in a modeling dir to its file.
+
+    A family names its central row and its parts by entity, not by file, so the
+    directory is the registry: a sibling is found by the singular it declares.
+    Read from frontmatter alone and cached per directory, because a family
+    loader runs once per generation and the whole directory would otherwise be
+    parsed on every call.
+    """
+    index: dict[str, str] = {}
+    for path in sorted(Path(model_dir).glob("*.org")):
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if _frontmatter_scalar(text, "type") != "ores.codegen.entity":
+            continue
+        singular = _frontmatter_scalar(text, "entity_singular")
+        if singular:
+            index.setdefault(singular, str(path))
+    return index
+
+
+def _family_entity_model(
+        model_dir: Path, entity: str, owner: str) -> tuple[Path, dict[str, Any]]:
+    """The entity model a family names, or a loud error naming the family.
+
+    A family may only name entities modelled beside it, because its protocol
+    carries their domain types and change records in the same component's
+    namespace.
+    """
+    path_str = _entity_model_paths(str(model_dir)).get(entity)
+    if path_str is None:
+        raise ValueError(
+            f"{owner}: names the entity '{entity}', but no ores.codegen.entity "
+            f"model in {model_dir} declares it beside the family")
+    path = Path(path_str)
+    doc = parse_org(path.read_text(encoding="utf-8"))
+    return path, org_document_to_model(doc)["domain_entity"]
+
+
+def _require_family_part(
+        owner: str, part: dict[str, str], central: str,
+        part_model: dict[str, Any]) -> None:
+    """Refuse a part that is not a full member of the family's composite.
+
+    The part must reach the central row through a foreign key whose
+    ``:parent_entity:`` is the central entity, and that key must carry the
+    composite flags the family read and write depend on. The error names the
+    family, the part and exactly which fact is missing.
+    """
+    shim, entity = part["part"], part["entity"]
+    foreign_keys = [
+        fk for fk in (part_model.get("foreign_keys") or [])
+        if fk.get("parent_entity") == central]
+    if not foreign_keys:
+        raise ValueError(
+            f"{owner}: part '{shim}' ({entity}) declares no foreign key whose "
+            f":parent_entity: is '{central}'; a family part must reach its "
+            f"central row by a foreign key")
+    foreign_key = foreign_keys[0]
+    missing = [prop for flag, prop in _FAMILY_PART_FLAGS
+               if not foreign_key.get(flag)]
+    if missing:
+        raise ValueError(
+            f"{owner}: part '{shim}' ({entity}) has a foreign key to '{central}' "
+            f"that is missing the composite flag(s) {', '.join(missing)}")
+
+
+def load_org_family_model(path: Path | str) -> dict[str, Any]:
+    """Load an org-mode composite-family model.
+
+    A family is the protocol of a composite entity: one central row and its
+    parts. It derives the family records and the four message pairs -- get,
+    get_many, put and put_many -- from the central entity's own derived key
+    record and from the part entities its ``* Parts`` table names. A part must
+    be an ``ores.codegen.entity`` modelled beside the family whose foreign key
+    to the central entity carries ``:bump_parent_version:``, ``:list_by:``,
+    ``:list_by_uuid:`` and ``:list_by_as_of:``; anything else fails the load.
+
+    The family does not render a domain type of its own, so the returned
+    ``family`` dict carries the include and import paths its protocol header and
+    TypeScript twin need for the entity models it names.
+    """
+    path = Path(path)
+    doc = parse_org(path.read_text(encoding="utf-8"))
+    fm = doc.frontmatter
+    family: dict[str, Any] = {}
+    for key in ("product", "component", "subcomponent", "entity_singular",
+                "entity_plural", "entity_title", "brief"):
+        if key in fm:
+            family[key] = fm[key]
+    body = _strip_body(doc.root)
+    if body:
+        family["description"] = body
+
+    owner = family.get("entity_singular") or path.name
+    if not family.get("component"):
+        raise ValueError(
+            f"{path}: a family model must declare #+component: so its central "
+            f"entity and parts can be found beside it")
+    flags = _section(doc.root, "Flags")
+    central = ""
+    if flags:
+        central = str(flags.properties.get("central_entity") or "").strip()
+    if not central:
+        raise ValueError(
+            f"{path}: a family model must name its central row with "
+            f"':central_entity:' in '* Flags'")
+    family["central_entity"] = central
+
+    parts_section = _section(doc.root, "Parts")
+    rows = _parse_org_table_rows(parts_section) if parts_section else []
+    parts: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for row in rows:
+        shim = (row.get("part") or "").strip()
+        entity = (row.get("entity") or "").strip()
+        if not shim or not entity:
+            raise ValueError(
+                f"{path}: every row of '* Parts' must name a part and an entity")
+        if shim in seen:
+            raise ValueError(
+                f"{path}: the part '{shim}' is listed more than once; a part "
+                f"member name must be unique")
+        seen.add(shim)
+        parts.append({"part": shim, "entity": entity})
+    family["parts"] = parts
+
+    model_dir = path.resolve().parent
+    _, central_model = _family_entity_model(model_dir, central, owner)
+    for part in parts:
+        _, part_model = _family_entity_model(model_dir, part["entity"], owner)
+        _require_family_part(owner, part, central, part_model)
+
+    family.update(family_protocol_messages(family, central_model))
+    family["domain_imports"] = ts_domain_imports(family["messages"])
+    family["utility_imports"] = ts_utility_imports(family["messages"])
+    return {"family": family}
 
 
 def _reject_silent_ts_gap(

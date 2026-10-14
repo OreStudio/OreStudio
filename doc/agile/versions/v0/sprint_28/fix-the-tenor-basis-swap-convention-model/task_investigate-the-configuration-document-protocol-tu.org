@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The width of the configuration document protocol's translation unit is measured,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -58,7 +58,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Failed units in the Windows MSVC debug job | 1 | =gh run view --job 115483009852 --log= | =5418a8db3= |
+| Repository headers in the handler unit | 103 | =python3 evidence/measure_handler_tu.py= | =c5ac470c94= |
+| Third-party include sites in the handler unit | 371 | =python3 evidence/measure_handler_tu.py= | =c5ac470c94= |
+| Repository headers in the control unit | 12 | =python3 evidence/measure_handler_tu.py= | =c5ac470c94= |
+| Element types in =conventions_document= | 25 | =python3 evidence/measure_handler_tu.py= | =c5ac470c94= |
+| Element types in =curve_configuration_document= | 33 | =python3 evidence/measure_handler_tu.py= | =c5ac470c94= |
 
 * Notes
 
@@ -86,3 +91,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The C1202 is context accumulation, not one over-wide literal. The
+=windows-msvc-debug-ninja= job of run =38451315943= has exactly one
+failed unit, the handler. The control unit
+=tenor_basis_swap_convention_json_io.cpp= reflects the same 24-member
+struct from 12 repository headers and built at step =[974/7099]=, while
+the handler reaches 103 repository headers, 58 document element types
+and failed at =[2017/7099]=.
+
+The per-entity split does not reach the handler because the document
+model is an operation model that hand-lists 60+ domain includes and
+re-aggregates what the 149 per-entity protocols separate.
+
+The smallest split is two operation models, one per document family.
+The findings are on
+[[id:1B13CDFF-BDA0-4D2E-8E05-ECB3EC3B9259][Why the configuration
+document protocol unit is wide]], and the durable rule is on
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
+Studio]]. The lever and its raw output are in =evidence/= beside this
+task. =compass check= passed 6/6.

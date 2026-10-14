@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 1B13CDFF-BDA0-4D2E-8E05-ECB3EC3B9259
+:END:
+#+title: Investigation: Why the configuration document protocol unit is wide
+#+description: Measure the configuration document handler translation unit: its include closure, the reflected literals its encode path reaches, the failure mode, and the smallest split that would clear it.
+#+type: investigation
+#+level: s1
+#+filetags: :fix-the-tenor-basis-swap-convention-model:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into why the configuration document handler builds such a wide MSVC translation unit.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The Windows job of =continuous-windows.yml= stops with =fatal error C1202:
+recursive type or function dependency context too complex= while compiling
+=projects/ores.refdata/core/src/messaging/configuration_document_handler.cpp=.
+The note names =rfl::internal::no_duplicate_field_names= on the field-name
+literal of =tenor_basis_swap_convention=, a 24-member generated struct.
+
+The rfl complexity record separates two failure modes. Mode 1 is context
+accumulation: the unit's template instantiation graph is already wide, and one
+more literal tips it over. Mode 2 is a single literal that is too wide on its
+own. The mode decides the fix, and the failure note alone does not name it.
+
+The question was which mode this is, and why the per-entity protocol split the
+component already has does not reach this unit.
+
+* Methodology
+
+Measured at =origin/main= =c5ac470c94=. The unit is
+=configuration_document_handler.cpp= (=sha256 15d8c2dc…=); the protocol is
+=configuration_document_protocol.hpp= (=sha256 59453127…=).
+
+The lever is =evidence/measure_handler_tu.py= beside this page. It walks the
+quoted include graph to the repository's include roots and counts the member
+declarations of each document element struct. Run it from any directory:
+
+#+begin_src sh :results verbatim
+python3 measure_handler_tu.py > tu_measurement.txt
+#+end_src
+
+reflect-cpp builds one =rfl::Literal= per plain struct, holding that struct's
+own field names, so a plain struct's member count is its literal width. The
+types here are plain structs: the reachable set contains no =rfl::Flatten= and
+no tagged =rfl::Variant=, the two shapes that widen a literal beyond its own
+members.
+
+The counter was checked against a hand count of =tenor_basis_swap_convention=:
+24 members, matching.
+
+The CI log is the second source. =gh run view --job 115483009852 --log= is the
+=windows-msvc-debug-ninja= job of run =38451315943= at =5418a8db3=, the last
+completed failure before this investigation.
+
+* Paths taken
+
+- A compiler-based measurement was set aside. A fresh checkout has no
+  =vcpkg_installed=, and installing the dependency set to count AST nodes for
+  one measurement was not worth the time.
+- The earlier rfl record gives a Mode 2 threshold of "below 19 fields" from a
+  2026-06 =swap_leg= case, while the 2026-10 Data-Oriented Design note says
+  plain generated structs of up to 59 members build. The two disagree, so this
+  investigation settles the mode from the CI log rather than from either.
+- [[https://github.com/OreStudio/OreStudio/actions/runs/38451315943][run 38451315943]] — the Windows job whose log decides the mode.
+
+* Conclusions
+
+The unit and its literal set, at =c5ac470c94=:
+
+| Measure                                   | Value |
+|-------------------------------------------+-------|
+| Repository headers in the unit's closure   | 103 |
+| Third-party include sites in the closure   | 371 |
+| Element types in =conventions_document=     | 25 |
+| Widest literal in =conventions_document=    | 60 (=commodity_future_convention=) |
+| Element types in =curve_configuration_document= | 33 |
+| Widest literal in =curve_configuration_document= | 46 (=cap_floor_volatility_config=) |
+| Document element types in the one unit     | 58 |
+| Control unit: repository headers           | 12 |
+| Control unit: third-party include sites    | 37 |
+
+The failure is *Mode 1, context accumulation*. Three pieces of evidence:
+
+1. The failing literal has 24 names. The widest literal in the same unit has
+   60, and the project measured plain generated structs of up to 59 members
+   building on MSVC. A 24-name literal is not over the single-literal ceiling.
+2. The control unit =projects/ores.refdata/api/src/domain/tenor_basis_swap_convention_json_io.cpp=
+   reflects the same 24-member struct from 12 repository headers and 37
+   third-party include sites, against 103 and 371. It *built* in the same
+   Windows job, at step =[974/7099]=, twenty-two minutes before the handler
+   failed at step =[2017/7099]=. The same literal is safe in a narrow unit and
+   fatal in a wide one.
+3. The job has exactly one =FAILED:= line, the handler unit. The failure is a
+   property of that unit's accumulated graph, not of a type.
+
+Why the per-entity protocol split does not reach it. Refdata generates 149
+per-entity protocol headers, one per entity, and each keeps that entity's CRUD
+unit narrow. But =ores.refdata.configuration_document_messages= is an operation
+model. Its =* Includes= block hand-lists 60+ domain headers, and it declares
+the =conventions_document= and =curve_configuration_document= aggregates with
+their messages. Codegen emits one protocol header and one handler for the
+model. The document protocol includes the domain headers directly and includes
+no per-entity protocol at all. So encoding one document response walks the
+aggregate graph, and the per-entity file split never applies.
+
+The handler makes it worse by serving both documents. It instantiates
+=reply<>=(=encode=) for five responses, two of which carry a whole document, so
+one unit's encode graph reaches every convention and curve type at once.
+
+* Recommendations
+
+The smallest split that divides the context is two operation models, one per
+document family:
+
+- =conventions_document_messages= — 25 element types, widest literal 60.
+- =curve_configuration_document_messages= — 33 element types, widest literal 46.
+
+Each emits its own protocol and handler, so each unit's encode graph reaches
+one document. This is the split [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][the protocol split task]] should make.
+
+If one family is still too wide, split it by section: the conventions into
+index conventions, instrument conventions and FX; the curve configuration into
+definitions, volatility configs and correlation configs.
+
+The durable rule belongs on [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]: a document
+model that aggregates many entity families gives its unit a literal width equal
+to the sum of them, so a document model names one family.
+
+* See also
+
+- [[id:28A38AAC-2B2D-4690-95C8-B2795ADE3B3B][Investigate the configuration document protocol's translation unit]] — the task that commissioned this page.
+- [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] — the story.
+- [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][Split the configuration document protocol by document family]] — the task that acts on the recommendation.
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] — how the Windows job relates to the local gate.
+- =evidence/measure_handler_tu.py= and =evidence/tu_measurement.txt= — the lever and its raw output.

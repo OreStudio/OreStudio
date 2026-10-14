@@ -198,15 +198,16 @@ TEST_CASE("write_asset_class_publishes_an_event", tags) {
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_class_history(id_str, v.coding_scheme_code);
+        auto versions = svc.get_asset_class_history(id_str, v.coding_scheme_code);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_class(id_str, v.coding_scheme_code);
+        svc.delete_asset_class(id_str, v.coding_scheme_code);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_class(id_str, v.coding_scheme_code).has_value());
-        REQUIRE(svc.get_class_history(id_str, v.coding_scheme_code).size() == versions.size());
+        REQUIRE_FALSE(svc.get_asset_class(id_str, v.coding_scheme_code).has_value());
+        REQUIRE(svc.get_asset_class_history(id_str, v.coding_scheme_code).size() ==
+                versions.size());
     }
 }

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 01C973D4-02F9-4BC4-A76C-697E4817726E
+:ID: B6A3FA52-2230-4E4B-939C-43CDD191A11D
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.asset_class
@@ -167,8 +167,8 @@ description, and the coding scheme.
 
 ** Repository
 :PROPERTIES:
-:entity_singular_short: class
-:entity_plural_short:   classes
+:entity_singular_short: asset_class
+:entity_plural_short:   asset_classes
 :entity_singular_words: asset class
 :entity_plural_words:   asset classes
 :END:

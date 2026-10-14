@@ -84,7 +84,7 @@ export interface ListAssetClassesRequest {
 
 export interface ListAssetClassesResponse {
     result: Result;
-    classes: AssetClass[];
+    asset_classes: AssetClass[];
     total: number;
 }
 
@@ -123,7 +123,7 @@ export interface PutManyAssetClassesRequest {
 
 export interface PutManyAssetClassesResponse {
     result: Result;
-    classes: AssetClass[];
+    asset_classes: AssetClass[];
 }
 
 export interface DeleteAssetClassRequest {

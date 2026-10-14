@@ -158,8 +158,9 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active asset classes
      */
-    std::uint32_t get_total_class_count(context ctx,
-                                        const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t
+    get_total_asset_class_count(context ctx,
+                                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a asset class by closing its temporal validity.

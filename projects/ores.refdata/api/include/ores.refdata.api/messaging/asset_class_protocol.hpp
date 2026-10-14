@@ -100,7 +100,7 @@ struct list_asset_classes_request {
 
 struct list_asset_classes_response {
     ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::asset_class> classes;
+    std::vector<ores::refdata::domain::asset_class> asset_classes;
     std::uint64_t total;
 };
 
@@ -175,7 +175,7 @@ struct put_many_asset_classes_request {
 
 struct put_many_asset_classes_response {
     ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::asset_class> classes;
+    std::vector<ores::refdata::domain::asset_class> asset_classes;
 };
 
 struct delete_asset_class_request {

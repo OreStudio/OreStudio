@@ -102,14 +102,14 @@ public:
      * @param limit Maximum number of records to return.
      * @return Vector of asset classes for the requested page.
      */
-    std::vector<domain::asset_class> list_classes(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::asset_class> list_asset_classes(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active asset classes.
      *
      * @return Total number of active asset classes.
      */
-    std::uint32_t count_classes();
+    std::uint32_t count_asset_classes();
 
 
     /**
@@ -119,61 +119,60 @@ public:
      * @param version The version to fetch.
      * @return The asset class at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::asset_class> get_class_at_version(const std::string& code,
-                                                            const std::string& coding_scheme_code,
-                                                            std::uint32_t version);
+    std::optional<domain::asset_class> get_asset_class_at_version(
+        const std::string& code, const std::string& coding_scheme_code, std::uint32_t version);
 
     /**
      * @brief Retrieves a single asset class by its primary key.
      *
      * @return The asset class if found, std::nullopt otherwise.
      */
-    std::optional<domain::asset_class> get_class(const std::string& code,
-                                                 const std::string& coding_scheme_code);
+    std::optional<domain::asset_class> get_asset_class(const std::string& code,
+                                                       const std::string& coding_scheme_code);
 
     /**
      * @brief Retrieves a batch of asset classes by primary key.
      */
     std::vector<domain::asset_class>
-    get_classes(const std::vector<std::string>& codes,
-                const std::vector<std::string>& coding_scheme_codes);
+    get_asset_classes(const std::vector<std::string>& codes,
+                      const std::vector<std::string>& coding_scheme_codes);
 
     /**
      * @brief Saves a asset class (creates or updates).
      *
-     * @param class The asset class to save.
+     * @param asset_class The asset class to save.
      * @throws std::exception on failure.
      */
-    void save_class(const domain::asset_class& class);
+    void save_asset_class(const domain::asset_class& asset_class);
 
     /**
      * @brief Saves a batch of asset classes.
      *
-     * @param classes The asset classes to save.
+     * @param asset_classes The asset classes to save.
      * @throws std::exception on failure.
      */
-    void save_classes(const std::vector<domain::asset_class>& classes);
+    void save_asset_classes(const std::vector<domain::asset_class>& asset_classes);
 
     /**
      * @brief Deletes a asset class by its primary key.
      *
      * @throws std::exception on failure.
      */
-    void delete_class(const std::string& code, const std::string& coding_scheme_code);
+    void delete_asset_class(const std::string& code, const std::string& coding_scheme_code);
 
     /**
      * @brief Deletes asset classes by their primary keys.
      */
-    void delete_classes(const std::vector<std::string>& codes,
-                        const std::vector<std::string>& coding_scheme_codes);
+    void delete_asset_classes(const std::vector<std::string>& codes,
+                              const std::vector<std::string>& coding_scheme_codes);
 
     /**
      * @brief Retrieves all historical versions of a asset class.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::asset_class> get_class_history(const std::string& code,
-                                                       const std::string& coding_scheme_code);
+    std::vector<domain::asset_class> get_asset_class_history(const std::string& code,
+                                                             const std::string& coding_scheme_code);
 
 private:
     context ctx_;

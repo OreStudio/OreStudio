@@ -127,8 +127,9 @@ asset_class_service::list_asset_classes(const messaging::list_asset_classes_requ
             return response;
         }
     }
-    response.classes = repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_class_count(ctx_, as_of);
+    response.asset_classes =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
+    response.total = repo_.get_total_asset_class_count(ctx_, as_of);
     return response;
 }
 
@@ -200,10 +201,10 @@ messaging::put_many_asset_classes_response asset_class_service::put_many_asset_c
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
-    response.classes.reserve(batch.size());
+    response.asset_classes.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, ctx_, key_from(value));
-        response.classes.push_back(written.empty() ? value : std::move(written.front()));
+        response.asset_classes.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
 }
@@ -368,19 +369,19 @@ asset_class_service::prepare_change(const messaging::asset_class_change& change,
 }
 
 
-std::vector<domain::asset_class> asset_class_service::list_classes(std::uint32_t offset,
-                                                                   std::uint32_t limit) {
+std::vector<domain::asset_class> asset_class_service::list_asset_classes(std::uint32_t offset,
+                                                                         std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all asset classes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t asset_class_service::count_classes() {
+std::uint32_t asset_class_service::count_asset_classes() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total asset classes count";
-    return repo_.get_total_class_count(ctx_);
+    return repo_.get_total_asset_class_count(ctx_);
 }
 
 
-std::optional<domain::asset_class> asset_class_service::get_class_at_version(
+std::optional<domain::asset_class> asset_class_service::get_asset_class_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting asset class at version. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code
@@ -389,7 +390,8 @@ std::optional<domain::asset_class> asset_class_service::get_class_at_version(
 }
 
 std::optional<domain::asset_class>
-asset_class_service::get_class(const std::string& code, const std::string& coding_scheme_code) {
+asset_class_service::get_asset_class(const std::string& code,
+                                     const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting asset class. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
@@ -399,12 +401,12 @@ asset_class_service::get_class(const std::string& code, const std::string& codin
 }
 
 std::vector<domain::asset_class>
-asset_class_service::get_classes(const std::vector<std::string>& codes,
-                                 const std::vector<std::string>& coding_scheme_codes) {
+asset_class_service::get_asset_classes(const std::vector<std::string>& codes,
+                                       const std::vector<std::string>& coding_scheme_codes) {
     return repo_.read_latest(ctx_, codes, coding_scheme_codes);
 }
 
-void asset_class_service::save_class(const domain::asset_class& v) {
+void asset_class_service::save_asset_class(const domain::asset_class& v) {
     if (v.code.empty())
         throw std::invalid_argument("Asset Class code cannot be empty.");
     if (v.coding_scheme_code.empty())
@@ -418,23 +420,24 @@ void asset_class_service::save_class(const domain::asset_class& v) {
                               << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
-void asset_class_service::save_classes(const std::vector<domain::asset_class>& classes) {
-    for (const auto& e : classes) {
+void asset_class_service::save_asset_classes(
+    const std::vector<domain::asset_class>& asset_classes) {
+    for (const auto& e : asset_classes) {
         if (e.code.empty())
             throw std::invalid_argument("Asset Class code cannot be empty.");
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Asset Class coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << classes.size() << " asset classes";
-    auto ts = classes;
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << asset_classes.size() << " asset classes";
+    auto ts = asset_classes;
     for (auto& e : ts) {
         stamp(e, ctx_);
     }
     repo_.write(ctx_, ts);
 }
 
-void asset_class_service::delete_class(const std::string& code,
-                                       const std::string& coding_scheme_code) {
+void asset_class_service::delete_asset_class(const std::string& code,
+                                             const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing asset class. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     repo_.remove(ctx_, code, coding_scheme_code);
@@ -442,14 +445,14 @@ void asset_class_service::delete_class(const std::string& code,
                               << " coding_scheme_code: " << coding_scheme_code;
 }
 
-void asset_class_service::delete_classes(const std::vector<std::string>& codes,
-                                         const std::vector<std::string>& coding_scheme_codes) {
+void asset_class_service::delete_asset_classes(
+    const std::vector<std::string>& codes, const std::vector<std::string>& coding_scheme_codes) {
     repo_.remove(ctx_, codes, coding_scheme_codes);
 }
 
 std::vector<domain::asset_class>
-asset_class_service::get_class_history(const std::string& code,
-                                       const std::string& coding_scheme_code) {
+asset_class_service::get_asset_class_history(const std::string& code,
+                                             const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for asset class. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);

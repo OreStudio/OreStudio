@@ -304,8 +304,8 @@ asset_class_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-asset_class_repository::get_total_class_count(context ctx,
-                                              const std::optional<std::string>& as_of) {
+asset_class_repository::get_total_asset_class_count(context ctx,
+                                                    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset class count";
 
     const auto tid = ctx.tenant_id().to_string();

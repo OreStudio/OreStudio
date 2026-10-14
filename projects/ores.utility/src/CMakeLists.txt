@@ -52,17 +52,25 @@ set(version_cpp_in  "${CMAKE_SOURCE_DIR}/projects/ores.utility/src/version/versi
 set(version_cpp_out "${CMAKE_CURRENT_BINARY_DIR}/version/version.cpp")
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/version")
 
+# The manifest lands beside the binaries, so every consumer finds it by
+# resolving its own executable path rather than the working directory. It is
+# deliberately not a BYPRODUCT of the target below, and nothing may depend on
+# it: a build input that changes every commit is what relinks the tree.
+set(version_manifest_out "${ORES_PUBLISH_DIRECTORY}/bin/version.manifest")
+
 add_custom_target(ores.utility.version ALL
     COMMAND "${CMAKE_COMMAND}"
         "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}"
         "-DOreStudio_VERSION_MAJOR=${OreStudio_VERSION_MAJOR}"
         "-DOreStudio_VERSION_MINOR=${OreStudio_VERSION_MINOR}"
         "-DOreStudio_VERSION_PATCH=${OreStudio_VERSION_PATCH}"
+        "-DORES_PLATFORM_TRIPLET=${ORES_PLATFORM_TRIPLET}"
         "-DINPUT_FILE=${version_cpp_in}"
         "-DOUTPUT_FILE=${version_cpp_out}"
+        "-DMANIFEST_FILE=${version_manifest_out}"
         -P "${CMAKE_SOURCE_DIR}/cmake/generate_version.cmake"
     BYPRODUCTS "${version_cpp_out}"
-    COMMENT "Stamping version.cpp"
+    COMMENT "Writing version.cpp and the build manifest"
     VERBATIM)
 
 # Bootstrap: ensure version.cpp exists before the first build so the compiler
@@ -74,8 +82,10 @@ if(NOT EXISTS "${version_cpp_out}")
             "-DOreStudio_VERSION_MAJOR=${OreStudio_VERSION_MAJOR}"
             "-DOreStudio_VERSION_MINOR=${OreStudio_VERSION_MINOR}"
             "-DOreStudio_VERSION_PATCH=${OreStudio_VERSION_PATCH}"
+            "-DORES_PLATFORM_TRIPLET=${ORES_PLATFORM_TRIPLET}"
             "-DINPUT_FILE=${version_cpp_in}"
             "-DOUTPUT_FILE=${version_cpp_out}"
+            "-DMANIFEST_FILE=${version_manifest_out}"
             -P "${CMAKE_SOURCE_DIR}/cmake/generate_version.cmake"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()

@@ -42,11 +42,17 @@
 namespace ores::utility::version {
 
 /**
- * @brief Returns the build info string stamped at build time.
+ * @brief Returns the build description of the running binary.
  *
- * Contains the git commit hash, dirty flag, and wall-clock timestamp for
- * local builds, or CI provider/number/commit/timestamp for CI builds.
- * Implemented in a generated .cpp so only that one TU recompiles per build.
+ * Read at runtime from the version manifest beside the executable, which a
+ * local build, a package and a deployed image all ship. It carries the git
+ * commit and dirty flag for a local build, or the CI provider, number,
+ * commit and timestamp for a CI build. Returns "unknown" when no manifest
+ * can be read, so a missing record never stops a service starting.
+ *
+ * Read rather than embedded so that a commit changes no compiled file.
+ * Embedding it would recompile this translation unit and relink every
+ * target that links ores.utility.
  */
 ORES_UTILITY_EXPORT const char* build_info();
 

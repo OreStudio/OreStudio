@@ -110,7 +110,7 @@ begin
     end if;
 
     if exists (
-        select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl
+        select 1 from ores_dq_fx_spot_generation_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
         raise debug 'Synthetic FX spot configs (uniform demo) artefact already populated for dataset %', v_dataset_id;
@@ -119,7 +119,7 @@ begin
 
     raise debug 'Populating synthetic FX spot configs (uniform demo) for dataset: synthetic.feeds.uniform_demo';
 
-    insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
+    insert into ores_dq_fx_spot_generation_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled,
         -- auto_start=true on every row: all starter FX configs are

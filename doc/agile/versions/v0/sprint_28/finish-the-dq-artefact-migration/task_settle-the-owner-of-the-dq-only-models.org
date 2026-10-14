@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :dq:codegen:cleanup:finish-the-dq-artefact-migration:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/settle-the-owner-of-the-dq-only-models
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-13
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every ores.dq artefact model is the owner of its data, or has moved to its owner
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

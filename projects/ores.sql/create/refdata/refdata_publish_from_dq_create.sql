@@ -2169,7 +2169,7 @@ begin
     end if;
 
     select count(*) into v_staged
-    from ores_dq_counterparty_aliases_artefact_tbl
+    from ores_dq_counterparty_identifiers_artefact_tbl
     where dataset_id = p_dataset_id;
 
     insert into ores_refdata_counterparty_identifiers_tbl (
@@ -2181,7 +2181,7 @@ begin
         a.id_value, a.description,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
-    from ores_dq_counterparty_aliases_artefact_tbl a
+    from ores_dq_counterparty_identifiers_artefact_tbl a
     join ores_refdata_counterparty_identifiers_tbl ci
       on ci.tenant_id = p_target_tenant_id
      and ci.id_scheme = 'LEI'
@@ -2562,7 +2562,7 @@ begin
     end if;
 
     select count(*) into v_staged
-    from ores_dq_netting_set_aliases_artefact_tbl
+    from ores_dq_netting_set_identifiers_artefact_tbl
     where dataset_id = p_dataset_id;
 
     insert into ores_refdata_netting_set_identifiers_tbl (
@@ -2574,7 +2574,7 @@ begin
         a.id_value, a.description,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
-    from ores_dq_netting_set_aliases_artefact_tbl a
+    from ores_dq_netting_set_identifiers_artefact_tbl a
     join ores_refdata_netting_sets_tbl ns
       on ns.tenant_id = p_target_tenant_id
      and ns.party_id = v_party_id

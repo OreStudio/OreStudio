@@ -271,7 +271,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_configuration_analytic_parameters_artefact_tbl
   ores_dq_configuration_analytics_artefact_tbl
   ores_dq_configuration_market_bindings_artefact_tbl
-  ores_dq_counterparty_aliases_artefact_tbl
+  ores_dq_counterparty_identifiers_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_configs_artefact_tbl
   ores_dq_cross_currency_basis_conventions_artefact_tbl
@@ -308,6 +308,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_fra_conventions_artefact_tbl
   ores_dq_future_conventions_artefact_tbl
   ores_dq_fx_option_conventions_artefact_tbl
+  ores_dq_fx_spot_generation_configs_artefact_tbl
   ores_dq_fx_volatility_configs_artefact_tbl
   ores_dq_gmm_components_artefact_tbl
   ores_dq_ibor_index_conventions_artefact_tbl
@@ -329,7 +330,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_market_data_providers_artefact_tbl
   ores_dq_market_observations_artefact_tbl
   ores_dq_netting_agreements_artefact_tbl
-  ores_dq_netting_set_aliases_artefact_tbl
+  ores_dq_netting_set_identifiers_artefact_tbl
   ores_dq_netting_sets_artefact_tbl
   ores_dq_ois_conventions_artefact_tbl
   ores_dq_overnight_index_conventions_artefact_tbl
@@ -354,7 +355,6 @@ entity "dq_staging" as dq_staging {
   ores_dq_swap_conventions_artefact_tbl
   ores_dq_swap_index_conventions_artefact_tbl
   ores_dq_swaption_volatility_configs_artefact_tbl
-  ores_dq_synthetic_fx_spot_configs_artefact_tbl
   ores_dq_tags_artefact_tbl
   ores_dq_tenor_basis_swap_conventions_artefact_tbl
   ores_dq_tenor_basis_two_swap_conventions_artefact_tbl

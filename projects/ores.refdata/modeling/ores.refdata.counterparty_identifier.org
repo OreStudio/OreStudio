@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3ABD31C8-417D-4655-8115-371EFDC119AF
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.counterparty_identifier
 #+description: Codegen entity model for the refdata =counterparty_identifier= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -135,6 +136,49 @@ choice, that precedence is what it starts from.
     return idx % 10 == 0;
 }()
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id_value
+:END:
+
+An ORE document names a counterparty by a name its position carries, such as
+=CPTY_A=, and the import carries the counterparty's LEI beside it. The store
+holds the counterparty's uuid, which does not exist until publishing, so the
+staging row names the counterparty by LEI instead.
+
+** id_value
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** id_scheme
+:PROPERTIES:
+:type: text
+:END:
+
+** lei
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* Artefact indexes
+
+** lei
+:PROPERTIES:
+:columns: lei
+:END:
 
 * SQL
 

@@ -17,9 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
--- GLEIF LEI to BIC mapping data - Artefact Table
+-- GLEIF LEI to BIC identifier mappings from golden copy files. Each row maps one LEI to one BIC, and a LEI may hold several BICs. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_lei_bic_artefact_tbl" (
@@ -52,10 +57,12 @@ create or replace function ores_dq_lei_bic_artefact_insert_fn(
 ) returns void as $$
 begin
     insert into ores_dq_lei_bic_artefact_tbl (
-        dataset_id, tenant_id, lei, version, bic
+        dataset_id, tenant_id, lei, version,
+        bic
     )
     values (
-        p_dataset_id, p_tenant_id, p_lei, p_version, p_bic
+        p_dataset_id, p_tenant_id, p_lei, p_version,
+        p_bic
     );
 end;
 $$ language plpgsql;

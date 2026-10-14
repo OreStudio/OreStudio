@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :dq:codegen:architecture:staging:
 #+created: 2026-10-12
-#+updated: 2026-10-13
+#+updated: 2026-10-14
 
 * Summary
 
@@ -17,9 +17,11 @@ that owns the entity. There is one way to make one: the entity's own model, in
 the component that owns the data, opts in with
 =:ores.sql.schema.domain_entity_artefact_create.enabled: true=, and codegen
 generates the table from that model. The model adds an =* Artefact columns=
-section only when the staging shape differs from the entity. A staging table is
-not an entity of DQ: it gets no DQ model, no DQ C++ code, no shell commands and
-no TypeScript. The rest of the pipeline is a dataset, an artefact type, a bundle
+section only when the staging shape differs from the entity. A staging table
+for another component's entity is not an entity of DQ: it gets no DQ model, no
+DQ C++ code, no shell commands and no TypeScript. A staging table that is
+terminal -- that publishes nowhere and is therefore the entity's only store --
+is DQ's own, model and all. The rest of the pipeline is a dataset, an artefact type, a bundle
 member, any dataset dependencies, and the owning service's publish subject and
 SQL function. Older tables were made other ways; they are listed at the end,
 with the task that retires each.
@@ -177,8 +179,24 @@ models' artefact hook, and the template and its literate source are deleted, by
 
 | Pattern | Tables | Why it is legacy | Retired by |
 |---------+--------+------------------+------------|
-| Hand-written SQL with no model | =ip2country=, =lei_bic= | Nothing generates or checks the table against its entity | [[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][Model the geo ip2country store]] for =ip2country=; [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]] for =lei_bic= |
-| Undecided: an =ores.dq= model whose owner is unsettled | =badge_definitions=, =badge_severities=, =code_domains=, =coding_schemes=, =counterparty_aliases=, =netting_set_aliases=, =lei_entities=, =lei_relationships=, =synthetic_fx_spot_configs= | Each needs a decision: DQ is the owner, or the model moves to the component that owns the published rows | [[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]] |
+| Hand-written SQL with no model | =ip2country= | Nothing generates or checks the table against its entity | [[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][Model the geo ip2country store]] |
+
+An =ores.dq= model whose owner is unsettled is settled by one rule: the owning
+model is the model of the entity the artefact stages, in the component that owns
+the published rows. Where the artefact's own type row is terminal -- its
+=target_table= and =target_subject= both null -- the artefact table is the
+entity's only store, and DQ owns the model. The four DQ registries
+(=badge_definition=, =badge_severity=, =code_domain=, =coding_scheme=) and the
+three GLEIF staging models (=lei_entity=, =lei_relationship=, =lei_bic=) are
+terminal and stay in =ores.dq=. Where the type row publishes onward, the rows
+are the publishing component's data in transit, and the staging shape moves onto
+that component's model as an =* Artefact columns= section:
+=counterparty_alias= onto =ores.refdata.counterparty_identifier=,
+=netting_set_alias= onto =ores.refdata.netting_set_identifier=, and
+=synthetic_fx_spot_config= onto =ores.synthetic.fx_spot_generation_config=. The
+report configuration binding staged in =dq_report_configurations_artefact_tbl=
+moved the same way, onto =ores.reporting.report_configuration=, by
+[[id:6632B4F0-7005-4A55-BB69-96161952C2EF][Settle the owner of the DQ-only models]].
 
 Junction artefact tables come from their own template,
 =sql_schema_junction_artefact_create=, and are out of scope of this page.

@@ -166,7 +166,7 @@
 \ir ./dq_configuration_market_bindings_artefact_create.sql
 
 -- Synthetic market data artefact tables
-\ir ./dq_synthetic_fx_spot_configs_artefact_create.sql
+\ir ./dq_fx_spot_generation_configs_artefact_create.sql
 \ir ./dq_market_data_providers_artefact_create.sql
 \ir ./dq_gmm_components_artefact_create.sql
 \ir ./dq_ir_curve_generation_configs_artefact_create.sql
@@ -179,13 +179,13 @@
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql
 \ir ./dq_lei_relationships_artefact_create.sql
-\ir ./dq_counterparty_aliases_artefact_create.sql
+\ir ./dq_counterparty_identifiers_artefact_create.sql
 
 -- ORE sample netting artefact tables
 \ir ./dq_netting_agreements_artefact_create.sql
 \ir ./dq_netting_sets_artefact_create.sql
 \ir ./dq_csas_artefact_create.sql
-\ir ./dq_netting_set_aliases_artefact_create.sql
+\ir ./dq_netting_set_identifiers_artefact_create.sql
 
 -- Party child artefact tables (an office, the countries and currencies a party works in, the counterparties it may trade with)
 \ir ./dq_party_contact_informations_artefact_create.sql

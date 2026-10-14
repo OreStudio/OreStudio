@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9CCB36D2-D297-478D-8968-41FE16623FBC
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.fx_spot_generation_config
 #+description: Codegen entity model for the synthetic fx_spot_generation_config table; configuration for generating synthetic FX spot observations.
@@ -301,6 +302,109 @@ Every FX spot feed is =fx=. A screen filters the feeds by it. The catalogue
 #+begin_src cpp :name generator
 std::string("fx")
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id
+:END:
+
+The synthetic feed import carries one denormalised row per FX spot feed: the
+parent generation config's own fields beside the FX spot sub-config's. The
+parent's uuid is made when the row publishes, so the import carries the row's
+own id instead.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** enabled
+:PROPERTIES:
+:type: boolean
+:END:
+
+** auto_start
+:PROPERTIES:
+:type: boolean
+:default: false
+:END:
+
+** base_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** gmm_initial_price
+:PROPERTIES:
+:type: double precision
+:END:
+
+** ticks_per_hour
+:PROPERTIES:
+:type: integer
+:END:
+
+** process_type
+:PROPERTIES:
+:type: text
+:END:
+
+** price_source
+:PROPERTIES:
+:type: text
+:default: 'vintage'
+:END:
+
+** vintage_source
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** vintage_date
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** provider_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* Artefact indexes
+
+** base_currency_code
+:PROPERTIES:
+:columns: base_currency_code
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:columns: quote_currency_code
+:END:
 
 * SQL
 

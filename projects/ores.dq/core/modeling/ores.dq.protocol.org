@@ -355,14 +355,6 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 | =dq.v1.subject_areas_versions.list= | Retrieve version history for a subject area |
 | =dq.v1.subject_areas_versions.get= | Retrieve one version of a subject area |
 
-* Synthetic FX Spot Configs
-
-| Subject | Description |
-|---------+-------------|
-| =dq.v1.synthetic_fx_spot_configs.list= | Retrieve all synthetic FX spot configs |
-| =dq.v1.synthetic_fx_spot_configs.get= | Retrieve one synthetic FX spot config |
-| =dq.v1.synthetic_fx_spot_configs.get_many= | Retrieve several synthetic FX spot configs by key |
-
 * Treatment Dimensions
 
 | Subject | Description |
@@ -444,9 +436,6 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 | =dq.v1.subject_areas_events.created= | Published when a subject area is created |
 | =dq.v1.subject_areas_events.deleted= | Published when a subject area is deleted |
 | =dq.v1.subject_areas_events.updated= | Published when a subject area is updated |
-| =dq.v1.synthetic_fx_spot_configs_events.created= | Published when a synthetic FX spot config is created |
-| =dq.v1.synthetic_fx_spot_configs_events.deleted= | Published when a synthetic FX spot config is deleted |
-| =dq.v1.synthetic_fx_spot_configs_events.updated= | Published when a synthetic FX spot config is updated |
 | =dq.v1.treatment_dimensions_events.created= | Published when a treatment dimension is created |
 | =dq.v1.treatment_dimensions_events.deleted= | Published when a treatment dimension is deleted |
 | =dq.v1.treatment_dimensions_events.updated= | Published when a treatment dimension is updated |

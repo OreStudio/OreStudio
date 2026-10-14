@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 71427B36-E7A6-5D10-A08C-D2775BF14ED5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the lei_bic commands from the shell?
+#+description: Every command the lei_bic submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:lei_bic:
+
+This file documents the lei_bic resource at the shell, one section per command. Every command is a subcommand of =lei_bic=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3D948633-521A-5D4A-9DE7-B659288BF9DA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+lei_bic list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.lei_bic.list=.
+
+#+name: lei_bic-list
+#+begin_src ores-shell :tangle lei_bic-list.ores :exports none
+lei_bic list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 48D4E98E-BE00-55A2-9358-F65765B628AE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+lei_bic get <lei>
+#+end_example
+
+It is addressed at =dq.v1.lei_bic.get=.
+
+#+name: lei_bic-get
+#+begin_src ores-shell :tangle lei_bic-get.ores :exports none
+lei_bic get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3A21C7C4-A617-51E9-8511-58049B3FB7F5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+lei_bic get-many <lei>
+#+end_example
+
+It is addressed at =dq.v1.lei_bic.get_many=.
+
+#+name: lei_bic-get-many
+#+begin_src ores-shell :tangle lei_bic-get-many.ores :exports none
+lei_bic get-many __none__
+#+end_src
+

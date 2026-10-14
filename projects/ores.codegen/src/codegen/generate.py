@@ -308,11 +308,10 @@ _PROTOCOL_DEPENDENT_FACETS = frozenset({
 # registers first answers every call, including calls whose arity belongs to
 # the real owner.
 #
-# The profile alone is not the condition. Three further dq models bind it
-# (lei_entity, lei_relationship, synthetic_fx_spot_config) and dq is their only
-# owner, so their command units are the only surface those entities have. The
-# gate fires only where another component models the same plural; see
-# :func:`_plural_owners`.
+# The profile alone is not the condition. The dq models that bind it
+# (lei_entity, lei_relationship, lei_bic) have dq as their only owner, so their
+# command units are the only surface those entities have. The gate fires only
+# where another component models the same plural; see :func:`_plural_owners`.
 _STAGING_ONLY_FACETS = frozenset({
     "ores.cpp.shell-command",
     # The literate recipe documents the unit above, so it goes wherever that

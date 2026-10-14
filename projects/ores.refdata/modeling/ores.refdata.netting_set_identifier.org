@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2A4B8FD6-62B5-406C-A3E7-88AA0B6B4A46
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.netting_set_identifier
 #+description: Codegen entity model for the refdata =netting_set_identifier= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -125,6 +126,49 @@ Free text description providing additional context.
 #+begin_src cpp :name generator
 std::string("Test identifier")
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id_value
+:END:
+
+An ORE document names a trade's netting set by its =NettingSetId=, such as
+=CPTY_A=, and the import carries the set's own code beside it. The store holds
+the set's uuid, which does not exist until publishing, so the staging row names
+the set by code instead.
+
+** id_value
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** id_scheme
+:PROPERTIES:
+:type: text
+:END:
+
+** netting_set_code
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* Artefact indexes
+
+** netting_set_code
+:PROPERTIES:
+:columns: netting_set_code
+:END:
 
 * SQL
 

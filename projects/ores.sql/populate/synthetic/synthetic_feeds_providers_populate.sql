@@ -141,13 +141,13 @@ begin
           and d.code in ('synthetic.feeds.refinitiv', 'synthetic.feeds.ice', 'synthetic.feeds.tradeweb')
           and d.valid_to = ores_utility_infinity_timestamp_fn()
     loop
-        if exists (select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl where dataset_id = v_dataset.id)
+        if exists (select 1 from ores_dq_fx_spot_generation_configs_artefact_tbl where dataset_id = v_dataset.id)
            or exists (select 1 from ores_dq_ir_curve_generation_configs_artefact_tbl where dataset_id = v_dataset.id) then
             raise debug 'Provider feeds artefact already populated for dataset %', v_dataset.code;
             continue;
         end if;
 
-        insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
+        insert into ores_dq_fx_spot_generation_configs_artefact_tbl (
             dataset_id, tenant_id, id, version,
             name, description, enabled, auto_start,
             base_currency_code, quote_currency_code,

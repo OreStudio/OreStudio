@@ -183,7 +183,7 @@ begin
     select id into v_dataset_id from ores_dq_datasets_tbl
     where code = 'test.ore_alias_without_counterparty'
       and valid_to = ores_utility_infinity_timestamp_fn();
-    insert into ores_dq_counterparty_aliases_artefact_tbl (dataset_id, tenant_id, id_value,
+    insert into ores_dq_counterparty_identifiers_artefact_tbl (dataset_id, tenant_id, id_value,
         version, id_scheme, lei, description)
     values (v_dataset_id, ores_utility_system_tenant_id_fn(), 'NO_SUCH_BANK', 0, 'ORE',
         '00000000000000000000', 'test');
@@ -209,7 +209,7 @@ begin
     select id into v_dataset_id from ores_dq_datasets_tbl
     where code = 'test.ore_alias_staged_twice'
       and valid_to = ores_utility_infinity_timestamp_fn();
-    insert into ores_dq_counterparty_aliases_artefact_tbl (dataset_id, tenant_id, id_value,
+    insert into ores_dq_counterparty_identifiers_artefact_tbl (dataset_id, tenant_id, id_value,
         version, id_scheme, lei, description)
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'STAGED_TWICE', 0, 'ORE',
@@ -240,7 +240,7 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
     -- CPTY_A is already the alias of one counterparty, and this dataset names
     -- a different one, so the name is not applied over and the publish skips it.
-    insert into ores_dq_counterparty_aliases_artefact_tbl (dataset_id, tenant_id, id_value,
+    insert into ores_dq_counterparty_identifiers_artefact_tbl (dataset_id, tenant_id, id_value,
         version, id_scheme, lei, description)
     values (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CPTY_A', 0, 'ORE',
         '7H6GLXDRUGQFU57RNE97', 'test');

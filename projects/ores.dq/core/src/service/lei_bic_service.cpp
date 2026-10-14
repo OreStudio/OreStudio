@@ -1,0 +1,185 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.dq.core/service/lei_bic_service.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
+#include "ores.dq.api/domain/lei_bic.hpp"
+#include "ores.dq.api/messaging/lei_bic_protocol.hpp"
+#include "ores.dq.core/repository/lei_bic_repository.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <cstdint>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
+
+namespace ores::dq::service {
+
+using namespace ores::logging;
+
+lei_bic_service::lei_bic_service(context ctx)
+    : ctx_(std::move(ctx)) {}
+namespace {
+
+/**
+ * @brief The current row a key names, or an empty vector when there is none.
+ *
+ * A key record carries each column with the column's own type, and the
+ * repository takes the text form every one of its key parameters shares, so
+ * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
+ */
+std::vector<domain::lei_bic> read_one(repository::lei_bic_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const messaging::lei_bic_key& key) {
+    return repo.read_latest(ctx, key.lei);
+}
+
+}
+
+messaging::list_lei_bic_response
+lei_bic_service::list_lei_bic(const messaging::list_lei_bic_request& request) {
+    messaging::list_lei_bic_response response;
+    if (!request.order.field.empty() &&
+        !repository::lei_bic_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "LEI BIC", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->lei_one_of && request.filter->lei_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "lei_one_of", .limit = "1000"});
+        return response;
+    }
+    response.lei_bic =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_lei_bic_count(ctx_, request.filter);
+    return response;
+}
+
+messaging::get_lei_bic_response
+lei_bic_service::get_lei_bic(const messaging::get_lei_bic_request& request) {
+    messaging::get_lei_bic_response response;
+    auto found = read_one(repo_, ctx_, request.key);
+    if (found.empty()) {
+        response.result = refuse(outcome_code::not_found, {.entity = "lei_bic"});
+        return response;
+    }
+    response.lei_bic = std::move(found.front());
+    return response;
+}
+
+messaging::get_many_lei_bic_response
+lei_bic_service::get_many_lei_bic(const messaging::get_many_lei_bic_request& request) {
+    messaging::get_many_lei_bic_response response;
+    // One entry per requested key, in the order asked for, so the reply is
+    // positional and a caller reads absence from an empty entry rather than
+    // from a missing one.
+    response.entries.reserve(request.keys.size());
+    for (const auto& k : request.keys) {
+        messaging::lei_bic_lookup entry;
+        entry.key = k;
+        auto found = read_one(repo_, ctx_, k);
+        if (!found.empty())
+            entry.lei_bic = std::move(found.front());
+        response.entries.push_back(std::move(entry));
+    }
+    return response;
+}
+
+
+std::vector<domain::lei_bic> lei_bic_service::list_lei_bic(std::uint32_t offset,
+                                                           std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all LEI BIC";
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t lei_bic_service::count_lei_bic() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total LEI BIC count";
+    return repo_.get_total_lei_bic_count(ctx_);
+}
+
+
+std::optional<domain::lei_bic> lei_bic_service::get_lei_bic(const std::string& lei) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting LEI BIC. " << "lei: " << lei;
+    auto results = repo_.read_latest(ctx_, lei);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::vector<domain::lei_bic> lei_bic_service::get_lei_bic(const std::vector<std::string>& leis) {
+    return repo_.read_latest(ctx_, leis);
+}
+
+void lei_bic_service::save_lei_bic(const domain::lei_bic& v) {
+    if (v.lei.empty())
+        throw std::invalid_argument("LEI BIC lei cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving LEI BIC. " << "lei: " << v.lei;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved LEI BIC. " << "lei: " << v.lei;
+}
+
+void lei_bic_service::save_lei_bic(const std::vector<domain::lei_bic>& lei_bic) {
+    for (const auto& e : lei_bic) {
+        if (e.lei.empty())
+            throw std::invalid_argument("LEI BIC lei cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << lei_bic.size() << " LEI BIC";
+    auto ts = lei_bic;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
+    }
+    repo_.write(ctx_, ts);
+}
+
+void lei_bic_service::delete_lei_bic(const std::string& lei) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing LEI BIC. " << "lei: " << lei;
+    repo_.remove(ctx_, lei);
+    BOOST_LOG_SEV(lg(), info) << "Removed LEI BIC. " << "lei: " << lei;
+}
+
+void lei_bic_service::delete_lei_bic(const std::vector<std::string>& leis) {
+    repo_.remove(ctx_, leis);
+}
+
+
+}

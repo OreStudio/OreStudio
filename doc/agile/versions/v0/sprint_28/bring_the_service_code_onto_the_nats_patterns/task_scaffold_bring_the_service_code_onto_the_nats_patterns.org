@@ -8,7 +8,7 @@
 #+filetags: :bring_the_service_code_onto_the_nats_patterns:sprint_28:v0:
 #+owner: marco
 #+branch: feature/bring-the-service-code-onto-the-nats-patterns
-#+pr:
+#+pr: 3311
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3311][#3311]] | [doc] Document the NATS service patterns |
 
 * Review
 

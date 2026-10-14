@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 40D4C718-6D87-439D-8816-7BF6428C9977
+:END:
+#+title: Story: Fix the failing local gate checks
+#+description: Two checks are red on main. The compass suite fails because it chmods the user's persona cache, which a sandbox makes read-only. Four IAM pgTAP suites fail on a fresh test database because they read data only a provisioned environment has: they assert a provisioned tenant exists and then insert into it. They roll back, so nothing is left behind and the gap is fixtures, not leftovers.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Get the local gate green for reasons that hold on any machine, not just this one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- The compass suite passes with a read-only home directory.
+- The IAM pgTAP suites pass on a database a previous run has already touched.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6A906BCE-0428-41CD-AD78-1F4F692B4D5A][Scaffold story: Fix the failing local gate checks]] | STARTED | 2026-10-14 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9D4D10F4-1FD0-4DD1-8D4E-7D05E3C27D7B][Make the persona cache tests independent of the user cache]] | BACKLOG | | | Initial task for: Fix the failing local gate checks |
+
+* Decisions
+
+* Out of scope
+
+-

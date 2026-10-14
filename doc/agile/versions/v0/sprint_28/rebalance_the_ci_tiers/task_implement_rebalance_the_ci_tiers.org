@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rebalance_the_ci_tiers:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-rebalance-the-ci-tiers
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7AF0E20A-1107-409B-ACA3-40FE4B3C3486][Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Continuous Linux carries only the two linux-clang jobs and runs as often as thei
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7AF0E20A-1107-409B-ACA3-40FE4B3C3486][Rebalance the CI tiers: Linux clang continuous, macOS and Windows nightly]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,9 @@ Continuous Linux carries only the two linux-clang jobs and runs as often as thei
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the last green run of each workflow to get the real job durations.
+Move the variants whose run time cannot fit a short cadence into the
+nightly tier, and shrink the continuous matrix to the fastest pair.
 
 * Measurements
 
@@ -58,9 +58,51 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Last green Continuous Linux, all four jobs | 2026-09-08 | =gh run view 34218351651= | 625f0ba0 |
+| linux-clang-debug-ninja | 2h46m03s | =gh run view 34218351651= | 625f0ba0 |
+| linux-clang-release-ninja | 2h54m13s | =gh run view 34218351651= | 625f0ba0 |
+| linux-gcc-debug-ninja | 4h17m29s | =gh run view 34218351651= | 625f0ba0 |
+| linux-gcc-release-ninja | 4h08m34s | =gh run view 34218351651= | 625f0ba0 |
+| Last green Continuous MacOS | 2026-10-03 | =gh run view 37128190389= | 96350f41 |
+| macos-clang-debug-ninja | 4h40m56s | =gh run view 37128190389= | 96350f41 |
+| macos-clang-release-ninja | 5h40m53s | =gh run view 37128190389= | 96350f41 |
 
 * Notes
+
+** Why linux-clang is the continuous pair
+
+The two clang jobs are the only ones that finished well inside the six
+hour limit: 2h46m and 2h54m. The gcc jobs ran 4h08m to 4h17m, and the
+macOS jobs 4h40m to 5h40m. Neither pair can run every three hours
+without queueing. Both already have a nightly home: the Nightly Build
+covers gcc, and this change gives macOS its own nightly.
+
+** The cadence
+
+Continuous Linux runs every three hours. The slower clang job ran in
+2h54m, so three hours is the tightest interval that does not queue a
+run behind its predecessor. The relevance-guard skips a run when no
+non-doc code changed, so three hours is a ceiling rather than a promise.
+
+** Why this also fixes the cache
+
+Two sccache variants hold roughly 5 GB, which fits inside GitHub's 10 GB
+repository cap alongside the vcpkg and get-cmake entries. A run can now
+finish and reach its =Save sccache= step, which the four-variant matrix
+could not. The cold-build loop closes.
+
+** The macOS runner
+
+The macOS workflow moves to =macos-15= in the same change. GitHub
+retires =macos-14= on 2026-11-02 and browns it out on October 16, 19, 23,
+26, 29 and 30.
+
+** Not done here
+
+- Coverage and packaging still run on the continuous clang jobs.
+- Windows has no measured run time. Its last run reported success with
+  the build matrix skipped, so the 5-8h figure in its comment is
+  inherited, not measured.
 
 * Test Scenarios
 
@@ -86,3 +128,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Continuous Linux now carries the two linux-clang jobs only, every three
+hours. macOS and Windows moved to the nightly tier, and macOS builds on
+=macos-15= instead of the retiring =macos-14=.
+
+The change also updates every reference the rename breaks: the readme
+badges, =build/scripts/ci_health.py=, the CI workflows page, the
+developer page, the version-bump recipe, and the version-bump backlog
+snippet.
+
+Not verified here: no run has yet exercised the new schedule. The first
+scheduled Continuous Linux run and the first Nightly MacOS and Nightly
+Windows runs are the proof, and they set the cadence's real value.
+

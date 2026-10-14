@@ -141,8 +141,8 @@ Backlog, sprint planning, and task lifecycle.
 |-----------------------+-----------------------------------------------------------------------------------------------------------------|
 | CDash Dashboard       | [[https://my.cdash.org/index.php?project=OreStudio][my.cdash.org — OreStudio]]                                |
 | CI — Linux            | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml][continuous-linux.yml]]       |
-| CI — Windows          | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml][continuous-windows.yml]]   |
-| CI — macOS            | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml][continuous-macos.yml]]     |
+| CI — Windows          | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-windows.yml][nightly-windows.yml]]   |
+| CI — macOS            | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-macos.yml][nightly-macos.yml]]     |
 | CI — Nightly Linux    | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml][nightly-linux.yml]]           |
 | CI — Nightly Format   | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-format.yml][nightly-format.yml]]         |
 | Releases              | [[https://github.com/OreStudio/OreStudio/releases][github.com/OreStudio/OreStudio/releases]]        |

@@ -36,8 +36,8 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md"><img alt="Contributing" src="https://img.shields.io/badge/PRs%20-welcome-brightgreen.svg"/></a>
 #+html: <a href="https://my.cdash.org/index.php?project=OreStudio"><img alt="CDash Dashboard" src="https://img.shields.io/badge/cdash-dashboard-00cc00.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml"><img alt="Continuous Linux" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml/badge.svg"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml"><img alt="Continuous Windows" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml/badge.svg"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml"><img alt="Continuous MacOS.yml" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml/badge.svg"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-windows.yml"><img alt="Nightly Windows" src="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-windows.yml/badge.svg"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-macos.yml"><img alt="Nightly MacOS" src="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-macos.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml"><img alt="Nightly Linux" src="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulls?q=is%3Apr+is%3Amerged+merged%3A%3E%3D2026-10-13"><img alt="PRs since v0.0.28" src="https://img.shields.io/badge/PRs%20since%20v0.0.28-GitHub%20search-blue"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.27.svg"/></a>

@@ -2,10 +2,10 @@
 :ID: DDCC55F1-9A4B-4335-99D1-56A78D781224
 :END:
 #+title: Task: Grant a run when a person triggers one
-#+description: A manual run of a definition that has no schedule cannot act: triggering copies the definition's run grant, and an unscheduled definition has none, so the run fails with 'the report instance records no run grant'. The design says a manual run creates a one-run grant from the person who asked for it; create it at admission so building a report's packages works on any definition, scheduled or not.
+#+description: A run of a definition that has never been scheduled cannot act: admission copies the definition's consent to run, and a definition run only by hand has none. Consent belongs to the report rather than to the trigger, so create it at admission from the person who asked, and let every later trigger reuse it.
 #+type: task
 #+level: s1
-#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
+#+filetags: :trigger_a_report_run_on_demand_or_on_a_schedule:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,14 +20,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A person who asks for a run gets one, whether or not the report has ever been
+scheduled. The report holds its consent to run, and admission creates that
+consent from the person asking when it does not yet exist. Every later trigger,
+on demand or scheduled, reuses it.
+
+This is the half of [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][the trigger
+story]] that gives a run its authority. Without it a run that no schedule
+produced cannot act, which is why building a report's ORE packages fails today.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] |
+| Parent story | [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

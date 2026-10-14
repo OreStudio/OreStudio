@@ -85,7 +85,7 @@ task and name that file in the Command column.
 | Codegen suite | 1,425 passed | =python3 -m pytest projects/ores.codegen/tests= | 9c0b211616 |
 | Local gate, non-heavy | 40 of 40 | =compass check --exclude-heavy= | f5892aaf08 |
 | pgTAP | 52 files, all pass | =compass check --only pgtap= after =compass db recreate -y -k= | f5892aaf08 |
-| ctest | 92 of 93; =ores.ore.core.tests= fails, independent of this branch | =./compass.sh test run --preset linux-clang-release-ninja= | f5892aaf08 |
+| ctest | 93 of 93 | =compass check --only ctest= | this branch |
 
 * Notes
 
@@ -148,26 +148,24 @@ a GiST index no entity template can express, by
 carries is also current-state now, so the test builds that fixture from
 =lei_entity= with the shape profile removed, rather than dropping the case.
 
-** One ctest suite fails, and it is not this branch
+** A stale test in ores.ore, fixed here
 
-=ores.ore.core.tests= fails on =run_store_database_tests.cpp:144=: the exported
-run document names 14 =Setup= parameters where the test expects 11. The three
-extra are =portfolioFile=, =marketDataFile= and =fixingDataFile=. Nothing in this
-branch reaches them. =export_run= builds them from
-=run_document_service::get=, which calls =generate_run_document=, which appends
-every row =setup_data_file_types= returns -- the three =data_file= /=input= rows
-in =ores_reporting_file_types_tbl=, seeded by
-=projects/ores.sql/populate/reporting/reporting_file_types_populate.sql= -- and
-=reverse_setup= filters nothing. This branch does not touch =ores.ore=, the
-reporting generator, that seed or the =reporting_report_configurations= store
-table; =git diff --name-only 5e185399d4..HEAD= names one reporting file, the
-model that gained the artefact hook, and the generated =reporting_report_configurations_create.sql=
-is unchanged. The same binary carries the same ORE and reporting code as the
-branch base. So the suite reproduces from the seeded row plus the generator, and
-it is red on a database that has run the seed.
+=ores.ore.core.tests= failed on =run_store_database_tests.cpp:144=: the exported
+run document names 14 =Setup= parameters where the test expects 11, the three
+extra being =portfolioFile=, =marketDataFile= and =fixingDataFile=.
 
-It shows only after =compass db recreate=: the workstation database before this
-branch was a restored snapshot, and a recreated one carries the =data_file= rows.
+The test was right until 2026-10-14 15:36, when =e1d3cb74bc= made
+=generate_run_document= name the run's own data files from the file types table,
+to fix a package that stored nothing because the prepare step failed with "the
+run document names no portfolio file". That commit is on this branch's base and
+after the last green ctest. It updated the reporting suites and missed this one,
+so the suite has been red on any database that has run the file types seed.
+
+The names are load-bearing, not cosmetic: =report_package_handler= places the
+gathered market data and fixings where the exported run document says they are,
+and warns when it names none. So the test's expectation was the stale half, and
+the fix is the test. It now asserts the exported =Setup= equals the imported one,
+with a comment saying why the names come from the catalogue. ctest is 93 of 93.
 
 * Test Scenarios
 
@@ -234,10 +232,10 @@ Acceptance: the decisions are recorded above and in the DQ guide, the models
 whose owner is elsewhere have moved, and the DQ stacks are deleted. The build is
 clean, the codegen suite passes 1,425 tests, and the non-heavy local gate passes
 40 of 40. pgTAP passes all 52 files against a database recreated from this
-branch, which is the check that exercises the three table renames. ctest is 92 of
-93: =ores.ore.core.tests= fails for a reason this branch does not reach, recorded
-in Notes. One hand-written artefact table is left, =ip2country=, which is the
-other task in this story.
+branch, which is the check that exercises the three table renames. ctest is 93 of
+93, after the stale =ores.ore= test this branch also fixes (Notes). One
+hand-written artefact table is left, =ip2country=, which is the other task in
+this story.
 
 The three GLEIF insert functions have no callers, and the DQ messaging reference
 does not list the GLEIF subjects; both are recorded in Notes and neither is work

@@ -46,6 +46,29 @@ it is not itself a check, so never score it.
 6. /Batch over per-object./ Write functions that process contiguous
    collections in bulk, not one call per object.
 
+** There is no entity
+
+The component chapter of the Data-Oriented Design book names the step of
+turning a class into "containers of smaller objects" as a transitional
+state, and puts the destination beyond it. "A component based object is
+nothing more than the sum of its parts", and its definition is "an
+inventory with some construction arguments". The subsection is titled
+[[https://www.dataorienteddesign.com/dodmain/node5.html#SECTION00540000000000000000][There is no Entity]].
+
+Two consequences bind this project, and both are reviewable.
+
+- A C++ type that holds its parts as named members is the transitional
+  composition form, not the target. It earns its place as a boundary
+  value or a local convenience, never as the shape of an entity.
+- There is no entity object, so no entity object travels. A message
+  carries flat value fields. A composite C++ type is projected flat for
+  the wire, and its members never appear as nested JSON objects.
+
+The second consequence is a live gap. Codegen projects the C++ type
+directly, so a grouped entity's members do appear nested on the wire
+today; the trading instrument fixtures carry =identity= at the top
+level. That is a defect against this rule, not a licence for it.
+
 ** Where each axiom applies
 
 ORE Studio is a database-backed application with Qt clients and a
@@ -63,9 +86,10 @@ over trades, paths, or steps that reads a few fields of each object.
 
 Entities and their C++ value types: reference data, trading
 instruments, market data, synthetic entities. The database owns the
-storage layout; the C++ types are the in-memory and wire shape. DOD
-here means value semantics, identity by key, and a clean split of
-core state from cold annexes — not cache-line gymnastics.
+storage layout; the C++ types are the in-memory shape, and the wire is
+their flat projection. DOD here means value semantics, identity by key,
+and a clean split of core state from cold annexes — not cache-line
+gymnastics.
 
 *** Regime 3 — wire and messaging
 
@@ -83,10 +107,13 @@ the replacement.
 
 The wire shape is a codegen projection of the Regime 2 entity, not a
 second artefact: one entity yields one JSON codec and one table
-codec. Review each entity once — its org model, its generated C++
-type, and its projections together — and do not walk the message
-shape again separately. Hand-written message types are the
-exception; they get their own Regime 3 walk.
+codec. The projection is flat. A grouped C++ type is projected as flat
+value fields, per *There is no entity* above; its members are a layout
+decision for memory and storage, not a wire contract. Review each entity
+once — its org model, its generated C++ type, and its projections
+together — and do not walk the message shape again separately.
+Hand-written message types are the exception; they get their own Regime
+3 walk.
 
 *** The boundary of the regimes
 
@@ -144,9 +171,12 @@ types through 103 repository headers.
 The rule: *keep the names reachable from one tagged write small, by
 writing the parts of a large carrier separately rather than as one
 tagged aggregate.* Splitting a wide entity into =field_group= members
-shapes its JSON and keeps each group readable, but no direct-member
-count is the C1202 limit; the nine-member figure this page once gave
-was a margin, not a measured ceiling.
+lowers the parent literal, so it is a remedy for the per-literal path. It
+is not a wire decision: the JSON stays flat per *There is no entity*
+above, and a change that nests it has changed a contract to fix a
+compile error. No direct-member count is the C1202 limit; the
+nine-member figure this page once gave was a margin, not a measured
+ceiling.
 
 The accumulation path gives a second rule for document models. A model
 that aggregates several entity families hands its unit a literal width
@@ -209,7 +239,7 @@ Decision checks — walk per entity model:
 |-------+-------------|
 | Identity by key | Relationships are keys and foreign keys, not pointers or owning-parent links. |
 | Table-shaped children | Child records are rows in their own table (junction/FK), not nested object trees. |
-| Core/cold split | =field_group= and table design separate core fields from cold annexes (change-reason cache, history, versioning, audit). |
+| Core/cold split | =field_group= and table design separate core fields from cold annexes (change-reason cache, history, versioning, audit). The split is for memory and storage; the wire stays flat. |
 | Batched collection access | Repositories and services return collections, not row-at-a-time callbacks. |
 | Explicit variation | A family of related entities (for example, instruments) states its variation explicitly — per-type tables or a closed variant — not open inheritance webs. |
 | Exact money at rest | A money quantity — rate, spread, notional, amount, price, strike, fee, premium, margin, face value — is exact decimal in both the domain type and the column, and the two agree. A continuous quantity — volatility, correlation, weight, probability, recovery rate, tranche fraction, day-count fraction, unit quantity — stays binary float. |
@@ -227,7 +257,7 @@ Invariant checks — spot-check once per component:
 
 | Check | Description |
 |-------+-------------|
-| Flat value messages | Messages are value-shaped, not object graphs over the wire. |
+| Flat value messages | Messages are value-shaped, not object graphs over the wire. A composite C++ type is projected flat; its members never appear as nested JSON objects. |
 | No polymorphic payload fields | No =std::variant= field and no encoded =std::string= field; one typed array per concrete type, joined by key. |
 | Feed batching | High-volume feeds batch items per message instead of one message per item. |
 

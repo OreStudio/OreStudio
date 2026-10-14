@@ -98,8 +98,21 @@ private:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        reply(nats_, msg, work(*req));
-        BOOST_LOG_SEV(oresmd_uri_handler_lg(), debug) << "Completed " << msg.subject;
+        // The work reads the market series store, so it can throw. An exception
+        // leaving this handler reaches the transport, which contains it but
+        // sends no reply, and the caller then waits out its whole deadline for
+        // an answer this handler could have given.
+        using response_type = typename Request::response_type;
+        try {
+            reply(nats_, msg, work(*req));
+            BOOST_LOG_SEV(oresmd_uri_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(oresmd_uri_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            response_type failure;
+            failure.success = false;
+            failure.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
     ores::nats::service::client& nats_;

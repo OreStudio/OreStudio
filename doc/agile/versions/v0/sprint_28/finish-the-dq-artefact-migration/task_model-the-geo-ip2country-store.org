@@ -26,11 +26,11 @@ The geo ip2country store and its staging table are generated from one geo model.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance

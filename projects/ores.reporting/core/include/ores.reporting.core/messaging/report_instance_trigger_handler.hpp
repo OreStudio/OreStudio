@@ -346,14 +346,12 @@ private:
         plan.definition_id = def->id;
         plan.tenant_id = def->tenant_id;
         plan.party_id = def->party_id;
-        plan.name = std::format(
-            "{}{} {}",
-            def->name,
-            kind == workflow::instance_kind_package ? " (package)" : "",
-            ores::platform::time::datetime::to_db_string(now));
+        plan.name = std::format("{}{} {}",
+                                def->name,
+                                kind == workflow::instance_kind_package ? " (package)" : "",
+                                ores::platform::time::datetime::to_db_string(now));
         plan.description = def->description;
-        plan.trigger_type =
-            scheduled ? std::string("scheduled") : std::string("on_demand");
+        plan.trigger_type = scheduled ? std::string("scheduled") : std::string("on_demand");
         plan.scheduler_job_id = scheduled ? def->scheduler_job_id : std::nullopt;
         plan.schedule_job_run_id =
             scheduled ? std::optional<std::int64_t>(req.job_instance_id) : std::nullopt;

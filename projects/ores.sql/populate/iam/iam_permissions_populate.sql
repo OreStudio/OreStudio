@@ -281,6 +281,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_centres:read',   'View business centres');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_centres:write',  'Create and modify business centres');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_centres:delete', 'Delete business centres');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_roles:read',   'View party roles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_roles:write',  'Create and modify party roles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_roles:delete', 'Delete party roles');
 
     -- Asset class code permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_class_codes:read',   'View asset class codes');

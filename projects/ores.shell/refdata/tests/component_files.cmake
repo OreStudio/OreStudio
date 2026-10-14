@@ -134,6 +134,7 @@ set(files
     "party_currency_commands_tests.cpp"
     "party_id_scheme_commands_tests.cpp"
     "party_identifier_commands_tests.cpp"
+    "party_role_commands_tests.cpp"
     "party_status_commands_tests.cpp"
     "party_type_commands_tests.cpp"
     "payment_frequency_commands_tests.cpp"

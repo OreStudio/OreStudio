@@ -137,6 +137,7 @@
 #include "ores.refdata.service/messaging/party_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_identifier_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_status_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/payment_frequency_event_registrar.hpp"
@@ -334,6 +335,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_party_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_currency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_identifier_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_party_role_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_status_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_portfolio_right_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_producer_kind_event_mapping(event_source, event_bus, nats));

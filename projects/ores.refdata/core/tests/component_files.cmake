@@ -128,6 +128,7 @@ set(files
     "party_id_scheme_eventing_integration_tests.cpp"
     "party_identifier_eventing_integration_tests.cpp"
     "party_rls_isolation_tests.cpp"
+    "party_role_eventing_integration_tests.cpp"
     "party_status_eventing_integration_tests.cpp"
     "party_type_eventing_integration_tests.cpp"
     "payment_frequency_eventing_integration_tests.cpp"

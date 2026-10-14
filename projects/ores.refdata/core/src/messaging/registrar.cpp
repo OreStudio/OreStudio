@@ -92,6 +92,7 @@
 #include "ores.refdata.core/messaging/party_id_scheme_registrar.hpp"
 #include "ores.refdata.core/messaging/party_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/party_registrar.hpp"
+#include "ores.refdata.core/messaging/party_role_registrar.hpp"
 #include "ores.refdata.core/messaging/party_status_registrar.hpp"
 #include "ores.refdata.core/messaging/party_type_registrar.hpp"
 #include "ores.refdata.core/messaging/payment_frequency_registrar.hpp"
@@ -244,6 +245,7 @@
 #include "ores.refdata.core/messaging/party_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_id_scheme_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_identifier_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_role_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_status_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/payment_frequency_history_provider_registrar.hpp"
@@ -378,6 +380,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_party_id_scheme_handlers(nats, ctx, verifier));
     append(register_payment_frequency_handlers(nats, ctx, verifier));
     append(register_party_identifier_handlers(nats, ctx, verifier));
+    append(register_party_role_handlers(nats, ctx, verifier));
     append(register_party_status_handlers(nats, ctx, verifier));
     append(register_party_type_handlers(nats, ctx, verifier));
     append(register_portfolio_handlers(nats, ctx, verifier));
@@ -588,6 +591,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_overnight_index_convention_history_provider(hist_registry);
         register_party_history_provider(hist_registry);
         register_party_id_scheme_history_provider(hist_registry);
+        register_party_role_history_provider(hist_registry);
         register_party_status_history_provider(hist_registry);
         register_party_type_history_provider(hist_registry);
         register_payment_frequency_history_provider(hist_registry);

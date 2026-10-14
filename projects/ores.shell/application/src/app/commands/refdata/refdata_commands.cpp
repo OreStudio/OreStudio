@@ -112,6 +112,7 @@
 #include "ores.shell/app/commands/refdata/party_currency_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_id_scheme_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_identifier_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_role_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_status_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/payment_frequency_commands.hpp"
@@ -260,6 +261,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     party_currency_commands::register_commands(root_menu, session);
     party_id_scheme_commands::register_commands(root_menu, session);
     party_identifier_commands::register_commands(root_menu, session);
+    party_role_commands::register_commands(root_menu, session);
     party_status_commands::register_commands(root_menu, session);
     party_type_commands::register_commands(root_menu, session);
     payment_frequency_commands::register_commands(root_menu, session);

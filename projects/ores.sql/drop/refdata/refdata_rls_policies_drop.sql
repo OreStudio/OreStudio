@@ -85,9 +85,6 @@ drop policy if exists regulatory_corporate_sectors_tenant_isolation_policy on "o
 -- Person Roles
 drop policy if exists person_roles_tenant_isolation_policy on "ores_refdata_person_roles_tbl";
 
--- Party Roles
-drop policy if exists party_roles_tenant_isolation_policy on "ores_refdata_party_roles_tbl";
-
 -- Party Relationships
 drop policy if exists party_relationships_tenant_isolation_policy on "ores_refdata_party_relationships_tbl";
 

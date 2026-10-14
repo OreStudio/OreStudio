@@ -4372,7 +4372,13 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_party_roles_tbl
-    Contains a code representing a related party role. This can be extended to provide custom roles.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Party Role Table
+    A party role is the part a party plays in a transaction or a relationship, such as the guarantor or the beneficiary. The scheme can be extended with custom roles. Each row is one value of an FpML coding scheme: a code, unique within
+    its coding scheme, with the source that defines it and a description. The rows
+    arrive through DQ from the FpML codelists.
     end note
 
     entity ores_refdata_party_statuses_tbl <<temporal>> #C6F0D8 {

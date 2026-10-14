@@ -110,6 +110,7 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'compute::batches:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::countries:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::business_centres:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::party_roles:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::calendars:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::calendar_rules:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::calendar_exceptions:read');
@@ -264,6 +265,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::business_centres:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::business_centres:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::business_centres:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::party_roles:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::party_roles:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::party_roles:delete');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::contact_types:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::contact_types:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::contact_types:delete');

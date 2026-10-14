@@ -48,6 +48,7 @@
 \ir ./dq_coding_schemes_create.sql
 \ir ./dq_coding_schemes_notify_trigger_create.sql
 \ir ./dq_coding_schemes_artefact_create.sql
+\ir ./dq_coding_scheme_functions_create.sql
 
 -- Badge system (severities and code domains before definitions, mappings last)
 \ir ./dq_badge_severities_create.sql

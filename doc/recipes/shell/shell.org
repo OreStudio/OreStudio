@@ -1581,3 +1581,7 @@ tangled into the runnable script library
 * Role Permissions
 
 - [[id:E98B87C4-F509-504E-8364-E0B7AA68E8B7][How do I run the role_permissions commands from the shell?]]
+
+* Party Roles
+
+- [[id:43C79CCF-3B45-5B98-AA26-830F163D5BFE][How do I run the party_roles commands from the shell?]]

@@ -2182,10 +2182,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
           source : text
           description : text
+        * coding_scheme_code : text <<FK>>
     }
 
     note right of ores_dq_party_roles_artefact_tbl
-    Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table
+    A party role is the part a party plays in a transaction or a relationship, such as the guarantor or the beneficiary. The scheme can be extended with custom roles. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
     end note
 
     entity ores_dq_payment_frequencies_artefact_tbl  #F7E5FF {

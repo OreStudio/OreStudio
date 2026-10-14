@@ -196,6 +196,7 @@
 \ir ./dq_population_functions_drop.sql
 
 -- Change reasons (dropped last - other tables reference these)
+\ir ./dq_coding_scheme_functions_drop.sql
 \ir ./dq_change_reason_functions_drop.sql
 \ir ./dq_change_reasons_notify_trigger_drop.sql
 \ir ./dq_change_reasons_drop.sql

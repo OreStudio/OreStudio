@@ -111,14 +111,19 @@ via its "Verifies task" field.
 | 1 | =format= failed on the first gate run: clang-format wanted the new include sorted after =math/psd_matrix.hpp=. | the two files that include both | Fixed | Ran clang-format over the changed files and folded the result into the commit. |
 | 2 | =inline constexpr= did not compile: clang reports =non-constexpr function 'sqrt' cannot be used in a constant expression=. | small_kappa_threshold.hpp | Fixed | Used =inline const=, which still gives one definition and keeps the derivation readable. |
 | 3 | The heavy phase was not completed. | - | Accepted | The change only adds a header the six affected files include, and their component builds with unity on and off, which is the relevant build evidence. The suites need services and a database this checkout cannot reach. |
+| 4 | =small_kappa_threshold.hpp= names one constant, so the next shared constant has nowhere to go. | the new header | Fixed | Renamed to =constants.hpp=, the process layer's shared constants, and the guard follows the name. |
 
 * Result
 
 =small_kappa_threshold= now has one definition, in
-=ores.analytics.quant/service/processes/small_kappa_threshold.hpp=, and the
-six process files include it. Their local copies are gone.
+=ores.analytics.quant/service/processes/constants.hpp=, and the six process
+files include it. Their local copies are gone.
 
-The component builds with =CMAKE_UNITY_BUILD= on and off. The two unity
-objects that previously failed on the redefinition now compile, so the
-collision that stopped the whole-tree unity build after 19 seconds is
-cleared. The next collision, if any, sits further into the tree.
+The header is named for the layer rather than for the one constant, so
+further constants the process layer shares belong in it.
+
+The component builds with =CMAKE_UNITY_BUILD= on and off, before and after
+the rename. The two unity objects that previously failed on the
+redefinition compile, so the collision that stopped the whole-tree unity
+build after 19 seconds is cleared. The next collision, if any, sits
+further into the tree.

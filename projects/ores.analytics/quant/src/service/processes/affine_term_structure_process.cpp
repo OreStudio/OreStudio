@@ -19,7 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/affine_term_structure_process.hpp"
 #include "ores.analytics.quant/math/psd_matrix.hpp"
-#include "ores.analytics.quant/service/processes/small_kappa_threshold.hpp"
+#include "ores.analytics.quant/service/processes/constants.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_SMALL_KAPPA_THRESHOLD_HPP
-#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_SMALL_KAPPA_THRESHOLD_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_CONSTANTS_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_CONSTANTS_HPP
 
 #include <cmath>
 #include <limits>
@@ -36,7 +36,8 @@ namespace ores::analytics::quant::service {
  * The process files each defined their own copy in an anonymous namespace. A
  * unity build concatenates those files into one translation unit, which merges
  * the unnamed namespaces and rejects the repeated name, so the definition
- * lives here instead.
+ * lives here instead. Further constants the process layer shares belong here
+ * as well.
  */
 // std::sqrt is not constexpr in this toolchain, so the constant cannot be
 // constexpr; inline keeps it a single public definition across the library.

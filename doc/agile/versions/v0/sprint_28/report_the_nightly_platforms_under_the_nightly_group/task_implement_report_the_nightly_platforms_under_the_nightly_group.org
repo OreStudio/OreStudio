@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:68D196A8-B335-437D-806A-581546034558][Report the nightly platform builds under the CDash Nightly group]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every macOS and Windows build appears under the CDash Nightly group, and every L
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:68D196A8-B335-437D-806A-581546034558][Report the nightly platform builds under the CDash Nightly group]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -41,9 +41,9 @@ Every macOS and Windows build appears under the CDash Nightly group, and every L
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The tier move renamed the macOS and Windows workflows but left their CDash
+group behind. Point both at Nightly, and check no other caller passes a
+group that CTest.cmake does not accept.
 
 * Measurements
 
@@ -57,9 +57,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Workflows passing =build_group=Continuous=, before | 3: continuous-linux, nightly-macos, nightly-windows | =grep -rn build_group .github/workflows= | 28b6d95758 |
+| Workflows passing =build_group=Continuous=, after | 1: continuous-linux | same | this branch |
+| The =Site= group | accepted by =CTestSite.cmake=, not =CTest.cmake= | =site-cdash.yml= line 141 | 28b6d95758 |
 
 * Notes
+
+** Why it was wrong
+
+=build_group= is handed to =ctest_start()=, which decides the CDash group
+the build lands in. macOS and Windows were continuous when that value was
+written, and renaming the workflows to nightly left it behind, so CDash
+filed nightly platform builds under Continuous.
+
+** The Site group is not a defect
+
+=site-cdash.yml= passes =build_group=Site=, but to =CTestSite.cmake=, which
+accepts it. =CTest.cmake= would reject it, and nothing passes Site to that
+script.
 
 * Test Scenarios
 
@@ -85,3 +100,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=nightly-macos.yml= and =nightly-windows.yml= now pass
+=build_group=Nightly=, so CDash files the macOS and Windows builds under
+the Nightly group alongside the Nightly Build. =continuous-linux.yml=
+still passes =Continuous=, and the =Site= group belongs to
+=CTestSite.cmake=, so it is untouched.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: no macOS or Windows run has been submitted since the
+change. Their first runs after this merge are the proof, and they land in
+the CDash Nightly group.

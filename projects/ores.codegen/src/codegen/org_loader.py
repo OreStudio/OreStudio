@@ -1672,6 +1672,8 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 if "service_find_by_code_parent_column" in de:
                     de["service_find_by_code"]["parent_column"] = de.pop(
                         "service_find_by_code_parent_column")
+            if "list_default_filter" in de:
+                de["list_default_filter"] = _parse_list_default_filter(de)
 
         # Repository naming conventions.
         repo = _section(cpp_section, "Repository")
@@ -3449,6 +3451,36 @@ def filter_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
     if described["searchable"]:
         fields.append(_ts_field("search", "std::optional<std::string>"))
     return fields
+
+
+def _parse_list_default_filter(entity: dict[str, Any]) -> dict[str, str]:
+    """The filter member a list narrows to when the caller states none.
+
+    The authored knob reads ``<column> = <cpp expression>``: the column names a
+    member the filter record already carries, and the expression is the value
+    assigned when the request leaves that member unset. A caller that states
+    the member keeps what it stated, so the default narrows the list rather
+    than pinning it.
+
+    Raises:
+        ValueError: if the knob does not read as a pair, or names a column that
+            is not a filter member -- a default on a member the filter record
+            does not carry cannot be generated.
+    """
+    name = entity.get("entity_singular", "entity")
+    raw = str(entity["list_default_filter"])
+    column, sep, expression = raw.partition("=")
+    column, expression = column.strip(), expression.strip()
+    if not sep or not column or not expression:
+        raise ValueError(
+            f"{name}: list_default_filter must read '<column> = <cpp expression>', "
+            f"not '{raw}'")
+    known = {m["column"] for m in filter_members(entity)["members"]}
+    if column not in known:
+        raise ValueError(
+            f"{name}: list_default_filter names '{column}', which is not a filter "
+            f"member; mark that column :filterable: true or drop the knob")
+    return {"column": column, "expression": expression}
 
 
 def versions_filter_fields() -> list[dict[str, Any]]:

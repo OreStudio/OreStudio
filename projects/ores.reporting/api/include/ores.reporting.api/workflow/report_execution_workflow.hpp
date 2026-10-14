@@ -48,6 +48,11 @@ using ores::workflow::service::write_step_timeout;
 inline constexpr std::chrono::seconds compute_step_timeout{3600};
 
 /**
+ * @brief The workflow type that executes a report, and the only one that knows the kinds.
+ */
+constexpr std::string_view report_execution_workflow_type = "report_execution_workflow";
+
+/**
  * @brief The run configuration codes a report definition states.
  *
  * Pre-processing either generates the engine's input or resolves a prepared
@@ -59,6 +64,24 @@ constexpr std::string_view pre_processing_execute = "execute";
 constexpr std::string_view pre_processing_substitute = "substitute";
 constexpr std::string_view post_processing_execute = "execute";
 constexpr std::string_view post_processing_ignore = "ignore";
+
+/**
+ * @brief The kinds of report instance.
+ *
+ * A production instance prepares the engine's input, computes it on the grid and records
+ * the results. A package instance prepares the input and stops, so the packages the grid
+ * would receive can be inspected and run locally. The codes are the rows of the report
+ * instance kinds lookup.
+ */
+constexpr std::string_view instance_kind_production = "production";
+constexpr std::string_view instance_kind_package = "package";
+
+/**
+ * @brief Whether @p value names a kind of report instance this component implements.
+ */
+[[nodiscard]] constexpr bool is_known_instance_kind(std::string_view value) {
+    return value == instance_kind_production || value == instance_kind_package;
+}
 
 /**
  * @brief Whether @p value names a pre-processing behaviour this component implements.
@@ -426,7 +449,8 @@ template <typename Command>
  * message, because the engine rebuilds it on every dispatch and on recovery.
  * A run that executes every phase is: gather_trades, gather_market_data,
  * assemble_bundle, prepare_ore_package, submit_compute, collect_compute_results,
- * finalise. A run that substitutes pre-processing replaces the first four with
+ * finalise. A package instance runs the first four and finalise, and never reaches
+ * the grid. A run that substitutes pre-processing replaces the first four with
  * resolve_prepared_input; one that ignores results replaces
  * collect_compute_results with ignore_compute_results.
  *
@@ -438,7 +462,7 @@ register_report_execution_workflow(ores::workflow::service::workflow_registry& r
     using namespace ores::workflow::service;
 
     workflow_definition def;
-    def.type_name = "report_execution_workflow";
+    def.type_name = std::string(report_execution_workflow_type);
     def.description = "Executes a risk report end-to-end: prepares the engine's input, "
                       "submits it to the compute grid, records the results, and finalises "
                       "the report.";
@@ -468,6 +492,21 @@ register_report_execution_workflow(ores::workflow::service::workflow_registry& r
         } else {
             throw std::runtime_error("report_execution_workflow: unknown pre-processing '" +
                                      req.pre_processing + "'");
+        }
+
+        // A package instance stops once the input is prepared: the packages are what it
+        // is for, and the grid never sees the run.
+        const auto kind = req.kind.value_or(std::string(instance_kind_production));
+        if (!is_known_instance_kind(kind))
+            throw std::runtime_error("report_execution_workflow: unknown instance kind '" + kind +
+                                     "'");
+        if (kind == instance_kind_package) {
+            if (req.pre_processing != pre_processing_execute)
+                throw std::runtime_error(
+                    "report_execution_workflow: a report that substitutes its input has no "
+                    "packages to build, because the archive it names is its package");
+            steps.push_back(detail::make_finalise());
+            return steps;
         }
 
         steps.push_back(detail::make_submit_compute(std::move(input_step)));

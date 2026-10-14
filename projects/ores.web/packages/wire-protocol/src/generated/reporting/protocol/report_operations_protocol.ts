@@ -28,10 +28,12 @@ export interface TriggerReportInstanceRequest {
     report_definition_id: string;
     tenant_id: string;
     job_instance_id: number;
+    kind: string;
 }
 
 export interface TriggerReportInstanceResponse {
     result: Result;
+    report_instance_id: string;
 }
 
 export interface ScheduleReportDefinitionsRequest {
@@ -220,6 +222,7 @@ export interface ReportExecutionRequest {
     pre_processing: string;
     prepared_input_key: string;
     post_processing: string;
+    kind: string | null;
 }
 
 export interface ResolvePreparedInputRequest {

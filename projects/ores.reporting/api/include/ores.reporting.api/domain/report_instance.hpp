@@ -84,6 +84,15 @@ struct report_instance final {
     boost::uuids::uuid definition_id;
 
     /**
+     * @brief What this instance does: production prepares the input, computes it on the grid and
+     * records the results, and package prepares the input and stops, so that its packages can be
+     * inspected and run locally. Refers to ores_reporting_report_instance_kinds_tbl. The scheduler
+     * creates production instances only, the concurrency policy of the definition counts them only,
+     * and a list shows them unless the caller asks for another kind.
+     */
+    std::string kind = "production";
+
+    /**
      * @brief The IAM run grant that this run acts under. Copied from the definition when the
      * scheduler trigger admits the run. The instance records the grant id so that a later change to
      * the definition's consent cannot change the authority of a run that is already in flight. IAM

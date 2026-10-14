@@ -24,6 +24,8 @@
 \ir ./reporting_report_instances_notify_trigger_drop.sql
 \ir ./reporting_report_instances_fsm_guard_drop.sql
 \ir ./reporting_report_instances_drop.sql
+\ir ./reporting_report_instance_kinds_notify_trigger_drop.sql
+\ir ./reporting_report_instance_kinds_drop.sql
 \ir ./reporting_risk_report_config_books_drop.sql
 \ir ./reporting_risk_report_config_portfolios_drop.sql
 \ir ./reporting_risk_report_configs_notify_trigger_drop.sql

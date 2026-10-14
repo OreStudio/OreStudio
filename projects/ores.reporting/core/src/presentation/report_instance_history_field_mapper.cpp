@@ -43,6 +43,7 @@ render_report_instance_fields(const domain::report_instance& v) {
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Definition ID", .value = boost::uuids::to_string(v.definition_id)});
+    fields.push_back({.name = "Kind", .value = v.kind});
     fields.push_back(
         {.name = "Run Grant ID",
          .value = v.run_grant_id ? boost::uuids::to_string(*v.run_grant_id) : std::string{}});

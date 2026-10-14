@@ -49,14 +49,16 @@ returns uuid as $$
     where i.tenant_id = p_tenant_id
       and i.definition_id = p_definition_id
       and i.valid_to = ores_utility_infinity_timestamp_fn()
+      and i.kind = 'production'
       and s.is_terminal = false
     order by i.valid_from
     limit 1;
 $$ language sql stable security definer set search_path = public, pg_temp;
 
 comment on function ores_reporting_in_flight_instance_fn(uuid, uuid) is
-'The id of one report instance of this definition that has not reached a
-terminal state, or null when none is in flight. The oldest is returned, so the
+'The id of one production report instance of this definition that has not reached a
+terminal state, or null when none is in flight. A package instance never counts,
+so it neither blocks a real run nor waits behind one. The oldest is returned, so the
 answer is stable while more than one waits.';
 
 revoke execute on function ores_reporting_in_flight_instance_fn(uuid, uuid) from public;

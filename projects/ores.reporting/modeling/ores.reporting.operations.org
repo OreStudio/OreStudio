@@ -34,6 +34,7 @@ service account, and the permission check reads that account's roles.
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 #+end_src
@@ -73,6 +74,17 @@ caller may act in it.
 The scheduler's job instance that caused this trigger, copied to the report
 instance's =trigger_run_id=. Zero when a caller triggers a report by hand.
 
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:default: "production"
+:END:
+
+The kind of instance to create: =production= or =package=. A =package= instance
+prepares the engine's input and stops, so a developer can inspect and run the packages
+the compute grid would receive. The default is =production=, which is what the scheduler
+asks for. The concurrency policy applies to production instances only.
+
 ** trigger_report_instance_response
 
 *** result
@@ -82,6 +94,14 @@ instance's =trigger_run_id=. Zero when a caller triggers a report by hand.
 
 Outcome of the operation, in the same shape every entity operation answers
 with, so a caller reads one result convention across the component.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The instance the trigger created, empty when it created none. A caller that asked for
+a =package= instance reads it to find the instance and the packages it stores.
 
 ** schedule_report_definitions_request
 :PROPERTIES:
@@ -738,6 +758,16 @@ Storage key of the prepared input archive. Empty unless pre_processing is
 
 Whether the run ingests the engine's results or records only that they were
 produced. Copied from the definition.
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The kind of the instance: =production= or =package=. A =package= instance gets the
+steps that prepare the engine's input and finalise, and never reaches the compute
+grid. Absent means =production=, so a run started before the kind existed keeps the
+chain it had.
 
 ** resolve_prepared_input_request
 :PROPERTIES:

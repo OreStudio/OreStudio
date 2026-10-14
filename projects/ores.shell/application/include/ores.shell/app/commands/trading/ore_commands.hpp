@@ -116,6 +116,37 @@ public:
                                std::chrono::seconds timeout);
 
     /**
+     * @brief Build, on this machine, the packages the compute grid would receive for a
+     * report, and unpack them.
+     *
+     * Runs a temporary report instance of the package kind for the definition. The
+     * instance runs the real steps that prepare the engine's input and stops before the
+     * grid, so the packages are the ones a production run would send. The command waits
+     * for the instance to finish, then downloads every package it stored and unpacks
+     * each into its own folder under @p out_dir.
+     *
+     * Marks command failure when no session is established, when the trigger is
+     * refused, when the instance fails or when the wait times out.
+     */
+    static void process_build_packages(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::string& report_definition_id,
+                                       const std::string& out_dir,
+                                       std::chrono::seconds timeout);
+
+    /**
+     * @brief Download and unpack the packages a report instance stored.
+     *
+     * Lists the packages stored under the instance's prefix and unpacks each into its
+     * own folder under @p out_dir. Says so when the instance stored none. A past
+     * instance's packages hold the data of its day, not today's.
+     */
+    static void process_fetch_packages(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::string& report_instance_id,
+                                       const std::string& out_dir);
+
+    /**
      * @brief Request a portfolio export and write the XML to a file.
      *
      * The reply carries trades and instruments, not XML, so the XML is

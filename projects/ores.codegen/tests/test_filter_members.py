@@ -17,7 +17,11 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
-from codegen.org_loader import filter_members, filter_record_fields  # noqa: E402
+from codegen.org_loader import (  # noqa: E402
+    _parse_list_default_filter,
+    filter_members,
+    filter_record_fields,
+)
 
 
 def entity(**extra):
@@ -142,3 +146,23 @@ def test_the_record_carries_each_bound_as_an_optional_string():
     for name in ('agreed_on_from', 'agreed_on_to'):
         assert fields[name]['cpp_type'] == 'std::optional<std::string>'
         assert fields[name]['ts_type'] == 'string | null'
+
+
+def test_a_default_filter_reads_a_column_and_an_expression():
+    e = entity(list_default_filter='status = std::string("active")',
+               columns=[{'name': 'status', 'cpp_type': 'std::string', 'filterable': True}])
+    assert _parse_list_default_filter(e) == {
+        'column': 'status', 'expression': 'std::string("active")'}
+
+
+def test_a_default_filter_that_is_not_a_pair_is_refused():
+    e = entity(list_default_filter='status')
+    with pytest.raises(ValueError, match="widget: list_default_filter must read"):
+        _parse_list_default_filter(e)
+
+
+def test_a_default_filter_on_a_column_the_filter_lacks_is_refused():
+    e = entity(list_default_filter='status = std::string("active")',
+               columns=[{'name': 'status', 'cpp_type': 'std::string'}])
+    with pytest.raises(ValueError, match="widget: list_default_filter names 'status'"):
+        _parse_list_default_filter(e)

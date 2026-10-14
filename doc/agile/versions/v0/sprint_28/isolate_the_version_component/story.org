@@ -101,10 +101,21 @@ Resolving "beside the running executable" reuses the existing
 =ores.utility= introduces no new dependency edge, since that library
 already links =ores.platform=.
 
-** Why each target works. A local build writes the manifest into
-=publish/bin= next to the binaries. A package and a deployed image copy
-=publish/= wholesale, so the manifest travels with the binary and the
-executable-relative lookup finds it without knowing the working directory.
+** Why each target works, and what it cost. A local build writes the
+manifest into =publish/bin= next to the binaries. A package and a deployed
+image do not copy =publish/= wholesale: they stage a curated subset, so each
+stager has to carry the manifest explicitly or the image silently reports an
+unknown commit. Both were taught to. =docker/stage-runtime.sh=, which feeds
+the compute image, copies it into its flat =bin/=. And
+=library_partition.stage_for_build()=, which feeds the base and runtime
+images, copies it beside each service in =services/<svc>/bin/=.
+
+Copying it into the flat =bin/= before the =ldd= walk is a trap worth
+recording. =ldd= fails on anything that is not an ELF binary, and
+=stage-runtime.sh= runs under =set -euo pipefail=, so a single failing
+=ldd= aborted the staging in silence and produced an image carrying no
+libraries at all. The walk is now tolerant of a non-binary, and the manifest
+is copied after it.
 
 ** Nothing may depend on the manifest. This is the one way to reintroduce
 the bug. The manifest must not appear in =BYPRODUCTS=, in =DEPENDS=, in

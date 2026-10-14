@@ -88,8 +88,7 @@ std::vector<std::filesystem::path> manifest_candidates() {
     const auto executable = ores::platform::process::executable_path();
     if (!executable.empty())
         candidates.push_back(executable.parent_path() / manifest_filename);
-    candidates.emplace_back(std::filesystem::path("/usr/local/share/ores") /
-                            manifest_filename);
+    candidates.emplace_back(std::filesystem::path("/usr/local/share/ores") / manifest_filename);
     candidates.emplace_back(std::filesystem::path("/etc/ores") / manifest_filename);
     return candidates;
 }
@@ -128,8 +127,7 @@ std::string read_build_info() {
 const char* build_info() {
     static const std::string info = [] {
         std::string from_manifest = read_build_info();
-        return from_manifest.empty() ? std::string("unknown")
-                                     : std::move(from_manifest);
+        return from_manifest.empty() ? std::string("unknown") : std::move(from_manifest);
     }();
     return info.c_str();
 }

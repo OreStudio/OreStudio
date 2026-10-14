@@ -8,7 +8,7 @@
 #+filetags: :dq:codegen:cleanup:finish-the-dq-artefact-migration:sprint_28:v0:
 #+owner: marco
 #+branch: feature/settle-the-owner-of-the-dq-only-models
-#+pr:
+#+pr: 3312
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -161,7 +161,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3312][#3312]] | [dq] Settle the owner of the DQ-only artefact models |
 
 * Review
 

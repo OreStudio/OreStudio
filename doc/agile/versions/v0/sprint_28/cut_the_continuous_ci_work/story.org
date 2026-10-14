@@ -21,11 +21,11 @@ Continuous Linux builds and tests the tree without coverage instrumentation and 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-14                               |
 
 * Acceptance
@@ -39,8 +39,8 @@ Continuous Linux builds and tests the tree without coverage instrumentation and 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8B97A3B1-F907-4FC3-8028-AA7CBE08B444][Scaffold story: Cut the work the continuous CI jobs carry]] | STARTED | 2026-10-14 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:36856431-DA44-49EC-AD62-60270158CB70][Take coverage and packaging off the continuous runs]] | STARTED | 2026-10-14 | | Initial task for: Cut the work the continuous CI jobs carry |
+| [[id:8B97A3B1-F907-4FC3-8028-AA7CBE08B444][Scaffold story: Cut the work the continuous CI jobs carry]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:36856431-DA44-49EC-AD62-60270158CB70][Take coverage and packaging off the continuous runs]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Cut the work the continuous CI jobs carry |
 
 * Decisions
 

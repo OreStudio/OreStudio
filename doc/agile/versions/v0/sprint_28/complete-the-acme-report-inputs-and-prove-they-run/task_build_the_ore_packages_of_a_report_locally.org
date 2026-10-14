@@ -8,7 +8,7 @@
 #+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
-#+pr: 3295
+#+pr: 3299
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3299][#3299]] | [reporting] Name a run's data files in the run document |
 | [[https://github.com/OreStudio/OreStudio/pull/3295][#3295]] | [reporting] Complete the ACME report inputs and prove they run |
 | [[https://github.com/OreStudio/OreStudio/pull/3283][#3283]] | [reporting] Build and fetch a report's ORE packages locally |
 

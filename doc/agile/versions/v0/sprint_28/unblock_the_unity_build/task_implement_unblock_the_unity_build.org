@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: F25AD584-4A4C-48DE-8B25-7E3BA740DA1F
+:END:
+#+title: Task: Hoist small_kappa_threshold into one public constant
+#+description: Initial task for: Unblock the unity build by hoisting the small-kappa threshold
+#+type: task
+#+level: s1
+#+filetags: :unblock_the_unity_build:sprint_28:v0:
+#+owner: marco
+#+branch: feature/unblock-the-unity-build
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FDDA1BCF-5CC4-4DE4-84AD-6B33E159E80C][Unblock the unity build by hoisting the small-kappa threshold]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The analytics quant component compiles with unity builds enabled, and the value has one definition.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FDDA1BCF-5CC4-4DE4-84AD-6B33E159E80C][Unblock the unity build by hoisting the small-kappa threshold]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- One definition of small_kappa_threshold exists, in a public header.
+- The component builds with CMAKE_UNITY_BUILD both on and off.
+- All six call sites keep the value they had.
+
+* Plan
+
+Define the value once in a public header of the component, include it
+from the six call sites, and delete the local copies. Confirm the
+component compiles both with unity builds on and off.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Definitions of =small_kappa_threshold=, before | 6, one per process file | =grep -rn "const double small_kappa_threshold" projects/= | b818ca68 |
+| Definitions after | 1, in the public header | same | this branch |
+| Whole-tree unity build, before | failed in 19 s in =ores.analytics.quant= | =cmake --build build/output/unity-trial= | pre-branch |
+| =ores.analytics.quant.lib=, unity on | builds, rc=0 | =cmake --build build/output/unity-trial --target ores.analytics.quant.lib= | this branch |
+| =ores.analytics.quant.lib=, unity off | builds, rc=0 | =cmake --build build/output/nounity-trial --target ores.analytics.quant.lib= | this branch |
+
+* Notes
+
+** Why an anonymous namespace did not help
+
+Five of the six files already wrapped the value in an anonymous namespace
+and one defined it directly. A unity build concatenates the files into a
+single translation unit, which merges every unnamed namespace into one, so
+the same name is then declared repeatedly in one namespace. Internal
+linkage is no protection.
+
+** Why a public header
+
+The value is one concept shared by six sibling files, so it belongs in one
+place. It sits in the component's public include tree with the rest of the
+process layer, and every consumer that includes the header gets it.
+
+** Why inline const and not inline constexpr
+
+The house style for public constants is =inline constexpr=, but
+=std::sqrt= is not =constexpr= in this toolchain: clang reports
+=non-constexpr function 'sqrt' cannot be used in a constant expression=.
+=inline const= keeps one definition and leaves the derivation readable
+rather than hard-coding =2^-26=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =format= failed on the first gate run: clang-format wanted the new include sorted after =math/psd_matrix.hpp=. | the two files that include both | Fixed | Ran clang-format over the changed files and folded the result into the commit. |
+| 2 | =inline constexpr= did not compile: clang reports =non-constexpr function 'sqrt' cannot be used in a constant expression=. | small_kappa_threshold.hpp | Fixed | Used =inline const=, which still gives one definition and keeps the derivation readable. |
+| 3 | The heavy phase was not completed. | - | Accepted | The change only adds a header the six affected files include, and their component builds with unity on and off, which is the relevant build evidence. The suites need services and a database this checkout cannot reach. |
+| 4 | =small_kappa_threshold.hpp= names one constant, so the next shared constant has nowhere to go. | the new header | Fixed | Renamed to =constants.hpp=, the process layer's shared constants, and the guard follows the name. |
+
+* Result
+
+=small_kappa_threshold= now has one definition, in
+=ores.analytics.quant/service/processes/constants.hpp=, and the six process
+files include it. Their local copies are gone.
+
+The header is named for the layer rather than for the one constant, so
+further constants the process layer shares belong in it.
+
+The component builds with =CMAKE_UNITY_BUILD= on and off, before and after
+the rename. The two unity objects that previously failed on the
+redefinition compile, so the collision that stopped the whole-tree unity
+build after 19 seconds is cleared. The next collision, if any, sits
+further into the tree.

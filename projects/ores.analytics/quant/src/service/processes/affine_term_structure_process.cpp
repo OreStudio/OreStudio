@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/affine_term_structure_process.hpp"
 #include "ores.analytics.quant/math/psd_matrix.hpp"
+#include "ores.analytics.quant/service/processes/constants.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -26,17 +27,6 @@
 #include <utility>
 
 namespace ores::analytics::quant::service {
-
-namespace {
-
-/**
- * @brief Below this value a mean-reversion sum behaves as zero and the
- * per-tick variance factor collapses to its dt limit (the hull_white
- * and two_factor_gaussian convention).
- */
-const double small_kappa_threshold = std::sqrt(std::numeric_limits<double>::epsilon());
-
-} // namespace
 
 affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kappas,
                                                              Eigen::MatrixXd sigma,

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
+#include "ores.analytics.quant/service/processes/constants.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -59,14 +60,6 @@ hull_white_process::hull_white_process(double kappa,
 double hull_white_process::theta_at(std::size_t tick) const {
     const std::size_t i = tick < theta_path_.size() ? tick : theta_path_.size() - 1;
     return theta_path_[i];
-}
-
-namespace {
-// QuantLib's OrnsteinUhlenbeckProcess branches at this same threshold
-// (speed < sqrt(QL_EPSILON)) rather than a bare kappa <= 0 check -- kappa
-// values positive but too small to divide by safely still need the
-// algebraic small-kappa limit, not just kappa == 0 exactly.
-const double small_kappa_threshold = std::sqrt(std::numeric_limits<double>::epsilon());
 }
 
 double hull_white_process::next() {

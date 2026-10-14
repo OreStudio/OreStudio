@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: FDDA1BCF-5CC4-4DE4-84AD-6B33E159E80C
+:END:
+#+title: Story: Unblock the unity build by hoisting the small-kappa threshold
+#+description: Six process files each defined their own small_kappa_threshold in an anonymous namespace. A unity build concatenates them into one translation unit, which merges the unnamed namespaces and rejects the repeated name, so a whole-tree unity build stopped after 19 seconds in ores.analytics.quant. Hoist the value into one public constant of the component and include it where it is used.
+#+type: story
+#+level: s2
+#+filetags: :analytics:build:unity:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The analytics quant component compiles with unity builds enabled, and the value has one definition.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- One definition of small_kappa_threshold exists, in a public header.
+- The component builds with CMAKE_UNITY_BUILD both on and off.
+- All six call sites keep the value they had.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:28F63ED7-23E6-4FDF-9702-D1BFC96D0E86][Scaffold story: Unblock the unity build by hoisting the small-kappa threshold]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F25AD584-4A4C-48DE-8B25-7E3BA740DA1F][Hoist small_kappa_threshold into one public constant]] | DONE | 2026-10-14 | 2026-10-14 | Initial task for: Unblock the unity build by hoisting the small-kappa threshold |
+
+* Decisions
+
+- The six copies became one public constant instead of six uniquely named
+  ones. The copies were the same tolerance, and renaming them would have
+  hidden that.
+- The constant is =inline const= rather than the house-style =inline
+  constexpr=, because =std::sqrt= is not =constexpr= in this toolchain.
+- The header lives in the component's public include tree, beside the
+  process layer it serves, so any consumer can use the same value.
+
+* Out of scope
+
+- Any further unity-build blockers. This clears the first collision only.
+  A whole-tree unity build has to run again to find the next one.

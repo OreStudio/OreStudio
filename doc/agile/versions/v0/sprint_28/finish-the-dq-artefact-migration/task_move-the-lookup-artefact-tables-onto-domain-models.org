@@ -26,11 +26,11 @@ No artefact table comes from the lookup template, and the template is retired.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] |
-| Now          | Delivered on the branch; the build and the suites are outstanding. |
+| Now          | Done. The build, the suites and the SQL tests are green. |
 | Waiting on   | Nothing.                               |
-| Next         | Build with the release-ninja preset, run the refdata and shell suites, then close. |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -117,3 +117,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered: no DQ artefact table comes from the lookup template, and the
+template is gone.
+
+Measured at =5518313880=, with
+=cd projects/ores.sql/create/dq && grep -h "Template:" *_artefact_create.sql | sed 's/.*Template: //' | sort | uniq -c=:
+119 tables from =sql_schema_domain_entity_artefact_create=, 9 from the
+junction template, and 0 from =sql_schema_artefact_create=. The template,
+its literate source, its entry in =get_schema_template_mappings= and the
+four codegen tests that rendered it are deleted.
+
+Verification, all at =5518313880=:
+
+- =./compass.sh build= with the =linux-clang-release-ninja= preset:
+  4254 of 4254 targets, exit 0.
+- =./compass.sh test run --preset linux-clang-release-ninja=:
+  93 of 93 suites passed, 0 failed, 1096 s.
+- =./projects/ores.sql/test/run_tests.sh=: 51 files, 507 tests, PASS.
+- =./compass.sh check --exclude-heavy=: 41 of 41.
+
+The pgTAP run needs an active tenant that people set up. A =db recreate=
+leaves only the system tenant, and CLI provisioning leaves the Acme tenant
+in =bootstrapping= until the provisioning wizard runs its
+=complete_provisioning= step, so the four isolation files fail on their own
+fixture before it is activated. Completing it the way the wizard does, with
+=ores_iam_mark_tenant_active_fn=, is what they need; this branch touches
+none of the tables they assert on.

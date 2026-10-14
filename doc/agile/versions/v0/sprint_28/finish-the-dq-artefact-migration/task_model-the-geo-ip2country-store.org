@@ -8,7 +8,7 @@
 #+filetags: :dq:codegen:geo:cleanup:finish-the-dq-artefact-migration:sprint_28:v0:
 #+owner: marco
 #+branch: feature/model-the-geo-ip2country-store
-#+pr:
+#+pr: 3316
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -136,7 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3316][#3316]] | [geo] Model the ip2country store and generate its staging table |
 
 * Review
 

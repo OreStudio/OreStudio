@@ -268,3 +268,29 @@ TEST_CASE("the instance kinds this component implements are production and packa
     CHECK_FALSE(wf::is_known_instance_kind("rehearsal"));
     CHECK_FALSE(wf::is_known_instance_kind(""));
 }
+
+TEST_CASE("finalise waits for the step whose result it completes", tags) {
+    // A step that waits for nothing is dispatched at once, so a finalise with no
+    // dependency races the chain it exists to close: it marks the instance complete
+    // while the run is still setting it running, and the state machine refuses a move
+    // from pending to completed.
+    const auto waits_for = [](const svc::workflow_step_def& step, const std::string& name) {
+        for (const auto& consumed : step.consumes) {
+            if (consumed == name)
+                return true;
+        }
+        return false;
+    };
+
+    const auto package = steps_for(run_request("execute", "", "execute", "package"));
+    REQUIRE(package.back().name == "finalise");
+    CHECK(waits_for(package.back(), "prepare_ore_package"));
+
+    const auto collected = steps_for(run_request("execute", "", "execute", "production"));
+    REQUIRE(collected.back().name == "finalise");
+    CHECK(waits_for(collected.back(), "collect_compute_results"));
+
+    const auto ignored = steps_for(run_request("execute", "", "ignore", "production"));
+    REQUIRE(ignored.back().name == "finalise");
+    CHECK(waits_for(ignored.back(), "ignore_compute_results"));
+}

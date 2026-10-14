@@ -414,7 +414,15 @@ template <typename Command>
     return s;
 }
 
-[[nodiscard]] inline workflow_step_def make_finalise() {
+/**
+ * @brief The step that completes a run.
+ *
+ * It waits for the step whose completion is the run's result. A step with
+ * nothing to wait for is dispatched at once, so a finalise that declares no
+ * dependency races the chain it exists to close, and can mark the instance
+ * complete while the run is still setting it running.
+ */
+[[nodiscard]] inline workflow_step_def make_finalise(std::string previous_step) {
     using namespace ores::reporting::messaging;
     workflow_step_def s;
     s.name = "finalise";
@@ -422,6 +430,7 @@ template <typename Command>
     s.command_subject = std::string(finalise_report_request::nats_subject);
     s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
+    s.consumes = {std::move(previous_step)};
 
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results&) -> std::string {
@@ -505,22 +514,25 @@ register_report_execution_workflow(ores::workflow::service::workflow_registry& r
                 throw std::runtime_error(
                     "report_execution_workflow: a report that substitutes its input has no "
                     "packages to build, because the archive it names is its package");
-            steps.push_back(detail::make_finalise());
+            steps.push_back(detail::make_finalise(std::move(input_step)));
             return steps;
         }
 
         steps.push_back(detail::make_submit_compute(std::move(input_step)));
 
+        std::string results_step;
         if (req.post_processing == post_processing_ignore) {
+            results_step = "ignore_compute_results";
             steps.push_back(detail::make_ignore_compute_results());
         } else if (req.post_processing == post_processing_execute) {
+            results_step = "collect_compute_results";
             steps.push_back(detail::make_collect_compute_results());
         } else {
             throw std::runtime_error("report_execution_workflow: unknown post-processing '" +
                                      req.post_processing + "'");
         }
 
-        steps.push_back(detail::make_finalise());
+        steps.push_back(detail::make_finalise(std::move(results_step)));
         return steps;
     };
 

@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 9D4D10F4-1FD0-4DD1-8D4E-7D05E3C27D7B
 :END:
-#+title: Task: Make the persona cache tests independent of the user cache
-#+description: Initial task for: Fix the failing local gate checks
+#+title: Task: Make both failing checks pass where they run
+#+description: Move the persona cache out of the user's home and into the checkout, and give the four tenant policy suites their own provisioned fixture instead of one they must find.
 #+type: task
 #+level: s1
 #+filetags: :fix_the_failing_local_gate_checks:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/fix-the-failing-local-gate-checks
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:40D4C718-6D87-439D-8816-7BF6428C9977][Fix the failing local gate checks]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Get the local gate green for reasons that hold on any machine, not just this one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:40D4C718-6D87-439D-8816-7BF6428C9977][Fix the failing local gate checks]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -84,3 +84,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The persona cache is now .cache/ores-personas under the checkout, which is
+already gitignored, and prepare_profile no longer chmods the user's home.
+The compass suite passes exactly as the gate runs it: 398 passed, 1 skipped.
+
+Four pgTAP suites searched for a provisioned tenant and, finding none, set a
+NULL tenant through set_config, which stopped row-level security from
+restricting and made them fail for reasons unrelated to the policies they
+test. Each now provisions its own tenant through ores_iam_provision_tenant_fn
+and rolls it back. The corpus is green: 52 files, 512 tests.

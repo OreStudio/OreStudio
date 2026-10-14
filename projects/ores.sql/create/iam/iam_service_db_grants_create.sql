@@ -169,6 +169,7 @@ select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
 select _ores_grant_select_fn('ores_assets_', :'iam_service_user');
 select _ores_grant_select_fn('ores_dq_', :'iam_service_user');
 select _ores_grant_select_fn('ores_refdata_', :'iam_service_user');
+select _ores_grant_select_fn('ores_geo_', :'iam_service_user');
 select _ores_grant_execute_fn('ores_assets_get_template_image_', :'iam_service_user');
 select _ores_grant_execute_fn('ores_iam_unapplied_role_grants_', :'iam_service_user');
 

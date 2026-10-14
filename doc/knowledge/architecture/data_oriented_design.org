@@ -48,12 +48,22 @@ it is not itself a check, so never score it.
 
 ** There is no entity
 
-The component chapter of the Data-Oriented Design book names the step of
-turning a class into "containers of smaller objects" as a transitional
-state, and puts the destination beyond it. "A component based object is
-nothing more than the sum of its parts", and its definition is "an
-inventory with some construction arguments". The subsection is titled
-[[https://www.dataorienteddesign.com/dodmain/node5.html#SECTION00540000000000000000][There is no Entity]].
+The rule is section 5.4 of Richard Fabian's /Data-Oriented Design/ (2013),
+*There is no Entity*
+([[https://www.dataorienteddesign.com/dodmain/node5.html#SECTION00540000000000000000][dodmain/node5.html]]).
+The section names the step of turning a class into "containers of smaller
+objects, an approach often called composition" as a transitional state,
+and puts the destination beyond it: "A component based object is nothing
+more than the sum of its parts", and its definition is "an inventory with
+some construction arguments".
+
+The reading this project takes is the one the trading model wrote down:
+no object graph is modelled; rows are atomised and keyed; relationships
+are foreign keys and joins; there is no parent that owns children, and no
+aggregate versions as a whole. An aggregate comes into being only when a
+read or a message needs one. See
+[[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][dfe15809]], the trading
+data-oriented model.
 
 Two consequences bind this project, and both are reviewable.
 
@@ -297,6 +307,12 @@ component's regime is a review error, not a finding.
 
 * See also
 
+- Richard Fabian, =Data-Oriented Design= (2013) — the book this page draws
+  its axioms and its section 5.4 rule from.
+  https://www.dataorienteddesign.com/dodmain/
+- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][dfe15809]] — the trading
+  data-oriented model, where the project's reading of section 5.4 is
+  written out.
 - [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] — the sibling criteria set for general
   component and PR review.
 - [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][compass-code-review-component]] — the broad whole-component audit this lens

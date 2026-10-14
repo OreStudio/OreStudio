@@ -8,7 +8,7 @@
 #+filetags: :trigger_a_report_run_on_demand_or_on_a_schedule:sprint_28:v0:
 #+owner: marco
 #+branch: feature/clean-up-and-prove-the-ore-packages
-#+pr:
+#+pr: 3320
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3320][#3320]] | [reporting] Grant a run when a person triggers one |
 
 * Review
 

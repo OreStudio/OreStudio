@@ -89,13 +89,26 @@ public:
 
         const auto bearer = ores::nats::service::extract_bearer(msg);
 
-        get_vintage_validity_response resp;
-        resp.success = true;
-        resp.entries = registry_.vintage_validity(ctx, auth_nats_, bearer);
+        // The registry reads the configured feeds, so it can throw. An
+        // exception leaving this handler reaches the transport, which contains
+        // it but sends no reply, and the caller waits out its deadline for an
+        // answer this handler could have given.
+        try {
+            get_vintage_validity_response resp;
+            resp.success = true;
+            resp.entries = registry_.vintage_validity(ctx, auth_nats_, bearer);
 
-        BOOST_LOG_SEV(vintage_validity_handler_lg(), info)
-            << msg.subject << " — " << resp.entries.size() << " feed(s) checked.";
-        reply(nats_, msg, resp);
+            BOOST_LOG_SEV(vintage_validity_handler_lg(), info)
+                << msg.subject << " — " << resp.entries.size() << " feed(s) checked.";
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(vintage_validity_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_vintage_validity_response failure;
+            failure.success = false;
+            failure.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
 private:

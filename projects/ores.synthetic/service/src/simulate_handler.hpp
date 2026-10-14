@@ -103,7 +103,19 @@ public:
             return;
         }
 
-        e->reply_simulate(nats_, msg, run_simulate_paths(*env));
+        // The simulation runs the feed's own path generation, which can throw
+        // on a configuration that does not fit. An exception leaving this
+        // handler reaches the transport, which contains it but sends no reply,
+        // and the caller waits out its deadline for an answer this handler
+        // could have given.
+        try {
+            e->reply_simulate(nats_, msg, run_simulate_paths(*env));
+        } catch (const std::exception& ex) {
+            BOOST_LOG_SEV(simulate_handler_lg(), error)
+                << "Simulate failed for " << kind << ": " << ex.what();
+            e->reply_simulate(
+                nats_, msg, feed_simulation_result{.success = false, .message = ex.what()});
+        }
         BOOST_LOG_SEV(simulate_handler_lg(), debug) << "Reply sent for " << kind << ".simulate.";
     }
 

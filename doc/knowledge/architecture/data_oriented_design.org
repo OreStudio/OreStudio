@@ -60,24 +60,34 @@ some construction arguments".
 The reading this project takes is the one the trading model wrote down:
 no object graph is modelled; rows are atomised and keyed; relationships
 are foreign keys and joins; there is no parent that owns children, and no
-aggregate versions as a whole. An aggregate comes into being only when a
-read or a message needs one. See
+aggregate versions as a whole. See
 [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][dfe15809]], the trading
 data-oriented model.
 
-Two consequences bind this project, and both are reviewable.
+Three consequences bind this project, and all are reviewable.
 
-- A C++ type that holds its parts as named members is the transitional
-  composition form, not the target. It earns its place as a boundary
-  value or a local convenience, never as the shape of an entity.
+- The components are separate types. No aggregate type represents an
+  entity, whether its parts are nested members or a read-time aggregate.
+  Each component has its own type, its own key, and its own codec.
 - There is no entity object, so no entity object travels. A message
-  carries flat value fields. A composite C++ type is projected flat for
-  the wire, and its members never appear as nested JSON objects.
+  carries one typed array per component, joined by key. One component's
+  fields never appear as nested objects inside another.
+- The unified view is assembled for display. A screen that needs one row
+  from several components reads the arrays for one page and zips them.
+  The server keeps filtering, ordering, paging and the total, so the
+  arrays stay aligned. A screen that spans several entities is a read
+  model, never a client join; see
+  [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol
+  specification]].
 
-The second consequence is a live gap. Codegen projects the C++ type
-directly, so a grouped entity's members do appear nested on the wire
-today; the trading instrument fixtures carry =identity= at the top
-level. That is a defect against this rule, not a licence for it.
+This is the target for every component, not for one. Codegen does not
+reach it yet: it emits one aggregate type per entity and projects that
+type directly, so a grouped entity's members appear nested on the wire,
+as the trading instrument fixtures do with =identity=. The atomised shape
+is a codegen change, and until it lands an aggregate is a known defect
+against this rule rather than a licence for it. The atomised shape also
+relieves the translation-unit pressure the C1202 section records, because
+no unit reflects one wide entity type.
 
 ** Where each axiom applies
 

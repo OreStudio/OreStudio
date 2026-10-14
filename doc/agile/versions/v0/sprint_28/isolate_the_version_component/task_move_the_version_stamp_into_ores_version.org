@@ -26,11 +26,11 @@ Take the per-commit build stamp out of every compiled artifact and carry it in a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:90132573-0DE8-4EF7-A2FA-ED2266488651][Isolate the version stamp into its own component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -84,3 +84,54 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The commit is out of every binary and in a manifest read at runtime, so a
+commit changes no compiled file.
+
+=version.cpp= no longer contains the commit, so =copy_if_different= leaves it
+alone and nothing recompiles or relinks when a commit lands. The commit,
+branch and dirty flag are written to =version.manifest= beside the binaries
+by the same generator, and =build_info()= reads the first manifest that
+carries =build_info=, caching it in a function-local static. The manifest is
+not a BYPRODUCT or a dependency of anything, because a build input that
+changes every commit is what relinks the tree.
+
+No =ores.version= component was created. With nothing embedded the cascade
+disappears on its own, so a separate shared library would have bought a
+codegen ceremony for one translation unit and no benefit.
+
+Measured:
+
+| Build | Compiles | Links |
+|-------+----------+-------|
+| A commit lands, nothing compiled changed | 0 | 0 |
+| A genuine change to =version.cpp= | 1 | 177 |
+
+The first row is the case that used to recompile =version.cpp= and relink
+all 179 targets. The second is the mechanism working as designed: a real
+content change still costs a real relink, and the stamp is no longer what
+drives it.
+
+Staging was the part the design first got wrong. Neither stager copies
+=publish/= wholesale, so both had to carry the manifest explicitly:
+=docker/stage-runtime.sh= into its flat =bin/=, and
+=library_partition.stage_for_build()= beside each service in
+=services/<svc>/bin/=. Copying it into the flat =bin/= before the =ldd= walk
+is a trap: =ldd= fails on a non-binary and that script runs under
+=set -euo pipefail=, so the staging aborted in silence and produced an image
+carrying no libraries at all. The walk is now tolerant and the copy happens
+after it.
+
+Verified end to end:
+
+- =build_info()= returns =local 797a4d893e= with a manifest beside the test
+  executable and =unknown= with none, so absence degrades rather than
+  failing.
+- The compute image =localhost/ores-compute-wrapper:0.0.28-5ac7b42e16=
+  deployed to goedel, three nodes healthy, logging
+  =Starting ores.compute.wrapper v0.0.28 [x64-linux] Protocol 0.1 (local
+  3e33987ffc ...)=.
+- The local environment stopped and started, 24 units active, logging the
+  same commit from =ores.ore.service= and =ores.compute.wrapper=.
+- The compass suite is at 401 passing, including two new tests for the
+  manifest being staged and its absence being survivable.

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 2A815158-3CF3-41BE-9078-A1F02A6ED227
+:END:
+#+title: The compute service spends 5% CPU polling with nothing to do
+#+description: ores.compute.service publishes a NATS request about every half-second, indefinitely, and sits at roughly 5% CPU with no batches in flight. Three timer-driven loops and the dispatcher are the candidates; which one owns the traffic is not yet established.
+#+type: capture
+#+level: cross
+#+filetags: :compute:grid:performance:polling:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Find out what ores.compute.service does with an idle grid, and stop it paying
+for it. Either the loop is doing work nobody asked for, or its interval is far
+shorter than the work needs.
+
+* Why
+
+Seen on brave_hopper on 2026-10-13: the service sits at roughly 5% CPU
+permanently, with no batches in flight and no workunits to claim. Its log is a
+continuous stream of NATS request/reply round trips, about one every half a
+second, never stopping, in three repeating shapes:
+
+#+begin_example
+NATS publish: _INBOX.AJ0Q0GTSB8IB.0_LR000000000
+NATS publish: _INBOX.S76BH2UBYPTY.0_lR000000000
+NATS publish: _INBOX.6I20BC0M9WLH.0_iR000000000
+#+end_example
+
+A call every half-second that changes nothing is the same shape as the market
+data ingest's cost: a per-iteration round trip rather than payload. On its own
+5% is survivable, but this is one of nineteen services on one machine, and the
+whole fleet pays an idle tax for each loop like it.
+
+Three timer-driven loops and the dispatcher are the candidates, all in
+=projects/ores.compute/service/src/app/=:
+
+- =compute_grid_poller= — "Samples server-side compute grid metrics on a fixed
+  interval", once per interval.
+- =lease_reaper= — reclaims the claims a host abandoned; it publishes on the
+  work-available subject.
+- =batch_workflow_bridge= — "runs every @p interval_seconds seconds. For each
+  pending…"; it publishes and then removes, with a comment about a restart
+  between the two.
+- =workunit_dispatcher= — publishes one assignment per result.
+
+Each takes its interval as a constructor argument from
+=cfg.telemetry_interval_seconds= (=application.cpp:145=).
+
+What is not yet established, and is the first thing to find: which of these owns
+the half-second traffic, and whether the rate is intended. The guess worth
+testing first is the grid poller, because sampling a grid that is doing nothing
+is the one loop whose work does not depend on there being anything to do — but
+that is a guess and not a measurement. The three shapes repeating may be a clue:
+if each shape is one loop, then more than one of them is running at that rate.
+
+*Correction, 2026-10-13.* Part of that 5% was not the round trip at all: it was
+writing a line about it. =ores.nats= logged every publish and every request at
+info, so an idle caller writing a request every half second wrote a log line
+every half second, formatted and handed to journald, forever. The publish path
+tried to throttle this by remembering subjects it had already logged — but a
+request/reply inbox is a new subject every time, so the set never held a repeat
+and the throttle never fired. Both are debug now
+(=[ores.nats] Log a NATS message at debug, not info=), which removes one
+contributor. The rest of the CPU is the round trip itself, and the probe below
+is still what says which loop owns it. Anyone measuring this service should
+take the reading after that fix, or they will be measuring the logger.
+
+The next probe is cheap and decisive: name each loop's interval as it starts,
+or watch which subject each shape is addressed to, since an =_INBOX= reply
+subject does not say what was asked. Querying the service's own logs at debug
+level for a few seconds should separate them without a rebuild. Checking what
+the service logs at info in an idle minute is worth doing at the same time, as
+that correction shows: a per-message notice at info is invisible in a diff and
+very visible in =top=.
+
+* References
+
+- =projects/ores.compute/service/src/app/compute_grid_poller.cpp= — the timer at
+  =:105=, =timer.expires_after(std::chrono::seconds(interval_seconds_))=.
+- =projects/ores.compute/service/src/app/lease_reaper.cpp= — its timer at
+  =:117=, and the work-available publish at =:58=.
+- =projects/ores.compute/service/src/app/batch_workflow_bridge.cpp= — its timer
+  at =:129=, the publish at =:90=.
+- =projects/ores.compute/service/src/app/application.cpp:145= — where the
+  interval comes from.
+
+* See also
+
+- [[id:4123F26A-4205-4062-B59A-68A13234D7FC][Restarting the synthetic producer stops the market data ingest]] — the same
+  per-iteration-round-trip shape, measured on the ingest side.
+- [[id:83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7][Boot auto-start never starts a tenant's feeds. The synthetic service's boot pass...]]

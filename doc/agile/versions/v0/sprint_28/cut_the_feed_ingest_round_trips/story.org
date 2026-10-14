@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 47945343-4077-428A-8ADA-CF13629395B3
+:END:
+#+title: Story: Cut the feed ingest round trips
+#+description: The market data ingest stores one observation per tick, and every database acquisition pays a session-context round trip before the insert. Collapse the session context to a single statement and measure the cost per stored tick.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Reduce the database round trips the feed ingest pays per stored tick, and prove the reduction by measurement.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- The session context is written in one round trip per acquisition.
+- Transactions per stored tick fall well below the old cost.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C0C7E4E3-810D-44A6-A5AD-B2D98CBD4B44][Scaffold story: Cut the feed ingest round trips]] | DONE | 2026-10-13 | 2026-10-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:47720564-A6F1-4FCD-81A0-495794CB5168][Write the session context in one round trip]] | DONE | 2026-10-13 | 2026-10-14 | Initial task for: Cut the feed ingest round trips |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The session context that every connection acquisition writes is now one
+statement instead of six, and the market data ingest pays about ten
+transactions per stored tick where it paid about fifty. The measurement
+is in the task's Result.
+
+The remaining ingest cost is not in this story. The ingest still opens
+one transaction per tick and stores one row per tick; batching the ticks
+of a single instant into one transaction is captured for later, as is the
+ingest that goes silent when the synthetic producer restarts.

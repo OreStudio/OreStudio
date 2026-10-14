@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 4123F26A-4205-4062-B59A-68A13234D7FC
+:END:
+#+title: Restarting the synthetic producer stops the market data ingest
+#+description: Stopping and restarting the synthetic service leaves the market data ingest receiving nothing while the producer reports its feeds running, and restarting the ingest service does not recover it. The ingest is a core NATS subscribe, not a JetStream durable, so the stale-consumer repair does not apply.
+#+type: capture
+#+level: cross
+#+filetags: :nats:marketdata:synthetic:ingest:reliability:
+#+created: 2026-10-13
+#+updated: 2026-10-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the ingest survive a restart of the producer. Restarting the synthetic
+service must not leave the market data ingest receiving nothing, and an ingest
+that has gone quiet must recover, either by itself or on its own restart.
+
+* Why
+
+Seen on brave_hopper on 2026-10-13, while measuring the cost of storing ticks.
+The synthetic service was stopped and started again to take an idle baseline on
+the database. Afterwards the producer reported its feeds running:
+
+#+begin_example
+synthetic.v1.feed_configs.list — 24 feed(s) running
+#+end_example
+
+and the ingest reported the opposite, per binding, every minute:
+
+#+begin_example
+INGEST STATUS: source='synthetic.bloomberg.zarzaronia' tenant='2850f4af-…'
+party='25fe1820-…' ticks=1274 last_tick=5236s ago
+#+end_example
+
+The stored observations did not move at all over a twelve-second window
+(=ores_marketdata_market_observations_tbl= held at 893,777), and the database
+counters fell to their idle floor: about 57 transactions and 1.5 inserted rows
+a second, against roughly 3,258 transactions and 95 rows a second while the
+ticks were arriving. So the ingest was not slow, it was silent.
+
+Restarting =ores.marketdata.service= did not recover it: the observation count
+was still exactly 893,777 across the restart. That is the part that rules out
+the hand fix below, and it is the reason this is worth a capture rather than a
+note.
+
+The ingest does not use a JetStream durable. =feed_ingest_loop::start()=
+subscribes with core NATS:
+
+#+begin_src cpp
+const auto wildcard = std::string(domain::synthetic_tick_subject) + ".>";
+tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });
+#+end_src
+
+(=projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp:64-67=), while
+the producer publishes with =js_publish=. The comment directly above those
+lines already names a subject trap in this area:
+
+#+begin_quote
+=subscribe()= prefixes its subject for this environment, so the wildcard stays
+relative here. =subjects_below()= returns the prefixed form a stream filter
+needs, and passed to =subscribe()= it is prefixed twice and matches no tick.
+#+end_quote
+
+So the ordinary repair does not apply: there is no durable consumer for the
+market data ingest to delete and recreate. What the subject the producer
+actually publishes on is, and what the subscription resolves to after
+prefixing, is the first thing to establish. The producer logged its publish as
+=ores.dev.brave_hopper.synthetic.v1.ops.sandbox_tick.synthetic.refinitiv.eurjpy=,
+which is the prefixed form of the wildcard above, so the mismatch is not
+obvious from the names alone.
+
+Two captures are adjacent but neither covers this. The producer side is
+[[id:83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7][Boot auto-start never starts a tenant's feeds]], where a synthetic restart
+drops every tenant feed until a folder is started again — that explains why the
+feeds had to be restarted, not why the ingest then heard nothing. The other is
+[[id:FA7D1F14-B357-4BEA-8AF0-B9D7C16E3E4D][A subject rename leaves durable JetStream consumers unable to attach]], whose
+mechanism is a stored consumer filter drifting from the code; it shows up as a
+service that will not start, and it needs a rename.
+
+To be explicit about what is not yet known: whether this is a subject mismatch,
+a subscription that was torn down and never rebuilt, or something in
+=refresh()= rebuilding the bindings without re-subscribing. The measurements
+above are what has been established.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= — =start()=
+  at =:59-69=, the wildcard and the subscribe.
+- =ores_marketdata_market_observations_tbl= — the tick table, whose count did
+  not move.
+- =build/config/nats-brave_hopper.conf= — this environment's monitor port is
+  20406, not the 8222 default, which is where to look at stream and consumer
+  state.
+
+* See also
+
+- [[id:83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7][Boot auto-start never starts a tenant's feeds. The synthetic service's boot pass...]]
+- [[id:FA7D1F14-B357-4BEA-8AF0-B9D7C16E3E4D][A subject rename leaves durable JetStream consumers unable to attach]]

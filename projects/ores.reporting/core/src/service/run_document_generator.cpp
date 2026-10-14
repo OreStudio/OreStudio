@@ -146,6 +146,10 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
                             type));
         r.files.push_back({t->ore_parameter, t->name_pattern});
     }
+    // The run's own data files belong to no configuration, so the loop above never
+    // names them.
+    for (const auto* t : domain::setup_data_file_types(in.file_types))
+        r.files.push_back({t->ore_parameter, t->name_pattern});
     r.analytics = in.analytics;
     for (auto& a : r.analytics)
         if (is_on(a))

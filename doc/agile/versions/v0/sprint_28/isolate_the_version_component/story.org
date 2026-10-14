@@ -2,7 +2,7 @@
 :ID: 90132573-0DE8-4EF7-A2FA-ED2266488651
 :END:
 #+title: Story: Isolate the version stamp into its own component
-#+description: The build's git hash is compiled into ores.utility.lib, a shared library that 179 targets link, so the stamp changes on every commit and relinks all of them. Work out how version is used, size the blast radius, and move the stamp into a small component that only the code that reports the version links.
+#+description: The build's git hash is compiled into ores.utility.lib, a shared library that 179 targets link, so the stamp changes on every commit and relinks all of them. The commit moves out of every binary into a manifest read at runtime, so a commit changes no compiled file and relinks nothing.
 #+type: story
 #+level: s2
 #+filetags: :sprint_28:v0:
@@ -15,7 +15,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Contain the relink cost of the per-commit version stamp so a commit stops relinking targets that never report a version.
+Know which commit produced a running binary, without a commit changing
+any compiled artifact.
 
 * Status
 
@@ -23,15 +24,78 @@ Contain the relink cost of the per-commit version stamp so a commit stops relink
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Design agreed; implementation not started. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Implement the manifest and its reader.  |
 | Last touched  | 2026-10-14                               |
 
 * Acceptance
 
-- The consumers of version are known and each is classified as reporting it or merely carrying it.
-- The relink set a version change causes is measured before and after.
+- A commit changes no compiled file, so the build after a commit relinks
+  no target.
+- A running service, the shell and the web server report the commit that
+  produced them, wherever they run.
+- The same mechanism serves a local build, a package and a deployed
+  image.
+- A missing or unreadable manifest degrades to the release version with a
+  clear marker. It never stops a service starting.
+- The relink set a commit causes is measured before and after.
+
+* Design
+
+Agreed 2026-10-14.
+
+** Nothing is embedded in a binary. =version.cpp.in= loses
+=@ORES_BUILD_INFO@=. =version.hpp= keeps only the release numbers and the
+platform triplet, which change at release time, not per commit. Nothing
+compiled changes when a commit lands, so the relink set is empty.
+
+** A manifest carries the fast-changing facts. A JSON document written at
+build time:
+
+#+begin_src json
+{
+  "format": 1,
+  "version": "1.8.17.0",
+  "commit": "bdf73e1d24",
+  "commit_full": "bdf73e1d24...",
+  "dirty": false,
+  "branch": "main",
+  "built_at": "2026-10-14T11:06:00Z",
+  "triplet": "x64-linux",
+  "checkout_label": "brave_hopper"
+}
+#+end_src
+
+A build step writes it rather than =configure_file=, so regenerating it
+costs one file write and recompiles nothing.
+
+** Lookup order, first hit wins:
+
+1. =$ORES_VERSION_MANIFEST=
+2. =version.json= beside the running executable
+3. =usr/local/share/ores/version.json=
+4. =etc/ores/version.json=
+
+Resolving "beside the running executable" reuses the existing
+=ores.platform::process= executable path, so =ores.version= depends on
+=ores.platform=. Checked: no library cycle, because =ores.platform='s
+library does not link =ores.utility=.
+
+** Why each target works. A local build writes the manifest into
+=publish/= next to the binaries. A package and a deployed image copy
+=publish/= wholesale, so the manifest travels with the binary and the
+executable-relative lookup finds it without knowing the working
+directory.
+
+** Reading it. =ores.version= reads and caches the manifest once, so the
+file is not read per call. =build_info()= returns the commit;
+=full_version_string()= and =format_startup_message()= keep their shape.
+
+** No signing yet. This is a development traceability mechanism, so the
+manifest binds to nothing and a stale manifest beside a new binary is
+possible. Signing, and binding the artifact digest into the manifest,
+are deferred.
 
 * Tasks
 
@@ -43,6 +107,19 @@ Contain the relink cost of the per-commit version stamp so a commit stops relink
 
 * Decisions
 
+- Nothing is embedded in a binary; a manifest is the only carrier of the
+  commit. Chosen over a linker-owned stamp and over
+  =LINK_DEPENDS_NO_SHARED=, which cannot be scoped to a single dependency
+  and would blunt ABI-change detection for every shared library of a
+  target it is set on.
+- The manifest is not signed yet. It is for development traceability.
+- The manifest is JSON because the reader is C++ and the writers are a
+  build step and a packaging step.
+
 * Out of scope
 
--
+- Signing the manifest, and binding the artifact digest into it.
+- =LINK_DEPENDS_NO_SHARED=. Considered and rejected for this work.
+- The wider observation that relinking dependents of a changed shared
+  library is not required for correctness, so most of the 179 relinks are
+  wasted work. Worth a separate decision.

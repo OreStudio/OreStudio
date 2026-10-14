@@ -135,13 +135,14 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
 
     const auto run = parse<domain::ore>(original.at("ore.xml"));
     const auto exported_run = parse<domain::ore>(exported.at("ore.xml"));
-    // The export names the files it writes. The portfolio, the market data and the
-    // fixings are data the configuration does not hold, so the export writes none
-    // of them and names none.
-    auto expected_setup = parameters_of(run.Setup);
-    for (const auto* data_file : {"portfolioFile", "marketDataFile", "fixingDataFile"})
-        expected_setup.erase(data_file);
-    CHECK(parameters_of(exported_run.Setup) == expected_setup);
+    // The export names every file it hands the packaging step, the run's own
+    // data files included. The portfolio, the market data and the fixings belong
+    // to no configuration, but the packaging step places the gathered market
+    // data and fixings where the run document says they are, so a document that
+    // named none would leave them out of the package. The names come from the
+    // file type catalogue rather than from the document, which is why the
+    // example's names come back as the catalogue spells them.
+    CHECK(parameters_of(exported_run.Setup) == parameters_of(run.Setup));
     REQUIRE(exported_run.Markets);
     CHECK(parameters_of(*exported_run.Markets) == parameters_of(*run.Markets));
     REQUIRE(exported_run.Analytics.Analytic.size() == run.Analytics.Analytic.size());

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :stop_losing_workflow_steps_to_a_transient_storm:sprint_28:v0:
 #+owner: marco
-#+branch: feature/stop-losing-workflow-steps-to-a-transient-storm
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:

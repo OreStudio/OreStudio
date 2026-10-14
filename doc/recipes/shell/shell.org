@@ -1633,3 +1633,7 @@ tangled into the runnable script library
 * Fpml Account Types
 
 - [[id:084E786F-6F42-5138-9E68-2118EF68745E][How do I run the fpml_account_types commands from the shell?]]
+
+* Account Types
+
+- [[id:60803D77-F933-54BA-9E26-F559A3863A91][How do I run the account_types commands from the shell?]]

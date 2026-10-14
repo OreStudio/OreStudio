@@ -255,14 +255,18 @@ which states the exception:
 | D8 | Receipt line missing on most handlers | *fixed* | One template edit; all 400 generated handlers now log subject, correlation id, session id and tenant |
 | D5 | A decode failure that is not answered | *fixed* | =crm_handler= refuses with =bad_request=, and its bridge calls are guarded |
 | D1 | Request/reply subject without a queue group | *fixed* | =get_http_info= is now queue-subscribed as =ores.http.server= |
-| D6 | Thirty handlers that can let an exception escape | *partial* | =crm_handler= and =workflow_query_handler::list_instances= guarded. The remaining 28 need per-handler triage |
+| D6 | Thirty handlers that can let an exception escape | *fixed* | Every replying entry point is guarded, in six groups: history, marketdata, iam, synthetic preview, feed control, and the ORE import dispatch |
 | D4 | No message identity on a retryable message | *not started* | Now reachable, because D2 makes redelivery happen |
 | D7 | Two explicit deadlines without their reason | *not started* | Two comments |
 
-D6 remains the substantial item and must be done per handler rather than in
-bulk: a =publish_from_dq= consumer has no reply subject, so catching and logging
-is correct there and a reply is impossible, while a =*_query_handler= serves
-request/reply and must answer. Each of the 28 states which kind it is.
+D6 needed per-handler triage rather than a bulk edit, and the triage changed
+what the count meant. Of the 29 hand-written handler headers with no catch,
+nine are =publish_from_dq= consumers, which have no reply subject and already
+record a failure through =wf->fail=; six more either have no call that can throw
+(a header read, a token validated through an =expected=, a static schema
+description) or are one-line reply helpers. The genuine escape paths were
+thirteen entry points, and each now answers the failure instead of leaving the
+caller to time out.
 
 * See also
 

@@ -63,7 +63,12 @@ TITLES = [
     "Junior Analyst",
 ]
 
-PERSONAS_ROOT = Path.home() / ".cache" / "ores-personas"
+# The persona cache lives under the checkout rather than in the user's home.
+# A sandboxed run cannot write to the home directory, and a tool that writes
+# outside its working directory cannot run in one at all. .cache/ is
+# gitignored.
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PERSONAS_ROOT = PROJECT_ROOT / ".cache" / "ores-personas"
 FILL_TIMEOUT_SECONDS = 30
 RESTORED_FILL_TIMEOUT_SECONDS = 6
 RESTORE_WAIT_SECONDS = 8

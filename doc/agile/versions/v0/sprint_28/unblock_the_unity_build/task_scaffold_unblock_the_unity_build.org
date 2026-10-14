@@ -8,7 +8,7 @@
 #+filetags: :unblock_the_unity_build:sprint_28:v0:
 #+owner: marco
 #+branch: feature/unblock-the-unity-build
-#+pr:
+#+pr: 3292
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3292][#3292]] | [analytics] Hoist the small-kappa threshold into one public constant |
 
 * Review
 

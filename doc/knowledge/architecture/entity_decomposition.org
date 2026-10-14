@@ -1,0 +1,209 @@
+:PROPERTIES:
+:ID: B607E5B7-190F-4D38-B515-8A7B27FB6B47
+:END:
+#+title: The atomised entity: a central row and its parts
+#+description: The target for entity data modelling: an entity is one keyed central row plus parts, with no aggregate type or row that holds the whole entity. How to split, how parts are named and linked, how a write bumps the central version, how the timeline assembles the parts for a read, what the wire carries, and the limits accepted.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:data_oriented_design:entity_model:composite_entity:codegen:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+* Summary
+
+An entity is one keyed central row plus its parts. The central row carries
+the key, the owning party, the tenant, the market-data address, the change
+audit, and the entity's version. A part carries the fields that change for
+a reason of their own, and reaches the central row by its key.
+
+No aggregate type and no single row holds the whole entity. A write to any
+part bumps the central row's version in the same transaction, so the
+central row's validity windows partition time into spans in which the parts
+are stable. Reading the entity at a version, or at an instant, is therefore
+a temporal join rather than the lookup of one stored object. The wire
+carries one typed array per part, and the screen assembles them for
+display.
+
+This is the storage and wire shape behind [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
+Studio]]'s rule that there is no entity.
+
+* Detail
+
+** What an entity is
+
+An entity is a set of keyed facts, not an object. The facts that answer to
+one key are the entity. Nothing owns them, and nothing versions as a whole
+except the central row, whose version stands for the state of the whole.
+
+The rule this page applies is in [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]:
+the components are separate types, no aggregate type represents an entity,
+and no entity object travels. See also the book it cites, section 5.4 of
+Richard Fabian's /Data-Oriented Design/ (2013),
+[[https://www.dataorienteddesign.com/dodmain/node5.html#SECTION00540000000000000000][There is no Entity]].
+
+** When a field set becomes a part
+
+A field set earns a part when it has at least one of these.
+
+- Its own multiplicity, so a row is absent, one, or many for one entity.
+- Its own change reason, so it moves without the rest.
+- Its own reader, so a consumer needs it and not the rest.
+
+A field set with none of them stays a column on the central row. One row
+per entity, one change reason and one reader make it a column group in a
+table's clothes, and a part would buy a join and a message it does not
+need.
+
+The split is by access, not by real-world taxonomy. Two fields belong
+together when the same write touches both and the same read needs both.
+
+** The central row
+
+- The key is a UUID. One key shape serves every entity of every family, so
+  a part and its central row join on one column.
+- =tenant_id= and =party_id=. Isolation is by tenant and ownership is by
+  party, and both are stamped from the session rather than from the caller.
+- The natural key. The identifier the domain carries, such as the ORE id of
+  a convention, is unique per tenant and party and is not the row key.
+- The market-data reference. One address per entity, where the entity binds
+  to market data.
+- The change audit: =modified_by=, =performed_by=, =change_reason_code=,
+  =change_commentary= and =recorded_at=. Every entity carries it, and
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]'s regime 2 says so.
+- The version. It is the entity's own and no two entities share one.
+
+The version is the optimistic-concurrency token, so the rules in
+[[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning]] govern who may move it and what a
+writer must claim to be allowed to.
+
+** The parts
+
+- A part is named for its family and its own concern, such as
+  =tenor_basis_swap_pay_receive=. The family comes first, so the owner of a
+  table or a type is readable from its name.
+- A part reaches its central row by the central key and by nothing else.
+- A part is itself an entity. It carries its own audit record and its own
+  version.
+
+A part's version counts the changes to that part. The central version
+counts the changes to the entity, which is every change to any part plus
+the entity's own. The two are different sequences on different things and
+are never compared. A screen that shows both must say which is which. This
+is the distinction
+[[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] draws between a
+child's version and its parent's.
+
+** The composition rule
+
+A write to any part bumps the central entity's version, in the same
+transaction. The transaction closes the central row's window and opens a
+new one at the same instant, closes the changed part's window and opens a
+new one, and leaves every unchanged part open.
+
+Because the bump happens in the same transaction as the part write, no
+instant exists at which the parts and the central version disagree. That is
+what lets a read assemble the entity from the timeline alone, with no
+mapping table and no stored aggregate.
+
+The row lock that serialises concurrent writers, the soft-delete symmetry
+so that removing a part bumps the version too, and the multi-level case are
+in [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]].
+
+** Reading a composition from the timeline
+
+Time is the link. The central row's validity windows partition time into
+spans in which no part changed, because any part change would have closed
+the window. Within a span every part's window covers the instant, so the
+parts that composed a version are exactly the parts current at that
+version's instant.
+
+The read has two steps.
+
+1. Take the central row, either by version or by instant. Its window gives
+   the instant to resolve at.
+2. For each part, take the row with the greatest version whose window
+   covers that instant.
+
+No link table is needed, because the windows already record which part
+versions composed which central version. The interval test generalises the
+as-of point query in [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] from
+an instant to a window.
+
+A date question resolves the central row at the instant first, and then the
+parts at the same instant. A cross-entity question resolves each entity at
+the one instant. Version numbers do not cross an entity boundary, so the
+instant is what aligns several entities.
+
+** The wire
+
+The wire carries one typed array per part, aligned over one page. A part's
+fields never appear as nested objects inside another part.
+
+The server keeps filtering, ordering, paging and the total, so the arrays
+stay aligned and the screen zips them for display. That is a projection,
+not a join. A screen whose rows span several entities is a read model,
+never a client join. See
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] for the reads and the read model, and
+[[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]] for the one-array-per-type shape.
+
+The list read carries the central row and the audit alone. A list that also
+carried every part would carry the whole entity population in one reply.
+The detail read is the one that pulls the parts.
+
+** Limits accepted
+
+*** Two commits in the same microsecond
+
+PostgreSQL timestamps have microsecond resolution. The version guard
+serialises writers and does not make their timestamps unique, so two
+sequential commits can share an instant.
+
+This is accepted and needs no tiebreaker, because the windows are
+half-open. When the older version's =valid_to= equals the newer version's
+=valid_from=, the older version's window is empty and covers no instant, so
+an as-of read resolves to the newer version alone. The older version keeps
+a zero-length window. It is readable by version and its audit stands, but
+no date resolves to it. See
+[[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] for the interval
+convention.
+
+*** Filtering and ordering reach the central row only
+
+A list reads the central row, so it can filter and order by the central
+row's columns alone. A screen that must find an entity by a part's value
+needs a read model, per
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]].
+
+*** The timeline costs storage and a lookup per part
+
+Every change writes one central row. The part that changed writes one part
+row, and an unchanged part is not copied. A read pays one temporal lookup
+per part.
+
+*** Two versions on one entity
+
+The central row and each part each carry a version. They are different
+sequences and the names must not be read as one number.
+
+* See also
+
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the rule this page applies, and
+  the C1202 ceiling the atomised shape relieves.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the bump
+  mechanism, the row lock and the window join this page assumes.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal
+  model, the infinity sentinel, and the as-of query.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning]] — the guard a part write must
+  satisfy.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the reads, the as-of guarantee
+  and the read model.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]] — one typed array per concrete type,
+  joined by key.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the domain vocabulary for a
+  deal built from its parts.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the precedent for two version numbers on one
+  thing.
+- [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]] — the write path an
+  entity table expects.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster, and
+  where to read this page in it.

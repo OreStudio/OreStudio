@@ -89,6 +89,10 @@ against this rule rather than a licence for it. The atomised shape also
 relieves the translation-unit pressure the C1202 section records, because
 no unit reflects one wide entity type.
 
+The target shape, the split rule, the part naming and the read are in
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central
+row and its parts]].
+
 ** Where each axiom applies
 
 ORE Studio is a database-backed application with Qt clients and a

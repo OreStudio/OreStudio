@@ -8,7 +8,7 @@
 #+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
-#+pr: 3318
+#+pr: 3322
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3322][#3322]] | [agile] Raise the two mop-up tasks for the trigger story |
 | [[https://github.com/OreStudio/OreStudio/pull/3318][#3318]] | [doc] Regenerate the shell recipe inventory |
 | [[https://github.com/OreStudio/OreStudio/pull/3317][#3317]] | [reporting] Send the kind on a scheduled report trigger |
 | [[https://github.com/OreStudio/OreStudio/pull/3315][#3315]] | [reporting] Admit a report run through the trigger that records it |

@@ -8,7 +8,7 @@
 #+filetags: :prove-the-credit-round-trip-over-the-corpus:sprint_28:v0:
 #+owner: marco
 #+branch: feature/prove-the-credit-round-trip-over-the-corpus
-#+pr:
+#+pr: 3358
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3358][#3358]] | [ore] Prove the credit round trip over the corpus |
 
 * Review
 

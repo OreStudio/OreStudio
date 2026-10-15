@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 8B1BDAB2-3EC8-47DE-9E52-91C1D2AA51D8
 :ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.tenor_basis_swap_long_short
 #+description: Codegen entity model for the refdata =tenor_basis_swap_long_short= part. The long and short leg form of a tenor basis swap convention.
@@ -165,6 +166,72 @@ How a coupon built from sub-periods is combined, as the canonical code the mappe
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made by the database when the
+publish inserts it. The name and the kind together are the central identity the
+publish already holds, so the part needs no uuid of its own either. The stored
+party is likewise the party the publish names.
+
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** long_index
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** long_pay_tenor
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** short_index
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** short_pay_tenor
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** spread_on_short
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** include_spread
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
 
 * SQL
 

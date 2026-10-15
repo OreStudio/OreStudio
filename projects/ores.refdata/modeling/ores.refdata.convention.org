@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 9477A085-0822-485F-BDF7-3C8F4A306E93
 :ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.convention
 #+description: Codegen entity model for the refdata =convention= table. The central row every convention kind shares: its key, the party that owns it, the kind it is, and the name it carries in the source document.
@@ -128,6 +129,33 @@ Nullable, because no convention is required to state its address yet.
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: name
+:END:
+
+A convention stages without its uuid and without its party. The uuid is made by
+the database when the publish inserts the row, and the party is the one the
+publish names, so neither is known when the dataset is seeded. The staged row
+carries the identity the source document gives instead: the kind and the name.
+A part reaches the central staging row by exactly that pair.
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
 
 * SQL
 

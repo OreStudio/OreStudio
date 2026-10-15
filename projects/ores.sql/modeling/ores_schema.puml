@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-565 tables in 21 groups.
+568 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -274,6 +274,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_configuration_analytic_parameters_artefact_tbl
   ores_dq_configuration_analytics_artefact_tbl
   ores_dq_configuration_market_bindings_artefact_tbl
+  ores_dq_conventions_artefact_tbl
   ores_dq_counterparty_identifiers_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_configs_artefact_tbl
@@ -359,6 +360,8 @@ entity "dq_staging" as dq_staging {
   ores_dq_swap_index_conventions_artefact_tbl
   ores_dq_swaption_volatility_configs_artefact_tbl
   ores_dq_tags_artefact_tbl
+  ores_dq_tenor_basis_swap_long_shorts_artefact_tbl
+  ores_dq_tenor_basis_swap_pay_receives_artefact_tbl
   ores_dq_tenor_basis_two_swap_conventions_artefact_tbl
   ores_dq_tenor_schedules_artefact_tbl
   ores_dq_todays_market_collections_artefact_tbl
@@ -373,7 +376,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-130 tables — ores_schema.dq_staging.puml
+133 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {

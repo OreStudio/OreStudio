@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 26F8B022-84E9-41CD-BA89-6881DF4369DB
 :ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.tenor_basis_swap_pay_receive
 #+description: Codegen entity model for the refdata =tenor_basis_swap_pay_receive= part. The paying and receiving leg form of a tenor basis swap convention.
@@ -189,6 +190,84 @@ Whether the receiving leg's coupons are averaged rather than compounded.
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made by the database when the
+publish inserts it. The name and the kind together are the central identity the
+publish already holds, so the part needs no uuid of its own either. The stored
+party is likewise the party the publish names.
+
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** pay_index
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** pay_frequency
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** receive_index
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** receive_frequency
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** spread_on_rec
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** include_spread
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** pay_is_averaged
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** rec_is_averaged
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
 
 * SQL
 

@@ -370,6 +370,20 @@ public:
                                          const std::vector<std::string>& args);
 
     /**
+     * @brief Generate a trade generation config's population: synthetic
+     * generate-trades --config <id> [--config <id>...].
+     *
+     * Each configuration is run as the party it books for, because the trading
+     * write path takes the instrument's party from the session and refuses a
+     * caller that states none. So the session's token is exchanged for one
+     * scoped to that party, and a party the account may not act as is refused
+     * rather than written against.
+     */
+    static void process_generate_trades(std::ostream& out,
+                                        ores::nats::service::nats_client& session,
+                                        const std::vector<std::string>& args);
+
+    /**
      * @brief Start every feed under a folder subtree, resolved
      * server-side via start_feeds_under_folder_request. @p token is a
      * folder id, name or codename path.

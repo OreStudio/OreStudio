@@ -337,6 +337,18 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('Instrument conventions');
     });
 
+    it('offers the tenor resolution screen to a signed-in person', () => {
+        const html = render('/refdata/tenors', ready, authenticated);
+
+        expect(html).toContain('Tenor resolution');
+    });
+
+    it('sends a visitor to sign in rather than to the tenor resolution screen', () => {
+        const html = render('/refdata/tenors', readyAnonymous, anonymous);
+
+        expect(html).not.toContain('Tenor resolution');
+    });
+
     it('sends a visitor to sign in rather than to the convention screen', () => {
         const html = render('/refdata/conventions', readyAnonymous, anonymous);
 

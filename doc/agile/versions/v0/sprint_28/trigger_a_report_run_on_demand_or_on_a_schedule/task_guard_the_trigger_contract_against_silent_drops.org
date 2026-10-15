@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
@@ -102,3 +102,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Guarded by a test that runs the scheduler's own publish handler and decodes the
+bytes it actually published as the production request type. The old guard
+restated the struct in the test file, so it passed whatever the contract said.
+The scheduler's body now carries uuids rather than strings, which is why the old
+guard was self-consistent and wrong.
+
+Proved by mutation rather than assertion. Adding a field to the operations model
+made the guard fail with "Field named 'probe_field' not found"; reverting left
+the model and the generated header byte-identical.
+
+Two things found on the way, both worth more than the guard. A business refusal
+is a failed outcome in the answer body, not an X-Error, and the scheduler read
+only the header, so every refusal was recorded as a succeeded firing with no
+run. That is the actual reason this was invisible. And the live reporting service
+queue-subscribes the production subject, so the refusal tests had been answered
+by the service rather than by their own responder.
+
+Still unguarded: the scheduler owns the field order, and the guard is a test
+rather than the compiler. A new contract field carrying a codec default that
+keeps the positional decode working would still slip through. Closing that needs
+the scheduler to send the real type, which would add a scheduler to reporting
+dependency to buy a compile-time check.

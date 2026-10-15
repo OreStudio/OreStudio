@@ -322,6 +322,16 @@ commodity_instrument_mapper::forward_commodity_swaption(const trade& t) {
     result.quantity = info.quantity;
     result.start_date = info.start_date;
     result.maturity_date = info.maturity_date;
+    // A swaption states a fixed leg and a floating leg; the fixed leg's
+    // Prices hold the swap's fixed price.
+    for (const auto& leg : d.LegData) {
+        if (leg.legDataType && leg.legDataType->CommodityFixedLegData &&
+            !leg.legDataType->CommodityFixedLegData->Prices.Price.empty()) {
+            result.fixed_price =
+                exact_decimal(leg.legDataType->CommodityFixedLegData->Prices.Price.front());
+            break;
+        }
+    }
     return result;
 }
 
@@ -577,7 +587,26 @@ trade commodity_instrument_mapper::reverse_commodity_swaption(const commodity_in
     }
     d.OptionData = std::move(od);
 
-    // Minimal commodity floating leg
+    // The schema requires exactly two legs, a fixed leg and a floating leg.
+    legData fixedLeg;
+    fixedLeg.LegType = legType::CommodityFixed;
+    fixedLeg.Payer = true;
+    if (!instr.currency.empty())
+        fixedLeg.Currency = instr.currency;
+    _CommodityFixedLegData_t cfix;
+    pricesType_Price_t price;
+    static_cast<float&>(price) = static_cast<float>(
+        instr.fixed_price.value_or(ores::utility::decimal::decimal{}).to_double());
+    cfix.Prices.Price.push_back(price);
+    quantitiesType_Quantity_t fixedQuantity;
+    static_cast<float&>(fixedQuantity) = static_cast<float>(instr.quantity);
+    cfix.Quantities = quantitiesType{};
+    cfix.Quantities->Quantity.push_back(fixedQuantity);
+    legDataType_group_t fixedLdt;
+    fixedLdt.CommodityFixedLegData = std::move(cfix);
+    fixedLeg.legDataType = std::move(fixedLdt);
+    d.LegData.push_back(std::move(fixedLeg));
+
     legData floatLeg;
     floatLeg.LegType = legType::CommodityFloating;
     floatLeg.Payer = false;

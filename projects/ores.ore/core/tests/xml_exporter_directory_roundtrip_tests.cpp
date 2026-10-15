@@ -78,18 +78,16 @@ struct scratch_dir {
  * The walk reports success for these, so the list is the only record. It is
  * asserted for equality rather than tolerance: a name that starts failing
  * fails this suite, and a name that stops failing also fails it until the list
- * shrinks. The defect is tracked as capture 67277DBB-5ABD-4C36-934B-E97144E8910B.
+ * shrinks. The five that remain each need a value the domain instrument does
+ * not hold, so they close with the domain rather than with the mapper; the
+ * defect is tracked as task 67277DBB-5ABD-4C36-934B-E97144E8910B.
  */
 const std::set<std::string>& known_export_gaps() {
     static const std::set<std::string> gaps = {
-        "Commodity_Swaption_NYMEX_NG.xml",
         "Exotic_EquityAccumulator_single_name.xml",
-        "Exotic_EquityTaRF.xml",
         "Exotic_EquityWorstOfBasketSwap.xml",
         "Exotic_FXWorstOfBasketSwap.xml",
         "Exotic_FxAccumulator.xml",
-        "Exotic_PerformanceOption_01_COM.xml",
-        "Exotic_PerformanceOption_01_FX.xml",
         "FX_WorstOfBasketSwap.xml",
     };
     return gaps;

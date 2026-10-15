@@ -1033,6 +1033,13 @@ trade equity_instrument_mapper::reverse_equity_tarf(
     scheduleData_Rules_t rule;
     static_cast<std::string&>(rule.Tenor) = "1Y";
     d.ScheduleData.Rules.push_back(std::move(rule));
+    // The schema requires at least one barrier. The forward mapper keeps the
+    // FixingCap level in knock_out_level, so export restores that barrier.
+    barrierData bd;
+    bd.Type = barrierType::FixingCap;
+    bd.Levels.Level.push_back(static_cast<float>(
+        instr.knock_out_level.value_or(ores::utility::decimal::decimal{}).to_double()));
+    d.Barriers.BarrierData.push_back(std::move(bd));
     t.EquityTaRFData = std::move(d);
     return t;
 }

@@ -113,7 +113,8 @@ reads as drift. Commit before running the modeling or codegen classes.
 branch changed, read from the diff against the base; a change under
 =projects/ores.codegen/= regenerates them all, because the generator and its
 templates decide every component's output. Keeping the rest of the registry
-clean is the hourly validation's job, not this branch's.
+clean belongs to the =drift-sweep= check, not to this branch's
+=component-drift=.
 
 * What still runs on GitHub
 

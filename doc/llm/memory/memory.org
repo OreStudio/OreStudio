@@ -127,6 +127,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:1E6E9374-E57D-4D3D-BAF7-16FC23651F19][Split hot and cold data by usage]] — main-path fields stay in the header and fact table, rarely read data gets its own table, and a column no mapper writes leaves the model.
 - [[id:E47BAF35-066F-4EF2-BA3D-522AED44FF33][Use exact decimals for rates, amounts and every money value]] — decimal in the domain type and numeric(38, 12) in the column; a double never enters the persisted domain; keep the document's digits at the ORE boundary.
 - [[id:97786EC5-123C-45AA-9CB9-5BCCC218FF78][Gate a change with compass check, not a bare site page]] — a bare =compass site page= republishes every stale page and gates nothing; =compass check= runs only the checks the change class needs and publishes just the changed pages.
+- [[id:B83064E5-6357-4FC6-A8BE-395DD429ED2A][Run the checks the affected code needs before merging]] — there is no separate validation job; run =compass check= for every class the change belongs to, heavy tier included, and merge only on a green report.
 
 ** User
 

@@ -5,6 +5,7 @@
 #+name: security
 #+full_name: ores.security
 #+description: Shared security primitives: scrypt password hashing and verification, JWT signing and validation, and the OWASP password and email validators.
+#+brief: Shared security primitives library
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :security:crypto:component:

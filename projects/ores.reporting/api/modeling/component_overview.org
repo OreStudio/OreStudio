@@ -5,6 +5,7 @@
 #+name: reporting.api
 #+full_name: ores.reporting.api
 #+description: Domain types and NATS protocol schemas for the reporting component.
+#+brief: Reporting domain types and NATS protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :reporting:api:component:

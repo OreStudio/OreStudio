@@ -5,6 +5,7 @@
 #+name: workflow.core
 #+full_name: ores.workflow.core
 #+description: Workflow orchestration — workflow definitions, execution, and state tracking for multi-step operations.
+#+brief: Workflow definition and execution core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :workflow:core:component:

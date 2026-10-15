@@ -5,6 +5,7 @@
 #+name: assets.api
 #+full_name: ores.assets.api
 #+description: Domain types, JSON I/O, and NATS protocol schemas for the assets component.
+#+brief: Asset domain types and NATS protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :assets:api:component:

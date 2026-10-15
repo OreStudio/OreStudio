@@ -5,6 +5,7 @@
 #+name: synthetic.core
 #+full_name: ores.synthetic.core
 #+description: Server-side implementation of the synthetic entities: repositories, services, NATS handlers, and the original catalog generators.
+#+brief: Synthetic entity repositories, services, and handlers
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :synthetic:core:component:

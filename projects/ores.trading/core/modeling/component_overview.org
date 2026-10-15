@@ -5,6 +5,7 @@
 #+name: trading.core
 #+full_name: ores.trading.core
 #+description: Trade booking and lifecycle management — domain model, repositories, services, and NATS message handlers.
+#+brief: Trade booking and lifecycle core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :trading:core:component:

@@ -5,6 +5,7 @@
 #+name: platform
 #+full_name: ores.platform
 #+description: Cross-platform OS abstractions: environment variables, filesystem access, network and hardware identity, process identity and signals, and time conversions.
+#+brief: Cross-platform OS abstraction library
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :platform:os:component:

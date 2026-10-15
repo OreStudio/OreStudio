@@ -5,6 +5,7 @@
 #+name: iam.core
 #+full_name: ores.iam.core
 #+description: Identity and access management — account lifecycle, authentication, multi-tenancy, and NATS handlers.
+#+brief: Identity and access management core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:core:component:

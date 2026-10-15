@@ -5,6 +5,7 @@
 #+name: http.core
 #+full_name: ores.http.core
 #+description: HTTP route implementations for the ORE Studio REST API — IAM, storage, and variability routes.
+#+brief: REST API HTTP route implementations
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :http:core:component:

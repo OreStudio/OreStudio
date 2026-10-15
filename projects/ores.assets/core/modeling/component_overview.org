@@ -5,6 +5,7 @@
 #+name: assets.core
 #+full_name: ores.assets.core
 #+description: Asset management — SVG images, tags, currency-image associations, and NATS message handlers.
+#+brief: Asset image and tag management core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :assets:core:component:

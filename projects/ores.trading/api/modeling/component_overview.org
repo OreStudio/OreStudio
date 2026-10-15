@@ -5,6 +5,7 @@
 #+name: trading.api
 #+full_name: ores.trading.api
 #+description: Protocol types, domain entities, JSON/table I/O, and NATS message schemas for the trading component.
+#+brief: Trading instrument and trade contract types
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :trading:api:component:

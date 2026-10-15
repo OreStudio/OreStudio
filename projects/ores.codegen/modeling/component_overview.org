@@ -5,6 +5,7 @@
 #+name: codegen
 #+full_name: ores.codegen
 #+description: Python + Mustache code generator producing SQL, C++, and v2 org documents from JSON models.
+#+brief: Python and Mustache code generator
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :codegen:python:mustache:templates:

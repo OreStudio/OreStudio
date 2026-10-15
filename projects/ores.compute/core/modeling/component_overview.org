@@ -5,6 +5,7 @@
 #+name: compute.core
 #+full_name: ores.compute.core
 #+description: Compute cluster management — app registration, batch dispatch, and result collection for risk compute jobs.
+#+brief: Risk compute cluster orchestration core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:core:component:

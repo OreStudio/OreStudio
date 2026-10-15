@@ -17,6 +17,9 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 (Describe the user-visible outcome this story delivers.)
 
+The investigation this story commissioned is
+[[id:6E648B05-2ADB-4E03-89CB-D4670CB72FC3][Investigation: Populating ACME with a trade population]]. It is the record of what was measured and which mechanism was chosen. It is a snapshot, not a description of the system.
+
 * Status
 
 | Field         | Value                                  |

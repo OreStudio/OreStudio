@@ -1,0 +1,1074 @@
+:PROPERTIES:
+:ID: 6E648B05-2ADB-4E03-89CB-D4670CB72FC3
+:END:
+#+title: Investigation: Populating ACME with a trade population
+#+description: What a realistic trade population for ACME requires. Whether bond support is complete, what population machinery exists, how DQ and synthetic generation compare, what the vendored ORE engine offers, and what the ACME tenant holds today.
+#+type: investigation
+#+level: s1
+#+filetags: :trading:acme:synthetic:dq:ore:bonds:populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+A point-in-time record, written while the story that commissioned it was
+open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into what a realistic trade population for ACME
+requires. It covers whether bond support is complete, what population
+machinery exists, how DQ and synthetic generation compare, what the
+vendored ORE engine offers, and what the ACME tenant holds today.
+
+It is a snapshot, not a description of the system. Whatever it concludes
+that the code must keep doing belongs on the page that owns the subject.
+Cite that page from code, recipes and models, not this one.
+
+* Context
+
+The ACME tenant holds =0= trades. The report package built for it is
+structurally valid and substantively empty, because the trading write path
+has never been exercised by anything but integration tests. A report over
+an empty population proves nothing about the report.
+
+The story must populate the ACME books so that the reports have something
+to compute. The population has to satisfy four properties at once, and
+they are what made this an investigation rather than a task:
+
+- the dates must sit relative to the present, so a population provisioned
+  today is still plausible when it is re-provisioned next month;
+- the references must be real, so every trade names a party, a book, a
+  netting set and a counterparty the tenant actually holds;
+- a second provision must not duplicate a trade and must not move its
+  version, because the system is bitemporal and every spurious version is
+  permanent history;
+- the population must price, which means it has to reach the vendored ORE
+  engine through the export that already exists.
+
+The question the story asked was which mechanism produces such a
+population, and whether the machinery to produce it already exists.
+
+* Methodology
+
+Read-only, plus live queries against a provisioned database. This record
+was written 2026-10-15 at =e452b09e021360c973be5a553ef1356bb6531d59= on
+=chore/close-the-trigger-story-2=, with the database provisioned the same
+day.
+
+Every count below came from
+=./compass.sh db sql -- -At -c "<query>"= against =ores_dev_bright_faraday=,
+and the query is stated beside each figure. The rest of the evidence came
+from the tree:
+
+- the trading models under =projects/ores.trading/modeling/=, read as the
+  declaration of what the family covers and what shape it takes;
+- the generated SQL under =projects/ores.sql/create/trading/=, read as
+  what the database actually enforces, which is not always what the model
+  declares;
+- the catalogue at
+  =projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org=,
+  parsed as a table of 121 trade types and their instrument routings;
+- the C++ generation machinery under =ores.utility/generation/= and the
+  generated generators under =ores.trading.api/src/generators/=;
+- the vendored engine packages under =external/ore/=, including the
+  example scripts and the static trade corpus;
+- the design pages the criteria come from, named at each point they are
+  applied.
+
+Where a claim rests on a live count it carries the query. Where it rests
+on the tree it carries the file and line range. Nothing below is an
+estimate.
+
+* Paths taken
+
+Seven paths were explored. Two were design alternatives for date
+relativity and are recorded with their verdicts. Two were audits that
+supply the generator's inputs. Two were reuse ideas, the DQ staging table
+and the ORE sample corpus, and neither survives its own details. One was
+a salvage of the DQ idea that stages the parameters rather than the
+trades.
+
+** The coverage audit of the bond family
+
+The story starts with bonds, so the first path was to establish whether
+bond support is complete and whether it follows the data-oriented design.
+"What complete" means here is stated by
+=doc/knowledge/architecture/data_oriented_design.org=, which classifies
+=ores.trading= as Regime 2 (persisted domain data) plus Regime 3 (wire)
+at lines 14-16 and 87-99. Regime 1 does not apply. Completeness for a
+family is therefore three things together:
+
+- the Regime 2 decision surface is fully modelled, so nothing lives only
+  in the tree. Lines 212-227 name the artefacts a review reads.
+- the entity's facts split by change reason, multiplicity or reader under
+  the composite pattern, with the parent version bump. That is
+  =codegen_patterns.org= lines 60-73.
+- the wire is a flat projection of those rows, with no nested objects and
+  no polymorphic payload fields. Lines 280-286.
+
+A passing build is not the test, and neither is coverage alone. The
+criteria page states the distinction at lines 244-258. The decision
+surface can fail, and codegen does not rescue it.
+
+The audit found the family broad and codegen-bound. =ls
+projects/ores.trading/modeling/ores.trading.bond*.org= returns 42 orgs.
+Nineteen are =ores.codegen.entity= and 23 are =ores.codegen.field_group=.
+The nineteen entities are =bond_instrument=, =bond_issue=,
+=bond_issue_call_date=, =bond_issue_conversion_target=, =bond_issue_leg=
+and its five children =bond_issue_leg_amount=, =bond_issue_leg_rate=,
+=bond_issue_leg_amortization=, =bond_issue_leg_schedule= and
+=bond_issue_leg_schedule_date=, =bond_leg= and its three children
+=bond_leg_amount=, =bond_leg_rate= and =bond_leg_amortization=,
+=bond_forward=, =bond_future=, =bond_option=, =bond_repo= and =bond_trs=.
+The separate =ores.trading.ascot.org= carries the eleventh code.
+
+Coverage is declared once, in
+=projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org=.
+Parsing its =* Trade types= table at lines 47-172 gives 121 trade types.
+Thirty have an empty =instrument= cell and are therefore routable
+nowhere. The bond family is nearly whole. Ten of the eleven bond-typed
+codes route to =bond_instrument=:
+
+#+begin_src
+Bond ForwardBond BondFuture BondOption BondRepo
+BondTRS BondPosition CallableBond ConvertibleBond Ascot
+#+end_src
+
+The eleventh, =BondFutureOption=, is unrouted. The catalogue states the
+consequence at lines 24-27. An empty =instrument= means nothing imports
+it, so nothing can export it. The routed column check in the generated
+schema agrees.
+=grep '^    check ("trade_type_code" in' projects/ores.sql/create/trading/trading_bond_instruments_create.sql=
+returns exactly the ten codes.
+
+The export carries the whole family through one carrier.
+=bond_instrument_data=, modelled at
+=ores.trading.bond_instrument_data_field_group.org=, holds 28 members.
+They are the header, the issue, the issue's call dates and conversion
+targets, the product's fact row, the bond's legs, and the document
+residue the tables cannot hold. The catalogue's =** Instrument types=
+table at lines 201-209 is the one row that names it, and the generator
+emits the container from the model rather than by hand.
+
+The composite pattern is half-built, and that is the central finding of
+this path. The pattern requires a child foreign key declaring
+=:bump_parent_version:=, =:list_by:=, =:list_by_uuid:= and
+=:list_by_as_of:= (=codegen_patterns.org= lines 60-73). It states what
+the bump buys at lines 67-73. A write to any part bumps the parent's
+version in the same transaction, so the parent's windows partition time
+into spans in which the parts are stable, and a read assembles the entity
+from the timeline with no link table.
+
+Measured on the bond orgs:
+
+#+begin_src
+cd projects/ores.trading/modeling
+grep -c '^:bump_parent_version:' ores.trading.bond_leg.org          -> 0
+grep -c '^:bump_parent_version:' ores.trading.bond_instrument.org   -> 0
+grep -c '^:list_by: *true'       ores.trading.bond_leg.org          -> 1
+grep -rl '^:bump_parent_version:' *.org -> structure_member, trade_additional_field,
+    trade_booking, trade_identifier, trade_party_role, trade_portfolio, trade_state
+grep -rl '^:list_by_uuid:' *.org -> (none)
+grep -rl '^:list_by_as_of:' *.org -> (none)
+#+end_src
+
+The bond children have the list-by-parent read and none of the bump. The
+two as-of flags exist nowhere in the component. The trade anchor's own
+parts do declare the bump, which shows the pattern is expressible and was
+applied to one family and not the other. The consequence is concrete.
+=bond_leg=, =bond_leg_amount=, =bond_leg_rate= and =bond_leg_amortization=
+can each be rewritten while =bond_instrument.version= stands still. An
+as-of read of the family therefore cannot say which legs were current
+when.
+
+Three smaller gaps follow from the same audit.
+
+- *The declared foreign keys are not database foreign keys.* Both
+  =bond_instrument.org= at lines 145-210 and the generated create script
+  describe the trade, activity and issue keys.
+  =./compass.sh db sql -- -At -c "SELECT count(*) FROM pg_constraint WHERE contype='f';"=
+  returns 25, and every one is a TimescaleDB catalogue constraint. The
+  bond keys are trigger checks instead. That is correct for a temporal
+  parent and wrong for the immutable lookups the same models describe as
+  database foreign keys.
+- *=bond_instrument.org= line 36 records its own coverage limit.* It says
+  the real foreign key to =ores_trading_trade_types_tbl= is PR 4's defect
+  7. It has not landed.
+- *The issue sits outside the economic digest.*
+  =trade_type_catalogue.org= =** Instrument components= at lines 269-318
+  lists =bond_instrument= as its own only component, and =bond_issue=
+  appears in no digest table. The issue row holds the bond's terms. An
+  amendment to those terms therefore moves the trades' economics without
+  moving their =economic_digest= or their =external_version=
+  (=trade.org= lines 153-195). Whether that is intended is a decision
+  rather than a defect, and nothing in the models states it.
+
+*** What the audit found conforming, and what it did not
+
+The evidence separates cleanly. It compiles and it is largely modelled,
+and it does not reach the target shape.
+
+Conforming:
+
+- The normalisation failure of September 2025 is gone for bonds. The
+  terms moved off the wide instrument row onto =bond_issue=, which
+  =bond_instrument.org= lines 17-29 describes as the change-reason split,
+  and each optional feature is a keyed child row rather than a nullable
+  column. That is the relational rule of =data_oriented_design.org= lines
+  109-116.
+- Money is exact. =notional= and =face_value= are =numeric(38, 12)= in
+  SQL and =ores::utility::decimal::decimal= in C++, and the schema checks
+  =face_value > 0=. That matches the exact-money-at-rest check at
+  =data_oriented_design.org= line 269.
+- The wire carries typed arrays rather than one tagged variant.
+  =grep -rn AddTagsToVariants projects/ --include=*.hpp --include=*.cpp=
+  returns nothing, and =instrument_batch.hpp= is one array per entity with
+  the element type named by the catalogue. That is the no-polymorphic-
+  payload-fields rule, and it retires the October defect recorded in
+  =doc/agile/product_backlog/inbox/msvc_c1202_bond_export_carrier.org=.
+
+Not conforming:
+
+- *The nested aggregate is still the C++ shape.* =bond_instrument.org=
+  lines 340-348 bind =domain_identity_group= and =domain_audit_group=, so
+  the domain class holds =instrument_identity identity;= and
+  =audit_record audit;=. =data_oriented_design.org= lines 69-90 rules that
+  out and calls it a known codegen defect rather than a licence. Every
+  bond entity carries it.
+- *=bond_instrument_data= is a 28-member container on the wire.*
+  =codegen_patterns.org= lines 110-117 permit a container at the
+  boundary, and the ORE XML import is exactly that boundary, so this is
+  defensible. It is still an aggregate type whose members are other
+  reflected aggregates, and it is carried inside the =trade_instrument=
+  variant at =trade_instrument.hpp= lines 43-52. Nothing in the models
+  states which of the two readings applies.
+- *No bond entity beyond =bond_instrument= declares =has_batch_read=.*
+  =grep -c has_batch_read ores.trading.bond_leg.org= returns 0 against
+  =bond_instrument.org= line 355. The batch read the export needs exists
+  as =read_legs_by_trade_ids= in =ores.trading.core/src/service/=, which
+  is the custom-repository-method escape hatch rather than a modelled
+  read.
+- *Party isolation is absent.* =codegen_patterns.org= line 89 names
+  =:rls_tenant_isolation:= and =:rls_party_isolation:= for every entity.
+  =grep -rl '^:rls_tenant_isolation:' projects/ores.trading/modeling/*.org=
+  returns 77 files and =grep -rl '^:rls_party_isolation:'= returns 1
+  (=ores.trading.structure.org=), against 111 entity orgs. In the live
+  database
+  =./compass.sh db sql -- -At -c "SELECT count(*) FROM pg_policies WHERE policyname LIKE '%party_isolation%';"=
+  returns 156, so the mechanism is real and trading mostly does not use
+  it.
+
+** The DQ staging path, as it stands
+
+The second path was to stage the population as a DQ artefact and publish
+it. It fails on three grounds, each of which survives a redesign.
+
+=doc/knowledge/architecture/dq_artefacts.org= states the purpose in its
+first sentence at lines 14-16. An artefact is a staging table that holds
+an entity's rows by dataset until a publication writes them into the
+service that owns the entity. Line 210 makes the ownership explicit. It
+is the owning component's data in transit. Its guarantees are the
+publication contract at lines 99-130, which are idempotence, three
+accepted modes (=upsert=, =insert_only=, =replace_all=), a return of one
+row per action taken, =clock_timestamp()= for row closure, and refusal of
+any target but the system tenant for installation data.
+
+A dataset is registered in =ores_dq_datasets_tbl=, whose columns are =id,
+tenant_id, version, code, catalog_name, subject_area_name, domain_name,
+..., as_of_date, ingestion_timestamp, ..., artefact_type, valid_from,
+valid_to=. The model of time is stated at
+=doc/knowledge/domain/data_quality.org= lines 70-71, which names business
+time (=as_of_date=) and system time (=ingestion_timestamp=) and calls the
+pair bi-temporal reasoning.
+
+A vintage is therefore the pair of business date and ingestion instant
+that a dataset row carries. What it is not is a date inside the staged
+rows. Nothing in the artefact pipeline rewrites a staged value relative
+to =as_of_date=. Publishing is a copy, optionally preceded by a close. A
+vintage says when the data was true of the world, not how to make it true
+of today.
+
+Live confirmation.
+=SELECT as_of_date, count(*) FROM ores_dq_datasets_tbl WHERE code LIKE 'acme%' GROUP BY 1=
+returns one row, =2026-10-15 00:00:00+01|72=. All 72 ACME dataset rows
+carry the provisioning date and nothing else. Their codes are such as
+=acme.acme_group.books= and =acme.acme_hk.portfolios=, from
+=SELECT d.code, d.as_of_date, d.version FROM ores_dq_datasets_tbl d=. A
+re-provision at a later date either leaves the old vintage or mints a new
+one. It never moves a trade's dates.
+
+Why the path fails for trades whose dates sit relative to today:
+
+1. *There is nothing to stage.* No trade artefact table exists, and
+   =dq_artefacts.org= lines 44-47 require the owning model to opt in.
+   Building one means generating a staging table for every instrument
+   family the population touches, plus a publish function per family
+   against the contract at lines 99-130.
+2. *A vintage is the wrong axis.* The requirement is that the population
+   sits relative to today. A dataset vintage is a fixed business date. To
+   make the dates relative you must either regenerate the staged rows at
+   each provision, which is generation wearing DQ's clothes, or shift them
+   after publication, which is mechanism B and carries its costs below.
+3. *The publish function cannot be the place the arithmetic lives.* It is
+   a data movement function with an idempotence contract. Putting date
+   arithmetic in it makes idempotence depend on the arithmetic, which the
+   contract does not contemplate.
+
+Measured on the tenant, the DQ path also stages nothing relevant.
+
+- *DQ carries no trade artefact table.*
+  =./compass.sh db sql -- -At -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE 'ores_dq%';"=
+  lists 156 tables and not one of them stages a trade, a bond instrument
+  or an instrument leg. The nearest thing is
+  =./compass.sh db sql -- -At -c "SELECT DISTINCT code FROM ores_dq_datasets_tbl WHERE code ILIKE '%trade%' OR code ILIKE '%bond%' OR code ILIKE '%instrument%';"=,
+  which returns one row, =synthetic.feeds.tradeweb=, a market data feed.
+- *No seed writes a trade.* =ls projects/ores.sql/populate/trading/= shows
+  23 files, all reference data. They are =trading_trade_types_populate.sql=,
+  =trading_activity_types_populate.sql=, the type vocabularies and
+  =trading_structure_reference_data_populate.sql=.
+  =find projects/ores.sql -path '*populate*' -iname '*trade*'= finds only
+  those lookups.
+- *The ACME seeder dataset stages no trades.*
+  =projects/ores.seeder/datasets/acme_corporation/dataset_overview.org=
+  lines 33-60 describe the dataset's files, and
+  =ls projects/ores.seeder/datasets/acme_corporation/*.json= returns 36 of
+  them. They are companies, LEIs, business units, portfolios, books,
+  accounts, netting agreements and sets, CSAs, report definitions, report
+  configurations, risk report configs and today's market configuration. No
+  trade file exists, and no artefact table stages one.
+- *No trade set exists.*
+  =./compass.sh db sql -- -At -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE '%trade_set%';"=
+  returns nothing, and the task that would create the partition,
+  =D054BDD3-351F-42D3-9638-7D3BAEEAD332= "Partition a run's trade
+  population into trade sets", is in the backlog.
+
+*** What a provisioned ACME tenant holds
+
+Tenant =47b4aff4-79e9-4ee9-936f-ee56db971bee=, from
+=SELECT id, code, name, status FROM ores_iam_tenants_tbl ORDER BY code;=.
+
+| Table | Rows | Query |
+|---|---|---|
+| =ores_trading_trades_tbl= | 0 | =SELECT count(*) FROM ores_trading_trades_tbl= |
+| =ores_trading_bond_instruments_tbl= | 0 | =WHERE tenant_id='47b4aff4-...'= |
+| =ores_trading_bond_issues_tbl= | 0 | same |
+| =ores_trading_bond_legs_tbl= | 0 | same |
+| =ores_trading_trade_identifiers_tbl= | 0 | same |
+| =ores_trading_trade_states_tbl= | 0 | same |
+| =ores_trading_party_roles_tbl= | 0 | same |
+| =ores_trading_swap_legs_tbl= | 0 | same |
+| =ores_trading_vanilla_swap_instruments_tbl= | 0 | same |
+
+The whole-database figure is the same. =SELECT count(*) FROM
+ores_trading_trades_tbl= returns 0 with no tenant filter. The tenant holds
+no trade of any kind, in any family.
+
+** Mechanism A, generation relative at an anchor
+
+The third path, and the one recommended. The generator takes an as-of
+date as an input, and every date it emits is an offset from that anchor.
+
+The machinery is present in outline.
+=ores.utility/generation/generation_context.hpp= constructs from a seed at
+line 43 or randomly at line 48, and =generation_engine.hpp= offers
+=past_timepoint(int years_back = 3)=, which returns a point relative to
+=std::chrono::system_clock::now()= (=generation_engine.cpp= lines 76-80).
+What is missing is an anchor parameter rather than a hard read of the
+clock, and offset arithmetic per date field.
+
+Date relativity is exactly what this buys, and it is what the tree
+already reaches for. It is also the only one of the two mechanisms that
+is coherent for a schedule stored as a rule.
+
+The existing generator machinery is real and its output today is test
+fixtures. Every model declares =generator_facet_name: generators=, and
+=ores.trading.api/src/generators/= holds a =generate_synthetic_<entity>=
+per entity. The only consumer of these in the tree is the =parent_seed=
+paste block, and
+=grep -rln parent_seed_snippet projects/ores.codegen/library/templates/=
+returns exactly one template, =cpp_nats_integration_test.cpp.mustache=.
+So the machinery seeds an integration test's foreign key chain and nothing
+else. =grep -rn "generate_synthetic_trade\b" projects/ --include=*.cpp=
+finds no caller outside its own definition.
+
+** Mechanism B, shift the dates after insert
+
+The fourth path. Take a static population from DQ or from the ORE sample
+corpus, insert it, then update the dates by a delta. This was tested on
+its merits rather than dismissed, and it loses.
+
+*** What a trade's dates are, and which are derived
+
+Almost all of them are stored, in a small number of shapes.
+=SELECT table_name||'.'||column_name||' : '||data_type FROM information_schema.columns WHERE table_schema='public' AND (column_name LIKE '%date%') AND table_name LIKE 'ores_trading%'=
+returns 97 columns across 50 tables. Three shapes matter.
+
+- *Stored anchors as =date= columns.*
+  =ores_trading_trade_bookings_tbl.trade_date=, =bond_issues.issue_date=,
+  =rate_instruments.start_date= and =.maturity_date=,
+  =equity_*_instruments.expiry_date=, =commodity_instruments.maturity_date=,
+  =cds_instruments.protection_start_date=,
+  =bond_issue_call_dates.call_date= and
+  =instrument_option_payment_dates.payment_date=.
+- *Stored schedules as rules, not as dates.*
+  =ores_trading_instrument_schedules_tbl= holds =schedule_kind, start_date,
+  end_date, tenor, calendar, convention, term_convention, rule,
+  end_of_month, first_date, last_date, remove_first_date,
+  remove_last_date=. =bond_issue_leg_schedules= holds the same set.
+  =bond_schedule_rules_field_group.org= lines 14-18 states the intent, "a
+  start date and a tenor, expanded against a calendar under a date rule".
+- *Stored schedules as explicit date lists.* The other arm is
+  =instrument_schedule_dates.schedule_date= and
+  =bond_issue_leg_schedule_dates.schedule_date=, selected by
+  =check ("schedule_kind" in ('rules', 'dates'))=.
+
+What is derived is the expansion. The instrument header's =start_date= and
+=maturity_date= are copies taken from the schedule at import, not
+independent facts.
+=projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp= lines
+89-113 define =start_date_from_schedule= and =end_date_from_schedule=,
+which read =Rules.front().StartDate= and =Rules.front().EndDate=, or the
+first and last entry of an explicit list, and lines 1315-1316 assign them
+onto the header. The views confirm it.
+=projects/ores.sql/create/trading/trading_common_dates_vw_create.sql=
+joins =rate_instruments= and =trade_bookings= to present =trade_date,
+start_date, expiry_date, maturity_date= as one row.
+
+A delta shift therefore has two cases, and the first is the awkward one.
+For a rule-based schedule, shifting =start_date= and leaving =tenor= alone
+makes ORE re-expand a coherent schedule from the new anchor, which is
+mechanism A with an extra database write. For a date-list schedule, every
+entry must be shifted individually, and the header copy with it. Either
+way you must also walk the other date-bearing columns. They are
+=call_date=, =schedule_date=, =payment_date=, =pay_date=,
+=exercise_date=, =value_date=, =protection_start_date=, =upfront_date=,
+=averaging_start_date=, =barrier_start_date= and =settlement_fixing_date=.
+The derived payment, fixing and accrual dates cannot be shifted at all,
+because they are not stored. They are re-derived by the engine from what
+you did store.
+
+The corpus advantage therefore does not survive intact. To shift an ORE
+sample coherently you must rewrite its schedule rules and its date lists,
+at which point the output is a re-anchored sample rather than a verbatim
+one. It stays recognisable as the sample only if you keep the tenor and
+the rule and move the anchor, which is mechanism A.
+
+*** Whether the constraints survive
+
+The schema enforces little about dates and nothing about calendars.
+=grep -h '^    check (' projects/ores.sql/create/trading/*.sql | sort -u=
+gives 162 check expressions. The date-relevant ones are:
+
+| Constraint | Table |
+|---|---|
+| =check ("end_date" > "start_date")= | =fx_variance_swap_instruments= |
+| =check ("maturity_date" is null or "start_date" is null or "maturity_date" > "start_date")= | several |
+| =check ("maturity_date" is null or "start_date" is null or "maturity_date" >= "start_date")= | several |
+| =check ("valid_from" < "valid_to")= | every generated table |
+
+No check requires a payment date to be a business day, and none could.
+Calendars are reference data held elsewhere, and ORE applies them at
+pricing time. A shift that moves a Saturday payment onto a Sunday passes
+every check the database has.
+
+The order checks do survive a uniform delta, because a positive delta
+preserves order. They fail the moment you clamp, snap or cap any single
+date, which is exactly what a plausible-looking population invites.
+
+*** What a post-insert update does to the change history
+
+The system is bitemporal and the update is visible. The generated insert
+trigger, for example
+=projects/ores.sql/create/trading/trading_bond_issues_create.sql= lines
+100-160, selects the current row =for update=, sets =NEW.version =
+current_version + 1=, closes the old row with =valid_to =
+clock_timestamp()=, and inserts the new version with =valid_to =
+ores_utility_infinity_timestamp_fn()=. The comment at line 155 gives the
+reason =clock_timestamp()= is used rather than =current_timestamp()=.
+
+Three consequences for mechanism B.
+
+- *The population reads as created, then corrected.* Every shifted row
+  carries two versions instead of one, and the first version's window is
+  however long the seed and the shift were apart.
+- *The correction is visible to a reviewer.*
+  =doc/knowledge/architecture/history_diff_architecture.org= lines 14-30
+  describe one generic history request served by codegen'd per-entity
+  handlers, with =ores.diff= computing field and intra-value spans, and a
+  surviving browser renderer at
+  =projects/ores.shell/api/src/app/commands/history_diff_renderer.cpp=.
+  The shift is not hidden. It is the first thing the history shows.
+- *An as-of read sees the pre-shift dates.* The versions sub-resource and
+  the as-of reads exist precisely to answer what this looked like on date
+  D, and the trade set carries an as-of. The task
+  =8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807= "Export a trade set as an
+  archive" says at its =* Goal=, "The as-of travels on the set". A
+  population whose dates were written wrong and then corrected answers the
+  wrong thing for every date before the correction.
+
+A further cost is semantic rather than historical. The trade anchor's
+=external_version= "moves when the economics the trade holds change, and
+never for an internal reason" (=ores.trading.trade.org= lines 162-169),
+and =economic_digest= is stored rather than recomputed. Schedule dates are
+declared economic.
+=grep -A 6 '^\*\* start_date' projects/ores.trading/modeling/ores.trading.instrument_schedule.org=
+shows =:economic: true= on the rule's start date. So a shift moves the
+economic digest of every trade it touches, and
+=doc/knowledge/domain/trade_versioning.org= lines 27-28 gives the rule
+that follows, "a trade changes version only if the agreement with the
+customer has changed". A date of performance is a term of the agreement,
+so the external version should move with it, and every trade then reads
+as amended by agreement with the customer. It was not. By contrast
+=trade_booking.trade_date= at lines 125-131 is =filterable= and not
+economic, so the agreement date is exempt while the performance dates are
+not.
+
+*** Whether it is idempotent
+
+Nothing in the mechanism is idempotent on its own. A relative shift by
+=+N= days applied twice gives =+2N=. Idempotence needs an absolute
+target, which means reading the current anchor, comparing it to the
+as-of, and writing only when they differ. That is a convergence loop
+rather than a shift, and it is the shape
+=principle-make-operations-idempotent= asks for.
+
+There is a mechanism that would make a double-run detectable. The audit
+columns carry =change_reason_code=, validated against
+=ores_dq_change_reasons_tbl=, and that table already holds
+=system.admin_reset= "Data reset by system administrator for
+re-provisioning" and =system.initial_load=, from
+=SELECT DISTINCT code FROM ores_dq_change_reasons_tbl WHERE code LIKE 'system%';=.
+A shift could claim =system.admin_reset= and a later run could refuse to
+shift a row already carrying it. That is a marker rather than a
+guarantee, and it costs one more write per row.
+
+*** The honest version of B's one advantage
+
+The advantage is real but narrow. A source corpus stays recognisable, so
+the population would be the ORE samples' trades rather than lookalikes.
+It survives for exactly one case, the rule-based schedule shifted by
+moving the anchor and keeping the tenor, which produces the same dates
+the generator would have produced. It does not survive the date-list
+schedules, where a shift is a rewrite, and it does not survive the
+calendar-free check surface, where nothing tells you the shifted dates
+are business days.
+
+** DQ for the parameters, not the trades
+
+The fifth path, and the one salvageable version of the DQ idea. Stage the
+parameters a generator reads, not the trades.
+
+An artefact table holding the population shape (which books, which
+counterparties, which products, which tenors, which as-of) publishes
+through the ordinary pipeline and gives DQ's idempotence and vintage
+story for free. The generator then runs at population time and the dates
+are relative because the generator is the thing that emits them. The
+artefact is small, diffable and stable, and the dates are never staged.
+
+Called that way, DQ is a good fit for the inputs and a poor fit for the
+trades.
+
+** The mechanisms side by side
+
+| Property | DQ, as it stands | DQ, parameters only | Mechanism A, relative at generation | Mechanism B, shift after insert |
+|---|---|---|---|---|
+| Stability across re-provisioning | Dataset vintage is stable; rows never move | Stable, because the parameters are | Exact for a fixed (seed, as-of); different as-of moves the population deliberately | Stable only if the shift is absolute and guarded |
+| Date relativity | None. A vintage is a fixed date | Full, by the generator | Full | Full, but by rewriting stored dates |
+| Referential integrity to parties and counterparties | Not addressed by the pipeline | Not addressed by the pipeline | Guaranteed if the generator picks from the tenant's real rows | Guaranteed, because the corpus already references real rows |
+| Reviewability of a diff | Good. Generated SQL and JSON diff cleanly | Good. The parameter set is small | Good. Regenerate and diff | Poor. The diff is version 1 against version 2 of every shifted row |
+| Business-day correctness | Not applicable | Not applicable | Guaranteed if the generator snaps to a calendar | Not guaranteed by anything in the schema |
+| Cost to build | High. A staging table and a publish function per family | Low | Medium. Anchor plus offset arithmetic per field | Medium to high. A per-field date walk across the 50 date-bearing tables |
+
+** The vendored ORE engine and its generators
+
+The sixth path, explored for what it can be reused for. Two engine
+packages are vendored, at
+=ls build/output/linux-clang-release-ninja/publish/vendor-packages/= and
+=ls external/ore/packages/=.
+
+- =ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz=, engine commit
+  =3b62ba248e36ea92f408f0d863ede09639074836=, dated 2026-06-11.
+- =ore-1.8.17.0-x64-linux.tar.gz=, engine commit
+  =3d75a69087911a7e2cf1e6882da7bc27135c0762=, dated 2026-09-11.
+
+=external/ore/packages/manifest.json= records both, including the note
+that the =1.8.17.0= tag was created on the fork because upstream had not
+tagged. Each package is a self-contained binary set, and its root
+=manifest.json= is minimal.
+=external/ore/methodology.txt= keeps the engine source tree outside the
+repo.
+
+*Which one runs.* Both are registered in the live database, from
+=SELECT * FROM ores_compute_app_versions_tbl=, as two rows of app =ORE=
+with =engine_version= =1.8.16.0-4-g3b62ba248= and =1.8.17.0=. Nothing
+marks either as default. The choice is made at submit time in
+=projects/ores.compute/core/src/messaging/report_submit_handler.cpp= lines
+125-128, which takes =std::ranges::max_element(candidates, {},
+&domain::app_version::engine_version)=, and the comment above it says why,
+"the highest engine version stands in; a field on the configuration would
+make the choice explicit rather than implied". So the grid runs =1.8.17.0=
+today.
+
+*** The Python script that generates trades
+
+*Path.*
+=external/ore/examples/ORE-Python/TradeGenerator/trade_generator_test.py=,
+33 lines, with =Readme.md= beside it and =Input/= at
+=external/ore/examples/ORE-Python/Input/=.
+
+*What it does.* It imports =from ORE import *=, builds an
+=InputParameters= from =currencies.xml=, =conventions.xml= and
+=curveconfig.xml=, takes the curve configuration and reference data
+manager off it, constructs an ORE =TradeGenerator= with those and an
+optional counterparty and netting set, calls a builder per trade, and
+writes the portfolio out.
+
+*What it generates.* The readme names the coverage at line 3, "simple
+trades - swaps, capfloors, FX options, equity derivatives and commodity
+derivatives". The builders the test calls are =buildSwap=,
+=buildInflationSwap=, =buildFxForward=, =buildCapFloor=, =buildEquitySwap=
+and =buildEquityForward=, plus commented out =buildCommoditySwap=,
+=buildCommodityForward= and =buildCommodityOption=.
+
+*The file format.* ORE portfolio XML. The last line is
+=tg.toFile(r"input\portfolio.xml")=, and the readme states the object
+"extends the Portfolio object, and so when we build a trade it is
+automatically added to the portfolio". That is the same file the trade
+export already writes through =ores::ore::xml::exporter::export_portfolio=
+(=doc/agile/.../task_export_the_trades_as_the_ore_portfolio_the_engine_reads.org=
+lines 73-81).
+
+*What is directly reusable.* Little, as code. The script imports a SWIG
+module =ORE.py= from a =build/ore/ORE-SWIG= path that this repo does not
+build or vendor, its paths use Windows separators, and the class it
+depends on lives in the engine tree that is deliberately kept outside the
+repo. What is reusable is the idea and the coverage list. It enumerates
+the trade families worth generating and the inputs each builder needs
+(index, notional, maturity, rate, payer flag), which is a useful check
+list for a generator that emits rows instead of XML.
+
+*A second, unrelated generator exists and is more portable.*
+=external/ore/examples/CurveBuilding/TradeGenerator.py= is 697 lines of
+pure Python that builds ORE XML from templates
+(=external/ore/examples/CurveBuilding/Helpers/TradeTemplate.xml=) with no
+ORE import at all. It covers OIS, FRA, vanilla swap and cross-currency
+basis trades and is the basis-curve builder. Its twin,
+=external/ore/examples/Legacy/Example_26/TradeGenerator.py=, is 695 lines
+and near-identical.
+
+*The static corpus.* =ls external/ore/examples/Products/Example_Trades/*.xml=
+returns 132 files, from =Cash_Bonds.xml= and =Cash_Ascot.xml= through the
+FX, equity, credit, commodity and scripted families. This is the corpus
+mechanism B would preserve.
+
+** What a realistic ACME population would reference
+
+The seventh path, and the audit that supplies the generator's inputs. All
+figures are for tenant =47b4aff4-79e9-4ee9-936f-ee56db971bee=
+(=acme_corporation=), current rows only, where current means
+=valid_to = '9999-12-31 23:59:59+00'=.
+
+*** Parties and books
+
+=./compass.sh db sql -- -At -c "SELECT short_code, full_name, party_category, party_type, status FROM ores_refdata_parties_tbl WHERE tenant_id='47b4aff4-79e9-4ee9-936f-ee56db971bee' AND valid_to='9999-12-31 23:59:59+00' ORDER BY short_code;"=
+returns five rows. Four are operational and one is the tenant's system
+party.
+
+| short_code | Name | Category | Type |
+|---|---|---|---|
+| =ACCOHK= | ACME Corporation HK Ltd | Operational | Corporate |
+| =ACCOUK= | ACME Corporation UK plc | Operational | Corporate |
+| =ACCOUS= | ACME Corporation US Inc | Operational | Corporate |
+| =ACMCOR= | Acme Corporation Plc | Operational | Corporate |
+| =acme_corporation_system= | System Party | System | Internal |
+
+Books are real and cover bonds. =SELECT b.party_id, p.short_code, b.name,
+b.book_status, b.regulatory_book_type ...= returns 38 current books, all
+=Active=, split =ACCOUK= 20, =ACCOHK= 8, =ACCOUS= 8, =ACMCOR= 2. Each
+party has a book named =Liquidity Buffer Bonds=, and the ACMCOR pair are
+=Group FX Hedges= and =Group Intercompany Loans=. Portfolios number 56
+and netting sets 98, by party =ACCOUK= 27, =ACCOUS= 25, =ACMCOR= 24,
+=ACCOHK= 22.
+
+*** Counterparties
+
+There are far more than a trade population needs.
+=SELECT tenant_id, count(*), count(DISTINCT id) FROM ores_refdata_counterparties_tbl GROUP BY tenant_id=
+gives =21522= rows and =2454= distinct ids at ACME, the surplus being
+SCD2 history. Every one is =party_type = 'Corporate'=, from
+=SELECT coalesce(party_type,'<null>'), count(*) ... GROUP BY 1=. The
+short codes are GLEIF-style names, =AARBAN|Aareal Bank AG=,
+=ABAMBA|ABN AMRO Bank N.V.= and =BARBAN|BARCLAYS BANK PLC= among them, so
+they arrived by an LEI import rather than from the seeder's JSON, and
+=ores_dq_lei_entities_artefact_tbl= holds 38212 staged rows.
+
+The tradeable set is much smaller and is the one that matters.
+=SELECT p.short_code, c.short_code ... FROM ores_refdata_party_counterparties_tbl pc JOIN ...=
+returns 38 distinct links, =ACCOUK= 11, =ACCOUS= 11, =ACCOHK= 8, =ACMCOR=
+8, covering 23 distinct counterparties. It is the intra-group entities
+plus named banks, =BAOFAM1=, =BAOFAM2=, =BARBAN=, =BNPPAR=, =BRCLYS=,
+=CINAAS=, =CITINC=, =DEBAAK=, =GOSAGR=, =HSBBAN=, =HSBHOL=, =JPCHBA=,
+=JPMCHA=, =LLBAGR=, =MORSTA=, =NATGRO=, =STCHBA3=, =UBSGRO= and =USX=.
+
+This is the set a population should face. A trade against a counterparty
+outside it will insert, because nothing checks =party_counterparties=,
+and it will be wrong.
+
+*** Staff
+
+=./compass.sh db sql -- -At -c "SELECT account_type, count(*) FROM ores_iam_accounts_tbl WHERE tenant_id='47b4aff4-...' AND valid_to='9999-12-31 23:59:59+00' GROUP BY 1;"=
+returns =user|59=. Each carries a =full_name= and a =job_title=. The
+titles are Head of Trading, Head of Desk, Senior Trader, Junior Trader,
+Senior Analyst, Junior Analyst, Head of Risk, Head of Market Risk, Head of
+Middle Office, COO, Country Head and Group Chief Executive Officer.
+=tenant_admin= is the sixtieth account and the only one with a party.
+
+Roles are assigned in bulk rather than per desk.
+=SELECT r.name, count(DISTINCT ar.account_id) FROM ores_iam_account_roles_tbl ar JOIN ores_iam_roles_tbl r ON r.id=ar.role_id GROUP BY 1 ORDER BY 2 DESC=
+gives =Member= 60, =Trading= 30, =Operations= 16, =Viewer= 12, then one
+each for the service roles and =SuperAdmin=, =TenantAdmin=. So 30 people
+may trade.
+
+Party membership is broad.
+=SELECT p.short_code, count(DISTINCT ap.account_id) FROM ores_iam_account_parties_tbl ap JOIN ...=
+gives =ACCOHK= 20, =ACCOUK= 20, =ACCOUS= 20, =ACMCOR= 2.
+
+Person roles are a vocabulary and carry no assignments.
+=SELECT count(*), count(DISTINCT code) FROM ores_refdata_person_roles_tbl=
+returns 20 rows over 10 codes, =Broker=, =Buyer=, =Custodian=,
+=DecisionMaker=, =ExecutionWithinFirm=, =InvestmentDecisionMaker=,
+=LoanCloser=, =LoanServicer=, =Seller= and =Trader=.
+
+*** What is missing, and therefore a prerequisite
+
+- *A person is not attached to a trade.* There is no column anywhere that
+  names the person who entered a trade. The audit group carries
+  =modified_by= and =performed_by= as usernames, validated by
+  =ores_iam_validate_account_username_fn=, so a trade is entered by a real
+  person only if the writer sets those to a real username. Nothing models
+  a book's owner, a desk's head or a trader's mandate.
+- *Almost no staff account has a default party.*
+  =SELECT count(*) FROM ores_iam_accounts_tbl WHERE tenant_id='47b4aff4-...' AND default_party_id IS NOT NULL=
+  returns 2, and those are =tenant_admin= and the system party's account.
+  The four operational parties' 59 people carry no default, so a writer
+  that switches party context has to decide which staff belong where from
+  =ores_iam_account_parties_tbl=, which lists all three of the larger
+  entities for everyone.
+- *No trade set exists*, as recorded above, so "the trades of this report"
+  has no home yet.
+
+*** The integrity constraints a population must satisfy
+
+These are enforced, and they are the reason referential integrity is a
+guarantee rather than a hope.
+
+- =ores_trading_trades_insert_fn= validates =party_id= against
+  =ores_refdata_parties_tbl=, =counterparty_id= against
+  =ores_refdata_counterparties_tbl=, and the three classifications against
+  their lookup tables
+  (=projects/ores.sql/create/trading/trading_trades_create.sql= lines
+  99-150).
+- =ores_trading_trade_bookings_insert_fn= validates the book against the
+  trade's party and the netting set against the trade's party and
+  counterparty, at lines 174-215. Its rules are "The book must belong to
+  the trade's party", "The set must be the trade's counterparty's and
+  party's" and "the counterparty identifier must belong to the trade's
+  counterparty".
+- =ores_trading_bond_instruments_insert_fn= validates =trade_id=,
+  =trade_activity_id= and =issue_id= (create script lines 112-142), and
+  then overwrites the party from session state. It runs
+  =NEW.party_id := current_setting('app.current_party_id')::uuid;= at line
+  109. The same assignment appears 24 times across the trading create
+  scripts, from
+  =grep -rn "current_setting('app.current_party_id')" projects/ores.sql/create/trading/*.sql=.
+
+That last line is the sharpest practical constraint in this document. A
+population writer cannot state the owning party on the row. It must set
+=app.current_party_id= correctly before each write, or every instrument
+lands against the wrong legal entity.
+
+*** The write path the population would use
+
+=trading.v1.ops.book_trade=
+(=ores.trading.api/messaging/trade_operations_protocol.hpp= lines 42-79)
+writes the anchor, the booking and the first state in one transaction, and
+takes an =activity_type_code= that names the transition.
+=ores_trading_activity_types_tbl= holds =new_booking= and =draft_capture=
+for the two entry points. This is the production path and it is the right
+seam for a population writer.
+
+=trading.v1.ops.export_trades_to_storage= (lines 180-210) reads books and
+stores the =export_portfolio_response=. =trading.v1.ops.export_portfolio=
+(lines 116-130) exports the trades under a taxonomy node.
+
+** What could not be established
+
+- *Whether the Windows build is green.* The C1202 defect recorded at
+  =doc/agile/product_backlog/inbox/msvc_c1202_bond_export_carrier.org=
+  named =instrument_payload.cpp=, which no longer exists, and
+  =grep -rn AddTagsToVariants projects/= now returns nothing, so the
+  trigger appears retired by the typed-batch design. The MSVC job could
+  not be run from this environment to confirm it.
+- *Whether the ACME report package was built and inspected.* The story
+  =441E3343-F754-49B1-9763-960BBC2D4532= and its build-the-packages task
+  were STARTED, so the zero-trade premise was taken as given and only the
+  trade count was confirmed, which is zero for every trading table at
+  every tenant.
+- *The exact provenance of the 2454 counterparties.* They are GLEIF names
+  and =ores_dq_lei_entities_artefact_tbl= holds 38212 rows, but no
+  publication row for a counterparty dataset came back from
+  =SELECT d.code, p.records_inserted ... FROM ores_dq_dataset_publications_tbl p JOIN ores_dq_datasets_tbl d ON d.id=p.dataset_id WHERE d.code LIKE '%counterpart%'=,
+  so the load path could not be shown end to end.
+- *Whether faker-cxx exposes a seeding API in the version this build
+  links.* =find_package(faker-cxx REQUIRED)= at =CMakeLists.txt= line 449
+  locates it, and it is not vendored in the tree, so the only established
+  fact is that no seed call exists, not what the available call is.
+- *The current CI state of the drift gate for =ores.trading=.* The
+  September review recorded the component as absent from the drift
+  registry. That was not re-measured here.
+
+* Conclusions
+
+Bond support is complete in coverage and incomplete in the composite
+pattern. All ten bond trade codes route to a real table, the tables
+exist, the export walks them, and the family is codegen-bound. The parent
+version bump the composite pattern requires is absent from every bond
+child, so the parent's windows do not partition time into spans in which
+the parts are stable. The single highest-value bond gap is that bump,
+because it is the one that makes an as-of read wrong rather than merely
+inelegant.
+
+Trade generation is not a DQ problem and not a formality. DQ carries no
+trade artefact table at all, and its versioning is a dataset vintage
+rather than a date. Synthetic generation already has the machinery, the
+weighting model and a seeded context, and its output today is test
+fixtures. The context's determinism is broken in three places in the
+tree.
+
+The vendored ORE engine ships a trade generator that cannot be run from
+this tree, because the SWIG module it imports is not vendored. It is
+useful as a coverage list and not as code.
+
+The conclusion of the comparison is mechanism A, generation relative at
+an anchor date, inside =ores.trading=, seeded, with a
+regenerate-and-diff review.
+
+** Why mechanism A and why mechanism B lost
+
+Mechanism B was tested rather than dismissed, and it loses on three
+grounds, not one.
+
+1. *Its derived dates are already relative, so B does not add what A
+   lacks.* =swap_instrument_mapper.cpp= lines 89-113 show the header dates
+   are copied from the schedule, and =bond_schedule_rules_field_group.org=
+   lines 14-18 show the schedule is a rule. Shifting the anchor and
+   keeping the tenor is exactly what A does, with a database write and a
+   version row added.
+2. *Its constraints do not check what matters.* The 162 check expressions
+   in the trading schema constrain order and the spine. None can constrain
+   a business day, because calendars are not in the schema. A shifted
+   population is unverified where it most needs verifying.
+3. *Its history makes the population read as corrected.* The trigger
+   writes a second version, the history diff renders it, and the as-of
+   read the trade set already carries answers for the pre-shift state.
+   Separately, schedule dates are =:economic: true=, so a shift moves the
+   =economic_digest=, and by the rule in =trade_versioning.org= lines
+   27-28 the =external_version= follows, which reports every trade as
+   amended by agreement.
+
+B's one advantage, keeping the ORE corpus recognisable, does not survive
+the date-list schedules or the calendar gap. A corpus that has been
+partially rewritten is neither generated nor verbatim.
+
+Mechanism A keeps the property the requirement actually asks for. The
+population is a function of (seed, as-of), and moving the as-of moves it
+coherently.
+
+The user's reasoning is right, and for a narrower reason than stated.
+Relative dates are not a synthetic-versus-DQ question. They are an
+*anchor* question, and the anchor belongs in the generator's signature.
+
+** What makes a seed deterministic
+
+The seed is necessary and it is not sufficient today. Three things must
+hold.
+
+1. *The seed must reach the engine.* =generation_context.hpp= line 43
+   constructs from a =uint64_t seed=, so the parameter exists and the
+   population must pass it explicitly rather than take the random
+   constructor at line 48.
+2. *The identifier minting must stop reading the clock.*
+   =generation_engine.cpp= lines 42-53 build a UUID v7 whose first 48 bits
+   are =std::chrono::system_clock::now()= in milliseconds. Two runs with
+   the same seed produce different ids. Either the timestamp is derived
+   from the seed and the anchor, or the population uses deterministic keys
+   it computes itself.
+3. *The text generation must be seeded too.* The generated entity
+   generators call =faker::lorem::sentence()=, =faker::number::integer()=
+   and similar, for example
+   =ores.trading.api/src/generators/activity_category_generator.cpp= line
+   50 and =bond_forward_generator.cpp= line 50.
+   =grep -rn "faker::seed" projects/= returns nothing, so faker-cxx draws
+   from its own unseeded engine. A seeded context alone does not pin a
+   single description string.
+
+With those three closed, "same seed and same anchor produce the same
+rows" is true and testable. Note what determinism does not mean. The same
+seed at a later anchor must produce a different population, moved forward
+coherently. Determinism is over the pair, not over the seed.
+
+** How the population stays relative to the present
+
+The as-of is an input to the generator, never a read of the clock inside
+a field generator.
+
+- The context carries =(seed, as_of)=.
+- Every date field is emitted as =as_of + offset(tenor)=, where the tenor
+  comes from the product's own terms, so a swap's schedule rules keep
+  their tenors and move their anchor.
+- The generator emits schedule rules wherever the schema offers the
+  choice, because a rule is relative and a date list is not, and
+  =check ("schedule_kind" in ('rules', 'dates'))= lets it say so.
+- Business-day snapping runs in the generator against the same calendars
+  ORE will use, so the emitted dates are the dates the engine would
+  compute. Nothing in the schema can check this, so the generator is the
+  only place it can be guaranteed.
+- A re-provision at a later as-of re-runs the generator. The population
+  moves and nothing is shifted.
+
+** How referential integrity is guaranteed rather than hoped for
+
+The database already enforces most of it, so the work is to feed it real
+keys.
+
+- *Party.* Set =app.current_party_id= per write, because
+  =ores_trading_bond_instruments_insert_fn= overwrites the column from
+  session state. Generate one party's population in one pass, then the
+  next.
+- *Counterparty.* Pick from the 38 links in
+  =ores_refdata_party_counterparties_tbl= for the party being written,
+  not from the 2454 counterparties. Nothing checks this, so the generator
+  must be the check, and the weighting page should carry the per-party
+  list.
+- *Book and netting set.* Pick the book from the trade's party and the
+  netting set from that party and the chosen counterparty, because the
+  booking trigger refuses anything else.
+- *Staff.* Set =modified_by= and =performed_by= to a real username, and
+  pick it from the =Trading=-role holders in
+  =ores_iam_account_parties_tbl= for the party being written. This is the
+  one piece with no model behind it, so it is a decision to make and
+  record rather than a lookup to perform.
+- *The prerequisite to close first.* Give staff accounts a
+  =default_party_id=, or declare the =account_parties= rows as the
+  authoritative mapping. Today 2 of 61 current accounts have one, and the
+  other 59 have no party of their own while their =account_parties= rows
+  are many-to-many, so the question of which person entered a trade cannot
+  be answered from the data.
+
+** How a reviewer sees what changed
+
+Two layers, and the first is the one that matters for a seed.
+
+- *Regenerate and diff.* Because the population is a function of
+  (seed, as-of), a review is a rebuild at a stated pair and a diff of the
+  emitted SQL or fixtures. This is the review the seeder already imagines
+  for its datasets, and it is the one that catches an accidental change to
+  the shape. It needs the emitted population to be committed or written
+  where a diff can see it.
+- *Entity history.* The generic history request, the per-entity handlers
+  and =ores.diff= (=doc/knowledge/architecture/history_diff_architecture.org=
+  lines 14-30) already render version-to-version changes. Under mechanism
+  A the first version is the only version, and history stays quiet. That
+  quiet is the signal.
+
+* Recommendations
+
+1. *Build the trade generator and the seeded population inside
+   =ores.trading=, using mechanism A, and review it by regenerating and
+   diffing.*
+2. *Put the generator in the =generators= facet.* Every trading model
+   already declares =generator_facet_name: generators=, and
+   =ores.trading.api/src/generators/= is where the machinery sits. The
+   population generator extends that facet rather than starting a new
+   component, because it must read the flight of entities the models own.
+3. *Put the arithmetic in =ores.utility/generation=.*
+   =generation_context= and =generation_engine= are already the seam, and
+   =past_timepoint= already reaches for the clock. Add an anchor to the
+   context and an offset helper to the engine. This is one change that
+   serves every component's generator.
+4. *Put the trigger at the boundary, not in the model.* A shell command
+   or a service operation calls =trading.v1.ops.book_trade= for the anchor
+   and the booking, and the generated repositories for the instrument
+   family. Do not add a populate script per table. =dq_artefacts.org=
+   lines 44-47 already say the owning model states the staging shape, and
+   the same principle puts the write behind the owning service.
+5. *Keep the corpus and the weights as data.*
+   =doc/knowledge/domain/trade_population_weights.org= already states a
+   weighted distribution over 86 ORE products, with the rule at lines
+   57-69 that every product carries a non-zero weight so each pricing path
+   is exercised. That page is written to be a data input. Keep it one.
+6. *Close the seed's three determinism gaps first.* The anchor on
+   =generation_context=, seed-derived ids, and a seeded faker are phase 0.
+   Without them a re-provision is not repeatable and the convergence
+   acceptance cannot be written.
+7. *Decide the person-to-party mapping and record it.* This is a
+   prerequisite and not a task. Give staff accounts a =default_party_id=,
+   or declare the =account_parties= rows authoritative.
+8. *Allow DQ only for the parameters.* A staged artefact holding the
+   population shape is a good fit. A staged artefact holding trades is
+   not.
+9. *Do not build a trade artefact table in DQ, a date-shift pass, or a
+   populate script per table.* These are the three designs the
+   investigation rules out.
+
+** Phasing
+
+| Phase | Work | Verified by |
+|---|---|---|
+| 0 | Close the seed's three determinism gaps: anchor on =generation_context=, seed-derived ids, seeded faker. | A test that builds the same (seed, as-of) twice and compares byte-for-byte. |
+| 1 | Close the prerequisite: decide and record how a person maps to a party, and populate =default_party_id= or declare =account_parties= authoritative. | A query showing every book's party has at least one =Trading=-role holder. |
+| 2 | Bond population. A generator for =bond_instrument=, =bond_issue= and the leg children, driven by the 10 routed bond codes, the =Liquidity Buffer Bonds= books and the per-party counterparty list. Write through =book_trade= and the generated repositories. | =SELECT count(*) FROM ores_trading_trades_tbl WHERE tenant_id=...= returns the intended count, and the export of a book's trades reverse-maps without loss. |
+| 3 | Prove it prices. Export the bonds as an ORE portfolio through =export_portfolio= and run one report. | The engine proceeds past =Pricing: Build Portfolio=. |
+| 4 | Extend to the rates family, then FX, equity, credit, commodity and scripted, in the order the weights page already sets. | The population's product mix matches the weights table within tolerance. |
+| 5 | Fill the coverage hole that blocks a family. 30 of 121 trade types have no instrument table, and each one is a family member a population cannot carry. | The catalogue's unrouted count falls. |
+
+** What has to be built, and what is reused
+
+Reused:
+
+- the =generators= facet, =generation_context=, =generation_engine= and
+  =parent_seed= blocks, as the skeleton;
+- =trading.v1.ops.book_trade= and the generated repositories, as the write
+  path;
+- the trigger-enforced integrity for party, book, netting set and
+  counterparty identifier, as the guarantee;
+- the export walk, =ores::ore::xml::exporter::export_portfolio=, as the
+  bridge to the engine;
+- =trade_population_weights.org=, as the weighting data;
+- =ores.diff= and the history renderer, as the review surface;
+- the seeder's dataset convention, for the parameters if a staged form is
+  wanted later.
+
+Built:
+
+- the as-of anchor and its offset arithmetic in =ores.utility/generation=;
+- a seeded id scheme that does not read the clock;
+- a faker seed call, or generated text that does not use faker;
+- the bond population generator and its per-party counterparty and staff
+  selection;
+- a shell command or service operation that runs the generation for a
+  party and a tenant;
+- the person-to-party decision, which is a prerequisite and not a task.
+
+Not built, and deliberately:
+
+- no trade artefact table in DQ;
+- no date-shift pass;
+- no new populate script per table.
+
+* See also
+
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]], the criteria applied to the bond family.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]], the composite and field-group patterns.
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]], the artefact and publication contract.
+- [[id:A1310399-0ACD-4FA1-9645-AB24B3C8BEB8][Trade Population Weights]], the product mix a population should follow.
+- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]], the September review this document re-measures.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]], coverage and routing.
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]], how a version change is reviewed.
+- [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Story: Populate the ACME books with a realistic trade population]], the story this record belongs to.
+- [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]], the story this population unblocks.

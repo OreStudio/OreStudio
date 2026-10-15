@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ counterparties rather than the 23 names the seeder happened to write by hand.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Implemented and proved through a recreate and an ACME provision. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance

@@ -35,11 +35,11 @@ holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Modelled, generated and committed on =feature/model-the-trade-generation-config= at =800a9955d1=. The build is green, the database recreates with the three new tables, and the four synthetic suites pass. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Close once the drift gates are re-run on the final commit; the generator is the next task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance

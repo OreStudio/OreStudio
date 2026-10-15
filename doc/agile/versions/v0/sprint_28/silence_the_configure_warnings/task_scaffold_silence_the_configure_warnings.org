@@ -8,7 +8,7 @@
 #+filetags: :silence_the_configure_warnings:sprint_28:v0:
 #+owner: marco
 #+branch: feature/silence-the-configure-warnings
-#+pr:
+#+pr: 3367
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3367][#3367]] | [cmake] Stop the doc-only and macOS configures warning |
 
 * Review
 

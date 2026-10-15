@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: synthetic
-Tables: 10
+Tables: 13
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -427,6 +427,129 @@ package "synthetic" #F9FBE7 {
     edit definitions, only the values of their own configs.
     end note
 
+    entity ores_synthetic_trade_generation_books_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * book_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_trade_generation_books_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Generation Book Table
+    One book a trade generation config books into. The book scope of a
+    configuration is a set, so it is a repeating field set and lives here, one
+    row per book, rather than a column on the config: a party holds up to twenty
+    books and the population spreads across them.
+    The row references a real book of the config's own party. The trade booking
+    trigger refuses a book that belongs to another party, so a row naming one
+    would write no trade. The generator resolves the reference rather than
+    inventing it, and that resolution is what fails loudly when the reference is
+    missing.
+    Book-scope rows belong to a parent config through config_id, the same
+    one-config-many-children shape gmm_component uses for its parent
+    fx_spot_generation_config.
+    end note
+
+    entity ores_synthetic_trade_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+        * description : text
+        * asset_class_code : text
+        * min_tenor_code : text
+        * max_tenor_code : text
+        * min_notional : numeric(38, 12)
+        * max_notional : numeric(38, 12)
+        * as_of_date : date
+        * seed : bigint
+        * enabled : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_trade_generation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Generation Config Table
+    A named recipe for the trades one party's books receive. It is the
+    population as configuration: a reviewer reads the row and the two scope
+    lists rather than a command.
+    The row names the booking party, the instrument family, the tenor and
+    notional bands, the as-of anchor and the seed. The book scope and the
+    counterparty scope are the two multi-valued field sets and live in child
+    tables, one row per book and one row per counterparty, the same
+    one-config-many-children shape fx_spot_generation_config uses for its
+    gmm_component rows and ir_curve_generation_config for its
+    ir_curve_template_entry rows.
+    The booking party is the row's own party_id. The writer sets
+    app.current_party_id to it before each trade, because the trading
+    insert triggers overwrite the instrument's party from session state.
+    The two scope lists are
+    [[id:2E13AC47-E3F0-4485-AA4D-BC6E9CD1980B][Trade Generation Book]] and
+    [[id:33A902F8-FA25-477E-BF7B-B2E1792AB1F8][Trade Generation
+    Counterparty]].
+    The population is a function of the pair (seed, as-of anchor). The seed
+    pins the shape of the population and not the identity of its rows. The
+    same pair emits the same rows; a later anchor moves the population
+    forward rather than repeating it. See
+    [[id:6E648B05-2ADB-4E03-89CB-D4670CB72FC3][Investigation: Populating ACME
+    with a trade population]], "What makes a seed deterministic".
+    end note
+
+    entity ores_synthetic_trade_generation_counterparties_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_trade_generation_counterparties_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Generation Counterparty Table
+    One counterparty a trade generation config faces. The counterparty scope of
+    a configuration is a set, so it is a repeating field set and lives here, one
+    row per counterparty, rather than a column on the config.
+    The row is what makes the population reviewable. A party holds thousands of
+    counterparties and only a handful of tradeable links, and a trade against a
+    counterparty outside the tradeable set inserts cleanly and is wrong. The
+    scope states the intended set, and the generator draws from it rather than
+    from the whole counterparty table.
+    Counterparty-scope rows belong to a parent config through config_id, the
+    same one-config-many-children shape gmm_component uses for its parent
+    fx_spot_generation_config.
+    end note
+
     entity ores_synthetic_yield_curve_process_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -477,6 +600,8 @@ ores_synthetic_process_parameter_definitions_tbl ||--o{ ores_synthetic_config_pr
 ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_ir_curve_generation_configs_tbl : "has"
 ores_synthetic_folders_tbl ||--o{ ores_synthetic_ir_curve_generation_configs_tbl : "has"
 ores_synthetic_ir_curve_generation_configs_tbl ||--o{ ores_synthetic_ir_curve_template_entries_tbl : "has"
+ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generation_books_tbl : "has"
+ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generation_counterparties_tbl : "has"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.synthetic.puml"

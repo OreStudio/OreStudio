@@ -7,57 +7,174 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-the-trade-generation-config
+#+pr: 3362
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give the synthetic trade population a configuration entity, so the
+population is data a reviewer reads rather than a command a reviewer
+trusts. The entity carries the booking party, the book scope, the
+instrument family, the counterparty scope, the tenor band, the notional
+band, the as-of anchor and the seed.
+
+The generator that consumes it is a later task. This task is the model and
+the layers codegen derives from it, in
+=ores.synthetic=, beside the generation configs the component already
+holds.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Modelled, generated and committed on =feature/model-the-trade-generation-config= at =800a9955d1=. The build is green, the database recreates with the three new tables, and the four synthetic suites pass. |
+| Waiting on   | Nothing. |
+| Next         | Close once the drift gates are re-run on the final commit; the generator is the next task. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+The task shipped with an empty acceptance, so the list below is written
+from the settled design in
+[[id:6E648B05-2ADB-4E03-89CB-D4670CB72FC3][Investigation: Populating ACME
+with a trade population]] and from the code the component already holds.
+Two items reading the code changed are marked.
+
+- An =ores.synthetic.trade_generation_config= entity exists. It carries
+  the booking party, the instrument family, the tenor band, the notional
+  band, the as-of anchor and the seed. One row is one named recipe for one
+  party.
+- The book scope and the counterparty scope are child tables,
+  =trade_generation_book= and =trade_generation_counterparty=, one row per
+  book and one per counterparty, each referencing its parent config with a
+  foreign key.
+- The booking party is the row's own =party_id=, and the config is
+  tenant- and party-isolated.
+- The instrument family references the refdata asset-class catalogue and
+  is validated at insert time, so a code the catalogue does not hold is
+  refused rather than stored. *Reading the code changed this item:* the
+  seeded vocabulary is =interest_rates=, not =rates=, and it holds no
+  =scripted= family.
+- The notional band is an exact decimal at rest, per the money rule.
+- The as-of anchor is a date and the seed is an integer, and the model
+  states that the population is a function of the pair. The seed pins the
+  shape of the population, not the identity of its rows.
+- =./compass.sh build --preset linux-clang-release-ninja= is green.
+- =./compass.sh db recreate -y -k= is green and creates the three tables.
+- The synthetic suites pass: =ores.synthetic.api.tests=,
+  =ores.synthetic.core.tests=, =ores.synthetic.service.tests= and
+  =ores.shell.synthetic.tests=.
+- The codegen drift gates are clean at the branch tip, which required
+  committing first: =component-drift= compares =git diff= against the
+  working tree, so it can only pass on a committed branch.
+- *Reading the code changed this item:* the two scope tables carry their
+  RLS in their own model flags rather than in the hand-written
+  =synthetic_rls_policies_create.sql= the sibling configs use. The sibling
+  policies hop through a parent container's scope, which this
+  configuration has none of.
+
+Out of scope, and deliberately not built here: the generator, the as-of
+arithmetic, the trade identifier scheme, the DQ artefact staging, and the
+provisioning step.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the four existing generation models, the codegen pattern
+   catalogue and the codegen input schema, then choose the shape.
+2. Scaffold three entity models with =compass add entity_org= and write
+   the columns, checks, foreign keys and presentation into them.
+3. Generate every supported layer with =compass codegen entity generate=.
+4. Wire the three entities into the two hand-written aggregators (the
+   shell command surface and the service event registrar) and into the
+   hand-written SQL create and drop orchestration files.
+5. Regenerate the CMake source lists, the shell script library, the shell
+   recipe inventory and the ER diagrams.
+6. Build, recreate the database, run the synthetic suites and run the
+   codegen drift gates.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Build | exit 0 | =./compass.sh build --preset linux-clang-release-ninja= | 800a9955d1 |
+| Database recreation | exit 0, three tables created | =./compass.sh db recreate -y -k= | 800a9955d1 |
+| =ores.synthetic.api.tests= | 288 assertions in 80 test cases, passed | =./compass.sh test run --preset linux-clang-release-ninja -- -R synthetic -V= | 800a9955d1 |
+| =ores.synthetic.core.tests= | 1036 assertions in 46 test cases, passed | same | 800a9955d1 |
+| =ores.synthetic.service.tests= | 444 assertions in 61 test cases, passed | same | 800a9955d1 |
+| =ores.shell.synthetic.tests= | 624 assertions in 221 test cases, passed | same | 800a9955d1 |
+| Synthetic suites | 4 of 4 passed, 2392 assertions in 408 test cases | same | 800a9955d1 |
+| Codegen drift gates | 51 of 52 checks passed; the one failure was another task's uncommitted files, not this branch's | =./compass.sh check --exclude-heavy= | 800a9955d1 |
 
 * Notes
+
+** The pattern chosen, and the one it is mistaken for
+
+The configuration is one table, =ores.codegen.entity=, bound to the
+=uuid-identified-lookup= profile. The two scopes are repeating field sets
+and are separate child tables referencing the config, the
+*associated-entity* shape =gmm_component= and =ir_curve_template_entry=
+already give their parent config.
+
+The neighbouring pattern it is mistaken for is *composite parent and
+parts*, the pattern the trading and refdata components use. The pressure
+towards it is real: this repository is mid-way through a story that
+atomises an entity onto its central row, and the codegen catalogue lists
+multiplicity as a reason to split. It was not taken, because a scope row is
+a link to a book or a counterparty that already exists and has its own
+lifecycle, and because the component's own config children do not bump a
+parent version. The cost of that choice is stated under
+"What the model does not do".
+
+The other pattern it could be mistaken for is *field group member*. A
+band, an anchor and a seed have one change reason and one reader, so they
+are columns on the one table; nesting them, or splitting each into a row,
+would buy a join and a message for nothing.
+
+** How each required field is held
+
+| Field | Held as | Why |
+|---|---|---|
+| Booking party | Reference: =party_id= on the config, the row's own owning party | Every neighbouring synthetic config carries =party_id= this way, and it is what the writer sets =app.current_party_id= from. |
+| Book scope | Repeating part: =trade_generation_book= rows | A party holds up to twenty books and the population spreads across them, so the scope is a set. |
+| Instrument family | Reference: =asset_class_code= to the refdata catalogue | The catalogue is the authority, as =fx_spot_generation_config= already treats it. |
+| Counterparty scope | Repeating part: =trade_generation_counterparty= rows | The reviewable part of the population: which counterparties the book faces. |
+| Tenor band | Fixed columns: =min_tenor_code=, =max_tenor_code= | One change reason, one reader, two scalars. |
+| Notional band | Fixed columns: =min_notional=, =max_notional=, =numeric= | Same, and money is an exact decimal. |
+| As-of anchor | Fixed column: =as_of_date= | The generator's input, never a clock read inside a field generator. |
+| Seed | Fixed column: =seed= | One number that fixes the population's shape with the anchor. |
+
+** What the model does not do
+
+- The book, counterparty and tenor references are soft. Books and
+  counterparties are temporal refdata rows in another component, and
+  =tenor.org= emits no single-argument validator to call; the generator
+  task resolves them and is what fails loudly. The asset-class reference
+  is the exception, because a validator for it already exists.
+- The scope rows do not bump the config's version. Adding a book to a
+  scope leaves the config's own version still, so the config's history
+  does not record the scope change. This is the component's existing
+  behaviour for its sub-configs, kept for consistency; the composite
+  pattern would fix it and was not taken.
+- The drift gates were run while a second agent held uncommitted work in the
+  same worktree. All 51 gates that do not read the whole working tree passed;
+  =component-drift= is the exception, because it compares =git diff= after an
+  in-place regeneration, so any dirty file anywhere fails it. Its reported
+  diff at =800a9955d1= named seven files, all of them that other task's, and
+  none of this branch's. Re-run it once the worktree is clean to close the
+  check.
+- There is no DQ artefact staging for these tables. The investigation
+  allows DQ for the parameters, not the trades, so staging is a reasonable
+  follow-up rather than a defect.
 
 * Test Scenarios
 
@@ -74,7 +191,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3362][#3362]] | [synthetic] Model the trade generation config |
 
 * Review
 
@@ -83,3 +200,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The model is committed at =800a9955d1= on
+=feature/model-the-trade-generation-config=, generated across every layer
+the entity supports: SQL create and drop, domain types and their JSON and
+table I/O, generator, repository, mapper, service, messaging protocol,
+NATS handler and registrar, eventing, history provider, shell commands and
+their recipes, and the wire-protocol TypeScript.
+
+Two facts found by reading rather than by designing are worth carrying
+forward. The asset-class vocabulary the insert trigger enforces is
+=fx, interest_rates, credit, equity, commodity, inflation, bond=, so
+"rates" is not a family code and "scripted" has no asset class at all;
+the weights page groups by asset class and will need the same mapping. And
+=compass db recreate -y -k= cannot win against the environment's own
+services, which reconnect to the database inside the guard's half-second
+window: the services must be stopped first, and restarted after.

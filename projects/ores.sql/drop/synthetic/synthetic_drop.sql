@@ -18,6 +18,12 @@
  *
  */
 
+\ir ./synthetic_trade_generation_counterparties_notify_trigger_drop.sql
+\ir ./synthetic_trade_generation_counterparties_drop.sql
+\ir ./synthetic_trade_generation_books_notify_trigger_drop.sql
+\ir ./synthetic_trade_generation_books_drop.sql
+\ir ./synthetic_trade_generation_configs_notify_trigger_drop.sql
+\ir ./synthetic_trade_generation_configs_drop.sql
 \ir ./synthetic_ir_curve_generation_config_process_parameter_values_process_type_validate_trg_drop.sql
 \ir ./synthetic_ir_curve_generation_config_process_parameter_values_notify_trigger_drop.sql
 \ir ./synthetic_ir_curve_generation_config_process_parameter_values_drop.sql

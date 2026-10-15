@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 54F7F5A4-AD02-5637-9D98-562E462520EB
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the trade_generation_counterparties commands from the shell?
+#+description: Every command the trade_generation_counterparties submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:trade_generation_counterparties:
+
+This file documents the trade_generation_counterparties resource at the shell, one section per command. Every command is a subcommand of =trade_generation_counterparties=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 59FF9D3C-A953-59D1-943B-C2F310676152
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.list=.
+
+#+name: trade_generation_counterparties-list
+#+begin_src ores-shell :tangle trade_generation_counterparties-list.ores :exports none
+trade_generation_counterparties list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 77DCDB8E-7E6A-5AAA-9156-0C4E5463BD46
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.get=.
+
+#+name: trade_generation_counterparties-get
+#+begin_src ores-shell :tangle trade_generation_counterparties-get.ores :exports none
+trade_generation_counterparties get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E631EABD-E46E-5D88-B135-973DA7AD7436
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.get_many=.
+
+#+name: trade_generation_counterparties-get-many
+#+begin_src ores-shell :tangle trade_generation_counterparties-get-many.ores :exports none
+trade_generation_counterparties get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8F71796B-A312-50BC-BBA1-0FBDD7B7D676
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties add <config_id> <counterparty_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.put=.
+
+#+name: trade_generation_counterparties-add
+#+begin_src ores-shell :tangle trade_generation_counterparties-add.ores :exports none
+trade_generation_counterparties add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B10EFE8F-E7F3-5555-94C4-B6CC5598E548
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties set <id> <config_id> <counterparty_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.put=.
+
+#+name: trade_generation_counterparties-set
+#+begin_src ores-shell :tangle trade_generation_counterparties-set.ores :exports none
+trade_generation_counterparties set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 848D61A8-34AD-52CF-8FE7-095751F75B7C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties put-many --count <n> <id> <config_id> <counterparty_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.put_many=.
+
+#+name: trade_generation_counterparties-put-many
+#+begin_src ores-shell :tangle trade_generation_counterparties-put-many.ores :exports none
+trade_generation_counterparties put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 9810A7CB-050C-5922-AAA1-6F41D82D4C8B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.delete=.
+
+#+name: trade_generation_counterparties-delete
+#+begin_src ores-shell :tangle trade_generation_counterparties-delete.ores :exports none
+trade_generation_counterparties delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1DEFB93A-8823-5D7F-9DF3-040DE76686D4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties.delete_many=.
+
+#+name: trade_generation_counterparties-delete-many
+#+begin_src ores-shell :tangle trade_generation_counterparties-delete-many.ores :exports none
+trade_generation_counterparties delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: ECB7CA5F-4FEC-5259-884F-4BD66A7070E1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties_versions.list=.
+
+#+name: trade_generation_counterparties-versions
+#+begin_src ores-shell :tangle trade_generation_counterparties-versions.ores :exports none
+trade_generation_counterparties versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F95FDA1B-E00E-5752-97A5-309AE346D707
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_counterparties version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_counterparties_versions.get=.
+
+#+name: trade_generation_counterparties-version
+#+begin_src ores-shell :tangle trade_generation_counterparties-version.ores :exports none
+trade_generation_counterparties version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

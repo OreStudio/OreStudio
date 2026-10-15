@@ -28,6 +28,9 @@ set(files
     "app/commands/synthetic/ir_curve_template_entry_commands.cpp"
     "app/commands/synthetic/market_data_generation_config_commands.cpp"
     "app/commands/synthetic/market_data_provider_commands.cpp"
+    "app/commands/synthetic/trade_generation_book_commands.cpp"
+    "app/commands/synthetic/trade_generation_config_commands.cpp"
+    "app/commands/synthetic/trade_generation_counterparty_commands.cpp"
     "app/commands/synthetic/yield_curve_process_parameter_definition_commands.cpp"
     "app/commands/synthetic/yield_curve_process_type_commands.cpp"
 )
@@ -42,6 +45,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/ir_curve_template_entry_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/market_data_generation_config_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/market_data_provider_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/trade_generation_book_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/trade_generation_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/trade_generation_counterparty_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/yield_curve_process_parameter_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
 )

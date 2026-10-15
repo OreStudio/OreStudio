@@ -8,7 +8,7 @@
 #+filetags: :trigger_a_report_run_on_demand_or_on_a_schedule:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3328
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3328][#3328]] | [shell] Name the report and stream the DQ steps so build-packages runs end to end |
 
 * Review
 

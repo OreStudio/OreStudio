@@ -33,6 +33,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/approval_gate.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/authorise.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/handler_helpers.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/step_command_stream.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/workflow_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/ores.service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/cache/run_token_cache.hpp"

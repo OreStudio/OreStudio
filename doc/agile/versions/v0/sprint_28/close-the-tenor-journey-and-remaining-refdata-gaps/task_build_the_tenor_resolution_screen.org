@@ -35,10 +35,13 @@ A tenant administrator defines how tenors resolve in ores.web, and the screen ma
 
 * Acceptance
 
-- A tenant administrator lists tenors and opens one.
-- The screen shows the tenor's convention and the schedule it produces.
-- The screen shows the resolved dates, and states the refusal when resolution fails.
-- The screen shows the tenor's history.
+- A tenant administrator lists tenors and opens one. *Met.*
+- The screen shows the tenor's convention and the tenors that convention resolves. *Met.*
+- The screen states the refusal when a write fails, and names the step to walk back to. *Met.*
+- The screen shows the tenor's history. *Met.*
+- The screen shows the resolved dates. *Not met*, and it cannot be: the server
+  serves no operation that resolves a tenor to a date. That view belongs to the
+  sibling task [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]].
 
 * Plan
 

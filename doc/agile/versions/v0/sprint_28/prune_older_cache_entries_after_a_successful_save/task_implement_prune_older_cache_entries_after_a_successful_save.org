@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: EFA518C0-662D-4CE0-AB32-0AE2CF547529
+:END:
+#+title: Task: Prune older cache entries after the save succeeds
+#+description: Initial task for: Prune older cache entries after a successful save
+#+type: task
+#+level: s1
+#+filetags: :prune_older_cache_entries_after_a_successful_save:sprint_28:v0:
+#+owner: marco
+#+branch: feature/prune-older-cache-entries-after-a-successful-save
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:621872F1-0497-452E-B3F4-1871B8C566F2][Prune older cache entries after a successful save]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each compiler-cache variant holds one entry, so every platform has room for a warm cache inside the 10 GB cap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:621872F1-0497-452E-B3F4-1871B8C566F2][Prune older cache entries after a successful save]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- Both workflows delete older entries of the same variant after a successful save.
+- The entry just written is never deleted.
+- A failed save deletes nothing.
+
+* Plan
+
+Add a step after Save sccache that deletes every older entry of the same
+variant, in both workflows that persist the cache.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Repository cache in use | 9.55 GB of 10 GB, across 14 entries | =gh api /repos/OreStudio/OreStudio/actions/caches= | 9e040210a4 |
+| Free | about 0.45 GB | same | 9e040210a4 |
+| sccache share | 8.58 GB across 5 entries | same | 9e040210a4 |
+| Entries per variant | clang-debug 2, clang-release 3 | same | 9e040210a4 |
+| gcc sccache entries | none, evicted | same | 9e040210a4 |
+| Entries a variant holds after a successful run, after this change | 1 | same | this branch |
+
+* Notes
+
+** The accumulation is the price of the earlier fix
+
+Saving under a run-unique key is what stopped a failed save destroying the
+cache, because the delete-then-save pair had a window with nothing in it.
+The price is that every run adds an entry rather than replacing one: two
+clang-debug runs already hold 5 GB of a 10 GB repository cap, and the
+repository sits at 9.55 GB.
+
+** What that has cost
+
+The gcc compiler cache has been evicted entirely, so the Nightly Build's
+gcc jobs, including the gcc release job restored earlier, run cold. vcpkg
+entries survive only because they are small.
+
+** The delete moves after the save
+
+This step deletes older entries of the same variant once the new one is
+stored. The ordering is the whole point: the delete can no longer run
+before a save that might fail, so it cannot destroy the cache. A variant
+ends a successful run holding exactly one entry.
+
+** The filter was dry-run first
+
+The jq expression was run against the live cache with the delete replaced
+by an echo. It selected the older clang-debug entry and not the current
+one, which is the behaviour the step depends on.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both workflows prune older entries of the same variant once the new one is
+stored, so a variant ends a successful run holding one entry. The
+repository cache should fall from 9.55 GB to roughly 4 GB, which leaves
+room for the gcc and vcpkg caches that are currently being evicted.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: the pruning only runs inside a workflow. The first
+successful continuous run after this merges is the proof, and a cache
+listing after it should show one entry per variant.

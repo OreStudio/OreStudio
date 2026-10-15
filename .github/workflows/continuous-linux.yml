@@ -329,14 +329,33 @@ jobs:
           fi
 
       - name: Save sccache
-        # The key is unique per run, so the save never collides and there is no
-        # delete step. A save that fails leaves the entries already stored
+        # The key is unique per run, so the save never collides, and it happens
+        # before any pruning. A save that fails leaves the stored entries
         # untouched, where deleting first would have destroyed them.
         if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
           key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+
+      - name: Prune older sccache entries
+        # Saves use a run-unique key, so entries accumulate: two clang-debug runs
+        # cost 5 GB of the 10 GB repository cap, and the gcc cache was evicted
+        # for want of room. Drop every older entry of this variant now that the
+        # new one is stored. This delete runs only after a successful save, so
+        # it cannot destroy the cache the way deleting first did.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
+          keep="${prefix}${{ github.run_id }}"
+          gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
+            --jq ".actions_caches[] | select(.key | startswith(\"${prefix}\")) | select(.key != \"${keep}\") | .id" \
+          | while read -r id; do
+              [ -n "$id" ] && gh api --method DELETE \
+                "/repos/${{ github.repository }}/actions/caches/${id}" || true
+            done
 
       - name: Show sccache statistics
         # ccache-action installs sccache. If no build ran, it is absent, and

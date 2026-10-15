@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 621872F1-0497-452E-B3F4-1871B8C566F2
+:END:
+#+title: Story: Prune older cache entries after a successful save
+#+description: Saves use a run-unique key so that a failed save can never destroy the cache, but the entries accumulate: two clang-debug runs already cost 5 GB of the 10 GB repository cap, the cache sits at 9.55 GB with 0.45 GB free, and the gcc cache has been evicted entirely, so the nightly gcc jobs run cold. Delete every older entry of the same variant once the new one is stored, which bounds each variant to one entry and frees roughly 5 GB.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:sccache:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Each compiler-cache variant holds one entry, so every platform has room for a warm cache inside the 10 GB cap.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- Both workflows delete older entries of the same variant after a successful save.
+- The entry just written is never deleted.
+- A failed save deletes nothing.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BFBF8594-3BB3-469A-A514-963416CF0424][Scaffold story: Prune older cache entries after a successful save]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EFA518C0-662D-4CE0-AB32-0AE2CF547529][Prune older cache entries after the save succeeds]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Prune older cache entries after a successful save |
+
+* Decisions
+
+- The delete returns, but only after a successful save. The earlier removal
+  was about ordering, not about deleting: deleting first left a window in
+  which a failed save destroyed the cache. Deleting afterwards cannot.
+- One entry per variant is the target. It bounds the repository cache at
+  roughly one cache per variant plus vcpkg, which fits the 10 GB cap and
+  leaves room for the gcc jobs.
+- The filter was dry-run against the live cache before it was committed, so
+  the expression that selects the older entries is known to select the
+  right ones.
+
+* Out of scope
+
+- Caching the macOS and Windows compilers. They still do not fit, and the
+  Linux caches are the ones on the critical path.

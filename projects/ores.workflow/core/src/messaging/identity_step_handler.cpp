@@ -18,10 +18,12 @@
  *
  */
 #include "ores.workflow.core/messaging/identity_step_handler.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/workflow/identity_workflow.hpp"
+#include <array>
 #include <chrono>
 #include <rfl/json.hpp>
 #include <string_view>
@@ -118,15 +120,33 @@ std::vector<ores::nats::service::subscription>
 register_identity_step_handlers(ores::nats::service::client& nats, std::string_view queue_group) {
     std::vector<ores::nats::service::subscription> subs;
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(identity_ns::identity_step_command_subject),
-                             std::string(queue_group),
-                             [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); }));
+    static constexpr std::array step_subjects{
+        identity_ns::identity_step_command_subject,
+        identity_ns::identity_compensation_command_subject};
+    const auto step_stream =
+        ores::service::messaging::ensure_step_stream(nats, queue_group, step_subjects);
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(identity_ns::identity_compensation_command_subject),
-                             std::string(queue_group),
-                             [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); }));
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        identity_ns::identity_step_command_subject,
+        std::string(queue_group),
+        step_stream,
+        [&nats](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            handle(nats, std::move(msg));
+            ack.accept();
+        }));
+
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        identity_ns::identity_compensation_command_subject,
+        std::string(queue_group),
+        step_stream,
+        [&nats](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            handle(nats, std::move(msg));
+            ack.accept();
+        }));
 
     return subs;
 }

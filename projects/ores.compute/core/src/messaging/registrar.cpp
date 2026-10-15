@@ -18,6 +18,7 @@
  *
  */
 #include "ores.compute.core/messaging/registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/batch_protocol.hpp"
@@ -41,6 +42,7 @@
 #include "ores.compute.core/messaging/work_handler.hpp"
 #include "ores.compute.core/messaging/workunit_registrar.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
+#include <array>
 #include <memory>
 #include <optional>
 
@@ -126,10 +128,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Report execution: submit to compute grid (workflow step handler).
     // ----------------------------------------------------------------
     auto rsh = std::make_shared<report_submit_handler>(nats, ctx, outbound_nats);
-    subs.push_back(nats.queue_subscribe(
+    static constexpr std::array step_subjects{
+        ores::reporting::messaging::submit_compute_request::nats_subject};
+    const auto step_stream =
+        ores::service::messaging::ensure_step_stream(nats, "ores.compute.service", step_subjects);
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
         std::string(ores::reporting::messaging::submit_compute_request::nats_subject),
         "ores.compute.service",
-        [rsh](ores::nats::message msg) { rsh->submit(std::move(msg)); }));
+        step_stream,
+        [rsh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            rsh->submit(std::move(msg));
+            ack.accept();
+        }));
 
     return subs;
 }

@@ -120,7 +120,7 @@ struct message {
 class ack_guard {
 public:
     explicit ack_guard(const message& msg) noexcept
-        : handle_(msg.ack.get()) {}
+        : handle_(msg.ack) {}
 
     ~ack_guard() {
         if (handle_ && !answered_)
@@ -151,11 +151,13 @@ private:
     void answer(void (ack_handle::*verb)()) noexcept {
         if (handle_ && !answered_) {
             answered_ = true;
-            (handle_->*verb)();
+            (handle_.get()->*verb)();
         }
     }
 
-    ack_handle* handle_;
+    // Shared, not borrowed: a handler that takes its message by value and
+    // moves it on would otherwise free the handle out from under the guard.
+    std::shared_ptr<ack_handle> handle_;
     bool answered_ = false;
 };
 

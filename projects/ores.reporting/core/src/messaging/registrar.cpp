@@ -289,45 +289,104 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     auto reh = std::make_shared<report_execution_handler>(
         nats, ctx, svc_nats, instance_states, std::move(http_base_url));
+    static constexpr std::array step_subjects{
+        gather_trades_request::nats_subject,
+        gather_market_data_request::nats_subject,
+        assemble_bundle_request::nats_subject,
+        resolve_prepared_input_request::nats_subject,
+        collect_compute_results_request::nats_subject,
+        ignore_compute_results_request::nats_subject,
+        finalise_report_request::nats_subject,
+        fail_report_request::nats_subject};
+    const auto step_stream =
+        ores::service::messaging::ensure_step_stream(nats, group, step_subjects, "execution");
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(gather_trades_request::nats_subject), group, [reh](ores::nats::message msg) {
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        std::string(gather_trades_request::nats_subject),
+        group,
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
             reh->gather_trades(std::move(msg));
+            ack.accept();
         }));
 
-    subs.push_back(nats.queue_subscribe(
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
         std::string(gather_market_data_request::nats_subject),
         group,
-        [reh](ores::nats::message msg) { reh->gather_market_data(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(assemble_bundle_request::nats_subject), group, [reh](ores::nats::message msg) {
-            reh->assemble_bundle(std::move(msg));
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            reh->gather_market_data(std::move(msg));
+            ack.accept();
         }));
 
-    subs.push_back(nats.queue_subscribe(
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        std::string(assemble_bundle_request::nats_subject),
+        group,
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            reh->assemble_bundle(std::move(msg));
+            ack.accept();
+        }));
+
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
         std::string(collect_compute_results_request::nats_subject),
         group,
-        [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(resolve_prepared_input_request::nats_subject),
-        group,
-        [reh](ores::nats::message msg) { reh->resolve_prepared_input(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(ignore_compute_results_request::nats_subject),
-        group,
-        [reh](ores::nats::message msg) { reh->ignore_compute_results(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(finalise_report_request::nats_subject), group, [reh](ores::nats::message msg) {
-            reh->finalise(std::move(msg));
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            reh->collect_results(std::move(msg));
+            ack.accept();
         }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(fail_report_request::nats_subject), group, [reh](ores::nats::message msg) {
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        std::string(resolve_prepared_input_request::nats_subject),
+        group,
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            reh->resolve_prepared_input(std::move(msg));
+            ack.accept();
+        }));
+
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        std::string(ignore_compute_results_request::nats_subject),
+        group,
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            reh->ignore_compute_results(std::move(msg));
+            ack.accept();
+        }));
+
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        std::string(finalise_report_request::nats_subject),
+        group,
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            reh->finalise(std::move(msg));
+            ack.accept();
+        }));
+
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        std::string(fail_report_request::nats_subject),
+        group,
+        step_stream,
+        [reh](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
             reh->fail(std::move(msg));
+            ack.accept();
         }));
 
     // ----------------------------------------------------------------
@@ -350,7 +409,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 subject,
                 group,
                 step_stream,
-                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+                [pdq](ores::nats::message msg) {
+            ores::nats::ack_guard ack(msg);
+            pdq->handle(std::move(msg));
+            ack.accept();
+        }));
         }
     }
 

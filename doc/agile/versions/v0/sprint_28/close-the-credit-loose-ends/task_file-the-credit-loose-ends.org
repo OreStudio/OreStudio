@@ -8,7 +8,7 @@
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
 #+branch: feature/close-the-credit-loose-ends
-#+pr:
+#+pr: 3364
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3364][#3364]] | [agile] File the credit loose ends into a story |
 
 * Review
 

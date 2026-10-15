@@ -8,7 +8,7 @@
 #+filetags: :silence_the_gnuinstalldirs_uninitialized_warnings:sprint_28:v0:
 #+owner: marco
 #+branch: feature/silence-the-gnuinstalldirs-uninitialized-warnings
-#+pr:
+#+pr: 3347
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3347][#3347]] | [cmake] Silence the GNUInstallDirs uninitialized warnings |
 
 * Review
 

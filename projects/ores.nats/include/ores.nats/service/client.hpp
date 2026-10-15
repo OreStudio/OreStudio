@@ -292,6 +292,32 @@ public:
     [[nodiscard]] std::vector<std::string>
     covering_subjects(std::initializer_list<std::string_view> subjects) const;
 
+    /**
+     * @brief The same filters, for a caller that holds its subjects in a
+     *        container.
+     *
+     * A service registering a family of subjects keeps them in an array, and
+     * naming the bare subject and its wildcard by hand at every call site is
+     * how the pair drifts apart. This overload is the one a service uses: it
+     * accepts any range whose elements convert to a @c std::string_view, which
+     * covers both the generated @c nats_subject constants and a literal.
+     *
+     * @code
+     * static constexpr std::array subjects{"a.v1.ops.one", "a.v1.ops.two"};
+     * admin.ensure_stream(name, nats.covering_subjects(subjects));
+     * @endcode
+     */
+    template <typename Range>
+    [[nodiscard]] std::vector<std::string> covering_subjects(const Range& subjects) const {
+        std::vector<std::string> filters;
+        for (const auto& subject : subjects) {
+            const std::string_view sv(subject);
+            filters.push_back(make_subject(sv));
+            filters.push_back(subjects_below(sv));
+        }
+        return filters;
+    }
+
 private:
     struct impl;
     std::unique_ptr<impl> impl_;

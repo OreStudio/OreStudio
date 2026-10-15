@@ -18,6 +18,7 @@
  *
  */
 #include "ores.workflow.core/messaging/registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
@@ -72,10 +73,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.workflow.service";
-    // A step completion or start message that always fails must stop being
-    // delivered. Redelivery past the bound leaves the run stalled, which the
-    // step deadline already reports, rather than cycling on one bad message.
-    constexpr auto engine_max_deliver = 10;
 
     // Generated per-entity registrars (workflow instances and steps). Each wires
     // the standard CRUD surface -- list/save/delete/history -- to the generated
@@ -144,7 +141,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         qg,
         [engine](ores::nats::message msg) { engine->on_step_completed(std::move(msg)); },
         engine_stream,
-        engine_max_deliver));
+        ores::service::messaging::step_max_deliver));
 
     subs.push_back(nats.js_queue_subscribe(
         messaging::start_workflow_message::nats_subject,
@@ -152,7 +149,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         qg,
         [engine](ores::nats::message msg) { engine->on_start_workflow(std::move(msg)); },
         engine_stream,
-        engine_max_deliver));
+        ores::service::messaging::step_max_deliver));
 
     // ----------------------------------------------------------------
     // Query handler (list instances, get steps).

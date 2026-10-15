@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/messaging/registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -549,9 +550,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "refdata.v1.ops.publish_supervisory_bodies_from_dq",
             "refdata.v1.ops.publish_tenor_schedules_from_dq",
         };
+        const auto step_stream =
+            ores::service::messaging::ensure_step_stream(nats, queue_group, publish_subjects);
         for (const auto subject : publish_subjects) {
-            subs.push_back(nats.queue_subscribe(
-                subject, queue_group, [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
+            subs.push_back(ores::service::messaging::subscribe_step_command(
+                nats,
+                subject,
+                queue_group,
+                step_stream,
+                [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
         }
     }
 

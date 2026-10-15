@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/messaging/registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
@@ -38,6 +39,7 @@
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <array>
 #include <memory>
 #include <optional>
 #include <string>
@@ -340,9 +342,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_report_definitions_from_dq_request::nats_subject,
             publish_risk_report_configs_from_dq_request::nats_subject,
         };
+        const auto step_stream =
+            ores::service::messaging::ensure_step_stream(nats, group, publish_subjects);
         for (const auto subject : publish_subjects) {
-            subs.push_back(nats.queue_subscribe(
-                subject, group, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+            subs.push_back(ores::service::messaging::subscribe_step_command(
+                nats,
+                subject,
+                group,
+                step_stream,
+                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
         }
     }
 

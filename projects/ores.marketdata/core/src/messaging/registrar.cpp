@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -46,6 +47,7 @@
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
 #include "ores.nats/domain/message.hpp"
+#include <array>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -222,10 +224,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Publish-from-DQ workflow step handler
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
-        subs.push_back(
-            nats.queue_subscribe("marketdata.v1.ops.publish_market_data_observations_from_dq",
-                                 queue,
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        static constexpr std::array publish_subjects{
+            "marketdata.v1.ops.publish_market_data_observations_from_dq"};
+        const auto step_stream =
+            ores::service::messaging::ensure_step_stream(nats, queue, publish_subjects);
+        for (const auto subject : publish_subjects) {
+            subs.push_back(ores::service::messaging::subscribe_step_command(
+                nats,
+                subject,
+                queue,
+                step_stream,
+                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        }
     }
 
     // ----------------------------------------------------------------

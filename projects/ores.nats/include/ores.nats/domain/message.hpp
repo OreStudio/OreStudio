@@ -119,7 +119,7 @@ struct message {
  */
 class ack_guard {
 public:
-    explicit ack_guard(message& msg) noexcept
+    explicit ack_guard(const message& msg) noexcept
         : handle_(msg.ack.get()) {}
 
     ~ack_guard() {

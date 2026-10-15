@@ -160,10 +160,15 @@ private:
 
     template <typename Body>
     void run(const ores::nats::message& msg, Body&& body) {
+        // A durable consumer answers every delivery, so each path below states
+        // the outcome; the guard retries a path that returns without deciding.
+        ores::nats::ack_guard ack(msg);
+
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
             BOOST_LOG_SEV(lg(), ores::logging::warn)
                 << "Ignored a command with no workflow headers: " << msg.subject;
+            ack.reject();
             return;
         }
         try {
@@ -176,6 +181,7 @@ private:
                                                                   cached->result_json,
                                                                   cached->error_message,
                                                                   cached->log);
+                ack.accept();
                 return;
             }
 
@@ -183,6 +189,7 @@ private:
                 ores::service::messaging::decode<ores::inbox::workflow::apply_step_command>(msg);
             if (!command || command->request_id.empty()) {
                 wf->fail("The command names no request.");
+                ack.accept();
                 return;
             }
 
@@ -199,6 +206,7 @@ private:
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
         }
+        ack.accept();
     }
 
     ores::nats::service::client& nats_;

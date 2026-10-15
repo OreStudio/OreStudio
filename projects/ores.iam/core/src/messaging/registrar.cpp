@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam.core/messaging/registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
@@ -147,10 +148,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.iam.service";
-    // A step command that always fails must stop being delivered. The bound is
-    // high enough that a transient fault is retried well past any restart, and
-    // low enough that a poison command cannot cycle forever.
-    constexpr auto step_max_deliver = 10;
 
     // === Phase 1: Wiring & Readiness ===
     // Construct and subscribe every handler, including this service's own
@@ -500,7 +497,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         qg,
         [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); },
         nats.make_stream_name("iam_steps"),
-        step_max_deliver));
+        ores::service::messaging::step_max_deliver));
     // The account-picture reconcile the attach_photos step runs is also a
     // subject, so an operator can re-run it from a client and a scope that is
     // not a provisioning run can be reconciled.
@@ -683,9 +680,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_accounts_from_dq_request::nats_subject,
             publish_account_contact_informations_from_dq_request::nats_subject,
         };
+        const auto step_stream =
+            ores::service::messaging::ensure_step_stream(nats, qg, publish_subjects);
         for (const auto subject : publish_subjects) {
-            subs.push_back(nats.queue_subscribe(
-                subject, qg, [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
+            subs.push_back(ores::service::messaging::subscribe_step_command(
+                nats,
+                subject,
+                qg,
+                step_stream,
+                [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
         }
     }
 

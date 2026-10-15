@@ -13,7 +13,6 @@
 #+entity_title: LEI BIC
 #+coding_scheme: none
 #+image_id: false
-#+has_artefact_insert_fn: true
 #+created: 2026-10-14
 #+updated: 2026-10-14
 

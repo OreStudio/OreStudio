@@ -125,14 +125,15 @@ the only references in the tree are the definition and the drop. The GLEIF loade
 writes its rows through the populate scripts. Kept for now because the task is
 about ownership, not about what the models generate; worth a capture.
 
-** The messaging reference does not list the GLEIF subjects
+** The messaging reference did not list LEI Bic
 
-=projects/ores.dq/core/modeling/ores.dq.protocol.org= is hand-maintained and
-lists neither =lei_entities= nor =lei_relationships= nor =lei_bic=, although all
-three answer =list=/=get=/=get_many=. That gap predates this task, and the three
-have no =_events= subjects, because =artefact-staging-only= withdraws the notify
-trigger that would raise them. The three removed =dq.v1.synthetic_fx_spot_configs=
-subject rows were the only ones this task had to take out.
+=projects/ores.dq/core/modeling/ores.dq.protocol.org= is hand-maintained. It
+listed =lei_entities= and =lei_relationships= but not the =lei_bic= model this
+task added, so its three subjects were added afterwards by the paperwork
+clean-up. None of the three has an =_events= subject, because
+=artefact-staging-only= withdraws the notify trigger that would raise one. The
+three removed =dq.v1.synthetic_fx_spot_configs= subject rows were the only ones
+this task had to take out.
 
 ** One table is still hand-written
 
@@ -246,6 +247,6 @@ branch, which is the check that exercises the three table renames. ctest is 93 o
 hand-written artefact table is left, =ip2country=, which is the other task in
 this story.
 
-The three GLEIF insert functions have no callers, and the DQ messaging reference
-does not list the GLEIF subjects; both are recorded in Notes and neither is work
-this task owed.
+The three GLEIF insert functions had no callers; the paperwork clean-up removed
+the flag that generated them. The DQ messaging reference did not list =lei_bic=;
+it does now.

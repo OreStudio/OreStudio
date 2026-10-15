@@ -22,3 +22,23 @@
  * Template: cpp_domain_type_table_io.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.refdata.api/domain/convention_kind_table_io.hpp"
+#include "ores.refdata.api/domain/convention_kind_table.hpp"
+#include <ostream>
+
+namespace ores::refdata::domain {
+
+namespace {
+
+void print_convention_kind_table(std::ostream& s, const std::vector<convention_kind>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<convention_kind>& v) {
+    print_convention_kind_table(s, v);
+    return s;
+}
+
+}

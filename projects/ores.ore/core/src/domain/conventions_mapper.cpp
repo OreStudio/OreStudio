@@ -18,9 +18,9 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include <algorithm>
 #include <boost/uuid/name_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <sstream>
@@ -1137,8 +1137,8 @@ reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convent
     return r;
 }
 
-tenorBasisSwapType reverse_tenor_basis_swap(
-    const ores::refdata::messaging::tenor_basis_swap_convention_item& v) {
+tenorBasisSwapType
+reverse_tenor_basis_swap(const ores::refdata::messaging::tenor_basis_swap_convention_item& v) {
     tenorBasisSwapType r;
     if (v.convention && v.convention->ores_id)
         static_cast<std::string&>(r.Id) = *v.convention->ores_id;

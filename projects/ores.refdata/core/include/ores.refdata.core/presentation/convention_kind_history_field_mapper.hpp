@@ -22,3 +22,24 @@
  * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_REFDATA_CORE_PRESENTATION_CONVENTION_KIND_HISTORY_FIELD_MAPPER_HPP
+#define ORES_REFDATA_CORE_PRESENTATION_CONVENTION_KIND_HISTORY_FIELD_MAPPER_HPP
+
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.refdata.api/domain/convention_kind.hpp"
+#include "ores.refdata.core/export.hpp"
+#include <vector>
+
+namespace ores::refdata::presentation {
+
+/**
+ * @brief Renders a convention_kind to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_convention_kind_fields(const domain::convention_kind& v);
+
+}
+
+#endif

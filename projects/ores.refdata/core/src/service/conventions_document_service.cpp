@@ -168,11 +168,9 @@ conventions_save_result conventions_document_service::save(messaging::convention
                        std::move(v.cross_currency_fix_float));
     replace_rows_by_id(ctx_, convention_repository(), std::move(v.convention));
     replace_rows_by_id(
-        ctx_, tenor_basis_swap_pay_receive_repository(),
-        std::move(v.tenor_basis_swap_pay_receive));
+        ctx_, tenor_basis_swap_pay_receive_repository(), std::move(v.tenor_basis_swap_pay_receive));
     replace_rows_by_id(
-        ctx_, tenor_basis_swap_long_short_repository(),
-        std::move(v.tenor_basis_swap_long_short));
+        ctx_, tenor_basis_swap_long_short_repository(), std::move(v.tenor_basis_swap_long_short));
     replace_party_rows(
         ctx_, tenor_basis_two_swap_convention_repository(), std::move(v.tenor_basis_two_swap));
     replace_party_rows(ctx_, deposit_convention_repository(), std::move(v.deposit));

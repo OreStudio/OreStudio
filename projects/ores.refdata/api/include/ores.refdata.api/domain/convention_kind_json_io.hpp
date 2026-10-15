@@ -22,3 +22,20 @@
  * Template: cpp_domain_type_json_io.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_KIND_JSON_IO_HPP
+#define ORES_REFDATA_API_DOMAIN_CONVENTION_KIND_JSON_IO_HPP
+
+#include "ores.refdata.api/domain/convention_kind.hpp"
+#include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+
+namespace ores::refdata::domain {
+
+/**
+ * @brief Dumps the convention_kind to a stream in JSON format.
+ */
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const convention_kind& v);
+
+}
+
+#endif

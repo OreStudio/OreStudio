@@ -22,3 +22,49 @@
  * Template: cpp_nats_changed_event.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_REFDATA_API_EVENTING_CONVENTION_KIND_EVENT_HPP
+#define ORES_REFDATA_API_EVENTING_CONVENTION_KIND_EVENT_HPP
+
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.refdata.api/messaging/convention_kind_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <rfl/json.hpp>
+#include <string>
+
+namespace ores::eventing::domain {
+
+/**
+ * @brief Event traits for convention kind's changes.
+ *
+ * The events collection is addressed by three subjects, one per action, so the
+ * traits state the prefix and the action completes it. The conversion is this
+ * entity's own because the notification carries the key as a JSON object and
+ * only this entity knows which columns its key record holds.
+ */
+template <>
+struct entity_event_traits<ores::refdata::messaging::convention_kind_event> {
+    static constexpr std::string_view subject_prefix = "refdata.v1.convention_kinds_events";
+
+    static ores::refdata::messaging::convention_kind_event
+    from_notification(const entity_event_notification& notification) {
+        ores::refdata::messaging::convention_kind_event event;
+        event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
+        if (const auto key =
+                rfl::json::read<ores::refdata::messaging::convention_kind_key>(notification.key))
+            event.key = *key;
+        event.action = notification.action;
+        event.version = notification.version;
+        event.occurred_at = notification.occurred_at;
+        event.correlation_id = notification.correlation_id;
+        return event;
+    }
+};
+
+}
+
+#endif

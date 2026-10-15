@@ -22,3 +22,35 @@
  * Template: cpp_history_field_mapper.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.refdata.core/presentation/convention_kind_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/convention_kind.hpp"
+#include <string>
+#include <vector>
+
+namespace ores::refdata::presentation {
+
+std::vector<ores::diff::domain::field_value>
+render_convention_kind_fields(const domain::convention_kind& v) {
+    using ores::diff::domain::field_value;
+    std::vector<field_value> fields;
+
+    fields.push_back({.name = "Code", .value = v.code});
+    fields.push_back({.name = "Name", .value = v.name});
+    fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
+    fields.push_back(
+        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
+    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
+    fields.push_back({.name = provenance_fields::recorded_at,
+                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+
+    return fields;
+}
+
+}

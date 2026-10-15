@@ -1014,10 +1014,6 @@ tangled into the runnable script library
 
 - [[id:2F45F265-10AF-505E-9FE5-5A24BFE2B4CB][How do I run the tenor_basis_two_swap_conventions commands from the shell?]]
 
-* Tenor Basis Swap Conventions
-
-- [[id:1F1CD75E-CC99-5C2A-9667-BCAD83093001][How do I run the tenor_basis_swap_conventions commands from the shell?]]
-
 * Zero Inflation Index Conventions
 
 - [[id:2185C4AF-356E-5FA0-B5E3-40720A53EFE5][How do I run the zero_inflation_index_conventions commands from the shell?]]
@@ -1633,3 +1629,23 @@ tangled into the runnable script library
 * Lei Bic
 
 - [[id:71427B36-E7A6-5D10-A08C-D2775BF14ED5][How do I run the lei_bic commands from the shell?]]
+
+* Conventions
+
+- [[id:12CAF0D6-9A5B-588D-AC29-8E1C4710964D][How do I run the conventions commands from the shell?]]
+
+* Report Trigger Types
+
+- [[id:D6C4EBEA-012F-59E6-9CBC-FDC7FDE47B7D][How do I run the report_trigger_types commands from the shell?]]
+
+* Tenor Basis Swap Long Shorts
+
+- [[id:C4AB07FD-F765-516E-AA91-FC971A3276D6][How do I run the tenor_basis_swap_long_shorts commands from the shell?]]
+
+* Tenor Basis Swap Pay Receives
+
+- [[id:811B54CD-8A63-5C41-B60B-F85A0C753E50][How do I run the tenor_basis_swap_pay_receives commands from the shell?]]
+
+* Convention Kinds
+
+- [[id:F32D2B7E-31F1-5983-9ECF-FEFC74F9EEB5][How do I run the convention_kinds commands from the shell?]]

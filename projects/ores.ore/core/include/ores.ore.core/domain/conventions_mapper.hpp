@@ -46,10 +46,10 @@
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.api/domain/swap_index_convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
-#include "ores.refdata.api/messaging/tenor_basis_swap_convention_protocol.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_basis_swap_convention_protocol.hpp"
 #include <cstddef>
 #include <map>
 #include <string>

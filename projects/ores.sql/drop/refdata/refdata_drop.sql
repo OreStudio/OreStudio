@@ -356,6 +356,8 @@
 \ir ./refdata_monetary_natures_drop.sql
 \ir ./refdata_rounding_types_notify_trigger_drop.sql
 \ir ./refdata_rounding_types_drop.sql
+\ir ./refdata_convention_kinds_notify_trigger_drop.sql
+\ir ./refdata_convention_kinds_drop.sql
 
 -- Calendar-date materialisation (depends on calendars; drop before it)
 \ir ./refdata_calendar_date_drop.sql

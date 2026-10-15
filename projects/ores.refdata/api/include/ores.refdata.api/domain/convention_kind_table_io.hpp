@@ -22,3 +22,22 @@
  * Template: cpp_domain_type_table_io.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_KIND_TABLE_IO_HPP
+#define ORES_REFDATA_API_DOMAIN_CONVENTION_KIND_TABLE_IO_HPP
+
+#include "ores.refdata.api/domain/convention_kind.hpp"
+#include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
+
+namespace ores::refdata::domain {
+
+/**
+ * @brief Dumps the convention_kind objects to a stream in table format.
+ */
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<convention_kind>& v);
+
+}
+
+#endif

@@ -840,12 +840,12 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
             REQUIRE(central.ores_id.has_value());
             CHECK(*central.ores_id == std::string(in.Id));
 
-            const auto pay_receive = std::ranges::find_if(
-                mapped.tenor_basis_swap_pay_receive,
-                [&](const auto& p) { return p.convention_id == central.id; });
-            const auto long_short = std::ranges::find_if(
-                mapped.tenor_basis_swap_long_short,
-                [&](const auto& l) { return l.convention_id == central.id; });
+            const auto pay_receive =
+                std::ranges::find_if(mapped.tenor_basis_swap_pay_receive,
+                                     [&](const auto& p) { return p.convention_id == central.id; });
+            const auto long_short =
+                std::ranges::find_if(mapped.tenor_basis_swap_long_short,
+                                     [&](const auto& l) { return l.convention_id == central.id; });
             if (in.PayIndex)
                 CHECK(pay_receive->pay_index == std::string(*in.PayIndex));
             if (in.ReceiveIndex)
@@ -875,10 +875,8 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
         for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
             INFO(path.string() + ": TenorBasisSwap element " + std::to_string(i));
             CHECK(remapped.convention[i] == mapped.convention[i]);
-            CHECK(remapped.tenor_basis_swap_pay_receive ==
-                  mapped.tenor_basis_swap_pay_receive);
-            CHECK(remapped.tenor_basis_swap_long_short ==
-                  mapped.tenor_basis_swap_long_short);
+            CHECK(remapped.tenor_basis_swap_pay_receive == mapped.tenor_basis_swap_pay_receive);
+            CHECK(remapped.tenor_basis_swap_long_short == mapped.tenor_basis_swap_long_short);
         }
     }
 

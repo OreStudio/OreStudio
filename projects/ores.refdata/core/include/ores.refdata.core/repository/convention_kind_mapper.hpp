@@ -22,3 +22,37 @@
  * Template: cpp_domain_type_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_REFDATA_CORE_REPOSITORY_CONVENTION_KIND_MAPPER_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_CONVENTION_KIND_MAPPER_HPP
+
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/convention_kind.hpp"
+#include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/convention_kind_entity.hpp"
+
+namespace ores::refdata::repository {
+
+/**
+ * @brief Maps convention_kind domain entities to data storage layer and vice-versa.
+ */
+class ORES_REFDATA_CORE_EXPORT convention_kind_mapper {
+private:
+    inline static std::string_view logger_name = "ores.refdata.repository.convention_kind_mapper";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    static domain::convention_kind map(const convention_kind_entity& v);
+    static convention_kind_entity map(const domain::convention_kind& v);
+
+    static std::vector<domain::convention_kind> map(const std::vector<convention_kind_entity>& v);
+    static std::vector<convention_kind_entity> map(const std::vector<domain::convention_kind>& v);
+};
+
+}
+
+#endif

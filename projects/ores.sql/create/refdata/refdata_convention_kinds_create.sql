@@ -17,15 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
+/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_table_create.mustache
+ * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
+ *
+ * Convention Kind Table
+ *
+ * The coded catalogue of convention kinds, one row per convention an ORE
+ * conventions document can carry. A central convention row names its kind with
+ * this code, and the kind selects the family whose parts the row carries.
+ *
+ * The rows are ORE's own convention category names, upper-cased: the kind of
+ * tenor_basis_swap_convention is TENOR_BASIS_SWAP. A kind that is modelled
+ * beside this table in ores.refdata owns a family of parts; this table is the
+ * closed set that says which kinds the central row may be.
+ *
+ * Batch-loaded reference data, refreshed from ORE's ore_types.xsd alongside the
+ * other coded refdata lookups.
  */
-
--- =============================================================================
--- The coded catalogue of convention kinds, one row per convention an ORE conventions document can carry. A central convention row names its kind with this code, and the kind selects the family whose parts the row carries. The rows are ORE's own convention category names, upper-cased: the kind of tenor_basis_swap_convention is TENOR_BASIS_SWAP. A kind that is modelled beside this table in ores.refdata owns a family of parts; this table is the closed set that says which kinds the central row may be. Batch-loaded reference data, refreshed from ORE's ore_types.xsd alongside the other coded refdata lookups.
--- =============================================================================
 
 create table if not exists "ores_refdata_convention_kinds_tbl" (
     "code" text not null,
@@ -33,7 +43,7 @@ create table if not exists "ores_refdata_convention_kinds_tbl" (
     "version" integer not null,
     "name" text not null,
     "description" text not null,
-    "display_order" integer not null,
+    "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -50,6 +60,12 @@ create table if not exists "ores_refdata_convention_kinds_tbl" (
     check ("code" <> '')
 );
 
+-- Unique name for active records
+create unique index if not exists convention_kinds_name_uniq_idx
+on "ores_refdata_convention_kinds_tbl" (tenant_id, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists convention_kinds_version_uniq_idx
 on "ores_refdata_convention_kinds_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -68,65 +84,86 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- The actor is validated before the version management below: the
-    -- validator accepts a username only while a current account row holds
-    -- it, and a self write retires that row.
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- The actor is validated before the version management and any parent
+    -- touch below: the validator accepts a username only while a current
+    -- account row holds it, and a self write retires that row.
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+
+    -- Version management
     select version into current_version
     from "ores_refdata_convention_kinds_tbl"
-    where tenant_id = new.tenant_id
-      and code = new.code
+    where tenant_id = NEW.tenant_id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
-            raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
-                using errcode = 'P0002';
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                perform ores_outcome_raise_fn(
+                    'already_exists',
+                    'convention_kind',
+                    'code');
+            end if;
+        elsif NEW.version != current_version then
+            perform ores_outcome_raise_fn(
+                'version_conflict',
+                'convention_kind',
+                'code',
+                NEW.version::text,
+                current_version::text);
         end if;
-        new.version = current_version + 1;
-
+        NEW.version = current_version + 1;
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_refdata_convention_kinds_tbl"
-        set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and code = new.code
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    return new;
+    return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_convention_kinds_insert_trg
 before insert on "ores_refdata_convention_kinds_tbl"
-for each row
-execute function ores_refdata_convention_kinds_insert_fn();
+for each row execute function ores_refdata_convention_kinds_insert_fn();
 
 create or replace rule ores_refdata_convention_kinds_delete_rule as
-on delete to "ores_refdata_convention_kinds_tbl"
-do instead
-  update "ores_refdata_convention_kinds_tbl"
-  set valid_to = current_timestamp
-  where tenant_id = old.tenant_id
-  and code = old.code
-  and valid_to = ores_utility_infinity_timestamp_fn();
+on delete to "ores_refdata_convention_kinds_tbl" do instead (
+    update "ores_refdata_convention_kinds_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and code = OLD.code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);
 
 -- =============================================================================
 -- Validation function for convention_kind
 -- Validates that a code exists in the convention_kinds table.
 -- Returns the validated value, or default if null/empty.
--- Uses current tenant data.
+-- Uses system tenant data (shared reference data).
 -- =============================================================================
 create or replace function ores_refdata_validate_convention_kind_fn(
     p_tenant_id uuid,
@@ -135,30 +172,50 @@ create or replace function ores_refdata_validate_convention_kind_fn(
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then
-        raise exception 'Invalid convention_kind: value cannot be null or empty'
-            using errcode = '23502';
+        perform ores_outcome_raise_fn('missing_field', 'convention_kind');
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_convention_kinds_tbl limit 1) then
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from ores_refdata_convention_kinds_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
         return p_value;
     end if;
 
     -- Validate against reference data
     if not exists (
         select 1 from ores_refdata_convention_kinds_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid convention_kind: %. Must be one of: %', p_value, (
-            select string_agg(code::text, ', ' order by code)
+            select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_convention_kinds_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Convention Kind
+-- =============================================================================
+alter table ores_refdata_convention_kinds_tbl enable row level security;
+
+drop policy if exists convention_kinds_tbl_tenant_isolation_policy
+    on ores_refdata_convention_kinds_tbl;
+
+create policy convention_kinds_tbl_tenant_isolation_policy
+on ores_refdata_convention_kinds_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

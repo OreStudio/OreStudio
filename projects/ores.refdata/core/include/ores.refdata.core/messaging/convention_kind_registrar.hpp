@@ -22,8 +22,8 @@
  * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_REFDATA_CORE_MESSAGING__REGISTRAR_HPP
-#define ORES_REFDATA_CORE_MESSAGING__REGISTRAR_HPP
+#ifndef ORES_REFDATA_CORE_MESSAGING_CONVENTION_KIND_REGISTRAR_HPP
+#define ORES_REFDATA_CORE_MESSAGING_CONVENTION_KIND_REGISTRAR_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"

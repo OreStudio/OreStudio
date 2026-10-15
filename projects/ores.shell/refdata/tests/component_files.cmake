@@ -58,6 +58,7 @@ set(files
     "commodity_volatility_config_commands_tests.cpp"
     "contact_type_commands_tests.cpp"
     "convention_commands_tests.cpp"
+    "convention_kind_commands_tests.cpp"
     "counterparty_business_centre_commands_tests.cpp"
     "counterparty_change_commands_tests.cpp"
     "counterparty_commands_tests.cpp"

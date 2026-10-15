@@ -57,6 +57,7 @@ set(files
     "commodity_volatility_config_eventing_integration_tests.cpp"
     "configuration_document_handler_tests.cpp"
     "contact_type_eventing_integration_tests.cpp"
+    "convention_kind_eventing_integration_tests.cpp"
     "conventions_document_service_tests.cpp"
     "counterparty_change_eventing_integration_tests.cpp"
     "counterparty_contact_information_eventing_integration_tests.cpp"

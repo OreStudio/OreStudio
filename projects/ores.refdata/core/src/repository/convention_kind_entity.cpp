@@ -22,3 +22,16 @@
  * Template: cpp_domain_type_entity.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.refdata.core/repository/convention_kind_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl/json/write.hpp>
+
+namespace ores::refdata::repository {
+
+std::ostream& operator<<(std::ostream& s, const convention_kind_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

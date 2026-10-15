@@ -22,3 +22,17 @@
  * Template: cpp_domain_type_json_io.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.refdata.api/domain/convention_kind_json_io.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+
+namespace ores::refdata::domain {
+
+std::ostream& operator<<(std::ostream& s, const convention_kind& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

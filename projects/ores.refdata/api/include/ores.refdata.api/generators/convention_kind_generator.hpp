@@ -22,3 +22,28 @@
  * Template: cpp_domain_type_generator.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_REFDATA_API_GENERATORS_CONVENTION_KIND_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_CONVENTION_KIND_GENERATOR_HPP
+
+#include "ores.refdata.api/domain/convention_kind.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
+
+namespace ores::refdata::generators {
+
+/**
+ * @brief Generates a synthetic convention_kind.
+ */
+ORES_REFDATA_API_EXPORT domain::convention_kind
+generate_synthetic_convention_kind(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic convention_kinds.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::convention_kind>
+generate_synthetic_convention_kinds(std::size_t n, utility::generation::generation_context& ctx);
+
+}
+
+#endif

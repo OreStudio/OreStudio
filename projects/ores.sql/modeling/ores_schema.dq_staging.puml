@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 131
+Tables: 130
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2525,34 +2525,6 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_tags_artefact_tbl
     A tag classifies an image. A tag belongs to one tenant, names a single category such as flag, currency or commodity, and its name is unique within that tenant. Images carry tags through the image_tag junction, so a tag has no lifecycle of its own beyond its own version history. - Artefact Table
-    end note
-
-    entity ores_dq_tenor_basis_swap_conventions_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * party_id : uuid <<FK>>
-          pay_index : text
-          pay_frequency : text
-          receive_index : text
-          receive_frequency : text
-          spread_on_rec : boolean
-          include_spread : boolean
-          sub_periods_coupon_type : text
-          pay_is_averaged : boolean
-          rec_is_averaged : boolean
-          long_index : text
-          long_pay_tenor : text
-          short_index : text
-          short_pay_tenor : text
-          spread_on_short : boolean
-          oresmd_uri : text
-    }
-
-    note right of ores_dq_tenor_basis_swap_conventions_artefact_tbl
-    Describes how ORE builds the two legs of a tenor basis swap, where each leg pays a different tenor off its own index and the two legs may differ in more than the tenor. Corresponds to the <TenorBasisSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). ORE lets a tenor basis swap be written two ways, and the corpus uses both. The paying and receiving form names PayIndex and ReceiveIndex with an optional frequency each, and adds the averaging and sub-periods fields. The long and short form names LongIndex and ShortIndex with an optional payment tenor each, and adds the spread flags. The two forms do not share a field, so the table carries every field of both and each row fills one form. - Artefact Table
     end note
 
     entity ores_dq_tenor_basis_two_swap_conventions_artefact_tbl  #F7E5FF {

@@ -22,3 +22,44 @@
  * Template: cpp_domain_type_entity.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_REFDATA_CORE_REPOSITORY_CONVENTION_KIND_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_CONVENTION_KIND_ENTITY_HPP
+
+#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
+#include <string>
+
+namespace ores::refdata::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
+
+/**
+ * @brief Represents a convention kind in the database.
+ */
+struct convention_kind_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_refdata_convention_kinds_tbl";
+
+    sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
+    int version = 0;
+
+    std::string name;
+
+    std::string description;
+    int display_order = 0;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
+};
+
+std::ostream& operator<<(std::ostream& s, const convention_kind_entity& v);
+
+}
+
+#endif

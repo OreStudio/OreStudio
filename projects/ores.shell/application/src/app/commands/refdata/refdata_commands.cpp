@@ -37,6 +37,7 @@
 #include "ores.shell/app/commands/refdata/commodity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/contact_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/convention_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_business_centre_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_commands.hpp"
@@ -202,6 +203,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     commodity_volatility_config_commands::register_commands(root_menu, session);
     contact_type_commands::register_commands(root_menu, session);
     convention_commands::register_commands(root_menu, session);
+    convention_kind_commands::register_commands(root_menu, session);
     counterparty_business_centre_commands::register_commands(root_menu, session);
     counterparty_commands::register_commands(root_menu, session);
     counterparty_change_commands::register_commands(root_menu, session);

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: task/wire-trading-staff-to-their-party
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,44 +20,97 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give every ACME staff account its party, so a trade can name the person who
+entered it. Today a staff account carries no =default_party_id=, and its party
+lives only in the many-to-many =ores_iam_account_parties_tbl=, which lists the
+three larger entities for everyone. "Which party does this person trade for" is
+therefore unanswerable from the data, and the trade population has to name one
+of the 30 =Trading=-role holders.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Change made and verified at the SQL-function level. End-to-end provisioning is blocked by the workflow dispatch defect on =main=. |
+| Waiting on   | The step-command stream gap (=main=: most step subjects have no stream, so a tenant provision stalls after the IAM step). |
+| Next         | Re-run the provisioning proof once the dispatch path is fixed. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- ACME's =Trading=-role staff resolve to a party.
+- The 30 =Trading= holders spread across the four books' parties, not one party.
+- A fresh =compass db recreate -y -k= followed by =bootstrap setup --profile
+  acme_demo= produces the assignment.
+- The =linux-clang-release-ninja= build is green and the IAM suites pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The assignment lives in the publisher, =ores_iam_publish_accounts_from_dq_fn=
+(=projects/ores.sql/create/iam/iam_publish_from_dq_create.sql=). The target
+party is already the function's =params.party_id=, required, and the entity
+bundle already publishes each accounts dataset against exactly one party
+(=acme.acme_uk.accounts= under =acme_uk=, and so on -- see
+=projects/ores.sql/populate/acme/acme_bundle_populate.sql=). The rules were:
+
+- *Why not a seed change in the profile.* The =load_staff= step's arguments
+  take =name=, =bundles= and =default= only, and =default= sets the default for
+  the *acting* account, the tenant administrator -- =set_account_default_party=
+  acts as the caller. There is no per-bundle or per-staff default in the step,
+  so a profile change would need new step machinery for data the publish
+  already holds.
+- *Why not a change to how staff are loaded.* The load is the bundle publish.
+  Accounts are created by the publisher, so the publisher is where the account
+  row is built.
+- *Why the target party is the right party.* It is a fact, not a judgement. A
+  staff dataset belongs to one legal entity and is published against that
+  entity's party, so the party the publish already targets *is* the employing
+  entity. No derivation from role or desk is needed, and none is invented.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ACME staff accounts staged by the recreate | 58 (1 group + 19 UK + 19 US + 19 HK) | =SELECT d.code, count(a.*) ... ores_dq_accounts_artefact_tbl ...= | 73911651f1 |
+| =Trading=-role staff staged | 30 (10 UK, 10 US, 10 HK) | =projects/ores.seeder/datasets/acme_corporation/accounts.json=, =generate_sql.py= is the generator | 73911651f1 |
+| UK staff accounts with a default party, publisher as =HEAD= states it | 0 of 19 | =evidence/wire_staff_harness.sql= | 73911651f1 |
+| All ACME staff accounts with a default party, edited publisher | 58 of 58, 4 distinct parties | =evidence/wire_staff_harness.sql= | 73911651f1 |
+| =Trading=-role holders by party, edited publisher | 10 =ACCOUK=, 10 =ACCOUS=, 10 =ACCOHK= | =evidence/wire_staff_harness.sql= | 73911651f1 |
+| Outcome-branch build | green, exit 0 | =./compass.sh build --preset linux-clang-release-ninja= | 73911651f1 |
+
+The raw readings are in =evidence/wire_staff_harness_output.txt=, the harness
+in =evidence/wire_staff_harness.sql=, and the pre-change function it compares
+against in =evidence/wire_staff_orig_publish_fn.sql=.
 
 * Notes
+
+*The investigation's account counts do not hold on the live database.* It
+records 61 current accounts over 59 =user= rows and 2 with a party. The
+organisation dataset the ACME tenant is built from holds 58 staff, and the
+recreate stages exactly those 58. The 2 with a party are =tenant_admin= and the
+system party's account, which are not staff and are not members of the
+organisation dataset. So the staff figure is 58, not 59, and the live database
+currently holds no ACME tenant at all (2 tenants: =system= and the
+half-provisioned =acme_corporation=), so the counts were re-established from the
+dataset that produces them.
+
+*What =default_party_id= means and who reads it.* It is the party an account
+signs into, "party to log into automatically when quick-login is enabled"
+(=projects/ores.iam.api/.../account.hpp=). It is a soft reference to a party
+owned by =ores.refdata=. Readers:
+
+- =auth_handler= returns it as =login_response.default_party_id=, but only when
+  the account is also a member of that party, so a stale default is dropped.
+- =tenant_provisioning_handler::actor_of= scopes a provisioning step's token to
+  it, falling back to the account's first party link.
+- =account_operations_service::set_my_default_party= is the writer; the migrate
+  path in =tenant_provisioning_handler= also writes it.
+
+Null is legal and not itself an error: the fallback keeps working. What null
+loses is the ability to *choose* a person's party deterministically, which is
+what the population needs.
 
 * Test Scenarios
 
@@ -83,3 +136,78 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The change is one insert column. =ores_iam_publish_accounts_from_dq_fn= now
+writes the target party into =default_party_id= on the account it creates, and
+its doc comment states why that party is the account's own party.
+
+*The fix is not verified end to end, and a green build must not be read as a
+working provision.* =compass db recreate -y -k= succeeds and the build is green,
+but a tenant cannot currently be provisioned through the normal path, so the
+"recreate then provision" proof has not been made. The cause is the defect
+already on =main=: the workflow's step-command dispatch moved to JetStream and
+most step subjects have no stream. Evidence from this run:
+
+- =bootstrap setup ... --profile acme_demo= ran to shell exit 0 and reported
+  "All 2 step(s) completed" for the *parent* run (=system_provision= +
+  =start_tenant_setup=). That is the handover, not the work.
+- The child =tenant_setup_workflow= steps never ran. Every row in
+  =ores_workflow_workflow_steps_tbl= has =command_published_at= set and
+  =completed_at= NULL -- for example step 0 =synthetic.market_data_providers= on
+  =synthetic.v1.ops.publish_market_data_providers_from_dq=, published 16:08:36.
+- Tenant =acme_corporation= was created and holds one account and one party
+  (=acme_corporation_system=). It holds no staff and no books.
+- The subjects that *do* have a stream and a live consumer work. Only
+  =synthetic_steps= is registered by a merged change (=5ee8749df7=, on this
+  commit): it carries =publish_feeds_from_dq= and
+  =publish_market_data_providers_from_dq= and has two consumers.
+  =iam_steps= carries =provision_tenant_step= and has one.
+- The commit that fixes this, =4dfacbef59= "Cover every step-command subject
+  with a stream", is *not* an ancestor of this commit. It is on
+  =origin/feature/audit-the-nats-call-sites=.
+- =WORKFLOWSTEPS_bright_faraday= exists but reports "No Consumers defined". It
+  was created by hand with the =nats= CLI on an earlier task, so it is
+  environment state and not code. It was left untouched.
+
+Verification was therefore made at the SQL-function level against the staged
+ACME datasets, which does not depend on the dispatch path at all. The harness
+creates two probe tenants in a transaction, loads the pre-change publisher into
+one and the edited publisher into the other, publishes every ACME staff dataset
+against its own party, reads the counts, and rolls back. The live database was
+left as it was found: two tenants and two parties before the harness ran, and
+the same after.
+
+Readings, from =evidence/wire_staff_harness_output.txt=:
+
+- Before, publisher as =HEAD= states it: 19 UK accounts inserted, 0 with a
+  default party, 0 distinct defaults.
+- After, edited publisher: 58 accounts, 58 with a default party, 4 distinct
+  defaults -- =ACMCOR= 1, =ACCOUK= 19, =ACCOUS= 19, =ACCOHK= 19.
+- The 30 =Trading=-role holders spread 10 / 10 / 10 across =ACCOUK=, =ACCOUS=
+  and =ACCOHK=. The group party's one account is the Group CEO, who holds
+  =Operations=. No party gets everyone.
+
+Build and tests:
+
+- =./compass.sh build --preset linux-clang-release-ninja= -- green, exit 0.
+- =./compass.sh test run --preset linux-clang-release-ninja -- -R
+  "^ores\.iam\.|^ores\.shell\.iam\.|^ores\.http\.iam\."= -- 5 of 5 passed in
+  42.79 s. The two suites that need =ORES_TEST_DB_USER= report their own counts
+  when run directly:
+
+  | Suite | Test cases | Assertions |
+  |-------+------------+------------|
+  | =ores.iam.api.tests= | 133 | 647 |
+  | =ores.iam.core.tests= | 296 | 1058 |
+  | =ores.iam.service.tests= | 13 | 32 |
+  | =ores.shell.iam.tests= | 466 | 1215 |
+  | =ores.http.iam.tests= | 30 | 267 |
+  | *total* | *938* | *3219* |
+
+The IAM core and service suites create their own timestamped tenants
+(=ores_iam_core_tests_*=, and the =other_*=, =ordf0d7d7003a_*= and
+=ordf0d7d7003a_1..3= fixtures). The half-provisioned =acme_corporation= tenant
+was still in the database after the run, unchanged at one account and one party.
+
+What is still open: the end-to-end provisioning proof, blocked on the dispatch
+gap and not on this change.

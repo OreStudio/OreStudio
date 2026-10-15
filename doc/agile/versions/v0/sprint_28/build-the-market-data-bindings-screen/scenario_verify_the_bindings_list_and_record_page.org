@@ -23,9 +23,10 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
   #+begin_src sh
   ./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
   #+end_src
-- The source names to expect are =synthetic.refinitiv.<pair>= for the FX spots, such as =synthetic.refinitiv.eurusd=, and =synthetic.ice.<index>= for the interest rate curves, such as =synthetic.ice.gbplibor3m=. All are synthetic sources, enabled, and set to auto start.
+- The party holds 55 feed bindings when provisioning finishes, and every one is a synthetic source, enabled and set to auto start.
+- The source names read =synthetic.bloomberg.<pair>= for an FX spot, such as =synthetic.bloomberg.usdcad=, and =synthetic.bloomberg.<index>= for an interest rate curve, such as =synthetic.bloomberg.audaonia=. The feeds tick, so the series column and the last tick carry values.
 - The Market data menu has no *Bindings* card yet: the card is a separate task (*Put Bindings in the Market data menu*). Open the list by its address, not from the menu. This is expected and is not a failure of this scenario.
-- *Known blocker, 2026-10-15.* Provisioning does not finish in this build. The tenant setup stops at =publish_bundle: refdata.currency_groups= with =JetStream publish failed: Timeout=. The workflow service cannot command the refdata service because =ores.refdata.service= never declares a JetStream stream for its =refdata.v1.ops.*= step subjects; only the iam, synthetic, marketdata and workflow services create streams. The Acme tenant stays =bootstrapping= and the list has no rows. Clear this before running the scenario, or the list states in steps 2 to 5 show only the empty state.
+- Provisioning was blocked on 2026-10-15 by a missing JetStream stream for the =refdata.v1.ops.*= step subjects. The rebase onto main carries the fix (D9, =[nats,service] Cover every step-command subject with a stream=), and tenant setup now finishes and creates the bindings. If provisioning stops again at =publish_bundle: refdata.currency_groups= with =JetStream publish failed: Timeout=, this build does not hold the fix.
 
 * Scenario Info
 
@@ -191,4 +192,5 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 - The scenario verifies the list and the record page of task *Build the bindings list and record page*. The add, edit, delete and history dialogs of the story are out of scope here and belong to their own tasks.
 - The menu card for Bindings is out of scope here, and the tester opens the list by address.
-- The =E2E= checks that need a server round trip, such as a real last tick and a real series, need the provisioning blocker above to be cleared first.
+- The environment was verified on 2026-10-15: the Acme tenant is active, the party holds 55 enabled synthetic bindings, and the feeds tick. The list states in steps 2 to 5 therefore show rows, not the empty state.
+- Only synthetic sources exist in the seed, so the vendor row in step 8 is absent and that step records the absence.

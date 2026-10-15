@@ -8,12 +8,12 @@
 #+filetags: :trigger_a_report_run_on_demand_or_on_a_schedule:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr: 3328
+#+pr: 3329
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
@@ -94,6 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3329][#3329]] | [agile] Close the task that proves build-packages end to end |
 | [[https://github.com/OreStudio/OreStudio/pull/3328][#3328]] | [shell] Name the report and stream the DQ steps so build-packages runs end to end |
 
 * Review
@@ -103,3 +104,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A person names a report and gets the packages on disk. `ore build-packages
+"<report definition name>" <out_dir>` resolves the name in the party the session
+is signed in to and refuses one that belongs elsewhere, naming it.
+
+Proved on a definition that had never been scheduled, `run_grant_id` and
+`scheduler_job_id` both null. It produced instance `ec6fd2d7` with
+`kind=package`, an `on_demand` trigger carrying no scheduler job, and
+`output_message` "Report execution completed.". The output holds `Input/ore.xml`
+plus the four configuration documents, `portfolio.xml`, `market.txt` and
+`fixings.txt`, and the run document names all seven where they are. The proof
+script reports PASS and the schema validates.
+
+Two things make this a thin proof, and both are recorded rather than papered
+over. The portfolio is empty with zero trades and `fixings.txt` is zero bytes,
+so the package is structurally right and substantively empty; market data is
+real with 39131 points. And the run needed two streams created by hand with the
+`nats` CLI, so it does not reproduce from the code alone.
+
+What was found on the way matters more than the proof. Commit `515cf28072` moved
+workflow step dispatch to JetStream and registered a stream for one step subject,
+so every other component's step subject published into nothing and timed out.
+Provisioning stalled after the IAM step and left the tenant bootstrapping, which
+is why nothing in this task was reachable at first. The minimum was fixed here,
+for the two synthetic publish-from-DQ subjects. The general gap is captured
+separately, and its durable-subscription half is not optional: each step subject
+is served by a core queue subscription that never acknowledges, so a message on a
+stream is redelivered until `max_age`.

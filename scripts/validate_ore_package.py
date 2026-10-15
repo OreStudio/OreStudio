@@ -13,14 +13,14 @@ developer takes by hand; the script adds only the checks on the result.
 
 Usage::
 
-    ./scripts/validate_ore_package.py --definition <uuid> \\
+    ./scripts/validate_ore_package.py --definition <name> \\
         --user <user> --password <password>
 
     # A package already on disk, with no build:
     ./scripts/validate_ore_package.py --package-dir /tmp/pkgs --skip-build
 
     # Also hand the package to the ORE engine, when one is available:
-    ./scripts/validate_ore_package.py --definition <uuid> --user u --password p \\
+    ./scripts/validate_ore_package.py --definition <name> --user u --password p \\
         --ore-binary ~/ORE/App/OREMain
 
 The ORE engine run is opt-in because the engine is not part of this repo; when
@@ -94,11 +94,19 @@ def find_shell(explicit: str | None) -> Path:
 
 def build_packages(shell: Path, definition: str, out_dir: Path,
                    user: str, password: str, timeout: int) -> None:
-    """Run ore build-packages through a generated .ores script."""
+    """Run ore build-packages through a generated .ores script.
+
+    @p definition is the report definition's name, which the command resolves
+    within the party the session is signed in to.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
+    # A report definition name is prose -- "Board Risk Dashboard" -- so it is
+    # quoted for the shell. The quotes are the shell's, not the command's: the
+    # name arrives as one argument whatever it holds.
+    quoted = "'" + definition.replace("'", "'\\''") + "'"
     script = (
         f"login {user} {password}\n"
-        f"ore build-packages {definition} {out_dir}\n"
+        f"ore build-packages {quoted} {out_dir}\n"
     )
 
     with tempfile.NamedTemporaryFile("w", suffix=".ores", delete=False) as handle:
@@ -288,7 +296,7 @@ def run_ore_engine(binary: Path, document: Path) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--definition", help="report definition id to build")
+    parser.add_argument("--definition", help="report definition name to build")
     parser.add_argument("--user", help="shell login user")
     parser.add_argument("--password", help="shell login password")
     parser.add_argument("--out-dir", default=None, help="where the package is written")

@@ -20,6 +20,7 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.synthetic.api/domain/step_subjects.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
@@ -134,15 +135,27 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Publish-from-DQ workflow step handler
     // ----------------------------------------------------------------
     {
+        // The engine dispatches each step as a JetStream message on the stream
+        // the service ensures at start, so the subscription is durable on it
+        // and acknowledges only once the dataset has been published. A step
+        // dispatched while this service was restarting waits on the server
+        // instead of being discarded, and a step whose publish failed is
+        // redelivered rather than lost. The publish itself is an idempotent
+        // upsert, so a repeat changes nothing.
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
-        subs.push_back(
-            nats.queue_subscribe("synthetic.v1.ops.publish_feeds_from_dq",
-                                 "ores.synthetic.service",
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe("synthetic.v1.ops.publish_market_data_providers_from_dq",
-                                 "ores.synthetic.service",
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        const auto step_stream = nats.make_stream_name("synthetic_steps");
+        subs.push_back(nats.js_queue_subscribe(
+            std::string(ores::synthetic::domain::publish_feeds_from_dq_step_subject),
+            "synthetic-publish-feeds-from-dq",
+            "ores.synthetic.service",
+            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); },
+            step_stream));
+        subs.push_back(nats.js_queue_subscribe(
+            std::string(ores::synthetic::domain::publish_market_data_providers_from_dq_step_subject),
+            "synthetic-publish-market-data-providers-from-dq",
+            "ores.synthetic.service",
+            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); },
+            step_stream));
     }
 
     // ----------------------------------------------------------------

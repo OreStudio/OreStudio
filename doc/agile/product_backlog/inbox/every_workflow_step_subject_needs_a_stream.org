@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 63F2D2D7-58EA-47DF-A458-6A9B79089D5C
+:END:
+#+title: Register a stream for every workflow step subject
+#+description: Step dispatch moved to JetStream and only one step subject got a stream. Every other component's step subject publishes into nothing and times out, so provisioning stalls after the IAM step and the tenant is left bootstrapping. Affects refdata, reporting, ore, compute, inbox and the DQ publish subjects.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

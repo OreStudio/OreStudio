@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: E457BBD2-3740-43B9-8BE8-5EB799748CBC
+:END:
+#+title: Task: Scaffold story: Run code coverage on the Continuous debug builds
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :run_code_coverage_on_the_continuous_debug_builds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/run-code-coverage-on-the-continuous-debug-builds
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F8DF1A62-3405-436E-96C6-56D6BAC8775E][Run code coverage on the Continuous debug builds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Record the coverage behaviour of the two tiers before the change, and wire the
+story into Sprint 28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F8DF1A62-3405-436E-96C6-56D6BAC8775E][Run code coverage on the Continuous debug builds]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- The story is wired into Sprint 28 and the branch carries its documents.
+- The coverage behaviour of each tier before the change is recorded.
+
+* Decisions
+
+- *Only the debug tier collects coverage.* =CTest.cmake= accepts
+  =code_coverage=1= and picks the tool from the compiler: =gcov= for gcc and
+  =llvm-cov= for clang. The Continuous matrix is clang-only, so its debug job
+  needs nothing installed beyond the LLVM that the workflow already installs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is scaffolded and wired into Sprint 28. This task carries the story
+documents, the sprint row and the branch, and closes after the scaffold PR
+merges.
+
+The recorded starting point: Continuous Linux passes no coverage flag at all,
+and the Nightly Build passes =code_coverage=1,with_memcheck=1= on its two debug
+jobs. The Continuous matrix is clang-only, so the coverage tool it needs is
+=llvm-cov=, which the workflow already installs.

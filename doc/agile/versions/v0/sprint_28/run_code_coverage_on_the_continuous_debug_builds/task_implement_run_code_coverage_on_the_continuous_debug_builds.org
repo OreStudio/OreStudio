@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: A15EBCD7-9EEA-46C4-B7C0-0EAC4B212B36
+:END:
+#+title: Task: Turn on coverage for the Continuous debug job
+#+description: Initial task for: Run code coverage on the Continuous debug builds
+#+type: task
+#+level: s1
+#+filetags: :run_code_coverage_on_the_continuous_debug_builds:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F8DF1A62-3405-436E-96C6-56D6BAC8775E][Run code coverage on the Continuous debug builds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Continuous Linux debug build collects code coverage and submits it to the Continuous track on CDash.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F8DF1A62-3405-436E-96C6-56D6BAC8775E][Run code coverage on the Continuous debug builds]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- continuous-linux.yml passes code_coverage=1 when the build type is debug.
+- The Continuous debug job still fits inside the 320-minute step cap.
+
+* Plan
+
+Pass =code_coverage=1= to the CTest script when the matrix build type is
+=debug=, in the same style that =nightly-linux.yml= already uses for coverage
+and memcheck. Leave the release build and the memcheck flag alone.
+
+=CTest.cmake= does the rest: it selects =gcov= or =llvm-cov= from the compiler,
+appends =-DWITH_PROFILING=On= to the configure arguments, and calls
+=ctest_coverage= before =ctest_submit=, so the results land on the track named
+by =ctest_start(${build_group})=, which is =Continuous= for this workflow.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Continuous clang-debug runtime before coverage | 4h08m39s | GitHub Actions run 38701476287, job summary | 81bbe2dc1e |
+| Continuous clang-release runtime before coverage | 2h24m15s | GitHub Actions run 38701476287, job summary | 81bbe2dc1e |
+| Cap on the CTest step | 320 min | =grep -n 'timeout-minutes' .github/workflows/continuous-linux.yml= | 81bbe2dc1e |
+| Hard job limit on hosted runners | 360 min | GitHub Actions documentation | — |
+
+* Notes
+
+The coverage flags enter every compile line, so the stored clang-debug sccache
+entry stops matching and the first run after this change compiles from cold.
+The step cap and the cache guard already handle that case: the save runs under
+=always()= and keeps whatever the run built.
+
+The debug job now runs longer than the three-hour cron interval. The interval
+needs a measured covered run before it can be re-derived.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=continuous-linux.yml= passes =code_coverage=1= when the matrix build type is
+=debug=, and passes nothing extra for =release=. The memcheck flag stays on the
+Nightly Build.
+
+=CTest.cmake= selects =llvm-cov= for this workflow, because the Continuous
+matrix is clang-only, and the LLVM that the workflow installs already provides
+it.
+
+Local checks pass: 7 of 7.
+
+The step cap is not yet proven against a covered run. The covered debug job has
+not run, so the claim that it fits inside 320 minutes rests on the uncovered
+figure of 4h08m39s plus the cost of the instrumentation.

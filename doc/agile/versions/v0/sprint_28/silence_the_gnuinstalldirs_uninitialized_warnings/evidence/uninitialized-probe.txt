@@ -1,0 +1,74 @@
+Reproduction of the ten GNUInstallDirs uninitialized warnings
+============================================================
+
+The warnings come from a module that is not ours, so the probe includes the
+real build/cpack/CMakeLists.txt from a scratch project rather than copying
+CMake's module. The scratch project supplies the few variables the file reads
+before it reaches the include under test.
+
+  Tool   cmake 4.4.4
+  Flags  -Wuninitialized --check-system-vars
+
+The two flags are the command-line equivalents of the preset's
+warnings.uninitialized and warnings.systemVars settings (see CMakePresets.json
+and the CMake manual page "cmake-presets(7)", section "warnings"). Both are
+needed: warnings.uninitialized alone does not report these variables, because
+they carry the CMAKE_ prefix.
+
+Harness CMakeLists.txt
+----------------------
+
+  cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
+  project(cpack_probe CXX)
+  set(PROJECT_VERSION_MAJOR 0)
+  set(PROJECT_VERSION_MINOR 0)
+  set(PROJECT_VERSION_PATCH 28)
+  set(PROJECT_VERSION "0.0.28")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/OreStudio/0.0.28")
+  include(<path>/cpack.cmake)
+  message(STATUS "RESULT LIBDIR=[${CMAKE_INSTALL_LIBDIR}] BINDIR=[${CMAKE_INSTALL_BINDIR}] SHAREDSTATEDIR=[${CMAKE_INSTALL_SHAREDSTATEDIR}]")
+
+<cpack.cmake> is build/cpack/CMakeLists.txt, first at origin/main and then at
+this branch, and readme.org and LICENSE sit beside the harness because the file
+configures both.
+
+Command
+-------
+
+  cmake -S . -B build -Wuninitialized --check-system-vars
+
+Result at origin/main
+---------------------
+
+  GNUInstallDirs uninitialized warnings: 10
+    CMAKE_INSTALL_BINDIR
+    CMAKE_INSTALL_DATAROOTDIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_INSTALL_LIBEXECDIR
+    CMAKE_INSTALL_LOCALSTATEDIR
+    CMAKE_INSTALL_OLDINCLUDEDIR
+    CMAKE_INSTALL_SBINDIR
+    CMAKE_INSTALL_SHAREDSTATEDIR
+    CMAKE_INSTALL_SYSCONFDIR
+
+  -- RESULT LIBDIR=[lib] BINDIR=[bin] SHAREDSTATEDIR=[com]
+  -- Generating done (0.0s)
+
+  configure exit code 0
+
+The set of variables is the set the CI log reports, and the count is the count
+the CI log reports.
+
+Result on this branch
+---------------------
+
+  GNUInstallDirs uninitialized warnings: 0
+
+  -- RESULT LIBDIR=[lib] BINDIR=[bin] SHAREDSTATEDIR=[com]
+  -- Generating done (0.0s)
+
+  configure exit code 0
+
+The three CMAKE_INSTALL_* values are identical to the run above, so the guard
+silences the diagnostic without changing what the module computes.

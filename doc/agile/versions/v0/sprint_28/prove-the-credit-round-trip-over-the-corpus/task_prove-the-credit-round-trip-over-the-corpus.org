@@ -67,9 +67,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Credit documents and trades the proof walks | 8 documents, 8 trades | =ctest --preset linux-clang-release-ninja -R ores.ore.core.tests= (the case "every credit trade in the corpus comes back as the same family rows") | 7ca85cdc76 |
-| Trades whose family rows change on the round trip | 0 | the same case; the set of known differences is empty | 7ca85cdc76 |
-| ORE core suite | 667 cases, 483,161 assertions, all pass | the same command; raw output in =evidence/credit_corpus_roundtrip_test_output.txt= | 7ca85cdc76 |
+| Credit documents and trades the proof walks | 8 documents, 8 trades | =ctest --preset linux-clang-release-ninja -R ores.ore.core.tests= (the case "every credit trade in the corpus comes back as the same family rows") | f6b2cdb497 |
+| Trades whose family rows change on the round trip | 0 | the same case; the set of known differences is empty | f6b2cdb497 |
+| ORE core suite | 667 cases, 483,161 assertions, all pass | the same command; raw output in =evidence/credit_corpus_roundtrip_test_output.txt= | f6b2cdb497 |
 
 * Notes
 

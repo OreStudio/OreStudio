@@ -8,7 +8,7 @@
 #+filetags: :run_code_coverage_on_the_continuous_debug_builds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/run-code-coverage-on-the-continuous-debug-builds
-#+pr:
+#+pr: 3343
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3343][#3343]] | [ci] Collect coverage on the Continuous debug build |
 
 * Review
 

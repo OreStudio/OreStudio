@@ -1469,7 +1469,7 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * kind_code : text <<FK>>
-          name : text
+        * name : text
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
@@ -1489,10 +1489,10 @@ package "refdata" #FFF3E0 {
     The row carries the key, the party that owns the row, the kind the row is, and
     the name it carries in the source document.
     The name is the identifier the source document gives the convention, the <Id>
-    element of that document. It is a plain stored field: it is kept so a round trip
-    through the ORE XML is lossless, and it carries no uniqueness condition of its
-    own. Two kinds may hold the same name; the tenant, the party and the kind
-    together are what make a convention the one a caller means.
+    element of that document. It is kept so a round trip through the ORE XML is
+    lossless, and it is part of the convention's identity: the party, the kind and
+    the name together are what make a convention the one a caller means. Two kinds
+    may hold the same name, because the kind is part of that identity.
     A convention's kind-specific fields live in that kind's parts, reached from
     this row by its key. The central row carries no kind-specific column.
     end note

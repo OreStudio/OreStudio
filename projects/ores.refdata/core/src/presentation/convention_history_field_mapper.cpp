@@ -40,7 +40,7 @@ std::vector<ores::diff::domain::field_value> render_convention_fields(const doma
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Kind Code", .value = v.kind_code});
-    fields.push_back({.name = "Name", .value = v.name.value_or(std::string{})});
+    fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

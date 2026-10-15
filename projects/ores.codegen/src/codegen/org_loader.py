@@ -802,6 +802,23 @@ def _parse_typed(value: str) -> Any:
             return value
 
 
+def _service_find_by_code_columns(value: Any) -> list[str]:
+    """The columns a ``:service_find_by_code_column:`` finder reads.
+
+    The property names one column when a row is addressed by a single code,
+    or several whitespace-separated columns when the identity is composite.
+    Keeping both spellings on the one property is what lets a model state its
+    identity's code columns in one place; the singular ``column`` the JSON
+    model carries stays the first of them for every consumer that predates
+    the composite case.
+    """
+    if isinstance(value, str):
+        return value.split()
+    if isinstance(value, (list, tuple)):
+        return [str(v) for v in value]
+    return [str(value)]
+
+
 # Includes the repository entity-header template emits itself, plus the
 # tokens legacy org "Entity includes" blocks add that no emitted member can
 # require: Timestamp.hpp arrives via db_types.hpp (always emitted, and it
@@ -1417,11 +1434,12 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         for k, v in flags.properties.items():
             de[k.lower()] = _parse_typed(v)
         # Custom: service_find_by_code is represented as a column reference
-        # in the org file; reshape into the {"column": ...} dict the JSON
-        # model uses.
+        # in the org file; reshape into the {"columns": ...} dict the JSON
+        # model uses. The singular ``column`` mirrors the first of them for
+        # consumers that predate a composite finder.
         if "service_find_by_code_column" in de:
-            col = de.pop("service_find_by_code_column")
-            de["service_find_by_code"] = {"column": col}
+            columns = _service_find_by_code_columns(de.pop("service_find_by_code_column"))
+            de["service_find_by_code"] = {"column": columns[0], "columns": columns}
 
     cols = _section(doc.root, "Columns")
     if cols:
@@ -1672,8 +1690,9 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             for k, v in cpp_flags.properties.items():
                 de[k.lower()] = _parse_typed(v)
             if "service_find_by_code_column" in de:
-                col = de.pop("service_find_by_code_column")
-                de["service_find_by_code"] = {"column": col}
+                columns = _service_find_by_code_columns(
+                    de.pop("service_find_by_code_column"))
+                de["service_find_by_code"] = {"column": columns[0], "columns": columns}
                 # A child entity whose natural key is composite (parent
                 # foreign key + code column, e.g. party_contact_information's
                 # (party_id, contact_type)) needs the parent column threaded
@@ -3224,8 +3243,15 @@ def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
     """
     finders: list[dict[str, Any]] = []
     legacy = entity.get("service_find_by_code") or {}
-    if legacy.get("column"):
-        finder: dict[str, Any] = {"column": legacy["column"], "suffix": "code"}
+    legacy_columns = list(
+        legacy.get("columns")
+        or ([legacy["column"]] if legacy.get("column") else []))
+    if legacy_columns:
+        finder: dict[str, Any] = {"column": legacy_columns[0], "suffix": "code"}
+        # Only a composite finder carries the list: a single-column finder
+        # keeps exactly the shape every existing consumer and test reads.
+        if len(legacy_columns) > 1:
+            finder["columns"] = legacy_columns
         if legacy.get("parent_column"):
             finder["parent_column"] = legacy["parent_column"]
         finders.append(finder)

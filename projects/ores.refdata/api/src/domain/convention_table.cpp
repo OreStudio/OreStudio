@@ -25,22 +25,9 @@
 #include "ores.refdata.api/domain/convention_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include <sstream>
 
 namespace ores::refdata::domain {
 
-namespace {
-template <typename T>
-std::string opt_str(const std::optional<T>& o) {
-    if (!o)
-        return {};
-    std::ostringstream s;
-    if constexpr (std::is_same_v<T, bool>)
-        s << std::boolalpha;
-    s << *o;
-    return s.str();
-}
-}
 
 std::string convert_to_table(const std::vector<convention>& v) {
     fort::char_table table;
@@ -49,7 +36,7 @@ std::string convert_to_table(const std::vector<convention>& v) {
     table << fort::header << "Kind" << "Name" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& c : v) {
-        table << c.kind_code << opt_str(c.name) << c.modified_by << c.version << fort::endr;
+        table << c.kind_code << c.name << c.modified_by << c.version << fort::endr;
     }
     return table.to_string();
 }

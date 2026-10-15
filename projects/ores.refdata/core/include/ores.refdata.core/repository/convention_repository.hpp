@@ -106,6 +106,14 @@ public:
     std::vector<domain::convention> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
+    /**
+     * @brief Reads latest conventions filtered by party_id, kind_code and name.
+     */
+    std::vector<domain::convention> read_latest_by_code(context ctx,
+                                                        const std::string& party_id,
+                                                        const std::string& kind_code,
+                                                        const std::string& name);
+
 
     /**
      * @brief Reads all conventions, possibly filtered by primary key.

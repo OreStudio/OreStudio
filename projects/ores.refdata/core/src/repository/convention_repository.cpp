@@ -210,6 +210,28 @@ std::vector<domain::convention> convention_repository::read_latest(context ctx,
         "Reading latest convention by id.");
 }
 
+std::vector<domain::convention>
+convention_repository::read_latest_by_code(context ctx,
+                                           const std::string& party_id,
+                                           const std::string& kind_code,
+                                           const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest convention by party_id/kind_code/name: "
+                               << party_id << "/" << kind_code << "/" << name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<convention_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id && "kind_code"_c == kind_code &&
+              "name"_c == name && "valid_to"_c == max.value());
+
+    return execute_read_query<convention_entity, domain::convention>(
+        ctx,
+        query,
+        [](const auto& entities) { return convention_mapper::map(entities); },
+        lg(),
+        "Reading latest convention by kind_code/name.");
+}
+
 
 std::vector<domain::convention> convention_repository::read_all(context ctx,
                                                                 const std::string& id) {

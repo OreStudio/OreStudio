@@ -31,6 +31,7 @@
 #include "ores.refdata.api/messaging/convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -131,6 +132,17 @@ public:
      * @return The convention if found, std::nullopt otherwise.
      */
     std::optional<domain::convention> get_convention(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single convention by its
+     * party_id, kind_code and name (this entity's natural key is the
+     * triple, not kind_code and name alone).
+     *
+     * @return The convention if found, std::nullopt otherwise.
+     */
+    std::optional<domain::convention> find_convention_by_code(const boost::uuids::uuid& party_id,
+                                                              const std::string& kind_code,
+                                                              const std::string& name);
 
     /**
      * @brief Retrieves a batch of conventions by primary key.

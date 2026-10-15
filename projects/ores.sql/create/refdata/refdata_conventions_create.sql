@@ -30,10 +30,10 @@
  * the name it carries in the source document.
  *
  * The name is the identifier the source document gives the convention, the <Id>
- * element of that document. It is a plain stored field: it is kept so a round trip
- * through the ORE XML is lossless, and it carries no uniqueness condition of its
- * own. Two kinds may hold the same name; the tenant, the party and the kind
- * together are what make a convention the one a caller means.
+ * element of that document. It is kept so a round trip through the ORE XML is
+ * lossless, and it is part of the convention's identity: the party, the kind and
+ * the name together are what make a convention the one a caller means. Two kinds
+ * may hold the same name, because the kind is part of that identity.
  *
  * A convention's kind-specific fields live in that kind's parts, reached from
  * this row by its key. The central row carries no kind-specific column.
@@ -45,7 +45,7 @@ create table if not exists "ores_refdata_conventions_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "kind_code" text not null,
-    "name" text null,
+    "name" text not null,
     "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -63,6 +63,11 @@ create table if not exists "ores_refdata_conventions_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn())
 );
+
+-- Composite natural key: unique combination for active records
+create unique index if not exists conventions_party_id_kind_code_name_uniq_idx
+on "ores_refdata_conventions_tbl" (tenant_id, party_id, kind_code, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists conventions_version_uniq_idx

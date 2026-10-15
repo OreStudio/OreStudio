@@ -1140,8 +1140,8 @@ reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convent
 tenorBasisSwapType
 reverse_tenor_basis_swap(const ores::refdata::messaging::tenor_basis_swap_convention_item& v) {
     tenorBasisSwapType r;
-    if (v.convention && v.convention->name)
-        static_cast<std::string&>(r.Id) = *v.convention->name;
+    if (v.convention)
+        static_cast<std::string&>(r.Id) = v.convention->name;
     if (!v.pay_receive.empty()) {
         const auto& p = v.pay_receive.front();
         if (p.pay_index) {
@@ -1843,7 +1843,7 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     refdata::domain::convention central;
     central.kind_code = std::string(tenor_basis_swap_kind);
     central.name = std::string(v.Id);
-    central.id = derived_uuid(central.kind_code + ":" + *central.name);
+    central.id = derived_uuid(central.kind_code + ":" + central.name);
     set_audit(central);
     r.key.id = central.id;
     r.convention = central;

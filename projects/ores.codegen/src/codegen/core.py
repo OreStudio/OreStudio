@@ -2404,6 +2404,46 @@ def _service_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
     }
 
 
+def _and_list(names: list[str]) -> str:
+    """Join column names as an English list: 'a', 'a and b', 'a, b and c'."""
+    if len(names) <= 1:
+        return names[0] if names else ''
+    return ', '.join(names[:-1]) + ' and ' + names[-1]
+
+
+def _prepare_finder_render(finder: dict[str, Any]) -> None:
+    """Precompute the C++ fragments a finder's templates state.
+
+    A finder addresses a row by a parent column (optional) and one or more
+    code columns. Joining the parameter list, the where clause and the log
+    expression here is the same shape a compound primary key already uses,
+    so a composite finder renders through the one template as a
+    single-column one. Called on every entry of ``key_finders`` and on
+    ``service_find_by_code``; both are stated once, from the model's finder
+    flags.
+
+    A prefixed ``service_`` field is the service surface's, which types the
+    parent as a uuid and the code columns as text.
+    """
+    columns = list(finder.get('columns')
+                   or ([finder['column']] if finder.get('column') else []))
+    parent = finder.get('parent_column')
+    keys = ([parent] if parent else []) + columns
+    finder['params'] = ', '.join(f'const std::string& {c}' for c in keys)
+    finder['where_and'] = ' && '.join(f'"{c}"_c == {c}' for c in keys)
+    finder['log_label'] = '/'.join(keys)
+    finder['log_fields'] = ' << "/" << '.join(keys)
+    finder['columns_label'] = '/'.join(columns)
+    finder['key_label'] = _and_list(keys)
+    finder['key_tail'] = _and_list(columns)
+    finder['key_noun'] = {2: 'pair', 3: 'triple'}.get(len(keys), 'key')
+    finder['service_params'] = ', '.join(
+        f'const boost::uuids::uuid& {c}' if c == parent
+        else f'const std::string& {c}' for c in keys)
+    finder['service_call_args'] = ', '.join(
+        f'boost::uuids::to_string({c})' if c == parent else c for c in keys)
+
+
 def _key_as_text(expression: str, column: dict[str, Any]) -> str:
     """One key column's value in the text form a key parameter takes it in.
 
@@ -4924,10 +4964,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # exclusion constraint and the versioning triggers, so two
             # parties can each hold a row with the same id; the repository
             # and protocol stay keyed by the primary key alone, because row
-            # level security already confines a session to its own rows.
+            # level security already confines a session to its own rows. A
+            # column can be both a sql key and a natural key -- the party of
+            # a party-scoped identity is -- so scan both buckets.
             sql_key_columns = pk_columns + [
                 {'column': c.get('name') or c.get('column')}
-                for c in domain_entity.get('columns', []) or []
+                for c in (list(domain_entity.get('columns', []) or [])
+                          + list(domain_entity.get('natural_keys', []) or []))
                 if c.get('sql_key')]
             pk['column_list'] = ', '.join(c['column'] for c in sql_key_columns)
             pk['index_suffix'] = '_'.join(c['column'] for c in pk_columns)
@@ -5751,6 +5794,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # row. Stated as one list because the two are the same method with a
         # different column and suffix, and the template states the query once.
         domain_entity['key_finders'] = key_finders(domain_entity)
+        # The finder templates state a parameter list, a where clause and a
+        # log expression, which a composite finder needs joined once rather
+        # than through nested mustache loops per branch.
+        for _finder in domain_entity['key_finders']:
+            _prepare_finder_render(_finder)
+        if domain_entity.get('service_find_by_code'):
+            _prepare_finder_render(domain_entity['service_find_by_code'])
         # The reads that resolve a declared key without the transaction-time
         # window, which is what history needs so that a closed row is still
         # addressable. Kept apart from key_finders because a model that states

@@ -116,8 +116,7 @@ void rekey_tenor_basis_swap(messaging::conventions_document& v) {
         if (c.kind_code != "TENOR_BASIS_SWAP")
             continue;
         const auto previous = c.id;
-        c.id = derived_uuid(boost::uuids::to_string(c.party_id) + ":" + c.kind_code + ":" +
-                            c.name.value_or(""));
+        c.id = derived_uuid(boost::uuids::to_string(c.party_id) + ":" + c.kind_code + ":" + c.name);
         for (auto& p : v.tenor_basis_swap_pay_receive)
             if (p.convention_id == previous)
                 p.convention_id = c.id;

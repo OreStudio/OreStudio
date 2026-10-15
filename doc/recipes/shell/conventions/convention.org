@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-conventions add <kind_code> <name> <oresmd_uri> <reason> <commentary>
+conventions add <party_id> <kind_code> <name> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.conventions.put=.
 
 #+name: conventions-add
 #+begin_src ores-shell :tangle conventions-add.ores :exports none
-conventions add __none__ - - system.new_record generated_script
+conventions add 00000000-0000-0000-0000-000000000000 __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-conventions set <id> <kind_code> <name> <oresmd_uri> <reason> <commentary> [--version <n>]
+conventions set <id> <party_id> <kind_code> <name> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.conventions.put=.
 
 #+name: conventions-set
 #+begin_src ores-shell :tangle conventions-set.ores :exports none
-conventions set 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+conventions set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-conventions put-many --count <n> <id> <kind_code> <name> <oresmd_uri> <reason> <commentary>
+conventions put-many --count <n> <id> <party_id> <kind_code> <name> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.conventions.put_many=.
 
 #+name: conventions-put-many
 #+begin_src ores-shell :tangle conventions-put-many.ores :exports none
-conventions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+conventions put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

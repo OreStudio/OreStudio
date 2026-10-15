@@ -262,24 +262,23 @@ public:
 
     /**
      * @brief Retrieves a single {{entity_singular_words}} by its
-     * {{parent_column}} and {{column}} (this entity's natural key is the
-     * pair, not {{column}} alone).
+     * {{{key_label}}} (this entity's natural key is the
+     * {{key_noun}}, not {{{key_tail}}} alone).
      *
      * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
      */
     std::optional<domain::{{entity_singular}}>
-    find_{{entity_singular_short}}_by_code(const boost::uuids::uuid& {{parent_column}},
-                                             const std::string& {{column}});
+    find_{{entity_singular_short}}_by_code({{{service_params}}});
 {{/parent_column}}
 {{^parent_column}}
 
     /**
-     * @brief Retrieves a single {{entity_singular_words}} by its {{column}}.
+     * @brief Retrieves a single {{entity_singular_words}} by its {{{key_label}}}.
      *
      * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
      */
     std::optional<domain::{{entity_singular}}>
-    find_{{entity_singular_short}}_by_code(const std::string& {{column}});
+    find_{{entity_singular_short}}_by_code({{{service_params}}});
 {{/parent_column}}
 {{/service_find_by_code}}
 

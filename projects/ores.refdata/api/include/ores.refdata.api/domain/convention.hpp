@@ -43,10 +43,10 @@ namespace ores::refdata::domain {
  * the name it carries in the source document.
  *
  * The name is the identifier the source document gives the convention, the <Id>
- * element of that document. It is a plain stored field: it is kept so a round trip
- * through the ORE XML is lossless, and it carries no uniqueness condition of its
- * own. Two kinds may hold the same name; the tenant, the party and the kind
- * together are what make a convention the one a caller means.
+ * element of that document. It is kept so a round trip through the ORE XML is
+ * lossless, and it is part of the convention's identity: the party, the kind and
+ * the name together are what make a convention the one a caller means. Two kinds
+ * may hold the same name, because the kind is part of that identity.
  *
  * A convention's kind-specific fields live in that kind's parts, reached from
  * this row by its key. The central row carries no kind-specific column.
@@ -71,12 +71,17 @@ struct convention final {
     /**
      * @brief The party that owns this convention. Set from the session that writes the document,
      * and enforced by row level security, so a party sees only its own configuration.
+     *
+     * It is part of the convention's identity, so two parties may each hold a convention of one
+     * kind under one name.
      */
     boost::uuids::uuid party_id;
 
     /**
      * @brief The kind of convention this row is, a code from the convention_kind lookup. It selects
      * the family whose parts the row carries.
+     *
+     * It is part of the convention's identity.
      */
     std::string kind_code;
 
@@ -84,9 +89,10 @@ struct convention final {
      * @brief The name the convention carries in the source document, its <Id> element. Kept so a
      * round trip through the ORE XML is lossless.
      *
-     * A plain stored field: it carries no natural-key role, no uniqueness and no extra condition.
+     * It is part of the convention's identity: with the party and the kind it makes the convention
+     * the one a caller means.
      */
-    std::optional<std::string> name;
+    std::string name;
 
     /**
      * @brief The oresmd URI of the market data this convention needs, when the kind names one

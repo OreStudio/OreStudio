@@ -67,14 +67,16 @@ SQL (table DDL, triggers, constraints) and TypeScript (protocol and domain inter
 
 #+begin_example
 * Flags                    — PROPERTIES: schema, product, component, has_tenant_id
-* Primary key              — PROPERTIES: column, type, cpp_type
-* Natural keys             — (optional) list of column names used as natural keys
 * Columns
-  ** <column_name>         — PROPERTIES: type, cpp_type, nullable, default (opt)
+  ** <column_name>         — PROPERTIES: type, cpp_type, nullable, default (opt),
+                             primary_key (opt), natural_key (opt)
 * SQL
   ** Flags                 — PROPERTIES: tablename
 * C++
-  ** Flags                 — PROPERTIES: component_include, component_core (opt)
+  ** Flags                 — PROPERTIES: component_include, component_core (opt),
+                             service_find_by_uuid (opt),
+                             service_find_by_code_column (opt),
+                             service_find_by_code_parent_column (opt)
   ** Repository            — PROPERTIES: entity_singular_short, entity_plural_short, ...
   ** Domain includes       — #+begin_src cpp :name includes
   ** Entity includes       — #+begin_src cpp :name includes (opt)
@@ -86,6 +88,24 @@ SQL (table DDL, triggers, constraints) and TypeScript (protocol and domain inter
   ** Custom repository methods — freeform
 * See also                 — org-roam links
 #+end_example
+
+A column marked =:primary_key: true= or =:natural_key: true= leaves the plain
+=Columns= bucket for the key bucket it names; a column carries at most one of
+the two, and the order the key columns appear in the =Columns= section is their
+order in the key. Every =natural_key= column joins one composite unique index,
+so a model states its identity once and both the store and the readers take it
+from there. A natural key is not required to be non-nullable, but a column that
+is half of an identity usually is.
+
+*** service_find_by_code (C++ Flags)
+
+=:service_find_by_code_column:= names the column, or the whitespace-separated
+columns, a =find_X_by_code= service method and its =read_latest_by_code=
+repository method read. =:service_find_by_code_parent_column:= names the parent
+column they read first, for an identity whose first column is a foreign key.
+A composite value generates one finder over the parent and every named code
+column, so a hand-written method never has to restate an identity the model
+already declares.
 
 *** view_group (Detail fields)
 

@@ -35,6 +35,7 @@ namespace ores::refdata::generators {
 using ores::utility::generation::generation_keys;
 
 domain::convention generate_synthetic_convention(utility::generation::generation_context& ctx) {
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
@@ -44,9 +45,10 @@ domain::convention generate_synthetic_convention(utility::generation::generation
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.kind_code = std::string("TENOR_BASIS_SWAP");
-    r.name = std::nullopt;
+    r.name = std::string("EUR-3M-6M-BASIS") + "-" + std::to_string(idx);
     r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

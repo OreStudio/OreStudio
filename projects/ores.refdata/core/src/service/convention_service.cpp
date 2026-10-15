@@ -101,6 +101,7 @@ messaging::convention_key key_from(const domain::convention& v) {
 domain::convention to_domain(const messaging::convention_write& write) {
     domain::convention v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.kind_code = write.kind_code;
     v.name = write.name;
     v.oresmd_uri = write.oresmd_uri;
@@ -392,6 +393,17 @@ convention_service::get_convention_at_version(const boost::uuids::uuid& id, std:
 std::optional<domain::convention> convention_service::get_convention(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::optional<domain::convention> convention_service::find_convention_by_code(
+    const boost::uuids::uuid& party_id, const std::string& kind_code, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding convention by party_id/kind_code/name: " << party_id
+                               << "/" << kind_code << "/" << name;
+    auto results =
+        repo_.read_latest_by_code(ctx_, boost::uuids::to_string(party_id), kind_code, name);
     if (results.empty())
         return std::nullopt;
     return results.front();

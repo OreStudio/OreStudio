@@ -114,22 +114,12 @@ public:
     read_latest(context ctx, {{{primary_key.batch_params}}});
     /**@}*/
 {{#key_finders}}
-{{#parent_column}}
 
     /**
-     * @brief Reads latest {{entity_plural_words}} filtered by {{parent_column}} and {{column}}.
+     * @brief Reads latest {{entity_plural_words}} filtered by {{{key_label}}}.
      */
     std::vector<domain::{{entity_singular}}>
-    read_latest_by_{{suffix}}(context ctx, const std::string& {{parent_column}}, const std::string& {{column}});
-{{/parent_column}}
-{{^parent_column}}
-
-    /**
-     * @brief Reads latest {{entity_plural_words}} filtered by {{column}}.
-     */
-    std::vector<domain::{{entity_singular}}>
-    read_latest_by_{{suffix}}(context ctx, const std::string& {{column}});
-{{/parent_column}}
+    read_latest_by_{{suffix}}(context ctx, {{{params}}});
 {{/key_finders}}
 {{^current_state}}
 {{#key_resolvers}}

@@ -20,10 +20,10 @@ The row carries the key, the party that owns the row, the kind the row is, and
 the name it carries in the source document.
 
 The name is the identifier the source document gives the convention, the =<Id>=
-element of that document. It is a plain stored field: it is kept so a round trip
-through the ORE XML is lossless, and it carries no uniqueness condition of its
-own. Two kinds may hold the same name; the tenant, the party and the kind
-together are what make a convention the one a caller means.
+element of that document. It is kept so a round trip through the ORE XML is
+lossless, and it is part of the convention's identity: the party, the kind and
+the name together are what make a convention the one a caller means. Two kinds
+may hold the same name, because the kind is part of that identity.
 
 A convention's kind-specific fields live in that kind's parts, reached from
 this row by its key. The central row carries no kind-specific column.
@@ -60,11 +60,15 @@ ctx.generate_uuid()
 :cpp_type:    boost::uuids::uuid
 :nullable:    false
 :sql_key:     true
+:natural_key: true
 :END:
 
 The party that owns this convention. Set from the session that writes the
 document, and enforced by row level security, so a party sees only its own
 configuration.
+
+It is part of the convention's identity, so two parties may each hold a
+convention of one kind under one name.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -72,13 +76,17 @@ ctx.generate_uuid()
 
 ** kind_code
 :PROPERTIES:
-:type:        text
-:cpp_type:    std::string
-:nullable:    false
+:type:                text
+:cpp_type:            std::string
+:nullable:            false
+:natural_key:         true
+:no_generator_suffix: true
 :END:
 
 The kind of convention this row is, a code from the =convention_kind= lookup.
 It selects the family whose parts the row carries.
+
+It is part of the convention's identity.
 
 #+begin_src cpp :name generator
 std::string("TENOR_BASIS_SWAP")
@@ -86,19 +94,20 @@ std::string("TENOR_BASIS_SWAP")
 
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
 :END:
 
 The name the convention carries in the source document, its =<Id>= element.
 Kept so a round trip through the ORE XML is lossless.
 
-A plain stored field: it carries no natural-key role, no uniqueness and no
-extra condition.
+It is part of the convention's identity: with the party and the kind it makes
+the convention the one a caller means.
 
 #+begin_src cpp :name generator
-std::nullopt
+std::string("EUR-3M-6M-BASIS")
 #+end_src
 
 ** oresmd_uri
@@ -151,8 +160,13 @@ std::nullopt
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:                       api
+:service_find_by_code_column:        kind_code name
+:service_find_by_code_parent_column: party_id
 :END:
+
+=service_find_by_code_column= names every column of the identity besides the
+parent; the finder reads the parent and each of them.
 
 ** Repository
 :PROPERTIES:
@@ -210,7 +224,7 @@ std::nullopt
 |-----------+----------------+-----------------+-----------+--------+-------------+----------------------------|
 | id        | Id             | idEdit          | line_edit | true   | true        | Enter convention id        |
 | kind_code | Kind           | kindCodeEdit    | line_edit | false  | true        | e.g. TENOR_BASIS_SWAP      |
-| name      | Name           | nameEdit        | line_edit | false  | false       | e.g. EUR-3M-6M-BASIS       |
+| name      | Name           | nameEdit        | line_edit | false  | true        | e.g. EUR-3M-6M-BASIS       |
 | oresmd_uri | Market Data URI | oresmdUriEdit | line_edit | false  | false       | e.g. oresmd://ir/EUR       |
 
 *** Columns

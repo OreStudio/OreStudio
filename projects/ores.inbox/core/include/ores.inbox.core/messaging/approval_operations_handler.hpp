@@ -30,6 +30,7 @@
 #include "ores.inbox.core/service/approval_request_service.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -795,9 +796,11 @@ private:
             const auto start = service::apply_start_of(kind, approved, "");
             if (!start)
                 return;
-            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                             ores::nats::default_wire_codec().encode(*start),
-                             ores::nats::service::forwarded_caller_headers(msg));
+            nats_.js_publish(
+                ores::workflow::messaging::start_workflow_message::nats_subject,
+                ores::nats::default_wire_codec().encode(*start),
+                ores::nats::headers::with_publish_identity(
+                    ores::nats::service::forwarded_caller_headers(msg), start->instance_id));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Request " << boost::uuids::to_string(approved.id)

@@ -21,6 +21,7 @@
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/asio/steady_timer.hpp>
@@ -87,17 +88,27 @@ void batch_workflow_bridge::poll_once() {
                 R"({{"success":true,"batch_id":"{}","message":"Compute batch completed"}})",
                 batch_id);
 
-            nats_.publish(
+            // Commit the completion to the stream, not to the bus. The engine
+            // reads this subject from a durable consumer, and a core publish
+            // returns without a server acknowledgement: it succeeds with no
+            // subscriber and no stream, so a completion published while the
+            // workflow service is down would be discarded in silence.
+            //
+            // The step id is the identity of the work, so a retry after a
+            // failed publish stores one completion rather than two.
+            nats_.js_publish(
                 std::string(ores::workflow::messaging::step_completed_event::nats_subject),
-                ores::nats::default_wire_codec().encode(evt));
+                ores::nats::default_wire_codec().encode(evt),
+                ores::nats::headers::publish_identity_headers(link.workflow_step_id));
 
             BOOST_LOG_SEV(lg(), info) << "Fired step_completed for batch " << batch_id
                                       << " (step=" << link.workflow_step_id
                                       << " instance=" << link.workflow_instance_id << ")";
 
-            // Remove the link as its own tenant: the removal is tenant-scoped,
-            // and the idempotency key (step_id) guards against duplicates
-            // should the service restart between publish and remove.
+            // Remove the link only once the completion is stored. A failed
+            // publish throws, so this line is skipped and the link survives to
+            // be retried by the next poll; the removal forfeits the retry, so
+            // it must never precede the confirmation.
             const auto removed = link_repo.remove(tenant_ctx, batch_id, std::nullopt);
             if (removed != repository::workflow_batch_link_repository::remove_status::removed) {
                 BOOST_LOG_SEV(lg(), warn)

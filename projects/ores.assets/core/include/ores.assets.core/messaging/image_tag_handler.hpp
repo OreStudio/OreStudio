@@ -80,6 +80,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -119,6 +121,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -158,6 +162,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -197,6 +203,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -236,6 +244,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -275,6 +285,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -314,6 +326,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -353,6 +367,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            image_tag_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "assets::image_tags:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

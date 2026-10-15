@@ -128,7 +128,11 @@ public:
         }
         auto req = decode<get_crm_rate_request>(msg);
         if (!req) {
+            // A payload that does not decode is refused, not ignored: without
+            // this the caller reads nothing and reports a request timeout for
+            // what is really a bad request.
             BOOST_LOG_SEV(crm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
 
@@ -141,23 +145,34 @@ public:
         }
 
         const auto tenant_id_str = ctx.tenant_id().to_string();
-        const auto result = bridge_->rate(tenant_id_str,
-                                          req->party_id,
-                                          req->crm_name,
-                                          req->base_currency_code,
-                                          req->quote_currency_code);
-        if (!result) {
+        // The rate engine is state fed from the bus, so a lookup can throw. A
+        // throw here would escape to the transport, which contains it but
+        // sends no reply: the caller would wait out its deadline for an answer
+        // this handler could have given. Answer instead, and say it failed.
+        try {
+            const auto result = bridge_->rate(tenant_id_str,
+                                              req->party_id,
+                                              req->crm_name,
+                                              req->base_currency_code,
+                                              req->quote_currency_code);
+            if (!result) {
+                reply(nats_,
+                      msg,
+                      get_crm_rate_response{.success = false,
+                                            .message = "No such CRM configured for this party",
+                                            .rate = {}});
+                return;
+            }
             reply(nats_,
                   msg,
-                  get_crm_rate_response{.success = false,
-                                        .message = "No such CRM configured for this party",
-                                        .rate = {}});
-            return;
+                  get_crm_rate_response{
+                      .success = true, .message = {}, .rate = to_item(req->crm_name, *result)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(crm_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  get_crm_rate_response{.success = false, .message = e.what(), .rate = {}});
         }
-        reply(nats_,
-              msg,
-              get_crm_rate_response{
-                  .success = true, .message = {}, .rate = to_item(req->crm_name, *result)});
     }
 
     void rates(ores::nats::message msg) {
@@ -175,28 +190,35 @@ public:
         auto req = decode<get_crm_rates_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(crm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
 
         const auto tenant_id_str = ctx.tenant_id().to_string();
 
-        get_crm_rates_response resp;
-        resp.success = true;
-        if (req->crm_name.empty()) {
-            // No CRM selected -- every enabled CRM the party has, tagged.
-            const auto results =
-                bridge_->resolved_rates(tenant_id_str, req->party_id, req->reciprocal);
-            resp.rates.reserve(results.size());
-            for (const auto& r : results)
-                resp.rates.push_back(to_item(r.crm_name, r.view));
-        } else {
-            const auto results = bridge_->resolved_rates(
-                tenant_id_str, req->party_id, req->crm_name, req->reciprocal);
-            resp.rates.reserve(results.size());
-            for (const auto& v : results)
-                resp.rates.push_back(to_item(req->crm_name, v));
+        try {
+            get_crm_rates_response resp;
+            if (req->crm_name.empty()) {
+                // No CRM selected -- every enabled CRM the party has, tagged.
+                const auto results =
+                    bridge_->resolved_rates(tenant_id_str, req->party_id, req->reciprocal);
+                resp.rates.reserve(results.size());
+                for (const auto& r : results)
+                    resp.rates.push_back(to_item(r.crm_name, r.view));
+            } else {
+                const auto results = bridge_->resolved_rates(
+                    tenant_id_str, req->party_id, req->crm_name, req->reciprocal);
+                resp.rates.reserve(results.size());
+                for (const auto& v : results)
+                    resp.rates.push_back(to_item(req->crm_name, v));
+            }
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(crm_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  get_crm_rates_response{.success = false, .message = e.what(), .rates = {}});
         }
-        reply(nats_, msg, resp);
     }
 
 private:

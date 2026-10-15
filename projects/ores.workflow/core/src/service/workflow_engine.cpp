@@ -265,11 +265,15 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
     // two can be joined by one grep. with_correlation_id() only applies to
     // request/reply, so a command has to set it here.
     try {
+        // The step id is the identity of this piece of work, so the stream can
+        // deduplicate a re-dispatch of it: a retry after a lost publish ack
+        // stores one command, not two.
         nats_.js_publish(step.command_subject,
                          data,
                          {{std::string(step_id_header), step_id_str},
                           {std::string(instance_id_header), inst_id_str},
                           {std::string(tenant_id_header), tenant_id_str},
+                          {std::string(ores::nats::headers::nats_msg_id), step_id_str},
                           {std::string(ores::nats::headers::nats_correlation_id), step_id_str}});
     } catch (const std::exception& e) {
         // Nothing was accepted, so nothing will answer and the step would sit
@@ -687,11 +691,16 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
 
 void workflow_engine::on_step_completed(ores::nats::message msg) {
     const std::lock_guard<std::mutex> lock(mutex_);
+    // Delivered durably, so it must be answered. Every path below answers
+    // explicitly; the guard retries anything that does not, and the transport
+    // retries if a call throws before the answer.
+    ores::nats::ack_guard ack(msg);
     auto event_result =
         ores::nats::default_wire_codec().decode<messaging::step_completed_event>(msg.data);
     if (!event_result) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode step_completed_event: "
                                   << event_result.error().what();
+        ack.reject();
         return;
     }
     const auto& event = *event_result;
@@ -708,13 +717,19 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     try {
         step_id = boost::lexical_cast<boost::uuids::uuid>(event.step_id);
     } catch (...) {
+        // The payload decoded, so the identity is not a parse race but a
+        // malformed event; it will not read better on a second delivery.
         BOOST_LOG_SEV(lg(), error) << "Invalid step_id: " << event.step_id;
+        ack.reject();
         return;
     }
 
     const auto found_steps = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_id));
     if (found_steps.empty()) {
+        // The step row may not be visible yet, so this is worth another
+        // delivery rather than a discard; the bound ends the retrying.
         BOOST_LOG_SEV(lg(), warn) << "Step not found: " << event.step_id;
+        ack.retry();
         return;
     }
     const auto* step = &found_steps.front();
@@ -744,6 +759,9 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         else
             BOOST_LOG_SEV(lg(), info) << "Duplicate step-completed event for step " << event.step_id
                                       << " (state is not in_progress); ignoring.";
+        // Already accounted for, so the delivery is done with; retrying would
+        // only reach this same line again.
+        ack.accept();
         return;
     }
 
@@ -779,12 +797,14 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     } catch (...) {
         BOOST_LOG_SEV(lg(), error)
             << "Invalid workflow_instance_id: " << event.workflow_instance_id;
+        ack.reject();
         return;
     }
 
     auto found_instances = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
     if (found_instances.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Workflow instance not found: " << event.workflow_instance_id;
+        ack.reject();
         return;
     }
     auto* instance = &found_instances.front();
@@ -816,16 +836,25 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
                 begin_compensation(*instance, event.error_message);
         }
     }
+    // The outcome is recorded and the run is advanced, so the delivery is
+    // complete. A throw above leaves this unreached, and the message is
+    // redelivered to finish the work.
+    ack.accept();
 }
 
 void workflow_engine::on_start_workflow(ores::nats::message msg) {
     const std::lock_guard<std::mutex> lock(mutex_);
+    // Delivered durably, so it must be answered. Every path below answers
+    // explicitly; the guard retries anything that does not, and the transport
+    // retries if a call throws before the answer.
+    ores::nats::ack_guard ack(msg);
 
     auto msg_result =
         ores::nats::default_wire_codec().decode<messaging::start_workflow_message>(msg.data);
     if (!msg_result) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode start_workflow_message: "
                                   << msg_result.error().what();
+        ack.reject();
         return;
     }
     const auto& req = *msg_result;
@@ -837,7 +866,9 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
 
     const auto* def = registry_->find(req.type);
     if (!def) {
+        // No definition will appear on a second delivery in this deployment.
         BOOST_LOG_SEV(lg(), error) << "No workflow definition for type: " << req.type;
+        ack.reject();
         return;
     }
 
@@ -847,6 +878,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         tenant_id = boost::lexical_cast<boost::uuids::uuid>(req.tenant_id);
     } catch (...) {
         BOOST_LOG_SEV(lg(), error) << "Invalid tenant_id: " << req.tenant_id;
+        ack.reject();
         return;
     }
 
@@ -858,18 +890,21 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         if (req.target_kind.empty()) {
             BOOST_LOG_SEV(lg(), error)
                 << "A target_id was given with no target_kind: " << req.target_id;
+            ack.reject();
             return;
         }
         try {
             target_id = boost::lexical_cast<boost::uuids::uuid>(req.target_id);
         } catch (...) {
             BOOST_LOG_SEV(lg(), error) << "Invalid target_id: " << req.target_id;
+            ack.reject();
             return;
         }
     }
     if (!req.target_kind.empty() && req.target_id.empty()) {
         BOOST_LOG_SEV(lg(), error)
             << "A target_kind was given with no target_id: " << req.target_kind;
+        ack.reject();
         return;
     }
 
@@ -883,21 +918,25 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         if (const auto undeclared = undeclared_deadline(steps)) {
             BOOST_LOG_SEV(lg(), error)
                 << "Cannot run workflow type " << req.type << ": " << *undeclared;
+            ack.reject();
             return;
         }
         const auto graph = workflow_graph(nodes_of(steps));
         if (const auto& incoherent = graph.incoherent()) {
             BOOST_LOG_SEV(lg(), error)
                 << "Cannot run workflow type " << req.type << ": " << *incoherent;
+            ack.reject();
             return;
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "Cannot build the step list for workflow type " << req.type << ": " << e.what();
+        ack.reject();
         return;
     }
     if (steps.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Workflow definition has no steps: " << req.type;
+        ack.reject();
         return;
     }
 
@@ -908,6 +947,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
             instance_id = boost::lexical_cast<boost::uuids::uuid>(req.instance_id);
         } catch (...) {
             BOOST_LOG_SEV(lg(), error) << "Invalid instance_id: " << req.instance_id;
+            ack.reject();
             return;
         }
     } else {
@@ -925,6 +965,9 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
             BOOST_LOG_SEV(lg(), info)
                 << "Workflow already started; leaving it alone:" << " type=" << req.type
                 << " workflow=" << boost::uuids::to_string(instance_id);
+            // The run the caller asked for exists, which is what the repeat
+            // means; retrying would reach this same line again.
+            ack.accept();
             return;
         }
     } catch (const std::exception& e) {
@@ -1000,6 +1043,9 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
                 << "Failed to create workflow instance " << id_str << ": " << e.what();
         }
     }
+    // Either the run started, or the failure is recorded against it; both are
+    // terminal, and a redelivery would only record the failure again.
+    ack.accept();
 }
 
 void workflow_engine::recover_in_progress() {

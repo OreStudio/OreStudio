@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -133,6 +137,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -183,6 +191,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -234,6 +246,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -284,6 +300,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -335,6 +355,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -385,6 +409,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -437,6 +465,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -489,6 +521,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ir_curve_generation_config_process_parameter_value_handler_lg(),
+            msg,
+            req_ctx.tenant_id().to_string());
         if (!has_permission(
                 req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.workflow.core/messaging/registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
@@ -139,14 +140,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
         "workflow-engine-step-completed",
         qg,
         [engine](ores::nats::message msg) { engine->on_step_completed(std::move(msg)); },
-        engine_stream));
+        engine_stream,
+        ores::service::messaging::step_max_deliver));
 
     subs.push_back(nats.js_queue_subscribe(
         messaging::start_workflow_message::nats_subject,
         "workflow-engine-start",
         qg,
         [engine](ores::nats::message msg) { engine->on_start_workflow(std::move(msg)); },
-        engine_stream));
+        engine_stream,
+        ores::service::messaging::step_max_deliver));
 
     // ----------------------------------------------------------------
     // Query handler (list instances, get steps).

@@ -93,6 +93,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -139,6 +141,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -185,6 +189,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -231,6 +237,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -277,6 +285,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -323,6 +333,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -369,6 +381,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -415,6 +429,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -461,6 +477,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            market_series_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::market_series:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

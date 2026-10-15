@@ -83,6 +83,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -126,6 +128,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -169,6 +173,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -212,6 +218,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -255,6 +263,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -298,6 +308,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -341,6 +353,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -384,6 +398,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            currency_pair_convention_calendar_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

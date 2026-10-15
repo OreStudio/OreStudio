@@ -20,7 +20,9 @@
 #ifndef ORES_NATS_DOMAIN_HEADERS_HPP
 #define ORES_NATS_DOMAIN_HEADERS_HPP
 
+#include <string>
 #include <string_view>
+#include <unordered_map>
 
 namespace ores::nats::headers {
 
@@ -43,6 +45,45 @@ inline constexpr std::string_view x_error = "X-Error";
 /// on every downstream NATS call until the final response is returned.
 /// Distinct from the NATS-level Nats-Msg-Id used by JetStream deduplication.
 inline constexpr std::string_view nats_correlation_id = "Nats-Correlation-Id";
+
+/// JetStream deduplication identity. Two publishes to the same stream with the
+/// same value inside the stream's duplicate window are stored once.
+///
+/// Carry the identity of the *work*, never one minted per send: a step id, a
+/// run id. A value that changes on every attempt — a fresh UUID, a timestamp —
+/// defeats the mechanism, because the retry then looks like new work. A message
+/// with no identity of its own (a market tick, a liveness notice) carries none,
+/// because two such messages are genuinely two messages.
+///
+/// The window is finite, so this is the first of two lines of defence; the
+/// receiver still needs its own guard. See the "Idempotent Message Identity"
+/// pattern.
+inline constexpr std::string_view nats_msg_id = "Nats-Msg-Id";
+
+/// The headers that deduplicate a durable publish on @p identity.
+///
+/// Returns an empty map when @p identity is empty, so a message with no
+/// identity of its own is published without one rather than under a shared or
+/// invented value.
+[[nodiscard]] inline std::unordered_map<std::string, std::string>
+publish_identity_headers(std::string_view identity) {
+    if (identity.empty())
+        return {};
+    return {{std::string(nats_msg_id), std::string(identity)}};
+}
+
+/// The same identity added to headers a caller already assembles.
+///
+/// A durable publish usually carries more than its identity — the forwarded
+/// caller, a trace key — so this merges rather than replaces. An empty
+/// @p identity leaves the headers untouched.
+[[nodiscard]] inline std::unordered_map<std::string, std::string>
+with_publish_identity(std::unordered_map<std::string, std::string> headers,
+                      std::string_view identity) {
+    if (!identity.empty())
+        headers[std::string(nats_msg_id)] = std::string(identity);
+    return headers;
+}
 
 /// Session-level trace key generated once on Qt client login.
 /// Forwarded on every outbound NATS message for the duration of the login

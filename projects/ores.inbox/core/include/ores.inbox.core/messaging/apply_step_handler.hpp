@@ -72,9 +72,15 @@ public:
      * @brief Serves inbox.v1.steps.tell_apply_result.
      */
     void tell(ores::nats::message msg) {
+        // A durable consumer answers every delivery, so each path below states
+        // the outcome; the guard retries a path that returns without deciding.
+        ores::nats::ack_guard ack(msg);
+
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
-        if (!wf)
+        if (!wf) {
+            ack.reject();
             return;
+        }
         try {
             if (const auto cached = ores::service::messaging::check_step_idempotency(
                     nats_, wf->step_id, wf->tenant_id)) {
@@ -85,6 +91,7 @@ public:
                                                                   cached->result_json,
                                                                   cached->error_message,
                                                                   cached->log);
+                ack.accept();
                 return;
             }
 
@@ -92,6 +99,7 @@ public:
                 ores::service::messaging::decode<ores::inbox::workflow::apply_step_command>(msg);
             if (!command || command->request_id.empty()) {
                 wf->fail("The command names no request.");
+                ack.accept();
                 return;
             }
 
@@ -104,6 +112,7 @@ public:
             const auto request = lifecycle.request(command->request_id);
             if (!request) {
                 wf->fail("No such request.");
+                ack.accept();
                 return;
             }
             const auto kind = lifecycle.kind(request->kind_code);
@@ -119,10 +128,12 @@ public:
                     << request->kind_code << ", so the person who asked was not told.";
             }
             wf->complete("{}");
+            ack.accept();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
+            ack.accept();
         }
     }
 

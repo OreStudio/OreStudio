@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/run_configuration_handler.hpp"
 #include "ores.nats/domain/correlation.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
@@ -115,7 +116,8 @@ void run_configuration_handler::import_run_configuration(ores::nats::message msg
     swm.instance_id = instance_id;
     nats_.js_publish(start_workflow_message::nats_subject,
                      ores::nats::default_wire_codec().encode(swm),
-                     ores::nats::service::forwarded_caller_headers(msg));
+                     ores::nats::headers::with_publish_identity(
+                         ores::nats::service::forwarded_caller_headers(msg), swm.instance_id));
 
     BOOST_LOG_SEV(lg(), info) << "run configuration import dispatched | corr=" << correlation_id
                               << " instance=" << instance_id;

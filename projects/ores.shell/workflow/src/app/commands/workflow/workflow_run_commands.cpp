@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -422,7 +423,9 @@ void workflow_run_commands::process_start(std::ostream& out,
         session.transport().js_publish(
             workflow::messaging::start_workflow_message::nats_subject,
             ores::nats::default_wire_codec().encode(msg),
-            ores::nats::service::forwarded_caller_headers(session.auth().jwt));
+            ores::nats::headers::with_publish_identity(
+                ores::nats::service::forwarded_caller_headers(session.auth().jwt),
+                msg.instance_id));
     } catch (const std::exception& e) {
         fail(out) << "Failed to start the workflow: " << e.what() << std::endl;
         return;

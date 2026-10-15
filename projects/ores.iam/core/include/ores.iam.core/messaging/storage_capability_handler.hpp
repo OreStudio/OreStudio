@@ -131,7 +131,19 @@ public:
         claims.issued_at = now;
         claims.expires_at = now + capability_lifetime;
 
-        const auto token = signer_->create_token(claims);
+        // Signing is the one call here that can throw. An exception leaving
+        // this handler reaches the transport, which contains it but sends no
+        // reply, and the caller waits out its deadline for an answer this
+        // handler could have given.
+        std::optional<std::string> token;
+        try {
+            token = signer_->create_token(claims);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(storage_capability_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            refuse(std::string("The storage capability could not be signed: ") + e.what());
+            return;
+        }
         if (!token) {
             refuse("The storage capability could not be signed.");
             return;

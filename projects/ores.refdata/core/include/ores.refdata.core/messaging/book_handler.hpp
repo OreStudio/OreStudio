@@ -80,6 +80,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -125,6 +127,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -170,6 +174,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -215,6 +221,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -260,6 +268,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -305,6 +315,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -350,6 +362,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -395,6 +409,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -440,6 +456,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -485,6 +503,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            book_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::books:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

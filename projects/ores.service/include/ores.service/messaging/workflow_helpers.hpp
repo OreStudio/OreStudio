@@ -20,6 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -154,7 +155,13 @@ private:
                                                               .log = log};
 
         const auto data = ores::nats::default_wire_codec().encode(event);
-        nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject, data);
+        // The step id identifies the work, so the stream stores one completion
+        // for it however many times the publish is attempted. The engine's own
+        // duplicate guard remains the second line, because the stream's window
+        // is finite.
+        nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject,
+                         data,
+                         ores::nats::headers::publish_identity_headers(step_id));
     }
 };
 
@@ -232,6 +239,10 @@ inline std::optional<cached_step_result> check_step_idempotency(ores::nats::serv
     const auto data = ores::nats::default_wire_codec().encode(req);
 
     try {
+        // Five seconds, not the shared 30s default, and deliberately: this is a
+        // cached-result lookup on a step handler's own path, so it must fail
+        // fast. A slow answer is worth abandoning — the handler proceeds and
+        // does the work, which is safe because the step is idempotent.
         const auto reply_msg = nats.request_sync(
             get_step_result_request::nats_subject, data, {}, std::chrono::seconds(5));
 

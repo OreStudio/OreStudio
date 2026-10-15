@@ -1,0 +1,360 @@
+#+title: Inventory: the NATS call sites against the pattern library
+#+description: Every NATS call site in the tree at 4fcab4aeed, classified against the nineteen NATS service patterns, with each deviation named and the fix it needs.
+
+This is the inventory [[id:11F9A445-13B3-43E0-A674-BE8C5E9E9A79][Audit the
+NATS call sites against the pattern library]] asks for. It holds the code to
+the [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+library and records what does not match.
+
+Read it as an inventory, not a fix list: nothing here has been changed. The
+fixes are the rest of the task.
+
+* The tree this describes
+
+Every number below is measured at commit =4fcab4aeed= (the merge of the pattern
+library). The tree moves, so a count without that commit is not a measurement.
+
+** The call sites
+
+| Kind | Sites | Method |
+|------+-------+--------|
+| =queue_subscribe= | 3871 | balanced-paren extraction over =projects/*.cpp= and =*.hpp= |
+| =subscribe= (fan-out) | 19 | same |
+| =subscribe_buffered= | 338 | same |
+| =js_queue_subscribe= (durable) | 3 | same |
+| =js_publish= | 15 | same |
+| =publish= (core) | 47 | same |
+| =request_sync= / =authenticated_request= | 64 combined | same |
+| =ensure_stream= | 6 production, 2 in tests | same |
+
+An independent =grep -o= count gives 3873 / 339 / 19 / 3 for the four consumer
+variants. The two methods disagree by two or fewer on each, which is the
+expected order of noise; the figures are reliable to that tolerance and no
+conclusion below turns on a single site.
+
+** The shape of the population
+
+Two classes dominate, and neither is a deviation:
+
+- 3599 generated =queue_subscribe= sites across 400 files, emitted from
+  =cpp_nats_registrar.cpp.mustache=. Every one subscribes a codegen protocol
+  constant in the service's own queue group and stores its handle in a vector
+  the service runner holds.
+- 390 generated entity-event registrars and the ~3713 generated shell
+  =do_auth_request= calls, which are the client half of the same protocol.
+
+The hand-written population is 314 consumer sites across 41 files, plus the
+publisher, requester and provisioning sites. *The deviations are almost all
+here.* That is the useful headline: the generated surface conforms, because a
+template wrote it once; the hand-written surface is where the rules were
+re-derived per call site.
+
+* Verdicts
+
+| # | Pattern | Verdict | Note |
+|---+---------+---------+------|
+| 1 | Prefix Every Subject With make_subject | conforms | The two absolute cases are =_INBOX= (exempt by design) and stream filters via =covering_subjects= |
+| 2 | Name a Subject With a Codegen Constant | conforms | Hand-written subjects are the DQ publish-from-DQ family and config-driven subjects, both deliberate |
+| 3 | Queue-Group Subscription | *1 deviation* | See D1 |
+| 4 | Durable Subscription | conforms | All 3 sites pass durable, queue group and stream name |
+| 5 | Stream Provisioning at Start | conforms | All 6 production sites use =covering_subjects=, none passes a bare subject |
+| 6 | Acknowledge What Was Handled | *unimplemented* | See D2 |
+| 7 | Commit Through the Stream | *1 deviation* | See D3 |
+| 8 | Idempotent Message Identity | *unimplemented* | See D4 |
+| 9 | Bounded Request | deviates, minor | See D7 |
+| 10 | Classify Transport Failure | conforms | The client distinguishes refusal, no-responders and timeout |
+| 11 | Report a Refusal Off the Body | *2 sites* | See D5 |
+| 12 | Report a Failure in the Body | conforms | All 400 generated handlers publish a =failed= body on an exception |
+| 13 | Never Let an Exception Cross the Bus | *30 handlers* | See D6 |
+| 14 | Announce Every Handled Message | *large gap* | See D8 |
+| 15 | Propagate the Correlation Id | conforms | Generated handlers forward it; the engine sets it on step commands |
+| 16 | Observe the Connection State | conforms | Disconnected, reconnected and error callbacks are installed |
+| 17 | Own the Subscription Handle | conforms | No dropped handle found in 4225 consumer sites |
+| 18 | Bind Before You Call Your Own Service | conforms | The runner registers before its readiness activities |
+
+* Deviations
+
+** D1 — a request/reply subject subscribed without a queue group
+
+=projects/ores.http/server/src/messaging/registrar.cpp=, the
+=get_http_info_request= subject, uses =subscribe()=.
+
+Breaks [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]]:
+with more than one HTTP-server replica, every replica answers the same request
+and the caller takes whichever reply arrives first.
+
+*Fix.* Change it to =queue_subscribe()= with the server's group name. Confirm
+first that this is a request/reply endpoint and not a broadcast — if it is the
+latter, the library's own exception applies and the page needs no change.
+
+** D2 — the durable subscriptions acknowledge automatically
+
+The three =js_queue_subscribe= sites run under JetStream's default
+=ManualAck=false=, so returning from the handler acknowledges the message
+whatever the handler decided. Every other acknowledgement-related identifier —
+=AckPolicy=, =AckWait=, =MaxDeliver=, =ManualAck= — appears nowhere in
+=projects/= outside a single comment. The pattern is not implemented; it is
+absent.
+
+Breaks [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was
+Handled]].
+
+=ores.workflow.service= is the exposed case: =on_step_completed= and
+=on_start_workflow= log and return on a decode failure or a parse failure, and
+any later throw is caught by the transport's callback. All of those
+acknowledge. The durable consumer therefore does not redeliver work it failed,
+which is exactly what it exists for.
+
+*Fix.* Give =js_queue_subscribe= an explicit acknowledgement policy and an
+attempt bound, and put the answer on every handler path through a guard whose
+destructor defaults to a nak. This is the open
+=task_acknowledge_only_what_was_handled= and it belongs with the =max_deliver=
+bound in the same change.
+
+** D3 — a workflow completion published without an acknowledgement
+
+=projects/ores.compute/service/src/app/batch_workflow_bridge.cpp= publishes
+=workflow.v1.ops.step_completed= with core =publish()=, then removes
+=workflow_batch_link= — its own retry record.
+
+Breaks [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the
+Stream]]. Core publish is unacknowledged: it succeeds with no subscriber, no
+stream and no confirmation. The consumer of that subject is a durable JetStream
+consumer, and the same subject is published durably from
+=workflow_helpers.hpp=. =ores.compute= ensures no stream itself, so if the
+workflow stream is absent the completion is dropped in silence, the link is
+removed, and the run stalls with nothing in either log to explain it. The
+comment at the removal calls =step_id= the idempotency guard, but it guards
+against duplicate delivery, not against a lost publish.
+
+*Fix.* Publish with =js_publish()= and let the throw skip the removal, so the
+poll retries. This is the highest-value fix in the inventory: it is a
+correctness bug, not a conformance gap.
+
+** D4 — no message identity on a retryable message
+
+="Nats-Msg-Id"= appears nowhere in the tree. The pattern that absorbs a
+redelivery is therefore absent as a mechanism.
+
+Breaks [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message
+Identity]].
+
+This is a *consequence of D2* rather than an independent fault: with automatic
+acknowledgement a redelivery mostly does not happen, so nothing forced the
+question. Fixing D2 makes a redelivery reachable and this becomes load-bearing.
+The per-entity handlers already carry a natural identity — the entity key on a
+write — so the work is to state it on the wire and honour it in the receiver,
+not to invent a scheme.
+
+** D5 — a decode failure that is not answered
+
+=projects/ores.marketdata/service/include/ores.marketdata.service/messaging/crm_handler.hpp=
+has two entry points, =rate()= and =rates()=. Each calls =decode<...>()= and,
+on failure, logs a warning and returns without replying (the =if (!req)= blocks
+in each). =bridge_->rate()= and =bridge_->resolved_rates()= are called with no
+enclosing try/catch at all.
+
+Breaks [[id:6B12C3D4-E5F6-4A71-8C93-A4B5C6D7E8F9][Report a Refusal Off the
+Body]] for the decode failure, and the same file is part of D6 for the calls.
+
+The caller reads nothing for 30 seconds and then reports
+=NATS request timed out=, which is a lie: the service answered nothing because
+it declined the payload.
+
+*Fix.* =error_reply(..., bad_request)= on the decode failure. Both entry points
+already call =log_handler_entry= and reply with a =success=false= body on their
+other paths, so this is a two-line change.
+
+** D6 — thirty hand-written handlers that can let an exception escape
+
+Of 489 handler headers, 400 are generated and every one wraps its service call
+in a try/catch. Of the 89 hand-written ones, *30 contain no catch at all*.
+
+Breaks [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let an Exception
+Cross the Bus]] and, through it,
+[[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
+
+The transport's callback contains the exception, so the service survives — but
+under core NATS the caller gets no reply and waits out its deadline. The
+service's own log line names the subject and the exception and nothing else.
+The worked examples are =workflow_query_handler.hpp= (0 catches, calls
+repositories directly) and =crm_handler.hpp= (0 catches).
+
+The 30 are: =http_info_handler=, =report_submit_handler=, =workflow_handler=,
+=workflow_query_handler=, =history_handler=, three marketdata core handlers
+(=oresmd_schema_handler=, =oresmd_uri_handler=, =publish_from_dq_handler=),
+=storage/objects_handler=, =analytics/configuration_document_handler=,
+=analytics/publish_from_dq_handler=, =iam/publish_from_dq_handler=,
+=iam/storage_capability_handler=, =refdata/configuration_document_handler=,
+=refdata/publish_from_dq_handler=, =refdata/calendar_adjustment_handler=,
+=refdata/calendar_materialisation_handler=, =reporting/run_document_handler=,
+=reporting/publish_from_dq_handler= and continuing in the same families.
+
+Each needs triage rather than a blanket fix: a =publish_from_dq= handler is a
+fire-and-forget consumer with no reply subject, where catching and logging is
+correct and a reply is impossible; a =*_query_handler= serves request/reply and
+must answer. The distinction is the same one the pattern library draws, so the
+fix is per handler and each one states which kind it is.
+
+** D7 — two request deadlines stated without their reason
+
+=provision_commands.cpp= passes 120 seconds for a provisioning request, and
+=workflow_helpers.hpp= passes 5 seconds for a step-result fetch. Both are
+deliberate and both are correct in substance.
+
+Breaks [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]] only in
+form: the pattern asks that an exception to the shared default say why beside
+it. Neither site does.
+
+*Fix.* A comment stating the responder's expected latency. Lowest priority in
+the inventory; recorded for completeness rather than for its risk.
+
+** D8 — the receipt line is missing on most handlers
+
+=log_handler_entry= is called in 23 files. Of the 400 generated handlers,
+exactly one calls it. The generated handler's failure line is
+="<subject> failed: <what>"= with no correlation id and no tenant.
+
+Breaks [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled
+Message]]: the correlation id and the tenant are the two fields the pattern
+requires and the generated surface omits both.
+
+This is the deviation with the widest reach and the cheapest fix: one line in
+=cpp_nats_handler.hpp.mustache= gives every generated handler a receipt line,
+which is ~3600 handler methods in one edit.
+
+** Deliberate departures, recorded as conforming
+
+These look like deviations and are not. Each is licensed by the pattern page,
+which states the exception:
+
+- The ~19 plain =subscribe()= sites: compute heartbeats, =reap_work_message=,
+  =node_sample_message= and =work_available=, which every peer must see; the
+  generated per-instance cache invalidators, which each instance needs; and the
+  shell and test watchers. Licensed by
+  [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]].
+- The ~47 core =publish()= sites that are telemetry, liveness, replies or an
+  explicitly lossy wake-up hint. Licensed by
+  [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the Stream]].
+- The 390 entity-event registrars on core NATS. The durable fact is the
+  Postgres row and its trigger; the event is a cache-invalidation hint, and
+  Postgres NOTIFY is itself at-most-once, so the pipeline already accepts
+  notification loss. Licensed by the same page. The residual risk is a cache
+  that stays stale with no reconciliation timer, which the pattern page does
+  not cover.
+- =currency_pair_convention_cache_registrar.hpp= generates three subscriptions
+  that no translation unit wires, so they never exist at runtime. Dead
+  generated code, not a deviation.
+
+* Fix order and progress
+
+| # | Deviation | State | What was done |
+|---+-----------+-------+---------------|
+| D3 | Completion published without an acknowledgement | *fixed* | =js_publish=, so the throw skips the link removal and the poll retries |
+| D2 | Durable subscriptions acknowledge automatically | *fixed* | Explicit policy and a required delivery bound; =ack_guard=, and the transport retries an undecided delivery; the three durable handlers answer explicitly |
+| D8 | Receipt line missing on most handlers | *fixed* | One template edit; all 400 generated handlers now log subject, correlation id, session id and tenant |
+| D5 | A decode failure that is not answered | *fixed* | =crm_handler= refuses with =bad_request=, and its bridge calls are guarded |
+| D1 | Request/reply subject without a queue group | *fixed* | =get_http_info= is now queue-subscribed as =ores.http.server= |
+| D6 | Thirty handlers that can let an exception escape | *fixed* | Every replying entry point is guarded, in six groups: history, marketdata, iam, synthetic preview, feed control, and the ORE import dispatch |
+| D4 | No message identity on a retryable message | *fixed* | The publisher side: the step id on a step's messages, the instance id on a workflow start, and none on a tick. The receiver side already guarded |
+| D7 | Two explicit deadlines without their reason | *fixed* | Both sites state why they depart from the 30s default, and the provisioning value is pinned above it with a static_assert |
+
+D6 needed per-handler triage rather than a bulk edit, and the triage changed
+what the count meant. Of the 29 hand-written handler headers with no catch,
+nine are =publish_from_dq= consumers, which have no reply subject and already
+record a failure through =wf->fail=; six more either have no call that can throw
+(a header read, a token validated through an =expected=, a static schema
+description) or are one-line reply helpers. The genuine escape paths were
+thirteen entry points, and each now answers the failure instead of leaving the
+caller to time out.
+
+* D9 - the step-command subjects no stream covers
+
+Found while provisioned ACME against a recreated database, which failed at its
+first step. The engine dispatches a step command with =js_publish=, so the
+subject must be covered by a stream; when it is not, the publish waits out the
+pub-ack timeout and the run fails with =JetStream publish failed: Timeout=.
+
+**This is not introduced by this branch.** The =js_publish= in
+=publish_command= comes from =515cf28072 [workflow,iam] Deliver step commands
+durably= (PR #3305, already on main). This branch adds one header to that call.
+It is also already recorded on main as the capture
+=doc/agile/product_backlog/inbox/every_workflow_step_subject_needs_a_stream.org=,
+filed independently by another environment.
+
+**Fixed and verified.** Every service that serves a step-command subject now
+declares its coverage through
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]' shared helper,
+and reads it durably. Proven by recreating the database, starting the fleet and
+running the ACME provisioning script to completion:
+
+#+begin_example
+  [1/2] system_provision: completed
+  [2/2] start_tenant_setup: completed
+✓ All 2 step(s) completed.
+✓ System provisioned. Tenant 'Acme Corporation'.
+#+end_example
+
+Two collisions surfaced only under that test, and both are worth remembering:
+a service that declares two groups of step commands under one stream name has
+the second wipe the first, because =ensure_stream= replaces a stream's subject
+list rather than widening it. refdata and iam each did exactly that, and each
+left the other's subject uncovered. =ensure_step_stream= now takes a label for
+that reason.
+
+**The gap.** Nine subjects are covered by some stream: the workflow start and
+completion, =iam.v1.ops.provision_tenant_step=, the market and synthetic ticks,
+and the compute work assignment. The step commands of a **DQ bundle-publish**
+workflow go instead to =ds.target_subject=, and there are **66 =*_from_dq=**
+subjects, none of them covered:
+
+| Service | Subjects it serves |
+|---------+--------------------|
+| refdata | 45 |
+| dq | 7 |
+| analytics | 3 |
+| reporting | 3 |
+| iam | 2 |
+| synthetic | 2 |
+| assets | 1 |
+| marketdata | 1 |
+
+**Why a central fix is not available.** =workflow_definition::build_steps()=
+builds the steps per instance from the request payload, so the subjects are not
+knowable at engine startup. Coverage has to be declared by the service that
+serves the subject, which is also what
+[[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]]
+requires.
+
+**The fix, in two parts that belong together.**
+
+1. Each of the eight services ensures a stream covering its own =*_from_dq=
+   subjects, at startup, before its registrar runs. Each already holds those
+   subjects in a list or a pair of literal calls, so the stream is built from
+   the same list; =make_subject= and =subjects_below= give the filters.
+2. The same subjects become durable consumers (=js_queue_subscribe= with a
+   stable durable name and the delivery bound), not core =queue_subscribe=.
+   Without this half a step published while the service is down is retained by
+   the stream and never replayed, so the run still stalls - which is the
+   failure #3305 set out to remove.
+
+Part 1 alone stops the crash. Part 2 alone changes nothing. Neither is a fix on
+its own.
+
+**Where the code is.** The registration sits in one block per service, in
+=projects/ores.<svc>/core/src/messaging/registrar.cpp=, either an array of
+subjects plus a loop (refdata, analytics, reporting, dq, iam) or one
+=queue_subscribe= call per subject (synthetic, assets, marketdata). The handler
+variable and the queue-group name differ per service.
+
+**Verification.** =compass db recreate -y -k=, =compass services start=, then
+=compass shell -f
+projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+must run to completion and the run must not be reported as failed.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the
+  standard this inventory measures against.
+- [[id:6B5E348B-6B7A-46BF-AB56-33E4D5327AE4][Bring the service code onto the
+  NATS patterns]] — the story this inventory belongs to.

@@ -287,9 +287,11 @@ public:
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;
 
-            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                             ores::nats::default_wire_codec().encode(start),
-                             ores::nats::service::forwarded_caller_headers(msg));
+            nats_.js_publish(
+                ores::workflow::messaging::start_workflow_message::nats_subject,
+                ores::nats::default_wire_codec().encode(start),
+                ores::nats::headers::with_publish_identity(
+                    ores::nats::service::forwarded_caller_headers(msg), start.instance_id));
 
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "Started " << start.type << " for tenant " << req->tenant_code
@@ -552,9 +554,11 @@ public:
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;
 
-            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                             ores::nats::default_wire_codec().encode(start),
-                             ores::nats::service::forwarded_caller_headers(msg));
+            nats_.js_publish(
+                ores::workflow::messaging::start_workflow_message::nats_subject,
+                ores::nats::default_wire_codec().encode(start),
+                ores::nats::headers::with_publish_identity(
+                    ores::nats::service::forwarded_caller_headers(msg), start.instance_id));
 
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "Started " << start.type << " for party " << found.front() << " of tenant "
@@ -586,6 +590,10 @@ public:
      */
     void provision_step(ores::nats::message msg) {
         const auto correlation_id = log_handler_entry(tenant_provisioning_handler_lg(), msg);
+        // The step command is delivered durably, so it must be answered rather
+        // than left to the transport's default. The guard retries when a path
+        // below returns without deciding.
+        ores::nats::ack_guard ack(msg);
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
@@ -593,10 +601,14 @@ public:
             // discarded here in silence is indistinguishable from one that was
             // never delivered. Say so where the discard happens: the engine has
             // no other way to learn that the command did reach a service.
+            // A command that cannot be read will not read any better on a
+            // second delivery, and it names no step to fail, so it is discarded
+            // rather than retried.
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step: the step command could not be read, so the step is left "
                    "unanswered and the run will expire it. subject="
                 << msg.subject;
+            ack.reject();
             return;
         }
 
@@ -616,6 +628,7 @@ public:
                                                                   cached->result_json,
                                                                   cached->error_message,
                                                                   cached->log);
+                ack.accept();
                 return;
             }
 
@@ -624,16 +637,21 @@ public:
             auto parsed =
                 rfl::json::read<ores::iam::workflow::provision_tenant_step_command>(payload);
             if (!parsed) {
+                // The step is failed, so the delivery is done with: re-running
+                // it would only report the same failure again.
                 wf->fail("The provisioning step command could not be read: " +
                          std::string(parsed.error().what()));
+                ack.accept();
                 return;
             }
 
             execute_step(*wf, *parsed, correlation_id);
+            ack.accept();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed: " << e.what();
             wf->fail(e.what());
+            ack.accept();
         }
     }
 
@@ -1205,7 +1223,9 @@ private:
         // child's own steps then act as.
         auto client =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-        client.publish(ores::workflow::messaging::start_workflow_message::nats_subject, start);
+        client.publish(ores::workflow::messaging::start_workflow_message::nats_subject,
+                       start,
+                       start.instance_id);
 
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Started " << start.type << " for tenant " << run.tenant_code

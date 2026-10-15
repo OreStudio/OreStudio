@@ -74,6 +74,12 @@ constexpr std::chrono::seconds default_run_timeout(3600);
  * this request replaces used.
  */
 constexpr std::chrono::seconds provision_request_timeout(120);
+// Four times the shared 30s default, deliberately: this request starts a run
+// whose first phase seeds tenants, accounts and reference data, so the
+// responder's own work is minutes rather than milliseconds. A shorter deadline
+// would report a healthy provisioning as a timeout.
+static_assert(provision_request_timeout > ores::nats::service::default_request_timeout,
+              "a provisioning request must outlast the shared default");
 
 /// The flags both commands that create a tenant read. The description default
 /// is the caller's, because the command that sets a system up is making a

@@ -22,6 +22,8 @@
 
 #include <cstddef>
 #include <functional>
+#include <memory>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -29,6 +31,27 @@
 #include <vector>
 
 namespace ores::nats {
+
+/**
+ * @brief Answers a durable delivery: ack, nak or term.
+ *
+ * A core NATS message has no such handle, because there is nothing to
+ * acknowledge. A JetStream message carries one, and the handler that decides
+ * the outcome answers through it. The transport's own backstop naks a message
+ * left unanswered, so an undecided delivery is redelivered rather than
+ * silently acknowledged.
+ */
+class ack_handle {
+public:
+    virtual ~ack_handle() = default;
+
+    /// The work is committed; the message is delivered no more.
+    virtual void accept() = 0;
+    /// The work failed; deliver the message again.
+    virtual void retry() = 0;
+    /// The message can never be handled; stop delivering it.
+    virtual void reject() = 0;
+};
 
 /**
  * @brief A received NATS message.
@@ -64,6 +87,76 @@ struct message {
      * per-request authentication: @c "Authorization" -> @c "Bearer <token>".
      */
     std::unordered_map<std::string, std::string> headers;
+
+    /**
+     * @brief The delivery's acknowledgement handle, or nothing for core NATS.
+     *
+     * Held by shared handle so the message stays cheap to pass by value, which
+     * is how every handler receives it. An @c ack_guard answers on the
+     * handler's behalf; the handle itself accepts only the first answer.
+     */
+    std::shared_ptr<ack_handle> ack;
+};
+
+/**
+ * @brief RAII guard for a durable delivery, defaulting to a retry.
+ *
+ * Declared at the top of a handler, it answers the message on the handler's
+ * behalf when the handler answers nothing itself. The destructor runs @c retry,
+ * so a path that throws or returns early is redelivered rather than
+ * acknowledged as done — the failure mode that defeats at-least-once delivery.
+ *
+ * @code
+ * void provision_step(ores::nats::message msg) {
+ *     ores::nats::ack_guard ack(msg);
+ *     // ... work ...
+ *     ack.accept();   // committed
+ * }
+ * @endcode
+ *
+ * A message with no handle — every core NATS message — makes every method a
+ * no-op, so one handler shape serves both.
+ */
+class ack_guard {
+public:
+    explicit ack_guard(const message& msg) noexcept
+        : handle_(msg.ack.get()) {}
+
+    ~ack_guard() {
+        if (handle_ && !answered_)
+            handle_->retry();
+    }
+
+    ack_guard(const ack_guard&) = delete;
+    ack_guard& operator=(const ack_guard&) = delete;
+
+    /// @return true when this message can be answered at all.
+    [[nodiscard]] bool has_handle() const noexcept {
+        return handle_ != nullptr;
+    }
+
+    void accept() noexcept {
+        answer(&ack_handle::accept);
+    }
+
+    void retry() noexcept {
+        answer(&ack_handle::retry);
+    }
+
+    void reject() noexcept {
+        answer(&ack_handle::reject);
+    }
+
+private:
+    void answer(void (ack_handle::*verb)()) noexcept {
+        if (handle_ && !answered_) {
+            answered_ = true;
+            (handle_->*verb)();
+        }
+    }
+
+    ack_handle* handle_;
+    bool answered_ = false;
 };
 
 /**

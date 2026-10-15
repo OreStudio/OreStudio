@@ -111,6 +111,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_provider_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_provider_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/scope.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/step_subjects.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/synthetic_catalog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_parameter_definition_json_io.hpp"

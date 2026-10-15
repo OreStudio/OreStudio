@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 2B01F697-FA39-4914-B83D-7C42B8501E00
+:END:
+#+title: Task: Add release to the Nightly Build matrix
+#+description: Initial task for: Restore the linux gcc release build
+#+type: task
+#+level: s1
+#+filetags: :restore_the_gcc_release_linux_build:sprint_28:v0:
+#+owner: marco
+#+branch: feature/restore-the-gcc-release-linux-build
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FAF6498F-8AC1-48D3-B3BA-8369569CA789][Restore the linux gcc release build]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every Linux configuration the repository builds is built somewhere: gcc and clang, debug and release.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FAF6498F-8AC1-48D3-B3BA-8369569CA789][Restore the linux gcc release build]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- linux-gcc-release is built by the Nightly Build.
+- Coverage and memcheck run on the debug jobs only.
+- Every Linux configuration reports to CDash.
+
+* Plan
+
+Add release to the Nightly Build matrix, and move the coverage and memcheck
+flags onto the debug jobs only.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Linux configs built before the tier rebalance | 4: both compilers x both buildtypes | =git show 0d794200b6:.github/workflows/continuous-linux.yml= | 0d794200b6 |
+| Linux configs built after the rebalance | 3 | the matrices of every workflow | 2f3d74c1fb |
+| =linux-gcc-release= after the rebalance | built nowhere | same | 2f3d74c1fb |
+| Linux configs built after this change | 4 | same | this branch |
+
+* Notes
+
+** What the rebalance dropped
+
+Continuous Linux went from four configurations to two, clang debug and
+release, and the gcc pair moved to the Nightly Build. That matrix carried
+debug alone, so =linux-gcc-release= stopped being built anywhere, and
+nothing reported it to CDash because nothing ran it.
+
+** Why release joins the nightly rather than continuous
+
+The rebalance exists to keep the continuous compiler-cache working set
+small enough for the 10 GB repository cap. A third variant in continuous
+works against that. The nightly has room and already holds the gcc debug
+job.
+
+** Coverage and memcheck follow the buildtype
+
+The nightly added =code_coverage=1,with_memcheck=1= unconditionally. Both
+belong on a debug build, and neither is meaningful on an optimised release
+binary, so they are now added only when the buildtype is debug.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Nightly Build now builds four configurations -- linux-gcc and
+linux-clang, debug and release -- so =linux-gcc-release= is compiled again
+and reports to CDash under Nightly. Coverage and memcheck are added only
+when the buildtype is debug.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: no Nightly Build run has built the new configurations
+yet. The next nightly run is the proof: four jobs, with the release jobs
+carrying neither coverage nor valgrind.

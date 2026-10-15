@@ -16,9 +16,10 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-# Template: cmake_component_src.mustache
-# To modify, update the template and regenerate.
+find_package(Immer CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
+
 set(name "ores.analytics.quant")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -40,15 +41,19 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+# Deliberately minimal: no ores.database, ores.service, NATS, or refdata
+# linkage. This is a pure computation library, consumable standalone.
 target_link_libraries(${lib_target_name}
     PUBLIC
-        sqlgen::sqlgen
-        ores.logging.lib
-        ores.platform.lib
+        Boost::boost
+        Boost::graph
     PRIVATE
-        ores.utility.lib)
-
-
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+        immer
+        magic_enum::magic_enum
+    PUBLIC
+        # Eigen types appear in public headers (the process params
+        # structs); on a shared build a PRIVATE link would hide its
+        # include directories from consumers.
+        Eigen3::Eigen)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

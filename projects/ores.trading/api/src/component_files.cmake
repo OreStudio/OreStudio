@@ -1291,5 +1291,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_state_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/ores.trading.api.hpp"
 )

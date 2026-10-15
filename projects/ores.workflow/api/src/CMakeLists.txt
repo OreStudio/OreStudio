@@ -13,12 +13,9 @@
 # details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51
-# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-# Template: cmake_component_src.mustache
-# To modify, update the template and regenerate.
 set(name "ores.workflow.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -38,17 +35,14 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.workflow/api/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        sqlgen::sqlgen
-        ores.logging.lib
-        ores.platform.lib
+        ores.utility.lib
     PRIVATE
-        ores.utility.lib)
-
-
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+        faker-cxx::faker-cxx
+        libfort::fort)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

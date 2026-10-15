@@ -28,7 +28,6 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.assets.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/assets_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/image_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/image_tag_routes.hpp"

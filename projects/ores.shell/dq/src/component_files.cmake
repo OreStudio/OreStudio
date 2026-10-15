@@ -78,5 +78,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/report_definition_template_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/subject_area_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.dq.hpp"
 )

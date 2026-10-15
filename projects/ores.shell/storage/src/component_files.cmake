@@ -28,5 +28,4 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/storage/objects_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/storage/raw_storage_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.storage.hpp"
 )

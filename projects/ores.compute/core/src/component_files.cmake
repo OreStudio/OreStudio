@@ -124,7 +124,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/workunit_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/workunit_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/workunit_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/ores.compute.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/ores.compute.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/app_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/app_version_history_field_mapper.hpp"

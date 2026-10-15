@@ -16,9 +16,6 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-# Template: cmake_component_src.mustache
-# To modify, update the template and regenerate.
 set(name "ores.analytics.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -42,13 +39,15 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        sqlgen::sqlgen
-        ores.logging.lib
-        ores.platform.lib
+        ores.analytics.api.lib
     PRIVATE
-        ores.utility.lib)
-
-
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+        ores.service.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        sqlgen::sqlgen
+        Boost::boost)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

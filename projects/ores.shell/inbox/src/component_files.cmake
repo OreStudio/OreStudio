@@ -56,5 +56,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_kind_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_preference_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_recipient_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.inbox.hpp"
 )

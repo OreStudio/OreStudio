@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -9,16 +9,12 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51
-# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-# Template: cmake_component_src.mustache
-# To modify, update the template and regenerate.
 set(name "ores.ore.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -32,23 +28,70 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden)
 endif()
+
+# domain.cpp is 104k lines emitted by xsdcpp from ORE's schemas. It
+# declares per-element info tables, three of which no generated code
+# references, and nine serialization helpers marked XSDCPP_MAYBE_UNUSED.
+# That macro resolves to the unused attribute only under __GNUC__, which
+# clang defines for every target except the MSVC one, so the Windows
+# compilers see the nine as ordinary unused functions and -Werror rejects
+# them. The fix belongs upstream in xsdcpp, so the warnings are silenced
+# for that one file rather than the tree.
+#
+# GCC adds two diagnostics of its own on the same file, both from the
+# generated parser. One case label falls through to the default label
+# behind a "// no break" comment, which gcc does not accept as a
+# fallthrough marker. GCC 16 also reports a loop counter that is set but
+# never read. Both belong to the generator, so they are silenced here
+# with the file; clang raises neither, so the flags are GNU-only.
+set(domain_cpp_warnings "")
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    list(APPEND domain_cpp_warnings "-Wno-unused-const-variable")
+    if(WIN32)
+        list(APPEND domain_cpp_warnings "-Wno-unused-function")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        list(APPEND domain_cpp_warnings
+            "-Wno-implicit-fallthrough"
+            "-Wno-unused-but-set-variable")
+    endif()
+elseif(MSVC)
+    list(APPEND domain_cpp_warnings "/wd4505")
+endif()
+set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
+    PROPERTIES COMPILE_OPTIONS "${domain_cpp_warnings}")
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+if(MSVC)
+    target_compile_options(${lib_target_name} PUBLIC /bigobj)
+endif()
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        sqlgen::sqlgen
+        ores.analytics.api.lib
+        ores.ore.api.lib
+        ores.database.lib
+        ores.refdata.api.lib
+        ores.reporting.api.lib
+        ores.trading.api.lib
+    PRIVATE
+        ores.analytics.core.lib
+        ores.refdata.core.lib
+        ores.reporting.core.lib
+        ores.dq.api.lib
+        ores.history.core.lib
         ores.logging.lib
         ores.platform.lib
-    PRIVATE
-        ores.utility.lib)
-
-
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+        ores.utility.lib
+        Boost::boost)
+# Note: reflectcpp comes transitively through ores.platform.lib (PUBLIC)
+# Do not add it explicitly to avoid duplicate library warnings on macOS.
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

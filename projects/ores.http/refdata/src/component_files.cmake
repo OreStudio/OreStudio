@@ -26,7 +26,6 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.refdata.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/currency_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/refdata_routes.hpp"
 )

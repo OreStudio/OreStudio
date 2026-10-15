@@ -60,5 +60,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/messaging/image_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/messaging/image_tag_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/messaging/tag_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/ores.assets.api.hpp"
 )

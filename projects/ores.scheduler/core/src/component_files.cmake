@@ -46,7 +46,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/job_instance_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/scheduler_status_handler.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/ores.scheduler.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/ores.scheduler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/presentation/job_definition_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/repository/job_definition_entity.hpp"

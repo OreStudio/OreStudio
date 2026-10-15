@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -9,16 +9,14 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51
-# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-# Template: cmake_component_src.mustache
-# To modify, update the template and regenerate.
+find_package(Immer CONFIG REQUIRED)
+
 set(name "ores.iam.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -38,17 +36,35 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.iam/core/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        sqlgen::sqlgen
-        ores.logging.lib
+        ores.iam.api.lib
+        ores.geo.lib
+        ores.variability.core.lib
+        ores.database.lib
+        ores.dq.api.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
         ores.platform.lib
+        ores.security.lib
+        ores.nats.lib
+        ores.workflow.api.lib
+        ores.assets.api.lib
     PRIVATE
-        ores.utility.lib)
-
-
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+        ores.history.core.lib
+        ores.iam.client.lib
+        ores.inbox.api.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        ores.synthetic.api.lib
+        ores.marketdata.api.lib
+        ores.marketdata.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort
+        immer)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -35,5 +35,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/messaging/objects_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/net/http_client.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/net/storage_transfer.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/ores.storage.core.hpp"
 )

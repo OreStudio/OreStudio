@@ -90,5 +90,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_status_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_type_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.iam.hpp"
 )

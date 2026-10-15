@@ -40,7 +40,6 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.iam.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_credential_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_routes.hpp"

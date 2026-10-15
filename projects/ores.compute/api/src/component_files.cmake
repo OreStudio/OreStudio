@@ -144,5 +144,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/work_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/messaging/workunit_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/net/compute_storage.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/ores.compute.api.hpp"
 )

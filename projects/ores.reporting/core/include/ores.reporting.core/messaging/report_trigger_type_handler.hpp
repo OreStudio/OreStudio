@@ -85,8 +85,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -136,8 +134,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -187,8 +183,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -238,8 +232,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -289,8 +281,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -340,8 +330,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -391,8 +379,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -442,8 +428,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -493,8 +477,6 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            report_trigger_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_trigger_types:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

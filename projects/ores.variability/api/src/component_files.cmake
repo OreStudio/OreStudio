@@ -40,5 +40,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/generators/system_setting_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/messaging/operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/messaging/system_setting_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/ores.variability.api.hpp"
 )

@@ -38,5 +38,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/messaging/http_info_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/messaging/registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/ores.http.server.hpp"
 )

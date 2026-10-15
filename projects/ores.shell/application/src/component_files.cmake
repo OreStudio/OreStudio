@@ -90,5 +90,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/config/ores.shell.config.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/config/parser_exception.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.application.hpp"
 )

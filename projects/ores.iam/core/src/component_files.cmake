@@ -263,7 +263,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_type_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_type_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_type_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/ores.iam.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/ores.iam.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/presentation/account_contact_information_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/presentation/account_credential_history_field_mapper.hpp"

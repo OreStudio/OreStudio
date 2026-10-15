@@ -39,7 +39,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/system_setting_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/system_setting_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/system_setting_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/ores.variability.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/ores.variability.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/presentation/system_setting_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/repository/ores.variability.repository.hpp"

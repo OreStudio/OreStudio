@@ -39,6 +39,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/request_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/shell_root_menu.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.hpp"
 )

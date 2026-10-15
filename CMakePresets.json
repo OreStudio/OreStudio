@@ -13,16 +13,11 @@
       "binaryDir": "${sourceDir}/build/output/${presetName}",
       "cacheVariables": {
         "CMAKE_POSITION_INDEPENDENT_CODE": true,
-        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
         "CMAKE_CXX_STANDARD": "23",
         "CMAKE_CXX_STANDARD_REQUIRED": true,
         "CMAKE_CXX_EXTENSIONS": false,
-        "CMAKE_FIND_ROOT_PATH_MODE_PACKAGE": "BOTH",
-        "CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY": "ON",
         "CMAKE_FIND_USE_CMAKE_SYSTEM_PATH": "ON",
-        "CMAKE_PREFIX_PATH": "",
-        "VCPKG_INSTALL_OPTIONS": "--clean-after-build",
-        "X_VCPKG_APPLOCAL_DEPS_INSTALL": false
+        "CMAKE_PREFIX_PATH": ""
       },
       "warnings": {
         "uninitialized": true,
@@ -36,6 +31,18 @@
       "architecture": {
         "value": "unknown",
         "strategy": "external"
+      }
+    },
+    {
+      "name": "compiler-configuration",
+      "description": "Variables that only a configure which compiles reads. The vcpkg toolchain consumes the four VCPKG_* and CMAKE_FIND_* entries, and the generator consumes CMAKE_EXPORT_COMPILE_COMMANDS only when there are compile rules, so the doc-only preset must not inherit this.",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CMAKE_FIND_ROOT_PATH_MODE_PACKAGE": "BOTH",
+        "CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY": "ON",
+        "VCPKG_INSTALL_OPTIONS": "--clean-after-build",
+        "X_VCPKG_APPLOCAL_DEPS_INSTALL": false
       }
     },
     {
@@ -124,6 +131,7 @@
       "displayName": "Linux Clang Debug (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "clang",
         "unix-compiler-cache-wrapper",
         "debug-build",
@@ -136,6 +144,7 @@
       "displayName": "Linux Clang Debug (Make)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "clang",
         "unix-compiler-cache-wrapper",
         "debug-build",
@@ -148,6 +157,7 @@
       "displayName": "Linux Clang Release (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "clang",
         "unix-compiler-cache-wrapper",
         "release-build",
@@ -160,6 +170,7 @@
       "displayName": "Linux Clang Release (Make)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "clang",
         "unix-compiler-cache-wrapper",
         "release-build",
@@ -172,6 +183,7 @@
       "displayName": "Linux GCC Debug (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "gcc",
         "unix-compiler-cache-wrapper",
         "debug-build",
@@ -184,6 +196,7 @@
       "displayName": "Linux GCC Debug (Make)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "gcc",
         "unix-compiler-cache-wrapper",
         "debug-build",
@@ -196,6 +209,7 @@
       "displayName": "Linux GCC Release (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "gcc",
         "unix-compiler-cache-wrapper",
         "release-build",
@@ -208,6 +222,7 @@
       "displayName": "Linux GCC Release (Make)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "gcc",
         "unix-compiler-cache-wrapper",
         "release-build",
@@ -218,10 +233,10 @@
     {
       "name": "linux-doc-only",
       "displayName": "Linux \u2014 doc/site builds (vcpkg disabled)",
-      "description": "Configures without vcpkg; use for deploy_site, deploy_skills, deploy_settings and similar doc-only targets.",
+      "description": "Configures without vcpkg; use for deploy_site, deploy_skills, deploy_settings and similar doc-only targets. It inherits neither the compiler variables nor the make mixin: with ORES_VCPKG_ENABLED=OFF the toolchain is never loaded and no compile rule is generated, so CMake reports every one of those variables as unused.",
+      "generator": "Unix Makefiles",
       "inherits": [
-        "base-configuration",
-        "make"
+        "base-configuration"
       ],
       "cacheVariables": {
         "ORES_VCPKG_ENABLED": "OFF"
@@ -265,6 +280,7 @@
       "displayName": "Windows x64 Debug (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "windows-msvc",
         "debug-build",
         "ninja"
@@ -276,6 +292,7 @@
       "displayName": "Windows x64 Release (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "windows-msvc",
         "release-build",
         "ninja"
@@ -304,6 +321,7 @@
       "displayName": "Windows x64 Debug (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "windows-msvc-clang-cl",
         "debug-build",
         "ninja"
@@ -315,6 +333,7 @@
       "displayName": "Windows x64 Release (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "windows-msvc-clang-cl",
         "release-build",
         "ninja"
@@ -343,6 +362,7 @@
       "displayName": "Windows x64 Debug (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "windows-clang",
         "debug-build",
         "ninja"
@@ -354,6 +374,7 @@
       "displayName": "Windows x64 Release (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "windows-clang",
         "release-build",
         "ninja"
@@ -365,6 +386,7 @@
       "displayName": "Mac OSX Debug (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "debug-build",
         "ninja"
       ],
@@ -375,6 +397,7 @@
       "displayName": "Mac OSX Debug (Make)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "debug-build",
         "make"
       ],
@@ -385,6 +408,7 @@
       "displayName": "Mac OSX Release (Ninja)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "release-build",
         "ninja"
       ],
@@ -395,6 +419,7 @@
       "displayName": "Mac OSX Release (Make)",
       "inherits": [
         "base-configuration",
+        "compiler-configuration",
         "release-build",
         "make"
       ],

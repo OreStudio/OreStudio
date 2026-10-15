@@ -17,11 +17,11 @@
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>${PROJECT_MAJOR_VERSION}.${PROJECT_MINOR_VERSION}.${PROJECT_PATCH_VERSION}</string>
+  <string>${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}</string>
   <key>CFBundleSignature</key>
   <string>APPL</string>
   <key>CFBundleVersion</key>
-  <string>${PROJECT_MAJOR_VERSION}.${PROJECT_MINOR_VERSION}.${PROJECT_PATCH_VERSION}</string>
+  <string>${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}</string>
   <key>NSAppleScriptEnabled</key>
   <string>NO</string>
 </dict>

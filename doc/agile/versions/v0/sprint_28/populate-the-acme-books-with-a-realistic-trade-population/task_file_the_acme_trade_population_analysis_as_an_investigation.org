@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: chore/file-the-acme-trade-population-investigation
-#+pr:
+#+pr: 3336
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3336][#3336]] | [agile] File the ACME trade population analysis as an investigation |
 
 * Review
 

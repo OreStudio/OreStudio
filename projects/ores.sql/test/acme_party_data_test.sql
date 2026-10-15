@@ -27,6 +27,9 @@
  * - The counterparties each entity may trade with
  * - An entity is never its own counterparty, and holds every bank it has a master
  *   agreement with, so the two datasets cannot disagree
+ * - A party's other counterparties are the banks of the countries it works in,
+ *   and every one of them is a bank the GLEIF mapping names a BIC for, so the
+ *   list is a rule rather than a hand-written set
  * - Nothing reads as real contact data: the telephone numbers and the domain
  *   are the ones set aside for fiction
  *
@@ -37,7 +40,7 @@ begin;
 
 -- The expected counts are pinned on purpose. A change to the party data must
 -- change this test, so a count never moves unnoticed.
-select plan(12);
+select plan(14);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -80,6 +83,18 @@ create temp table t_entity_lei (company text, lei text);
 insert into t_entity_lei values
     ('acme_group', '9695ACMEGROUP0000030'), ('acme_uk', '9695ACMEUK0000000047'),
     ('acme_us', '9695ACMEUS0000000043'), ('acme_hk', '9695ACMEHK0000000018');
+
+-- The GLEIF extract the counterparty list is read from, by LEI and legal
+-- address country. It is the extract the counterparties come from, so a link
+-- that names an LEI this view does not carry is a link the publish cannot
+-- resolve. The country is the GLEIF legal address, which is what the list is
+-- derived from.
+create temp view t_gleif_entities as
+select a.lei, a.entity_legal_address_country as country
+from ores_dq_lei_entities_artefact_tbl a
+join ores_dq_datasets_tbl d
+  on d.id = a.dataset_id and d.valid_to = ores_utility_infinity_timestamp_fn()
+where d.code = 'gleif.lei_entities.tiny';
 
 select results_eq(
     $$select company, count(*) from t_contacts group by company order by company$$,
@@ -133,7 +148,7 @@ select is(
 
 select results_eq(
     $$select company, count(*) from t_counterparties group by company order by company$$,
-    $$values ('acme_group'::text, 8::bigint), ('acme_hk', 9), ('acme_uk', 11), ('acme_us', 11)$$,
+    $$values ('acme_group'::text, 453::bigint), ('acme_hk', 26), ('acme_uk', 411), ('acme_us', 27)$$,
     'each legal entity may trade with its counterparties');
 
 select is(
@@ -147,6 +162,29 @@ select is(
        and not exists (select 1 from t_counterparties c
             where c.company = a.company and c.counterparty_lei = a.counterparty_lei)),
     0::bigint, 'an entity may trade with every counterparty it holds a master agreement with');
+
+-- The approved banks of an entity, which are its links less the banks it holds
+-- a master agreement with and less its sister entities. A sister entity is a
+-- link through the 9695 pre-LOU prefix the group's own LEIs carry, and it is
+-- not a bank of this dataset at all.
+create temp view t_approved as
+select c.company, c.counterparty_lei
+from t_counterparties c
+where c.counterparty_lei not like '9695%'
+  and not exists (select 1 from t_agreements a
+        where a.company = c.company and a.counterparty_lei = c.counterparty_lei);
+
+select is(
+    (select count(*) from t_approved a
+     where not exists (select 1 from t_gleif_entities e where e.lei = a.counterparty_lei)),
+    0::bigint, 'every approved bank is one the GLEIF counterparty set carries');
+
+select is(
+    (select count(*) from t_approved a
+     join t_countries t on t.company = a.company
+     join t_gleif_entities e on e.lei = a.counterparty_lei
+     where t.country_alpha2_code <> e.country),
+    0::bigint, 'the approved banks of a party are the banks of the countries it works in');
 
 select * from finish();
 

@@ -8,7 +8,7 @@
 #+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
-#+pr: 3360
+#+pr: 3361
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3361][#3361]] | [seeder] Read the ACME tradeable counterparties from GLEIF |
 | [[https://github.com/OreStudio/OreStudio/pull/3360][#3360]] | [codegen] Regenerate the two handlers main left stale |
 | [[https://github.com/OreStudio/OreStudio/pull/3359][#3359]] | [agile] Close the streamed-steps task, which #3355 fixed |
 | [[https://github.com/OreStudio/OreStudio/pull/3356][#3356]] | [agile] Raise the stream follow-ups the verification exposed |

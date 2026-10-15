@@ -699,11 +699,37 @@ they arrived by an LEI import rather than from the seeder's JSON, and
 
 The tradeable set is much smaller and is the one that matters.
 =SELECT p.short_code, c.short_code ... FROM ores_refdata_party_counterparties_tbl pc JOIN ...=
-returns 38 distinct links, =ACCOUK= 11, =ACCOUS= 11, =ACCOHK= 8, =ACMCOR=
+returns 38 links, =ACCOUK= 11, =ACCOUS= 11, =ACCOHK= 8, =ACMCOR=
 8, covering 23 distinct counterparties. It is the intra-group entities
 plus named banks, =BAOFAM1=, =BAOFAM2=, =BARBAN=, =BNPPAR=, =BRCLYS=,
 =CINAAS=, =CITINC=, =DEBAAK=, =GOSAGR=, =HSBBAN=, =HSBHOL=, =JPCHBA=,
 =JPMCHA=, =LLBAGR=, =MORSTA=, =NATGRO=, =STCHBA3=, =UBSGRO= and =USX=.
+
+*Correction, 2026-10-15.* The count of 38 is the sum of the four parties'
+counts and not a distinct count, so it is a coincidence that the per-party
+sum is also the row count: =SELECT p.short_code, count(*) ...= returns 76
+current rows, =ACCOUK= 11, =ACCOUS= 11, =ACCOHK= 8, =ACMCOR= 8, because
+each of the 38 party-to-counterparty pairs carries two rows, one for each
+party that sees the other where the pair is intra-group. The distinct
+pair count is 38 exactly as stated, and the distinct counterparties are 23:
+three sister entities, =ACCOHK=, =ACCOUK= and =ACCOUS=, and the 20 banks
+named above. The tenant id quoted at the head of this section,
+=47b4aff4-79e9-4ee9-936f-ee56db971bee=, is stale: the tenant is
+=99f42580-ee0b-48ca-a7bf-d32ba92d273a= after the recreate of 2026-10-15,
+and the counterparty row count is 4904 distinct ids rather than 2454,
+because the ACME LEI import publishes the four group entities into the same
+table. The 38 and the 23 hold; the 2454 and the tenant id do not.
+
+The 38 links come from 39 staged rows in
+=ores_dq_party_counterparties_artefact_tbl=,
+=acme.acme_group.party_counterparties= 8, =acme.acme_uk= 11, =acme.acme_us=
+11, =acme.acme_hk= 9, published one dataset at a time by
+=ores_refdata_publish_party_counterparties_from_dq_fn=. One staged row,
+=2HI3YI5320L3RW6NJ957=, the Hong Kong and Shanghai Banking Corporation, has
+no counterparty row to join to and is dropped by the publish, which is why
+39 rows make 38 links. The sixth sister entity that the seeder's own rule
+implies, the group's LEI as seen from a subsidiary, is also absent for the
+same reason and never reached the staged set.
 
 This is the set a population should face. A trade against a counterparty
 outside it will insert, because nothing checks =party_counterparties=,
@@ -940,11 +966,13 @@ keys.
   =ores_trading_bond_instruments_insert_fn= overwrites the column from
   session state. Generate one party's population in one pass, then the
   next.
-- *Counterparty.* Pick from the 38 links in
+- *Counterparty.* Pick from the links in
   =ores_refdata_party_counterparties_tbl= for the party being written,
-  not from the 2454 counterparties. Nothing checks this, so the generator
+  not from the whole counterparty table. Nothing checks this, so the generator
   must be the check, and the weighting page should carry the per-party
-  list.
+  list. The list is broadened by the task that follows this investigation,
+  from 38 links over 23 counterparties to 916 links over 456, so the page
+  should be built against the widened set rather than the narrow one.
 - *Book and netting set.* Pick the book from the trade's party and the
   netting set from that party and the chosen counterparty, because the
   booking trigger refuses anything else.

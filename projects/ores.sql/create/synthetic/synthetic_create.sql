@@ -47,6 +47,14 @@
 \ir ./synthetic_ir_curve_template_entries_create.sql
 \ir ./synthetic_ir_curve_template_entries_notify_trigger_create.sql
 
+-- Trade generation: the config before the two scope lists that reference it.
+\ir ./synthetic_trade_generation_configs_create.sql
+\ir ./synthetic_trade_generation_configs_notify_trigger_create.sql
+\ir ./synthetic_trade_generation_books_create.sql
+\ir ./synthetic_trade_generation_books_notify_trigger_create.sql
+\ir ./synthetic_trade_generation_counterparties_create.sql
+\ir ./synthetic_trade_generation_counterparties_notify_trigger_create.sql
+
 -- Feed placement
 \ir ./synthetic_feed_placement_create.sql
 

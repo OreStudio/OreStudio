@@ -1637,3 +1637,15 @@ tangled into the runnable script library
 * Report Trigger Types
 
 - [[id:D6C4EBEA-012F-59E6-9CBC-FDC7FDE47B7D][How do I run the report_trigger_types commands from the shell?]]
+
+* Trade Generation Books
+
+- [[id:B8022ED0-4756-530A-A27B-6A042827FC84][How do I run the trade_generation_books commands from the shell?]]
+
+* Trade Generation Configs
+
+- [[id:F387B1AA-B374-5926-AB3E-A604924FFFD7][How do I run the trade_generation_configs commands from the shell?]]
+
+* Trade Generation Counterparties
+
+- [[id:54F7F5A4-AD02-5637-9D98-562E462520EB][How do I run the trade_generation_counterparties commands from the shell?]]

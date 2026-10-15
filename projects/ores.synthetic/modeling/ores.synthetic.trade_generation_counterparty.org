@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 33A902F8-FA25-477E-BF7B-B2E1792AB1F8
+:END:
+#+title: ores.synthetic.trade_generation_counterparty
+#+description: Codegen entity model for the synthetic trade_generation_counterparty table; one counterparty in a trade generation config's counterparty scope.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: trade_generation_counterparty
+#+entity_plural: trade_generation_counterparties
+#+entity_title: Trade Generation Counterparty
+#+brief: One counterparty in a trade generation config's counterparty scope.
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+One counterparty a trade generation config faces. The counterparty scope of
+a configuration is a set, so it is a repeating field set and lives here, one
+row per counterparty, rather than a column on the config.
+
+The row is what makes the population reviewable. A party holds thousands of
+counterparties and only a handful of tradeable links, and a trade against a
+counterparty outside the tradeable set inserts cleanly and is wrong. The
+scope states the intended set, and the generator draws from it rather than
+from the whole counterparty table.
+
+Counterparty-scope rows belong to a parent config through =config_id=, the
+same one-config-many-children shape =gmm_component= uses for its parent
+=fx_spot_generation_config=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this counterparty-scope row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party (legal entity) this row's configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:END:
+
+Parent =trade_generation_config= whose counterparty scope this row
+contributes to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+The counterparty this configuration faces (references
+=ores_refdata_counterparties_tbl.id=). A soft FK resolved by the generator
+rather than by a database trigger, and resolved against the party's
+tradeable links in =ores_refdata_party_counterparties_tbl=, which nothing in
+the schema checks.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_trade_generation_counterparties_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_synthetic_trade_generation_configs_tbl
+:error_message: Invalid config_id: %. No active trade_generation_config found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_generation_counterparty
+:entity_plural_short:   trade_generation_counterparties
+:entity_singular_words: trade generation counterparty
+:entity_plural_words:   trade generation counterparties
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| counterparty_id | Counterparty |
+| modified_by     | Modified By |
+| version         | Version     |
+
+* See also
+
+- [[id:96AB808A-DF49-410F-8A90-D1065A3716AC][ores.synthetic]] — component group overview.
+- [[id:0CD68B09-6EBC-4180-A298-0CC386590F31][Trade Generation Config]] — the configuration this row is a counterparty of.

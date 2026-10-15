@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 2E13AC47-E3F0-4485-AA4D-BC6E9CD1980B
+:END:
+#+title: ores.synthetic.trade_generation_book
+#+description: Codegen entity model for the synthetic trade_generation_book table; one book in a trade generation config's book scope.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: trade_generation_book
+#+entity_plural: trade_generation_books
+#+entity_title: Trade Generation Book
+#+brief: One book in a trade generation config's book scope.
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+One book a trade generation config books into. The book scope of a
+configuration is a set, so it is a repeating field set and lives here, one
+row per book, rather than a column on the config: a party holds up to twenty
+books and the population spreads across them.
+
+The row references a real book of the config's own party. The trade booking
+trigger refuses a book that belongs to another party, so a row naming one
+would write no trade. The generator resolves the reference rather than
+inventing it, and that resolution is what fails loudly when the reference is
+missing.
+
+Book-scope rows belong to a parent config through =config_id=, the same
+one-config-many-children shape =gmm_component= uses for its parent
+=fx_spot_generation_config=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this book-scope row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party (legal entity) this row's configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:END:
+
+Parent =trade_generation_config= whose book scope this row contributes to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** book_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+The book this configuration books into (references
+=ores_refdata_books_tbl.id=). A soft FK resolved by the generator rather
+than by a database trigger: books are a temporal refdata entity in another
+component, and a scope row is configuration rather than a trade.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_trade_generation_books_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_synthetic_trade_generation_configs_tbl
+:error_message: Invalid config_id: %. No active trade_generation_config found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_generation_book
+:entity_plural_short:   trade_generation_books
+:entity_singular_words: trade generation book
+:entity_plural_words:   trade generation books
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: b
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| book_id     | Book        |
+| modified_by | Modified By |
+| version     | Version     |
+
+* See also
+
+- [[id:96AB808A-DF49-410F-8A90-D1065A3716AC][ores.synthetic]] — component group overview.
+- [[id:0CD68B09-6EBC-4180-A298-0CC386590F31][Trade Generation Config]] — the configuration this row is a book of.

@@ -8,7 +8,7 @@
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
 #+branch: feature/ore-export-fidelity-gaps
-#+pr:
+#+pr: 3368
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3368][#3368]] | [ore] Close nine of the fourteen ORE export fidelity gaps |
 
 * Review
 

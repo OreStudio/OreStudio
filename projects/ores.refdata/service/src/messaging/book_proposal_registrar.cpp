@@ -55,7 +55,7 @@ std::vector<ores::nats::service::subscription> book_proposal_registrar::register
         workflow::recheck_counterparty_changes_subject,
         workflow::apply_counterparty_changes_subject};
     const auto step_stream =
-        ores::service::messaging::ensure_step_stream(nats, queue_group, step_subjects);
+        ores::service::messaging::ensure_step_stream(nats, queue_group, step_subjects, "apply");
 
     auto steps = std::make_shared<book_apply_step_handler>(nats, ctx);
     subs.push_back(ores::service::messaging::subscribe_step_command(

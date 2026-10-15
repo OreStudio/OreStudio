@@ -681,7 +681,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_account_contact_informations_from_dq_request::nats_subject,
         };
         const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, qg, publish_subjects);
+            ores::service::messaging::ensure_step_stream(nats, qg, publish_subjects, "from_dq");
         for (const auto subject : publish_subjects) {
             subs.push_back(ores::service::messaging::subscribe_step_command(
                 nats,

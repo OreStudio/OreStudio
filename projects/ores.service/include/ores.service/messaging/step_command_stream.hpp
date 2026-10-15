@@ -55,15 +55,22 @@ inline constexpr int step_stream_max_age_days = 1;
  * that serves those subjects: @c ores.refdata.service becomes
  * @c <prefix>_refdata_steps.
  */
-[[nodiscard]] inline std::string
-step_stream_name(const ores::nats::service::client& nats, std::string_view service_name) {
+[[nodiscard]] inline std::string step_stream_name(const ores::nats::service::client& nats,
+                                                  std::string_view service_name,
+                                                  std::string_view label) {
     constexpr std::string_view ores_prefix = "ores.";
     constexpr std::string_view service_suffix = ".service";
     if (service_name.starts_with(ores_prefix))
         service_name.remove_prefix(ores_prefix.size());
     if (service_name.ends_with(service_suffix))
         service_name.remove_suffix(service_suffix.size());
-    return nats.make_stream_name(std::string(service_name) + "_steps");
+    std::string suffix(service_name);
+    if (!label.empty()) {
+        suffix += '_';
+        suffix += label;
+    }
+    suffix += "_steps";
+    return nats.make_stream_name(suffix);
 }
 
 /**
@@ -101,12 +108,18 @@ step_stream_name(const ores::nats::service::client& nats, std::string_view servi
  * @throws std::runtime_error when the stream cannot be created. The caller
  *         decides whether that is fatal; for a service whose steps are its
  *         work, it is, because no step can then be delivered.
+ * @param label Distinguishes this group of step commands from another the same
+ *        service serves. A service that declares two groups under one name has
+ *        the second wipe the first, because @c ensure_stream replaces a
+ *        stream's subject list rather than widening it. Leave it empty for a
+ *        service with a single group.
  */
 template <typename Range>
 [[nodiscard]] inline std::string ensure_step_stream(ores::nats::service::client& nats,
                                                     std::string_view service_name,
-                                                    const Range& subjects) {
-    const std::string stream = step_stream_name(nats, service_name);
+                                                    const Range& subjects,
+                                                    std::string_view label = {}) {
+    const std::string stream = step_stream_name(nats, service_name, label);
     nats.make_admin().ensure_stream(
         stream, nats.covering_subjects(subjects), step_stream_max_age_days);
     return stream;

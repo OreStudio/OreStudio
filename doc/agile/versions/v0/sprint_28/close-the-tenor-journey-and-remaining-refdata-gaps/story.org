@@ -39,7 +39,7 @@ The tenor resolution journey and the remaining refdata gaps are built: the tenor
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] | STARTED | 2026-10-15 | | Build journey 9 in ores.web from its document and prototype: the tenor list, the tenor, its convention, the schedule, the resolved dates, the review, the refusal and the history.. Journeys 9. |
+| [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] | DONE | 2026-10-15 | 2026-10-15 | Build journey 9 in ores.web from its document and prototype: the tenor list, the tenor, its convention, the schedule, the resolved dates, the review, the refusal and the history.. Journeys 9. |
 | [[id:75FC1047-7339-442F-983C-083DB8BD8C5E][Give the party memberships their versions]] | BACKLOG | | | Serve a versions read for the party_countries and party_currencies junctions, and settle whether the journey's membership history wants that read or the generic history route, which is blocked on a composite id. |
 | [[id:ABEC57F4-A85F-4D0E-83F6-1FC9C7C891AB][Serve the convention family mapping, its term filter and term rules]] | BACKLOG | | | Give the server the family-to-entity mapping, a term filter on the convention lists, an existence check on each term column, and a draft version in the history view. |
 | [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]] | BACKLOG | | | Add the resolve operation journey 9 draws in two places, and the refusal payload its failures should carry instead of a thrown exception reaching the screen as a 500. |
@@ -50,6 +50,21 @@ The tenor resolution journey and the remaining refdata gaps are built: the tenor
 | [[id:8F4FD36A-3EAA-44EA-B424-25ACB382C2D8][Window the party timeline]] | BACKLOG | | | Read a party's history a window at a time with a load-older control, and replace the read for each part row with one read for the party. |
 
 * Decisions
+
+- The tenor resolution screen is its own screen, reached from its own card at
+  =/refdata/tenors=, and not a step inside the instrument-convention journey.
+  Tenors are their own reference-data job.
+- A tenor and the convention that resolves it are one rail, because they are
+  read together and the review draws one difference list over both. The
+  convention is not a second journey.
+- The confirm is a sequence of writes rather than one write, and a refusal names
+  the step that refused and the calls already written. A person has to be able to
+  see what landed.
+- The resolved dates, and a schedule axis expanded into dated rolls, wait on one
+  operation the server does not serve yet: resolving a tenor to a date. Both are
+  carried by [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]].
+- Every word the screen draws comes from the catalogue. The journey's state
+  module names its changes and its problems by key, never in English.
 
 * Out of scope
 

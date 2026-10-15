@@ -26,11 +26,11 @@ A tenant administrator defines how tenors resolve in ores.web, and the screen ma
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | The journey screen is built and the review round is answered. The resolved-dates view waits on the resolve operation. |
-| Waiting on   | The resolve operation, for the resolved dates only. |
-| Next         | Run the local check gate, close the task, and raise the PR. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
@@ -129,8 +129,10 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Main commits taken in by the rebase | 1783 | =git rev-list --count fb9425fd74..origin/main= | 5905c3e919 |
 | Unique lines on the branch | 1360 in 9 files | =git diff --stat origin/main...HEAD= | 5905c3e919 |
-| BFF tests | 771 passed in 66 files | =npm run test --workspace @ores/bff= | 5905c3e919 |
-| Web tests | 1548 passed in 137 files | =npm run test --workspace @ores/web= | 94cc92e25b |
+| BFF tests | 771 passed in 66 files | =npm run test --workspace @ores/bff= | a31630ea67 |
+| Web tests | 1550 passed in 137 files | =npm run test --workspace @ores/web= | a31630ea67 |
+| Local check gate | 7 of 7 passed | =./compass.sh check= | a31630ea67 |
+| Release build | 7402 targets, exit 0 | =./compass.sh build= | 94cc92e25b |
 
 * Notes
 
@@ -193,3 +195,20 @@ Round one, local review, 2026-10-15.
 
 
 * Result
+
+Complete. Journey 9 is built in =ores.web=: a seven-step rail — choose, tenor,
+convention, schedule, review, outcome, history — reached from its own card,
+=Define how tenors resolve=, at =/refdata/tenors=.
+
+The confirm is a sequence of writes. It writes the tenor, then the convention,
+then each membership link and unlink, and a refusal names the step that refused
+and the calls already written, so a person can see what landed.
+
+Two parts of the prototype are not met, for one reason: the server serves no
+operation that resolves a tenor to a date, so neither the resolved dates nor a
+schedule axis expanded into dated rolls can be drawn. Both belong to
+[[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]].
+
+The gate is green: 1550 web tests and 771 BFF tests pass, and =./compass.sh
+check= is 7 of 7 on the release-ninja preset.
+

@@ -15,26 +15,28 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Rework the credit trade types and the risk participation agreement to the instrument table rule: a family header holding exactly its codes, product fact tables keyed by the trade, shared children with role codes, and securities keyed by their reference datum.
+Rework the credit trade types and the risk participation agreement to the instrument table rule of the trade shape investigation (section 14), as the bonds were reworked, with the data-oriented review deciding the tables.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE |
+| State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Nothing. |
-| Waiting on    | Nothing. |
-| Next          | Nothing. |
-| Last touched  | 2026-10-13 |
+| Now           | Nothing. Eight units are merged here; the ninth, which proves the corpus, is [[id:6A48161C-53AE-4F60-A7C4-8649C3653414][Sprint 28]]. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-13                               |
 
 * Acceptance
 
 - The family header's trade_type check lists exactly the family's codes, and each product fact table checks its own.
 - Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key.
-- The family's trade types route through the trade-type catalogue, and the two importer-less codes leave the routing.
-- The credit round trip and the risk participation agreement round trip are lossless, and a money value is stored and exported as the digits the document wrote.
-- The credit family's dates are mapped into the blotter's common-date view, and the family's tables have a generated eventing integration test.
+- The family's trade types route to their tables through the trade-type catalogue, not hand-written code.
+- The ORE round trip stays lossless across the family's corpus, and a money value is stored and exported as the digits the document wrote.
+- The credit family's dates are mapped into the blotter's common-date view.
+- The family's tables have a generated eventing integration test.
+- =RiskParticipationAgreement= routes, imports and exports through the credit family, with no table left that nothing writes.
 
 * Tasks
 
@@ -62,9 +64,15 @@ Distilled from =design.org=, which carries the argument and the evidence.
   the first.
 - *The two codes with no importer leave the routing.* The catalogue rule is
   that a type with no writer has no table.
-- *The agreement's facts get a table of their own.* Its participation rate
-  and protection fee are required by the schema and belong to no other
-  product.
+- *The agreement's facts get a table of their own.* Its participation rate is
+  required by the schema and belongs to no other product. Its protection fee is
+  a list of legs and its underlying holds legs and an option block, so those are
+  rows of the shared leg and option tables, told apart by =leg_group=.
+- *A trade holds one option block.* The agreement has no option of its own and
+  the index option has no underlying, so no group or role column is needed on
+  the option table.
+- *A column lands when a mapper writes it.* The fact tables began with the
+  columns the mappers wrote and grew with their writers.
 - *Every money column is an exact decimal, and a continuous quantity is a
   binary float.* A float column stores an artifact of a money value. The
   recovery rate, the tranche points and the participation rate are continuous

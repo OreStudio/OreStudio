@@ -94,6 +94,26 @@ Each of these cost a round in the rates or credit work.
 - *A pinned bug.* A test that expects the float artifact keeps the bug alive. Correct it when you fix the member.
 - *A claim without a command.* A number in a design or a Result has its command and commit in Measurements, or it is not a measurement.
 
+- *A design column the binding does not hold.* The credit design gave the
+  agreement a money column for its protection fee, and the binding showed a list
+  of legs. Read the type of every ORE member before you copy a design column,
+  and split a unit when the binding disagrees with the design.
+- *A column with no writer.* A fact column lands with the mapper that writes it.
+  A column added early is cold data that nothing reads, and the next unit has to
+  explain it.
+- *A pinned gap fails when you fix it.* A test that lists the documents the
+  export cannot re-read fails when a unit fixes one. Remove the name from the
+  list and from the backlog capture in the same commit.
+- *A proof that passes first time.* Give it a control: each trade must render a
+  header row and a leg row, and a changed stored field must change the rendering.
+- *A shared mapper change reaches other families.* A cashflow leg changed the
+  rates export too. Run the rates suites, and say so in the task.
+- *A trailer in a quoted heredoc.* A quoted heredoc does not expand a variable,
+  so a commit trailer holds the text of the variable. Write the id out, or record
+  it in a follow-up commit, because commits are never amended.
+- *A stale database after a merge.* A merge from main can add a column. When a
+  suite fails on a missing column, recreate the database before you debug.
+
 * Postconditions
 
 - The family has a header, product fact tables and shared children, generated from models.

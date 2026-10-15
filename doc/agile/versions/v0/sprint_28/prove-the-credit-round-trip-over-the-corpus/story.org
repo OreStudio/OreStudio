@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-13
-#+updated: 2026-10-13
-#+environment:
+#+updated: 2026-10-15
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,11 +21,11 @@ Run the ORE round trip over the credit corpus at the new shape and prove that ev
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-13                               |
 
 * Acceptance
@@ -36,10 +36,33 @@ Run the ORE round trip over the credit corpus at the new shape and prove that ev
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0B4B0C19-93BE-44BB-AA8A-25DD1A3D3143][Prove the credit round trip over the corpus]] | BACKLOG | | | Run the ORE round trip over the credit corpus at the new shape: each trade imported, exported alone and imported again must give the same family rows. The last unit; it proves a shape the other units settle. (Staging unit 9.) |
+| [[id:0B4B0C19-93BE-44BB-AA8A-25DD1A3D3143][Prove the credit round trip over the corpus]] | DONE | | 2026-10-15 | Run the ORE round trip over the credit corpus at the new shape: each trade imported, exported alone and imported again must give the same family rows. The last unit; it proves a shape the other units settle. (Staging unit 9.) |
 
 * Decisions
 
+- *The proof compares the family rows of two imports, not the document
+  text.* A spelling the table does not keep, such as =false= for a flag, is
+  not a difference.
+- *The set of known differences is empty and fails in both directions.* A
+  name that differs fails the suite, and a name listed that stops differing
+  fails it too. An empty set is therefore a live claim, not a silence.
+- *The proof carries a control.* The round trip passed on its first run, so
+  each trade must render a header row and a leg row, and a control changes
+  the recovery rate of a credit default swap and expects the rendering to
+  change.
+
 * Out of scope
 
--
+- The treasury lock of an agreement's underlying, which the credit corpus
+  does not hold.
+
+* Result
+
+Every credit trade of =Example_Trades= comes back as the same family rows. The
+proof walks eight documents with eight trades, pins both counts, and keeps a
+closed set of known differences that is empty. A control shows that a changed
+stored field changes the rendering, and each trade must hold a header row and a
+leg row.
+
+Acceptance met: the corpus test pins eight documents and eight trades, and the
+set of known differences is empty.

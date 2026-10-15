@@ -8,7 +8,7 @@
 #+filetags: :trigger_a_report_run_on_demand_or_on_a_schedule:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr: 3324
+#+pr: 3326
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3326][#3326]] | [agile] Close the task that guards the trigger contract |
 | [[https://github.com/OreStudio/OreStudio/pull/3324][#3324]] | [scheduler] Guard the report trigger contract against silent drops |
 
 * Review

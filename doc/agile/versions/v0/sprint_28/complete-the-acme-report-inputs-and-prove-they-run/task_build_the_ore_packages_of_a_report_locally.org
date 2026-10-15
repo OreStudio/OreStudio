@@ -8,7 +8,7 @@
 #+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
-#+pr: 3335
+#+pr: 3344
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3344][#3344]] | [trading] Bump the trade's version from every bond part write |
 | [[https://github.com/OreStudio/OreStudio/pull/3335][#3335]] | [agile] Scaffold the ACME trade population story |
 | [[https://github.com/OreStudio/OreStudio/pull/3330][#3330]] | [agile] Close the trigger story |
 | [[https://github.com/OreStudio/OreStudio/pull/3322][#3322]] | [agile] Raise the two mop-up tasks for the trigger story |

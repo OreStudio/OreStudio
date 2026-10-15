@@ -132,6 +132,7 @@ const newPartyJourney = <p>New party journey</p>;
 const counterpartyJourney = <p>Counterparty onboarding</p>;
 const bookStructureJourney = <p>Book structure</p>;
 const conventionJourney = <p>Instrument conventions</p>;
+const tenorJourney = <p>Tenor resolution</p>;
 const signUpJourney = <p>Registration door</p>;
 
 function render(
@@ -176,6 +177,7 @@ function render(
                         counterpartyJourney={counterpartyJourney}
                         bookStructureJourney={bookStructureJourney}
                         conventionJourney={conventionJourney}
+                        tenorJourney={tenorJourney}
                         signUpJourney={signUpJourney}
                         journeyInProgress={false}
                         onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}

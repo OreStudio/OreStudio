@@ -43,6 +43,8 @@ import { CounterpartyJourney } from './journeys/CounterpartyJourney.js';
 import { useCounterpartyServer } from './journeys/counterpartyServer.js';
 import { ConventionJourney } from './journeys/ConventionJourney.js';
 import { useConventionsServer } from './journeys/conventionsServer.js';
+import { TenorJourney } from './journeys/TenorJourney.js';
+import { useTenorsServer } from './journeys/tenorsServer.js';
 import { BookStructureJourney } from './journeys/BookStructureJourney.js';
 import { useBooksServer } from './journeys/booksServer.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
@@ -189,6 +191,11 @@ export interface AppRoutesProps {
      */
     readonly conventionJourney: ReactNode;
     /**
+     * The tenor resolution screen, which a person who maintains reference data
+     * runs to author the tenors and the conventions that resolve them.
+     */
+    readonly tenorJourney: ReactNode;
+    /**
      * The registration door, which a visitor with no account runs.
      *
      * It is a route rather than a gate for the same reason the other two are:
@@ -232,6 +239,7 @@ export function AppRoutes({
     counterpartyJourney,
     bookStructureJourney,
     conventionJourney,
+    tenorJourney,
     signUpJourney,
     journeyInProgress,
     self,
@@ -1033,6 +1041,12 @@ export function AppRoutes({
                     <CardScreen card="conventions">{conventionJourney}</CardScreen>
                 ))}
             />
+            <Route
+                path={PATHS.tenors}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="tenors">{tenorJourney}</CardScreen>
+                ))}
+            />
             {MOVED.map(([from, to]) => (
                 <Route key={from} path={from} element={<Moved to={to} />} />
             ))}
@@ -1059,6 +1073,7 @@ export function ConnectedApp(): ReactNode {
     const counterpartyServer = useCounterpartyServer();
     const booksServer = useBooksServer();
     const conventionsServer = useConventionsServer();
+    const tenorsServer = useTenorsServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
     const username = session.status === 'authenticated' ? session.session.username : '';
@@ -1224,6 +1239,9 @@ export function ConnectedApp(): ReactNode {
                             server={conventionsServer}
                             onFinished={() => navigate('/')}
                         />
+                    }
+                    tenorJourney={
+                        <TenorJourney server={tenorsServer} onFinished={() => navigate('/')} />
                     }
                     journeyInProgress={journeyInProgress}
                     onSignIn={signIn}

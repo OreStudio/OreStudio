@@ -28,9 +28,9 @@ A tenant administrator defines how tenors resolve in ores.web, and the screen ma
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | The BFF routes and the web data layer are in place; the journey screen is not built. |
-| Waiting on   | Nothing.                               |
-| Next         | Build the journey screen, its steps and their tests. |
+| Now          | The journey screen is built; the resolved-dates view waits on the resolve operation. |
+| Waiting on   | The resolve operation, for the resolved dates only. |
+| Next         | Run the local check gate, review the change, and raise the PR. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
@@ -66,6 +66,27 @@ The tenor journey has the state file alone. The remaining work is:
 The journeys it draws from are the list, the tenor, its convention, the
 schedule, the resolved dates, the review, the refusal and the history.
 
+* Built, 2026-10-15
+
+All four steps above are done. The screen is a six-step rail — choose, tenor,
+convention, review, outcome, history — and the convention is the second half of
+the same rail rather than a journey of its own, because a tenor and the rule
+that resolves it are read together and the review draws one difference list over
+both.
+
+Two decisions worth carrying to the story:
+
+- The screen is reached from its own card, =Define how tenors resolve=, at
+  =/refdata/tenors=, beside the instrument-convention card. Tenors are their own
+  reference-data job, not a step inside the convention journey.
+- The resolved-dates view is not drawn. The server serves no operation that
+  resolves a tenor to a date; the BFF says so in =tenors.ts= and the state
+  machine says so in =tenorsState.ts=. That view belongs to the sibling task
+  =Resolve a tenor over the wire, with the refusal it carries=.
+
+Tests: 20 on the state machine, 8 on the steps, 1 on the page.
+
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -81,7 +102,7 @@ task and name that file in the Command column.
 | Main commits taken in by the rebase | 1783 | =git rev-list --count fb9425fd74..origin/main= | 5905c3e919 |
 | Unique lines on the branch | 1360 in 9 files | =git diff --stat origin/main...HEAD= | 5905c3e919 |
 | BFF tests | 771 passed in 66 files | =npm run test --workspace @ores/bff= | 5905c3e919 |
-| Web tests | 1518 passed in 134 files | =npm run test --workspace @ores/web= | 5905c3e919 |
+| Web tests | 1548 passed in 137 files | =npm run test --workspace @ores/web= | 94cc92e25b |
 
 * Notes
 

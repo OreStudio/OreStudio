@@ -1,0 +1,195 @@
+create or replace function ores_iam_publish_accounts_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_target_party_id uuid;
+    v_target_hostname text;
+    v_inserted bigint := 0;
+    v_skipped bigint := 0;
+    r record;
+    v_account_id uuid;
+begin
+    -- This publish replaces whatever is there: the artefact is the source of
+    -- truth for the dataset it publishes. It states that once, here, rather
+    -- than leaving every version at zero and relying on the store to read a
+    -- zero as "do not check".
+    perform ores_utility_allow_version_replace_fn();
+
+    v_target_party_id := (p_params ->> 'party_id')::uuid;
+    if v_target_party_id is null then
+        raise exception 'ores_iam_publish_accounts_from_dq_fn requires params.party_id';
+    end if;
+
+    -- The tenant the accounts land in supplies the domain of their sign-in
+    -- addresses, so a tenant keeps one spelling of an address whatever the
+    -- source dataset called the company. The hostname is the name the sign-in
+    -- path resolves the tenant by, so the address names the tenant the same
+    -- way the principal does.
+    select hostname into v_target_hostname
+    from ores_iam_tenants_tbl
+    where id = p_target_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_target_hostname is null then
+        raise exception 'ores_iam_publish_accounts_from_dq_fn: no active tenant %',
+            p_target_tenant_id;
+    end if;
+
+    for r in
+        select * from ores_dq_accounts_artefact_tbl
+        where dataset_id = p_dataset_id
+    loop
+        if exists (
+            select 1 from ores_iam_accounts_tbl
+            where tenant_id = p_target_tenant_id
+              and username = r.username
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        v_account_id := gen_random_uuid();
+
+        insert into ores_iam_accounts_tbl (
+            id, tenant_id, version, account_type, username, full_name, email,
+            job_title, picture_code, modified_by, performed_by,
+            change_reason_code, change_commentary, valid_from, valid_to
+        ) values (
+            v_account_id, p_target_tenant_id, 0, r.account_type, r.username, r.full_name,
+            case
+                when position('@' in r.email) > 0
+                    then split_part(r.email, '@', 1) || '@' || v_target_hostname
+                else r.username || '@' || v_target_hostname
+            end,
+            r.job_title, nullif(r.photo_key, ''),
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Published from organisation dataset',
+            current_timestamp, ores_utility_infinity_timestamp_fn()
+        );
+
+        -- The staged hash is the one credential the import carries, and it
+        -- belongs in the account's credential row rather than on the account.
+        insert into ores_iam_account_credentials_tbl (
+            id, tenant_id, version, account_id, password_hash,
+            modified_by, performed_by, change_reason_code, change_commentary,
+            valid_from, valid_to
+        ) values (
+            gen_random_uuid(), p_target_tenant_id, 0, v_account_id, r.password_hash,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Published from organisation dataset',
+            current_timestamp, ores_utility_infinity_timestamp_fn()
+        );
+
+        insert into ores_iam_account_parties_tbl (
+            account_id, tenant_id, party_id, version,
+            modified_by, performed_by, change_reason_code, change_commentary,
+            valid_from, valid_to
+        ) values (
+            v_account_id, p_target_tenant_id, v_target_party_id, 0,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Published from organisation dataset',
+            current_timestamp, ores_utility_infinity_timestamp_fn()
+        );
+
+        -- account_operations_service::login() requires a row here (see
+        -- ores_iam_system_provisioner_create.sql for the same pattern on
+        -- super_admin/tenant_admin) -- without it, password login throws
+        -- "Login tracking information missing" for every bulk-created
+        -- account.
+        insert into ores_iam_login_info_tbl (
+            account_id, last_ip, last_attempt_ip,
+            failed_logins, locked, last_login, online
+        ) values (
+            v_account_id, '0.0.0.0', '0.0.0.0',
+            0, false, '1970-01-01 00:00:00+00', false
+        )
+        on conflict (account_id) do nothing;
+
+        -- Best-effort role assignment by exact role name; a role that
+        -- doesn't exist in this tenant's RBAC set is silently skipped
+        -- rather than blocking account creation.
+        if r.role is not null then
+            -- A version of 0 states no earlier version to match: the trigger numbers the row.
+            insert into ores_iam_account_roles_tbl (
+                tenant_id, account_id, role_id, version, modified_by, performed_by,
+                change_reason_code, change_commentary, valid_from, valid_to
+            )
+            select p_target_tenant_id, v_account_id, rl.id, 0, current_user, current_user,
+                   'system.external_data_import', 'Published from organisation dataset',
+                   current_timestamp, ores_utility_infinity_timestamp_fn()
+            from ores_iam_roles_tbl rl
+            where rl.tenant_id = p_target_tenant_id
+              and rl.name = r.role
+              and rl.valid_to = ores_utility_infinity_timestamp_fn();
+        end if;
+
+        v_inserted := v_inserted + 1;
+    end loop;
+
+    -- Second pass: resolve reports_to_username to reports_to_account_id.
+    -- Needs its own pass rather than resolving inline above -- the target
+    -- manager account may be defined earlier in this same artefact set
+    -- (e.g. a Desk Head row before the Traders who report to them), but
+    -- generation/publish order isn't guaranteed to put every manager
+    -- ahead of every report, so every account is fully published first,
+    -- then every reporting line is wired up against the now-complete set.
+    -- A manager row account's own version gets bumped by re-inserting it
+    -- (temporal versioning is insert-only -- see
+    -- ores_iam_accounts_touch_version_fn for the same pattern).
+    for r in
+        select a.dataset_id, a.reports_to_username, a.username
+        from ores_dq_accounts_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+          and a.reports_to_username is not null
+    loop
+        declare
+            rec ores_iam_accounts_tbl%rowtype;
+            v_manager_id uuid;
+        begin
+            select id into v_manager_id
+            from ores_iam_accounts_tbl
+            where tenant_id = p_target_tenant_id
+              and username = r.reports_to_username
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if v_manager_id is null then
+                continue;
+            end if;
+
+            select * into rec
+            from ores_iam_accounts_tbl
+            where tenant_id = p_target_tenant_id
+              and username = r.username
+              and valid_to = ores_utility_infinity_timestamp_fn()
+            for update;
+
+            if not found or rec.reports_to_account_id = v_manager_id then
+                continue;
+            end if;
+
+            rec.version := 0;
+            rec.reports_to_account_id := v_manager_id;
+            rec.modified_by := coalesce(ores_iam_current_service_fn(), current_user);
+            rec.performed_by := current_user;
+            rec.change_reason_code := 'system.external_data_import';
+            rec.change_commentary := 'Reporting line wired from organisation dataset';
+
+            insert into ores_iam_accounts_tbl select (rec).*;
+        end;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

@@ -27,8 +27,8 @@ The investigation this story commissioned is
 | State         | BACKLOG                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Two tasks are done. The remainder cannot be proved end to end. |
-| Waiting on    | Most workflow step subjects have no stream and no consumer, so a fresh provision publishes the tenant setup steps and never runs them. The fix, =4dfacbef59=, sits on =origin/feature/audit-the-nats-call-sites= and is not merged. |
-| Next          | Merge the step-command stream fix, then re-run the provisioning proof for the tasks that need it. |
+| Waiting on    | The step-command stream mechanism covers each service's publish-from-DQ steps only. An execution workflow's operational steps have no stream, so ore build-packages starts an instance that never finishes. Task: stream the workflow execution step subjects. |
+| Next          | Stream the execution step subjects, then re-run the package proof. |
 | Last touched  | 2026-10-15                               |
 
 * Acceptance
@@ -56,6 +56,9 @@ The investigation this story commissioned is
 | [[id:DEA0A754-9D39-41B7-8194-DD068C37B179][File the ACME trade population analysis as an investigation]] | DONE | | 2026-10-15 | The analysis under doc/analysis was written at the wrong level, so it is the story's record and belongs beside the story. Scaffold it as an investigation, move the content into the six required sections, and delete the analysis. |
 | [[id:C0ECCF7D-1D5C-4367-9C6E-A9A062BA4F89][Give the as-of read microsecond precision]] | BACKLOG | | | datetime::to_db_string formats to the second while parts written in one transaction land microseconds apart, so a bound taken from one version row can fall inside its neighbour's window. The composite versioning test widens each bound by a second to compensate, which is a test hiding a defect rather than proving the code. |
 | [[id:37A9FCA1-EB22-4DAB-9B6E-FA58F4CB01F6][Stop the infinity sentinel losing its value through a time_point]] | BACKLOG | | | datetime::from_iso8601_utc("9999-12-31 23:59:59+00") round-trips to 1816-03-30. The infinity sentinel marks the current row everywhere, so any code that round-trips it through a time_point silently produces 1816. Establish whether this is confined to the as-of read or is a general fault. |
+| [[id:CE31D1C2-95B0-4F8C-BA7B-3DA99E938DCE][Stream the workflow execution step subjects]] | BACKLOG | | | The step-command stream mechanism covers each service's publish-from-DQ steps only. The operational steps an execution workflow dispatches have no stream, so js_publish times out and the workflow never starts. Reporting declares its two publish subjects and omits reporting.v1.ops.gather_market_data, and ore and compute declare none at all. |
+| [[id:43641A03-D2F3-4156-8DF7-CAEB08F2DA83][Make a stream overlap visible rather than fatal]] | BACKLOG | | | ensure_stream treats JSStreamSubjectOverlapErr as fatal, so one stale stream that claims a subject a service now wants stops that service booting and takes the whole fleet target down. The only diagnostic is one ERROR line. A stale stream should be reported and reconciled, not an environment-wide outage. |
+| [[id:B14B058D-6EBF-453B-90A5-F635B4E253D4][Make the environment reset clear the broker]] | BACKLOG | | | compass db recreate is the clean-slate reset everyone reaches for, and it leaves JetStream untouched. compass nats purge is the command that clears it, and it matches only streams whose names start with the lowercase environment prefix, so a hand-made stream is invisible to it. Ten streams and 398 messages survived a recreate. |
 
 * Decisions
 

@@ -8,7 +8,7 @@
 #+filetags: :overlay_the_libarchive_port_to_silence_its_unused_variable:sprint_28:v0:
 #+owner: marco
 #+branch: feature/overlay-the-libarchive-port-to-silence-its-unused-variable
-#+pr:
+#+pr: 3370
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3370][#3370]] | [cmake] Overlay the libarchive port to list its unused variable |
 
 * Review
 

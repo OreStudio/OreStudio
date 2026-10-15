@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 26B22F6B-2734-4849-A2A4-6EC12B6A7CC0
+:END:
+#+title: Task: File the credit loose ends
+#+description: Move the three credit gaps out of the product backlog and into this story as its tasks, preserving each capture's UUID.
+#+type: task
+#+level: s1
+#+filetags: :close-the-credit-loose-ends:sprint_28:v0:
+#+owner: marco
+#+branch: feature/close-the-credit-loose-ends
+#+pr: 3364
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The three credit gaps are tracked work with owners and acceptance criteria,
+instead of three captures that no sprint carries.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- Each of the three captures is a BACKLOG task on this story, with its UUID unchanged, and the bucket index no longer lists it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3364][#3364]] | [agile] File the credit loose ends into a story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The three captures are the story's tasks. Promotion kept each UUID, so every
+existing =id:= link still resolves, and the =inbox= and =next= indexes no longer
+list them. The story sits in Sprint 28 as BACKLOG, with the three tasks in the
+same state.

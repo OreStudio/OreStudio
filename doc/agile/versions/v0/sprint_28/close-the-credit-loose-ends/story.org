@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 78265FE0-5B33-4285-B7CB-03081CF07A06
+:END:
+#+title: Story: Close the credit loose ends
+#+description: The three gaps the credit rework left open: the ORE export drops a required element from 17 example documents, the IMM_ROLL algorithm behind the credit and CDS tenor convention throws, and the netting sets wait for a credit-limit entity.
+#+type: story
+#+level: s2
+#+filetags: :credit:trading:ore:tenor:refdata:netting:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Close the three gaps the credit rework left open. The ORE export keeps every
+child element a document requires, so the corpus round trip reads back what it
+wrote. The credit and CDS tenor convention resolves on the IMM roll schedule
+instead of throwing. A netting set is keyed by the credit limit its analysis
+names.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the first task.                  |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- The directory round trip over =external/ore/examples/Products/Example_Trades= re-reads every document it writes. The seventeen documents that drop a required child element today, across Commodity, Credit, FX worst-of and Exotic, stop dropping it.
+- =resolve_end_date()= resolves an =IMM_ROLL= convention from its roll schedule, and the CDS =tenor_convention_resolution= rows carry the roll-quarter count of each nominal tenor.
+- A netting set carries the credit limit that its identity names.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:67277DBB-5ABD-4C36-934B-E97144E8910B][ORE export drops required elements from 17 example documents]] | BACKLOG | | | The directory round trip over external/ore/examples/Products/Example_Trades writes all 132 documents but 17 of them do not re-read: the export drops a required child element (LegData, Quantity, InitialPrice, BarrierData, RangeBound or StrikePrice). The affected products are Commodity, Credit, FX worst-of and Exotic. A test now catches this; this capture tracks the fix. |
+| [[id:7746D493-C42B-441B-93C9-765A4EC768D6][Implement IMM_ROLL tenor resolution for credit/CDS conventions]] | BACKLOG | | | The tenor_convention.resolution_algorithm=IMM_ROLL branch and CREDIT_CDS_IMM convention are modeled and seeded, but resolve_end_date() throws std::logic_error for it -- the actual roll-schedule stepping algorithm, and the CDS tenor_convention_resolution rows (roll-quarter counts per nominal tenor), are not implemented. |
+| [[id:23379DE2-8C3E-4CE6-AE7F-D13748E643E3][Key netting sets by their credit limit]] | BACKLOG | | | The netting sets analysis names the credit limit as part of a set's identity, but no credit limit entity exists, so netting_set leaves it out. |
+| [[id:26B22F6B-2734-4849-A2A4-6EC12B6A7CC0][File the credit loose ends]] | DONE | | 2026-10-15 | Move the three credit gaps out of the product backlog and into this story as its tasks, preserving each capture's UUID. |
+
+* Decisions
+
+* Out of scope
+
+- The deliberate scope cuts of the credit instrument rework: the =CBO= product,
+  a =CreditDefaultSwapOption= importer, and the treasury-lock underlying of a
+  risk participation agreement. They are not loose ends of that rework; they
+  were ruled out of it, and they need their own story.

@@ -8,7 +8,7 @@
 #+filetags: :restore_the_gcc_release_linux_build:sprint_28:v0:
 #+owner: marco
 #+branch: feature/restore-the-gcc-release-linux-build
-#+pr:
+#+pr: 3333
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3333][#3333]] | [ci] Restore the linux gcc release build |
 
 * Review
 

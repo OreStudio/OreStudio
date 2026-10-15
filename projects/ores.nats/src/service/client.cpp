@@ -809,15 +809,23 @@ void client::js_publish(std::string_view subject,
 namespace {
 
 /**
- * @brief Delete a durable whose stored filter is not the one asked for.
+ * @brief Delete a durable whose stored configuration is not the one asked for.
  *
  * A durable is identified by its name, and JetStream refuses to attach one
- * whose stored filter differs from the filter the code now asks for. A subject
- * rename leaves exactly that: @c ensure_stream reconciles the *stream*, so the
- * stream carries the new filter and everything looks right, while the consumer
- * keeps the old one and the service never starts. Compare the stored filter and
- * delete the consumer when it differs; the subscribe recreates it against the
- * current filter.
+ * whose stored configuration differs from what the code now asks for. Two
+ * changes leave exactly that:
+ *
+ * - A subject rename: @c ensure_stream reconciles the *stream*, so the stream
+ *   carries the new filter and everything looks right, while the consumer
+ *   keeps the old one and the service never starts.
+ * - A change to the acknowledgement settings, such as the delivery bound or the
+ *   ack policy. The consumer keeps what it was created with, and the subscribe
+ *   that asks for the new value fails.
+ *
+ * Both fail the service's start with the same bare message, so compare every
+ * setting this code asks for and delete the consumer when any differs; the
+ * subscribe recreates it against the current ones. A consumer whose
+ * configuration is stale has no position worth keeping anyway.
  *
  * A consumer that is absent, or that cannot be read, is left alone: the
  * subscribe that follows reports the real reason.
@@ -825,7 +833,8 @@ namespace {
 void reconcile_durable(jsCtx* js,
                        const std::string& stream,
                        const std::string& durable,
-                       const std::string& subject) {
+                       const std::string& subject,
+                       int max_deliver) {
     jsOptions opts;
     jsOptions_Init(&opts);
     auto jerr = jsErrCode(0);
@@ -841,13 +850,20 @@ void reconcile_durable(jsCtx* js,
         return;
     }
 
-    // Copied before the destroy: FilterSubject is owned by the consumer info,
-    // so the log lines below would otherwise read freed memory.
+    // All copied before the destroy: these fields are owned by the consumer
+    // info, so the log lines below would otherwise read freed memory.
     const char* filter = existing->Config != nullptr ? existing->Config->FilterSubject : nullptr;
     const std::string stored(filter != nullptr ? filter : "");
-    const bool differs = stored.empty() || subject != stored;
+    const jsAckPolicy stored_ack =
+        existing->Config != nullptr ? existing->Config->AckPolicy : js_AckNone;
+    const int64_t stored_max_deliver =
+        existing->Config != nullptr ? existing->Config->MaxDeliver : 0;
     jsConsumerInfo_Destroy(existing);
-    if (!differs)
+
+    const bool stale_filter = stored.empty() || subject != stored;
+    const bool stale_ack = stored_ack != js_AckExplicit;
+    const bool stale_bound = stored_max_deliver != static_cast<int64_t>(max_deliver);
+    if (!stale_filter && !stale_ack && !stale_bound)
         return;
 
     jsOptions del_opts;
@@ -856,13 +872,17 @@ void reconcile_durable(jsCtx* js,
     const natsStatus ds = js_DeleteConsumer(js, stream.c_str(), durable.c_str(), &del_opts, &jerr);
     if (ds != NATS_OK) {
         BOOST_LOG_SEV(lg(), warn) << "NATS durable '" << durable << "' on '" << stream
-                                  << "' holds the stale filter '" << stored
-                                  << "' and could not be deleted: " << natsStatus_GetText(ds);
+                                  << "' holds a stale configuration (filter '" << stored
+                                  << "', ack " << static_cast<int>(stored_ack) << ", max-deliver "
+                                  << stored_max_deliver
+                                  << ") and could not be deleted: " << natsStatus_GetText(ds);
         return;
     }
     BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
-                              << "' held the stale filter '" << stored << "'; recreated on '"
-                              << subject << "'";
+                              << "' held a stale configuration (filter '" << stored << "', ack "
+                              << static_cast<int>(stored_ack) << ", max-deliver "
+                              << stored_max_deliver << "); recreated on '" << subject
+                              << "' with max-deliver " << max_deliver;
 }
 
 }
@@ -887,7 +907,7 @@ subscription client::js_queue_subscribe(std::string_view subject,
                               << ", max-deliver: " << max_deliver << ")";
 
     if (!stream_name.empty())
-        reconcile_durable(impl_->js, std::string(stream_name), durable_str, subj_str);
+        reconcile_durable(impl_->js, std::string(stream_name), durable_str, subj_str, max_deliver);
 
     jsSubOptions sub_opts;
     jsSubOptions_Init(&sub_opts);

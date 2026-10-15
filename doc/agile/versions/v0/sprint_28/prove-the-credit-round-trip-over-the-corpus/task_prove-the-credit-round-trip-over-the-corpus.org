@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-13
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6A48161C-53AE-4F60-A7C4-8649C3653414][Prove the credit round trip over the corpus]] story. It captures the goal, current status, acceptance, and any notes or results.

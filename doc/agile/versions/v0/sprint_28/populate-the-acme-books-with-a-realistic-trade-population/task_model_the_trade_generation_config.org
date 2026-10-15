@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/model-the-trade-generation-config
-#+pr:
+#+pr: 3362
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -191,7 +191,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3362][#3362]] | [synthetic] Model the trade generation config |
 
 * Review
 

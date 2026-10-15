@@ -244,6 +244,12 @@ jobs:
 
       - name: Run CTest workflow
         id: ctest
+        # The job limit is 360 minutes, and this is the heaviest configuration
+        # the repository builds: debug with coverage and memcheck. Uncapped, it
+        # ran to exactly 6h0m0s and was killed, leaving the cache steps below
+        # roughly thirty seconds, which cannot upload a compiler cache. Cap it
+        # as continuous-linux.yml does and leave the rest of the job to them.
+        timeout-minutes: 320
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
           export CTEST_PARALLEL_LEVEL=$(nproc)

@@ -21,12 +21,18 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace ores::scheduler::service {
 
@@ -46,25 +52,59 @@ struct nats_publish_payload {
     std::optional<std::string> tenant_id;
 };
 
-// The body published to the subject on each firing.
-//
-// Its field order and types are the reporting operation's
-// trigger_report_instance_request: the definition, the tenant, the run, then
-// the kind. A report trigger and its receiver are two ends of one contract,
-// and the codec is positional, so the order is the contract -- a field the
-// receiver declares and this does not send fails the whole decode, not just
-// that field, and the run the firing asked for is never admitted.
-//
-// The scheduler cannot depend on the reporting API to have this checked where
-// the type is defined, so the contract is pinned from the receiving end:
-// ores.reporting.core.tests states this shape and reads it back as the
-// reporting request type.
+// The body published to the subject on each firing, in the field order
+// reporting's trigger_report_instance_request declares. The codec is positional,
+// so a field the receiver declares and this does not send fails the whole
+// decode rather than that field alone, and the run the firing asked for is never
+// admitted. Nothing here states that order: the guard is a reporting test that
+// decodes the bytes this handler publishes as the production request type, so a
+// field added to the contract breaks it.
 struct nats_trigger_body {
-    std::string report_definition_id;
-    std::string tenant_id;
+    boost::uuids::uuid report_definition_id;
+    boost::uuids::uuid tenant_id;
     std::int64_t job_instance_id = 0;
     std::string kind;
 };
+
+boost::uuids::uuid parse_uuid(const std::string& value, const std::string& what) {
+    try {
+        return boost::uuids::string_generator()(value);
+    } catch (const std::exception&) {
+        throw std::invalid_argument("action_payload names '" + value + "' as " + what +
+                                    ", which is not an identifier");
+    }
+}
+
+// Why the answering operation refused the request, or empty when it did not.
+//
+// Every operation answers with a result naming an outcome, and a refusal of the
+// trigger itself is a failed outcome in the body rather than an envelope error.
+// The subject and the response type are the action_payload's business, so this
+// reads the common result and not the response. An answer it cannot read counts
+// as a refusal: a firing nobody can account for is what the job record is for.
+struct reply_result {
+    ores::utility::domain::outcome outcome = ores::utility::domain::outcome::ok;
+    std::string code;
+    std::string message;
+};
+
+struct reply_body {
+    reply_result result;
+};
+
+std::string refusal_in_reply(const std::vector<std::byte>& body) {
+    if (body.empty())
+        return "it answered with no body";
+
+    const auto decoded = ores::nats::default_wire_codec().decode<reply_body>(body);
+    if (!decoded)
+        return "its answer could not be read: " + decoded.error().what();
+
+    if (decoded->result.outcome == ores::utility::domain::outcome::ok)
+        return {};
+
+    return decoded->result.code + ": " + decoded->result.message;
+}
 
 } // anonymous namespace
 
@@ -93,33 +133,39 @@ nats_publish_action_handler::execute(const action_context& ctx) {
             co_return std::unexpected(msg);
         }
 
-        // The scheduler always asks for a production run: a package is what a
-        // developer asks for by hand.
-        const nats_trigger_body body{.report_definition_id =
-                                         parsed->report_definition_id.value_or(""),
-                                     .tenant_id = parsed->tenant_id.value_or(""),
-                                     .job_instance_id = ctx.inst_id,
-                                     .kind = "production"};
-
         // A job that names no report definition is a notification nothing
-        // answers, so it stays fire-and-forget.
+        // answers: it states a subject and nothing this handler can place in a
+        // report request, so it stays fire-and-forget and reads no identifiers.
         if (!parsed->report_definition_id) {
-            nats_.publish(subject, ores::nats::default_wire_codec().encode(body));
+            nats_.publish(subject, {});
             BOOST_LOG_SEV(lg(), info)
                 << "NATS publish action succeeded for job: " << ctx.job.job_name
                 << " (subject: " << subject << ")";
             co_return std::expected<void, std::string>{};
         }
 
+        const nats_trigger_body body{
+            .report_definition_id = parse_uuid(*parsed->report_definition_id, "report_definition_id"),
+            .tenant_id = parse_uuid(parsed->tenant_id.value_or(""), "tenant_id"),
+            .job_instance_id = ctx.inst_id,
+            .kind = "production"};
+
         // A report trigger is a request: the reporting service answers, and a
         // refusal has to reach the job rather than being discarded. The reply
-        // carries no subject of its own, so a rejection arrives as an X-Error
-        // header.
+        // carries no subject of its own, so a rejection the reporting service
+        // makes before reading the body arrives as an X-Error header.
         const auto reply =
             svc_nats_.authenticated_request(subject, ores::nats::default_wire_codec().encode(body));
         const auto err = reply.headers.find(std::string(ores::nats::headers::x_error));
         if (err != reply.headers.end()) {
             const auto msg = "Subject " + subject + " refused the trigger: " + err->second;
+            BOOST_LOG_SEV(lg(), error) << msg << " (job: " << ctx.job.job_name << ")";
+            co_return std::unexpected(msg);
+        }
+
+        const auto refused = refusal_in_reply(reply.data);
+        if (!refused.empty()) {
+            const auto msg = "Subject " + subject + " refused the trigger: " + refused;
             BOOST_LOG_SEV(lg(), error) << msg << " (job: " << ctx.job.job_name << ")";
             co_return std::unexpected(msg);
         }

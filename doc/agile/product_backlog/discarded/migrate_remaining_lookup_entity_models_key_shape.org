@@ -36,6 +36,28 @@ task currently owns it. Every affected model is unloadable
 migrated, which silently blocks regeneration for the components that
 still carry =lookup_entity= models.
 
+* Resolution
+
+Nothing is left to migrate. The capture counted roughly 75 =lookup_entity= and
+=table=-shaped models outside =ores.refdata= still on the old * Primary key/
+* Natural keys split after the parser rewrite. There are now **zero** models of
+either type anywhere in the tree:
+
+#+begin_example
+grep -rl '^#+type: ores.codegen.lookup_entity$' projects/ --include='*.org' | wc -l   # 0
+grep -rl '^#+type: ores.codegen.table$'          projects/ --include='*.org' | wc -l   # 0
+#+end_example
+
+They went two ways. The sprint-28 work moved the last fifteen, the refdata
+coded-scheme tables, onto =ores.codegen.entity= models and retired
+=sql_schema_artefact_create= with them; the rest had already gone. The archive
+of the migration is the [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][story that
+finished it]], and the one remaining hand-written table, =ip2country=, was
+modelled by [[id:AE03BD95-AD8B-4FA9-9D56-230F4D26A7F2][its own task]].
+
+Filed to =discarded= because the work it asks for cannot be done: the subjects
+are gone, not deferred.
+
 * References
 
 - [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Task: Downgrade address/model-type incompatibility to skip in --component mode]] — did the equivalent migration for =ores.refdata=; reuse its script/approach.

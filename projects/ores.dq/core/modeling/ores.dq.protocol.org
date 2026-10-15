@@ -270,6 +270,14 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 | =dq.v1.lei_relationships.get= | Retrieve one LEI relationship |
 | =dq.v1.lei_relationships.get_many= | Retrieve several LEI relationships by key |
 
+* LEI Bic
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.lei_bic.list= | Retrieve all LEI to BIC mappings |
+| =dq.v1.lei_bic.get= | Retrieve one LEI to BIC mapping |
+| =dq.v1.lei_bic.get_many= | Retrieve several LEI to BIC mappings by key |
+
 * Methodologies
 
 | Subject | Description |

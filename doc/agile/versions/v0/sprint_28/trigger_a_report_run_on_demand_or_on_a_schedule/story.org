@@ -64,7 +64,7 @@ and it cannot work until the trigger exists.
 |------+-------+-------+-----+-------------|
 | [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | DONE | 2026-10-15 | 2026-10-15 | Create the report's consent at admission rather than only at schedule time |
 | [[id:C4DE51A9-9892-4F17-A549-6B3BCED95E0A][Prove ore build-packages end to end]] | BACKLOG | | | The command has never run end to end. Its parts are tested and merged, but no run has gone from a report definition name through a live workflow service and JetStream stream to a package on disk. |
-| [[id:600681D4-21D2-498D-A9A0-F740B35E57FC][Guard the trigger contract against silent drops]] | BACKLOG | | | The scheduler keeps a hand-written copy of the reporting trigger request. When the contract gained a fourth field the copy was not updated, and every scheduled firing was silently dropped for a day. The copy is still there and the test that guards it mirrors the struct rather than calling production code. |
+| [[id:600681D4-21D2-498D-A9A0-F740B35E57FC][Guard the trigger contract against silent drops]] | DONE | | 2026-10-15 | The scheduler keeps a hand-written copy of the reporting trigger request. When the contract gained a fourth field the copy was not updated, and every scheduled firing was silently dropped for a day. The copy is still there and the test that guards it mirrors the struct rather than calling production code. |
 
 * Decisions
 

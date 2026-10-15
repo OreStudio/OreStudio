@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2496E82C-1FB4-4EAF-8E81-5EFD753B041C
+:END:
+#+title: Regenerating several components deletes behaviour, because m…
+#+description: Regenerating several components deletes behaviour, because main's copy of a generated file carries hand-added content the model cannot reproduce. ores.geo: src/CMakeLists.txt was hand-migrated on 2026-07-30 (0a8ea6f7e3) to component_files.cmake and links ores.database.lib, while the flat template still emits file(GLOB_RECURSE) and a different link set; regenerating it left geolocation_service.hpp unable to find ores.database/domain/context.hpp. ores.history/api: src/CMakeLists.txt is a hand-written header-only INTERFACE library, and the generated form asks for sources the directory does not contain. ores.storage/service: config/options.hpp declares a std::string storage_dir and app/application.cpp includes the nats client, the domain service runner, the heartbeat publisher and the local store, all of which regeneration deletes. Each component needs its model to catch up before it can regenerate at all.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

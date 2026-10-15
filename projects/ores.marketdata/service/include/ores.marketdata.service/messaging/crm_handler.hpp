@@ -171,8 +171,7 @@ public:
             BOOST_LOG_SEV(crm_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
-                  get_crm_rate_response{
-                      .success = false, .message = e.what(), .rate = {}});
+                  get_crm_rate_response{.success = false, .message = e.what(), .rate = {}});
         }
     }
 

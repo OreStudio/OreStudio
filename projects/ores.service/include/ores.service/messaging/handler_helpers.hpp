@@ -81,9 +81,8 @@ inline std::string log_handler_entry(Logger& lg, const ores::nats::message& msg)
  * @return the correlation id, for outbound calls that must carry it.
  */
 template <typename Logger>
-inline std::string log_handler_entry(Logger& lg,
-                                     const ores::nats::message& msg,
-                                     std::string_view tenant_id) {
+inline std::string
+log_handler_entry(Logger& lg, const ores::nats::message& msg, std::string_view tenant_id) {
     using namespace ores::logging;
     auto cid = ores::nats::extract_or_generate_correlation_id(msg);
     const auto sid_it = msg.headers.find(std::string(ores::nats::headers::nats_session_id));

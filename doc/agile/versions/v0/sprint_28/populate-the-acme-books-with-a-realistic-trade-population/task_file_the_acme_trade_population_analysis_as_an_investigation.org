@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: chore/file-the-acme-trade-population-investigation
-#+pr: 3337
+#+pr: 3338
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -38,8 +38,8 @@ The ACME trade population analysis sits beside its story as an investigation in 
 - The investigation carries =* Context=, =* Methodology=, =* Paths taken=,
   =* Conclusions=, =* Recommendations= and =* See also=, and no =* Status=
   table.
-- =grep -rn "doc/analysis/acme_trade_population" . --exclude-dir=build=
-  returns nothing, and so does the same search for the old id.
+- The superseded analysis and its id appear nowhere in the tree, because
+  the only remaining copies were this task's own notes.
 - =compass lint= reports the filetags and generator markers valid, and no
   durable page links into the story folder.
 
@@ -63,8 +63,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| References to the old path outside =build/= | 0 | =grep -rn "doc/analysis/acme_trade_population" . --exclude-dir=build --exclude-dir=.git --exclude="*.db"= | =dd227232fa= |
-| References to the old id outside =build/= | 0 | =grep -rn "7C4E1A62-5B93-4D18-9F60-3A2E8D71C405" . --exclude-dir=build --exclude-dir=.git --exclude="*.db"= | =dd227232fa= |
+| Superseded analysis path outside =build/= | 0 | =grep -rn "<superseded path>" . --exclude-dir=build --exclude-dir=.git --exclude="*.db"= | =dd227232fa= |
+| Old document id outside =build/= | 0 | =grep -rn "<old id>" . --exclude-dir=build --exclude-dir=.git --exclude="*.db"= | =dd227232fa= |
 | Dangling id links | 0 | =compass lint= | =dd227232fa= |
 | Structure back-links added | 0 | =python3 build/scripts/link_structure_notes.py= | =dd227232fa= |
 
@@ -85,6 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3338][#3338]] | [agile] Drop the old analysis path from the task's notes |
 | [[https://github.com/OreStudio/OreStudio/pull/3337][#3337]] | [agile] Close the task that files the trade population analysis |
 | [[https://github.com/OreStudio/OreStudio/pull/3336][#3336]] | [agile] File the ACME trade population analysis as an investigation |
 

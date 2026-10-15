@@ -735,7 +735,11 @@ def resolve_targets(
     # dependant would then never see its dependee fire.
     deferred: list[tuple[str, dict, str]] = []
     for facet in sorted(gen_facets):
-        if component_is_part and facet == "ores.cmake.component":
+        # The CMake facet of a sub-component project is hand-maintained: its
+        # link list carries what the model does not, and the templates' baseline
+        # has drifted from 93 of the 94 checked-in files. Nothing here may
+        # rewrite it. Every other facet still renders.
+        if component_is_part and facet.startswith("ores.cmake"):
             continue
         ts = graph.facet_ts.get(facet, "")
         for arch in graph.facet_archetypes.get(facet, []):

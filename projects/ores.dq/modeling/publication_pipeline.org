@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :dq:publish:librarian:bundle:pipeline:architecture:knowledge:
 #+created: 2026-07-02
-#+updated: 2026-07-02
+#+updated: 2026-10-15
 
 * Summary
 
@@ -22,10 +22,13 @@ step per member dataset, each step invoking a =SECURITY DEFINER=
 service — this is the one sanctioned exception to strict service-table
 isolation (DQ never writes another service's tables directly). Codegen
 already covers the *schema* side of a new artefact type — the bundle,
-junction, artefact-type lookup rows, and the entity's own shadow
-staging table (=ores_dq_<entity>_artefact_tbl=, via an
-=ores.codegen.lookup_entity= model) are all generated. Populating the
-shadow table is also codegen-generic when the source is FPML
+junction and artefact-type rows, and the entity's own shadow staging
+table (=ores_dq_<plural>_artefact_tbl=) are all generated. The staging
+table comes from the model of the entity it stages, in the component
+that owns the published rows, which opts in with
+=:ores.sql.schema.domain_entity_artefact_create.enabled: true=; the one
+way to do this is [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]].
+Populating the shadow table is also codegen-generic when the source is FPML
 coding-scheme data (via =fpml_parser.py=); other external sources need
 a bespoke per-source parser, and computed data (e.g. synthetic
 configs) needs bespoke value computation. What is *never*
@@ -61,7 +64,7 @@ registration, and any publisher UI config page.
   ┌───────────────────────────▼─────────────────────────────────────────┐
   │ Target service (ores.refdata.core / ores.assets.core / ...)         │
   │  publish_from_dq_handler → ores_<service>_publish_<entity>_from_dq_fn│
-  │  (SECURITY DEFINER: reads ores_dq_<entity>_artefact_tbl,            │
+  │  (SECURITY DEFINER: reads ores_dq_<plural>_artefact_tbl,           │
   │   writes only ores_<service>_* tables)                              │
   └─────────────────────────────────────────────────────────────────────┘
 #+end_example
@@ -78,27 +81,29 @@ registration, and any publisher UI config page.
   code (e.g. =gleif.lei_counterparties.small=) to its
   =artefact_table= (source DQ table), =target_table=, and
   =target_subject= (the NATS subject the workflow step will call).
-  Codegen lookup-entity model:
-  =projects/ores.dq/modeling/ores.dq.artefact_type_lookup_entity.org=.
-- =ores_dq_<entity>_artefact_tbl= — the *shadow staging table* for one
-  artefact type: same columns as the target entity, plus =dataset_id=
-  and =tenant_id= bookkeeping, but no PK/FK constraints (a row can be
+  Codegen entity model:
+  =projects/ores.dq/modeling/ores.dq.artefact_type.org=.
+- =ores_dq_<plural>_artefact_tbl= — the *shadow staging table* for one
+  artefact type: the entity's columns, plus =dataset_id= and
+  =tenant_id= bookkeeping, and no PK/FK constraints (a row can be
   incomplete or reference an entity that doesn't exist yet in the
-  target service). This is also codegen-generated, from its own
-  =ores.codegen.lookup_entity= model living alongside the entity type
-  in =projects/ores.dq/modeling/= — e.g.
-  =ores.dq.report_definition_lookup_entity.org= drives
-  =sql_schema_artefact_create.mustache= to produce
-  =ores_dq_report_definitions_artefact_tbl=
-  (=projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql=,
-  header confirms =AUTO-GENERATED FILE=). Flags on the lookup-entity
-  model (=has_coding_scheme=, =has_image_id=, =has_artefact_insert_fn=)
-  control optional bookkeeping columns/functions.
+  target service). It is generated from the model of the entity it
+  stages, in the component that owns the published rows, which opts in
+  with =:ores.sql.schema.domain_entity_artefact_create.enabled: true=
+  and adds an =* Artefact columns= section only where the staging shape
+  differs from the entity — e.g. =ores.reporting.report_definition=
+  generates =ores_dq_report_definitions_artefact_tbl=
+  (=projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql=).
+  A staging table for another component's entity gets no DQ model, no
+  DQ C++ code, no shell commands and no TypeScript; a terminal one,
+  which publishes nowhere and is therefore the entity's only store, is
+  DQ's own, model and all. [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]]
+  states the rule and the checklist.
 
 So four of the five metadata/schema artefacts are codegen-generated
-today — bundle, junction, artefact-type lookup, and the per-entity
-shadow artefact table. What is *not* generated is the data that fills
-the shadow table (next) and the publish function that drains it
+today — bundle, junction, artefact type, and the per-entity shadow
+artefact table. What is *not* generated is the data that fills the
+shadow table (next) and the publish function that drains it
 (Stage 4).
 
 ** Stage 2 — Populating the artefact table
@@ -177,12 +182,13 @@ Each target service exposes a NATS subject
 =<service>.v1.<entity>.publish-from-dq=, handled by a
 =publish_from_dq_handler= that calls a =SECURITY DEFINER= SQL function
 =ores_<service>_publish_<entity>_from_dq_fn= defined in that service's
-own SQL tree, e.g.
-=projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql=
-(22 functions), =assets_publish_from_dq_create.sql= (1),
-=reporting_publish_from_dq_create.sql= (1). This is the one sanctioned
+own SQL tree, one file per component. There are 57 functions across
+seven components, and they are very unevenly spread:
+=refdata_publish_from_dq_create.sql= holds 47 of them, =analytics=,
+=iam=, =reporting= and =synthetic= hold 2 each, and =assets= and
+=marketdata= hold 1 each. This is the one sanctioned
 exception to strict service-table isolation: the function reads
-=ores_dq_<entity>_artefact_tbl= (cross-service read, DDL-owner
+=ores_dq_<plural>_artefact_tbl= (cross-service read, DDL-owner
 privilege) and writes only to tables owned by its own service — DQ
 itself never gets DML on another service's tables. See
 =doc/plans/2026-05-14-dq-publish-pattern.org= for the full rationale
@@ -221,7 +227,7 @@ per artefact type:
 4. A wizard config page in =PublishBundleWizard= if the artefact type
    needs user-supplied parameters (stage 5).
 
-The bundle row, junction row, artefact-type lookup row, and the shadow
+The bundle row, junction row, artefact-type row, and the shadow
 artefact *table* itself (stage 1) are all already backed by codegen —
 and so is the populate step for FPML-shaped sources. The publish
 function is the one gap with *no* codegen path today, for any source:
@@ -229,7 +235,7 @@ any effort to add a new bundle type at scale (e.g. a
 synthetic-market-data bundle) needs either to accept the hand-written
 cost of one more =publish_..._from_dq_fn=/handler pair, or to extend
 =ores.codegen= with a reusable "publish-from-dq" profile before
-proceeding — the 25 existing functions are structurally identical
+proceeding — the 57 existing functions are structurally identical
 enough (read artefact table, honor =mode=, upsert into one target
 table) to make a generic profile plausible.
 
@@ -257,13 +263,13 @@ pipeline order:
    — this row is the glue the workflow step uses to know which NATS
    subject to call (stage 1).
 
-4. Shadow-table codegen model — [[proj:projects/ores.dq/modeling/ores.dq.report_definition_lookup_entity.org][~projects/ores.dq/modeling/ores.dq.report_definition_lookup_entity.org~]]
-   (=ores.codegen.lookup_entity=) declares the staging-table shape
-   (name, report_type, schedule_expression, ..., =display_order=,
-   artefact indexes) that generates the next file.
+4. Staging declaration — the owning entity model at #7 opts in with
+   =:ores.sql.schema.domain_entity_artefact_create.enabled: true=. This
+   artefact needs no =* Artefact columns= section, because its staging
+   shape is the entity's own columns.
 
 5. Generated shadow table — [[proj:projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql][~projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql~]]
-   (auto-generated from #4) creates
+   (auto-generated from #7) creates
    =ores_dq_report_definitions_artefact_tbl= — no PK/FK constraints,
    just =dataset_id=/=tenant_id= bookkeeping plus the entity's columns
    (stage 1).
@@ -280,8 +286,9 @@ pipeline order:
 
 7. Target entity codegen model — [[proj:projects/ores.reporting/modeling/ores.reporting.report_definition.org][~projects/ores.reporting/modeling/ores.reporting.report_definition.org~]]
    (=ores.codegen.entity=) is the "real" =report_definition= domain
-   type — unrelated to publishing, but it's what #8's target table is
-   generated from, and what #9 ultimately writes rows shaped like.
+   type. It is what #8's target table is generated from, what #9
+   ultimately writes rows shaped like, and — since the DQ artefact
+   migration — what #5 is generated from too.
 
 8. Target table — [[proj:projects/ores.sql/create/reporting/reporting_report_definitions_create.sql][~projects/ores.sql/create/reporting/reporting_report_definitions_create.sql~]]
    creates =ores_reporting_report_definitions_tbl=, the real,
@@ -336,20 +343,22 @@ the bundle system.
 | 7,8 | Target entity model + table | Generated (ordinary entity codegen) | Already solved — orthogonal to bundling |
 | 12 | Workflow orchestration | Generated infra, generic | Already solved — zero marginal cost per new type |
 | 13 | Librarian UI shell (list bundle, Apply) | Generic | Already solved, except a bespoke wizard param page when publish needs user input |
-| 4 | Shadow-table =lookup_entity= model | Hand-authored, feeds a generator | Redundant hand-work — every column is copy-pasted from the target entity's own model; should be *derived* from it instead, removing column-drift risk |
+| 4 | Staging-shape declaration | Solved — declared on the owning model | Already solved by the DQ artefact migration; the hand-authored =lookup_entity= shadow models are gone |
 | 3 | Artefact-type registration row | Hand-written SQL insert | Mechanical — =target_subject= is 100% derivable from =<service>.<entity>= by naming convention |
-| 9 | Publish-from-dq SQL function | Hand-written (25 near-identical copies) | Highest-value codegen target — read artefact table, honor =mode=, upsert by natural key; structurally identical across all 25 instances |
+| 9 | Publish-from-dq SQL function | Hand-written (57 near-identical copies) | Highest-value codegen target — read artefact table, honor =mode=, upsert by natural key; structurally identical across all 57 instances |
 | 10,11 | NATS handler + registrar wiring | Hand-written per service | Mechanical, same shape as ordinary entity-messaging codegen — needs a "publish_from_dq" facet |
 | 1,2 | Bundle row + membership row | Hand-written one-liner SQL calls | Cheap to template but low ROI as a standalone archetype — better as a scripted step of an "add to bundle" helper |
 | 6 | Seed/populate data | Split: generic for FPML sources, hand-written otherwise | FPML coding-scheme data is fully codegen'd via =fpml_parser.py= (generic, not per-entity); other external sources (LEI, crypto, ISO) need bespoke per-source parsers; computed/synthetic data (our FX case) can reuse the populate-script *skeleton* but the value computation is irreducibly bespoke |
 
 *Recommendation:* build a single new =ores.codegen= facet — provisionally
 =publish_from_dq= — that hangs off an entity's existing codegen model
-and, from one declaration, generates items #3, #4, #9, #10, #11. Once
-that facet exists, adding a new type to the bundle system reduces to:
-model the entity normally (already required for any entity) → enable
-the =publish_from_dq= facet → hand-write only the bundle/membership
-rows (one-liners) and the actual seed data.
+and, from one declaration, generates items #3, #9, #10 and #11. Item #4
+is no longer part of this: the DQ artefact migration already moved the
+staging-shape declaration onto the owning model, so there is nothing
+left to derive there. Once the facet exists, adding a new type to the
+bundle system reduces to: model the entity normally (already required
+for any entity) → enable the =publish_from_dq= facet → hand-write only
+the bundle/membership rows (one-liners) and the actual seed data.
 
 * See also
 
@@ -359,7 +368,11 @@ rows (one-liners) and the actual seed data.
 - [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]] — the design
   rationale and migration history behind the publish-from-dq rule.
 - [[id:2DC7CB2C-EF21-4E55-BB05-07F42DF5BD8B][ores.dq.dataset_bundle]] — codegen entity model for bundles.
-- [[id:6D8510CF-B977-4126-9051-5BFA9DE929B3][ores.dq.artefact_type]] — codegen lookup-entity model for artefact types.
+- [[id:6D8510CF-B977-4126-9051-5BFA9DE929B3][ores.dq.artefact_type]] — codegen entity model for artefact types.
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the one way to add an artefact, and the retired
+  patterns this page's history produced.
+- [[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] — the story
+  that would carry the recommendation above.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — what makes a value domain "FPML-shaped" and
   therefore eligible for the generic =fpml_parser.py= populate path.
 - [[id:4A7B2C8E-F391-4D5A-B6E0-1C9D3F7A5B2E][Eventing Pipeline]] — the analogous walkthrough for the

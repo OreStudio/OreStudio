@@ -171,7 +171,7 @@ files, and no =#+type= value of its own.
 |-------------------+--------------------------------+-----------------------------------------------------------------+----------------------------------------------------|
 | =Entity=          | =ores.codegen.entity=          | [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]]                                  | =projects/ores.<component>/modeling/ores.<component>.<entity>.org= |
 | =Junction=        | =ores.codegen.junction=        | *(not yet authored to this depth — see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][schema reference]] for the shallow treatment)* | same                                                |
-| =LookupEntity=    | =ores.codegen.lookup_entity=   | *(not yet authored)*                                             | same                                                |
+| =LookupEntity= (unused) | =ores.codegen.lookup_entity=   | No model uses it since the DQ artefact migration; the staging table now comes from the owning entity's model, and =sql_schema_artefact_create= is deleted | same                                                |
 | =FieldGroup=      | =ores.codegen.field_group=     | *(not yet authored)*                                             | same                                                |
 | =Table= (retired) | =ores.codegen.table=           | Superseded by =ores.codegen.entity=; type removed from the generator | —                                          |
 | =ServiceRegistry= | =ores.codegen.service_registry= | *(not yet authored)*                                            | same                                                |

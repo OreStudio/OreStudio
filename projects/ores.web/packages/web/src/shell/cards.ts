@@ -125,6 +125,13 @@ export const CARDS = {
         icon: 'document',
         kind: 'workflow',
     },
+    tenors: {
+        titleKey: 'home.tenant.tenors',
+        bodyKey: 'home.tenant.tenorsBody',
+        to: PATHS.tenors,
+        icon: 'document',
+        kind: 'workflow',
+    },
     classifications: {
         titleKey: 'refdata.classifications.title',
         bodyKey: 'refdata.area.classificationsBody',
@@ -271,6 +278,7 @@ export const AREA_CARDS = {
         'classifications',
         'bookStructure',
         'conventions',
+        'tenors',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
     marketdata: ['synthetic', 'curveEvolution'],

@@ -8,12 +8,12 @@
 #+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-tenor-resolution-screen
-#+pr:
+#+pr: 3357
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,94 @@ A tenant administrator defines how tenors resolve in ores.web, and the screen ma
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- A tenant administrator lists tenors and opens one. *Met.*
+- The screen shows the tenor's convention and the tenors that convention resolves. *Met.*
+- The screen shows the schedule axes a convention may roll on, and which axis a
+  tenor in the set uses. *Met.* Expanding an axis into its dated rolls is *not
+  met*, for the same reason as the resolved dates below.
+- The screen states the refusal when a write fails, names the step that refused,
+  and says which calls had already been written. *Met.*
+- The screen shows the tenor's history. *Met.*
+- The screen shows the resolved dates. *Not met*, and it cannot be: the server
+  serves no operation that resolves a tenor to a date. That view belongs to the
+  sibling task [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]].
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work is split between the wire layer and the screen.
+
+The branch =feature/build-the-tenor-resolution-screen= carries the first half,
+written 2026-10-10 and parked while the book prototypes were signed off:
+
+- =bff/src/tenors.ts= with =tenors.test.ts= — the catalogue, the pick lists, one
+  convention's set, and the writes of a tenor, a convention and a membership row.
+  No route resolves a tenor to a date, because the server serves no such operation.
+- =web/src/api/tenors.ts= — the typed client.
+- =web/src/journeys/tenorsServer.ts= — the server half of the journey.
+- =web/src/journeys/tenorsState.ts= — the journey state.
+
+The screen half is not written. Every peer journey in this package carries five
+files — =<x>State.ts=, =<x>State.test.ts=, =<x>Steps.tsx=, =<x>Steps.test.tsx=
+and =<X>Journey.tsx= — so its state machine and its screen are proved by tests.
+The tenor journey has the state file alone. The remaining work is:
+
+1. =web/src/journeys/tenorsState.test.ts= — prove the state machine.
+2. =web/src/journeys/tenorsSteps.tsx= and =tenorsSteps.test.tsx= — the steps.
+3. =web/src/journeys/TenorJourney.tsx= — the screen, against
+   =doc/prototypes/tenors/define-how-tenors-resolve/=.
+4. Wire the journey into its route, then run the package suites.
+
+The journeys it draws from are the list, the tenor, its convention, the
+schedule, the resolved dates, the review, the refusal and the history.
+
+* Built, 2026-10-15
+
+All four steps above are done. The screen is a six-step rail — choose, tenor,
+convention, review, outcome, history — and the convention is the second half of
+the same rail rather than a journey of its own, because a tenor and the rule
+that resolves it are read together and the review draws one difference list over
+both.
+
+Two decisions worth carrying to the story:
+
+- The screen is reached from its own card, =Define how tenors resolve=, at
+  =/refdata/tenors=, beside the instrument-convention card. Tenors are their own
+  reference-data job, not a step inside the convention journey.
+- The resolved-dates view is not drawn. The server serves no operation that
+  resolves a tenor to a date; the BFF says so in =tenors.ts= and the state
+  machine says so in =tenorsState.ts=. That view belongs to the sibling task
+  =Resolve a tenor over the wire, with the refusal it carries=.
+
+* Review round one, 2026-10-15
+
+The local review raised findings on both axes. What it changed:
+
+- Every word the journey draws now comes from the catalogue. The state module
+  named its changes and its problems in English; it now names them by key, and
+  the screen renders them. A member's before and after are a named set state
+  rather than the sentence "in the set". (TS-C04.)
+- The schedule step is drawn. It was missing: the prototype's rail carries seven
+  steps and the screen carried six. The step names each schedule axis, its source
+  and its calendar, and marks the axis a tenor in the set uses. Expanding an axis
+  into dated rolls needs the same operation the resolved-dates view waits on, so
+  it is not drawn here either.
+- The refusal notice now names the step that refused, in the rail's own words.
+  It previously named only the protocol subject, so the step was reachable but
+  never stated.
+- Two return types declared on the client's write calls. (TS-T13.)
+- A dead catalogue key removed. (TS-H02.)
+
+Tests: 20 on the state machine, 9 on the steps, 1 on the page.
+
 
 * Measurements
 
@@ -55,9 +127,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Main commits taken in by the rebase | 1783 | =git rev-list --count fb9425fd74..origin/main= | 5905c3e919 |
+| Unique lines on the branch | 1360 in 9 files | =git diff --stat origin/main...HEAD= | 5905c3e919 |
+| BFF tests | 771 passed in 66 files | =npm run test --workspace @ores/bff= | a31630ea67 |
+| Web tests | 1550 passed in 137 files | =npm run test --workspace @ores/web= | a31630ea67 |
+| Local check gate | 7 of 7 passed | =./compass.sh check= | a31630ea67 |
+| Release build | 7402 targets, exit 0 | =./compass.sh build= | 94cc92e25b |
 
 * Notes
+
+*Takeover, 2026-10-15.* The branch sat unpushed and checked out in no worktree
+for five days, and sprint 27 closed and sprint 28 opened in between. The
+takeover did four things:
+
+1. Rebased the two commits onto =origin/main= (=1783= commits on). Two
+   conflicts, both in agile records:
+   - =server.ts= took both sides: main's synthetic, curve, oresmd, binding and
+     series routes, and the branch's tenor route.
+   - =sprint_27/.../story.org= dropped the branch's =STARTED= row. Sprint 27 is
+     closed and carried the task forward, so re-adding the row would have
+     contradicted the closed sprint.
+   - The task file took sprint 28's parent story and kept the branch's
+     =STARTED= state and =clever_dijkstra= environment.
+2. Moved the task under its sprint 28 story: =Close the tenor journey and the
+   remaining refdata gaps=. The carry-forward had reset it to =BACKLOG= and
+   cleared its environment, so the record disagreed with the branch.
+3. Clocked on with =compass task start C73F5C2E=, which flipped the task and
+   the story to =STARTED= and stamped the journal.
+4. Set the preset to =linux-clang-release-ninja= per instruction.
+
+The engine half of the journey was already on =main= from the separate 8-26
+August work on the tenor resolution algorithm; the branch does not repeat it.
 
 * Test Scenarios
 
@@ -74,12 +174,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3357][#3357]] | [web] Build the tenor resolution screen |
 
 * Review
 
+Round one, local review, 2026-10-15.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | English UI copy built in a state module, against TS-C04 "text is reached by key"; the peer keeps presentation out and translates at the screen | =tenorsState.ts=, =tenorsSteps.tsx= | Accepted | Changes and problems now carry catalogue keys; member before/after is a named set state |
+| 2 | The schedule step the prototype's rail carries is missing | =tenorsSteps.tsx= | Accepted | Drawn: names each axis, its source and its calendar. Date expansion still waits on the resolve operation |
+| 3 | "Names the step to walk back to" is not visible: only the protocol subject is drawn | =tenorsSteps.tsx= | Accepted | The notice now names the refusing step in the rail's words |
+| 4 | Exported write calls omit their return type, against TS-T13 | =api/tenors.ts= | Accepted | Both declared |
+| 5 | Dead catalogue key =review.unconfirmed=, against TS-H02 | =locales/*.ts= | Accepted | Removed |
+| 6 | The Plan says the branch carries resolve routes while the BFF says none exist | task file | Accepted | Corrected |
+| 7 | The parent story is STARTED while its =Now= still reads "Not yet started" | =story.org= | Accepted | Corrected |
+| 8 | A test title, "and blank as null", does not cover the case it names | =tenorsState.test.ts= | Noted | The state machine keeps the typed text as given; a blank override is sent as null by =writePlan=, which the plan tests cover. Title left as it reads, because the assertion it makes is the one worth keeping |
+| 9 | =as unknown as z.ZodType= in the client, against TS-T04 | =api/tenors.ts= | Declined | Copied from the peer clients =books.ts= and =conventions.ts=. A branch does not fix a pattern it follows; it is a task of its own |
+| 10 | Duplicated =refusalText=, =optionsOf=, the two field-row components, and the two BFF put handlers | several | Declined | These mirror the peer journeys and the peer BFF route modules. Extracting them is a change across every journey, not this one |
+
 
 * Result
+
+Complete. Journey 9 is built in =ores.web=: a seven-step rail — choose, tenor,
+convention, schedule, review, outcome, history — reached from its own card,
+=Define how tenors resolve=, at =/refdata/tenors=.
+
+The confirm is a sequence of writes. It writes the tenor, then the convention,
+then each membership link and unlink, and a refusal names the step that refused
+and the calls already written, so a person can see what landed.
+
+Two parts of the prototype are not met, for one reason: the server serves no
+operation that resolves a tenor to a date, so neither the resolved dates nor a
+schedule axis expanded into dated rolls can be drawn. Both belong to
+[[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]].
+
+The gate is green: 1550 web tests and 771 BFF tests pass, and =./compass.sh
+check= is 7 of 7 on the release-ninja preset.
+

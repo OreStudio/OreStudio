@@ -34,6 +34,7 @@ export const PATHS = {
     onboardCounterparty: '/refdata/counterparties/onboard',
     bookStructure: '/refdata/books/structure',
     conventions: '/refdata/conventions',
+    tenors: '/refdata/tenors',
     organisation: '/organisation',
     people: '/organisation/people',
     hierarchy: '/organisation/hierarchy',

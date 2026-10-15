@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-13
+#+updated: 2026-10-15
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -67,9 +67,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Credit documents and trades the proof walks | 8 documents, 8 trades | =ctest --preset linux-clang-debug-make -R ores.ore.core.tests= (the case "every credit trade in the corpus comes back as the same family rows") | the PR head |
-| Trades whose family rows change on the round trip | 0 | the same case; the set of known differences is empty | the PR head |
-| ORE core suite | 667 cases, 483,161 assertions, all pass | the same command | the PR head |
+| Credit documents and trades the proof walks | 8 documents, 8 trades | =ctest --preset linux-clang-release-ninja -R ores.ore.core.tests= (the case "every credit trade in the corpus comes back as the same family rows") | 7ca85cdc76 |
+| Trades whose family rows change on the round trip | 0 | the same case; the set of known differences is empty | 7ca85cdc76 |
+| ORE core suite | 667 cases, 483,161 assertions, all pass | the same command | 7ca85cdc76 |
 
 * Notes
 

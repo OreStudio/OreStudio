@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 8B4A05F1-FCC7-4AC2-B91A-F31ED775C268
+:END:
+#+title: Task: Re-tangle the shell scripts
+#+description: Initial task for: Re-tangle the shell scripts the report trigger work left behind
+#+type: task
+#+level: s1
+#+filetags: :re_tangle_the_shell_scripts_the_report_trigger_work_left_behind:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3C9FF46E-E842-4D60-B3B9-4154E904D460][Re-tangle the shell scripts the report trigger work left behind]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shell script library matches what the recipes tangle to, and the tangle-shell check passes on main.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3C9FF46E-E842-4D60-B3B9-4154E904D460][Re-tangle the shell scripts the report trigger work left behind]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- Every recipe under doc/recipes/shell has its tangled output committed.
+- compass check --only tangle-shell passes.
+
+* Plan
+
+Run the tangle that the generated headers name,
+=./compass.sh build --direct tangle_shell_scripts=, and commit its output. Write
+no script by hand.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Scripts the tangle rewrote | 3740 | tangle summary line | working tree |
+| Files whose content changed | 13 | =git status --porcelain= | working tree |
+| Stale report_instances scripts | 3 | =git diff --name-only projects/ores.shell/scripts/library/= | a2e40e912e |
+| report_trigger_types scripts added | 10 | =git status --porcelain= | working tree |
+| =trigger_id= type in the model | uuid | project model, ores.reporting.report_instance.org line 356 | a2e40e912e |
+| Before: tangle-shell | FAIL | =compass check --only tangle-shell --base origin/main= | a2e40e912e |
+| After: the whole gate | 30 of 30 pass | =compass check --exclude-heavy= | working tree, committed |
+
+* Notes
+
+The tangle rewrote all 3740 scripts, and only thirteen carry different content:
+the three stale ones and the ten that did not exist. The other 3727 are byte
+identical, so the change is small even though the step touches everything.
+
+Both =tangle-shell= and =component-drift= compare generated output against what
+is committed, so both stay red until this output is in a commit. That is why the
+gate is run again after the commit.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The tangle ran once and its output is committed. Thirteen files carry a new
+content: the three =report_instances= scripts whose =trigger_id= placeholder was
+=0=, and the ten =report_trigger_types= scripts that were absent from the
+repository. The other 3727 scripts are byte identical to what was committed.
+
+=trigger_id= is a uuid, so the regenerated empty uuid is the correct
+placeholder: the model states uuid, and the generated domain header carries
+=boost::uuids::uuid trigger_id=.
+
+Local checks pass: 30 of 30, =tangle-shell= and =component-drift= included. Both
+of those were red on main before this change, and both turn green only once the
+regenerated output is committed, because each compares the tangled or generated
+output against what the repository carries.

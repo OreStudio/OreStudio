@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 3E7EC73F-B911-43F7-8329-81424362671B
+:END:
+#+title: Task: Scaffold story: Re-tangle the shell scripts the report trigger work left behind
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :re_tangle_the_shell_scripts_the_report_trigger_work_left_behind:sprint_28:v0:
+#+owner: marco
+#+branch: feature/re-tangle-the-shell-scripts-the-report-trigger-work-left-behind
+#+pr: 3351
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3C9FF46E-E842-4D60-B3B9-4154E904D460][Re-tangle the shell scripts the report trigger work left behind]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Record what the report trigger change left unsynchronised, and wire the story
+into Sprint 28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3C9FF46E-E842-4D60-B3B9-4154E904D460][Re-tangle the shell scripts the report trigger work left behind]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- The story is wired into Sprint 28 and the branch carries its documents.
+- The missing and stale tangled output is enumerated with commands.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stale report_instances scripts | 3 | =git diff --name-only projects/ores.shell/scripts/library/= | a2e40e912e |
+| report_trigger_types scripts tracked | 0 | =git ls-files projects/ores.shell/scripts/library/report_trigger_types/ | wc -l= | a2e40e912e |
+| report_trigger_types scripts in the recipe | 10 | =ls doc/recipes/shell/report_trigger_types/= and its code blocks | a2e40e912e |
+
+* Notes
+
+The commit that introduced the drift is 96c4be8625, which is titled as work in
+progress. It regenerated doc/recipes/shell/report_instances/report_instance.org
+and added doc/recipes/shell/report_trigger_types/report_trigger_type.org, and it
+did not run the tangle afterwards.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3351][#3351]] | [shell] Re-tangle the scripts the report trigger work left behind |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is scaffolded and wired into Sprint 28. This task carries the story
+documents, the sprint row and the branch, and closes after the scaffold PR
+merges.
+
+The recorded starting point: three =report_instances= scripts render the
+=trigger_id= uuid placeholder as =0=, and none of the ten
+=report_trigger_types= scripts are tracked. Both numbers and the commands that
+produced them are in the measurements table.

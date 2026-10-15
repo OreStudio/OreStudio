@@ -8,7 +8,7 @@
 #+filetags: :cut_the_continuous_build_time:sprint_28:v0:
 #+owner: marco
 #+branch: feature/cut-the-continuous-build-time
-#+pr:
+#+pr: 3352
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3352][#3352]] | [agile] Close the continuous build-time story with its findings |
 
 * Review
 

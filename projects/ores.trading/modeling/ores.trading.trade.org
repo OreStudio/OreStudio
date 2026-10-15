@@ -34,7 +34,21 @@ no audit tail: the audit record of the act that booked it carries that.
 :product:       ores
 :component:     trading
 :has_tenant_id: true
+:generate_touch_function: true
 :END:
+
+=:generate_touch_function:=: the trade is a composite parent. A write to
+any of its parts bumps the trade's own version in the same transaction,
+so the trade's windows partition time into spans in which its parts are
+stable, and a read assembles the trade from the timeline with no link
+table.
+
+The parts are the trade's own anchors (=trade_state=, =trade_booking=,
+=trade_identifier=, =trade_party_role=, =trade_portfolio=,
+=trade_additional_field=, =structure_member=) and the bond rows keyed by
+the same trade: =bond_instrument= and the leg rows under it. Each of
+those declares =:bump_parent_version: true= on its trade key. See the
+"Temporal composite entity versioning" architecture doc.
 
 * Columns
 

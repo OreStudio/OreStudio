@@ -47,6 +47,12 @@
 \ir ./trading_trade_activities_create.sql
 \ir ./trading_trade_activities_notify_trigger_create.sql
 
+-- Trades. Every trade-keyed table below names a trade, and the trade is the
+-- composite parent whose version its parts bump, so the trade table and its
+-- touch-version function must exist before the first child that names it.
+\ir ./trading_trades_create.sql
+\ir ./trading_trades_notify_trigger_create.sql
+
 \ir ./trading_party_role_types_create.sql
 \ir ./trading_party_role_types_notify_trigger_create.sql
 
@@ -353,10 +359,7 @@
 -- Scripted instruments (depends on reference data above)
 \ir ./trading_scripted_instruments_create.sql
 \ir ./trading_scripted_instruments_notify_trigger_create.sql
-
 -- Trades (depend on the classification lookups above)
-\ir ./trading_trades_create.sql
-\ir ./trading_trades_notify_trigger_create.sql
 
 -- Structure members (depend on the structure and on the trade the leg is, so
 -- they load after both)

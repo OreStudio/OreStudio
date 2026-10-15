@@ -69,6 +69,7 @@ set(files
     "price_type_eventing_integration_tests.cpp"
     "rate_instrument_eventing_integration_tests.cpp"
     "repository_activity_type_repository_tests.cpp"
+    "repository_bond_composite_versioning_tests.cpp"
     "repository_bond_leg_amount_repository_tests.cpp"
     "repository_equity_accumulator_instrument_repository_tests.cpp"
     "repository_equity_asian_option_instrument_repository_tests.cpp"

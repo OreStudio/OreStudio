@@ -172,6 +172,24 @@ public:
 
 
     /**
+     * @brief Reads bond leg amounts filtered by trade_id that were live at
+     * any point during [valid_from_bound, valid_to_bound) — i.e. the set of
+     * bond leg amounts that compose a parent entity's state as of one of
+     * its own historical versions. See the "Temporal composite entity
+     * versioning" architecture doc.
+     * @param ctx Repository context with database connection
+     * @param trade_id The trade_id to filter by
+     * @param valid_from_bound The parent version's own valid_from
+     * @param valid_to_bound The parent version's own valid_to
+     */
+    std::vector<domain::bond_leg_amount>
+    read_by_trade_id_as_of(context ctx,
+                           const std::string& trade_id,
+                           std::chrono::system_clock::time_point valid_from_bound,
+                           std::chrono::system_clock::time_point valid_to_bound);
+
+
+    /**
      * @brief Whether a list of bond leg amounts can be ordered by a field.
      *
      * The model's :sortable: columns, and nothing else.

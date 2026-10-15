@@ -150,6 +150,7 @@ std::make_optional(ores::utility::decimal::decimal::from_string("1000000").value
 :target_column: id
 :nullable:      false
 :error_message: Invalid trade_id: %. Trade must exist for tenant.
+:bump_parent_version: true
 :END:
 
 The trade that carries this instrument. An instrument is written beside

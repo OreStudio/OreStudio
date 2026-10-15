@@ -153,6 +153,8 @@ states one.
 :nullable:      false
 :error_message: Invalid trade_id: %. Trade must exist for tenant.
 :list_by:  true
+:bump_parent_version: true
+:list_by_as_of: true
 :END:
 
 The trade this row belongs to. An instrument is keyed by its trade, so a

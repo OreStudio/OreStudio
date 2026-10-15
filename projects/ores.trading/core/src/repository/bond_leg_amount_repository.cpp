@@ -29,6 +29,7 @@
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_leg_amount.hpp"
 #include "ores.trading.api/domain/bond_leg_amount_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/bond_leg_amount_protocol.hpp"
@@ -38,6 +39,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -350,6 +352,33 @@ std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count_by_tra
 
     return execute_count_query<bond_leg_amount_entity>(
         ctx, query, filter_condition(filter), lg(), "Counting bond leg amounts by trade_id");
+}
+
+
+std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_by_trade_id_as_of(
+    context ctx,
+    const std::string& trade_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading bond leg amounts as of window. trade_id: " << trade_id;
+
+    const auto vf(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
+    const auto vt(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<bond_leg_amount_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_from"_c < vt.value() &&
+              "valid_to"_c > vf.value()) |
+        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
+
+    return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
+        lg(),
+        "Reading bond leg amounts as of window by trade_id.");
 }
 
 

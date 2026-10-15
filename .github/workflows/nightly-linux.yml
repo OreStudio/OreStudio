@@ -143,18 +143,21 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          # Saves use a run-unique key, so restore by prefix and take the
-          # newest entry. Nothing deletes cache entries any more.
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          # Saves use a run-unique key, pruned to the newest entry per variant,
+          # so restore by prefix and take that entry. The key is scoped to this
+          # workflow: the clang variants are also built by Continuous Linux, but
+          # with coverage flags this workflow does not pass, so its entries hold
+          # objects this build cannot use.
+          key: sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
           restore-keys: |
-            sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
+            sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.24
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 2000M
+          max-size: 1000M
           save: false
 
       - name: Install dev packages
@@ -291,7 +294,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          key: sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
 
       - name: Prune older sccache entries
         # Saves use a run-unique key, so entries accumulate: two clang-debug runs
@@ -303,7 +306,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
+          prefix="sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
           keep="${prefix}${{ github.run_id }}"
           gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
             --jq ".actions_caches[] | select(.key | startswith(\"${prefix}\")) | select(.key != \"${keep}\") | .id" \

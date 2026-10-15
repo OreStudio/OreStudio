@@ -32,6 +32,7 @@
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_protocol.hpp"
+#include "ores.trading.api/messaging/bond_issue_leg_rate_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
@@ -67,6 +68,12 @@ constexpr std::string_view population_reason = "system.initial_load";
  * trade is the Internal one.
  */
 constexpr std::string_view internal_id_type = "Internal";
+
+/*
+ * The coupon a generated bond states. A fixed rate is what a bond's terms
+ * carry, and the engine refuses a fixed leg that states none.
+ */
+constexpr double coupon_rate = 0.05;
 
 }
 
@@ -450,6 +457,38 @@ void trading_trade_population_writer::write_issue_leg(
             "the notional of bond issue " + write.security_id);
 
     /*
+     * The coupon: a fixed leg states a rate and no index, and the reader takes
+     * the rate itself from the amount list under the "rate" role. Without both,
+     * the leg the engine rebuilds has no FixedLegData and refuses to price.
+     */
+    ores::trading::messaging::put_bond_issue_leg_rate_request rate_req;
+    rate_req.change.write.issue_id = write.issue_id;
+    rate_req.change.write.leg_number = 1;
+    rate_req.change.write.rate_kind = "fixed";
+    rate_req.change.precondition = {
+        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    rate_req.intent.reason_code = std::string(population_reason);
+    rate_req.intent.commentary = "Generated trade population.";
+    call_ok(ores::trading::messaging::put_bond_issue_leg_rate_request::nats_subject,
+            rate_req,
+            "the rate of bond issue " + write.security_id);
+
+    ores::trading::messaging::put_bond_issue_leg_amount_request coupon_req;
+    coupon_req.change.write.issue_id = write.issue_id;
+    coupon_req.change.write.leg_number = 1;
+    coupon_req.change.write.amount_role = "rate";
+    coupon_req.change.write.sequence_number = 2;
+    coupon_req.change.write.value =
+        ores::utility::decimal::decimal::from_double(coupon_rate).value();
+    coupon_req.change.precondition = {
+        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    coupon_req.intent.reason_code = std::string(population_reason);
+    coupon_req.intent.commentary = "Generated trade population.";
+    call_ok(ores::trading::messaging::put_bond_issue_leg_amount_request::nats_subject,
+            coupon_req,
+            "the coupon of bond issue " + write.security_id);
+
+    /*
      * The schedule is a rule and not a date list, so the terms stay relative
      * to the anchor: the tenor and the convention are what the document
      * states, and the dates follow from them.
@@ -457,7 +496,7 @@ void trading_trade_population_writer::write_issue_leg(
     ores::trading::messaging::put_bond_issue_leg_schedule_request schedule_req;
     schedule_req.change.write.issue_id = write.issue_id;
     schedule_req.change.write.leg_number = 1;
-    schedule_req.change.write.schedule_role = "payment";
+    schedule_req.change.write.schedule_role = "schedule";
     schedule_req.change.write.sequence_number = 1;
     schedule_req.change.write.schedule_kind = "rules";
     schedule_req.change.write.start_date = slot.issue_date;

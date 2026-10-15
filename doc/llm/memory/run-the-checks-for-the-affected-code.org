@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: B83064E5-6357-4FC6-A8BE-395DD429ED2A
+:END:
+#+title: Run the checks the affected code needs before merging
+#+description: There is no separate validation job. The author runs compass check for every class the change belongs to, heavy tier included, and merges only on a green report.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :process:gate:local-checks:build:memory:feedback:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+Run =./compass.sh check= before merging, and merge only on a green report. The
+author of a change runs the checks for every class it belongs to, and a change
+that touches C++, services or SQL pays the heavy tier — build, database
+recreate, ctest and pgTAP — in the worktree that wrote it.
+
+*Why:* There is no separate validation job. A pair of memories said to validate
+statically and leave the build to an hourly run in one environment, and no
+timer, no cron entry and no second worktree ever ran it, so nothing compiled or
+tested main between merges. The two also contradicted each other and an earlier
+retirement of the same policy, so the position was never settled, and the cost
+was trunk defects found by whoever built next. Retired on 2026-10-15 at the
+user's instruction: the author runs the checks for the affected code.
+
+*How to apply:* Run =./compass.sh check=, which classifies the change and runs
+what its classes need, and read =build/output/local_checks/report.md=.
+=--exclude-heavy= is only for a change whose classes need no compiler. The heavy
+tier wants two things =compass services stop= cannot both give it — =db
+recreate= needs the fleet down, =ctest= needs NATS up — so stop the fleet, start
+the NATS server alone, run the check and start the fleet again; [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and
+local checks]] has the exact commands. A red report holds the merge, and it is
+fixed on the branch that raised it rather than filed as a follow-up task.

@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: E4650DF3-EC2C-4710-AC36-16C0F93229F5
+:END:
+#+title: Task: Scaffold story: Overlay the libarchive port to silence its unused variable
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :overlay_the_libarchive_port_to_silence_its_unused_variable:sprint_28:v0:
+#+owner: marco
+#+branch: feature/overlay-the-libarchive-port-to-silence-its-unused-variable
+#+pr: 3370
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06A524E-2551-40CD-B8C5-B4927749FB0D][Overlay the libarchive port to silence its unused variable]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Establish that the libarchive warning can only be fixed in a portfile, and that
+the boost-system warning cannot be fixed that way, and wire the story into
+Sprint 28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C06A524E-2551-40CD-B8C5-B4927749FB0D][Overlay the libarchive port to silence its unused variable]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- The story is wired into Sprint 28 and the branch carries its documents.
+- The mechanism for each of the two vcpkg warnings is recorded.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Ports that call vcpkg_buildpath_length_warning | 14, of which 1 is a boost port | =grep -rl vcpkg_buildpath_length_warning vcpkg/ports/= | d89b3c0a53 |
+| Upstream libarchive portfile lists the variable | no | vcpkg master portfile | d89b3c0a53 |
+| Versions of libarchive with the entry missing | all, up to and including master | same | d89b3c0a53 |
+
+* Notes
+
+The unused-variable check is unconditional. =vcpkg_cmake_configure= runs it
+whenever a port manually specifies a variable that the project never read, and
+only the per-call =MAYBE_UNUSED_VARIABLES= argument suppresses it. No
+environment variable or toolchain setting turns it off globally, so the
+portfile is the only place the fix can live.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3370][#3370]] | [cmake] Overlay the libarchive port to list its unused variable |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is scaffolded and wired into Sprint 28. This task carries the story
+documents, the sprint row and the branch, and closes after the scaffold PR
+merges.
+
+The recorded mechanism: the libarchive warning is fixable in a portfile, so it
+gets an overlay; the boost-system warning is a correct advisory about path
+length, so it does not. Both facts and the commands behind them are in the
+measurements table.

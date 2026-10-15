@@ -44,4 +44,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/market_data_provider_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/yield_curve_process_parameter_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.synthetic.hpp"
 )

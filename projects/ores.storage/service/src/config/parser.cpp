@@ -53,8 +53,8 @@ void print_help(const options_description& od, std::ostream& info) {
 void version(std::ostream& info) {
     info << product_version << std::endl
          << "Copyright (C) 2026 Marco Craveiro." << std::endl
-         << "License GPLv3: GNU GPL version 3 or later " << "<http://gnu.org/licenses/gpl.html>."
-         << std::endl
+         << "License GPLv3: GNU GPL version 3 or later "
+         << "<http://gnu.org/licenses/gpl.html>." << std::endl
          << "This is free software: you are free to change and redistribute it." << std::endl
          << "There is NO WARRANTY, to the extent permitted by law." << std::endl;
 
@@ -74,15 +74,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     //   my_opts.add_options()(...);
     //   const auto od(standard_service_options::make_options_description(
     //       "ores.storage.service.log", my_opts));
-    options_description sod("Object storage");
-    sod.add_options()("storage-dir",
-                      boost::program_options::value<std::string>()->default_value(
-                          "/var/ores/http-server/storage"),
-                      "Root directory the buckets live under. It must match the HTTP "
-                      "server's --storage-dir, because both interfaces serve the same "
-                      "objects through the same store.");
-    const auto od(
-        standard_service_options::make_options_description("ores.storage.service.log", sod));
+    const auto od(standard_service_options::make_options_description("ores.storage.service.log"));
     const auto vm(standard_service_options::parse(od, arguments, "STORAGE_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -100,7 +92,6 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
-    r.storage_dir = vm["storage-dir"].as<std::string>();
     return r;
 }
 

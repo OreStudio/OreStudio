@@ -156,6 +156,42 @@ void resolve_tenor_basis_swap_identity(const ores::database::context& ctx,
     relink(v.tenor_basis_swap_long_short, tenor_basis_swap_long_short_repository());
 }
 
+// Closes every live row one part table holds for a convention.
+template <typename Repository>
+void close_live_rows(const ores::database::context& ctx,
+                     Repository repo,
+                     const std::string& convention_id) {
+    const auto live = repo.read_latest_by_convention_id(
+        ctx,
+        convention_id,
+        0,
+        std::numeric_limits<std::uint32_t>::max(),
+        {},
+        std::nullopt);
+    for (const auto& row : live)
+        repo.remove(ctx, boost::uuids::to_string(row.id));
+}
+
+// A convention fills exactly one leg form. The part writes above make the form
+// the document carries current; a live part the document omits is closed here,
+// so an import that moves a convention from one form to the other does not
+// leave both live. It runs after the writes, so a convention is never left with
+// neither. This is the same obligation the DQ publish carries; the two cannot
+// share a body, because this path writes through the repositories and the
+// publish writes in SQL.
+void close_omitted_leg_forms(const ores::database::context& ctx,
+                             const std::vector<boost::uuids::uuid>& conventions,
+                             const std::set<std::string>& pay_receive_forms,
+                             const std::set<std::string>& long_short_forms) {
+    for (const auto& id : conventions) {
+        const auto key = boost::uuids::to_string(id);
+        if (!pay_receive_forms.contains(key))
+            close_live_rows(ctx, tenor_basis_swap_pay_receive_repository(), key);
+        if (!long_short_forms.contains(key))
+            close_live_rows(ctx, tenor_basis_swap_long_short_repository(), key);
+    }
+}
+
 
 // A world convention is the tenant's, whoever imports a document naming it, so
 // one the tenant holds is never replaced by an import.
@@ -186,6 +222,20 @@ conventions_document_service::conventions_document_service(context ctx)
 conventions_save_result conventions_document_service::save(messaging::conventions_document v) {
     ores::service::messaging::stamp_document(v, ctx_);
     resolve_tenor_basis_swap_identity(ctx_, v);
+
+    // The leg forms the document carries, read before the parts move into the
+    // write calls below, and the conventions they belong to.
+    std::set<std::string> pay_receive_forms;
+    for (const auto& p : v.tenor_basis_swap_pay_receive)
+        pay_receive_forms.insert(boost::uuids::to_string(p.convention_id));
+    std::set<std::string> long_short_forms;
+    for (const auto& l : v.tenor_basis_swap_long_short)
+        long_short_forms.insert(boost::uuids::to_string(l.convention_id));
+    std::vector<boost::uuids::uuid> tenor_conventions;
+    for (const auto& c : v.convention)
+        if (c.kind_code == tenor_basis_swap_kind)
+            tenor_conventions.push_back(c.id);
+
     conventions_save_result r;
     replace_party_rows(ctx_, zero_convention_repository(), std::move(v.zero));
     replace_party_rows(ctx_, average_ois_convention_repository(), std::move(v.average_ois));
@@ -225,6 +275,7 @@ conventions_save_result conventions_document_service::save(messaging::convention
     add_missing_world_rows(ctx_, ibor_index_convention_repository(), v.ibor_index, r.world_kept);
     add_missing_world_rows(
         ctx_, overnight_index_convention_repository(), v.overnight_index, r.world_kept);
+    close_omitted_leg_forms(ctx_, tenor_conventions, pay_receive_forms, long_short_forms);
     for (const auto& fx : v.fx)
         r.fx_skipped.push_back(fx.pair.base_currency + "-" + fx.pair.quote_currency +
                                "-FX-CONVENTIONS");

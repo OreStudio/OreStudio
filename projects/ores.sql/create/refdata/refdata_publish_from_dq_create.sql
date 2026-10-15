@@ -5140,17 +5140,24 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- The copied column list is read from the live table itself, so there is no
 -- second per-kind list to keep in step either.
 --
--- The atomised tenor basis swap kind is absent: its live shape is the central
--- ores_refdata_conventions_tbl plus two part tables, which the one-artefact-
--- to-one-live-table transform cannot express. It has no artefact table and is
--- not published from DQ.
+-- The atomised tenor basis swap kind is not in the kind list: its live shape is
+-- the central ores_refdata_conventions_tbl plus two part tables, which the
+-- one-artefact-to-one-live-table transform cannot express. The function
+-- delegates that kind to
+-- ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn and folds the
+-- counts it returns into its own, so the dataset keeps one entry point, one
+-- artefact type and one subject. The dataset is not split because the atomised
+-- kind's identity row is staged in the same central artefact table every other
+-- kind's identity uses, and a second dataset would duplicate that staging.
 --
 -- Rows the target party already carries are skipped, so a republish converges
 -- on the same set. Ids the engine does not ask for are inert: the engine
 -- resolves a convention by id.
 --
--- The oresmd_uri column is copied through as staged. It is null in the seed:
--- no offline tool turns an ORE index name into an oresmd URI today. See the
+-- The oresmd_uri column is copied through as staged: a flat kind stages the
+-- URI of the one index it names, and the atomised central row stages null
+-- because a tenor basis swap names two indices. The live write path leaves the
+-- column null for every kind, so the seed and the write path agree. See the
 -- README under tools/ore_conventions/.
 create or replace function ores_refdata_publish_conventions_from_dq_fn(
     p_dataset_id uuid,
@@ -5173,8 +5180,12 @@ declare
     v_commentary text;
     v_staged bigint;
     v_inserted bigint;
+    r record;
     v_total_inserted bigint := 0;
     v_total_staged bigint := 0;
+    v_atom_inserted bigint := 0;
+    v_atom_skipped bigint := 0;
+    v_atom_deleted bigint := 0;
     v_kinds text[] := array[
         'average_ois', 'bma_basis_swap', 'bond_yield', 'cds',
         'cms_spread_option', 'commodity_forward', 'commodity_future',
@@ -5262,11 +5273,266 @@ begin
         v_total_inserted := v_total_inserted + v_inserted;
     end loop;
 
+    -- The atomised kind has no entry in the kind list above, because its live
+    -- shape is not one artefact table to one live table. It is published by its
+    -- own function and its counts are folded into this function's.
+    for r in
+        select * from ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn(
+            p_dataset_id, p_target_tenant_id, p_mode, p_params)
+    loop
+        if r.action = 'inserted' then
+            v_atom_inserted := v_atom_inserted + r.record_count;
+        elsif r.action = 'skipped' then
+            v_atom_skipped := v_atom_skipped + r.record_count;
+        elsif r.action = 'deleted' then
+            v_atom_deleted := v_atom_deleted + r.record_count;
+        end if;
+    end loop;
+
     return query
-    select 'inserted'::text, v_total_inserted
-    where v_total_inserted > 0
-    union all select 'skipped'::text, v_total_staged - v_total_inserted
-    where v_total_staged - v_total_inserted > 0;
+    select 'inserted'::text, v_total_inserted + v_atom_inserted
+    where v_total_inserted + v_atom_inserted > 0
+    union all select 'skipped'::text, v_total_staged - v_total_inserted + v_atom_skipped
+    where v_total_staged - v_total_inserted + v_atom_skipped > 0
+    union all select 'deleted'::text, v_atom_deleted
+    where v_atom_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Atomised Instrument Conventions: the tenor basis swap composite
+-- =============================================================================
+
+-- The tenor basis swap kind is the first atomised convention: its live shape is
+-- one central ores_refdata_conventions_tbl row plus exactly one row in one of
+-- two mutually exclusive part tables, tenor_basis_swap_pay_receives or
+-- tenor_basis_swap_long_shorts. The flat name transform cannot express that
+-- shape, so this function owns the kind and the flat publisher delegates to it.
+--
+-- The staged central row names the convention by (kind, name), never by a uuid;
+-- the publish supplies the uuid and the party, as the other party-scoped
+-- publishers do. A part names its central row by the same (kind, name) pair.
+--
+-- A publish makes each staged convention's live part rows exactly the staged
+-- ones: the staged part is written when absent, and a live part the staging
+-- omits is closed. That second clause is what closes the other leg form when a
+-- convention arrives in the other form, so a convention never holds both forms
+-- at once. The mode has no effect: like the flat publisher, this one only
+-- inserts what is absent.
+create or replace function ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_commentary text;
+    v_staged_central bigint := 0;
+    v_staged_part bigint := 0;
+    v_inserted_central bigint := 0;
+    v_inserted_part bigint := 0;
+    v_deleted bigint := 0;
+    v_batch bigint := 0;
+    r record;
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
+
+    select count(*) into v_staged_central
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'TENOR_BASIS_SWAP';
+
+    select count(*) into v_staged_part
+    from (
+        select 1
+        from ores_dq_tenor_basis_swap_pay_receives_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_tenor_basis_swap_long_shorts_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+    ) parts;
+
+    -- The central row is created only when the party holds no live row for the
+    -- identity, so a republish leaves the row it already wrote as it is. The
+    -- store's trigger stamps the version.
+    insert into ores_refdata_conventions_tbl (
+        tenant_id, id, version, party_id, kind_code, name, oresmd_uri,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, v_party_id,
+        dq.kind_code, dq.name, dq.oresmd_uri,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'TENOR_BASIS_SWAP'
+      and not exists (
+          select 1 from ores_refdata_conventions_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.party_id = v_party_id
+            and o.kind_code = dq.kind_code
+            and o.name = dq.name
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted_central = row_count;
+
+    -- The paying and receiving part, written only for a convention that has no
+    -- live row of that form.
+    insert into ores_refdata_tenor_basis_swap_pay_receives_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        pay_index, pay_frequency, receive_index, receive_frequency,
+        spread_on_rec, include_spread, sub_periods_coupon_type,
+        pay_is_averaged, rec_is_averaged,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.pay_index, a.pay_frequency, a.receive_index, a.receive_frequency,
+        a.spread_on_rec, a.include_spread, a.sub_periods_coupon_type,
+        a.pay_is_averaged, a.rec_is_averaged,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_tenor_basis_swap_pay_receives_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_tenor_basis_swap_pay_receives_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted_part = row_count;
+
+    -- The long and short part, written only for a convention that has no live
+    -- row of that form.
+    insert into ores_refdata_tenor_basis_swap_long_shorts_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        long_index, long_pay_tenor, short_index, short_pay_tenor,
+        spread_on_short, include_spread, sub_periods_coupon_type,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.long_index, a.long_pay_tenor, a.short_index, a.short_pay_tenor,
+        a.spread_on_short, a.include_spread, a.sub_periods_coupon_type,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_tenor_basis_swap_long_shorts_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_tenor_basis_swap_long_shorts_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- A staged convention fills exactly one form. A live part of the other form
+    -- is closed, so a convention that arrives in the other form does not keep
+    -- both. The part table's delete rule closes the row and bumps the central
+    -- version, the way any child write does. The delete is issued one row at a
+    -- time because the rule replaces the statement, so ROW_COUNT reports
+    -- nothing: the loop's own count is what the publish reports as deleted. The
+    -- scope is the conventions this dataset stages: a convention the staging
+    -- does not name is left alone.
+    for r in
+        select o.id
+        from ores_refdata_tenor_basis_swap_pay_receives_tbl o
+        join ores_refdata_conventions_tbl c on c.id = o.convention_id
+        where c.tenant_id = p_target_tenant_id
+          and c.party_id = v_party_id
+          and c.kind_code = 'TENOR_BASIS_SWAP'
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+          and o.tenant_id = p_target_tenant_id
+          and o.valid_to = ores_utility_infinity_timestamp_fn()
+          and exists (
+              select 1 from ores_dq_conventions_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.kind_code = 'TENOR_BASIS_SWAP'
+                and dq.name = c.name)
+          and not exists (
+              select 1 from ores_dq_tenor_basis_swap_pay_receives_artefact_tbl a
+              where a.dataset_id = p_dataset_id
+                and a.kind_code = c.kind_code
+                and a.convention_name = c.name)
+    loop
+        delete from ores_refdata_tenor_basis_swap_pay_receives_tbl
+        where tenant_id = p_target_tenant_id
+          and id = r.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+        v_deleted := v_deleted + 1;
+    end loop;
+
+    for r in
+        select o.id
+        from ores_refdata_tenor_basis_swap_long_shorts_tbl o
+        join ores_refdata_conventions_tbl c on c.id = o.convention_id
+        where c.tenant_id = p_target_tenant_id
+          and c.party_id = v_party_id
+          and c.kind_code = 'TENOR_BASIS_SWAP'
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+          and o.tenant_id = p_target_tenant_id
+          and o.valid_to = ores_utility_infinity_timestamp_fn()
+          and exists (
+              select 1 from ores_dq_conventions_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.kind_code = 'TENOR_BASIS_SWAP'
+                and dq.name = c.name)
+          and not exists (
+              select 1 from ores_dq_tenor_basis_swap_long_shorts_artefact_tbl a
+              where a.dataset_id = p_dataset_id
+                and a.kind_code = c.kind_code
+                and a.convention_name = c.name)
+    loop
+        delete from ores_refdata_tenor_basis_swap_long_shorts_tbl
+        where tenant_id = p_target_tenant_id
+          and id = r.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+        v_deleted := v_deleted + 1;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted_central + v_inserted_part
+    where v_inserted_central + v_inserted_part > 0
+    union all select 'skipped'::text,
+        (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part)
+    where (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part) > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 

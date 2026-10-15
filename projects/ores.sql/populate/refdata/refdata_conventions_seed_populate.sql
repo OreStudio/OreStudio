@@ -30,10 +30,12 @@
 -- each artefact table to its live table by name. The atomised tenor basis swap
 -- stages into the central convention artefact table and its two part artefact
 -- tables. Each block is seeded only when its own table holds no rows for the
--- dataset, so a block added later still seeds. Each row's oresmd_uri is the
--- oresmd fixing URI of the ORE index the row names, read from
+-- dataset, so a block added later still seeds. Each flat row's oresmd_uri is
+-- the oresmd fixing URI of the ORE index the row names, read from
 -- tools/ore_conventions/oresmd_index_map.tsv; a kind that names no index (a
--- requirement) carries null.
+-- requirement) carries null. The atomised convention's central row stages
+-- null, because the kind names two indices and the live write path leaves the
+-- column null.
 
 
 -- =============================================================================
@@ -2395,43 +2397,43 @@ begin
         insert into ores_dq_conventions_artefact_tbl (
             dataset_id, tenant_id, kind_code, name, oresmd_uri
         ) values
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'AUD-BBSW-1M-3M-BASIS', 'oresmd://ir/AUD?type=fixing&index=ibor&name=BBSW&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'AUD-BBSW-3M-6M-BASIS', 'oresmd://ir/AUD?type=fixing&index=ibor&name=BBSW&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CAD-CDOR-1M-3M-BASIS', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CDOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CAD-CDOR-3M-1D-BASIS', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CDOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CHF-LIBOR-1M-6M-BASIS', 'oresmd://ir/CHF?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CHF-LIBOR-3M-12M-BASIS', 'oresmd://ir/CHF?type=fixing&index=ibor&name=LIBOR&tenor=12M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CHF-LIBOR-3M-6M-BASIS-CONVENTIONS', 'oresmd://ir/CHF?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CZK-PRIBOR-1M-3M-BASIS', 'oresmd://ir/CZK?type=fixing&index=ibor&name=PRIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CZK-PRIBOR-3M-6M-BASIS', 'oresmd://ir/CZK?type=fixing&index=ibor&name=PRIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'DKK-CIBOR-1M-6M-BASIS', 'oresmd://ir/DKK?type=fixing&index=ibor&name=CIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'DKK-CIBOR-3M-6M-BASIS', 'oresmd://ir/DKK?type=fixing&index=ibor&name=CIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'EUR-EURIBOR-LIBOR-6M-BASIS', 'oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'EUR-OIS-1M-BASIS-CONVENTIONS', 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=1M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'GBP-LIBOR-1M-6M-BASIS', 'oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'GBP-LIBOR-3M-6M-BASIS-CONVENTIONS', 'oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'GBP-LIBOR-6M-12M-BASIS', 'oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=12M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'HKD-HIBOR-1M-3M-BASIS', 'oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'HUF-BUBOR-3M-6M-BASIS', 'oresmd://ir/HUF?type=fixing&index=ibor&name=BUBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'JPY-EYTIBOR-6M-6M-BASIS', 'oresmd://ir/JPY?type=fixing&index=ibor&name=EYTIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'JPY-LIBOR-1M-3M-BASIS', 'oresmd://ir/JPY?type=fixing&index=ibor&name=LIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'JPY-LIBOR-3M-6M-BASIS-CONVENTIONS', 'oresmd://ir/JPY?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'NOK-NIBOR-1M-6M-BASIS', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'NOK-NIBOR-3M-6M-BASIS', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'PLN-WIBOR-3M-6M-BASIS', 'oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SEK-STIBOR-1M-3M-BASIS', 'oresmd://ir/SEK?type=fixing&index=ibor&name=STIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SEK-STIBOR-3M-6M-BASIS', 'oresmd://ir/SEK?type=fixing&index=ibor&name=STIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SGD-SIBOR-3M-6M-BASIS', 'oresmd://ir/SGD?type=fixing&index=ibor&name=SIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SGD-SOR-3M-6M-BASIS', 'oresmd://ir/SGD?type=fixing&index=ibor&name=SOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'THB-THBFIX-3M-6M-BASIS', 'oresmd://ir/THB?type=fixing&index=ibor&name=THBFIX&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'THB-THBFIX_BIBOR-6M-BASIS', 'oresmd://ir/THB?type=fixing&index=ibor&name=BIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-BSBY-1M-3M-BASIS', 'oresmd://ir/USD?type=fixing&index=ibor&name=BSBY&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-LIBOR-1M-3M-BASIS-CONVENTIONS', 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-LIBOR-3M-12M-BASIS', 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=12M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-LIBOR-3M-6M-BASIS-CONVENTIONS', 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-SOFR-BSBY-1M-BASIS', 'oresmd://ir/USD?type=fixing&index=ibor&name=BSBY&tenor=1M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-SOFR-BSBY-3M-BASIS', 'oresmd://ir/USD?type=fixing&index=ibor&name=BSBY&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-SOFR-FedFunds-3M-BASIS', 'oresmd://ir/USD?type=fixing&index=ibor&name=FedFunds');
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'AUD-BBSW-1M-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'AUD-BBSW-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CAD-CDOR-1M-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CAD-CDOR-3M-1D-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CHF-LIBOR-1M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CHF-LIBOR-3M-12M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CHF-LIBOR-3M-6M-BASIS-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CZK-PRIBOR-1M-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'CZK-PRIBOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'DKK-CIBOR-1M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'DKK-CIBOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'EUR-EURIBOR-LIBOR-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'EUR-OIS-1M-BASIS-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'GBP-LIBOR-1M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'GBP-LIBOR-3M-6M-BASIS-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'GBP-LIBOR-6M-12M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'HKD-HIBOR-1M-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'HUF-BUBOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'JPY-EYTIBOR-6M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'JPY-LIBOR-1M-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'JPY-LIBOR-3M-6M-BASIS-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'NOK-NIBOR-1M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'NOK-NIBOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'PLN-WIBOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SEK-STIBOR-1M-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SEK-STIBOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SGD-SIBOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'SGD-SOR-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'THB-THBFIX-3M-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'THB-THBFIX_BIBOR-6M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-BSBY-1M-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-LIBOR-1M-3M-BASIS-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-LIBOR-3M-12M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-LIBOR-3M-6M-BASIS-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-SOFR-BSBY-1M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-SOFR-BSBY-3M-BASIS', null),
+            (v_dataset_id, v_tenant_id, 'TENOR_BASIS_SWAP', 'USD-SOFR-FedFunds-3M-BASIS', null);
     end if;
 
     -- TenorBasisSwap pay receive: 10 rows

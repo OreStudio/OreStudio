@@ -226,9 +226,9 @@ uuid is made by the publish, so the part names the central row by its `name` and
 is the paying and receiving form, every other row is the long and short form.
 
 The central row stages no party and no uuid either, because both are supplied at
-publish time. Its `oresmd_uri` is the URI of the first index the entry names
-(`PayIndex`, then `ReceiveIndex`, then `LongIndex`, then `ShortIndex`); an entry
-that names no index carries null.
+publish time. It also stages no `oresmd_uri`: the column holds the URI of a kind
+that names one index, and this kind names two, so the central row carries null
+and the store's own write path leaves the column null too.
 
 Two kinds in the corpus are not seeded at all:
 
@@ -244,7 +244,9 @@ Every flat convention table carries a nullable `oresmd_uri` column, and the
 central atomised convention table mirrors it. The generator writes the oresmd
 **fixing** URI of the ORE index
 the row names, read from `oresmd_index_map.tsv` (below). A row whose kind names
-no index (a *requirement*, per the model doc string) carries `null`.
+no index (a *requirement*, per the model doc string) carries `null`, and so does
+the atomised central row, because an atomised kind names two indices rather than
+one.
 
 The URI comes from the codecs, never from a rule typed into the generator: an
 ORE index name becomes a URI only through `ore_index_codec::read` then
@@ -318,5 +320,8 @@ The dataset rides in the `party_essentials` bundle at `display_order` 5, before
 the report definitions run in the same bundle. Dependency rows in
 `reporting_dataset_dependency_populate.sql` also order it before both reporting
 datasets. The publish function is
-`ores_refdata_publish_conventions_from_dq_fn`.
+`ores_refdata_publish_conventions_from_dq_fn`; for the atomised tenor basis swap
+it delegates to `ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn`,
+which writes the central convention row and closes the leg form the corpus no
+longer stages.
 

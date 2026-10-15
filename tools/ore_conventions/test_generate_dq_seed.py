@@ -152,7 +152,11 @@ class GenerateDqSeedCompositeTest(unittest.TestCase):
         self.assertEqual(len(central["rows"]), 2)
         self.assertEqual(central["rows"][0][2], "'TENOR_BASIS_SWAP'")
         self.assertEqual(central["rows"][0][3], "'TBS-PAY'")
-        self.assertEqual(central["rows"][0][4], f"'{EURIBOR_URI}'")
+        # The kind names two indices, so the central row stages no URI: the
+        # live write path leaves the column null for every kind.
+        self.assertEqual(central["rows"][0][4], "null")
+        self.assertEqual(central["rows"][1][3], "'TBS-LS'")
+        self.assertEqual(central["rows"][1][4], "null")
 
         # The part names the central row and holds its own fields.
         self.assertEqual(pay_receive["table"],

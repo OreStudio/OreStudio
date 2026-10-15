@@ -146,3 +146,60 @@ TEST_CASE("an import does not duplicate a convention the DQ path published", tag
     CHECK(held.convention.front().id == published_id);
     CHECK(held.tenor_basis_swap_pay_receive.size() == 1);
 }
+
+TEST_CASE("an import that changes leg form closes the other form", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto ctx = party_context(h);
+    boost::uuids::random_generator uuid;
+
+    // The first import carries the paying and receiving form.
+    ores::refdata::messaging::conventions_document first;
+    ores::refdata::domain::convention central;
+    central.id = uuid();
+    central.kind_code = "TENOR_BASIS_SWAP";
+    central.name = "EUR-3M-6M-BASIS";
+    central.change_reason_code = "system.test";
+    first.convention.push_back(central);
+    ores::refdata::domain::tenor_basis_swap_pay_receive pay_receive;
+    pay_receive.id = uuid();
+    pay_receive.convention_id = central.id;
+    pay_receive.pay_index = std::string("EUR-EURIBOR-6M");
+    pay_receive.receive_index = std::string("EUR-EURIBOR-3M");
+    pay_receive.change_reason_code = "system.test";
+    first.tenor_basis_swap_pay_receive.push_back(pay_receive);
+
+    conventions_document_service conventions(ctx);
+    conventions.save(first);
+
+    const auto held_first = conventions.get();
+    REQUIRE(held_first.convention.size() == 1);
+    REQUIRE(held_first.tenor_basis_swap_pay_receive.size() == 1);
+    CHECK(held_first.tenor_basis_swap_long_short.empty());
+
+    // The second import names the same party, kind and name in the other form,
+    // so it resolves to the same central row and must close the first form.
+    ores::refdata::messaging::conventions_document second;
+    ores::refdata::domain::convention changed;
+    changed.id = uuid();
+    changed.kind_code = "TENOR_BASIS_SWAP";
+    changed.name = central.name;
+    changed.change_reason_code = "system.test";
+    second.convention.push_back(changed);
+    ores::refdata::domain::tenor_basis_swap_long_short long_short;
+    long_short.id = uuid();
+    long_short.convention_id = changed.id;
+    long_short.long_index = std::string("EUR-EURIBOR-6M");
+    long_short.short_index = std::string("EUR-EURIBOR-3M");
+    long_short.change_reason_code = "system.test";
+    second.tenor_basis_swap_long_short.push_back(long_short);
+
+    conventions.save(second);
+
+    const auto held_second = conventions.get();
+    REQUIRE(held_second.convention.size() == 1);
+    CHECK(held_second.convention.front().id == held_first.convention.front().id);
+    CHECK(held_second.tenor_basis_swap_pay_receive.empty());
+    REQUIRE(held_second.tenor_basis_swap_long_short.size() == 1);
+    CHECK(held_second.tenor_basis_swap_long_short.front().long_index ==
+          std::string("EUR-EURIBOR-6M"));
+}

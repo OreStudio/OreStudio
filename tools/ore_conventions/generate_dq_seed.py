@@ -529,7 +529,9 @@ INDEX_KINDS = ("IborIndex", "OvernightIndex", "ZeroInflationIndex", "SwapIndex")
 # The field a row's single oresmd_uri is written from, in priority order, when
 # the kind does not define the index in its id. The model doc string names the
 # same field. A kind absent here names no index, so its rows carry no URI: it is
-# a requirement, per the model doc string.
+# a requirement, per the model doc string. An atomised kind is not a flat row
+# and is not listed here: its central row stages no URI, because the kind names
+# two indices and the column holds the URI of a kind that names one.
 PRIMARY_INDEX = {
     "AverageOIS": ("Index",),
     "BMABasisSwap": ("Index", "BMAIndex"),
@@ -542,7 +544,6 @@ PRIMARY_INDEX = {
     "InflationSwap": ("Index",),
     "OIS": ("Index",),
     "Swap": ("Index",),
-    "TenorBasisSwap": ("PayIndex", "ReceiveIndex", "LongIndex", "ShortIndex"),
     "TenorBasisTwoSwap": ("LongIndex", "ShortIndex"),
 }
 
@@ -791,13 +792,19 @@ def build_rows(rows, kind, spec, index_map):
     return out
 
 
-def build_composite_rows(rows, kind, index_map):
+def build_composite_rows(rows, kind):
     """Return the staging blocks an atomised convention kind seeds.
 
     One canonical entry stages a central convention row and one row in exactly
     one of the kind's part tables. The part names the central row by the
     convention's name and kind, never by a uuid: the uuid is made by the
     publish, and the kind is part of the central identity.
+
+    The central row stages no oresmd_uri. The column holds the URI of a kind
+    that names one index, and an atomised kind names two: PayIndex and
+    ReceiveIndex, or LongIndex and ShortIndex. The live write path leaves the
+    column null for every kind, so staging null here keeps the corpus and the
+    store in agreement.
     """
     spec = COMPOSITE_KINDS[kind]
     kind_code = sql_literal(spec["kind_code"])
@@ -827,18 +834,8 @@ def build_composite_rows(rows, kind, index_map):
             continue
         fields = parse_signature(row["signature"])
         name = sql_literal(row["id"])
-        index_name = primary_index_name(kind, row["id"], fields)
-        if index_name is None:
-            uri = "null"
-        else:
-            if index_name not in index_map:
-                raise GenError(
-                    f"{kind} {row['id']}: index {index_name!r} is not in the "
-                    f"index map {DEFAULT_MAP.name}; regenerate it from the "
-                    "codec")
-            uri = sql_literal(index_map[index_name])
         blocks["central"]["rows"].append(
-            ["v_dataset_id", "v_tenant_id", kind_code, name, uri])
+            ["v_dataset_id", "v_tenant_id", kind_code, name, "null"])
 
         pay_receive = (fields.get("PayIndex", "").strip()
                        or fields.get("ReceiveIndex", "").strip())
@@ -897,7 +894,7 @@ def generate(tsv_path, index_map_path=DEFAULT_MAP):
     per_kind = {}
     for k in seeded:
         if k in COMPOSITE_KINDS:
-            per_kind[k] = build_composite_rows(rows, k, index_map)
+            per_kind[k] = build_composite_rows(rows, k)
         else:
             per_kind[k] = build_rows(rows, k, KINDS[k], index_map)
     return seeded, per_kind
@@ -946,10 +943,12 @@ HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*
 -- each artefact table to its live table by name. The atomised tenor basis swap
 -- stages into the central convention artefact table and its two part artefact
 -- tables. Each block is seeded only when its own table holds no rows for the
--- dataset, so a block added later still seeds. Each row's oresmd_uri is the
--- oresmd fixing URI of the ORE index the row names, read from
+-- dataset, so a block added later still seeds. Each flat row's oresmd_uri is
+-- the oresmd fixing URI of the ORE index the row names, read from
 -- tools/ore_conventions/oresmd_index_map.tsv; a kind that names no index (a
--- requirement) carries null.
+-- requirement) carries null. The atomised convention's central row stages
+-- null, because the kind names two indices and the live write path leaves the
+-- column null.
 
 """
 

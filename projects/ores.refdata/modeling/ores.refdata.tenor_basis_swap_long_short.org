@@ -16,9 +16,11 @@
 
 The long and short leg form of a tenor basis swap. ORE writes a tenor basis
 swap as =LongIndex= and =ShortIndex= with an optional payment tenor each, plus
-the spread flag. A row of this part holds that form. The paying and receiving
-form lives in =tenor_basis_swap_pay_receive=, and a convention fills exactly
-one of the two.
+the spread flag. The corpus also writes =IncludeSpread= and
+=SubPeriodsCouponType= alongside both forms, so this part declares them too
+rather than the shared central row. A row of this part holds that form. The
+paying and receiving form lives in =tenor_basis_swap_pay_receive=, and a
+convention fills exactly one of the two.
 
 * Flags
 :PROPERTIES:
@@ -138,6 +140,32 @@ Whether the quoted spread is added to the short leg rather than the long one.
 std::nullopt
 #+end_src
 
+** include_spread
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread is included in the coupon that carries it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+How a coupon built from sub-periods is combined, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -207,6 +235,8 @@ std::nullopt
 | short_index    | Short Index    |
 | long_pay_tenor | Long Tenor     |
 | short_pay_tenor | Short Tenor   |
+| include_spread | Include Spread |
+| sub_periods_coupon_type | Sub Periods Type |
 | modified_by    | Modified By    |
 | version        | Version        |
 
@@ -231,6 +261,8 @@ std::nullopt
 | short_index     | Short Index    | shortIndexEdit       | line_edit | false  | false       | e.g. EUR-EURIBOR-3M |
 | short_pay_tenor | Short Pay Tenor | shortPayTenorEdit   | line_edit | false  | false       | e.g. 3M             |
 | spread_on_short | Spread On Short | spreadOnShortEdit   | checkbox  | false  | false       |                     |
+| include_spread  | Include Spread  | includeSpreadEdit   | checkbox  | false  | false       |                     |
+| sub_periods_coupon_type | Sub Periods Type | subPeriodsCouponTypeEdit | line_edit | false | false | e.g. Compounding |
 
 *** Columns
 
@@ -241,6 +273,8 @@ std::nullopt
 | ShortIndex     | short_index     | Short Index    | string    | 180   |
 | ShortPayTenor  | short_pay_tenor | Short Pay Tenor | string   | 120   |
 | SpreadOnShort  | spread_on_short | Spread On Short | bool     | 80    |
+| IncludeSpread  | include_spread  | Include Spread  | bool     | 80    |
+| SubPeriodsCouponType | sub_periods_coupon_type | Sub Periods Type | string | 140 |
 | Version        | version         | Version        | int       | 80    |
 | ModifiedBy     | modified_by     | Modified By    | string    | 120   |
 | RecordedAt     | recorded_at     | Recorded At    | timestamp | 150   |

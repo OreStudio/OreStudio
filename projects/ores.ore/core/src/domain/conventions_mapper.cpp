@@ -1196,6 +1196,18 @@ tenorBasisSwapType reverse_tenor_basis_swap(
             r.ShortPayTenor = *l.short_pay_tenor;
         if (l.spread_on_short)
             r.SpreadOnShort = make_bool(*l.spread_on_short);
+        if (l.include_spread)
+            r.IncludeSpread = make_bool(*l.include_spread);
+        if (l.sub_periods_coupon_type) {
+            const auto& s = *l.sub_periods_coupon_type;
+            if (s == "Compounding")
+                r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
+            else if (s == "Averaging")
+                r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
+            else
+                throw std::runtime_error(
+                    "reverse_tenor_basis_swap: unknown sub_periods_coupon_type: " + s);
+        }
     }
     return r;
 }
@@ -1836,10 +1848,10 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     r.key.id = central.id;
     r.convention = central;
 
-    const bool pay_receive_form =
-        v.PayIndex || v.PayFrequency || v.ReceiveIndex || v.ReceiveFrequency ||
-        v.SpreadOnRec || v.IncludeSpread || v.SubPeriodsCouponType || v.PayIsAveraged ||
-        v.RecIsAveraged;
+    // The form comes from the leg fields alone. IncludeSpread and
+    // SubPeriodsCouponType are written alongside both forms, so they must never
+    // decide it.
+    const bool pay_receive_form = v.PayIndex || v.ReceiveIndex;
     if (pay_receive_form) {
         refdata::domain::tenor_basis_swap_pay_receive p;
         p.id = derived_uuid(boost::uuids::to_string(central.id) + ":pay_receive");
@@ -1904,6 +1916,23 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
 
     if (v.SpreadOnShort)
         l.spread_on_short = parse_bool(*v.SpreadOnShort);
+
+    if (v.IncludeSpread)
+        l.include_spread = parse_bool(*v.IncludeSpread);
+
+    if (v.SubPeriodsCouponType) {
+        using sp = domain::subPeriodsCouponType;
+        switch (*v.SubPeriodsCouponType) {
+            case sp::Compounding:
+                l.sub_periods_coupon_type = "Compounding";
+                break;
+            case sp::Averaging:
+                l.sub_periods_coupon_type = "Averaging";
+                break;
+            default:
+                throw std::runtime_error("Unknown sub-periods coupon type enum value");
+        }
+    }
 
     set_audit(l);
     r.long_short.push_back(std::move(l));

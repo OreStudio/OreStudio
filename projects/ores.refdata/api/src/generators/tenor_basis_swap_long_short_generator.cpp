@@ -52,6 +52,8 @@ generate_synthetic_tenor_basis_swap_long_short(utility::generation::generation_c
     r.short_index = std::nullopt;
     r.short_pay_tenor = std::nullopt;
     r.spread_on_short = std::nullopt;
+    r.include_spread = std::nullopt;
+    r.sub_periods_coupon_type = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

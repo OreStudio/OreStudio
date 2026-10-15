@@ -47,11 +47,12 @@ std::string convert_to_table(const std::vector<tenor_basis_swap_long_short>& v) 
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Long Index" << "Short Index" << "Long Tenor" << "Short Tenor"
-          << "Modified By" << "Version" << fort::endr;
+          << "Include Spread" << "Sub Periods Type" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ls : v) {
         table << opt_str(ls.long_index) << opt_str(ls.short_index) << opt_str(ls.long_pay_tenor)
-              << opt_str(ls.short_pay_tenor) << ls.modified_by << ls.version << fort::endr;
+              << opt_str(ls.short_pay_tenor) << opt_str(ls.include_spread)
+              << opt_str(ls.sub_periods_coupon_type) << ls.modified_by << ls.version << fort::endr;
     }
     return table.to_string();
 }

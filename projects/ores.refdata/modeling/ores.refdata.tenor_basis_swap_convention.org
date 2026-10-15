@@ -23,8 +23,11 @@ ORE lets a tenor basis swap be written two ways, and the corpus uses both. The
 paying and receiving form names =PayIndex= and =ReceiveIndex= with an optional
 frequency each, and adds the averaging and sub-periods fields. The long and
 short form names =LongIndex= and =ShortIndex= with an optional payment tenor
-each, and adds the spread flags. The two forms do not share a field, so the
-family carries one part for each form and a convention fills exactly one.
+each, and adds the spread flags. The corpus also writes =IncludeSpread= and
+=SubPeriodsCouponType= alongside both forms, so each part declares them and the
+shared central row carries neither. Apart from those two fields the two forms
+share nothing, so the family carries one part for each form and a convention
+fills exactly one.
 
 The family's central row is the shared [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][convention]], which names this kind
 with =kind_code= =TENOR_BASIS_SWAP= and holds the ORE document id. Everything

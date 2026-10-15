@@ -49,6 +49,11 @@ render_tenor_basis_swap_long_short_fields(const domain::tenor_basis_swap_long_sh
     fields.push_back(
         {.name = "Spread On Short",
          .value = v.spread_on_short ? (*v.spread_on_short ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Include Spread",
+         .value = v.include_spread ? (*v.include_spread ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Sub Periods Coupon Type",
+                      .value = v.sub_periods_coupon_type.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

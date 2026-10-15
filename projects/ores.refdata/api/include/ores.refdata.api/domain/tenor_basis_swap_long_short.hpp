@@ -39,9 +39,11 @@ namespace ores::refdata::domain {
  *
  * The long and short leg form of a tenor basis swap. ORE writes a tenor basis
  * swap as LongIndex and ShortIndex with an optional payment tenor each, plus
- * the spread flag. A row of this part holds that form. The paying and receiving
- * form lives in tenor_basis_swap_pay_receive, and a convention fills exactly
- * one of the two.
+ * the spread flag. The corpus also writes IncludeSpread and
+ * SubPeriodsCouponType alongside both forms, so this part declares them too
+ * rather than the shared central row. A row of this part holds that form. The
+ * paying and receiving form lives in tenor_basis_swap_pay_receive, and a
+ * convention fills exactly one of the two.
  */
 struct tenor_basis_swap_long_short final {
     /**
@@ -94,6 +96,17 @@ struct tenor_basis_swap_long_short final {
      * @brief Whether the quoted spread is added to the short leg rather than the long one.
      */
     std::optional<bool> spread_on_short;
+
+    /**
+     * @brief Whether the spread is included in the coupon that carries it.
+     */
+    std::optional<bool> include_spread;
+
+    /**
+     * @brief How a coupon built from sub-periods is combined, as the canonical code the mapper
+     * stores.
+     */
+    std::optional<std::string> sub_periods_coupon_type;
 
     /**
      * @brief Username of the person who last modified this tenor basis swap long short.

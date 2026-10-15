@@ -54,6 +54,8 @@ tenor_basis_swap_long_short_mapper::map(const tenor_basis_swap_long_short_entity
     r.short_index = v.short_index;
     r.short_pay_tenor = v.short_pay_tenor;
     r.spread_on_short = v.spread_on_short;
+    r.include_spread = v.include_spread;
+    r.sub_periods_coupon_type = v.sub_periods_coupon_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -79,6 +81,8 @@ tenor_basis_swap_long_short_mapper::map(const domain::tenor_basis_swap_long_shor
     r.short_index = v.short_index;
     r.short_pay_tenor = v.short_pay_tenor;
     r.spread_on_short = v.spread_on_short;
+    r.include_spread = v.include_spread;
+    r.sub_periods_coupon_type = v.sub_periods_coupon_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

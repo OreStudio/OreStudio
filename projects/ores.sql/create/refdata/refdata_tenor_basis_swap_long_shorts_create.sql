@@ -26,9 +26,11 @@
  *
  * The long and short leg form of a tenor basis swap. ORE writes a tenor basis
  * swap as LongIndex and ShortIndex with an optional payment tenor each, plus
- * the spread flag. A row of this part holds that form. The paying and receiving
- * form lives in tenor_basis_swap_pay_receive, and a convention fills exactly
- * one of the two.
+ * the spread flag. The corpus also writes IncludeSpread and
+ * SubPeriodsCouponType alongside both forms, so this part declares them too
+ * rather than the shared central row. A row of this part holds that form. The
+ * paying and receiving form lives in tenor_basis_swap_pay_receive, and a
+ * convention fills exactly one of the two.
  */
 
 create table if not exists "ores_refdata_tenor_basis_swap_long_shorts_tbl" (
@@ -42,6 +44,8 @@ create table if not exists "ores_refdata_tenor_basis_swap_long_shorts_tbl" (
     "short_index" text null,
     "short_pay_tenor" text null,
     "spread_on_short" boolean null,
+    "include_spread" boolean null,
+    "sub_periods_coupon_type" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

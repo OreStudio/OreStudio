@@ -47,6 +47,8 @@ struct tenor_basis_swap_long_short_write {
     std::optional<std::string> short_index;
     std::optional<std::string> short_pay_tenor;
     std::optional<bool> spread_on_short;
+    std::optional<bool> include_spread;
+    std::optional<std::string> sub_periods_coupon_type;
 };
 
 struct tenor_basis_swap_long_short_change {

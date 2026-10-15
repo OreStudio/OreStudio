@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor>
-     * <spread_on_short> <reason> <commentary>
+     * <spread_on_short> <include_spread> <sub_periods_coupon_type> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,8 @@ public:
 
     /**
      * @brief set <id> <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor>
-     * <spread_on_short> <reason> <commentary> [--version <n>]
+     * <spread_on_short> <include_spread> <sub_periods_coupon_type> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +105,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <convention_id> <long_index> <long_pay_tenor> <short_index>
-     * <short_pay_tenor> <spread_on_short> <reason> <commentary>
+     * <short_pay_tenor> <spread_on_short> <include_spread> <sub_periods_coupon_type> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

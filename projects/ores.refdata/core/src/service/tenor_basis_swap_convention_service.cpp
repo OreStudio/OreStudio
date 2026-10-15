@@ -163,6 +163,8 @@ to_domain_long_short(const messaging::tenor_basis_swap_long_short_write& write) 
     v.short_index = write.short_index;
     v.short_pay_tenor = write.short_pay_tenor;
     v.spread_on_short = write.spread_on_short;
+    v.include_spread = write.include_spread;
+    v.sub_periods_coupon_type = write.sub_periods_coupon_type;
     return v;
 }
 

@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-tenor_basis_swap_long_shorts add <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary>
+tenor_basis_swap_long_shorts add <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <include_spread> <sub_periods_coupon_type> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.put=.
 
 #+name: tenor_basis_swap_long_shorts-add
 #+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-add.ores :exports none
-tenor_basis_swap_long_shorts add 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+tenor_basis_swap_long_shorts add 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-tenor_basis_swap_long_shorts set <id> <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary> [--version <n>]
+tenor_basis_swap_long_shorts set <id> <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <include_spread> <sub_periods_coupon_type> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.put=.
 
 #+name: tenor_basis_swap_long_shorts-set
 #+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-set.ores :exports none
-tenor_basis_swap_long_shorts set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+tenor_basis_swap_long_shorts set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-tenor_basis_swap_long_shorts put-many --count <n> <id> <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary>
+tenor_basis_swap_long_shorts put-many --count <n> <id> <convention_id> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <include_spread> <sub_periods_coupon_type> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.tenor_basis_swap_long_shorts.put_many=.
 
 #+name: tenor_basis_swap_long_shorts-put-many
 #+begin_src ores-shell :tangle tenor_basis_swap_long_shorts-put-many.ores :exports none
-tenor_basis_swap_long_shorts put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+tenor_basis_swap_long_shorts put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

@@ -41,6 +41,8 @@ export interface TenorBasisSwapLongShort {
     short_index: string | null;
     short_pay_tenor: string | null;
     spread_on_short: boolean | null;
+    include_spread: boolean | null;
+    sub_periods_coupon_type: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -52,6 +52,8 @@ struct tenor_basis_swap_long_short_entity {
     std::optional<std::string> short_index;
     std::optional<std::string> short_pay_tenor;
     std::optional<bool> spread_on_short;
+    std::optional<bool> include_spread;
+    std::optional<std::string> sub_periods_coupon_type;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

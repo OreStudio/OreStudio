@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: F7C3FA80-ED8C-498B-98F4-0CC0E7A2644F
+:END:
+#+title: Task: Read the version manifest variable through the environment provider
+#+description: Initial task for: Fix the deprecated getenv in the build stamp
+#+type: task
+#+level: s1
+#+filetags: :fix_the_deprecated_getenv_in_the_build_stamp:sprint_28:v0:
+#+owner: marco
+#+branch: feature/fix-the-deprecated-getenv-in-the-build-stamp
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CD448C32-785F-48D9-8DB5-31C9FBC60566][Fix the deprecated getenv in the build stamp]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Windows build compiles version.cpp under -Werror, and no component reads the environment with std::getenv directly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CD448C32-785F-48D9-8DB5-31C9FBC60566][Fix the deprecated getenv in the build stamp]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- version.cpp.in calls the platform environment provider instead of std::getenv.
+- The heading <cstdlib> include goes with it.
+- ores.utility.lib builds and links.
+
+* Plan
+
+Read ORES_VERSION_MANIFEST through the platform environment provider, and
+drop the =<cstdlib>= include that existed only for =std::getenv=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Windows jobs failing on the deprecation | 4 of 4, in Nightly Windows 38686566210 | =gh run view --job 116262839823 --log-failed= | 6b76b8de89 |
+| The error | =version.cpp:85:37: 'getenv' is deprecated ... [-Werror,-Wdeprecated-declarations]= | same | 6b76b8de89 |
+| Readers of the manifest variable | 1 | =grep -rn ORES_VERSION_MANIFEST --include=*.cpp --include=*.in projects/= | 6b76b8de89 |
+
+* Notes
+
+** Why it broke only on Windows
+
+Clang on Linux and AppleClang accept =std::getenv= without comment. The MSVC
+STL marks it deprecated in favour of =_dupenv_s=, and the tree builds with
+=-Werror=, so the deprecation is fatal there and nowhere else.
+
+** The codebase already answers this
+
+=ores.platform/environment/real_environment_provider.hpp= documents that
+callers must go through the provider because =std::getenv= breaks the
+Windows build under =-Werror=. The provider returns an
+=optional<string>=, so the emptiness check moves from =*from_env != '\0'=
+to =!from_env->empty()=.
+
+** No new dependency
+
+=projects/ores.utility/src/CMakeLists.txt= already links =ores.platform.lib=,
+and the same function already calls
+=ores::platform::process::executable_path()=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=version.cpp.in= reads =ORES_VERSION_MANIFEST= through
+=ores::platform::environment::environment::get_value=, which returns an
+=optional<string>= and never names =std::getenv=. The =<cstdlib>= include
+went with it.
+
+=ores.utility.lib= builds and links with the change, compiling the
+regenerated =version.cpp=.
+
+The local gate ran all 52 checks rather than the usual handful, because
+=.in= is not a class the checker knows, and four of them failed:
+=component-drift=, =cmake-sources=, =tangle-shell= and =backlog-indexes=.
+None touches this change. They are drift on main in
+=ores.shell/scripts/library/report_instances/=, a generated
+=report_trigger_types= directory and =product_backlog/inbox.org=, and the
+gate's own prepare steps rewrote those files in the working tree. Their
+side effects were reverted before this commit; they belong to whoever
+landed that shell work.
+
+Not verified here: the Windows build is the one that failed, and only
+Windows can verify it. The deprecation is specific to the MSVC STL, so the
+next Nightly Windows run is the proof.

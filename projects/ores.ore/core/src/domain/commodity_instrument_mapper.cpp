@@ -172,6 +172,7 @@ std::string extract_underlying_name(const underlyingTypes_group_t& u) {
 struct swap_leg_info {
     std::string commodity_code;
     std::string currency;
+    double quantity = 0.0;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::chrono::year_month_day> maturity_date;
 };
@@ -185,6 +186,8 @@ swap_leg_info extract_floating_leg_info(const xsd::vector<legData>& legs) {
             continue;
         const auto& fl = *leg.legDataType->CommodityFloatingLegData;
         info.commodity_code = std::string(fl.Name);
+        if (!fl.Quantities.Quantity.empty())
+            info.quantity = static_cast<double>(fl.Quantities.Quantity.front());
         if (leg.Currency)
             info.currency = std::string(*leg.Currency);
         if (leg.ScheduleData && !leg.ScheduleData->Rules.empty()) {
@@ -294,6 +297,7 @@ commodity_instrument_mapper::forward_commodity_swap(const trade& t) {
     const auto info = extract_floating_leg_info(d.LegData);
     result.commodity_code = info.commodity_code;
     result.currency = info.currency;
+    result.quantity = info.quantity;
     result.start_date = info.start_date;
     result.maturity_date = info.maturity_date;
     return result;
@@ -315,6 +319,7 @@ commodity_instrument_mapper::forward_commodity_swaption(const trade& t) {
     const auto info = extract_floating_leg_info(d.LegData);
     result.commodity_code = info.commodity_code;
     result.currency = info.currency;
+    result.quantity = info.quantity;
     result.start_date = info.start_date;
     result.maturity_date = info.maturity_date;
     return result;
@@ -386,6 +391,8 @@ commodity_instrument_mapper::forward_commodity_option_strip(const trade& t) {
     if (d.LegData.legDataType && d.LegData.legDataType->CommodityFloatingLegData) {
         const auto& fl = *d.LegData.legDataType->CommodityFloatingLegData;
         result.commodity_code = std::string(fl.Name);
+        if (!fl.Quantities.Quantity.empty())
+            result.quantity = static_cast<double>(fl.Quantities.Quantity.front());
     }
     if (d.LegData.Currency)
         result.currency = std::string(*d.LegData.Currency);
@@ -502,6 +509,12 @@ trade commodity_instrument_mapper::reverse_commodity_swap(const commodity_instru
     pricesType_Price_t price;
     static_cast<float&>(price) = 0.0f;
     fl.Prices.Price.push_back(price);
+    // A commodity leg's Quantity is required: without it the exported
+    // document no longer satisfies the schema and cannot be read back.
+    quantitiesType_Quantity_t fixedQuantity;
+    static_cast<float&>(fixedQuantity) = static_cast<float>(instr.quantity);
+    fl.Quantities = quantitiesType{};
+    fl.Quantities->Quantity.push_back(fixedQuantity);
     legDataType_group_t flt;
     flt.CommodityFixedLegData = std::move(fl);
     fixedLeg.legDataType = std::move(flt);
@@ -516,6 +529,9 @@ trade commodity_instrument_mapper::reverse_commodity_swap(const commodity_instru
     _CommodityFloatingLegData_t cfl;
     static_cast<std::string&>(cfl.Name) = instr.commodity_code;
     cfl.PriceType = priceType::FutureSettlement;
+    quantitiesType_Quantity_t floatingQuantity;
+    static_cast<float&>(floatingQuantity) = static_cast<float>(instr.quantity);
+    cfl.Quantities.Quantity.push_back(floatingQuantity);
     legDataType_group_t flt2;
     flt2.CommodityFloatingLegData = std::move(cfl);
     floatLeg.legDataType = std::move(flt2);
@@ -570,6 +586,9 @@ trade commodity_instrument_mapper::reverse_commodity_swaption(const commodity_in
     _CommodityFloatingLegData_t cfl;
     static_cast<std::string&>(cfl.Name) = instr.commodity_code;
     cfl.PriceType = priceType::FutureSettlement;
+    quantitiesType_Quantity_t swaptionQuantity;
+    static_cast<float&>(swaptionQuantity) = static_cast<float>(instr.quantity);
+    cfl.Quantities.Quantity.push_back(swaptionQuantity);
     legDataType_group_t ldt;
     ldt.CommodityFloatingLegData = std::move(cfl);
     floatLeg.legDataType = std::move(ldt);
@@ -649,6 +668,9 @@ trade commodity_instrument_mapper::reverse_commodity_option_strip(
     _CommodityFloatingLegData_t cfl;
     static_cast<std::string&>(cfl.Name) = instr.commodity_code;
     cfl.PriceType = priceType::FutureSettlement;
+    quantitiesType_Quantity_t stripQuantity;
+    static_cast<float&>(stripQuantity) = static_cast<float>(instr.quantity);
+    cfl.Quantities.Quantity.push_back(stripQuantity);
     legDataType_group_t ldt;
     ldt.CommodityFloatingLegData = std::move(cfl);
     leg.legDataType = std::move(ldt);

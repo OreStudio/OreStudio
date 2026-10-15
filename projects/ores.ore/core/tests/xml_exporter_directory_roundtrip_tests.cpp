@@ -82,11 +82,6 @@ struct scratch_dir {
  */
 const std::set<std::string>& known_export_gaps() {
     static const std::set<std::string> gaps = {
-        "Commodity_APO_Strip_NYMEX_CSX.xml",
-        "Commodity_Basis_Swap_NYMEX_CL.xml",
-        "Commodity_Option_Strip_NYMEX_NG.xml",
-        "Commodity_Swap_LME_AL_AVG_ALT.xml",
-        "Commodity_Swap_NYMEX_A7Q.xml",
         "Commodity_Swaption_NYMEX_NG.xml",
         "Exotic_EquityAccumulator_single_name.xml",
         "Exotic_EquityTaRF.xml",

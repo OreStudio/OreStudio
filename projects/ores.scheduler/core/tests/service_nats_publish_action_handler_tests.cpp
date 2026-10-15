@@ -208,7 +208,8 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     CHECK(result.error().find("refused the trigger") != std::string::npos);
 }
 
-TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused in the body", tags) {
+TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused in the body",
+          tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

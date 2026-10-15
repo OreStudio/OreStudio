@@ -145,7 +145,8 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         }
 
         const nats_trigger_body body{
-            .report_definition_id = parse_uuid(*parsed->report_definition_id, "report_definition_id"),
+            .report_definition_id =
+                parse_uuid(*parsed->report_definition_id, "report_definition_id"),
             .tenant_id = parse_uuid(parsed->tenant_id.value_or(""), "tenant_id"),
             .job_instance_id = ctx.inst_id,
             .kind = "production"};

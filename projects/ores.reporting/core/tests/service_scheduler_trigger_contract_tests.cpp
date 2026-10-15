@@ -109,7 +109,8 @@ TEST_CASE("what the scheduler publishes decodes as the reporting trigger request
     std::vector<std::byte> published;
     auto responder = nats.subscribe(test_subject, [&nats, &published](ores::nats::message msg) {
         published = msg.data;
-        nats.publish(msg.reply_subject, ores::nats::default_wire_codec().encode(admitted_response{}));
+        nats.publish(msg.reply_subject,
+                     ores::nats::default_wire_codec().encode(admitted_response{}));
     });
 
     auto svc_nats = make_unauthenticated_client(nats);

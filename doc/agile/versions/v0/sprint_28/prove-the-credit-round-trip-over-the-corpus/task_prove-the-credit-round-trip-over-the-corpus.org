@@ -106,6 +106,12 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | The proof could pass without comparing anything | xml_credit_corpus_roundtrip_tests.cpp | accept | Each trade must render a header and a leg row, and a control changes one field and expects a different rendering. |
+| 2 | The compared rows are claimed to cover every table the family writes | xml_credit_corpus_roundtrip_tests.cpp | accept | Checked each table against the Goal: the header, six facts, the basket, the legs with amounts and rates, the option block with its five children, the schedules with their dates, and the strikes are all rendered. The claim holds. |
+| 3 | The measurements named a commit the rebase left behind | task_prove-the-credit-round-trip-over-the-corpus.org | accept | The measurements now name the commit the suite was run at. |
+| 4 | The test file failed clang-format | xml_credit_corpus_roundtrip_tests.cpp | accept | Formatted. The `format` check is now clean. |
+| 5 | `cmake-sources` fails: `ores.service/src/component_files.cmake` omits `step_command_stream.hpp` | projects/ores.service/src/component_files.cmake | accept | Pre-existing on main, not from this branch: the header is on main and no branch lists it. Regenerated the file. Fixed here because the gate is the only gate and it blocks the change. |
+| 6 | A document whose import throws is skipped without a word | xml_credit_corpus_roundtrip_tests.cpp | decline | The rates corpus test, already merged, reads the same way. The `documents == 8` pin catches a document that drops out of the walk, so the silence cannot hide a loss. |
+| 7 | The scratch directory is left behind when a `REQUIRE` aborts | xml_credit_corpus_roundtrip_tests.cpp | decline | Sibling precedent again, and the directory is a temporary path the next run clears. No effect on the proof. |
 
 * Result
 

@@ -95,8 +95,7 @@ std::string family_rows(const trade_import_item& item) {
     std::ostringstream s;
     s << "credit_instruments " << b.credit_instruments << '\n'
       << "credit_default_swap_instruments " << b.credit_default_swap_instruments << '\n'
-      << "index_credit_default_swap_instruments " << b.index_credit_default_swap_instruments
-      << '\n'
+      << "index_credit_default_swap_instruments " << b.index_credit_default_swap_instruments << '\n'
       << "index_credit_default_swap_option_instruments "
       << b.index_credit_default_swap_option_instruments << '\n'
       << "synthetic_cdo_instruments " << b.synthetic_cdo_instruments << '\n'

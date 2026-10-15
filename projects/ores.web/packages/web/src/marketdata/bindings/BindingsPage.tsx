@@ -20,12 +20,10 @@
  */
 
 import { type ReactNode } from 'react';
-import { Link } from 'react-router';
 import { useTranslation } from '../../i18n/Provider.js';
 import { RecordList, useRecordSource, type ListFilter } from '../../refdata/RecordList.js';
 import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { show } from '../../refdata/records.js';
-import { seriesPageOf } from '../../oresmd/identity.js';
 import { useSeriesTitle } from '../../oresmd/useSeriesTitle.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { RelativeTime } from '../../ui/Time.js';
@@ -67,7 +65,20 @@ function BindingsList(): ReactNode {
             lead={t('marketdata.bindings.lead')}
             crumbs={[...useAreaRoot('marketdata'), { label: t('marketdata.bindings.title') }]}
             pathOf={(row) => bindingPath(show(row['id']))}
+            // The output the binding writes leads; the source it consumes follows.
             columns={[
+                {
+                    id: 'series',
+                    header: t('marketdata.bindings.series'),
+                    cell: (row) => {
+                        const listed = facts.seriesOf(show(row['source_name']));
+                        return listed === undefined ? (
+                            <span className="text-ink-faint">{'\u2014'}</span>
+                        ) : (
+                            titled(listed.identity)
+                        );
+                    },
+                },
                 {
                     id: 'source_name',
                     header: t('refdata.fields.source_name'),
@@ -79,25 +90,6 @@ function BindingsList(): ReactNode {
                     id: 'producer_kind',
                     header: t('refdata.fields.producer_kind'),
                     cell: (row) => t(`refdata.choices.producer_kind.${show(row['producer_kind'])}`),
-                },
-                {
-                    id: 'series',
-                    header: t('marketdata.bindings.series'),
-                    cell: (row) => {
-                        const listed = facts.seriesOf(show(row['source_name']));
-                        if (listed === undefined) {
-                            return <span className="text-ink-faint">{'\u2014'}</span>;
-                        }
-                        return (
-                            <Link
-                                className="text-accent hover:underline"
-                                to={seriesPageOf(listed)}
-                                onClick={(event) => event.stopPropagation()}
-                            >
-                                {titled(listed.identity)}
-                            </Link>
-                        );
-                    },
                 },
                 {
                     id: 'enabled',

@@ -103,6 +103,8 @@ function BindingBody({
     const lastTick = facts.lastTickOf(sourceName);
     const status = facts.statusOf({ source_name: sourceName, producer_kind: kind, enabled });
     const none = <span className="text-ink-faint">{'\u2014'}</span>;
+    // The page is named for what the binding writes, not the source it consumes.
+    const target = listed === undefined ? sourceName : titled(listed.identity);
 
     return (
         <div className="space-y-4">
@@ -110,9 +112,9 @@ function BindingBody({
                 crumbs={[
                     ...useAreaRoot('marketdata'),
                     { label: t('marketdata.bindings.title'), to: bindingPath() },
-                    { label: sourceName },
+                    { label: target },
                 ]}
-                title={sourceName}
+                title={target}
                 recordKey={sourceName}
                 version={binding.version}
                 subdued

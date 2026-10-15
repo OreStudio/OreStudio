@@ -3859,6 +3859,9 @@ const fr: SourceCatalogue = {
                 synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
+                bindings: 'Liaisons',
+                bindingsBody:
+                    'Les flux qui écrivent des données de marché pour cette partie : la série que chacun écrit et s’il tourne.',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },

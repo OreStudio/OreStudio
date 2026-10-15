@@ -3834,6 +3834,9 @@ const pt: SourceCatalogue = {
                 synthetic: 'Sintético',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
+                bindings: 'Vínculos',
+                bindingsBody:
+                    'Os feeds que escrevem dados de mercado para esta parte: a série que cada um escreve e se está em execução.',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },

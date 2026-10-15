@@ -228,8 +228,6 @@ describe('the routes of the application', () => {
         '/development',
         // Opened from an oresmd URL, so no card leads to it.
         '/market-data/series',
-        // The menu card for Bindings arrives with its own task.
-        '/market-data/bindings',
     ]);
 
     /** Routes that are a record's page, a redirect or outside the signed-in shell. */

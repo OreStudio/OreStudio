@@ -3808,6 +3808,9 @@ export const en: SourceCatalogue = {
                 synthetic: 'Synthetic',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
+                bindings: 'Bindings',
+                bindingsBody:
+                    'The feeds that write market data for this party: the series each one writes and whether it runs.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },

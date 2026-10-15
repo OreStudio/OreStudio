@@ -113,6 +113,7 @@ provisioning step.
 | =ores.synthetic.service.tests= | 444 assertions in 61 test cases, passed | same | 800a9955d1 |
 | =ores.shell.synthetic.tests= | 624 assertions in 221 test cases, passed | same | 800a9955d1 |
 | Synthetic suites | 4 of 4 passed, 2392 assertions in 408 test cases | same | 800a9955d1 |
+| Codegen drift gates | 51 of 52 checks passed; the one failure was another task's uncommitted files, not this branch's | =./compass.sh check --exclude-heavy= | 800a9955d1 |
 
 * Notes
 
@@ -164,6 +165,13 @@ would buy a join and a message for nothing.
   does not record the scope change. This is the component's existing
   behaviour for its sub-configs, kept for consistency; the composite
   pattern would fix it and was not taken.
+- The drift gates were run while a second agent held uncommitted work in the
+  same worktree. All 51 gates that do not read the whole working tree passed;
+  =component-drift= is the exception, because it compares =git diff= after an
+  in-place regeneration, so any dirty file anywhere fails it. Its reported
+  diff at =800a9955d1= named seven files, all of them that other task's, and
+  none of this branch's. Re-run it once the worktree is clean to close the
+  check.
 - There is no DQ artefact staging for these tables. The investigation
   allows DQ for the parameters, not the trades, so staging is a reasonable
   follow-up rather than a defect.

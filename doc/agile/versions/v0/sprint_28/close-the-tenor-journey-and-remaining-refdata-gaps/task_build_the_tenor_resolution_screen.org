@@ -8,7 +8,7 @@
 #+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-tenor-resolution-screen
-#+pr:
+#+pr: 3357
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -174,7 +174,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3357][#3357]] | [web] Build the tenor resolution screen |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ The tenor resolution journey and the remaining refdata gaps are built: the tenor
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -39,7 +39,7 @@ The tenor resolution journey and the remaining refdata gaps are built: the tenor
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] | BACKLOG | | | Build journey 9 in ores.web from its document and prototype: the tenor list, the tenor, its convention, the schedule, the resolved dates, the review, the refusal and the history.. Journeys 9. |
+| [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] | STARTED | 2026-10-15 | | Build journey 9 in ores.web from its document and prototype: the tenor list, the tenor, its convention, the schedule, the resolved dates, the review, the refusal and the history.. Journeys 9. |
 | [[id:75FC1047-7339-442F-983C-083DB8BD8C5E][Give the party memberships their versions]] | BACKLOG | | | Serve a versions read for the party_countries and party_currencies junctions, and settle whether the journey's membership history wants that read or the generic history route, which is blocked on a composite id. |
 | [[id:ABEC57F4-A85F-4D0E-83F6-1FC9C7C891AB][Serve the convention family mapping, its term filter and term rules]] | BACKLOG | | | Give the server the family-to-entity mapping, a term filter on the convention lists, an existence check on each term column, and a draft version in the history view. |
 | [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]] | BACKLOG | | | Add the resolve operation journey 9 draws in two places, and the refusal payload its failures should carry instead of a thrown exception reaching the screen as a 500. |

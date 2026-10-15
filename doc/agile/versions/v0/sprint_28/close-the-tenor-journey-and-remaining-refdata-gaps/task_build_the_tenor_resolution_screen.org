@@ -28,20 +28,43 @@ A tenant administrator defines how tenors resolve in ores.web, and the screen ma
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | Not yet started.                       |
+| Now          | The BFF routes and the web data layer are in place; the journey screen is not built. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Build the journey screen, its steps and their tests. |
+| Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- A tenant administrator lists tenors and opens one.
+- The screen shows the tenor's convention and the schedule it produces.
+- The screen shows the resolved dates, and states the refusal when resolution fails.
+- The screen shows the tenor's history.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work is split between the wire layer and the screen.
+
+The branch =feature/build-the-tenor-resolution-screen= carries the first half,
+written 2026-10-10 and parked while the book prototypes were signed off:
+
+- =bff/src/tenors.ts= with =tenors.test.ts= — the tenor list, read and resolve routes.
+- =web/src/api/tenors.ts= — the typed client.
+- =web/src/journeys/tenorsServer.ts= — the server half of the journey.
+- =web/src/journeys/tenorsState.ts= — the journey state.
+
+The screen half is not written. Every peer journey in this package carries five
+files — =<x>State.ts=, =<x>State.test.ts=, =<x>Steps.tsx=, =<x>Steps.test.tsx=
+and =<X>Journey.tsx= — so its state machine and its screen are proved by tests.
+The tenor journey has the state file alone. The remaining work is:
+
+1. =web/src/journeys/tenorsState.test.ts= — prove the state machine.
+2. =web/src/journeys/tenorsSteps.tsx= and =tenorsSteps.test.tsx= — the steps.
+3. =web/src/journeys/TenorJourney.tsx= — the screen, against
+   =doc/prototypes/tenors/define-how-tenors-resolve/=.
+4. Wire the journey into its route, then run the package suites.
+
+The journeys it draws from are the list, the tenor, its convention, the
+schedule, the resolved dates, the review, the refusal and the history.
 
 * Measurements
 
@@ -55,9 +78,35 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Main commits taken in by the rebase | 1783 | =git rev-list --count fb9425fd74..origin/main= | 5905c3e919 |
+| Unique lines on the branch | 1360 in 9 files | =git diff --stat origin/main...HEAD= | 5905c3e919 |
+| BFF tests | 771 passed in 66 files | =npm run test --workspace @ores/bff= | 5905c3e919 |
+| Web tests | 1518 passed in 134 files | =npm run test --workspace @ores/web= | 5905c3e919 |
 
 * Notes
+
+*Takeover, 2026-10-15.* The branch sat unpushed and checked out in no worktree
+for five days, and sprint 27 closed and sprint 28 opened in between. The
+takeover did four things:
+
+1. Rebased the two commits onto =origin/main= (=1783= commits on). Two
+   conflicts, both in agile records:
+   - =server.ts= took both sides: main's synthetic, curve, oresmd, binding and
+     series routes, and the branch's tenor route.
+   - =sprint_27/.../story.org= dropped the branch's =STARTED= row. Sprint 27 is
+     closed and carried the task forward, so re-adding the row would have
+     contradicted the closed sprint.
+   - The task file took sprint 28's parent story and kept the branch's
+     =STARTED= state and =clever_dijkstra= environment.
+2. Moved the task under its sprint 28 story: =Close the tenor journey and the
+   remaining refdata gaps=. The carry-forward had reset it to =BACKLOG= and
+   cleared its environment, so the record disagreed with the branch.
+3. Clocked on with =compass task start C73F5C2E=, which flipped the task and
+   the story to =STARTED= and stamped the journal.
+4. Set the preset to =linux-clang-release-ninja= per instruction.
+
+The engine half of the journey was already on =main= from the separate 8-26
+August work on the tenor resolution algorithm; the branch does not repeat it.
 
 * Test Scenarios
 

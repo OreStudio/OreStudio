@@ -8,7 +8,7 @@
 #+filetags: :prune_older_cache_entries_after_a_successful_save:sprint_28:v0:
 #+owner: marco
 #+branch: feature/prune-older-cache-entries-after-a-successful-save
-#+pr:
+#+pr: 3339
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3339][#3339]] | [ci] Prune older cache entries after a successful save |
 
 * Review
 

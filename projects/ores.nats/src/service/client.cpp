@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <algorithm>
 #include <memory>
 #include <mutex>
 #include <nats/nats.h>
@@ -922,6 +923,141 @@ subscription client::js_queue_subscribe(std::string_view subject,
 
     if (s != NATS_OK)
         throw std::runtime_error(std::string("js_QueueSubscribe failed: ") + natsStatus_GetText(s));
+
+    auto si = std::make_unique<subscription::impl>();
+    si->sub = sub;
+    si->closure = std::move(cl);
+    return subscription(std::move(si));
+}
+
+namespace {
+
+/**
+ * @brief Delete a durable whose stored filter set or ack settings differ.
+ *
+ * The multi-subject counterpart of reconcile_durable. A stored *singular*
+ * filter counts as stale: it is what a consumer created before the service
+ * held a whole family of subjects, and it cannot serve the family.
+ */
+void reconcile_durable_multi(jsCtx* js,
+                             const std::string& stream,
+                             const std::string& durable,
+                             const std::vector<std::string>& subjects,
+                             int max_deliver) {
+    jsOptions opts;
+    jsOptions_Init(&opts);
+    auto jerr = jsErrCode(0);
+
+    jsConsumerInfo* existing = nullptr;
+    const natsStatus s =
+        js_GetConsumerInfo(&existing, js, stream.c_str(), durable.c_str(), &opts, &jerr);
+    if (s != NATS_OK || existing == nullptr) {
+        if (existing != nullptr)
+            jsConsumerInfo_Destroy(existing);
+        return;
+    }
+
+    std::vector<std::string> stored;
+    bool legacy_singular = false;
+    const jsAckPolicy stored_ack =
+        existing->Config != nullptr ? existing->Config->AckPolicy : js_AckNone;
+    const int64_t stored_max_deliver =
+        existing->Config != nullptr ? existing->Config->MaxDeliver : 0;
+    if (existing->Config != nullptr) {
+        if (existing->Config->FilterSubjects != nullptr &&
+            existing->Config->FilterSubjectsLen > 0) {
+            for (int i = 0; i < existing->Config->FilterSubjectsLen; ++i) {
+                const char* f = existing->Config->FilterSubjects[i];
+                stored.emplace_back(f != nullptr ? f : "");
+            }
+        } else if (existing->Config->FilterSubject != nullptr) {
+            legacy_singular = true;
+            stored.emplace_back(existing->Config->FilterSubject);
+        }
+    }
+    jsConsumerInfo_Destroy(existing);
+
+    std::vector<std::string> want(subjects);
+    std::sort(stored.begin(), stored.end());
+    std::sort(want.begin(), want.end());
+    const bool stale_filters = legacy_singular || stored != want;
+    const bool stale_ack = stored_ack != js_AckExplicit;
+    const bool stale_bound = stored_max_deliver != static_cast<int64_t>(max_deliver);
+    if (!stale_filters && !stale_ack && !stale_bound)
+        return;
+
+    jsOptions del_opts;
+    jsOptions_Init(&del_opts);
+    jerr = jsErrCode(0);
+    const natsStatus ds = js_DeleteConsumer(js, stream.c_str(), durable.c_str(), &del_opts, &jerr);
+    if (ds != NATS_OK) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "NATS durable '" << durable << "' on '" << stream
+            << "' holds a stale configuration and could not be deleted: " << natsStatus_GetText(ds);
+        return;
+    }
+    BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
+                              << "' held a stale configuration (" << stored.size()
+                              << " filter(s), ack " << static_cast<int>(stored_ack)
+                              << ", max-deliver " << stored_max_deliver
+                              << "); recreated with " << subjects.size() << " filter(s)";
+}
+
+}
+
+subscription client::js_queue_subscribe_multi(std::span<const std::string_view> subjects,
+                                              std::string_view durable_name,
+                                              std::string_view queue_group,
+                                              message_handler handler,
+                                              std::string_view stream_name,
+                                              int max_deliver) {
+
+    auto cl = std::make_unique<sub_closure>();
+    cl->handler = std::move(handler);
+    cl->durable = true;
+
+    std::vector<std::string> full;
+    full.reserve(subjects.size());
+    for (const auto subject : subjects)
+        full.push_back(make_subject(subject));
+
+    const std::string durable_str(durable_name);
+    const std::string queue_str(queue_group);
+
+    BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe-multi: " << full.size()
+                              << " subject(s) (durable: " << durable_str
+                              << ", group: " << queue_str << ", max-deliver: " << max_deliver << ")";
+
+    if (!stream_name.empty())
+        reconcile_durable_multi(impl_->js, std::string(stream_name), durable_str, full, max_deliver);
+
+    // The C API wants a null-terminated-style array of pointers that outlives
+    // the call; the strings themselves live in `full`.
+    std::vector<const char*> raw;
+    raw.reserve(full.size());
+    for (const auto& s : full)
+        raw.push_back(s.c_str());
+
+    jsSubOptions sub_opts;
+    jsSubOptions_Init(&sub_opts);
+    sub_opts.Config.Durable = durable_str.c_str();
+    sub_opts.Config.AckPolicy = js_AckExplicit;
+    sub_opts.Config.MaxDeliver = max_deliver;
+    sub_opts.Queue = queue_str.c_str();
+
+    natsSubscription* sub = nullptr;
+    const natsStatus s = js_SubscribeMulti(&sub,
+                                           impl_->js,
+                                           raw.data(),
+                                           static_cast<int>(raw.size()),
+                                           on_msg,
+                                           cl.get(),
+                                           nullptr,
+                                           &sub_opts,
+                                           nullptr);
+
+    if (s != NATS_OK)
+        throw std::runtime_error(std::string("js_SubscribeMulti failed: ") + natsStatus_GetText(s));
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;

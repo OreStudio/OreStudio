@@ -217,6 +217,31 @@ public:
                                                   int max_deliver);
 
     /**
+     * @brief Queue-group push-subscribe to several subjects on one consumer.
+     *
+     * The same durable as @c js_queue_subscribe, with a filter set rather than
+     * a single subject. A service whose step commands are a family of subjects
+     * wants this: one consumer holding the whole family keeps one cursor, so a
+     * subject added or renamed does not orphan a consumer, and the service has
+     * one server-side object to own rather than one per subject.
+     *
+     * The server supports multiple filters from 2.10. The consumer's stored
+     * filter set is reconciled as a set, so reordering @p subjects does not
+     * look like a change.
+     *
+     * @param subjects The relative subjects, prefixed internally. A wildcard is
+     *        allowed, but a list of exact subjects is preferred: a wildcard
+     *        that is wider than the service's work makes the consumer receive
+     *        messages it has no handler for.
+     */
+    [[nodiscard]] subscription js_queue_subscribe_multi(std::span<const std::string_view> subjects,
+                                                        std::string_view durable_name,
+                                                        std::string_view queue_group,
+                                                        message_handler handler,
+                                                        std::string_view stream_name,
+                                                        int max_deliver);
+
+    /**
      * @brief Create a JetStream admin handle for provisioning streams.
      *
      * The returned @c jetstream_admin is lightweight and borrows this

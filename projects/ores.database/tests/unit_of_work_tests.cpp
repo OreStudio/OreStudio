@@ -91,8 +91,9 @@ TEST_CASE("a raw insert through a unit of work is rolled back", tags) {
     const auto code =
         "UOW" + boost::uuids::to_string(boost::uuids::random_generator()()).substr(0, 8);
     const auto sql = "insert into ores_geo_ip2country_tbl (ip_range, tenant_id, country_code) "
-                     "values ('" + probe_range() + "', '" +
-                     h.context().tenant_id().to_string() + "', '" + code + "')";
+                     "values ('" +
+                     probe_range() + "', '" + h.context().tenant_id().to_string() + "', '" + code +
+                     "')";
 
     {
         unit_of_work uow(h.context());
@@ -116,8 +117,9 @@ TEST_CASE("a raw insert through a committed unit of work is kept", tags) {
     const auto code =
         "UOW" + boost::uuids::to_string(boost::uuids::random_generator()()).substr(0, 8);
     const auto sql = "insert into ores_geo_ip2country_tbl (ip_range, tenant_id, country_code) "
-                     "values ('" + probe_range() + "', '" +
-                     h.context().tenant_id().to_string() + "', '" + code + "')";
+                     "values ('" +
+                     probe_range() + "', '" + h.context().tenant_id().to_string() + "', '" + code +
+                     "')";
 
     {
         unit_of_work uow(h.context());
@@ -217,7 +219,8 @@ TEST_CASE("a read inside a unit of work does not commit it", tags) {
                 ctx, query, [](const auto& v) { return v; }, lg, "probe read");
         CHECK(found.empty());
 
-        const ip2country_probe probe{.ip_range = probe_range(), .tenant_id = tid, .country_code = code};
+        const ip2country_probe probe{
+            .ip_range = probe_range(), .tenant_id = tid, .country_code = code};
         ores::database::repository::execute_write_op(ctx, sqlgen::insert(probe), lg, "insert");
     }
 

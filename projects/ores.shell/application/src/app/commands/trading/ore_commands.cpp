@@ -229,9 +229,8 @@ bool remove_instance(std::ostream& out, nats_client& session, const std::string&
     request.intent.commentary =
         "Remove a package instance, and the packages it stored, once they are old enough.";
 
-    const auto reply =
-        do_auth_request<ores::reporting::messaging::delete_report_instance_response>(
-            out, session, request.nats_subject, request, import_request_timeout);
+    const auto reply = do_auth_request<ores::reporting::messaging::delete_report_instance_response>(
+        out, session, request.nats_subject, request, import_request_timeout);
     if (!reply)
         return false;
     if (reply->result.outcome != ores::utility::domain::outcome::ok) {

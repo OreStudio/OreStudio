@@ -27,7 +27,7 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 | Type | Compass type | Count | Primary output |
 |------+--------------+-------+----------------|
 | =ores.codegen.entity= | =entity_org= | ~83 | C++ domain class + SQL table + TypeScript UI |
-| =ores.codegen.lookup_entity= | =lookup_entity= | ~15 | SQL artefact table (batch-loaded, no UI) |
+| =ores.codegen.lookup_entity= | =lookup_entity= | 0 | Superseded: the staging table is declared on the owning entity's model and the type is not used by any model |
 | =ores.codegen.field_group= | =field_group= | ~11 | C++ struct fragment composed into entities |
 | =ores.codegen.table= (retired) | — | 0 | Superseded by =ores.codegen.entity=; every table model was migrated and the type removed from the generator |
 | =ores.codegen.junction= | =junction= | ~8 | SQL join table + C++ struct + repository |
@@ -111,6 +111,15 @@ column heading would clarify the structure.
 
 A batch-loaded reference table with no UI.  Typically driven by
 an external data source (LEI golden copy, reporting definition catalogue, etc.).
+
+No model uses this type. It built the DQ artefact staging tables, and the
+DQ artefact migration moved every one of those onto the model of the entity
+it stages, which declares it with
+=:ores.sql.schema.domain_entity_artefact_create.enabled: true=; the
+=sql_schema_artefact_create= template it fed is deleted. The generator still
+accepts the type and the =compass= scaffolder still offers it, so the
+description below is kept for reading old models; a new artefact does not
+use it. See [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]].
 
 *** Frontmatter keywords
 

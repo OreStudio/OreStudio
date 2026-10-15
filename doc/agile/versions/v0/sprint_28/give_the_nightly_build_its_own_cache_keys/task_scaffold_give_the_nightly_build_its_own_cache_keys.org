@@ -98,3 +98,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story is scaffolded and wired into Sprint 28. This task exists to carry the
+story documents, the sprint row and the branch, and to close after the scaffold
+PR merges.
+
+The overlap is recorded: Continuous Linux builds linux-clang-debug and
+linux-clang-release, the Nightly Build builds those two and adds linux-gcc-debug
+and linux-gcc-release, so only the two clang variants are shared. The decision
+record states why a shared key namespace is harmful for those two.

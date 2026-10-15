@@ -26,9 +26,9 @@ The investigation this story commissioned is
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Now           | Four tasks are merged. The remainder cannot be proved end to end. |
+| Waiting on    | Most workflow step subjects have no stream and no consumer, so a fresh provision publishes the tenant setup steps and never runs them. The fix, =4dfacbef59=, sits on =origin/feature/audit-the-nats-call-sites= and is not merged. |
+| Next          | Merge the step-command stream fix, then re-run the provisioning proof for the tasks that need it. |
 | Last touched  | 2026-10-15                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ The investigation this story commissioned is
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:DAAD7526-D0AF-45B7-9DAD-ACE17BFCB28F][Fix composite versioning for the bond hierarchy]] | BACKLOG | | | bump_parent_version is in the seven trade-anchor parts and in no bond child, so rewriting a leg leaves the parent version still and the as-of read cannot say which legs were current. Make every bond child bump its parent and give the hierarchy an as-of read. |
-| [[id:1E3B3BEC-D4E9-47B4-8502-B295ECBA8ACA][Wire trading staff to their party]] | BACKLOG | | | 59 of 61 ACME accounts carry no default_party_id and their membership is many-to-many, so a trade cannot name the person who entered it. Populate the party for the staff who trade. |
+| [[id:1E3B3BEC-D4E9-47B4-8502-B295ECBA8ACA][Wire trading staff to their party]] | DONE | | 2026-10-15 | 59 of 61 ACME accounts carry no default_party_id and their membership is many-to-many, so a trade cannot name the person who entered it. Populate the party for the staff who trade. |
 | [[id:3BDA92FD-97A7-4DA8-BEE7-335D532A8731][Broaden the tradeable party-counterparty links]] | BACKLOG | | | ACME holds 2454 counterparties and only 38 tradeable party-to-counterparty links, covering 23 of them. Widen the links so a generated book faces many counterparties rather than its default. |
 | [[id:0AB008AD-075B-49D7-A720-8E4CFC12C521][Confirm the writing party comes from the token]] | BACKLOG | | | The trading write path sets NEW.party_id from app.current_party_id, so a caller cannot state the party on the row. Confirm a token naming a party sets it, and that a token naming none is refused rather than defaulting. |
 | [[id:150BDE00-36AE-4E0F-A074-0C1950378087][Model the trade generation config]] | BACKLOG | | | Every other capability in ores.synthetic is driven by a generation config entity. Model one for trades: booking party, book scope, instrument family, counterparty scope, tenor and notional bands, as-of anchor and seed. |

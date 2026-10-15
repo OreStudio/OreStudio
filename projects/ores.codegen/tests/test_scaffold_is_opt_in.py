@@ -35,6 +35,7 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.core import _component_include_root  # noqa: E402
 from codegen.generate import resolve_targets  # noqa: E402
+from codegen.manifest import Component, discover_models  # noqa: E402
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
 
@@ -55,6 +56,9 @@ Fixture body.
 
 SERVICE_ORG = FLAT_ORG.replace("#+name: demo", "#+name: demo.service") \
                       .replace("#+full_name: ores.demo", "#+full_name: ores.demo.service")
+
+API_ORG = FLAT_ORG.replace("#+name: demo", "#+name: demo.api") \
+                  .replace("#+full_name: ores.demo", "#+full_name: ores.demo.api")
 
 STUB_OUTPUT_SUFFIXES = (
     "domain/stub.hpp",
@@ -218,3 +222,46 @@ def test_no_stub_file_survives_anywhere_in_the_tree():
     )
 
     assert found == []
+
+
+def test_discovery_reaches_a_composite_part(tmp_path):
+    """A composite's parts are component models in their own right.
+
+    The catalogue names only the top-level component, so a part's
+    component_overview.org sits one directory below the composite's
+    modeling_dir. Discovery has to walk to it, or the part's umbrella header,
+    export macros and test main have no model to generate from and go stale
+    with nothing reporting it.
+    """
+    _write(tmp_path / "projects/ores.demo/modeling/component_overview.org",
+           FLAT_ORG.format(kind_line="#+component_kind: composite"))
+    _write(tmp_path / "projects/ores.demo/api/modeling/component_overview.org",
+           API_ORG.format(kind_line="#+component_kind: api"))
+
+    found = discover_models(
+        Component(name="demo", modeling_dir="projects/ores.demo/modeling"),
+        tmp_path)
+
+    assert sorted(str(p.relative_to(tmp_path)) for p in found) == [
+        "projects/ores.demo/api/modeling/component_overview.org",
+        "projects/ores.demo/modeling/component_overview.org",
+    ]
+
+
+def test_a_discovered_part_renders_its_umbrella_header(tmp_path):
+    """The part's umbrella header is what parts-aware discovery exists to reach."""
+    _write(tmp_path / "projects/ores.demo/modeling/component_overview.org",
+           FLAT_ORG.format(kind_line="#+component_kind: composite"))
+    _write(tmp_path / "projects/ores.demo/api/modeling/component_overview.org",
+           API_ORG.format(kind_line="#+component_kind: api"))
+
+    found = discover_models(
+        Component(name="demo", modeling_dir="projects/ores.demo/modeling"),
+        tmp_path)
+    part_model = next(p for p in found if "/api/" in str(p))
+
+    units, _, _ = resolve_targets(
+        part_model, CODEGEN_BASE, address="ores.cpp.component")
+
+    assert _umbrella_paths([u["output"] for u in units], "ores.demo.api") == [
+        "projects/ores.demo.api/include/ores.demo.api/ores.demo.api.hpp"]

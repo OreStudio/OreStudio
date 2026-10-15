@@ -19,6 +19,7 @@
  */
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
@@ -26,6 +27,8 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <expected>
@@ -37,17 +40,33 @@
 // its tenant and the run. A job whose payload the handler cannot read must not
 // take the scheduler loop down, so the failure path returns rather than throws.
 //
-// A report trigger is a request, so the refusal case fakes the answering side
-// rather than starting the fleet: what the handler owes is that an X-Error on
-// the reply becomes a failed job.
+// A report trigger is a request, so the refusal cases fake the answering side
+// rather than starting the fleet: what the handler owes is that a refusal, in
+// either of the two forms the transport and the operation use, becomes a failed
+// job.
 
 namespace {
 
 const std::string_view test_suite("scheduler.tests");
 const std::string tags("[action][nats]");
 
-// The subject the reporting service answers, and the one a refusal is faked on.
-constexpr std::string_view trigger_subject = "reporting.v1.ops.trigger_report_instance";
+// The subjects the refusals are faked on.
+//
+// Deliberately not the production trigger subject: the live reporting service
+// queue-subscribes that one, so the request is delivered to the fleet rather
+// than to this test, and what the test measured would be the running service.
+constexpr std::string_view refused_in_envelope_subject =
+    "reporting.v1.ops.trigger_report_instance.envelope_refusal";
+constexpr std::string_view refused_in_body_subject =
+    "reporting.v1.ops.trigger_report_instance.body_refusal";
+
+// A body shaped as the answering operation's own response: a result naming the
+// outcome, and the report instance it produced. Stated here because what is
+// being tested is the answering side the handler does not know the type of.
+struct operation_response {
+    ores::utility::domain::result result;
+    std::string report_instance_id;
+};
 
 ores::scheduler::domain::job_definition make_job(const std::string& payload) {
     ores::scheduler::domain::job_definition job;
@@ -137,8 +156,8 @@ TEST_CASE("nats_publish_action_handler publishes to the payload's subject", tags
     auto svc_nats = make_unauthenticated_client(nats);
     nats_publish_action_handler handler(nats, svc_nats);
 
-    // No report definition, so this is a notification nothing answers: it is
-    // published and the job succeeds.
+    // No report definition, so this is a notification nothing answers: the
+    // handler publishes it and the job succeeds without waiting for a reply.
     const auto job = make_job(R"({"subject":"ores.scheduler.action_handler_test"})");
     const action_context ctx{job, h.context(), 42};
 
@@ -163,7 +182,7 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     // X-Error header on the reply -- so the test answers with one rather than
     // requiring the fleet to be up. Before this change the header was ignored
     // and the job was recorded as succeeded while no report instance existed.
-    auto responder = nats.subscribe(trigger_subject, [&nats](ores::nats::message msg) {
+    auto responder = nats.subscribe(refused_in_envelope_subject, [&nats](ores::nats::message msg) {
         nats.publish(msg.reply_subject,
                      {},
                      {{std::string(ores::nats::headers::x_error), std::string("forbidden")}});
@@ -173,8 +192,8 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     nats_publish_action_handler handler(nats, svc_nats);
 
     // The payload names the subject the responder answers on, so both sides of
-    // the test spell it once, from trigger_subject.
-    const auto payload = std::string(R"({"subject":")") + std::string(trigger_subject) +
+    // the test spell it once, from the test's own subject.
+    const auto payload = std::string(R"({"subject":")") + std::string(refused_in_envelope_subject) +
                          R"(","report_definition_id":"00000000-0000-0000-0000-000000000000",)"
                          R"("tenant_id":"00000000-0000-0000-0000-000000000000"})";
     const auto job = make_job(payload);
@@ -187,4 +206,44 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
 
     REQUIRE_FALSE(result.has_value());
     CHECK(result.error().find("refused the trigger") != std::string::npos);
+}
+
+TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused in the body", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    // A report definition the reporting service will not run is still an answer
+    // rather than an envelope error, so that refusal is a failed result in the
+    // reply body and carries no X-Error. A job recorded as succeeded while no
+    // report instance exists is the failure this pins.
+    auto responder = nats.subscribe(refused_in_body_subject, [&nats](ores::nats::message msg) {
+        operation_response refusal;
+        refusal.result.outcome = ores::utility::domain::outcome::failed;
+        refusal.result.code = "missing_configuration";
+        refusal.result.message = "no configuration bound";
+        nats.publish(msg.reply_subject, ores::nats::default_wire_codec().encode(refusal));
+    });
+
+    auto svc_nats = make_unauthenticated_client(nats);
+    nats_publish_action_handler handler(nats, svc_nats);
+
+    const auto payload = std::string(R"({"subject":")") + std::string(refused_in_body_subject) +
+                         R"(","report_definition_id":"00000000-0000-0000-0000-000000000000",)"
+                         R"("tenant_id":"00000000-0000-0000-0000-000000000000"})";
+    const auto job = make_job(payload);
+    const action_context ctx{job, h.context(), 7};
+
+    boost::asio::io_context io;
+    std::expected<void, std::string> result;
+    ores::testing::run_coroutine_test(
+        io, [&]() -> boost::asio::awaitable<void> { result = co_await handler.execute(ctx); });
+
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().find("refused the trigger") != std::string::npos);
+    CHECK(result.error().find("missing_configuration") != std::string::npos);
+    CHECK(result.error().find("no configuration bound") != std::string::npos);
 }

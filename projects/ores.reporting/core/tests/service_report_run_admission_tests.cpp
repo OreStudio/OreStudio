@@ -32,14 +32,12 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/msgpack.hpp>
 #include <stdexcept>
 
 // The decision these pin: report_instance.trigger_id is a real foreign key, so
@@ -69,37 +67,6 @@ write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
     }
     party_repo.write(h.context(), party);
     return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
-}
-
-// The body the scheduler's nats_publish action publishes on each firing.
-//
-// The scheduler keeps its own copy, in
-// ores.scheduler.core/src/service/nats_publish_action_handler.cpp, because it
-// cannot depend on the reporting API. The codec is positional, so that copy and
-// the reporting request type must match field for field: a field the handler
-// declares and the scheduler does not send fails the whole decode, not just
-// that field. That is the state this test was written to catch -- the scheduler
-// sent three fields while the request type had four, so the reporting service
-// answered bad_request and no scheduled run was ever admitted.
-//
-// Stating the shape here rather than importing it is deliberate and is what
-// makes the seam visible: no compiler sees both ends of this contract, so the
-// next field added to either side fails here, at the receiving end, where the
-// silent rejection used to be.
-struct scheduler_trigger_body {
-    std::string report_definition_id;
-    std::string tenant_id;
-    std::int64_t job_instance_id = 0;
-    std::string kind;
-};
-
-ores::reporting::messaging::trigger_report_instance_request
-decode_the_scheduler_trigger(const scheduler_trigger_body& body) {
-    const auto decoded =
-        rfl::msgpack::read<ores::reporting::messaging::trigger_report_instance_request>(
-            rfl::msgpack::write(body));
-    REQUIRE(decoded.has_value());
-    return *decoded;
 }
 
 }
@@ -185,31 +152,11 @@ TEST_CASE("a plan that is not one of the two trigger types is refused", tags) {
         CHECK(trigger.report_definition_id != plan.definition_id);
 }
 
-TEST_CASE("the scheduler's own firing reaches the reporting handler as a scheduled trigger", tags) {
-    auto lg(make_logger(test_suite));
-
-    scoped_database_helper h;
-    auto ctx = ores::testing::make_generation_context(h);
-
-    const auto definition_id = ctx.generate_uuid();
-    const auto job_instance_id = std::int64_t{918273645};
-    const auto body =
-        scheduler_trigger_body{.report_definition_id = boost::uuids::to_string(definition_id),
-                               .tenant_id = h.tenant_id().to_string(),
-                               .job_instance_id = job_instance_id,
-                               .kind = "production"};
-
-    const auto req = decode_the_scheduler_trigger(body);
-
-    // The firing is what makes the handler take the scheduled branch, and it
-    // only survives if the scheduler puts it on the wire: the handler reads a
-    // zero here as a trigger sent by hand.
-    CHECK(req.job_instance_id == job_instance_id);
-    CHECK(req.report_definition_id == definition_id);
-    CHECK(req.tenant_id == h.tenant_id().to_uuid());
-    CHECK(req.kind == "production");
-}
-
+// The scheduler's own firing enters as a scheduled trigger, not as one sent by
+// hand: the handler reads its job instance from the request, and admits the run
+// with the definition's own scheduler job named. The body the scheduler
+// publishes is guarded in service_scheduler_trigger_contract_tests.cpp, which
+// decodes the bytes the scheduler's handler actually sends.
 TEST_CASE("a scheduled run is admitted by the trigger that names its firing", tags) {
     auto lg(make_logger(test_suite));
 

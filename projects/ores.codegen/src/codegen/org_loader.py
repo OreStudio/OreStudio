@@ -6839,6 +6839,15 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # comes out as an INTERFACE library instead.
     c["header_only"] = str(fm.get("header_only", "")).strip().lower() in (
         "true", "yes", "1")
+    # Paste points: a component model splices hand-written C++ into a generated
+    # service file the same way an entity model does, through the
+    # <<paste:KIND_UUID>> markers its template carries. A service that has
+    # outgrown the stub -- ores.storage/service wires a local store and a real
+    # run loop -- keeps that code in its model here, so regenerating the file
+    # cannot delete it.
+    implementations = _collect_implementations(doc.root)
+    if implementations:
+        c["implementations"] = implementations
     return {"component": c}
 
 

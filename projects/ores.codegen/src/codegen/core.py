@@ -23,6 +23,12 @@ _COMPONENT_FILES_TEMPLATES = {
     "cmake_component_files_tests.mustache",
 }
 
+# The paste kind ores.cpp.service-app.application_impl offers for the body of
+# run(). A service that implements it supplies its own body, and the template
+# renders the "not yet implemented" stub only when nothing implements it, so a
+# stub and a real implementation never appear together.
+SERVICE_APP_RUN_BODY_PASTE_KIND = "2CD994C9-83FF-4C41-8909-5AD2BF3DECCC"
+
 # Templates whose context needs the component's shell-command units injected
 # at render time -- the opted-in models scanned from the modeling directory of
 # the entity being rendered, plus the local units the component's shell
@@ -1129,9 +1135,10 @@ def _substitute_paste_markers(text, data):
     every block in the current entity that ``:implements`` that kind UUID.
 
     Org-mode entity models carry an ``implementations`` dict keyed by kind
-    UUID under ``domain_entity`` (or ``junction``, for junction models).
-    For each marker, look up the matching list of code bodies, join them
-    with a blank line, and substitute.
+    UUID under ``domain_entity`` (or ``junction``, for junction models, or
+    ``component``, for a component overview whose service template offers a
+    paste point). For each marker, look up the matching list of code bodies,
+    join them with a blank line, and substitute.
 
     Missing kinds produce an empty substitution and the entire marker line
     (including its newline) is collapsed, leaving no trace in the output.
@@ -1144,7 +1151,8 @@ def _substitute_paste_markers(text, data):
     case-insensitive -- a case mismatch between the two must not silently
     drop an author's paste block, which a case-sensitive dict lookup would
     do without any error or warning."""
-    de = data.get("domain_entity") or data.get("junction") or {}
+    de = (data.get("domain_entity") or data.get("junction")
+          or data.get("component") or {})
     impls = de.get("implementations") or {}
     impls_lower = {k.lower(): v for k, v in impls.items()}
 
@@ -2962,6 +2970,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             ) if include_dir.is_dir() else []
             component['headers'] = headers
             component['has_headers'] = bool(headers)
+
+        # Whether this component supplies its own run() body through the
+        # service-app paste point. The template renders the "not yet
+        # implemented" stub only when it does not, so the two never appear
+        # together.
+        component['has_app_run_body'] = (
+            SERVICE_APP_RUN_BODY_PASTE_KIND.lower()
+            in {k.lower() for k in (component.get('implementations') or {})})
 
         data['component'] = component
 

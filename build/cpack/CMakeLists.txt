@@ -16,7 +16,19 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
+# CMake >= 4.4 enforces our warnings.uninitialized preset (see
+# CMakePresets.json) inside CMake's own bundled
+# Modules/GNUInstallDirs.cmake, which dereferences each CMAKE_INSTALL_<dir>
+# cache entry before it creates it, once per directory. That module isn't
+# ours to patch, so silence uninitialized warnings only around this include.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(PUSH)
+    cmake_diagnostic(SET CMD_UNINITIALIZED IGNORE)
+endif()
 include(GNUInstallDirs)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(POP)
+endif()
 
 # CMake >= 4.4 enforces our warnings.uninitialized preset (see
 # CMakePresets.json) inside CMake's own bundled

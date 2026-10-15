@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 9CFAAFA9-6EB9-4A57-8761-AF9C348BF138
+:END:
+#+title: Story: Silence the GNUInstallDirs uninitialized warnings
+#+description: CMake 4.4 prints ten (uninitialized) warnings on the Linux configure step, one for each CMAKE_INSTALL_<dir> variable. They come from CMake's own Modules/GNUInstallDirs.cmake, which dereferences each cache entry at line 306 before it creates it, and the repository's warnings.uninitialized and warnings.systemVars preset settings make CMake report that dereference. The module is not ours to patch, and the same file already silences this diagnostic around Modules/InstallRequiredSystemLibraries.cmake and Modules/CPack.cmake for the same reason.
+#+type: story
+#+level: s2
+#+filetags: :ci:cmake:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Linux CI configure step reports no uninitialized-variable warnings from CMake's own GNUInstallDirs module.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- build/cpack/CMakeLists.txt suppresses CMD_UNINITIALIZED around include(GNUInstallDirs).
+- The configure step still completes and still populates the CMAKE_INSTALL_* variables.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1F0CB199-5F7E-4745-B9D2-B265BADD4199][Scaffold story: Silence the GNUInstallDirs uninitialized warnings]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1A0B9E09-A1A1-4429-96A8-E0B07016A5BC][Suppress the diagnostic around the GNUInstallDirs include]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Silence the GNUInstallDirs uninitialized warnings |
+
+* Decisions
+
+- *Silence the diagnostic; do not change the module and do not drop the
+  preset settings.* The dereference is inside CMake's own
+  =Modules/GNUInstallDirs.cmake=, which reads each =CMAKE_INSTALL_<dir>= cache
+  entry at line 306 before it creates the entry. build/cpack/CMakeLists.txt
+  already suppresses =CMD_UNINITIALIZED= around
+  =Modules/InstallRequiredSystemLibraries.cmake= and =Modules/CPack.cmake= for
+  the same class of problem, so the third include follows the same pattern.
+- *Keep the =warnings.systemVars= setting.* Turning it off would silence these
+  ten warnings, but it would also stop CMake reporting every other uninitialized
+  variable with a =CMAKE_= prefix, which is the check that found these.
+
+* Out of scope
+
+- The uninitialized warnings that come from CMake's own compiler-detection
+  modules. Those do not appear in the repository's configure output.

@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 1F0CB199-5F7E-4745-B9D2-B265BADD4199
+:END:
+#+title: Task: Scaffold story: Silence the GNUInstallDirs uninitialized warnings
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :silence_the_gnuinstalldirs_uninitialized_warnings:sprint_28:v0:
+#+owner: marco
+#+branch: feature/silence-the-gnuinstalldirs-uninitialized-warnings
+#+pr: 3347
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9CFAAFA9-6EB9-4A57-8761-AF9C348BF138][Silence the GNUInstallDirs uninitialized warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Record where the ten warnings come from and why the preset settings are not the
+thing to change, and wire the story into Sprint 28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9CFAAFA9-6EB9-4A57-8761-AF9C348BF138][Silence the GNUInstallDirs uninitialized warnings]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- The story is wired into Sprint 28 and the branch carries its documents.
+- The origin of the ten warnings is recorded with a reproduction.
+
+* Decisions
+
+- *Both preset settings are needed to see the warnings.* =warnings.uninitialized=
+  alone does not report them, because each variable carries the =CMAKE_=
+  prefix; =warnings.systemVars= (the =--check-system-vars= equivalent) is what
+  puts them in scope. The reproduction therefore passes both flags, and a
+  reproduction that passes only the first shows nothing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3347][#3347]] | [cmake] Silence the GNUInstallDirs uninitialized warnings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is scaffolded and wired into Sprint 28. This task carries the story
+documents, the sprint row and the branch, and closes after the scaffold PR
+merges.
+
+The recorded origin of the warnings: CMake's own
+=Modules/GNUInstallDirs.cmake=, at line 306, dereferencing each
+=CMAKE_INSTALL_<dir>= cache entry through =_GNUInstallDirs_cache_path= before
+the entry exists. The reproduction and the reason both preset settings are
+needed to see them are in =evidence/uninitialized-probe.txt=.

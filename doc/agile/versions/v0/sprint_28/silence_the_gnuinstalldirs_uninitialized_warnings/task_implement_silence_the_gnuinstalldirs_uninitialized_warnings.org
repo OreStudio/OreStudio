@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 1A0B9E09-A1A1-4429-96A8-E0B07016A5BC
+:END:
+#+title: Task: Suppress the diagnostic around the GNUInstallDirs include
+#+description: Initial task for: Silence the GNUInstallDirs uninitialized warnings
+#+type: task
+#+level: s1
+#+filetags: :silence_the_gnuinstalldirs_uninitialized_warnings:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9CFAAFA9-6EB9-4A57-8761-AF9C348BF138][Silence the GNUInstallDirs uninitialized warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Linux CI configure step reports no uninitialized-variable warnings from CMake's own GNUInstallDirs module.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9CFAAFA9-6EB9-4A57-8761-AF9C348BF138][Silence the GNUInstallDirs uninitialized warnings]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- build/cpack/CMakeLists.txt suppresses CMD_UNINITIALIZED around include(GNUInstallDirs).
+- The configure step still completes and still populates the CMAKE_INSTALL_* variables.
+
+* Plan
+
+Wrap =include(GNUInstallDirs)= in the guard that the same file already applies
+to =include(InstallRequiredSystemLibraries)= and =include(CPack)=: push the
+diagnostic state, set =CMD_UNINITIALIZED= to =IGNORE=, include, pop. Keep the
+guard behind the =CMAKE_VERSION VERSION_GREATER_EQUAL "4.4"= test, because
+=cmake_diagnostic= does not exist before 4.4.
+
+Reproduce the warnings with cmake 4.4.4 before and after, because the local
+cmake is 4.3.4 and does not report them at all.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| GNUInstallDirs uninitialized warnings without the guard | 10 | =evidence/uninitialized-probe.txt= | c13d21d0ae |
+| GNUInstallDirs uninitialized warnings with the guard | 0 | =evidence/uninitialized-probe.txt= | working tree |
+| =CMAKE_INSTALL_LIBDIR= / =BINDIR= / =SHAREDSTATEDIR=, both runs | =lib= / =bin= / =com= | =evidence/uninitialized-probe.txt= | c13d21d0ae and working tree |
+| CMake version that reports the warnings | 4.4.4 | =cmake --version= | — |
+| CMake version that does not | 4.3.4 | =cmake --version= | — |
+
+* Notes
+
+The probe includes the repository's real build/cpack/CMakeLists.txt, first at
+origin/main and then on this branch, from a scratch project that supplies the
+variables the file reads before it reaches the include. It does not copy CMake's
+module, because the point is to test the module as CMake ships it.
+
+=warnings.uninitialized= on its own prints nothing for these variables. The
+probe passes =-Wuninitialized --check-system-vars=, which are the command-line
+equivalents of both preset settings.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+build/cpack/CMakeLists.txt suppresses =CMD_UNINITIALIZED= around
+=include(GNUInstallDirs)=, in the same shape as the two includes below it.
+
+The probe goes from 10 warnings to 0 and still configures with exit code 0. The
+three =CMAKE_INSTALL_*= values it prints are identical before and after, so the
+guard does not change what the module computes.
+
+Local checks pass: 7 of 7.

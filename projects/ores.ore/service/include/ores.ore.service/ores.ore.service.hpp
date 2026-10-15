@@ -17,18 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ORE_SERVICE_HPP
 #define ORES_ORE_SERVICE_HPP
 
 /**
- * @brief ORE import microservice
+ * @brief ORE import service
  *
- * Standalone NATS microservice that receives ORE import workflow requests,
- * downloads and unpacks ORE directory tarballs from storage, plans the import
- * using ore_import_planner, and orchestrates saga steps against refdata,
- * trading, and marketdata services with full compensation support. It also
- * assembles the report package an ORE run consumes.
+ * The runnable host for the ORE integration — configuration, the import worklist, execute and
+ * rollback handlers, and the report package handler.
  */
-namespace ores::ore.service {}
+namespace ores::ore::service {}
 
 #endif

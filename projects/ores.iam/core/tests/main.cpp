@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_test_main.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.testing/database_lifecycle_listener.hpp"
 #include "ores.testing/logging_listener.hpp"
-#include "ores.testing/test_timeout_listener.hpp"
 #include <boost/scope_exit.hpp>
 #include <catch2/catch_session.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
@@ -27,7 +31,6 @@
 
 CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
-CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
 int main(int argc, char* argv[]) {
     BOOST_SCOPE_EXIT(void) {
@@ -35,21 +38,6 @@ int main(int argc, char* argv[]) {
     }
     BOOST_SCOPE_EXIT_END
 
-    ores::testing::logging_listener::set_test_module_name("ores.iam.tests");
-
-    // The repository tests write synthetic tenant types and statuses into the
-    // shared system tenant; an aborted run leaves OPEN rows that collide with
-    // the next run. Close the leftovers at the start of every run.
-    ores::testing::database_lifecycle_listener::register_pre_run_sweep_table(
-        "ores_iam_tenant_types_tbl");
-    ores::testing::database_lifecycle_listener::register_pre_run_sweep_table(
-        "ores_iam_tenant_statuses_tbl");
-    // The repository and eventing tests also write synthetic tenants into the
-    // shared system tenant (the insert trigger stamps tenant_id = system),
-    // and the hostname unique index is partial on OPEN rows -- an aborted run
-    // leaves rows the next run's counter restarts collide with.
-    ores::testing::database_lifecycle_listener::register_pre_run_sweep_table(
-        "ores_iam_tenants_tbl");
-
+    ores::testing::logging_listener::set_test_module_name("ores.iam.core.tests");
     return Catch::Session().run(argc, argv);
 }

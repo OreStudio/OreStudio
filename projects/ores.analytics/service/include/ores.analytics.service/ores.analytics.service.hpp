@@ -17,15 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ANALYTICS_SERVICE_HPP
 #define ORES_ANALYTICS_SERVICE_HPP
 
 /**
  * @brief ORE Studio analytics service binary.
  *
- * Executable entry point for the analytics service. Parses command-line
-arguments, connects to NATS and PostgreSQL, initialises ores.analytics.core,
-and handles pricing model configuration requests from other services.
+ * NATS service entrypoint for the analytics domain.
  */
 namespace ores::analytics::service {}
 

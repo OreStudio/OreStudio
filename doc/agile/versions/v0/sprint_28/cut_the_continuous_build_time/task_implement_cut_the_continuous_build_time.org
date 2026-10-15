@@ -26,12 +26,12 @@ The continuous linux-clang jobs finish inside the six-hour limit on a cold runne
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] |
-| Now          | Not yet started.                       |
+| Now          | Closed.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-14                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
 
 * Acceptance
 
@@ -62,7 +62,9 @@ task and name that file in the Command column.
 | Link steps in the whole build | 53 of 7187 | same log | 3446f45cae |
 | Largest gap between step completions | 36.9 s (ores.ore/core) | same log | 3446f45cae |
 | Median gap between step completions | 1.96 s | same log | 3446f45cae |
-| Whole-tree unity build outcome | fails in 19 s on a symbol collision | =cmake --build build/output/unity-trial= | this branch |
+| Whole-tree unity build outcome | fails in 19 s on a symbol collision | =cmake --build build/output/unity-trial= | 03bcc5add6 |
+| Continuous clang-debug after the cache repairs | 4h08m39s, successful | =gh run list --workflow=continuous-linux.yml= | 64f77ad0a9 |
+| Continuous clang-release after the cache repairs | 2h24m15s, successful | same | 64f77ad0a9 |
 
 * Notes
 
@@ -93,6 +95,11 @@ every file-local constant and helper becomes =static= or moves into an
 anonymous namespace. The sweep's size is unknown, because the build stops
 at the first collision.
 
+The collision itself was cleared later, by the separate story that hoisted
+=small_kappa_threshold= into one constant of the component. Unity was still not
+pursued, because the hotspot measurement below had already removed the reason
+to.
+
 ** The cache, not the compile work, is the whole story
 
 Run 37097859492 on 2026-10-03 built at an 85.72 % sccache hit rate. Its
@@ -110,14 +117,22 @@ the same stale entry, misses again, and times out again. The cache size
 follows the same trap: the clang-release entry is 1.22 GB against its
 2.5 GB ceiling, because it takes several completing runs to fill.
 
-** What is left
+** How the deadlock was broken
 
-Cutting compile work is needed only to break that deadlock once, because
-a low-hit run has to complete before the cache can be refreshed. Unity is
-blocked on the symbol sweep; precompiled headers are the open lever. The
-other route is to let the two remaining variants hold a larger share of
-the 10 GB cache, so one refresh survives. A non-unity baseline build runs
-in =build/output/nounity-trial= for the comparison.
+The deadlock was broken on the cache side, which is where the constraint was,
+and each repair landed as its own story in this sprint:
+
+- Save the cache whenever the CTest step ran and the local cache grew, instead
+  of gating the save on =!cancelled()=.
+- Cap the CTest step below the job limit, so the save has time to run before the
+  job is torn down.
+- Save under a run-unique key and prune older entries, so a failed save cannot
+  destroy the cache and the entries cannot grow past the repository cap.
+- Scope the cache keys to each workflow, so the two workflows stop handing each
+  other entries built with flags the other cannot use.
+
+The continuous clang jobs now finish inside the six-hour limit: clang-debug in
+4h08m39s and clang-release in 2h24m15s.
 
 * Test Scenarios
 
@@ -143,3 +158,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The trials are complete and every compile-time lever is recorded as measured
+out. No compile-time lever was adopted.
+
+- There is no hotspot to split: the largest gap between build-step completions is
+  36.9 s and the median is 1.96 s, so the time is spread across all 7187 steps.
+- The linker is measured out: 53 link steps of 7187.
+- A whole-tree unity build stops in 19 s on the repeated =small_kappa_threshold=,
+  and the hotspot measurement had already removed the reason to pursue it. The
+  collision was cleared later by a separate story, so the block is gone even
+  though unity was not adopted.
+- Precompiled headers were not trialled, because the hotspot measurement removed
+  the reason to.
+
+The constraint was the compiler cache, and the repairs landed as separate
+stories in this sprint: keeping the save on a cancelled job, giving the save
+time to run, pruning older entries, and scoping the keys to each workflow. The
+continuous clang jobs now complete inside the six-hour limit, at 4h08m39s and
+2h24m15s.
+
+The story is closed with these findings so that the next reader does not re-run
+the trials. Its commits carry documents only; no build or workflow file changes
+in them.

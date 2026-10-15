@@ -30,10 +30,10 @@ lever is needed at all.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] |
-| Now          | Nothing. |
-| Waiting on   | Continuous Linux run 38560750280, the first on the two-job matrix. |
-| Next         | Nothing. |
-| Last touched | 2026-10-14                               |
+| Now          | Closed. |
+| Waiting on   | Nothing. |
+| Next         | None. |
+| Last touched | 2026-10-15                               |
 
 * Acceptance
 

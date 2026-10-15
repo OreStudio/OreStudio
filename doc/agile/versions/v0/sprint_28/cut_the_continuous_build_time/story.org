@@ -2,12 +2,12 @@
 :ID: 9D908DC5-72C6-4F92-9B06-9A99AA1D639A
 :END:
 #+title: Story: Cut the continuous build time
-#+description: The continuous clang jobs no longer fit the six-hour limit. The 2026-10-14 linux-clang-release job reached only 5422 of 7187 build steps in 5h39m, against about 1.4 s per step for the whole build on the last green run. Linking is 53 of those 7187 steps, so a faster linker is out. This story trials the levers that cut total compile work, and raises the sccache ceiling for the two remaining variants if the measurement supports it.
+#+description: The continuous clang jobs no longer fit the six-hour limit. The 2026-10-14 linux-clang-release job reached only 5422 of 7187 build steps in 5h39m, against about 1.4 s per step for the whole build on the last green run. Linking is 53 of those 7187 steps, so a faster linker is out. The trials ruled out every lever that cuts compile work, and the constraint turned out to be the compiler cache, which the other stories in this sprint fixed.
 #+type: story
 #+level: s2
 #+filetags: :ci:linux:build:sccache:sprint_28:v0:
 #+created: 2026-10-14
-#+updated: 2026-10-14
+#+updated: 2026-10-15
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ The continuous linux-clang jobs finish inside the six-hour limit on a cold runne
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Closed.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-14                               |
+| Next          | None.            |
+| Last touched  | 2026-10-15                               |
 
 * Acceptance
 
@@ -39,10 +39,29 @@ The continuous linux-clang jobs finish inside the six-hour limit on a cold runne
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D7F7AB28-1CED-4F0F-9CAF-E62A8CA17B37][Scaffold story: Cut the continuous build time]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:2D3E420F-8C52-413F-8ADA-0C2F2FC89066][Trial a unity build and precompiled headers]] | STARTED | 2026-10-14 | | Initial task for: Cut the continuous build time |
+| [[id:2D3E420F-8C52-413F-8ADA-0C2F2FC89066][Trial a unity build and precompiled headers]] | DONE | 2026-10-14 | 2026-10-15 | Initial task for: Cut the continuous build time |
 
 * Decisions
 
+- *The build is not the constraint, so no compile-time lever was adopted.* The
+  largest gap between build-step completions is 36.9 s and the median is 1.96 s,
+  so the time is spread across all 7187 steps and there is no hotspot to split.
+  Linking is 53 of those steps, so a faster linker cannot pay. A whole-tree unity
+  build stops in 19 s, and precompiled headers were not reached because the
+  measurement already showed there was nothing for them to recover.
+- *The constraint was the compiler cache.* On 2026-10-03 the same job ran at an
+  85.72 per cent hit rate and finished the whole build in about 49 minutes. A
+  job that reached the six-hour limit was cancelled, and =Save sccache= was
+  gated on =!cancelled()=, so the run threw away every object it had compiled.
+  The cache could never warm and the job could never finish.
+- *The fix belongs to the cache, and it landed as its own stories.* Keeping the
+  save on a cancelled job, giving the save time to run, pruning older entries,
+  scoping the keys per workflow, and restoring the gcc release job are separate
+  stories in this sprint, because each is a defect in its own right rather than a
+  build-time trial.
+
 * Out of scope
 
--
+- Precompiled headers. The hotspot measurement removed the reason to trial them,
+  so this story closes without that trial rather than recording a result it
+  never produced.

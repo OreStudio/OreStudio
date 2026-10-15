@@ -205,8 +205,7 @@ TEST_CASE("a party imports the same run twice", tags) {
     // it to the convention the first wrote by its stated key rather than add a
     // second one under a fresh key. The part is resolved the same way, so the
     // convention keeps one part rather than gaining a second.
-    const auto held =
-        ores::refdata::service::conventions_document_service(parties.a_context).get();
+    const auto held = ores::refdata::service::conventions_document_service(parties.a_context).get();
     CHECK(held.convention.size() == 1);
     CHECK(held.tenor_basis_swap_pay_receive.size() + held.tenor_basis_swap_long_short.size() == 1);
 }

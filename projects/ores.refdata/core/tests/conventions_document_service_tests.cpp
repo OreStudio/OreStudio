@@ -27,8 +27,8 @@
 #include "ores.refdata.core/service/tenor_basis_swap_convention_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>

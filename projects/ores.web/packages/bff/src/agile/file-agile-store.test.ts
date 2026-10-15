@@ -245,26 +245,43 @@ describe('the backlog', () => {
 
 const REAL_DOC = resolve(__dirname, '../../../../../../doc');
 
-describe.skipIf(!existsSync(join(REAL_DOC, 'agile', 'versions')))('the real agile tree', () => {
-    it('reads the newest sprint with stories that all have an id, a title and a state', async () => {
-        const store = new FileAgileStore(REAL_DOC);
-        const board = await store.board();
-        expect(board).not.toBeNull();
-        expect(board?.stories.length).toBeGreaterThan(0);
-        for (const story of board?.stories ?? []) {
-            expect(story.id, story.path).toMatch(/^[0-9A-F-]{36}$/);
-            expect(story.title, story.path).not.toBe('');
-            expect(story.state, story.path).not.toBe('UNKNOWN');
-        }
-        expect((await store.backlog()).buckets.every((bucket) => bucket.items.length >= 0)).toBe(
-            true,
-        );
-    });
+/**
+ * The real tree holds thousands of org files and grows with every story and
+ * task, so the reader's cost is the corpus's size and the machine's load, not
+ * the default five seconds. This budget is the one the charts test below has
+ * always used for the same read, and it keeps a correct result from turning
+ * into a failure when the suite runs in parallel.
+ */
+const REAL_TREE_TIMEOUT_MS = 30_000;
 
-    it('draws charts for the newest sprint, with a velocity over many sprints', async () => {
-        const charts = await new FileAgileStore(REAL_DOC).charts();
-        expect(charts?.velocity.length).toBeGreaterThan(5);
-        expect(charts?.scope).toBeGreaterThan(0);
-        expect(charts?.byState.length).toBeGreaterThan(0);
-    }, 30_000);
+describe.skipIf(!existsSync(join(REAL_DOC, 'agile', 'versions')))('the real agile tree', () => {
+    it(
+        'reads the newest sprint with stories that all have an id, a title and a state',
+        async () => {
+            const store = new FileAgileStore(REAL_DOC);
+            const board = await store.board();
+            expect(board).not.toBeNull();
+            expect(board?.stories.length).toBeGreaterThan(0);
+            for (const story of board?.stories ?? []) {
+                expect(story.id, story.path).toMatch(/^[0-9A-F-]{36}$/);
+                expect(story.title, story.path).not.toBe('');
+                expect(story.state, story.path).not.toBe('UNKNOWN');
+            }
+            expect(
+                (await store.backlog()).buckets.every((bucket) => bucket.items.length >= 0),
+            ).toBe(true);
+        },
+        REAL_TREE_TIMEOUT_MS,
+    );
+
+    it(
+        'draws charts for the newest sprint, with a velocity over many sprints',
+        async () => {
+            const charts = await new FileAgileStore(REAL_DOC).charts();
+            expect(charts?.velocity.length).toBeGreaterThan(5);
+            expect(charts?.scope).toBeGreaterThan(0);
+            expect(charts?.byState.length).toBeGreaterThan(0);
+        },
+        REAL_TREE_TIMEOUT_MS,
+    );
 });

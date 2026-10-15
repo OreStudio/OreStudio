@@ -128,8 +128,7 @@ void resolve_tenor_basis_swap_identity(const ores::database::context& ctx,
         if (c.kind_code != tenor_basis_swap_kind)
             continue;
         const auto provisional = c.id;
-        const auto existing =
-            conventions.find_convention_by_code(c.party_id, c.kind_code, c.name);
+        const auto existing = conventions.find_convention_by_code(c.party_id, c.kind_code, c.name);
         c.id = existing ? existing->id : new_uuid();
         resolved[boost::uuids::to_string(provisional)] = c.id;
     }
@@ -142,13 +141,13 @@ void resolve_tenor_basis_swap_identity(const ores::database::context& ctx,
             if (it == resolved.end())
                 continue;
             p.convention_id = it->second;
-            const auto held = repo.read_latest_by_convention_id(
-                ctx,
-                boost::uuids::to_string(it->second),
-                0,
-                std::numeric_limits<std::uint32_t>::max(),
-                {},
-                std::nullopt);
+            const auto held =
+                repo.read_latest_by_convention_id(ctx,
+                                                  boost::uuids::to_string(it->second),
+                                                  0,
+                                                  std::numeric_limits<std::uint32_t>::max(),
+                                                  {},
+                                                  std::nullopt);
             p.id = held.empty() ? new_uuid() : held.front().id;
         }
     };
@@ -162,12 +161,7 @@ void close_live_rows(const ores::database::context& ctx,
                      Repository repo,
                      const std::string& convention_id) {
     const auto live = repo.read_latest_by_convention_id(
-        ctx,
-        convention_id,
-        0,
-        std::numeric_limits<std::uint32_t>::max(),
-        {},
-        std::nullopt);
+        ctx, convention_id, 0, std::numeric_limits<std::uint32_t>::max(), {}, std::nullopt);
     for (const auto& row : live)
         repo.remove(ctx, boost::uuids::to_string(row.id));
 }

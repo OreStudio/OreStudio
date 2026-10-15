@@ -183,10 +183,17 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          # Saves use a run-unique key, so restore by prefix and take the
-          # newest entry. Nothing deletes cache entries any more.
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          # Saves use a run-unique key, pruned to the newest entry per variant,
+          # so restore by prefix and take that entry.
+          #
+          # The second prefix is transitional. The keys were shared with the
+          # Nightly Build until the workflow scope was added, and the entries
+          # under the old prefix were built by this workflow, so they are worth
+          # restoring once while the scoped cache is cold. Drop that line once
+          # the scoped entries exist, and let the old ones age out.
+          key: sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
           restore-keys: |
+            sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
             sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: Ccache for gh actions
@@ -336,7 +343,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          key: sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
 
       - name: Prune older sccache entries
         # Saves use a run-unique key, so entries accumulate: two clang-debug runs
@@ -348,7 +355,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
+          prefix="sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
           keep="${prefix}${{ github.run_id }}"
           gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
             --jq ".actions_caches[] | select(.key | startswith(\"${prefix}\")) | select(.key != \"${keep}\") | .id" \

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C87F76DB-3B4C-41DC-8755-802CB029DDB5
+:END:
+#+title: The per-component link list in src/CMakeLists.txt is hand-ma…
+#+description: The per-component link list in src/CMakeLists.txt is hand-maintained, not model-derived. Of 94 src/CMakeLists.txt, 93 diverge from the template baseline, in both directions: ores.geo carries Boost::boost, ores.database.lib and ores.telemetry.core.lib while lacking sqlgen::sqlgen, ores.logging.lib, ores.platform.lib, ores.utility.lib and ores.rfl.pch; ores.iam/api adds ores.security.lib. The extra_dependencies slot that exists for exactly this is used by only 5 files. The templates are also behind the 2026-07-30 migration away from file(GLOB_RECURSE): ores.cmake.component.api_src and .core_src still emit it while 88 of the 94 checked-in files now include component_files.cmake. Finishing this means encoding the 94 link lists into their models and bringing the api, core and service src templates onto component_files.cmake.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

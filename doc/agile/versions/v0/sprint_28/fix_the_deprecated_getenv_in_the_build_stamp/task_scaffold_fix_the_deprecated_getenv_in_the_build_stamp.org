@@ -8,7 +8,7 @@
 #+filetags: :fix_the_deprecated_getenv_in_the_build_stamp:sprint_28:v0:
 #+owner: marco
 #+branch: feature/fix-the-deprecated-getenv-in-the-build-stamp
-#+pr:
+#+pr: 3331
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3331][#3331]] | [ores.utility] Read the version manifest variable through the environment provider |
 
 * Review
 

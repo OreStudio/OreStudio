@@ -18,8 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include <boost/uuid/name_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -74,14 +73,17 @@ void set_audit(T& r) {
 
 constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
 
-// The central row's key is a uuid and the name is not a natural key, so the
-// mapper derives the key from the kind and the name. The derivation is
-// deterministic, so two maps of one document agree, which the round-trip
-// comparison relies on. The store re-keys the row by party, because one name
-// may be imported under more than one party.
-boost::uuids::uuid derived_uuid(const std::string& name) {
-    boost::uuids::name_generator gen(boost::uuids::uuid{});
-    return gen(name);
+// A convention is identified by its party, its kind and the name it carries in
+// the source document. The mapper knows the kind and the name but not the
+// party, so it cannot state that identity and does not try: the store resolves
+// it once the session's party is known. What the mapper emits instead is a
+// provisional key, minted fresh for each convention it maps, so the part rows
+// can reach their central row inside one mapped document. The store discards
+// the provisional key and writes the row under the key the identity resolves
+// to, so the provisional key is never an identity.
+boost::uuids::uuid provisional_uuid() {
+    static thread_local ores::utility::uuid::uuid_v7_generator generator;
+    return generator();
 }
 
 // ---------------------------------------------------------------------------
@@ -1843,7 +1845,7 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     refdata::domain::convention central;
     central.kind_code = std::string(tenor_basis_swap_kind);
     central.name = std::string(v.Id);
-    central.id = derived_uuid(central.kind_code + ":" + central.name);
+    central.id = provisional_uuid();
     set_audit(central);
     r.key.id = central.id;
     r.convention = central;
@@ -1854,7 +1856,7 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     const bool pay_receive_form = v.PayIndex || v.ReceiveIndex;
     if (pay_receive_form) {
         refdata::domain::tenor_basis_swap_pay_receive p;
-        p.id = derived_uuid(boost::uuids::to_string(central.id) + ":pay_receive");
+        p.id = provisional_uuid();
         p.convention_id = central.id;
         if (v.PayIndex)
             p.pay_index = std::string(*v.PayIndex);
@@ -1900,7 +1902,7 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     }
 
     refdata::domain::tenor_basis_swap_long_short l;
-    l.id = derived_uuid(boost::uuids::to_string(central.id) + ":long_short");
+    l.id = provisional_uuid();
     l.convention_id = central.id;
     if (v.LongIndex)
         l.long_index = std::string(*v.LongIndex);

@@ -46,10 +46,13 @@
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/zero_convention_repository.hpp"
 #include "ores.refdata.core/repository/zero_inflation_index_convention_repository.hpp"
+#include "ores.refdata.core/service/convention_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/name_generator.hpp>
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -62,8 +65,9 @@ using namespace ores::refdata::repository;
 
 namespace {
 
-// A party's convention is keyed by its name and the party, so a second import
-// of the same name replaces the row the party holds rather than colliding with it.
+// A party's convention is identified by the party, the kind and the name the
+// source document gives it, so a second import of that convention replaces the
+// row the party holds rather than colliding with it.
 template <typename Repository, typename Row>
 void replace_party_rows(const ores::database::context& ctx,
                         Repository repo,
@@ -82,7 +86,8 @@ void replace_party_rows(const ores::database::context& ctx,
 
 // A row's version comes from the live row with the same key, so an import
 // replaces the row it names rather than colliding with it. The central row and
-// its parts are keyed by a uuid, so the id alone is the key.
+// its parts are addressed by the key the identity resolved to, which the
+// resolver below sets, so the id alone is the key by the time a row is written.
 template <typename Repository, typename Row>
 void replace_rows_by_id(const ores::database::context& ctx,
                         Repository repo,
@@ -99,31 +104,56 @@ void replace_rows_by_id(const ores::database::context& ctx,
     repo.write(ctx, rows);
 }
 
-// The name is not a natural key, so the store derives the central row's key
-// from the party, the kind and the name. The derivation is deterministic, so
-// importing one document twice replaces the row rather than duplicating it.
-boost::uuids::uuid derived_uuid(const std::string& name) {
-    boost::uuids::name_generator gen(boost::uuids::uuid{});
-    return gen(name);
+constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
+
+boost::uuids::uuid new_uuid() {
+    static thread_local ores::utility::uuid::uuid_v7_generator generator;
+    return generator();
 }
 
-// The mapper derives the central key from the kind and the name alone,
-// because it does not know the party. Two parties that import one document
-// would then collide on the key, so re-derive it from the party the session
-// stamped and carry the new key onto the parts.
-void rekey_tenor_basis_swap(messaging::conventions_document& v) {
+// A convention is identified by its party, its kind and the name it carries in
+// the source document. The mapper states the kind and the name but cannot state
+// the party, so it emits a provisional key per convention and the part rows
+// name their central row by that key. Here the party is known, so the identity
+// resolves through the generated finder: the row the party already holds keeps
+// its key, and only a genuinely new convention is given one. The parts are
+// relinked to the key the identity resolved to, and each takes the key of the
+// part the party already holds for that convention, so a second import replaces
+// the rows the first wrote rather than adding a second convention.
+void resolve_tenor_basis_swap_identity(const ores::database::context& ctx,
+                                       messaging::conventions_document& v) {
+    convention_service conventions(ctx);
+    std::map<std::string, boost::uuids::uuid> resolved;
     for (auto& c : v.convention) {
-        if (c.kind_code != "TENOR_BASIS_SWAP")
+        if (c.kind_code != tenor_basis_swap_kind)
             continue;
-        const auto previous = c.id;
-        c.id = derived_uuid(boost::uuids::to_string(c.party_id) + ":" + c.kind_code + ":" + c.name);
-        for (auto& p : v.tenor_basis_swap_pay_receive)
-            if (p.convention_id == previous)
-                p.convention_id = c.id;
-        for (auto& l : v.tenor_basis_swap_long_short)
-            if (l.convention_id == previous)
-                l.convention_id = c.id;
+        const auto provisional = c.id;
+        const auto existing =
+            conventions.find_convention_by_code(c.party_id, c.kind_code, c.name);
+        c.id = existing ? existing->id : new_uuid();
+        resolved[boost::uuids::to_string(provisional)] = c.id;
     }
+    if (resolved.empty())
+        return;
+
+    const auto relink = [&](auto& parts, auto repo) {
+        for (auto& p : parts) {
+            const auto it = resolved.find(boost::uuids::to_string(p.convention_id));
+            if (it == resolved.end())
+                continue;
+            p.convention_id = it->second;
+            const auto held = repo.read_latest_by_convention_id(
+                ctx,
+                boost::uuids::to_string(it->second),
+                0,
+                std::numeric_limits<std::uint32_t>::max(),
+                {},
+                std::nullopt);
+            p.id = held.empty() ? new_uuid() : held.front().id;
+        }
+    };
+    relink(v.tenor_basis_swap_pay_receive, tenor_basis_swap_pay_receive_repository());
+    relink(v.tenor_basis_swap_long_short, tenor_basis_swap_long_short_repository());
 }
 
 
@@ -155,7 +185,7 @@ conventions_document_service::conventions_document_service(context ctx)
 
 conventions_save_result conventions_document_service::save(messaging::conventions_document v) {
     ores::service::messaging::stamp_document(v, ctx_);
-    rekey_tenor_basis_swap(v);
+    resolve_tenor_basis_swap_identity(ctx_, v);
     conventions_save_result r;
     replace_party_rows(ctx_, zero_convention_repository(), std::move(v.zero));
     replace_party_rows(ctx_, average_ois_convention_repository(), std::move(v.average_ois));

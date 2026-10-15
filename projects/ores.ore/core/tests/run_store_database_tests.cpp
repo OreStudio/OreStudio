@@ -22,6 +22,7 @@
 #include "ores.ore.core/store/run_store.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
@@ -199,6 +200,15 @@ TEST_CASE("a party imports the same run twice", tags) {
     const auto second =
         store::import_run(parties.a_context, make_definition(h, parties), "second", files);
     CHECK(second.stored.size() == 5);
+
+    // The input names one tenor basis swap, and the second import must resolve
+    // it to the convention the first wrote by its stated key rather than add a
+    // second one under a fresh key. The part is resolved the same way, so the
+    // convention keeps one part rather than gaining a second.
+    const auto held =
+        ores::refdata::service::conventions_document_service(parties.a_context).get();
+    CHECK(held.convention.size() == 1);
+    CHECK(held.tenor_basis_swap_pay_receive.size() + held.tenor_basis_swap_long_short.size() == 1);
 }
 
 TEST_CASE("an import naming a file the input lacks is refused before it writes", tags) {

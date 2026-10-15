@@ -27,6 +27,8 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <utility>
+#include <vector>
 
 /**
  * @file xml_roundtrip_conventions_tests.cpp
@@ -873,9 +875,39 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
         const auto remapped = conventions_mapper::map(reparsed);
         for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
             INFO(path.string() + ": TenorBasisSwap element " + std::to_string(i));
-            CHECK(remapped.convention[i] == mapped.convention[i]);
-            CHECK(remapped.tenor_basis_swap_pay_receive == mapped.tenor_basis_swap_pay_receive);
-            CHECK(remapped.tenor_basis_swap_long_short == mapped.tenor_basis_swap_long_short);
+            // The mapper mints a provisional key for each convention so its part
+            // can reach it inside one mapped document. Two maps of one document
+            // agree on the stated key, not on that key, so the comparison pairs
+            // the rows by the convention they belong to and drops the keys.
+            auto mapped_central = mapped.convention[i];
+            auto remapped_central = remapped.convention[i];
+            mapped_central.id = boost::uuids::uuid{};
+            remapped_central.id = boost::uuids::uuid{};
+            CHECK(remapped_central == mapped_central);
+
+            const auto parts_of = [](const auto& doc, const boost::uuids::uuid& convention_id) {
+                std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> pay_receive;
+                for (const auto& p : doc.tenor_basis_swap_pay_receive) {
+                    if (p.convention_id != convention_id)
+                        continue;
+                    auto part = p;
+                    part.id = boost::uuids::uuid{};
+                    part.convention_id = boost::uuids::uuid{};
+                    pay_receive.push_back(part);
+                }
+                std::vector<ores::refdata::domain::tenor_basis_swap_long_short> long_short;
+                for (const auto& l : doc.tenor_basis_swap_long_short) {
+                    if (l.convention_id != convention_id)
+                        continue;
+                    auto part = l;
+                    part.id = boost::uuids::uuid{};
+                    part.convention_id = boost::uuids::uuid{};
+                    long_short.push_back(part);
+                }
+                return std::make_pair(pay_receive, long_short);
+            };
+            CHECK(parts_of(remapped, remapped.convention[i].id) ==
+                  parts_of(mapped, mapped.convention[i].id));
         }
     }
 

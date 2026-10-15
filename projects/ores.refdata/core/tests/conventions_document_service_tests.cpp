@@ -24,9 +24,11 @@
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.refdata.core/service/tenor_basis_swap_convention_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <algorithm>
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
@@ -92,4 +94,55 @@ TEST_CASE("a world convention the tenant holds is left as it is", tags) {
     const auto after = conventions.get().ibor_index;
     CHECK(std::ranges::find_if(after, [&](const auto& c) { return c.id == index.id; })->version ==
           version);
+}
+
+TEST_CASE("an import does not duplicate a convention the DQ path published", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto ctx = party_context(h);
+    boost::uuids::random_generator uuid;
+
+    const std::string name = "GBP-LIBOR-3M-6M-BASIS-CONVENTIONS";
+    const auto published_id = uuid();
+
+    // The DQ path publishes the convention first, under a key it chose.
+    ores::refdata::service::tenor_basis_swap_convention_service family(ctx);
+    ores::refdata::messaging::put_tenor_basis_swap_convention_request put;
+    put.item.change.write.id = published_id;
+    put.item.change.write.kind_code = "TENOR_BASIS_SWAP";
+    put.item.change.write.name = name;
+    ores::refdata::messaging::tenor_basis_swap_pay_receive_change part;
+    part.write.id = uuid();
+    part.write.convention_id = published_id;
+    part.write.pay_index = std::string("GBP-LIBOR-6M");
+    part.write.receive_index = std::string("GBP-LIBOR-3M");
+    put.item.pay_receive.push_back(part);
+    put.intent.reason_code = "system.test";
+    REQUIRE(family.put_tenor_basis_swap_convention(put).result.outcome ==
+            ores::utility::domain::outcome::ok);
+
+    // A later import of a document naming the same party, kind and name resolves
+    // to the published row rather than adding a second convention under the
+    // provisional key the mapper minted.
+    ores::refdata::messaging::conventions_document doc;
+    ores::refdata::domain::convention central;
+    central.id = uuid();
+    central.kind_code = "TENOR_BASIS_SWAP";
+    central.name = name;
+    central.change_reason_code = "system.test";
+    doc.convention.push_back(central);
+    ores::refdata::domain::tenor_basis_swap_pay_receive imported;
+    imported.id = uuid();
+    imported.convention_id = central.id;
+    imported.pay_index = std::string("GBP-LIBOR-6M");
+    imported.receive_index = std::string("GBP-LIBOR-3M");
+    imported.change_reason_code = "system.test";
+    doc.tenor_basis_swap_pay_receive.push_back(imported);
+
+    conventions_document_service conventions(ctx);
+    conventions.save(doc);
+
+    const auto held = conventions.get();
+    REQUIRE(held.convention.size() == 1);
+    CHECK(held.convention.front().id == published_id);
+    CHECK(held.tenor_basis_swap_pay_receive.size() == 1);
 }

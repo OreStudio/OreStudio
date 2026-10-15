@@ -53,7 +53,7 @@ The investigation this story commissioned is
 | [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | BACKLOG | | | Repeat the pattern for the remaining families, each landing with its own acceptance rather than a general claim of coverage. Order the work from the ORE generator's coverage list and the shipped sample corpus. |
 | [[id:6172EE1E-5895-4F11-A6A0-08989B4D15A2][Add the generate_trades step to the ACME profile]] | BACKLOG | | | ACME provisioning runs the population, so the step belongs in the acme_demo profile after load_staff and start_market_feeds. One step or one per party depends on the party question, which decide rather than discover. |
 | [[id:A40DD310-3C6C-4681-87BB-802890B3E93D][Prove the population converges across two provisions]] | BACKLOG | | | Provision ACME twice and assert that no trade duplicated and no trade's version advanced. This is the acceptance that catches an unstable seed and the shift-after-insert design at once. |
-| [[id:DEA0A754-9D39-41B7-8194-DD068C37B179][File the ACME trade population analysis as an investigation]] | STARTED | | | The analysis under doc/analysis was written at the wrong level, so it is the story's record and belongs beside the story. Scaffold it as an investigation, move the content into the six required sections, and delete the analysis. |
+| [[id:DEA0A754-9D39-41B7-8194-DD068C37B179][File the ACME trade population analysis as an investigation]] | DONE | | 2026-10-15 | The analysis under doc/analysis was written at the wrong level, so it is the story's record and belongs beside the story. Scaffold it as an investigation, move the content into the six required sections, and delete the analysis. |
 
 * Decisions
 

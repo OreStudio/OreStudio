@@ -26,11 +26,11 @@ The ACME trade population analysis sits beside its story as an investigation in 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | The investigation is scaffolded, its content moved, and the old analysis deleted. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR and close the task.       |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance

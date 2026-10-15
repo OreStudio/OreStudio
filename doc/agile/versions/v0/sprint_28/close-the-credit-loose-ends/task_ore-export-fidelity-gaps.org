@@ -104,7 +104,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Documents that re-read | 127 of 132, up from 118 | =compass test run -- -R ores.ore.core.tests= (the case "roundtrip mirrors every portfolio in the ORE example corpus") | 04d150a501 |
+| Documents that still fail to re-read | 5, down from 14 | the same case; =known_export_gaps()= names them | 04d150a501 |
+| ORE core suite | 667 cases, 0 failures | =compass test run -- -R ores.ore.core.tests= | 04d150a501 |
+| Local check gate | 18 of 18 checks passed | =compass check= | 04d150a501 |
 
 * Notes
 

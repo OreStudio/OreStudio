@@ -26,11 +26,11 @@ One central convention row, a convention_kind lookup, and two child entities for
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AECE9B3F-CA2C-486E-A5DB-50BBD06AC77B][Atomise every convention onto the central entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-14                               |
 
 * Acceptance
@@ -86,3 +86,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Tenor basis swap is atomised and the pattern is proven end to end. A
+convention is a central row identified by party, kind and name, plus one
+part table per leg form, with a generated family protocol, service,
+handler and registrar carrying the central row and its parts in one round
+trip and one transaction.
+
+The pilot also produced the codegen the pattern needs: the family model
+kind and its messages, service, handler and registrar; a finder taking a
+parent column and more than one code column; and a natural key whose
+column can be marked server owned, so the party arrives from the session
+rather than from the wire.
+
+Four things the pilot surfaced that no build could have. The DQ publish
+path assumed one live table per kind, so a composite had no publish path
+at all. The ORE id was the real identity, hidden in a hash that two
+implementations had to reproduce exactly. A pair of coupon fields was
+modelled as belonging to one leg form when the corpus carries them on
+both. And the part trigger's touch function was never generated, so no
+part row could be written.
+
+The remaining twenty-five kinds each get a task, one convention per PR.
+
+[[id:AECE9B3F-CA2C-486E-A5DB-50BBD06AC77B][Story: Atomise every convention onto the central entity]]

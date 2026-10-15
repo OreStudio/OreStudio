@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AECE9B3F-CA2C-486E-A5DB-50BBD06AC77B][Atomise every convention onto the central entity]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AECE9B3F-CA2C-486E-A5DB-50BBD06AC77B][Atomise every convention onto the central entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
@@ -83,3 +83,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The composite convention has a publish path. One artefact table per live
+table stages the identity and the payload, never the uuid and never the
+party, because the database assigns the key and the publish names the
+party. The existing conventions publisher delegates to a composite one for
+the atomised kind, so there is still one dataset, one artefact type and
+one subject.
+
+Identity resolves by party, kind and name, and each part's live rows are
+made exactly the staged rows. That closure is what closes the old leg form
+when a convention changes form, instead of leaving it carrying both forms
+at once; the document path closes omitted forms too.
+
+Exercised on a recreated database against the real ore.conventions
+dataset: a first publish inserted the staged conventions, a republish
+changed nothing and left every version untouched, and restaging one
+convention in the other form inserted one part and closed the other.
+pgTAP now covers this publisher; the flat one had no test at all.
+
+Left deliberately: the publishers declare p_mode and never read it, while
+the contract says it accepts upsert, insert-only and replace-all. The
+contract and the code disagree, and one parameter cannot express both the
+row conflict and the closure, so it needs its own decision.

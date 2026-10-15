@@ -26,11 +26,11 @@ The prototype is the design. The list has the key first, the kind, the series ti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -57,7 +57,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite, packages/web | 1566 passed | =cd projects/ores.web/packages/web && npx vitest run= | 0e047ec801 |
+| The party's feed bindings | 55 | =compass sql -- -c "select count(*) from ores_marketdata_feed_bindings_tbl where party_id='77eafcc9-4a17-4f5e-9999-08df8867150d'"= | 91ca02d251 |
 
 * Notes
 
@@ -85,3 +86,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The list and the record page are built from the shared record parts, and they lead with the output: the series is the first column of the list and the title of the record page, and the source the binding consumes follows it and sits in the key line. The Bindings card is in the Market data area, after Synthetic, worded in English, French and Portuguese and gated on =marketdata::feed_bindings:read=; the Market data menu entry asks the same read, so the area is offered to a person who holds only it. The oresmd URL and its Inspect button are on the record page, and the access mark is drawn for a person who may change a synthetic binding.
+
+Decisions taken while building, all on 2026-10-15:
+
+- The prototype names the record page for the source and the series in the subtitle. Marco reversed that: a binding is named for what it writes, so the output target is the title and the input is second. The prototype, the journey and this task's own Goal still state the old order, and need updating.
+- The series is not a link on the list. It misled, so it is plain text.
+- The access mark is drawn although no Edit exists yet. Marco agreed to leave it until the next task brings the actions.
+
+Left undone, each worth its own task:
+
+- The =Feed=, =Folder= and =Ticks per hour= rows show a dash while the feed runs. =api.folderFeeds({ search: sourceName })= finds no feed for =synthetic.bloomberg.usdpln=, so the lookup comes back empty.
+- The prototype, the journey and the Goal above still describe the input-first order.
+
+The manual scenario [[id:42CD0D45-9401-4152-848E-591C94013269][Verify the bindings list and record page]] covers the list and the record page; it is not yet run.

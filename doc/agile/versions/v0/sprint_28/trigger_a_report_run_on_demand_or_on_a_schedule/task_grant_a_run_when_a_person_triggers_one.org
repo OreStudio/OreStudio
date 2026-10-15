@@ -8,7 +8,7 @@
 #+filetags: :trigger_a_report_run_on_demand_or_on_a_schedule:sprint_28:v0:
 #+owner: marco
 #+branch: feature/clean-up-and-prove-the-ore-packages
-#+pr: 3320
+#+pr: 3321
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -33,11 +33,11 @@ produced cannot act, which is why building a report's ORE packages fails today.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] |
-| Now          | Built; the reporting core and IAM suites are green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close on merge.                        |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
@@ -106,6 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3321][#3321]] | [agile] Close the task that grants a run when a person triggers one |
 | [[https://github.com/OreStudio/OreStudio/pull/3320][#3320]] | [reporting] Grant a run when a person triggers one |
 
 * Review

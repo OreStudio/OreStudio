@@ -62,7 +62,7 @@ and it cannot work until the trigger exists.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | STARTED | 2026-10-15 | | Create the report's consent at admission rather than only at schedule time |
+| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | DONE | 2026-10-15 | 2026-10-15 | Create the report's consent at admission rather than only at schedule time |
 |      |       |       |     |             |
 
 * Decisions

@@ -29,12 +29,12 @@ and it cannot work until the trigger exists.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The design is settled; no code is written. |
+| Now           | Complete. All three tasks merged. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-14                               |
+| Next          | Nothing. The workflow step stream gap this exposed is captured in the product backlog, and the package carrying no trades belongs to a data task rather than this story. |
+| Last touched  | 2026-10-15                               |
 
 * Acceptance
 

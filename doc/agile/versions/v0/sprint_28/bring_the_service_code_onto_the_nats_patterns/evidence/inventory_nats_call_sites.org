@@ -268,6 +268,67 @@ description) or are one-line reply helpers. The genuine escape paths were
 thirteen entry points, and each now answers the failure instead of leaving the
 caller to time out.
 
+* D9 - the step-command subjects no stream covers
+
+Found while provisioned ACME against a recreated database, which failed at its
+first step. The engine dispatches a step command with =js_publish=, so the
+subject must be covered by a stream; when it is not, the publish waits out the
+pub-ack timeout and the run fails with =JetStream publish failed: Timeout=.
+
+**This is not introduced by this branch.** The =js_publish= in
+=publish_command= comes from =515cf28072 [workflow,iam] Deliver step commands
+durably= (PR #3305, already on main). This branch adds one header to that call.
+
+**The gap.** Nine subjects are covered by some stream: the workflow start and
+completion, =iam.v1.ops.provision_tenant_step=, the market and synthetic ticks,
+and the compute work assignment. The step commands of a **DQ bundle-publish**
+workflow go instead to =ds.target_subject=, and there are **66 =*_from_dq=**
+subjects, none of them covered:
+
+| Service | Subjects it serves |
+|---------+--------------------|
+| refdata | 45 |
+| dq | 7 |
+| analytics | 3 |
+| reporting | 3 |
+| iam | 2 |
+| synthetic | 2 |
+| assets | 1 |
+| marketdata | 1 |
+
+**Why a central fix is not available.** =workflow_definition::build_steps()=
+builds the steps per instance from the request payload, so the subjects are not
+knowable at engine startup. Coverage has to be declared by the service that
+serves the subject, which is also what
+[[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]]
+requires.
+
+**The fix, in two parts that belong together.**
+
+1. Each of the eight services ensures a stream covering its own =*_from_dq=
+   subjects, at startup, before its registrar runs. Each already holds those
+   subjects in a list or a pair of literal calls, so the stream is built from
+   the same list; =make_subject= and =subjects_below= give the filters.
+2. The same subjects become durable consumers (=js_queue_subscribe= with a
+   stable durable name and the delivery bound), not core =queue_subscribe=.
+   Without this half a step published while the service is down is retained by
+   the stream and never replayed, so the run still stalls - which is the
+   failure #3305 set out to remove.
+
+Part 1 alone stops the crash. Part 2 alone changes nothing. Neither is a fix on
+its own.
+
+**Where the code is.** The registration sits in one block per service, in
+=projects/ores.<svc>/core/src/messaging/registrar.cpp=, either an array of
+subjects plus a loop (refdata, analytics, reporting, dq, iam) or one
+=queue_subscribe= call per subject (synthetic, assets, marketdata). The handler
+variable and the queue-group name differ per service.
+
+**Verification.** =compass db recreate -y -k=, =compass services start=, then
+=compass shell -f
+projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+must run to completion and the run must not be reported as failed.
+
 * See also
 
 - [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the

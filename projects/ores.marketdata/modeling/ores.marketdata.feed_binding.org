@@ -95,6 +95,7 @@ carries, and the key of the ingest loop's binding cache. Matches the
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "VENDOR"
+:filterable: true
 :END:
 
 References =producer_kind.code= -- the kind of producer this binding

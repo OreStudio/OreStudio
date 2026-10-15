@@ -106,10 +106,13 @@ export const FEED_BINDINGS_RESOURCE: SyntheticResource = {
     namespace: 'marketdata',
     filter: {
         party_id: null,
+        producer_kind: null,
         id_one_of: null,
         party_id_one_of: null,
+        producer_kind_one_of: null,
         search: null,
     } satisfies FeedBindingsFilter,
+    filters: ['producer_kind'],
     scope: (session) => ({ party_id: partyOf(session) }),
     search: true,
     sortable: ['source_name', 'enabled'],

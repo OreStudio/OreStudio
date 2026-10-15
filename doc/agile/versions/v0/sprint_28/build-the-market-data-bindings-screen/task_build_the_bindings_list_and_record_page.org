@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The prototype is the design. The list has the key first, the kind, the series ti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -37,7 +37,7 @@ The prototype is the design. The list has the key first, the kind, the series ti
 
 - The list and the record page match the prototype, built from the shared record parts and the shipped oresmd link.
 - A series with no observation shows its URL as text, and a series with a page links to it.
-- Edit and Delete are drawn only for a person who may take them, and not for a vendor binding's Edit.
+- The record page shows the access mark only for a person who may change a synthetic binding. The Edit and Delete actions belong to the next task.
 
 * Plan
 

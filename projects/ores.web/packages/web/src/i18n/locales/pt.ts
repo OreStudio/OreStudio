@@ -3467,6 +3467,7 @@ const pt: SourceCatalogue = {
         },
         fields: {
             image_id: 'Bandeira',
+            producer_kind: 'Tipo',
             version: 'Versão',
             modified_by: 'Modificado por',
             performed_by: 'Executado por',
@@ -3571,6 +3572,7 @@ const pt: SourceCatalogue = {
             component_index: 'Índice',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Sintético', VENDOR: 'Fornecedor' },
             process_type: {
                 geometric: 'Geométrico',
                 arithmetic: 'Aritmético',
@@ -3800,6 +3802,27 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Vínculos',
+            lead: 'Os feeds que escrevem dados de mercado para esta parte: a fonte que cada um nomeia, a série que escreve e se está em execução.',
+            allKinds: 'Todos os tipos',
+            series: 'Série',
+            status: 'Estado',
+            lastTick: 'Último tick',
+            feed: 'Feed',
+            folder: 'Pasta',
+            ticksPerHour: 'Ticks por hora',
+            seriesHint: 'A série em que este vínculo escreve e o URL oresmd que a nomeia.',
+            vendorNote:
+                'Um vínculo de feed real é só de leitura aqui. Só um vínculo de feed sintético pode mudar.',
+            statuses: {
+                running: 'Em execução',
+                stopped: 'Parado',
+                disabled: 'Desativado',
+                quiet: 'Silencioso',
+                unsupported: 'Não suportado',
+            },
+        },
         feeds: {
             targetUri:
                 'A série em que este feed escreve. Cada tick do feed é guardado como uma observação da série que este URI nomeia.',

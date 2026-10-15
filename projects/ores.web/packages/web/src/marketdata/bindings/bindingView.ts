@@ -1,0 +1,85 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+import type { FeedBindingActivity } from '@ores/contracts';
+
+/** The kind of a binding that names a generated producer. */
+export const SYNTHETIC = 'SYNTHETIC';
+
+/**
+ * How long an enabled binding may go without a tick before the screen calls it quiet.
+ * Nothing states how long a feed may be quiet yet, so the threshold is provisional.
+ */
+export const QUIET_AFTER_SECONDS = 600;
+
+/** What a binding is doing, as the status column says it. */
+export type BindingStatus = 'unsupported' | 'disabled' | 'quiet' | 'running' | 'stopped';
+
+/** Whether a binding names a generated producer. Any other kind is read only here. */
+export function isSynthetic(kind: string): boolean {
+    return kind === SYNTHETIC;
+}
+
+/** The seconds since a time written as YYYY-MM-DD HH:MM:SSZ, or nothing when there is no time. */
+export function secondsSince(at: string, now: number): number | undefined {
+    if (at === '') {
+        return undefined;
+    }
+    const then = Date.parse(at.replace(' ', 'T'));
+    return Number.isNaN(then) ? undefined : Math.max(0, Math.round((now - then) / 1000));
+}
+
+/**
+ * The status of a binding. A binding of a real feed is not supported. A binding that
+ * is not enabled stores nothing. An enabled binding whose source has written nothing,
+ * or nothing lately, is quiet whether its feed runs or not, so a silent source cannot
+ * hide behind a running one. Otherwise it is running or stopped as its feed is. While
+ * the running feeds are not yet known, nothing is said.
+ */
+export function statusOf(input: {
+    readonly kind: string;
+    readonly enabled: boolean;
+    readonly running: boolean | undefined;
+    readonly lastTickAt: string;
+    readonly now: number;
+}): BindingStatus | undefined {
+    if (!isSynthetic(input.kind)) {
+        return 'unsupported';
+    }
+    if (!input.enabled) {
+        return 'disabled';
+    }
+    if (input.running === undefined) {
+        return undefined;
+    }
+    const age = secondsSince(input.lastTickAt, input.now);
+    if (age === undefined || age > QUIET_AFTER_SECONDS) {
+        return 'quiet';
+    }
+    return input.running ? 'running' : 'stopped';
+}
+
+/** The activity of each binding by its source name. */
+export function activityByName(
+    activities: readonly FeedBindingActivity[],
+): ReadonlyMap<string, FeedBindingActivity> {
+    return new Map(activities.map((activity) => [activity.source_name, activity]));
+}

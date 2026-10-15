@@ -3441,6 +3441,7 @@ export const en: SourceCatalogue = {
         },
         fields: {
             image_id: 'Flag',
+            producer_kind: 'Kind',
             version: 'Version',
             modified_by: 'Modified by',
             performed_by: 'Performed by',
@@ -3545,6 +3546,7 @@ export const en: SourceCatalogue = {
             component_index: 'Index',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Synthetic', VENDOR: 'Vendor' },
             process_type: {
                 geometric: 'Geometric',
                 arithmetic: 'Arithmetic',
@@ -3774,6 +3776,27 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Bindings',
+            lead: 'The feeds that write market data for this party: which source each one names, the series it writes and whether it runs.',
+            allKinds: 'All kinds',
+            series: 'Series',
+            status: 'Status',
+            lastTick: 'Last tick',
+            feed: 'Feed',
+            folder: 'Folder',
+            ticksPerHour: 'Ticks per hour',
+            seriesHint: 'The series this binding writes to, and the oresmd URL that names it.',
+            vendorNote:
+                'A binding of a real feed is read only here. Only a binding of a synthetic feed can change.',
+            statuses: {
+                running: 'Running',
+                stopped: 'Stopped',
+                disabled: 'Disabled',
+                quiet: 'Quiet',
+                unsupported: 'Not supported',
+            },
+        },
         feeds: {
             targetUri:
                 'The series this feed writes to. Each tick the feed makes is stored as an observation of the series that this URI names.',

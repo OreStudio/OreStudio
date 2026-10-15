@@ -84,6 +84,23 @@ export function seriesRoute(uri: string): string {
     return `/market-data/series?uri=${encodeURIComponent(uri)}`;
 }
 
+/** The Evolution page for a series the party holds, by its id. */
+export function evolutionIdRoute(seriesId: string): string {
+    return `/market-data/evolution?series=${encodeURIComponent(seriesId)}`;
+}
+
+/** The series page for a series the party holds, by its id. */
+export function seriesIdRoute(seriesId: string): string {
+    return `/market-data/series?series=${encodeURIComponent(seriesId)}`;
+}
+
+/** The page that shows a listed series: Evolution when it has an axis, else the series page. */
+export function seriesPageOf(listed: ListedSeries): string {
+    return canBeShown(listed)
+        ? evolutionIdRoute(listed.series_id)
+        : seriesIdRoute(listed.series_id);
+}
+
 /** Whether a listed series is the one a form names: the same four words and the same identity fields. */
 function isTheSeries(listed: ListedSeries, form: IdentityForm): boolean {
     const { asset, scope, instrument_type, quote_type, fields } = listed.identity;

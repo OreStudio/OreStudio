@@ -57,8 +57,10 @@ export interface FeedBindingLookup {
 
 export interface FeedBindingsFilter {
     party_id: string | null;
+    producer_kind: string | null;
     id_one_of: string[] | null;
     party_id_one_of: string[] | null;
+    producer_kind_one_of: string[] | null;
     search: string | null;
 }
 

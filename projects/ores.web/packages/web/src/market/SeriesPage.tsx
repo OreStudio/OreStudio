@@ -25,7 +25,14 @@ import { Link, useSearchParams } from 'react-router';
 import { DEFAULT_OBSERVATIONS, type ListedSeries } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { LineChart, SERIES_COLOURS } from '../marketdata/LineChart.js';
-import { evolutionRoute, seriesOfUrl, seriesVerdict } from '../oresmd/identity.js';
+import { canBeShown } from './evolutionView.js';
+import {
+    evolutionIdRoute,
+    evolutionRoute,
+    seriesOfUrl,
+    seriesVerdict,
+    type SeriesVerdict,
+} from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
 import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
@@ -53,24 +60,39 @@ const LISTED = 20;
  * see. A series the party does not have, a fixing and a URL the codec refuses are
  * said in words. A series with an axis has the Evolution page, and the page says so
  * and links to it.
+ *
+ * A series id in the address, as `series`, names a series the party already holds, so
+ * a screen that knows the id links to it without composing a URL.
  */
 export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
     const titled = useSeriesTitle();
     const [search] = useSearchParams();
     const uri = search.get('uri') ?? '';
+    const seriesId = search.get('series') ?? '';
     const parsed = useQuery({ ...oresmdQueries.parse(uri), enabled: uri !== '' });
     const schema = useQuery({ ...oresmdQueries.schema(), enabled: uri !== '' });
-    const list = useQuery({ ...oresmdQueries.seriesList(partyId), enabled: uri !== '' });
+    const list = useQuery({
+        ...oresmdQueries.seriesList(partyId),
+        enabled: uri !== '' || seriesId !== '',
+    });
 
     const named =
         parsed.data === undefined || schema.data === undefined
             ? undefined
             : seriesOfUrl(schema.data, parsed.data);
-    const verdict =
-        named?.ok === true && list.data !== undefined
-            ? seriesVerdict(list.data, named.form)
-            : undefined;
+    const byId =
+        seriesId === '' ? undefined : list.data?.series.find((one) => one.series_id === seriesId);
+    const verdict: SeriesVerdict | undefined =
+        seriesId !== ''
+            ? list.data === undefined
+                ? undefined
+                : byId === undefined
+                  ? { kind: 'not-listed' }
+                  : { kind: canBeShown(byId) ? 'shown' : 'no-shape', listed: byId }
+            : named?.ok === true && list.data !== undefined
+              ? seriesVerdict(list.data, named.form)
+              : undefined;
     const listed = verdict?.kind === 'no-shape' ? verdict.listed : undefined;
 
     return (
@@ -82,15 +104,15 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
                     description={t('market.series.description')}
                 />
             </div>
-            {uri === '' ? (
+            {uri === '' && seriesId === '' ? (
                 <Notice>{t('market.series.noUri')}</Notice>
             ) : parsed.isError || schema.isError || list.isError ? (
                 <Notice tone="error">
                     {(parsed.error ?? schema.error ?? list.error)?.message ?? ''}
                 </Notice>
-            ) : named === undefined || list.data === undefined ? (
+            ) : list.data === undefined || (seriesId === '' && named === undefined) ? (
                 <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-            ) : !named.ok ? (
+            ) : named !== undefined && !named.ok ? (
                 <Notice tone="warn">
                     {named.reason === 'fixing'
                         ? t('market.evolution.errors.fixing')
@@ -103,7 +125,10 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
             ) : verdict?.kind === 'shown' ? (
                 <Notice>
                     {t('market.series.hasShape', { series: titled(verdict.listed.identity) })}{' '}
-                    <Link className="text-accent-bright hover:underline" to={evolutionRoute(uri)}>
+                    <Link
+                        className="text-accent-bright hover:underline"
+                        to={seriesId === '' ? evolutionRoute(uri) : evolutionIdRoute(seriesId)}
+                    >
                         {t('market.series.openEvolution')}
                     </Link>
                 </Notice>
@@ -136,7 +161,7 @@ function Observations({
         <section className="card space-y-4 p-6">
             <div>
                 <h2 className="text-lg font-medium">{titled(series.identity)}</h2>
-                <p className="break-all font-mono text-xs text-ink-faint">{uri}</p>
+                {uri !== '' && <p className="break-all font-mono text-xs text-ink-faint">{uri}</p>}
                 <p className="text-sm text-ink-muted">
                     {observations.length === 0
                         ? t('market.series.empty')

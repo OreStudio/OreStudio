@@ -3489,6 +3489,7 @@ const fr: SourceCatalogue = {
         },
         fields: {
             image_id: 'Drapeau',
+            producer_kind: 'Type',
             version: 'Version',
             modified_by: 'Modifié par',
             performed_by: 'Effectué par',
@@ -3593,6 +3594,7 @@ const fr: SourceCatalogue = {
             component_index: 'Indice',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Synthétique', VENDOR: 'Fournisseur' },
             process_type: {
                 geometric: 'Géométrique',
                 arithmetic: 'Arithmétique',
@@ -3825,6 +3827,27 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Liaisons',
+            lead: "Les flux qui écrivent des données de marché pour cette partie : la source que chacun nomme, la série qu'il écrit et s'il tourne.",
+            allKinds: 'Tous les types',
+            series: 'Série',
+            status: 'Statut',
+            lastTick: 'Dernier tick',
+            feed: 'Flux',
+            folder: 'Dossier',
+            ticksPerHour: 'Ticks par heure',
+            seriesHint: "La série dans laquelle cette liaison écrit, et l'URL oresmd qui la nomme.",
+            vendorNote:
+                'Une liaison de flux réel est en lecture seule ici. Seule une liaison de flux synthétique peut changer.',
+            statuses: {
+                running: 'En cours',
+                stopped: 'Arrêté',
+                disabled: 'Désactivé',
+                quiet: 'Silencieux',
+                unsupported: 'Non pris en charge',
+            },
+        },
         feeds: {
             targetUri:
                 'La série dans laquelle ce flux écrit. Chaque tick du flux est stocké comme une observation de la série que nomme cette URI.',

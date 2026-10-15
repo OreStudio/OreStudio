@@ -278,6 +278,29 @@ pub-ack timeout and the run fails with =JetStream publish failed: Timeout=.
 **This is not introduced by this branch.** The =js_publish= in
 =publish_command= comes from =515cf28072 [workflow,iam] Deliver step commands
 durably= (PR #3305, already on main). This branch adds one header to that call.
+It is also already recorded on main as the capture
+=doc/agile/product_backlog/inbox/every_workflow_step_subject_needs_a_stream.org=,
+filed independently by another environment.
+
+**Fixed and verified.** Every service that serves a step-command subject now
+declares its coverage through
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]' shared helper,
+and reads it durably. Proven by recreating the database, starting the fleet and
+running the ACME provisioning script to completion:
+
+#+begin_example
+  [1/2] system_provision: completed
+  [2/2] start_tenant_setup: completed
+✓ All 2 step(s) completed.
+✓ System provisioned. Tenant 'Acme Corporation'.
+#+end_example
+
+Two collisions surfaced only under that test, and both are worth remembering:
+a service that declares two groups of step commands under one stream name has
+the second wipe the first, because =ensure_stream= replaces a stream's subject
+list rather than widening it. refdata and iam each did exactly that, and each
+left the other's subject uncovered. =ensure_step_stream= now takes a label for
+that reason.
 
 **The gap.** Nine subjects are covered by some stream: the workflow start and
 completion, =iam.v1.ops.provision_tenant_step=, the market and synthetic ticks,

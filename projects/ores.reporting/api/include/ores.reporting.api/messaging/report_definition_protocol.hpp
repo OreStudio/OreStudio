@@ -72,7 +72,9 @@ struct report_definition_lookup {
 };
 
 struct report_definitions_filter {
+    std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 };
 
 struct report_definition_event {

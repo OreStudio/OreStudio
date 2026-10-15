@@ -70,7 +70,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:42CD0D45-9401-4152-848E-591C94013269][Verify the bindings list and record page]] | PENDING | Provisioning must finish first; the tenant setup currently stops at =publish_bundle: refdata.currency_groups= with =JetStream publish failed: Timeout=. |
 
 * PRs
 

@@ -62,8 +62,8 @@ using namespace ores::refdata::repository;
 
 namespace {
 
-// A party's convention is keyed by its ORE id and the party, so a second import
-// of the same id replaces the row the party holds rather than colliding with it.
+// A party's convention is keyed by its name and the party, so a second import
+// of the same name replaces the row the party holds rather than colliding with it.
 template <typename Repository, typename Row>
 void replace_party_rows(const ores::database::context& ctx,
                         Repository repo,
@@ -99,15 +99,15 @@ void replace_rows_by_id(const ores::database::context& ctx,
     repo.write(ctx, rows);
 }
 
-// The ORE id is not a natural key, so the store derives the central row's key
-// from the party, the kind and the ORE id. The derivation is deterministic, so
+// The name is not a natural key, so the store derives the central row's key
+// from the party, the kind and the name. The derivation is deterministic, so
 // importing one document twice replaces the row rather than duplicating it.
 boost::uuids::uuid derived_uuid(const std::string& name) {
     boost::uuids::name_generator gen(boost::uuids::uuid{});
     return gen(name);
 }
 
-// The mapper derives the central key from the kind and the ORE id alone,
+// The mapper derives the central key from the kind and the name alone,
 // because it does not know the party. Two parties that import one document
 // would then collide on the key, so re-derive it from the party the session
 // stamped and carry the new key onto the parts.
@@ -117,7 +117,7 @@ void rekey_tenor_basis_swap(messaging::conventions_document& v) {
             continue;
         const auto previous = c.id;
         c.id = derived_uuid(boost::uuids::to_string(c.party_id) + ":" + c.kind_code + ":" +
-                            c.ores_id.value_or(""));
+                            c.name.value_or(""));
         for (auto& p : v.tenor_basis_swap_pay_receive)
             if (p.convention_id == previous)
                 p.convention_id = c.id;

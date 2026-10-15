@@ -3,7 +3,7 @@
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.convention
-#+description: Codegen entity model for the refdata =convention= table. The central row every convention kind shares: its key, the party that owns it, the kind it is, and the ORE document id it came from.
+#+description: Codegen entity model for the refdata =convention= table. The central row every convention kind shares: its key, the party that owns it, the kind it is, and the name it carries in the source document.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
@@ -17,12 +17,12 @@
 The central row of the atomised convention. Every convention kind -- a swap, a
 deposit, a tenor basis swap -- is one row here plus the parts its family names.
 The row carries the key, the party that owns the row, the kind the row is, and
-the ORE document id it was read from.
+the name it carries in the source document.
 
-The ORE id is the identifier ORE itself gives the convention, the =<Id>=
-element of the document. It is a plain stored field: it is kept so a round trip
+The name is the identifier the source document gives the convention, the =<Id>=
+element of that document. It is a plain stored field: it is kept so a round trip
 through the ORE XML is lossless, and it carries no uniqueness condition of its
-own. Two kinds may hold the same ORE id; the tenant, the party and the kind
+own. Two kinds may hold the same name; the tenant, the party and the kind
 together are what make a convention the one a caller means.
 
 A convention's kind-specific fields live in that kind's parts, reached from
@@ -84,15 +84,15 @@ It selects the family whose parts the row carries.
 std::string("TENOR_BASIS_SWAP")
 #+end_src
 
-** ores_id
+** name
 :PROPERTIES:
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-The ORE document's own id for this convention, its =<Id>= element. Kept so a
-round trip through the ORE XML is lossless.
+The name the convention carries in the source document, its =<Id>= element.
+Kept so a round trip through the ORE XML is lossless.
 
 A plain stored field: it carries no natural-key role, no uniqueness and no
 extra condition.
@@ -189,7 +189,7 @@ std::nullopt
 | column      | header      |
 |-------------+-------------|
 | kind_code   | Kind        |
-| ores_id     | ORE Id      |
+| name        | Name        |
 | modified_by | Modified By |
 | version     | Version     |
 
@@ -210,7 +210,7 @@ std::nullopt
 |-----------+----------------+-----------------+-----------+--------+-------------+----------------------------|
 | id        | Id             | idEdit          | line_edit | true   | true        | Enter convention id        |
 | kind_code | Kind           | kindCodeEdit    | line_edit | false  | true        | e.g. TENOR_BASIS_SWAP      |
-| ores_id   | ORE Id         | oresIdEdit      | line_edit | false  | false       | e.g. EUR-3M-6M-BASIS       |
+| name      | Name           | nameEdit        | line_edit | false  | false       | e.g. EUR-3M-6M-BASIS       |
 | oresmd_uri | Market Data URI | oresmdUriEdit | line_edit | false  | false       | e.g. oresmd://ir/EUR       |
 
 *** Columns
@@ -218,7 +218,7 @@ std::nullopt
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|
 | Kind        | kind_code   | Kind        | string    | 160   |
-| OresId      | ores_id     | ORE Id      | string    | 200   |
+| Name        | name        | Name        | string    | 200   |
 | OresmdUri   | oresmd_uri  | Market Data | string    | 260   |
 | Version     | version     | Version     | int       | 80    |
 | ModifiedBy  | modified_by | Modified By | string    | 120   |

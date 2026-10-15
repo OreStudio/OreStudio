@@ -141,21 +141,21 @@ void convention_commands::register_commands(cli::Menu& root_menu, nats_client& s
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <kind_code> <ores_id> <oresmd_uri> <reason> <commentary>");
+        "add <kind_code> <name> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <kind_code> <ores_id> <oresmd_uri> <reason> <commentary> [--version <n>]");
+        "set <id> <kind_code> <name> <oresmd_uri> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <kind_code> <ores_id> <oresmd_uri> <reason> <commentary>");
+        "put-many --count <n> <id> <kind_code> <name> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,7 +356,7 @@ void convention_commands::process_add(std::ostream& out,
         }
         req.change.write.id = boost::uuids::random_generator()();
         read_token(req.change.write.kind_code, parsed->positionals[next++], "kind_code");
-        read_token(req.change.write.ores_id, parsed->positionals[next++], "ores_id");
+        read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -407,7 +407,7 @@ void convention_commands::process_set(std::ostream& out,
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.kind_code, parsed->positionals[next++], "kind_code");
-        read_token(req.change.write.ores_id, parsed->positionals[next++], "ores_id");
+        read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -472,7 +472,7 @@ void convention_commands::process_put_many(std::ostream& out,
             messaging::convention_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.kind_code, parsed->positionals[next++], "kind_code");
-            read_token(change.write.ores_id, parsed->positionals[next++], "ores_id");
+            read_token(change.write.name, parsed->positionals[next++], "name");
             read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

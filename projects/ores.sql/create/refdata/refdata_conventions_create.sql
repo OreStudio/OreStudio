@@ -27,12 +27,12 @@
  * The central row of the atomised convention. Every convention kind -- a swap, a
  * deposit, a tenor basis swap -- is one row here plus the parts its family names.
  * The row carries the key, the party that owns the row, the kind the row is, and
- * the ORE document id it was read from.
+ * the name it carries in the source document.
  *
- * The ORE id is the identifier ORE itself gives the convention, the <Id>
- * element of the document. It is a plain stored field: it is kept so a round trip
+ * The name is the identifier the source document gives the convention, the <Id>
+ * element of that document. It is a plain stored field: it is kept so a round trip
  * through the ORE XML is lossless, and it carries no uniqueness condition of its
- * own. Two kinds may hold the same ORE id; the tenant, the party and the kind
+ * own. Two kinds may hold the same name; the tenant, the party and the kind
  * together are what make a convention the one a caller means.
  *
  * A convention's kind-specific fields live in that kind's parts, reached from
@@ -45,7 +45,7 @@ create table if not exists "ores_refdata_conventions_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "kind_code" text not null,
-    "ores_id" text null,
+    "name" text null,
     "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,

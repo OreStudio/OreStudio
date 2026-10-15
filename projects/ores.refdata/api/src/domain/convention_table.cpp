@@ -46,10 +46,10 @@ std::string convert_to_table(const std::vector<convention>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Kind" << "ORE Id" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Kind" << "Name" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& c : v) {
-        table << c.kind_code << opt_str(c.ores_id) << c.modified_by << c.version << fort::endr;
+        table << c.kind_code << opt_str(c.name) << c.modified_by << c.version << fort::endr;
     }
     return table.to_string();
 }

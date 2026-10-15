@@ -35,7 +35,7 @@ export interface ConventionKey {
 export interface ConventionWrite {
     id: string;
     kind_code: string;
-    ores_id: string | null;
+    name: string | null;
     oresmd_uri: string | null;
 }
 

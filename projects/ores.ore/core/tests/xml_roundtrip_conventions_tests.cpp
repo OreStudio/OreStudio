@@ -837,8 +837,8 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
             const auto& in = document.TenorBasisSwap[i];
             const auto& central = mapped.convention[i];
             CHECK(central.kind_code == "TENOR_BASIS_SWAP");
-            REQUIRE(central.ores_id.has_value());
-            CHECK(*central.ores_id == std::string(in.Id));
+            REQUIRE(central.name.has_value());
+            CHECK(*central.name == std::string(in.Id));
 
             const auto pay_receive =
                 std::ranges::find_if(mapped.tenor_basis_swap_pay_receive,

@@ -123,7 +123,7 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
         union all
         select 1 from ores_refdata_conventions_tbl
-        where tenant_id = p_tenant_id and ores_id = p_value
+        where tenant_id = p_tenant_id and name = p_value
           and kind_code = 'TENOR_BASIS_SWAP'
           and valid_to = ores_utility_infinity_timestamp_fn()
         union all

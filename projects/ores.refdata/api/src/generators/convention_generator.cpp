@@ -46,7 +46,7 @@ domain::convention generate_synthetic_convention(utility::generation::generation
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.kind_code = std::string("TENOR_BASIS_SWAP");
-    r.ores_id = std::nullopt;
+    r.name = std::nullopt;
     r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

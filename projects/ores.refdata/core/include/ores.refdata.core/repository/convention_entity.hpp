@@ -47,7 +47,7 @@ struct convention_entity {
     int version = 0;
     std::string party_id;
     std::string kind_code;
-    std::optional<std::string> ores_id;
+    std::optional<std::string> name;
     std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;

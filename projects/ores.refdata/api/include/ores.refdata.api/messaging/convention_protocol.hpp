@@ -42,7 +42,7 @@ struct convention_key {
 struct convention_write {
     boost::uuids::uuid id;
     std::string kind_code;
-    std::optional<std::string> ores_id;
+    std::optional<std::string> name;
     std::optional<std::string> oresmd_uri;
 };
 

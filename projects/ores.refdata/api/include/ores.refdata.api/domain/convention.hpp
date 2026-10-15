@@ -40,12 +40,12 @@ namespace ores::refdata::domain {
  * The central row of the atomised convention. Every convention kind -- a swap, a
  * deposit, a tenor basis swap -- is one row here plus the parts its family names.
  * The row carries the key, the party that owns the row, the kind the row is, and
- * the ORE document id it was read from.
+ * the name it carries in the source document.
  *
- * The ORE id is the identifier ORE itself gives the convention, the <Id>
- * element of the document. It is a plain stored field: it is kept so a round trip
+ * The name is the identifier the source document gives the convention, the <Id>
+ * element of that document. It is a plain stored field: it is kept so a round trip
  * through the ORE XML is lossless, and it carries no uniqueness condition of its
- * own. Two kinds may hold the same ORE id; the tenant, the party and the kind
+ * own. Two kinds may hold the same name; the tenant, the party and the kind
  * together are what make a convention the one a caller means.
  *
  * A convention's kind-specific fields live in that kind's parts, reached from
@@ -81,12 +81,12 @@ struct convention final {
     std::string kind_code;
 
     /**
-     * @brief The ORE document's own id for this convention, its <Id> element. Kept so a round trip
-     * through the ORE XML is lossless.
+     * @brief The name the convention carries in the source document, its <Id> element. Kept so a
+     * round trip through the ORE XML is lossless.
      *
      * A plain stored field: it carries no natural-key role, no uniqueness and no extra condition.
      */
-    std::optional<std::string> ores_id;
+    std::optional<std::string> name;
 
     /**
      * @brief The oresmd URI of the market data this convention needs, when the kind names one

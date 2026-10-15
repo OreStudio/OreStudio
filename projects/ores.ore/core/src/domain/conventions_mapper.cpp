@@ -74,10 +74,10 @@ void set_audit(T& r) {
 
 constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
 
-// The central row's key is a uuid and the ORE id is not a natural key, so the
-// mapper derives the key from the kind and the document id. The derivation is
+// The central row's key is a uuid and the name is not a natural key, so the
+// mapper derives the key from the kind and the name. The derivation is
 // deterministic, so two maps of one document agree, which the round-trip
-// comparison relies on. The store re-keys the row by party, because one ORE id
+// comparison relies on. The store re-keys the row by party, because one name
 // may be imported under more than one party.
 boost::uuids::uuid derived_uuid(const std::string& name) {
     boost::uuids::name_generator gen(boost::uuids::uuid{});
@@ -1140,8 +1140,8 @@ reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convent
 tenorBasisSwapType
 reverse_tenor_basis_swap(const ores::refdata::messaging::tenor_basis_swap_convention_item& v) {
     tenorBasisSwapType r;
-    if (v.convention && v.convention->ores_id)
-        static_cast<std::string&>(r.Id) = *v.convention->ores_id;
+    if (v.convention && v.convention->name)
+        static_cast<std::string&>(r.Id) = *v.convention->name;
     if (!v.pay_receive.empty()) {
         const auto& p = v.pay_receive.front();
         if (p.pay_index) {
@@ -1842,8 +1842,8 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     ores::refdata::messaging::tenor_basis_swap_convention_item r;
     refdata::domain::convention central;
     central.kind_code = std::string(tenor_basis_swap_kind);
-    central.ores_id = std::string(v.Id);
-    central.id = derived_uuid(central.kind_code + ":" + *central.ores_id);
+    central.name = std::string(v.Id);
+    central.id = derived_uuid(central.kind_code + ":" + *central.name);
     set_audit(central);
     r.key.id = central.id;
     r.convention = central;

@@ -36,7 +36,7 @@ export interface Convention {
     id: string;
     party_id: string;
     kind_code: string;
-    ores_id: string | null;
+    name: string | null;
     oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;

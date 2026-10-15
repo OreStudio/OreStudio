@@ -102,7 +102,7 @@ domain::convention to_domain(const messaging::convention_write& write) {
     domain::convention v;
     v.id = write.id;
     v.kind_code = write.kind_code;
-    v.ores_id = write.ores_id;
+    v.name = write.name;
     v.oresmd_uri = write.oresmd_uri;
     return v;
 }

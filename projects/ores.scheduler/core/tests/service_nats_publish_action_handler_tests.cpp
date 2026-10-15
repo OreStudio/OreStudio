@@ -32,6 +32,7 @@
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <expected>
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -173,23 +174,30 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    ores::nats::service::client nats(ores::testing::make_nats_options());
-    nats.connect();
-    REQUIRE(nats.is_connected());
+    // The reply is delivered on the NATS dispatch thread, and the callback can
+    // still be running after this test's frame is gone. The client is held by a
+    // shared pointer and the responder captures it by value: a captured
+    // reference would point at a destroyed client by then, and the publish below
+    // would run against a torn-down connection. The suite passes alone and
+    // segfaults under load, which is what a race looks like.
+    auto nats = std::make_shared<ores::nats::service::client>(
+        ores::testing::make_nats_options());
+    nats->connect();
+    REQUIRE(nats->is_connected());
 
     // A stand-in for the reporting service. The handler's contract is that a
     // refusal reaches the job instead of being discarded, and a refusal is an
     // X-Error header on the reply -- so the test answers with one rather than
     // requiring the fleet to be up. Before this change the header was ignored
     // and the job was recorded as succeeded while no report instance existed.
-    auto responder = nats.subscribe(refused_in_envelope_subject, [&nats](ores::nats::message msg) {
-        nats.publish(msg.reply_subject,
+    auto responder = nats->subscribe(refused_in_envelope_subject, [nats](ores::nats::message msg) {
+        nats->publish(msg.reply_subject,
                      {},
                      {{std::string(ores::nats::headers::x_error), std::string("forbidden")}});
     });
 
-    auto svc_nats = make_unauthenticated_client(nats);
-    nats_publish_action_handler handler(nats, svc_nats);
+    auto svc_nats = make_unauthenticated_client(*nats);
+    nats_publish_action_handler handler(*nats, svc_nats);
 
     // The payload names the subject the responder answers on, so both sides of
     // the test spell it once, from the test's own subject.
@@ -213,24 +221,25 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    ores::nats::service::client nats(ores::testing::make_nats_options());
-    nats.connect();
-    REQUIRE(nats.is_connected());
+    auto nats = std::make_shared<ores::nats::service::client>(
+        ores::testing::make_nats_options());
+    nats->connect();
+    REQUIRE(nats->is_connected());
 
     // A report definition the reporting service will not run is still an answer
     // rather than an envelope error, so that refusal is a failed result in the
     // reply body and carries no X-Error. A job recorded as succeeded while no
     // report instance exists is the failure this pins.
-    auto responder = nats.subscribe(refused_in_body_subject, [&nats](ores::nats::message msg) {
+    auto responder = nats->subscribe(refused_in_body_subject, [nats](ores::nats::message msg) {
         operation_response refusal;
         refusal.result.outcome = ores::utility::domain::outcome::failed;
         refusal.result.code = "missing_configuration";
         refusal.result.message = "no configuration bound";
-        nats.publish(msg.reply_subject, ores::nats::default_wire_codec().encode(refusal));
+        nats->publish(msg.reply_subject, ores::nats::default_wire_codec().encode(refusal));
     });
 
-    auto svc_nats = make_unauthenticated_client(nats);
-    nats_publish_action_handler handler(nats, svc_nats);
+    auto svc_nats = make_unauthenticated_client(*nats);
+    nats_publish_action_handler handler(*nats, svc_nats);
 
     const auto payload = std::string(R"({"subject":")") + std::string(refused_in_body_subject) +
                          R"(","report_definition_id":"00000000-0000-0000-0000-000000000000",)"

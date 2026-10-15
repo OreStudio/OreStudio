@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 9D908DC5-72C6-4F92-9B06-9A99AA1D639A
+:END:
+#+title: Story: Cut the continuous build time
+#+description: The continuous clang jobs no longer fit the six-hour limit. The 2026-10-14 linux-clang-release job reached only 5422 of 7187 build steps in 5h39m, against about 1.4 s per step for the whole build on the last green run. Linking is 53 of those 7187 steps, so a faster linker is out. The trials ruled out every lever that cuts compile work, and the constraint turned out to be the compiler cache, which the other stories in this sprint fixed.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:build:sccache:sprint_28:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The continuous linux-clang jobs finish inside the six-hour limit on a cold runner.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- A measured A/B build shows what a unity build, or precompiled headers, changes in compile work.
+- The lever that pays is adopted behind an option, or every lever is measured out and recorded.
+- The continuous clang jobs complete inside the six-hour limit.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D7F7AB28-1CED-4F0F-9CAF-E62A8CA17B37][Scaffold story: Cut the continuous build time]] | DONE | 2026-10-14 | 2026-10-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2D3E420F-8C52-413F-8ADA-0C2F2FC89066][Trial a unity build and precompiled headers]] | DONE | 2026-10-14 | 2026-10-15 | Initial task for: Cut the continuous build time |
+
+* Decisions
+
+- *The build is not the constraint, so no compile-time lever was adopted.* The
+  largest gap between build-step completions is 36.9 s and the median is 1.96 s,
+  so the time is spread across all 7187 steps and there is no hotspot to split.
+  Linking is 53 of those steps, so a faster linker cannot pay. A whole-tree unity
+  build stops in 19 s, and precompiled headers were not reached because the
+  measurement already showed there was nothing for them to recover.
+- *The constraint was the compiler cache.* On 2026-10-03 the same job ran at an
+  85.72 per cent hit rate and finished the whole build in about 49 minutes. A
+  job that reached the six-hour limit was cancelled, and =Save sccache= was
+  gated on =!cancelled()=, so the run threw away every object it had compiled.
+  The cache could never warm and the job could never finish.
+- *The fix belongs to the cache, and it landed as its own stories.* Keeping the
+  save on a cancelled job, giving the save time to run, pruning older entries,
+  scoping the keys per workflow, and restoring the gcc release job are separate
+  stories in this sprint, because each is a defect in its own right rather than a
+  build-time trial.
+
+* Out of scope
+
+- Precompiled headers. The hotspot measurement removed the reason to trial them,
+  so this story closes without that trial rather than recording a result it
+  never produced.

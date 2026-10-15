@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/ore-export-fidelity-gaps
+#+pr: 3368
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -68,16 +68,23 @@ Run of 2026-09-26 over the 132 documents:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- Every document the walk writes under
+  =external/ore/examples/Products/Example_Trades= whose dropped element has a
+  field in the domain instrument can be read back, so
+  =known_export_gaps()= in =xml_exporter_directory_roundtrip_tests.cpp= shrinks
+  to the five documents whose value the domain does not hold.
+- A value the export now writes comes from the domain instrument and is not
+  invented: what the reverse mapper writes, the forward mapper reads.
+- No document that already re-read stops re-reading.
 
 * Plan
 
@@ -97,7 +104,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Documents that re-read | 127 of 132, up from 118 | =compass test run -- -R ores.ore.core.tests= (the case "roundtrip mirrors every portfolio in the ORE example corpus") | 04d150a501 |
+| Documents that still fail to re-read | 5, down from 14 | the same case; =known_export_gaps()= names them | 04d150a501 |
+| ORE core suite | 667 cases, 0 failures | =compass test run -- -R ores.ore.core.tests= | 04d150a501 |
+| Local check gate | 18 of 18 checks passed | =compass check= | 04d150a501 |
 
 * Notes
 
@@ -116,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3368][#3368]] | [ore] Close nine of the fourteen ORE export fidelity gaps |
 
 * Review
 
@@ -125,6 +135,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The documents that fail to re-read fell from fourteen to five. Nine now round
+trip: the six commodity documents, the equity TaRF, and the two performance
+options. Each fix carries a value the domain holds — a commodity leg's
+quantity, the swaption's fixed price, the TaRF's knock-out level, and the
+performance option's strike prices.
+
+The five that remain each need a value the domain instrument does not hold, so
+closing them means changing the domain, not the mapper. That work has its own
+task, which the story now carries.
+
+Acceptance met: the nine documents whose dropped element has a domain field
+re-read, every value written comes from the instrument, and no document that
+already re-read stopped re-reading.
 
 * Promoted from capture
 

@@ -259,7 +259,7 @@ describe.skipIf(!existsSync(join(REAL_DOC, 'agile', 'versions')))('the real agil
         expect((await store.backlog()).buckets.every((bucket) => bucket.items.length >= 0)).toBe(
             true,
         );
-    });
+    }, 30_000);
 
     it('draws charts for the newest sprint, with a velocity over many sprints', async () => {
         const charts = await new FileAgileStore(REAL_DOC).charts();

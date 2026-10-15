@@ -17,19 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_component_header.hpp.mustache
- * To modify, update the template and regenerate.
- */
-#ifndef ORES_STORAGE_API_HPP
-#define ORES_STORAGE_API_HPP
+#ifndef ORES_STORAGE_HPP
+#define ORES_STORAGE_HPP
 
 /**
- * @brief Object storage public contract.
+ * @brief The public contract of object storage.
  *
- * The public contract of object storage: the bucket and key path and URL helpers its consumers
- * link, and the modelled operation surface.
+ * Provides the HTTP path helpers for the generic S3-like object storage API
+ * (PUT/GET/HEAD/DELETE /api/v1/storage/{bucket}/{key}), and the modelled
+ * operation surface both interfaces are generated from. The storage layer is
+ * application-agnostic: it holds no bucket name of its own, and bucket name
+ * constants are defined by each domain library (e.g. ores.compute.api).
+ *
+ * The implementation lives in ores.storage.core and the service in
+ * ores.storage.service; a consumer links this part and no other.
  */
 namespace ores::storage::api {}
 

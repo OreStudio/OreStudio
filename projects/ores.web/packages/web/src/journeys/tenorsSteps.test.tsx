@@ -151,8 +151,17 @@ function reviewOf(steps: ReturnType<typeof stepsFor>) {
 }
 
 describe('the tenor steps', () => {
-    it('lists the steps in the order the rail draws them', () => {
+    it('draws the rail the spec names: the list, the tenor, its convention, the schedule, the review, the outcome and the history', () => {
         const steps = stepsFor(asDetails(blankDraft()), fakeServer());
+        expect(steps.map((step) => step.id)).toEqual([
+            'choose',
+            'tenor',
+            'convention',
+            'schedule',
+            'review',
+            'outcome',
+            'history',
+        ]);
         expect(steps.map((step) => step.id)).toEqual([...TENOR_STEP_IDS]);
     });
 

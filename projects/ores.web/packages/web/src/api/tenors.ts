@@ -168,11 +168,19 @@ export const tenors = {
             ).rows;
     },
 
-    writeTenor(write: Tenor, version: number | null, intent: TenorIntent) {
+    writeTenor(
+        write: Tenor,
+        version: number | null,
+        intent: TenorIntent,
+    ): Promise<TenorWriteOutcome<Tenor>> {
         return put<Tenor>('/api/tenors/tenors', 'tenor', write, version, intent);
     },
 
-    writeConvention(write: TenorConvention, version: number | null, intent: TenorIntent) {
+    writeConvention(
+        write: TenorConvention,
+        version: number | null,
+        intent: TenorIntent,
+    ): Promise<TenorWriteOutcome<TenorConvention>> {
         return put<TenorConvention>(
             '/api/tenors/conventions',
             'convention',

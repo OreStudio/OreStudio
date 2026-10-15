@@ -23,10 +23,10 @@ The tenor resolution journey and the remaining refdata gaps are built: the tenor
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | The tenor resolution screen is built and its task is under review. Eight of the nine tasks are still BACKLOG. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-13                               |
+| Next          | Land the tenor resolution screen, then the remaining tasks. |
+| Last touched  | 2026-10-15                               |
 
 * Acceptance
 

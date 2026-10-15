@@ -287,34 +287,60 @@ export function reduceTenor(draft: TenorDraft, action: TenorAction): TenorDraft 
     }
 }
 
-/** One line of the review: what changes, before, after, and the operation that writes it. */
+/** One line of the review: what changes, before, after, and the operation that writes it.
+ *
+ * The words are not here. `what` and `part` are catalogue keys and `before`/`after`
+ * name the state they show, so the screen reaches every word through the catalogue
+ * and this module holds no English. See TS-C04.
+ */
 export interface Change {
     readonly id: string;
+    /** The catalogue key for the thing that changes, such as the field or the member. */
     readonly what: string;
-    readonly before: string;
-    readonly after: string;
+    readonly part: string | undefined;
+    readonly before: ChangeValue;
+    readonly after: ChangeValue;
     readonly operation: string;
 }
 
-const TENOR_LABELS: readonly (readonly [TenorField, string])[] = [
-    ['displayName', 'Display name'],
-    ['description', 'Description'],
-    ['sortOrder', 'Sort order'],
-    ['kind', 'Kind'],
-    ['unit', 'Unit'],
-    ['multiplier', 'Multiplier'],
+/** What one side of a change shows: a value read, nothing, or a named state. */
+export type ChangeValue =
+    | { readonly kind: 'value'; readonly value: string }
+    | { readonly kind: 'absent' }
+    | { readonly kind: 'state'; readonly state: 'inSet' | 'notInSet'; readonly tenorCode: string };
+
+const present = (tenorCode: string): ChangeValue => ({
+    kind: 'state',
+    state: 'inSet',
+    tenorCode,
+});
+const absentFromSet = (tenorCode: string): ChangeValue => ({
+    kind: 'state',
+    state: 'notInSet',
+    tenorCode,
+});
+
+/** The tenor fields a change is drawn for, in the order the review lists them. */
+const TENOR_FIELDS: readonly TenorField[] = [
+    'displayName',
+    'description',
+    'sortOrder',
+    'kind',
+    'unit',
+    'multiplier',
 ];
 
-const CONVENTION_LABELS: readonly (readonly [ConventionField, string])[] = [
-    ['description', 'Description'],
-    ['measuredFrom', 'Measured from'],
-    ['resolutionAlgorithm', 'Resolution algorithm'],
-    ['rollRule', 'Roll rule'],
-    ['oresmdUri', 'Market data URI'],
+/** The convention fields a change is drawn for, in the order the review lists them. */
+const CONVENTION_FIELDS: readonly ConventionField[] = [
+    'description',
+    'measuredFrom',
+    'resolutionAlgorithm',
+    'rollRule',
+    'oresmdUri',
 ];
 
-function show(value: string): string {
-    return value === '' ? '-' : value;
+function asValue(text: string): ChangeValue {
+    return text === '' ? { kind: 'absent' } : { kind: 'value', value: text };
 }
 
 function tenorChanged(draft: TenorDraft): boolean {
@@ -325,7 +351,7 @@ function tenorChanged(draft: TenorDraft): boolean {
         return true;
     }
     const before = tenorFieldsOf(draft.tenorOpened);
-    return TENOR_LABELS.some(([field]) => draft.tenor[field] !== before[field]);
+    return TENOR_FIELDS.some((field) => draft.tenor[field] !== before[field]);
 }
 
 function conventionChanged(draft: TenorDraft): boolean {
@@ -336,7 +362,7 @@ function conventionChanged(draft: TenorDraft): boolean {
         return true;
     }
     const before = conventionFieldsOf(draft.conventionOpened);
-    return CONVENTION_LABELS.some(([field]) => draft.convention[field] !== before[field]);
+    return CONVENTION_FIELDS.some((field) => draft.convention[field] !== before[field]);
 }
 
 /** The members whose place in the set or whose anchor override differs from what was read. */
@@ -359,19 +385,21 @@ export function changesOf(draft: TenorDraft): readonly Change[] {
         if (draft.tenorOpened === undefined) {
             changes.push({
                 id: 'tenor:new',
-                what: 'New tenor',
-                before: '-',
-                after: draft.tenor.code,
+                what: 'journey.tenors.review.what.newTenor',
+                part: undefined,
+                before: { kind: 'absent' },
+                after: asValue(draft.tenor.code),
                 operation: 'refdata.v1.tenors.put',
             });
         }
-        for (const [field, label] of TENOR_LABELS) {
+        for (const field of TENOR_FIELDS) {
             if (draft.tenor[field] !== before[field]) {
                 changes.push({
                     id: `tenor:${field}`,
-                    what: `Tenor ${label.toLowerCase()}`,
-                    before: show(before[field]),
-                    after: show(draft.tenor[field]),
+                    what: 'journey.tenors.review.what.tenor',
+                    part: `journey.tenors.tenor.fields.${field}`,
+                    before: asValue(before[field]),
+                    after: asValue(draft.tenor[field]),
                     operation: 'refdata.v1.tenors.put',
                 });
             }
@@ -385,19 +413,21 @@ export function changesOf(draft: TenorDraft): readonly Change[] {
         if (draft.conventionOpened === undefined) {
             changes.push({
                 id: 'convention:new',
-                what: 'New convention',
-                before: '-',
-                after: draft.convention.code,
+                what: 'journey.tenors.review.what.newConvention',
+                part: undefined,
+                before: { kind: 'absent' },
+                after: asValue(draft.convention.code),
                 operation: 'refdata.v1.tenor_conventions.put',
             });
         }
-        for (const [field, label] of CONVENTION_LABELS) {
+        for (const field of CONVENTION_FIELDS) {
             if (draft.convention[field] !== before[field]) {
                 changes.push({
                     id: `convention:${field}`,
-                    what: `Convention ${label.toLowerCase()}`,
-                    before: show(before[field]),
-                    after: show(draft.convention[field]),
+                    what: 'journey.tenors.review.what.convention',
+                    part: `journey.tenors.convention.fields.${field}`,
+                    before: asValue(before[field]),
+                    after: asValue(draft.convention[field]),
                     operation: 'refdata.v1.tenor_conventions.put',
                 });
             }
@@ -406,9 +436,10 @@ export function changesOf(draft: TenorDraft): readonly Change[] {
             const was = member.original !== undefined;
             changes.push({
                 id: `member:${member.tenorCode}`,
-                what: `${member.tenorCode} in ${draft.convention.code}`,
-                before: was ? 'in the set' : 'not in the set',
-                after: member.wanted ? 'in the set' : 'not in the set',
+                what: 'journey.tenors.review.what.member',
+                part: undefined,
+                before: was ? present(member.tenorCode) : absentFromSet(member.tenorCode),
+                after: member.wanted ? present(member.tenorCode) : absentFromSet(member.tenorCode),
                 operation: member.wanted
                     ? 'refdata.v1.tenor_convention_resolutions.put'
                     : 'refdata.v1.tenor_convention_resolutions.delete',
@@ -418,33 +449,82 @@ export function changesOf(draft: TenorDraft): readonly Change[] {
     return changes;
 }
 
+/** What one side of a change shows, as the catalogue draws it. */
+export interface ChangeSide {
+    /** A value read, drawn as it stands. */
+    readonly value?: string;
+    /** A catalogue key, drawn with `params`. */
+    readonly key?: string;
+    readonly params?: Readonly<Record<string, string>>;
+}
+
+/** A change as the review row draws it, every word reached through the catalogue. */
+export interface ChangeText {
+    readonly whatKey: string;
+    readonly whatParams: Readonly<Record<string, string>>;
+    readonly before: ChangeSide;
+    readonly after: ChangeSide;
+}
+
+function sideOf(value: ChangeValue): ChangeSide {
+    switch (value.kind) {
+        case 'absent':
+            return { key: 'journey.tenors.review.absent' };
+        case 'value':
+            return { value: value.value };
+        case 'state':
+            return {
+                key:
+                    value.state === 'inSet'
+                        ? 'journey.tenors.convention.inSet'
+                        : 'journey.tenors.convention.notInSet',
+                params: { tenor: value.tenorCode },
+            };
+    }
+}
+
+/** A change as the catalogue keys and values that draw its row. */
+export function changeText(change: Change): ChangeText {
+    return {
+        whatKey: change.what,
+        whatParams: change.part === undefined ? {} : { part: change.part },
+        before: sideOf(change.before),
+        after: sideOf(change.after),
+    };
+}
+
 const whole = /^-?\d+$/;
 
-/** What the draft still lacks, in words the form can show. */
-export function tenorProblems(draft: TenorDraft): readonly string[] {
-    const problems: string[] = [];
+/** A reason the draft cannot be written yet, named by the catalogue key that says so. */
+export interface Problem {
+    readonly what: string;
+}
+
+/** What the draft still lacks, as catalogue keys the form renders. */
+export function tenorProblems(draft: TenorDraft): readonly Problem[] {
+    const problems: Problem[] = [];
     if (draft.tenorActive) {
         const t = draft.tenor;
         if (t.code.trim() === '' || t.displayName.trim() === '') {
-            problems.push('Name the tenor: a code and a display name.');
+            problems.push({ what: 'journey.tenors.problems.nameTenor' });
         }
         if (t.kind === '' || t.unit === '') {
-            problems.push('Choose the tenor kind and unit.');
+            problems.push({ what: 'journey.tenors.problems.chooseKindAndUnit' });
         }
         if (!whole.test(t.sortOrder)) {
-            problems.push('The sort order is a whole number.');
+            problems.push({ what: 'journey.tenors.problems.sortOrderWhole' });
         }
         if (t.multiplier !== '' && !whole.test(t.multiplier)) {
-            problems.push('The multiplier is a whole number.');
+            problems.push({ what: 'journey.tenors.problems.multiplierWhole' });
         }
     }
     if (draft.conventionActive) {
         const c = draft.convention;
         if (c.code.trim() === '') {
-            problems.push('Name the convention.');
+            problems.push({ what: 'journey.tenors.problems.nameConvention' });
         }
         if (c.measuredFrom === '' || c.resolutionAlgorithm === '' || c.rollRule === '') {
-            problems.push('Choose the anchor, the algorithm and the roll rule.');
+            problems.push({ what: 'journey.tenors.problems.chooseAnchorAlgorithmRoll' });
         }
     }
     return problems;

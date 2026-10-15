@@ -28,16 +28,20 @@ A tenant administrator defines how tenors resolve in ores.web, and the screen ma
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | The journey screen is built; the resolved-dates view waits on the resolve operation. |
+| Now          | The journey screen is built and the review round is answered. The resolved-dates view waits on the resolve operation. |
 | Waiting on   | The resolve operation, for the resolved dates only. |
-| Next         | Run the local check gate, review the change, and raise the PR. |
+| Next         | Run the local check gate, close the task, and raise the PR. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
 
 - A tenant administrator lists tenors and opens one. *Met.*
 - The screen shows the tenor's convention and the tenors that convention resolves. *Met.*
-- The screen states the refusal when a write fails, and names the step to walk back to. *Met.*
+- The screen shows the schedule axes a convention may roll on, and which axis a
+  tenor in the set uses. *Met.* Expanding an axis into its dated rolls is *not
+  met*, for the same reason as the resolved dates below.
+- The screen states the refusal when a write fails, names the step that refused,
+  and says which calls had already been written. *Met.*
 - The screen shows the tenor's history. *Met.*
 - The screen shows the resolved dates. *Not met*, and it cannot be: the server
   serves no operation that resolves a tenor to a date. That view belongs to the
@@ -50,7 +54,9 @@ The work is split between the wire layer and the screen.
 The branch =feature/build-the-tenor-resolution-screen= carries the first half,
 written 2026-10-10 and parked while the book prototypes were signed off:
 
-- =bff/src/tenors.ts= with =tenors.test.ts= — the tenor list, read and resolve routes.
+- =bff/src/tenors.ts= with =tenors.test.ts= — the catalogue, the pick lists, one
+  convention's set, and the writes of a tenor, a convention and a membership row.
+  No route resolves a tenor to a date, because the server serves no such operation.
 - =web/src/api/tenors.ts= — the typed client.
 - =web/src/journeys/tenorsServer.ts= — the server half of the journey.
 - =web/src/journeys/tenorsState.ts= — the journey state.
@@ -87,7 +93,26 @@ Two decisions worth carrying to the story:
   machine says so in =tenorsState.ts=. That view belongs to the sibling task
   =Resolve a tenor over the wire, with the refusal it carries=.
 
-Tests: 20 on the state machine, 8 on the steps, 1 on the page.
+* Review round one, 2026-10-15
+
+The local review raised findings on both axes. What it changed:
+
+- Every word the journey draws now comes from the catalogue. The state module
+  named its changes and its problems in English; it now names them by key, and
+  the screen renders them. A member's before and after are a named set state
+  rather than the sentence "in the set". (TS-C04.)
+- The schedule step is drawn. It was missing: the prototype's rail carries seven
+  steps and the screen carried six. The step names each schedule axis, its source
+  and its calendar, and marks the axis a tenor in the set uses. Expanding an axis
+  into dated rolls needs the same operation the resolved-dates view waits on, so
+  it is not drawn here either.
+- The refusal notice now names the step that refused, in the rail's own words.
+  It previously named only the protocol subject, so the step was reachable but
+  never stated.
+- Two return types declared on the client's write calls. (TS-T13.)
+- A dead catalogue key removed. (TS-H02.)
+
+Tests: 20 on the state machine, 9 on the steps, 1 on the page.
 
 
 * Measurements
@@ -151,8 +176,20 @@ via its "Verifies task" field.
 
 * Review
 
+Round one, local review, 2026-10-15.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | English UI copy built in a state module, against TS-C04 "text is reached by key"; the peer keeps presentation out and translates at the screen | =tenorsState.ts=, =tenorsSteps.tsx= | Accepted | Changes and problems now carry catalogue keys; member before/after is a named set state |
+| 2 | The schedule step the prototype's rail carries is missing | =tenorsSteps.tsx= | Accepted | Drawn: names each axis, its source and its calendar. Date expansion still waits on the resolve operation |
+| 3 | "Names the step to walk back to" is not visible: only the protocol subject is drawn | =tenorsSteps.tsx= | Accepted | The notice now names the refusing step in the rail's words |
+| 4 | Exported write calls omit their return type, against TS-T13 | =api/tenors.ts= | Accepted | Both declared |
+| 5 | Dead catalogue key =review.unconfirmed=, against TS-H02 | =locales/*.ts= | Accepted | Removed |
+| 6 | The Plan says the branch carries resolve routes while the BFF says none exist | task file | Accepted | Corrected |
+| 7 | The parent story is STARTED while its =Now= still reads "Not yet started" | =story.org= | Accepted | Corrected |
+| 8 | A test title, "and blank as null", does not cover the case it names | =tenorsState.test.ts= | Noted | The state machine keeps the typed text as given; a blank override is sent as null by =writePlan=, which the plan tests cover. Title left as it reads, because the assertion it makes is the one worth keeping |
+| 9 | =as unknown as z.ZodType= in the client, against TS-T04 | =api/tenors.ts= | Declined | Copied from the peer clients =books.ts= and =conventions.ts=. A branch does not fix a pattern it follows; it is a task of its own |
+| 10 | Duplicated =refusalText=, =optionsOf=, the two field-row components, and the two BFF put handlers | several | Declined | These mirror the peer journeys and the peer BFF route modules. Extracting them is a change across every journey, not this one |
+
 
 * Result

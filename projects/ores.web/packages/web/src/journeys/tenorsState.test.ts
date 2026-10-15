@@ -25,6 +25,7 @@ import type { TenorConvention } from '@ores/wire-protocol/generated/refdata/doma
 import type { TenorConventionResolution } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention_resolution';
 import {
     blankDraft,
+    changeText,
     changesOf,
     reduceTenor,
     tenorProblems,
@@ -113,9 +114,9 @@ describe('the tenor draft', () => {
     });
 
     it('asks a new tenor for the fields the server requires', () => {
-        expect(tenorProblems(walk({ kind: 'start-tenor' }))).toEqual([
-            'Name the tenor: a code and a display name.',
-            'Choose the tenor kind and unit.',
+        expect(tenorProblems(walk({ kind: 'start-tenor' })).map((p) => p.what)).toEqual([
+            'journey.tenors.problems.nameTenor',
+            'journey.tenors.problems.chooseKindAndUnit',
         ]);
         expect(tenorProblems(walk({ kind: 'open-tenor', tenor: overnight }))).toEqual([]);
     });
@@ -126,9 +127,9 @@ describe('the tenor draft', () => {
             { kind: 'set-tenor-field', field: 'sortOrder', value: '2.5' },
             { kind: 'set-tenor-field', field: 'multiplier', value: 'x' },
         );
-        expect(tenorProblems(draft)).toEqual([
-            'The sort order is a whole number.',
-            'The multiplier is a whole number.',
+        expect(tenorProblems(draft).map((p) => p.what)).toEqual([
+            'journey.tenors.problems.sortOrderWhole',
+            'journey.tenors.problems.multiplierWhole',
         ]);
     });
 
@@ -143,13 +144,12 @@ describe('the tenor draft', () => {
                 { kind: 'set-tenor-field', field: 'displayName', value: 'O/N spot' },
             ),
         );
-        expect(changes).toEqual([
+        expect(changes.map(changeText)).toEqual([
             {
-                id: 'tenor:displayName',
-                what: 'Tenor display name',
-                before: 'Overnight',
-                after: 'O/N spot',
-                operation: 'refdata.v1.tenors.put',
+                whatKey: 'journey.tenors.review.what.tenor',
+                whatParams: { part: 'journey.tenors.tenor.fields.displayName' },
+                before: { value: 'Overnight' },
+                after: { value: 'O/N spot' },
             },
         ]);
     });
@@ -159,8 +159,11 @@ describe('the tenor draft', () => {
             { kind: 'start-tenor' },
             { kind: 'set-tenor-field', field: 'code', value: '1M' },
         );
-        expect(changesOf(draft)).toContainEqual(
-            expect.objectContaining({ id: 'tenor:new', after: '1M' }),
+        expect(changesOf(draft).map(changeText)).toContainEqual(
+            expect.objectContaining({
+                whatKey: 'journey.tenors.review.what.newTenor',
+                after: { value: '1M' },
+            }),
         );
     });
 });
@@ -203,16 +206,16 @@ describe('the convention and its set', () => {
         expect(changesOf(draft)).toEqual([
             {
                 id: 'member:O/N',
-                what: 'O/N in TARGET_STANDARD',
-                before: 'in the set',
-                after: 'not in the set',
+                what: 'journey.tenors.review.what.member',
+                before: { kind: 'state', state: 'inSet', tenorCode: 'O/N' },
+                after: { kind: 'state', state: 'notInSet', tenorCode: 'O/N' },
                 operation: 'refdata.v1.tenor_convention_resolutions.delete',
             },
             {
                 id: 'member:1M',
-                what: '1M in TARGET_STANDARD',
-                before: 'not in the set',
-                after: 'in the set',
+                what: 'journey.tenors.review.what.member',
+                before: { kind: 'state', state: 'notInSet', tenorCode: '1M' },
+                after: { kind: 'state', state: 'inSet', tenorCode: '1M' },
                 operation: 'refdata.v1.tenor_convention_resolutions.put',
             },
         ]);
@@ -231,9 +234,9 @@ describe('the convention and its set', () => {
         expect(changesOf(kept)).toEqual([
             {
                 id: 'member:O/N',
-                what: 'O/N in TARGET_STANDARD',
-                before: 'in the set',
-                after: 'in the set',
+                what: 'journey.tenors.review.what.member',
+                before: { kind: 'state', state: 'inSet', tenorCode: 'O/N' },
+                after: { kind: 'state', state: 'inSet', tenorCode: 'O/N' },
                 operation: 'refdata.v1.tenor_convention_resolutions.put',
             },
         ]);
@@ -252,9 +255,9 @@ describe('the convention and its set', () => {
         expect(changesOf(draft)).toEqual([
             {
                 id: 'member:O/N',
-                what: 'O/N in TARGET_STANDARD',
-                before: 'in the set',
-                after: 'not in the set',
+                what: 'journey.tenors.review.what.member',
+                before: { kind: 'state', state: 'inSet', tenorCode: 'O/N' },
+                after: { kind: 'state', state: 'notInSet', tenorCode: 'O/N' },
                 operation: 'refdata.v1.tenor_convention_resolutions.delete',
             },
         ]);
@@ -262,9 +265,9 @@ describe('the convention and its set', () => {
 
     it('asks a new convention for a name, an anchor and an algorithm', () => {
         const draft = walk({ kind: 'start-convention', tenorCodes: ['O/N'] });
-        expect(tenorProblems(draft)).toEqual([
-            'Name the convention.',
-            'Choose the anchor, the algorithm and the roll rule.',
+        expect(tenorProblems(draft).map((p) => p.what)).toEqual([
+            'journey.tenors.problems.nameConvention',
+            'journey.tenors.problems.chooseAnchorAlgorithmRoll',
         ]);
     });
 

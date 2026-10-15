@@ -42,12 +42,14 @@ import { Button, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { Picker } from './pickers.js';
 import {
+    changeText,
     CONVENTION_ENTITY_TYPE,
     TENOR_ENTITY_TYPE,
     tenorProblems,
     writePlan,
     type ConventionField,
     type TenorDetails,
+    type ChangeSide,
     type TenorField,
     type TenorRefusal,
 } from './tenorsState.js';
@@ -60,6 +62,7 @@ export const TENOR_STEP_IDS = [
     'choose',
     'tenor',
     'convention',
+    'schedule',
     'review',
     'outcome',
     'history',
@@ -378,7 +381,12 @@ function TenorStep({
                 />
                 <TenorFieldRow t={t} state={state} name="multiplier" />
             </div>
-            {problems.length > 0 && <Notice tone="warn">{problems.join(' ')}</Notice>}
+            {problems.length > 0 && (
+                <Notice tone="warn">
+                    {t('journey.tenors.problems.header')}{' '}
+                    {problems.map((problem) => t(problem.what)).join(' ')}
+                </Notice>
+            )}
         </div>
     );
 }
@@ -541,7 +549,84 @@ function ConventionStep({
                     </table>
                 </div>
             </section>
-            {problems.length > 0 && <Notice tone="warn">{problems.join(' ')}</Notice>}
+            {problems.length > 0 && (
+                <Notice tone="warn">
+                    {t('journey.tenors.problems.header')}{' '}
+                    {problems.map((problem) => t(problem.what)).join(' ')}
+                </Notice>
+            )}
+        </div>
+    );
+}
+
+/* ----------------------------------------------------------------- schedule */
+
+/**
+ * The schedule axes a convention may roll on.
+ *
+ * A schedule axis is what turns a period into dated rolls, so a person choosing
+ * a convention is choosing how it rolls. The axis is read from the catalogue and
+ * named here; expanding it into its dated rolls needs the schedule-date operation
+ * the server does not serve yet, so this step names the axis and its source
+ * rather than drawing the dates.
+ */
+function ScheduleStep({
+    t,
+    state,
+    catalogue,
+}: {
+    readonly t: Translator['t'];
+    readonly state: TenorDetails;
+    readonly catalogue: TenorCatalogue | undefined;
+}): ReactNode {
+    const [chosen, setChosen] = useState('');
+    if (!state.conventionActive) {
+        return <Notice tone="info">{t('journey.tenors.schedule.open')}</Notice>;
+    }
+    const schedules = catalogue?.schedules ?? [];
+    const memberSchedules = new Set(
+        state.members
+            .filter((member) => member.wanted)
+            .map((member) => member.original?.schedule_code ?? '')
+            .filter((code) => code !== ''),
+    );
+    const selected = chosen !== '' ? chosen : ([...memberSchedules][0] ?? '');
+    return (
+        <div className="space-y-5">
+            <p className="text-xs text-ink-faint">{t('journey.tenors.schedule.note')}</p>
+            {schedules.length === 0 ? (
+                <Notice tone="info">{t('journey.tenors.schedule.empty')}</Notice>
+            ) : (
+                <div className="grid gap-3 md:grid-cols-2">
+                    {schedules.map((schedule) => (
+                        <button
+                            key={schedule.code}
+                            type="button"
+                            className={`card space-y-1 p-4 text-left hover:border-accent ${
+                                selected === schedule.code ? 'border-accent' : ''
+                            }`}
+                            onClick={() => setChosen(schedule.code)}
+                        >
+                            <span className="flex items-center justify-between gap-2">
+                                <span className="font-mono text-xs">{schedule.code}</span>
+                                {memberSchedules.has(schedule.code) && (
+                                    <Tag tone="accent">{t('journey.tenors.schedule.inUse')}</Tag>
+                                )}
+                            </span>
+                            <span className="block font-semibold">{schedule.name}</span>
+                            <span className="block text-xs text-ink-muted">
+                                {schedule.description}
+                            </span>
+                            <span className="block font-mono text-xs text-ink-faint">
+                                {schedule.schedule_source}
+                                {schedule.calendar_code === null
+                                    ? ''
+                                    : ` · ${schedule.calendar_code}`}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -560,11 +645,22 @@ function ReviewStep({
     readonly onMove: (index: number) => void;
 }): ReactNode {
     const chosen = reasons.find((reason) => reason.code === state.reasonCode);
+    const refusedStep = state.refusal?.step ?? 'review';
     return (
         <div className="space-y-5">
             {state.refusal !== undefined && (
                 <Notice tone="error">
                     <p className="font-semibold">{t('journey.tenors.refusal.heading')}</p>
+                    {/*
+                     * The step that refused, in the words the rail uses. A person
+                     * walks back to it, so the name has to be the rail's name and
+                     * not the protocol subject the server answered with.
+                     */}
+                    <p className="text-sm">
+                        {t('journey.tenors.refusal.atStep', {
+                            step: t(`journey.tenors.review.stepLabel.${refusedStep}`),
+                        })}
+                    </p>
                     <p className="text-sm">{state.refusal.subject}</p>
                     <p className="text-sm">{state.refusal.message}</p>
                     <ul className="text-sm">
@@ -580,7 +676,7 @@ function ReviewStep({
                     <Button
                         size="sm"
                         className="mt-2"
-                        onClick={() => onMove(tenorStepIndex(state.refusal?.step ?? 'review'))}
+                        onClick={() => onMove(tenorStepIndex(refusedStep))}
                     >
                         {t('journey.tenors.refusal.walkBack')}
                     </Button>
@@ -607,18 +703,27 @@ function ReviewStep({
                                 </tr>
                             </thead>
                             <tbody>
-                                {state.changes.map((change) => (
-                                    <tr
-                                        key={change.id}
-                                        className="border-b border-line-subtle last:border-b-0"
-                                    >
-                                        <td className="px-3 py-2">{change.what}</td>
-                                        <td className="px-3 py-2 text-ink-muted">
-                                            {change.before}
-                                        </td>
-                                        <td className="px-3 py-2">{change.after}</td>
-                                    </tr>
-                                ))}
+                                {state.changes.map((change) => {
+                                    const text = changeText(change);
+                                    const side = (value: ChangeSide): string =>
+                                        value.value !== undefined
+                                            ? value.value
+                                            : t(value.key ?? '', value.params);
+                                    return (
+                                        <tr
+                                            key={change.id}
+                                            className="border-b border-line-subtle last:border-b-0"
+                                        >
+                                            <td className="px-3 py-2">
+                                                {t(text.whatKey, text.whatParams)}
+                                            </td>
+                                            <td className="px-3 py-2 text-ink-muted">
+                                                {side(text.before)}
+                                            </td>
+                                            <td className="px-3 py-2">{side(text.after)}</td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -877,6 +982,13 @@ export function tenorSteps(input: TenorStepsInput): readonly JourneyStep<ReactNo
                 label: t('common.continue'),
                 enabled: state.conventionActive && tenorProblems(state).length === 0,
             },
+        },
+        {
+            id: 'schedule',
+            title: t('journey.tenors.schedule.title'),
+            lead: t('journey.tenors.schedule.lead'),
+            body: <ScheduleStep t={t} state={state} catalogue={input.catalogue} />,
+            next: { label: t('common.continue'), enabled: state.conventionActive },
         },
         {
             id: 'review',

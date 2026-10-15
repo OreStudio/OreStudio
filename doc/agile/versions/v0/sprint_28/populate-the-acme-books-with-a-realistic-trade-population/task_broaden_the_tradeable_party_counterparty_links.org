@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/broaden-the-tradeable-party-counterparty-links
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,42 +20,52 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Widen the tradeable party-to-counterparty links so a generated book faces many
+counterparties rather than the 23 names the seeder happened to write by hand.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and proved through a recreate and an ACME provision. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review.                  |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- The tradeable links of each ACME party are derived from the GLEIF extract
+  rather than written by hand.
+- Each party faces a different set, chosen by a stated rule.
+- Every link resolves to a counterparty the tenant holds.
+- A recreate and an ACME provision reproduce the widened set.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Establish the layer that owns the rows. =ores_refdata_party_counterparties_tbl=
+   is the live table; the staged table behind it is
+   =ores_dq_party_counterparties_artefact_tbl=, published one dataset at a time
+   by =ores_refdata_publish_party_counterparties_from_dq_fn=, which joins each
+   staged LEI to =ores_refdata_counterparty_identifiers_tbl= under the LEI
+   scheme. The staged rows are written by the ACME seeder, so the seeder owns
+   the choice and neither the publish function nor the database is the place to
+   change it.
+2. Replace the hand-written =APPROVED= dictionary in
+   =generate_party_data.py= with a rule read from the vendored GLEIF extract.
+3. Regenerate the JSON and the SQL, update the pinned pgTAP counts, and add
+   assertions for the rule itself.
+4. Prove it through =compass db recreate -y -k= and an ACME provision.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tradeable links, before | 38 distinct pairs, 76 current rows, 23 counterparties | =compass db sql -- -c "select ... from ores_refdata_party_counterparties_tbl ..."= | 8c8ee5ccba |
+| Staged rows, before | 39, =acme_group= 8, =acme_uk= 11, =acme_us= 11, =acme_hk= 9 | same, against =ores_dq_party_counterparties_artefact_tbl= | 8c8ee5ccba |
+| Tradeable links, after | 916, =ACCOUK= 411, =ACMCOR= 453, =ACCOUS= 27, =ACCOHK= 25 | same | (this branch) |
+| Counterparties covered, after | 456 | same | (this branch) |
 
 * Notes
 
@@ -83,3 +93,50 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rule, in =projects/ores.seeder/datasets/acme_corporation/generate_party_data.py=:
+
+- A party trades with three groups of counterparties. The banks it holds a
+  master agreement with, read from =netting_agreements.json= as before, so the
+  two datasets cannot disagree. Its sister entities. And the banks it approves,
+  which is the new part.
+- The approved banks are the GLEIF entities whose legal address is in one of
+  the countries the party declares in =COUNTRIES=, and which the GLEIF BIC
+  mapping names. The BIC mapping is the registry's own statement that the
+  entity is one a payment can be addressed to, so the set is a bank set rather
+  than one inferred from a name. Active =GENERAL= entities only: a retired
+  entity cannot be traded with, and a fund or a branch is not the legal entity
+  a master agreement names.
+- The list is sorted by LEI. An LEI is derived from the entity itself and never
+  reassigned, so the list is stable across an extract refresh.
+- The consequence is that each party faces a different set, because each books
+  in different countries: =ACCOUK= faces British, Irish, German and French
+  banks, =ACCOUS= faces American and Canadian ones, and =ACCOHK= faces Hong
+  Kong, Singapore and Japanese ones.
+- The three hand-written =APPROVED= lists are deleted. Every bank they named
+  that was not a bank of the party's own countries, =BARCLAYS PLC=,
+  =LLOYDS BANKING GROUP PLC= and =NATWEST GROUP PLC= for the United Kingdom,
+  is kept through its master agreement instead, so no link that existed before
+  is lost.
+
+Counts, after a =compass db recreate -y -k= and an ACME provision: 916 links
+over 456 counterparties, =ACCOUK= 411, =ACMCOR= 453, =ACCOUS= 27, =ACCOHK= 25.
+Before: 38 over 23.
+
+Two findings that are data defects rather than under-population, and are not
+fixed here:
+
+- =2HI3YI5320L3RW6NJ957=, the Hong Kong and Shanghai Banking Corporation, is
+  staged by =acme.acme_hk.party_counterparties= and has no counterparty row to
+  join to. The publish drops it, which is why =ACCOHK= takes 25 links from 26
+  staged rows. It was in the hand-written list before this change and is
+  carried over, so the defect is older than the rule.
+- The sixth sister entity, the group's LEI as seen from a subsidiary, is
+  absent from the staged rows for the same reason. The seeder's own rule
+  implies it and its own dataset cannot carry it.
+
+One thing the environment hides, recorded because the next recreate will meet
+it: =compass db recreate -y -k= leaves the fleet holding dead database
+connections, and the provisioning run then stalls part-way with no error in
+the workflow. =compass services restart= after the recreate clears it.
+

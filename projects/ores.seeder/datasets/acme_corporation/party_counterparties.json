@@ -21,15 +21,1795 @@
   },
   {
     "company_code": "acme_group",
-    "counterparty_lei": "MLU0ZO3ML4LN2LL2TL39"
+    "counterparty_lei": "0IKLU6X1B10WK7X42C15"
   },
   {
     "company_code": "acme_group",
-    "counterparty_lei": "6SHGI4ZSSLCXXQSBB395"
+    "counterparty_lei": "0W2PZJM8XOY22M4GG883"
   },
   {
     "company_code": "acme_group",
-    "counterparty_lei": "549300SZJ9VS8SGXAN81"
+    "counterparty_lei": "1JJY8I27IN483BHQLX09"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "1VUV7VQFKUOQSJ21A208"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "21380011ZYMBN21SZ194"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "21380013V6JI2T3MOG16"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138001M5OB5OE11NS50"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800246DSYDX1BMF80"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138002XB6T14IGKGU43"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138003488D1LGCBRV23"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "21380038NTY1PVJ3IY34"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "21380039DXZZIN38WR68"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138003HW6485HGVSH88"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138004N9K31CATCK953"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "21380055DUNS6NF26T32"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138005IBE41C824QF22"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138005O9XJIJN4JPN90"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138005PR3L49ZS15G64"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "21380065OVUSBK99TQ03"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138006AACENARGZJ838"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138006XK2FFFY53L343"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "21380081EP12LC86CB82"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138008864ADTHGQP554"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138008ANZZHTOFO9Y42"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138008GGHD1Q6OZZ280"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138008KTNTDICZU8L25"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138008LEZ3ZLF8HJ541"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138008P9NOMBRMROI73"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138009CAEGO41Q6HB61"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2138009M124EE2Q9ZK29"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800A7BOPQRC475O81"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800AE5VSF3V1PAV23"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800AINT5U4D66UA65"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800AQHMYPEH8NNA33"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800AYQA28LZ7J6M48"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800BC4TEGCCQH9V07"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800CT9EVOBAGLKM04"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800CXIBLC2TMIGI76"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800D41PZHBTEHQN06"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800DD8GVBIP1HM239"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800DG2M8QX22U6P30"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800DVCFBA2TVL1T25"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800EF3SHQLBJPGB20"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800EO3S4IKXAPB795"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800EUD395AUZB1G21"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800F3IFWY8CWYWO07"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800FD3LOR6LPZPH83"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800FL3FQISXK5IP29"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800GEIK9AZNTJVZ29"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800GI1LKW2KY84R66"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800HTIY6D1KMBG757"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800HXR6XZKC2G7U74"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800HZ54TG54H2KV03"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800HZTUSEIN3M1Z46"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800IBT39XQ9C4CP71"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800KDQFY4NBXFKP66"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800KJGAYVISGD2863"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800LOV39TJH6YQY23"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800LZU65P34WD8A92"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800MBWEIJDM5CU638"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800MSK6IY7NX8XM32"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800MZ8SY49DGWN237"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800NCOJLY8JW3YI89"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800NLJCYY4AZZLS92"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800NRFLLAE9AF6P35"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800OLF8OE1I3HVY91"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800OOT97XZGKQPY40"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800OTQ2BHFRVL6A46"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800PERENGATFCHD95"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800PLUYXGZ8LU7T61"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800PNWYME8874XZ32"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800PX57VULWV8AK43"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800QILIUD4ROSUO03"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800QW7QJVVCL9RZ56"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800RA4QIHSIMFZL73"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800RNCUQ66C57MV78"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800RRX1TYUVV2R518"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800S4QPWSX1GXY767"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800S8K5XZJ2K6OB13"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800SVCJUHY6VX7884"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800TKOS7J5UA3ZI07"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800TLZ6PCLYPSR448"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800TSUEO1BP2F4Z08"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800UHF7TEFY61T896"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800UHJUCFNA7KY464"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800UIMM88P3K5ZV42"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800UUGANOMFJ9X769"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800VLY8N58Y1PKO02"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800W6KCECL8MCGZ36"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800WMLZ87OAYT3X87"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800WTQKOQI8ELD692"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800X5WU57YL9GPK89"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800XJY1CUVMC29H81"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800XSHRKUIZK86B68"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800Y39WDKGBTX4B95"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800YMG7E1F48JC136"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800YWQOYL4VQODV50"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800ZAC8VAGV4L2K61"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800ZCPY5ZNSY5I637"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800ZD686TR7FEP983"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "213800ZFTXJC7RV9UQ92"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2549006RZET62B51UR82"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "254900DIJWMU1HVLWA90"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "254900GLQ835JRAP7I39"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "254900HILJ9CO56XA292"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "254900TG3REX549BAZ53"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "254900Y6AXA86G5ASI55"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2G5BKIC2CB69PRJH1W31"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2IGI19DL77OX0HC3ZE78"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2TV5CTDU7ZDMT8HL5F58"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "2ZCNRR8UK83OBTEK2170"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "3538000RUBUJN1MAB911"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "353800717BLAHZMEXR15"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "3912001VYZ4FACUQ1K19"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "391200IBCEYMREHKPO13"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "391200JSBVM7SPMPFX14"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "391200UZL84G59FD0D11"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "3KXUNHVVQFIJN6RHLO76"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "3U8WV1YX2VMUHH7Z1Q21"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5299002CRNX7K6KOL397"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5299004TE2DYMKEAM814"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "52990056C1E0V96O5B50"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5299007QVIQ7IO64NX37"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5299007S3UH5RKUYDA52"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5299008I0TO44SUINZ71"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5299008RRLLP8RA53L11"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900DSJ4S9VXG0FS94"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900F5KTT6ZUPA8N40"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900FU4WJ2XT7BVE31"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900GJD3OQLRZCKW37"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900GM944JT8YIRL63"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900GXEWI4BLMXTJ81"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900HNH6UOOF40A490"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900HNOAA1KXQJUQ27"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900J6VNDBVTKV7I86"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900JZXXU699FCKK89"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900K16YGKC8BES892"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900K9B0N5BT694847"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900NNUPAGGOMPXZ31"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900O36LIHML9KNF05"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900OOZP78CYPYF471"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900OQ9BR23GQ6MD82"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900Q1M1F4M8KMTM64"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900S1KHKOEQL5CK20"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900U1VF734FP08987"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900VA5CNBWXAONR25"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900WMBOJTFWCJ6Z71"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "529900XIPMQFJ8PTB895"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493000N7DDJ93G26E43"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493000PAN0KGGJFC352"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493002IGEWNBCWX0S85"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493002MUOV04NSPT571"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493003MITCIX89B0R76"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "54930056FHWP7GIWYY08"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493005OHTWG8AUKVX64"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "54930061N57ORAEPGX16"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493006GGLR4BTEL8O61"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493007FKT78NKPM5V55"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493007JJOEN82MFUM53"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493007O3QFXCPOGWK22"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493007VSMFZCPV1NB83"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493008GNQHVI377MY19"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5493009ADHYKU8V9P697"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300CGO72ED3XVUZ04"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300CU9LDRDVQE5539"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300DLWZLXC60CXS69"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300DPP8ACTS8VM749"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300DTUYXVMJXZNY75"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300E6W08778I4OW85"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300EJYMJS22ND8Y17"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300FH0WJAPEHTIQ77"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300GDPG70E3MBBU98"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300GSSPQ1QSKI1376"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300GUAMON5OX2OO54"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300HFEHJOXGE4ZE63"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300I6K0JHSVK8I066"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300K7NH3086Y0SV98"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300KP56LL8NKKFL47"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300KR3CB1AXT4LT74"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300KUB2XKWLPMXV81"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300NC3GURN0AEZU06"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300O8T6I5A7FBMN18"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300OF84KDPIFN4M17"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300OLXJ4Y010LOT34"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300PN6MKI0CLP4T28"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300PPXHEU2JF0AM85"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300QK33HS7IXY1175"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300QS0R6M20VUB380"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300RQT6K4WXZL3083"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300U8H3KN0K301B23"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300URGO4D3SHWLM15"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300WHU4EIHRP28H10"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300XP222MV7P3CC54"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300XYJSIN9JGKDH03"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "549300ZK53CNGEEI6A29"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "571474TGEMMWANRLN572"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "5U0XI89JRFVHWIBS4F54"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "63540061DPCBNMCGRY22"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "635400LSFAEFKDSBOC05"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "635400LWGWFFKITHYD44"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "635400OAUSKT6BT5UZ19"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "635400OVUMFYZGQ43469"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "6EWKU0FGVX5QQJHFGT48"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "6PTKHDJ8HDUF78PFWH30"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "6TJCK1B7E7UTXP528Y04"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "784F5XWPLTWKTBV3E584"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "7CPI4ZQUQVBDH8SA1F44"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "7D9EHZL14BBPJWTN6S08"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "7LTWFZYICNSX8D621K86"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "7N7YKE66OZ27KON72O26"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "84S0VF8TSMH0T6D4K848"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "851WYGNLUQLFZBSYGB56"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "8945002FWV05NGBXJJ26"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "8945008WK6DNAUZQ7L32"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "894500M8C9DWGV7L2Q81"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "894500NTXK2L5DK8ST13"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "8I5DZWZKVSZI1NUHU748"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "8IBZUGJ7JPLH368JE346"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950000VTPII1X03R06"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950001JKROZEF62G96"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950001WI712W7PQG45"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950008DNO3H80I0682"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500090LN710HT1B25"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695000P6V7QBJL4NW96"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695000QMU1H848E3Q66"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695000YG7TR7PAP0L59"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950010FL2T1TJKR531"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695001BN7B574TIZH43"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695001WIZU5SWHBP423"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950023SCR9X9F3L662"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695002ASDT3XIMLZY47"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950036L1P0BIL35D42"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695003BBN1S4HV82514"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695003KLVYC6WLE4F19"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695003KW541RB4PSS16"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695003L8X241KRTAG54"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695003SC48YQ0POQD44"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695003SJ7Z9C9HIGV14"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695003ZGAIUXLI2B651"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950041VJ1QP0B69503"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695004NR7T2BKZFQL03"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695004W30Q4EEGQ1Y09"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695005B0IXNAZ11QL51"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695005FT3RGI6WWJ534"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695005G1Q14RE4REC98"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695005GXM695D8LUY58"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695005HLMTFJJDOB797"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695005MSX1OYEMGDF46"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950066U5XAAIRCPA78"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695006OH2J2YVVCPY96"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695006R5WWBX118FA17"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695006UH4BR9VH36947"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950070V8OK5HMTM949"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695007EQZDL89LUW373"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695007N7RATI6VK7E92"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695007Q5MTZ4Q454M45"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695007YFLSFQ43HNC76"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "96950085DHGG9K8CYV50"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500892AQHFDSWRF71"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695008F57RGP8WJVD09"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695009GVHASHCJ1D122"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9695009KQA7MMTQL8E07"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500A3Y5KTGJEMDZ32"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500A9SZ8YP1810S21"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500AGACQ54Q3UF243"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500B5DNR7Q1ACGD23"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500B8TW4VUQ7WKT96"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500BQ4JYX8980ZJ22"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500C6V7XE6KJJW795"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500C9913Z7PKUGB44"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500CHDIA34DPV9611"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500CN2FOU71HFHW51"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500CP6UARAMYIGY51"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500CXBDY2KMHP0J53"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500D5PFMTWUYSUF61"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500DEKQHM09GPQM16"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500DEM67LRGQOTV19"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500DRY71IGWG0L656"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500E07BR6468F5910"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500E6PTIKAVW46P28"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500EIKV8PFM8OAP16"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500EJMFFRSWFDJG41"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500EVOBAGHKZEXA33"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500EYG6U339D3TI84"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500F9HMMIJD7DJC28"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500FDN8G43HMHZM83"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500FF9M4SBM5VHR15"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500FVXC72N72X9J71"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500FYEXW795NPJO79"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500FZ69MUJG4X7Z43"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500GCBQ50LL4N4X78"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500GDYGB7Y20PP765"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500GIRR9L94LVRP32"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500GIUTUIEDJHFL17"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500GMOFJPLBESK810"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500GRYRLGR28CAX66"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500H8VFKY74LBMD78"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500HCJLWDO4YCYT40"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500HQXNML1DTRBT51"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500HRT9HZF47M6584"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500I60Z80FT66CR93"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500IHDSNRRY5LDB67"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500ITSEQFH24SE562"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500JJWO4PQG0R1C58"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500JK1O192KI3E882"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500JM7VIGQIPZOL49"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500JYOZHAIBIU3513"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500K8IQ975QPQKN89"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500KBBNBZ7MIZAX74"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500KN90DZLHUN3566"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500KWT26BST7DUO80"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500L38QMPKJ554U34"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500LLFVCIVUFVMK94"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500LTWFP98DC8XE44"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500LZ8VV8HS83UI11"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500M0I766TJINXO92"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500NJ02LC5HAFDY89"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500NUI273XLGK9751"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500O5P2XQHACZB347"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500O6YKL9S5XGAP98"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500O7DJZNM0F0Z036"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500OCJGH64CBUIY13"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500OCY8KZTP2CB380"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500OMKS4AIGVOBR28"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500OQSJX6T47PZQ59"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500ORP9FTJYI28L37"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500PI25OKPKTD9364"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500PLBHFXRDQ2T644"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500Q0AKBOIX5OK547"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500Q2PFTTP0Y5QL44"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500Q39EWQJXXGQB80"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500QFU43JUMEBY949"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500QH3DQ56ELDMG12"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500QL4O0R6UCP9V20"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500QLO3GN6GUB4P61"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500QQVZTWFHPN2O17"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500QUPGUHSZ2FTU81"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500R3EA0ADWQ2II38"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500RVNUVNP6SCY284"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500SAHI7IJX8TRZ82"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500SGZEL04ORYBK95"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500SJXM8MW32ZVG75"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500SRQKP7167VWF70"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500SX48YEYEHYII63"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500T1UBNNTYVWOS04"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500T4TDGHRQWB7P58"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500TJ5KRTCJQWXH05"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500TU5ZMYBIWP0R51"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500U61BV3EB4B7I48"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500U7ESUWL7OBF125"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500UEQ3U3P21QNJ13"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500URVFX2P87A8306"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VCC5OCQHSHU906"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VFRBX1W3Y3XS80"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VHT1ZNPVWOYF63"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VME9AAR39CTQ60"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VR2NA6ANMTXH21"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VRA7FNH5YBQJ98"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VRSFWX7S1P2M29"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500VSI0Q11PB93327"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500W27MXOYZQRB449"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500W2MGVVW9OKB478"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500W34S6NCZWYBV47"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500W7Y2VW04VB8943"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500W8LGZQUL2KL242"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500W8SBCXNX1DG443"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500WFZ7C2IBN9TB80"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500WME8Y1C3PFJO94"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500X4B1N5NA7VL398"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500X6PPLAEU0GBV79"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500X8MO6M37C47827"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500XM9XYLLPWS3X80"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500XQTL79VHO3DZ93"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500XVHN9Z1Z1Y1358"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500Y5C0C13HQSAB09"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500Y5YGKGKT3Q1627"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500YEPXWE78XJIB31"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500YOM7PBQMJLNE66"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500Z260RS2Q4QY529"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "969500ZO0UK0ACQQHO98"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9845001RFA8CMB01A341"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "984500564M886CFD4643"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9DJT3UXIJIZJI4WXO774"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "9W4ONDYI7MRRJYXY8R34"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "ATUEL7OJR5057F2PV266"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "B4TYDEB6GKMZO031MB27"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "B81CK4ESI35472RHJ606"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "BSGEFEIOM18Y80CKCV46"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "C3GTMMZIHMY46P4OIX74"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "C6J3FGIWG6MBDGTE8F80"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "CO6GC26LCGGRTUESIP55"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "DIZES5CFO5K3I5R58746"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "DKGVVH5FKILG8R13CO13"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "DSNHHQ2B9X5N6OUJ1236"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "DZZ47B9A52ZJ6LT6VV95"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "E58DKGMJYYYJLN8C3868"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "EJ3P8B7HPQFKAH6YME79"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "EQYXK86SF381Q21S3020"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "ES7IP3U3RHIGC71XBU11"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "EZKODONU5TYHW4PP1R34"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "F01VVKN4DRF2NWKGQ283"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "F0HUI1NY1AZMJMD8LP67"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "FGJPAKKCTZVSKZXNBS63"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "G5GSEF7VJP5I7OUK5573"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "GTQYZJON3I7SXRNJTT73"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "H7FNTJ4851HG0EXQ1Z70"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "HPFHU0OQ28E4N0NFVK49"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "IO66REGK3RCBAMA8HR66"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "JBONEPAGQXF4QP29B387"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "K6Q0W1PS1L1O4IQL9C32"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "KB1H1DSPRFMYMCUFXT09"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "KD3XUN7C6T14HNAYLU02"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "KX1WK48MPD4Y2NCUIZ63"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "L3I9ZG2KFGXZ61BMYR72"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "LC2LS8O497851NSB4L61"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "N1FBEDJ5J41VKZLO2475"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "N4JDFKKH2FTD8RKFXO39"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "N9FYJ29MC81JI74MJE92"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "NHXOBHMY8K53VRC7MZ54"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "NICH5Q04ADUV9SN3Q390"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "NJ2Z3LWOIYWE0BE0UJ21"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "NQQ6HPCNCCU6TUTQYE16"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "NT7C58H5HPZYKZDPOO64"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "O2RNE8IBXP4R0TD8PU41"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "OQ3T05P7YR8P5YJEVI93"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "PQEBSF10YW5QXWIKTJ21"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "PT3QB789TSUIDF371261"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "PTCQB104N23FMNK2RZ28"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "Q2GQA2KF6XJ24W42G291"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "R0MUWSFPU8MPRO8K5P83"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "R83QYRLEMH4ZSHI0L097"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "RB0PEZSDGCO3JS6CEU02"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "RILFO74KP1CM8P6PCT96"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "RR3QWICWWIPCS8A4S074"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "SQEISV1ELQFV4EDRBN58"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "SVY0KHTJZBP60K295346"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "TU5V87TL5Q0UV1EW4H93"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "TUKDD90GPC79G1KOE162"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "TXDSU46SXBWIGJ8G8E98"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "VBHFXSYT7OG62HNT8T76"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "VDYMYTQGZZ6DU0912C88"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "VKU1UKDS9E7LYLMACP54"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "W2RVX391BFSQJQAGEM62"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "WGII3666BEDR02O24131"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "XKZZ2JZF41MRHTR1V493"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "XZYM01I1402576QWNU05"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "Z06S12H6N9QRJ8HHN626"
+  },
+  {
+    "company_code": "acme_group",
+    "counterparty_lei": "ZMHGNT7ZPKZ3UFZ8EO46"
   },
   {
     "company_code": "acme_uk",
@@ -61,7 +1841,671 @@
   },
   {
     "company_code": "acme_uk",
-    "counterparty_lei": "213800LBQA1Y9L22JB70"
+    "counterparty_lei": "0IKLU6X1B10WK7X42C15"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "0W2PZJM8XOY22M4GG883"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "1VUV7VQFKUOQSJ21A208"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "21380011ZYMBN21SZ194"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "21380013V6JI2T3MOG16"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138001M5OB5OE11NS50"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800246DSYDX1BMF80"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138002XB6T14IGKGU43"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138003488D1LGCBRV23"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "21380038NTY1PVJ3IY34"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "21380039DXZZIN38WR68"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138003HW6485HGVSH88"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138004N9K31CATCK953"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "21380055DUNS6NF26T32"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138005IBE41C824QF22"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138005O9XJIJN4JPN90"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138005PR3L49ZS15G64"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "21380065OVUSBK99TQ03"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138006AACENARGZJ838"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138006XK2FFFY53L343"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "21380081EP12LC86CB82"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138008864ADTHGQP554"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138008ANZZHTOFO9Y42"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138008GGHD1Q6OZZ280"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138008KTNTDICZU8L25"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138008LEZ3ZLF8HJ541"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138008P9NOMBRMROI73"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138009CAEGO41Q6HB61"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2138009M124EE2Q9ZK29"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800A7BOPQRC475O81"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800AE5VSF3V1PAV23"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800AINT5U4D66UA65"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800AQHMYPEH8NNA33"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800AYQA28LZ7J6M48"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800BC4TEGCCQH9V07"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800CT9EVOBAGLKM04"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800CXIBLC2TMIGI76"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800D41PZHBTEHQN06"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800DD8GVBIP1HM239"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800DG2M8QX22U6P30"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800DVCFBA2TVL1T25"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800EF3SHQLBJPGB20"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800EO3S4IKXAPB795"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800EUD395AUZB1G21"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800F3IFWY8CWYWO07"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800FD3LOR6LPZPH83"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800FL3FQISXK5IP29"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800GEIK9AZNTJVZ29"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800GI1LKW2KY84R66"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800HTIY6D1KMBG757"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800HXR6XZKC2G7U74"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800HZ54TG54H2KV03"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800HZTUSEIN3M1Z46"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800IBT39XQ9C4CP71"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800KDQFY4NBXFKP66"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800KJGAYVISGD2863"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800LOV39TJH6YQY23"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800LZU65P34WD8A92"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800MBWEIJDM5CU638"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800MSK6IY7NX8XM32"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800MZ8SY49DGWN237"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800NCOJLY8JW3YI89"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800NLJCYY4AZZLS92"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800NRFLLAE9AF6P35"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800OLF8OE1I3HVY91"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800OOT97XZGKQPY40"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800OTQ2BHFRVL6A46"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800PERENGATFCHD95"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800PLUYXGZ8LU7T61"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800PNWYME8874XZ32"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800PX57VULWV8AK43"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800QILIUD4ROSUO03"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800QW7QJVVCL9RZ56"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800RA4QIHSIMFZL73"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800RNCUQ66C57MV78"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800RRX1TYUVV2R518"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800S4QPWSX1GXY767"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800S8K5XZJ2K6OB13"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800SVCJUHY6VX7884"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800TKOS7J5UA3ZI07"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800TLZ6PCLYPSR448"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800TSUEO1BP2F4Z08"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800UHF7TEFY61T896"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800UHJUCFNA7KY464"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800UIMM88P3K5ZV42"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800UUGANOMFJ9X769"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800VLY8N58Y1PKO02"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800W6KCECL8MCGZ36"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800WMLZ87OAYT3X87"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800WTQKOQI8ELD692"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800X5WU57YL9GPK89"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800XJY1CUVMC29H81"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800XSHRKUIZK86B68"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800Y39WDKGBTX4B95"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800YMG7E1F48JC136"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800YWQOYL4VQODV50"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800ZAC8VAGV4L2K61"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800ZCPY5ZNSY5I637"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800ZD686TR7FEP983"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "213800ZFTXJC7RV9UQ92"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2549006RZET62B51UR82"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "254900DIJWMU1HVLWA90"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "254900HILJ9CO56XA292"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2G5BKIC2CB69PRJH1W31"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2TV5CTDU7ZDMT8HL5F58"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "2ZCNRR8UK83OBTEK2170"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "3912001VYZ4FACUQ1K19"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "391200IBCEYMREHKPO13"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "391200JSBVM7SPMPFX14"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "391200UZL84G59FD0D11"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "3KXUNHVVQFIJN6RHLO76"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "3U8WV1YX2VMUHH7Z1Q21"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5299002CRNX7K6KOL397"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5299004TE2DYMKEAM814"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "52990056C1E0V96O5B50"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5299007QVIQ7IO64NX37"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5299007S3UH5RKUYDA52"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5299008I0TO44SUINZ71"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5299008RRLLP8RA53L11"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900DSJ4S9VXG0FS94"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900F5KTT6ZUPA8N40"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900FU4WJ2XT7BVE31"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900GJD3OQLRZCKW37"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900GM944JT8YIRL63"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900GXEWI4BLMXTJ81"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900HNH6UOOF40A490"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900HNOAA1KXQJUQ27"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900J6VNDBVTKV7I86"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900JZXXU699FCKK89"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900K16YGKC8BES892"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900K9B0N5BT694847"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900NNUPAGGOMPXZ31"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900O36LIHML9KNF05"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900OOZP78CYPYF471"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900OQ9BR23GQ6MD82"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900Q1M1F4M8KMTM64"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900S1KHKOEQL5CK20"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900U1VF734FP08987"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900VA5CNBWXAONR25"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900WMBOJTFWCJ6Z71"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "529900XIPMQFJ8PTB895"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5493000N7DDJ93G26E43"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5493002IGEWNBCWX0S85"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5493003MITCIX89B0R76"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "54930056FHWP7GIWYY08"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "54930061N57ORAEPGX16"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5493007JJOEN82MFUM53"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5493008GNQHVI377MY19"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "5493009ADHYKU8V9P697"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300CGO72ED3XVUZ04"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300CU9LDRDVQE5539"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300DPP8ACTS8VM749"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300DTUYXVMJXZNY75"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300E6W08778I4OW85"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300EJYMJS22ND8Y17"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300FH0WJAPEHTIQ77"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300GDPG70E3MBBU98"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300GSSPQ1QSKI1376"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300GUAMON5OX2OO54"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300HFEHJOXGE4ZE63"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300K7NH3086Y0SV98"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300KP56LL8NKKFL47"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300KR3CB1AXT4LT74"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300KUB2XKWLPMXV81"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300NC3GURN0AEZU06"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300OF84KDPIFN4M17"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300OLXJ4Y010LOT34"
   },
   {
     "company_code": "acme_uk",
@@ -69,7 +2513,943 @@
   },
   {
     "company_code": "acme_uk",
-    "counterparty_lei": "2138005O9XJIJN4JPN90"
+    "counterparty_lei": "549300QK33HS7IXY1175"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300QS0R6M20VUB380"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300RQT6K4WXZL3083"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300U8H3KN0K301B23"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300URGO4D3SHWLM15"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300WHU4EIHRP28H10"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300XP222MV7P3CC54"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300XYJSIN9JGKDH03"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "549300ZK53CNGEEI6A29"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "63540061DPCBNMCGRY22"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "635400LSFAEFKDSBOC05"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "635400LWGWFFKITHYD44"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "635400OAUSKT6BT5UZ19"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "635400OVUMFYZGQ43469"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "6EWKU0FGVX5QQJHFGT48"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "6TJCK1B7E7UTXP528Y04"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "7CPI4ZQUQVBDH8SA1F44"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "7D9EHZL14BBPJWTN6S08"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "7N7YKE66OZ27KON72O26"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "84S0VF8TSMH0T6D4K848"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "851WYGNLUQLFZBSYGB56"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "8945002FWV05NGBXJJ26"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "8945008WK6DNAUZQ7L32"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "894500M8C9DWGV7L2Q81"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "894500NTXK2L5DK8ST13"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "8IBZUGJ7JPLH368JE346"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950000VTPII1X03R06"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950001JKROZEF62G96"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950001WI712W7PQG45"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950008DNO3H80I0682"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500090LN710HT1B25"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695000P6V7QBJL4NW96"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695000QMU1H848E3Q66"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695000YG7TR7PAP0L59"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950010FL2T1TJKR531"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695001BN7B574TIZH43"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695001WIZU5SWHBP423"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950023SCR9X9F3L662"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695002ASDT3XIMLZY47"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950036L1P0BIL35D42"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695003BBN1S4HV82514"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695003KLVYC6WLE4F19"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695003KW541RB4PSS16"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695003L8X241KRTAG54"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695003SC48YQ0POQD44"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695003SJ7Z9C9HIGV14"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695003ZGAIUXLI2B651"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950041VJ1QP0B69503"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695004NR7T2BKZFQL03"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695004W30Q4EEGQ1Y09"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695005B0IXNAZ11QL51"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695005FT3RGI6WWJ534"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695005G1Q14RE4REC98"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695005GXM695D8LUY58"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695005HLMTFJJDOB797"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695005MSX1OYEMGDF46"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950066U5XAAIRCPA78"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695006OH2J2YVVCPY96"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695006R5WWBX118FA17"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695006UH4BR9VH36947"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950070V8OK5HMTM949"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695007EQZDL89LUW373"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695007N7RATI6VK7E92"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695007Q5MTZ4Q454M45"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695007YFLSFQ43HNC76"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "96950085DHGG9K8CYV50"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500892AQHFDSWRF71"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695008F57RGP8WJVD09"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695009GVHASHCJ1D122"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9695009KQA7MMTQL8E07"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500A3Y5KTGJEMDZ32"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500A9SZ8YP1810S21"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500AGACQ54Q3UF243"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500B5DNR7Q1ACGD23"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500B8TW4VUQ7WKT96"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500BQ4JYX8980ZJ22"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500C6V7XE6KJJW795"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500C9913Z7PKUGB44"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500CHDIA34DPV9611"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500CN2FOU71HFHW51"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500CP6UARAMYIGY51"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500CXBDY2KMHP0J53"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500D5PFMTWUYSUF61"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500DEKQHM09GPQM16"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500DEM67LRGQOTV19"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500DRY71IGWG0L656"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500E07BR6468F5910"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500E6PTIKAVW46P28"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500EIKV8PFM8OAP16"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500EJMFFRSWFDJG41"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500EVOBAGHKZEXA33"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500EYG6U339D3TI84"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500F9HMMIJD7DJC28"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500FDN8G43HMHZM83"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500FF9M4SBM5VHR15"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500FVXC72N72X9J71"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500FYEXW795NPJO79"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500FZ69MUJG4X7Z43"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500GCBQ50LL4N4X78"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500GDYGB7Y20PP765"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500GIRR9L94LVRP32"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500GIUTUIEDJHFL17"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500GMOFJPLBESK810"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500GRYRLGR28CAX66"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500H8VFKY74LBMD78"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500HCJLWDO4YCYT40"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500HQXNML1DTRBT51"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500HRT9HZF47M6584"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500I60Z80FT66CR93"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500IHDSNRRY5LDB67"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500ITSEQFH24SE562"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500JJWO4PQG0R1C58"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500JK1O192KI3E882"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500JM7VIGQIPZOL49"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500JYOZHAIBIU3513"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500K8IQ975QPQKN89"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500KBBNBZ7MIZAX74"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500KN90DZLHUN3566"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500KWT26BST7DUO80"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500L38QMPKJ554U34"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500LLFVCIVUFVMK94"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500LTWFP98DC8XE44"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500LZ8VV8HS83UI11"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500M0I766TJINXO92"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500NJ02LC5HAFDY89"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500NUI273XLGK9751"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500O5P2XQHACZB347"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500O6YKL9S5XGAP98"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500O7DJZNM0F0Z036"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500OCJGH64CBUIY13"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500OCY8KZTP2CB380"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500OMKS4AIGVOBR28"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500OQSJX6T47PZQ59"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500ORP9FTJYI28L37"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500PI25OKPKTD9364"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500PLBHFXRDQ2T644"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500Q0AKBOIX5OK547"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500Q2PFTTP0Y5QL44"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500Q39EWQJXXGQB80"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500QFU43JUMEBY949"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500QH3DQ56ELDMG12"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500QL4O0R6UCP9V20"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500QLO3GN6GUB4P61"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500QQVZTWFHPN2O17"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500QUPGUHSZ2FTU81"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500R3EA0ADWQ2II38"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500RVNUVNP6SCY284"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500SAHI7IJX8TRZ82"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500SGZEL04ORYBK95"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500SJXM8MW32ZVG75"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500SRQKP7167VWF70"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500SX48YEYEHYII63"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500T1UBNNTYVWOS04"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500T4TDGHRQWB7P58"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500TJ5KRTCJQWXH05"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500TU5ZMYBIWP0R51"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500U61BV3EB4B7I48"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500U7ESUWL7OBF125"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500UEQ3U3P21QNJ13"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500URVFX2P87A8306"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VCC5OCQHSHU906"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VFRBX1W3Y3XS80"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VHT1ZNPVWOYF63"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VME9AAR39CTQ60"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VR2NA6ANMTXH21"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VRA7FNH5YBQJ98"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VRSFWX7S1P2M29"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500VSI0Q11PB93327"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500W27MXOYZQRB449"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500W2MGVVW9OKB478"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500W34S6NCZWYBV47"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500W7Y2VW04VB8943"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500W8LGZQUL2KL242"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500W8SBCXNX1DG443"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500WFZ7C2IBN9TB80"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500WME8Y1C3PFJO94"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500X4B1N5NA7VL398"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500X6PPLAEU0GBV79"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500X8MO6M37C47827"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500XM9XYLLPWS3X80"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500XQTL79VHO3DZ93"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500XVHN9Z1Z1Y1358"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500Y5C0C13HQSAB09"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500Y5YGKGKT3Q1627"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500YEPXWE78XJIB31"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500YOM7PBQMJLNE66"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500Z260RS2Q4QY529"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "969500ZO0UK0ACQQHO98"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9845001RFA8CMB01A341"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "984500564M886CFD4643"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "9W4ONDYI7MRRJYXY8R34"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "B81CK4ESI35472RHJ606"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "DIZES5CFO5K3I5R58746"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "DKGVVH5FKILG8R13CO13"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "DSNHHQ2B9X5N6OUJ1236"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "DZZ47B9A52ZJ6LT6VV95"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "E58DKGMJYYYJLN8C3868"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "EJ3P8B7HPQFKAH6YME79"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "EQYXK86SF381Q21S3020"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "EZKODONU5TYHW4PP1R34"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "F01VVKN4DRF2NWKGQ283"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "F0HUI1NY1AZMJMD8LP67"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "GTQYZJON3I7SXRNJTT73"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "H7FNTJ4851HG0EXQ1Z70"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "K6Q0W1PS1L1O4IQL9C32"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "KX1WK48MPD4Y2NCUIZ63"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "LC2LS8O497851NSB4L61"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "N1FBEDJ5J41VKZLO2475"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "N4JDFKKH2FTD8RKFXO39"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "N9FYJ29MC81JI74MJE92"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "NHXOBHMY8K53VRC7MZ54"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "NICH5Q04ADUV9SN3Q390"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "NJ2Z3LWOIYWE0BE0UJ21"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "NT7C58H5HPZYKZDPOO64"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "O2RNE8IBXP4R0TD8PU41"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "OQ3T05P7YR8P5YJEVI93"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "PQEBSF10YW5QXWIKTJ21"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "PTCQB104N23FMNK2RZ28"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "Q2GQA2KF6XJ24W42G291"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "R83QYRLEMH4ZSHI0L097"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "RILFO74KP1CM8P6PCT96"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "RR3QWICWWIPCS8A4S074"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "SQEISV1ELQFV4EDRBN58"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "SVY0KHTJZBP60K295346"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "TU5V87TL5Q0UV1EW4H93"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "TUKDD90GPC79G1KOE162"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "TXDSU46SXBWIGJ8G8E98"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "VBHFXSYT7OG62HNT8T76"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "VDYMYTQGZZ6DU0912C88"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "W2RVX391BFSQJQAGEM62"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "WGII3666BEDR02O24131"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "XKZZ2JZF41MRHTR1V493"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "XZYM01I1402576QWNU05"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "Z06S12H6N9QRJ8HHN626"
+  },
+  {
+    "company_code": "acme_uk",
+    "counterparty_lei": "ZMHGNT7ZPKZ3UFZ8EO46"
   },
   {
     "company_code": "acme_uk",
@@ -97,7 +3477,39 @@
   },
   {
     "company_code": "acme_us",
-    "counterparty_lei": "6SHGI4ZSSLCXXQSBB395"
+    "counterparty_lei": "254900GLQ835JRAP7I39"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "254900TG3REX549BAZ53"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "2IGI19DL77OX0HC3ZE78"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "5493000PAN0KGGJFC352"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "5493002MUOV04NSPT571"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "549300PN6MKI0CLP4T28"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "571474TGEMMWANRLN572"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "6PTKHDJ8HDUF78PFWH30"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "784F5XWPLTWKTBV3E584"
   },
   {
     "company_code": "acme_us",
@@ -105,15 +3517,47 @@
   },
   {
     "company_code": "acme_us",
-    "counterparty_lei": "IGJSJL3JD5P30I6NJZ34"
-  },
-  {
-    "company_code": "acme_us",
     "counterparty_lei": "9DJT3UXIJIZJI4WXO774"
   },
   {
     "company_code": "acme_us",
-    "counterparty_lei": "549300RQT6K4WXZL3083"
+    "counterparty_lei": "BSGEFEIOM18Y80CKCV46"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "C6J3FGIWG6MBDGTE8F80"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "ES7IP3U3RHIGC71XBU11"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "HPFHU0OQ28E4N0NFVK49"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "KB1H1DSPRFMYMCUFXT09"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "KD3XUN7C6T14HNAYLU02"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "L3I9ZG2KFGXZ61BMYR72"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "NQQ6HPCNCCU6TUTQYE16"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "PT3QB789TSUIDF371261"
+  },
+  {
+    "company_code": "acme_us",
+    "counterparty_lei": "VKU1UKDS9E7LYLMACP54"
   },
   {
     "company_code": "acme_us",
@@ -137,15 +3581,83 @@
   },
   {
     "company_code": "acme_hk",
-    "counterparty_lei": "MLU0ZO3ML4LN2LL2TL39"
+    "counterparty_lei": "1JJY8I27IN483BHQLX09"
   },
   {
     "company_code": "acme_hk",
-    "counterparty_lei": "6SHGI4ZSSLCXXQSBB395"
+    "counterparty_lei": "254900Y6AXA86G5ASI55"
   },
   {
     "company_code": "acme_hk",
-    "counterparty_lei": "549300SZJ9VS8SGXAN81"
+    "counterparty_lei": "3538000RUBUJN1MAB911"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "353800717BLAHZMEXR15"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "5493005OHTWG8AUKVX64"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "5493006GGLR4BTEL8O61"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "5493007FKT78NKPM5V55"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "5493007O3QFXCPOGWK22"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "5493007VSMFZCPV1NB83"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "549300DLWZLXC60CXS69"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "549300I6K0JHSVK8I066"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "549300O8T6I5A7FBMN18"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "5U0XI89JRFVHWIBS4F54"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "ATUEL7OJR5057F2PV266"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "C3GTMMZIHMY46P4OIX74"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "CO6GC26LCGGRTUESIP55"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "FGJPAKKCTZVSKZXNBS63"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "IO66REGK3RCBAMA8HR66"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "JBONEPAGQXF4QP29B387"
+  },
+  {
+    "company_code": "acme_hk",
+    "counterparty_lei": "RB0PEZSDGCO3JS6CEU02"
   },
   {
     "company_code": "acme_hk",

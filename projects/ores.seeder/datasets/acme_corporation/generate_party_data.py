@@ -20,10 +20,14 @@ counterparties it may trade with.
   The banks are real legal entities, named by the LEI the GLEIF counterparty
   set holds for them. The numbers and addresses are fictional: telephone
   numbers are the ranges set aside for drama and the domain is reserved.
+- A treasury's approved banks are read from the vendored GLEIF extract, not
+  written by hand, so the list grows with the data rather than with a person's
+  patience. See approved_banks() for the rule.
 
 Usage:
     python3 generate_party_data.py
 """
+import csv
 import json
 import os
 
@@ -91,14 +95,13 @@ CURRENCIES = {
     "acme_hk": ["HKD", "USD", "JPY", "AUD", "NZD", "CNH", "SGD", "KRW", "INR", "TWD"],
 }
 
-# Banks a treasury approves besides those it holds a master agreement with.
-APPROVED = {
-    "acme_uk": ["213800LBQA1Y9L22JB70", "549300PPXHEU2JF0AM85", "2138005O9XJIJN4JPN90"],
-    "acme_us": ["6SHGI4ZSSLCXXQSBB395", "8I5DZWZKVSZI1NUHU748", "IGJSJL3JD5P30I6NJZ34",
-                "9DJT3UXIJIZJI4WXO774", "549300RQT6K4WXZL3083"],
-    "acme_hk": ["MLU0ZO3ML4LN2LL2TL39", "6SHGI4ZSSLCXXQSBB395", "549300SZJ9VS8SGXAN81"],
-    "acme_group": ["MLU0ZO3ML4LN2LL2TL39", "6SHGI4ZSSLCXXQSBB395", "549300SZJ9VS8SGXAN81"],
-}
+# The counterparties the treasury of an entity approves besides the ones it
+# holds a master agreement with, read from the vendored GLEIF extract by
+# approved_banks() under the rule stated there.
+GLEIF_DIR = os.path.normpath(
+    os.path.join(SCRIPT_DIR, "..", "..", "..", "..", "external", "lei"))
+GLEIF_ENTITIES = "20260123-0800-gleif-goldencopy-lei2-golden-copy-subset-tiny.csv"
+GLEIF_BIC = "lei-bic-20260130T000000.csv"
 
 
 def union(*lists):
@@ -149,16 +152,71 @@ def links(by_company, key):
     ]
 
 
+def gleif_banks_by_country():
+    """
+    The GLEIF entities that are banks, by legal-address country.
+
+    A tradeable counterparty is read from the same extract the provisioning
+    publishes, so every link resolves: the LEI import stages the subset and the
+    counterparty publish joins each staged LEI to a counterparty. An entity
+    qualifies as a bank when the GLEIF BIC mapping names it, which is the
+    registry's own statement that the entity is a financial institution a
+    payment can be addressed to, rather than an inferred one. The file also
+    carries entities no counterparty publish reaches, such as a bank of a
+    country the tiny subset does not carry, so the two files are joined rather
+    than either being trusted alone.
+
+    Active general entities only: a retired entity cannot be traded with, and a
+    fund or a branch is not the legal entity a master agreement names.
+    """
+    with open(os.path.join(GLEIF_DIR, GLEIF_BIC), encoding="utf-8-sig") as f:
+        bic_leis = {row["LEI"] for row in csv.DictReader(f) if row["LEI"]}
+
+    by_country = {}
+    with open(os.path.join(GLEIF_DIR, GLEIF_ENTITIES), encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            if (row["LEI"] in bic_leis
+                    and row["Entity.EntityCategory"] == "GENERAL"
+                    and row["Entity.EntityStatus"] == "ACTIVE"):
+                by_country.setdefault(row["Entity.LegalAddress.Country"], set()).add(row["LEI"])
+    return by_country
+
+
+def approved_banks(company, held, banks_by_country):
+    """
+    The banks the treasury of an entity approves, by the rule.
+
+    A party trades with the banks of the jurisdictions it books in: the legal
+    address of the bank is in one of the countries the party itself works in.
+    A London entity books sterling, euro and dollar business, so it faces
+    British, Irish, German and French banks, and a Hong Kong entity faces Hong
+    Kong and Singapore banks. The rule reads the grid the entity already
+    declares in COUNTRIES, so the two datasets cannot disagree.
+
+    The list is sorted by LEI so that it is stable, and an LEI is derived from
+    the entity itself and never reassigned, so a bank keeps its place when the
+    extract is refreshed.
+    """
+    if company == "acme_group":
+        countries = sorted({code for office in COUNTRIES for code in COUNTRIES[office]})
+    else:
+        countries = COUNTRIES[company]
+    wanted = {lei for country in countries for lei in banks_by_country.get(country, ())}
+    return sorted(wanted - set(held) - {ENTITY_LEI[company]})
+
+
 def counterparties():
     with open(os.path.join(SCRIPT_DIR, "netting_agreements.json")) as f:
         agreements = json.load(f)
     held = {company: [] for company in ENTITY_LEI}
     for agreement in agreements:
         held[agreement["company_code"]].append(agreement["counterparty_lei"])
+    banks_by_country = gleif_banks_by_country()
     records = []
     for company, own in ENTITY_LEI.items():
         sisters = [lei for c, lei in ENTITY_LEI.items() if c != company]
-        wanted = union(held[company], APPROVED[company], sisters)
+        approved = approved_banks(company, held[company], banks_by_country)
+        wanted = union(held[company], approved, sisters)
         for lei in wanted:
             if lei != own:
                 records.append({"company_code": company, "counterparty_lei": lei})

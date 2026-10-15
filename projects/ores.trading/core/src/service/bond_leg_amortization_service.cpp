@@ -28,6 +28,7 @@
 #include "ores.trading.core/repository/bond_leg_amortization_repository.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -480,6 +481,17 @@ std::uint32_t bond_leg_amortization_service::count_bond_leg_amortizations_by_tra
     BOOST_LOG_SEV(lg(), debug) << "Getting total bond leg amortizations count by trade_id: "
                                << trade_id;
     return repo_.get_total_bond_leg_amortization_count_by_trade_id(ctx_, trade_id);
+}
+
+
+std::vector<domain::bond_leg_amortization>
+bond_leg_amortization_service::list_bond_leg_amortizations_by_trade_id_as_of(
+    const std::string& trade_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing bond leg amortizations by trade_id as of window: "
+                               << trade_id;
+    return repo_.read_by_trade_id_as_of(ctx_, trade_id, valid_from_bound, valid_to_bound);
 }
 
 

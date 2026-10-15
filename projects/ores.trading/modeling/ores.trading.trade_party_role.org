@@ -40,7 +40,6 @@ row-level security needs the party on every row.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :parent_entity: trade
-:bump_parent_version: true
 :economic:    false
 :END:
 
@@ -103,6 +102,7 @@ The counterparty the firm faces is on the anchor, not a role.
 :error_message: Invalid trade_id: %. No active trade found with this id.
 :nullable: false
 :list_by:  true
+:bump_parent_version: true
 :END:
 
 A database foreign key: the anchor is immutable.

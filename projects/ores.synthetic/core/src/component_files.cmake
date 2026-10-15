@@ -115,8 +115,11 @@ set(files
     "service/trade_generation_book_service.cpp"
     "service/trade_generation_config_service.cpp"
     "service/trade_generation_counterparty_service.cpp"
+    "service/trade_population_planner.cpp"
+    "service/trade_population_service.cpp"
     "service/yield_curve_process_parameter_definition_service.cpp"
     "service/yield_curve_process_type_service.cpp"
+    "trading/trading_trade_population_writer.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -231,6 +234,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/trade_generation_book_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/trade_generation_config_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/trade_generation_counterparty_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/trade_population_planner.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/trade_population_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/trade_population_writer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/yield_curve_process_parameter_definition_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/yield_curve_process_type_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 )

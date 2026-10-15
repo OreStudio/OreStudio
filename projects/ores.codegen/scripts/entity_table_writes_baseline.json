@@ -164,24 +164,6 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_dq_lei_bic_artefact_insert_fn",
-      "file": "projects/ores.sql/create/dq/dq_lei_bic_artefact_create.sql",
-      "reason": "predates the check"
-    },
-    {
-      "kind": "sql_function",
-      "name": "ores_dq_lei_entities_artefact_insert_fn",
-      "file": "projects/ores.sql/create/dq/dq_lei_entities_artefact_create.sql",
-      "reason": "predates the check"
-    },
-    {
-      "kind": "sql_function",
-      "name": "ores_dq_lei_relationships_artefact_insert_fn",
-      "file": "projects/ores.sql/create/dq/dq_lei_relationships_artefact_create.sql",
-      "reason": "predates the check"
-    },
-    {
-      "kind": "sql_function",
       "name": "ores_dq_methodologies_upsert_fn",
       "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
       "reason": "predates the check"

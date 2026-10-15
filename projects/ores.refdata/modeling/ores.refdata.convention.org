@@ -61,6 +61,7 @@ ctx.generate_uuid()
 :nullable:    false
 :sql_key:     true
 :natural_key: true
+:server_owned: true
 :END:
 
 The party that owns this convention. Set from the session that writes the

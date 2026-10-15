@@ -69,7 +69,8 @@ SQL (table DDL, triggers, constraints) and TypeScript (protocol and domain inter
 * Flags                    — PROPERTIES: schema, product, component, has_tenant_id
 * Columns
   ** <column_name>         — PROPERTIES: type, cpp_type, nullable, default (opt),
-                             primary_key (opt), natural_key (opt)
+                             primary_key (opt), natural_key (opt),
+                             server_owned (opt)
 * SQL
   ** Flags                 — PROPERTIES: tablename
 * C++
@@ -96,6 +97,14 @@ order in the key. Every =natural_key= column joins one composite unique index,
 so a model states its identity once and both the store and the readers take it
 from there. A natural key is not required to be non-nullable, but a column that
 is half of an identity usually is.
+
+A key column marked =:server_owned: true= stays in the key and the unique index
+but leaves the write record, so a caller never states it and the service stamps
+it from the session. A per-party row keyed by a surrogate id uses this for its
+=party_id=: the unique index still scopes the row to its party, and the write
+cannot name a party other than the session's. The flag is refused on any column
+the specification does not list as server-owned, so a caller-owned field is not
+silently dropped from the wire.
 
 *** service_find_by_code (C++ Flags)
 

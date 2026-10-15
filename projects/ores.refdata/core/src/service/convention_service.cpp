@@ -101,7 +101,6 @@ messaging::convention_key key_from(const domain::convention& v) {
 domain::convention to_domain(const messaging::convention_write& write) {
     domain::convention v;
     v.id = write.id;
-    v.party_id = write.party_id;
     v.kind_code = write.kind_code;
     v.name = write.name;
     v.oresmd_uri = write.oresmd_uri;

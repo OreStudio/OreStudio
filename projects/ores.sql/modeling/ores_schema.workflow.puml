@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: workflow
-Tables: 4
+Tables: 5
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -109,6 +109,36 @@ package "workflow" #FFF8E1 {
     carries its own chain rather than pointing at one, because the definition that
     produced it may not produce the same chain twice and must never reshape a run
     that is already in flight.
+    end note
+
+    entity ores_workflow_step_claims_tbl  #F7E5FF {
+        * step_id : uuid <<PK, FK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * work_tenant_id : uuid <<FK>>
+        * owner : text
+        * claimed_at : timestamptz
+        * lease_expires_at : timestamptz
+        * attempts : integer
+    }
+
+    note right of ores_workflow_step_claims_tbl
+    One row for each step whose work is in flight. A step command is delivered at
+    least once, so two deliveries for one step can arrive at once; this row is
+    what makes exactly one of them do the work. The row holds who holds the step
+    -- the service running the work, as it names itself -- when the lease it holds
+    ends, and how many times the step has been claimed.
+    The table is a lease rather than a record. A step's own state is what refuses
+    a replay after the work is done, so the row is removed the moment the step
+    leaves in_progress, and what remains is only the claims that are live now.
+    A step belongs to a tenant and no policy lets the system tenant read another
+    tenant's rows, so a claim any tenant's step can take cannot be a query over
+    the steps of all of them. The claim belongs to the installation instead. It
+    holds an id, a time and a count and no business data of a tenant. The service
+    reads and writes it as the system tenant.
+    The table is hand-written, not generated. It is a mutable current-state table
+    with atomic claim statements, and the policy below admits only a session of the
+    system tenant, a shape the entity templates do not offer.
     end note
 
     entity ores_workflow_workflow_instances_tbl <<temporal>> #C6F0D8 {

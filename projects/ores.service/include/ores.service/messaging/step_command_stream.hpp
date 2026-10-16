@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
@@ -224,6 +225,11 @@ private:
 
     const std::string durable = step_durable_name(stream);
 
+    // The holder a claim records is this service, because this service is what
+    // runs the step's work. It is computed once, so every claim this process
+    // takes names one identity rather than one per delivery.
+    const std::string claim_owner = ores::workflow::messaging::step_claim_owner(service_name);
+
     BOOST_LOG_SEV(detail::lg(), info) << "Serving " << subjects.size() << " step command(s) on '"
                                       << stream << "' as '" << durable << "'";
 
@@ -231,12 +237,65 @@ private:
         filters,
         durable,
         service_name,
-        [by_subject](ores::nats::message msg) {
+        [by_subject, &nats, claim_owner](ores::nats::message msg) {
             for (const auto& [subject, handler] : *by_subject) {
-                if (msg.subject == subject) {
-                    handler(std::move(msg));
-                    return;
+                if (msg.subject != subject)
+                    continue;
+
+                /*
+                 * A command is served only by the delivery that holds the claim
+                 * on its step. Delivery is at-least-once, so two deliveries for
+                 * one step can arrive at once and both would otherwise do the
+                 * work; the claim is what makes exactly one of them do it.
+                 *
+                 * Only a real step command is claimed. A message without the
+                 * workflow headers names no step, so there is nothing to claim
+                 * and it goes straight to its handler.
+                 */
+                if (const auto wf = workflow_step_context::from_message(nats, msg)) {
+                    const auto outcome = claim_step(nats, wf->step_id, wf->tenant_id, claim_owner);
+                    if (outcome != step_claim_outcome::claimed) {
+                        // The handler answers the delivery itself, so every path
+                        // that does not reach it is answered here.
+                        ores::nats::ack_guard ack(msg);
+                        if (outcome == step_claim_outcome::busy) {
+                            // Another delivery holds a live lease, so the work is
+                            // running elsewhere. Come back rather than do it twice,
+                            // and come back after a pause: an immediate redelivery
+                            // lands on the same live lease, loses the same race,
+                            // and spends the delivery budget in a loop.
+                            BOOST_LOG_SEV(detail::lg(), info)
+                                << "Step " << wf->step_id
+                                << " is held by another delivery; retrying " << msg.subject
+                                << " in " << ores::workflow::messaging::step_claim_hold_off.count()
+                                << "ms";
+                            ack.retry_after(ores::workflow::messaging::step_claim_hold_off);
+                        } else if (outcome == step_claim_outcome::not_in_progress) {
+                            // The step is already done or already failed, so its
+                            // state refuses this replay and there is nothing here
+                            // for this delivery to do.
+                            ack.accept();
+                        } else if (outcome == step_claim_outcome::unknown) {
+                            // No such step, and nothing can ever serve it.
+                            BOOST_LOG_SEV(detail::lg(), warn)
+                                << "Step " << wf->step_id << " is not a workflow step; rejecting "
+                                << msg.subject;
+                            ack.reject();
+                        } else {
+                            // The engine could not be reached or could not decide.
+                            // Failing closed is deliberate: running the work
+                            // unclaimed is what the claim exists to prevent.
+                            BOOST_LOG_SEV(detail::lg(), warn)
+                                << "Could not claim step " << wf->step_id << " for " << msg.subject
+                                << "; retrying rather than running it unclaimed.";
+                            ack.retry();
+                        }
+                        return;
+                    }
                 }
+
+                handler(std::move(msg));
+                return;
             }
             // The consumer filters exactly the declared subjects, so a delivery
             // that matches none is a programming error. Answer it, because

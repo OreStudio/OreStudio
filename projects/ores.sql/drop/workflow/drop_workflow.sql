@@ -28,6 +28,7 @@
 \ir ./workflow_workflow_instances_notify_trigger_drop.sql
 \ir ./workflow_workflow_plan_steps_notify_trigger_drop.sql
 \ir ./workflow_workflow_plan_dependencies_notify_trigger_drop.sql
+\ir ./workflow_step_claims_drop.sql
 \ir ./workflow_workflow_plan_steps_drop.sql
 \ir ./workflow_workflow_plan_dependencies_drop.sql
 \ir ./workflow_workflow_steps_drop.sql

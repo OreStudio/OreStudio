@@ -458,6 +458,15 @@ void workflow_engine::set_step_state(const domain::workflow_step& step,
     }
     step_repo_.write(ctx_, updated);
 
+    // The claim exists only while the work is in flight, so the moment the step
+    // leaves in_progress the claim is taken away. The step's own state is what
+    // refuses a replay from here on, so a row left behind would say nothing the
+    // step does not already say, and the table would grow by one row for every
+    // step ever run. The release names no holder: the engine's write is what
+    // closes the window, and the holder is whichever process ran the work.
+    if (state_id != step_states_.require("in_progress"))
+        claim_repo_.release(ctx_, step_id);
+
     BOOST_LOG_SEV(lg(), info)
         << "step " << step.step_index << " (" << step.name << ")"
         << " workflow=" << boost::uuids::to_string(step.workflow_id) << " step_id="

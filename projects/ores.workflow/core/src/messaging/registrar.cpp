@@ -30,10 +30,12 @@
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.api/workflow/identity_workflow.hpp"
 #include "ores.workflow.core/messaging/identity_step_handler.hpp"
+#include "ores.workflow.core/messaging/workflow_claim_handler.hpp"
 #include "ores.workflow.core/messaging/workflow_handler.hpp"
 #include "ores.workflow.core/messaging/workflow_instance_history_provider_registrar.hpp"
 #include "ores.workflow.core/messaging/workflow_instance_registrar.hpp"
@@ -176,6 +178,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_step_result_request::nats_subject, qg, [qh](ores::nats::message msg) {
             qh->get_step_result(std::move(msg));
+        }));
+
+    // The claim is the engine's, because the engine holds the step's state and
+    // is the one that gives the claim back. It answers a step-command delivery's
+    // question before that delivery does any work.
+    auto ch = std::make_shared<workflow_claim_handler>(nats, ctx, step_states);
+
+    subs.push_back(
+        nats.queue_subscribe(claim_step_request::nats_subject, qg, [ch](ores::nats::message msg) {
+            ch->claim_step(std::move(msg));
         }));
 
     auto wh = std::make_shared<workflow_handler>(nats, std::move(ctx), std::move(signer), engine);

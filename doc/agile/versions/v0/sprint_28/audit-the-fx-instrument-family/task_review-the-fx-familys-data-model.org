@@ -8,7 +8,7 @@
 #+filetags: :audit-the-fx-instrument-family:sprint_28:v0:
 #+owner: marco
 #+branch: feature/audit-the-fx-instrument-family-against-dod
-#+pr:
+#+pr: 3387
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3387][#3387]] | [agile] Review the FX family's data model against the DOD guidelines |
 
 * Review
 

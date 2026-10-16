@@ -1,0 +1,181 @@
+Evidence for task 0AB008AD-075B-49D7-A720-8E4CFC12C521
+"Confirm the writing party comes from the token"
+
+Measured 2026-10-16 on branch prove/the-three-acme-population-acceptances
+at commit 5d0fa921e8, against a database recreated the same day
+(compass db recreate -y -k, services stopped, compass services restart
+after) and provisioned once with
+bootstrap setup ... --profile acme_demo.
+ACME tenant b7fe3d66-2aed-4d1c-a19b-0406b689640b.
+
+
+== 1. The chain, link by link ==
+
+claim in the token
+  projects/ores.security/include/ores.security/jwt/jwt_claims.hpp:140
+      std::optional<std::string> party_id;
+  projects/ores.security/src/jwt/jwt_authenticator.cpp:208
+      if (decoded.has_payload_claim("party_id"))
+          claims.party_id = decoded.get_payload_claim("party_id").as_string();
+
+the claim comes from the account's membership, never from a request body
+  projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp:830
+      claims.party_id = boost::uuids::to_string(party_id);
+      (party_id is the account's one membership, or the bootstrap party)
+  projects/ores.iam/core/include/ores.iam.core/messaging/account_operations_handler.hpp:1245
+      new_claims.party_id = boost::uuids::to_string(requested_party_id);
+      (after an is_member check over account_party_repository rows; a
+       non-member is answered "User is not a member of requested party")
+
+claim into the request context
+  projects/ores.service/src/service/request_context.cpp:77
+      if (!claims->party_id || claims->party_id->empty())
+          return base_ctx.with_tenant(*tid_result, ...);
+      ... base_ctx.with_party(*tid_result, party_id, visible_ids, username)
+
+context into the session setting
+  projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp:264
+      {"app.current_party_id", &party_str},   written on every acquire,
+      empty string when the context has no party
+  projects/ores.database/src/repository/bitemporal_operations.cpp:182
+      set_pg_config(conn, "app.current_party_id", ...)
+
+session setting onto the row
+  24 trading create scripts, each one assignment, e.g.
+  projects/ores.sql/create/trading/trading_bond_instruments_create.sql:109
+      NEW.party_id := current_setting('app.current_party_id')::uuid;
+  $ grep -rho "NEW.party_id := current_setting('app.current_party_id')::uuid" \
+        projects/ores.sql/create/trading/*.sql | wc -l
+  24
+
+the wire cannot state it
+  projects/ores.trading/api/include/ores.trading.api/messaging/bond_instrument_protocol.hpp:42
+      struct bond_instrument_write {
+          boost::uuids::uuid trade_id;
+          std::string trade_type_code;
+          boost::uuids::uuid trade_activity_id;
+          boost::uuids::uuid issue_id;
+          std::optional<...decimal> notional;
+      };
+  No tenant_id member and no party_id member.
+
+
+== 2. A write lands in the caller's party ==
+
+shell, logged in as tenant_admin@acme_corporation (token party = Acme
+Corporation Plc, ddb2008f-a010-4953-bcf9-adc76bb56732):
+  $ compass shell -l .scratch/acme_bond_rewrite.ores
+  bond_instruments set fe21a60d-4d15-5601-b650-7ca3f316d8cf Bond \
+    010c22be-139d-4c76-9b41-7867d0e01b77 9a68ed8a-f85d-54ce-b3a6-c5f9dac5fe2e \
+    5565273.69 system.test "Proving a bond rewrite versions the parent" --version 1
+  {"result":{"outcome":"ok",...},"bond_instrument":{"identity":{"version":2,
+   "tenant_id":"b7fe3d66-...","trade_type_code":"Bond",
+   "party_id":"ddb2008f-a010-4953-bcf9-adc76bb56732",...}}}
+  Stored party_id is the token's party.
+
+  $ psql ... -c "select version, party_id, change_reason_code, change_commentary
+    from ores_trading_bond_instruments_tbl
+    where trade_id='fe21a60d-4d15-5601-b650-7ca3f316d8cf' order by version"
+   version |               party_id               | change_reason_code  |             change_commentary
+  ---------+--------------------------------------+---------------------+--------------------------------------------
+         1 | ddb2008f-a010-4953-bcf9-adc76bb56732 | system.initial_load | Generated trade population.
+         2 | ddb2008f-a010-4953-bcf9-adc76bb56732 | system.test         | Proving a bond rewrite versions the parent
+
+  Every instrument in the population carries the party its trade carries,
+  8 per party over 4 parties:
+  $ psql ... -c "select t.party_id, i.party_id, count(*) from ores_trading_trades_tbl t
+      join ores_trading_bond_instruments_tbl i on i.trade_id = t.id and i.tenant_id = t.tenant_id
+      where t.tenant_id='b7fe3d66-...' and t.valid_to = ores_utility_infinity_timestamp_fn()
+        and i.valid_to = ores_utility_infinity_timestamp_fn() group by 1,2, (t.party_id=i.party_id)"
+             trade_party              |           instrument_party           | count
+  ------------------------------------+--------------------------------------+-------
+   2c7e3b71-ae00-421d-85e6-14d198985f99 | 2c7e3b71-ae00-421d-85e6-14d198985f99 |     8
+   80943f25-ac69-40c0-8f9a-52e9aa499339 | 80943f25-ac69-40c0-8f9a-52e9aa499339 |     8
+   c276b8a6-a3ab-4477-8adf-34e37f3018be | c276b8a6-a3ab-4477-8adf-34e37f3018be |     8
+   ddb2008f-a010-4953-bcf9-adc76bb56732 | ddb2008f-a010-4953-bcf9-adc76bb56732 |     8
+  (32 rows, all agreeing, no party mismatch)
+
+
+== 3. A row that states a party does not keep it ==
+
+$ PGPASSWORD=... psql -h localhost -U postgres -d ores_dev_bright_faraday \
+    -f evidence/party_stated_probe.sql
+begin;
+select set_config('app.current_tenant_id', 'b7fe3d66-2aed-4d1c-a19b-0406b689640b', false);
+select set_config('app.current_party_id', '80943f25-ac69-40c0-8f9a-52e9aa499339', false);
+insert into ores_trading_bond_instruments_tbl (...) values (..., 
+    'ddb2008f-a010-4953-bcf9-adc76bb56732' as party_id, ...);
+select 'stated_on_the_row', 'ddb2008f-...' union all
+select 'session_app_current_party_id', current_setting('app.current_party_id') union all
+select 'stored_party_id', party_id::text from ores_trading_bond_instruments_tbl
+  where trade_id = 'fe21a60d-...' and valid_to = ores_utility_infinity_timestamp_fn();
+rollback;
+
+             what             |                party
+------------------------------+--------------------------------------
+ stated_on_the_row            | ddb2008f-a010-4953-bcf9-adc76bb56732
+ session_app_current_party_id | 80943f25-ac69-40c0-8f9a-52e9aa499339
+ stored_party_id              | 80943f25-ac69-40c0-8f9a-52e9aa499339
+ROLLBACK
+
+The row asked for ACMCOR, the session named ACCOUK, the row was stored as
+ACCOUK. The caller cannot state the party.
+
+
+== 4. A caller naming no party is refused ==
+
+$ PGPASSWORD=... psql -h localhost -U postgres -d ores_dev_bright_faraday \
+    -f evidence/party_absent_probe.sql
+begin;
+select set_config('app.current_tenant_id', 'b7fe3d66-...', false);
+select set_config('app.current_party_id', '', false);
+select 'session_app_current_party_id', quote_literal(current_setting('app.current_party_id'));
+insert into ores_trading_bond_instruments_tbl (...) values (...);
+rollback;
+
+             what             | value
+------------------------------+-------
+ session_app_current_party_id | ''
+psql:.scratch/proof_party_absent.sql:13: ERROR:  invalid input syntax for type uuid: ""
+CONTEXT:  PL/pgSQL function ores_trading_bond_instruments_insert_fn() line 9 at assignment
+ROLLBACK
+
+The write is refused. Nothing is defaulted onto the row.
+
+Service level, for contrast:
+$ build/output/linux-clang-release-ninja/publish/bin/ores.service.tests "[request_context]"
+All tests passed (36 assertions in 12 test cases)
+  "a token naming a party scopes the context to that party" passes:
+      REQUIRE(result->party_id().has_value())
+      REQUIRE(*result->party_id() == boost::uuids::string_generator()(party))
+  "a valid bearer token scopes the context to its tenant, actor and permissions"
+  passes with REQUIRE_FALSE(result->party_id().has_value()) -- a token that
+  names no party is accepted, at tenant scope, and not refused.
+$ build/output/linux-clang-release-ninja/publish/bin/ores.service.tests
+All tests passed (282 assertions in 59 test cases)
+
+
+== 5. Finding: nothing on the trading write path refuses a party-less write ==
+
+projects/ores.service/include/ores.service/messaging/handler_helpers.hpp:283
+    inline void require_party(const ores::database::context& ctx) {
+        if (!ctx.party_id())
+            throw std::invalid_argument(
+                "A session that acts for no party cannot change configuration documents; act for "
+                "the party that owns them.");
+    }
+  $ grep -rn "require_party" projects/ores.trading/ | wc -l
+  0
+Its ten call sites are configuration-document handlers only:
+  projects/ores.refdata/core/src/messaging/configuration_document_handler.cpp
+  projects/ores.analytics/core/src/messaging/configuration_document_handler.cpp
+  projects/ores.reporting/core/src/messaging/run_document_handler.cpp
+
+So a party-less token is admitted by make_request_context, and the trading
+write dies on the empty string cast at the trigger. The property holds --
+nothing is defaulted -- but the refusal is incidental and its message does
+not name the cause. require_party is the guard that would name it.
+
+for_requested_party (handler_helpers.hpp:263) is on read paths only:
+  $ grep -rn "for_requested_party" projects/ --include=*.cpp
+  refdata/analytics/compute configuration and report handlers.

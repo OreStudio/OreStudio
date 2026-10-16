@@ -1,0 +1,7 @@
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+bond_instruments get fe21a60d-4d15-5601-b650-7ca3f316d8cf
+bond_instruments set fe21a60d-4d15-5601-b650-7ca3f316d8cf Bond 010c22be-139d-4c76-9b41-7867d0e01b77 9a68ed8a-f85d-54ce-b3a6-c5f9dac5fe2e 5565273.69 system.test "Proving a bond rewrite versions the parent" --version 1
+bond_instruments get fe21a60d-4d15-5601-b650-7ca3f316d8cf
+logout
+exit

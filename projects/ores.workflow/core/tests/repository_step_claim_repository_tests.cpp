@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.workflow.core/repository/step_claim_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.workflow.core/repository/step_claim_repository.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -157,13 +157,10 @@ TEST_CASE("release_removes_a_claim_whatever_the_holder_named_itself", tags) {
     const auto work_tenant = random_uuid();
 
     step_claim_repository claims;
-    REQUIRE(claims
-                .claim(cleanup.system(),
-                       step,
-                       work_tenant,
-                       "ores.reporting.service/4242",
-                       seconds(300))
-                .has_value());
+    REQUIRE(
+        claims
+            .claim(cleanup.system(), step, work_tenant, "ores.reporting.service/4242", seconds(300))
+            .has_value());
 
     // The engine releases on the holder's behalf, so the holder's name is not
     // part of the predicate. A name the engine never computed must still go.

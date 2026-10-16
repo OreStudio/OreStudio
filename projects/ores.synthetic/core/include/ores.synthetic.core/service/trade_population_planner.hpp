@@ -113,6 +113,25 @@ security_id_for(const domain::trade_generation_scope& scope, std::uint32_t slot)
 ORES_SYNTHETIC_CORE_EXPORT std::string
 security_id_for_book(const domain::trade_generation_scope& scope, const boost::uuids::uuid& book_id);
 
+/**
+ * @brief The id a config carries, named by the party it books for and by its
+ * own name.
+ *
+ * A scope is a named recipe rather than a draw, so a provisioner that states
+ * the same recipe twice reaches the same config, and the trade identifiers
+ * that name the config are stable from one environment to the next.
+ */
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
+config_id_for(const boost::uuids::uuid& party_id, const std::string& name);
+
+/// The id one book of a config's scope carries.
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
+book_scope_id_for(const boost::uuids::uuid& config_id, const boost::uuids::uuid& book_id);
+
+/// The id one counterparty of a config's scope carries.
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid counterparty_scope_id_for(
+    const boost::uuids::uuid& config_id, const boost::uuids::uuid& counterparty_id);
+
 }
 
 #endif

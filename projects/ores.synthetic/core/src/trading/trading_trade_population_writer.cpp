@@ -80,15 +80,6 @@ constexpr double coupon_rate = 0.05;
 trading_trade_population_writer::trading_trade_population_writer(
     ores::nats::service::nats_client& nats)
     : nats_(nats) {
-    /*
-     * The actor every write names. It falls back to the client's own login,
-     * which is the account the caller authenticated as; a trade is entered by
-     * a real person and the audit trail says which.
-     */
-    if (nats_.is_logged_in())
-        actor_ = nats_.auth().username;
-    if (actor_.empty())
-        actor_ = "ores.synthetic.service";
 }
 
 template <typename Request>

@@ -99,6 +99,7 @@ inline constexpr std::string_view provision_party_step_kind = "provision_party";
 inline constexpr std::string_view load_staff_step_kind = "load_staff";
 inline constexpr std::string_view attach_photos_step_kind = "attach_photos";
 inline constexpr std::string_view start_market_feeds_step_kind = "start_market_feeds";
+inline constexpr std::string_view generate_trades_step_kind = "generate_trades";
 
 /// The step kinds the notation knows. A kind that is not here is a code change:
 /// the catalogue is fixed and a profile states only which kinds it orders and
@@ -112,7 +113,8 @@ inline constexpr std::string_view provision_step_kinds[] = {system_provision_ste
                                                             provision_party_step_kind,
                                                             load_staff_step_kind,
                                                             attach_photos_step_kind,
-                                                            start_market_feeds_step_kind};
+                                                            start_market_feeds_step_kind,
+                                                            generate_trades_step_kind};
 
 /// The bundle the system-provisioning step publishes. Its members are the
 /// datasets the installation itself is read from, so they belong to the system
@@ -183,6 +185,11 @@ struct step_kind_words {
         return {"Start the market feeds",
                 "Starts the synthetic market data the tenant's curves and prices are built from.",
                 orchestrating_step_timeout};
+    if (kind == generate_trades_step_kind)
+        return {"Generate the trades",
+                "Records a trade generation config for each party the starting point names and "
+                "writes the population it states into that party's own books.",
+                orchestrating_step_timeout};
     if (kind == start_tenant_setup_step_kind)
         return {"Hand the tenant to its administrator",
                 "Starts the tenant's own setup run, which runs as the tenant "
@@ -214,7 +221,8 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {system_prov
                                                                      provision_party_step_kind,
                                                                      load_staff_step_kind,
                                                                      attach_photos_step_kind,
-                                                                     start_market_feeds_step_kind};
+                                                                     start_market_feeds_step_kind,
+                                                                     generate_trades_step_kind};
 
 /// Whether this build executes the kind. A kind the catalogue does not know is
 /// not executed either, so one predicate answers both refusals.
@@ -398,6 +406,11 @@ make_step(const provision_tenant_workflow_request& run,
     // creates must exist first; a party created after the step is never bound.
     if (kind == start_market_feeds_step_kind)
         return {provision_party_step_kind, publish_bundle_step_kind};
+    // A trade names a book, a counterparty and the person who entered it, so
+    // the books and the staff must exist first, and it is booked against the
+    // market the feeds have already started.
+    if (kind == generate_trades_step_kind)
+        return {load_staff_step_kind, start_market_feeds_step_kind};
     if (kind == start_tenant_setup_step_kind)
         return {system_provision_step_kind};
     return {};
@@ -585,9 +598,9 @@ inline void register_tenant_setup_workflow(ores::workflow::service::workflow_reg
     def.description =
         "Finishes a tenant from the seed profile the system-side run received: publishes the "
         "bundles the profile orders, imports its LEI hierarchy, provisions its parties, loads "
-        "its staff, attaches its images, starts its market feeds, and completes the tenant. One "
-        "engine step per declared kind that acts inside the tenant, in the profile's order, plus "
-        "the step that completes it.";
+        "its staff, attaches its images, starts its market feeds, generates its trades and "
+        "completes the tenant. One engine step per declared kind that acts inside the tenant, "
+        "in the profile's order, plus the step that completes it.";
 
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,

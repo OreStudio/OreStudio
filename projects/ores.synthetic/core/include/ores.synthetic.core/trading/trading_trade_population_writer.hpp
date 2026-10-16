@@ -100,7 +100,6 @@ private:
      * is stamped with the act that booked it rather than with its own id.
      */
     std::map<boost::uuids::uuid, boost::uuids::uuid> activities_;
-    std::string actor_;
 };
 
 }

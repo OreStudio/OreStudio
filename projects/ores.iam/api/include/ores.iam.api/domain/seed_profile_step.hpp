@@ -42,8 +42,8 @@ namespace ores::iam::domain {
  * without a code change.
  *
  * The catalogue is fixed: publish_bundle, import_lei_hierarchy,
- * provision_party, load_staff, attach_photos and
- * start_market_feeds. A step kind that is not in the catalogue is a code
+ * provision_party, load_staff, attach_photos, start_market_feeds and
+ * generate_trades. A step kind that is not in the catalogue is a code
  * change, because one new kind means one new step handler.
  *
  * The pair (seed_profile_id, step_kind) is the identity: a profile runs a

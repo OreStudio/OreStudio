@@ -504,10 +504,9 @@ package "synthetic" #F9FBE7 {
     The booking party is the row's own party_id. The writer sets
     app.current_party_id to it before each trade, because the trading
     insert triggers overwrite the instrument's party from session state.
-    The two scope lists are
-    [[id:2E13AC47-E3F0-4485-AA4D-BC6E9CD1980B][Trade Generation Book]] and
-    [[id:33A902F8-FA25-477E-BF7B-B2E1792AB1F8][Trade Generation
-    Counterparty]].
+    The two scope lists are the child tables trade_generation_book and
+    trade_generation_counterparty, one row per book and one row per
+    counterparty. Both are edited from this configuration's detail dialog.
     The population is a function of the pair (seed, as-of anchor). The seed
     pins the shape of the population and not the identity of its rows. The
     same pair emits the same rows; a later anchor moves the population

@@ -21,7 +21,11 @@
 #define ORES_IAM_MESSAGING_PROVISION_STEP_ARGUMENTS_HPP
 
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <stdexcept>
@@ -41,6 +45,7 @@ enum class provision_step_action {
     load_staff,
     attach_photos,
     start_market_feeds,
+    generate_trades,
     complete_provisioning,
     start_tenant_setup,
     refuse
@@ -78,6 +83,8 @@ enum class provision_step_action {
         return provision_step_action::attach_photos;
     if (kind == "start_market_feeds")
         return provision_step_action::start_market_feeds;
+    if (kind == "generate_trades")
+        return provision_step_action::generate_trades;
     return provision_step_action::refuse;
 }
 
@@ -459,6 +466,82 @@ parse_market_feed_arguments(const std::string& arguments_json) {
     result.dataset = detail::read_string(arguments, "dataset");
     if (result.dataset.empty())
         throw std::runtime_error("The step names no 'dataset' argument.");
+    return result;
+}
+
+/**
+ * @brief One trade generation config a generate_trades step records and runs.
+ *
+ * The entry states the recipe and not the scope: the party is named as the
+ * LEI import created it, the book as the party's own reference data names it,
+ * and the counterparties are the party's own tradeable links. So the entry
+ * carries no identifier of a row that only exists once the run has published
+ * one, and the same profile row is usable in any environment.
+ *
+ * The anchor is optional. A run that states none anchors on the day it runs,
+ * because the population is meant to sit relative to the present: a recipe
+ * that pinned a date would write a stale book every time it was used.
+ */
+struct trade_generation_assignment {
+    std::string party = {};
+    std::string name = {};
+    std::string description = {};
+    std::string asset_class_code = {};
+    std::string book = {};
+    std::string min_tenor_code = {};
+    std::string max_tenor_code = {};
+    std::optional<ores::utility::decimal::decimal> min_notional = {};
+    std::optional<ores::utility::decimal::decimal> max_notional = {};
+    std::optional<std::chrono::year_month_day> as_of_date = {};
+    std::optional<std::uint64_t> seed = {};
+};
+
+/// The configs a generate_trades step records, in the order it records them.
+struct trade_generation_step_arguments {
+    std::vector<trade_generation_assignment> configs = {};
+};
+
+/**
+ * @brief Reads a generate_trades step's arguments.
+ *
+ * The fields a kind cannot act without are named when the entry leaves one
+ * out, so a profile row that is half-written is refused before a config is
+ * recorded against it rather than after.
+ */
+[[nodiscard]] inline std::vector<trade_generation_assignment>
+parse_trade_generation_assignments(const std::string& arguments_json) {
+    /*
+     * A field an entry leaves out takes the default the entry states, so the
+     * checks below name the one that is missing rather than reporting a
+     * positional parse failure against the whole object.
+     */
+    auto parsed = rfl::json::read<trade_generation_step_arguments, rfl::DefaultIfMissing>(
+        arguments_json);
+    if (!parsed)
+        throw std::runtime_error("The step's arguments are not a trade generation recipe: " +
+                                 parsed.error().what());
+
+    auto result = std::move(parsed->configs);
+    if (result.empty())
+        throw std::runtime_error("The step names no config in its 'configs' argument.");
+    for (const auto& entry : result) {
+        const auto require = [&entry](const std::string& value, const char* field) {
+            if (value.empty())
+                throw std::runtime_error("The step's config '" + entry.party + "' names no '" +
+                                         field + "' argument.");
+        };
+        require(entry.party, "party");
+        require(entry.name, "name");
+        require(entry.asset_class_code, "asset_class_code");
+        require(entry.book, "book");
+        require(entry.min_tenor_code, "min_tenor_code");
+        require(entry.max_tenor_code, "max_tenor_code");
+        if (!entry.min_notional || !entry.max_notional)
+            throw std::runtime_error("The step's config '" + entry.name +
+                                     "' states no notional band.");
+        if (!entry.seed)
+            throw std::runtime_error("The step's config '" + entry.name + "' states no seed.");
+    }
     return result;
 }
 

@@ -216,6 +216,24 @@ boost::uuids::uuid trade_id_for(const domain::trade_generation_scope& scope, std
     return named("trade:" + slot_name(scope, slot));
 }
 
+boost::uuids::uuid config_id_for(const boost::uuids::uuid& party_id, const std::string& name) {
+    return named(std::format("config:{}:{}", boost::uuids::to_string(party_id), name));
+}
+
+boost::uuids::uuid book_scope_id_for(const boost::uuids::uuid& config_id,
+                                     const boost::uuids::uuid& book_id) {
+    return named(std::format("config_book:{}:{}",
+                             boost::uuids::to_string(config_id),
+                             boost::uuids::to_string(book_id)));
+}
+
+boost::uuids::uuid counterparty_scope_id_for(const boost::uuids::uuid& config_id,
+                                             const boost::uuids::uuid& counterparty_id) {
+    return named(std::format("config_counterparty:{}:{}",
+                             boost::uuids::to_string(config_id),
+                             boost::uuids::to_string(counterparty_id)));
+}
+
 boost::uuids::uuid issue_id_for_security(const std::string& security_id) {
     return named("bond_issue:" + security_id);
 }

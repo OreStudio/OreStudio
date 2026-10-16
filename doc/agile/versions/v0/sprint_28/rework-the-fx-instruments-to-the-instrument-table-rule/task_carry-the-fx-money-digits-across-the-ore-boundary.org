@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/carry-the-fx-money-digits-across-the-ore-boundary
-#+pr:
+#+pr: 3392
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3392][#3392]] | [ore] Carry the FX money digits across the ORE boundary |
 
 * Review
 

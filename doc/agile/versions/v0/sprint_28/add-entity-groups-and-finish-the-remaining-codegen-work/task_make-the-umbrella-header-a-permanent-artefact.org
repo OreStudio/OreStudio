@@ -8,7 +8,7 @@
 #+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work:sprint_28:v0:
 #+owner: marco
 #+branch: feature/codegen-umbrella-headers
-#+pr:
+#+pr: 3386
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3386][#3386]] | [codegen] Make the umbrella header a permanent artefact |
 
 * Review
 

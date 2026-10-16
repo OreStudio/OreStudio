@@ -115,6 +115,11 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate reference_curve_id (optional field -- skip validation when null)
+    if NEW.reference_curve_id is not null then
+        NEW.reference_curve_id := ores_marketdata_validate_curve_series_fn(NEW.tenant_id, NEW.reference_curve_id);
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

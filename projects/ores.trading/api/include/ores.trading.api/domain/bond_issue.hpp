@@ -126,7 +126,18 @@ struct bond_issue final {
     std::optional<std::string> credit_curve_id;
 
     /**
-     * @brief Reference curve the document names for the issue.
+     * @brief Reference curve the issue is discounted on, as the oresmd URI of the market series
+     * that curve is. ORE names a curve its own way, and one index has more than one spelling
+     * (refdata holds EUR-ESTR while the market's own forwarding names EUR-ESTER), so the row keeps
+     * our name and the export translates it to ORE's. The URI is the series' natural key, the same
+     * string in every environment; the series' id is a surrogate, and a row that kept one would
+     * name nothing in the next environment the data is loaded into.
+     *
+     * A generated population writes the curve its book's currency is discounted on, which the
+     * entity declares per currency on the trade generation config: which index a bond discounts on
+     * is a fact about the trade. A value naming no curve series of the tenant and party is refused
+     * at write time, by the validation below. The series is scoped to the party because one curve
+     * id is defined once per entity and each entity holds its own series.
      */
     std::optional<std::string> reference_curve_id;
 

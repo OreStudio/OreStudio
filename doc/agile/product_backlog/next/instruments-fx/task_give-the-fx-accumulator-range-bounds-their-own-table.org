@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 25681E10-8823-4DD7-910D-7C68FD4168A7
+:END:
+#+title: Task: Give the FX accumulator range bounds their own table
+#+description: Finding 2 of the FX review. fx_accumulator_instrument.range_bounds_json holds the ORE RangeBounds list as JSON text in a column, because the list has no child table. Give the child its own model and table keyed by the trade, map it in both directions, and delete the column.
+#+type: task
+#+level: s1
+#+filetags: :instruments-fx:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace =fx_accumulator_instrument.range_bounds_json= with a child table. The
+column holds the ORE =RangeBounds= list as JSON text, so a child record has no
+table and the column carries an encoded document. The Regime 2 check asks for
+rows, and the Regime 3 check forbids an encoded string field.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Define the child model.                |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- A child model holds a range bound: an optional start date and the optional levels =RangeFrom=, =RangeTo=, =Leverage=, =Strike= and =StrikeAdjustment=. Each level is exact decimal where it is money.
+- The child table is keyed by the trade and ordered, so the list order survives the round trip.
+- A mapper test holds the digits of a range-bound strike through the round trip.
+- The ORE schema requires at least one =RangeBound=, so an accumulator with no bounds is refused at the boundary with a stated error, not silently exported.
+- =range_bounds_json= is gone from the model, the SQL, the domain type, the entity, the protocol and the mapper.
+
+* Plan
+
+1. Classify the six =rangeBound= fields as money or continuous.
+2. Write the child entity model beside =fx_accumulator_instrument=, with the trade as its key.
+3. Regenerate, and map the child in both directions. Delete the JSON helpers, =range_bound_to_json= and =parse_json_range_bounds=.
+4. Regenerate the database and run the trading suite.
+5. Add the round-trip test, then import the accumulator corpus document and compare the stored rows with the document.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 2. The model states the gap itself: "The list has no child table, so it lives in JSON text."
+- The levels pass through float text on the way in and out today, so this unit also removes a precision loss.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -52,6 +52,10 @@ still holds up, but whether it was ever built to the rules.
 
 - The review is read-only. Filing the remediations is a separate decision, taken
   through the backlog once the findings are agreed.
+- The remediations are staged as seven units under
+  [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the
+  instrument table rule]], which the review narrowed to the deviations it
+  found.
 
 * Out of scope
 

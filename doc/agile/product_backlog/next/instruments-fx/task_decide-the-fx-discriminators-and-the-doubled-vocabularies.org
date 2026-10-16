@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: D18E2BB8-6B1B-42EF-AB6C-3CE165DB8195
+:END:
+#+title: Task: Decide the FX discriminators and the doubled vocabularies
+#+description: Findings 6, 8 and 9 of the FX review. The barrier and digital instruments encode a choice as nullable columns with no discriminator; fx_vanilla_option_instrument states three exercise styles in prose and admits two in its check; and four more closed vocabularies are stated both in a table and in a check. Decide each one and enforce it, or record why it stays.
+#+type: task
+#+level: s1
+#+filetags: :instruments-fx:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
++#+blocked_since:
++#+created: 2026-10-16
++#+updated: 2026-10-16
++#+environment:
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle the three Minor findings the FX review left open. Each one is a choice
+the model states in two places, or states in prose and refuses in a check. This
+unit decides each and makes the tree enforce the decision.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Decide the barrier and digital discriminators. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- =fx_barrier_option_instrument= states which barrier levels the =barrier_type= engages, and a check refuses a row that fills a level its type does not use.
+- =fx_digital_option_instrument= states the same for =strike=, =lower_barrier= and =upper_barrier=, or records why no discriminator is possible.
+- =fx_vanilla_option_instrument= names one closed exercise-style set in its prose and admits the same set in its check. Bermuda is either admitted by both or refused by both, with the reason recorded.
+- The four closed vocabularies that are stated in a table and in a check are kept equal by a mechanism, or the duplicate is removed and the reason recorded.
+- Every decision this unit makes is distilled into the parent story's =* Decisions=.
+
+* Plan
+
+1. Read each affected model's prose beside its check, and list every disagreement.
+2. Decide each: enforce the narrower set, widen the check, or keep both with a stated reason.
+3. Change the checks in the models, regenerate, and recreate the database.
+4. Add a case per decision that the check refuses the shape it should refuse.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], findings 6, 8 and 9.
+- These are decisions, not defects with one right answer. A decision to keep the current shape is a valid outcome if it is recorded.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

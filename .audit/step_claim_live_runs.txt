@@ -137,16 +137,47 @@ transitions. It is not a duplicate re-running a step: the claim admitted exactly
 one delivery, and the run that failed is the one delivery that held the claim.
 
 --------------------------------------------------------------------------------
-6. Live runs not done
+6. Kill-mid-step (run_kill_mid_step_test.sh)
 --------------------------------------------------------------------------------
-The kill-mid-step run was not performed. Two reasons, both worth recording:
+Stage: the identity fixture, not a reporting step. A reporting step reports in
+about 80 ms, so killing it in flight is a coin flip; the fixture declares
+delay_seconds so a run can be held open. The fixture's step deadline was
+write_step_timeout, 120 s -- exactly the lease -- so it was raised for this run
+to a fixture-local identity_step_timeout of 900 s (identity_workflow.hpp, saved
+as part of this artifact). Without that the engine's deadline would fail the
+step at the moment the lease ended and the run would prove the opposite.
 
-  * A reporting step reports in about 80 ms, so a SIGKILL has to land inside an
-    80 ms window to catch the claim held.
-  * The identity fixture holds a claim open deliberately, but its step deadline
-    is `write_step_timeout`, not the 900 s a reporting step carries, so it is not
-    the stage the prediction was written for.
+Run d54640c6-4554-4d65-addf-14fd8d2207cd, step 1849e14b-6ba8-4f55-80fc-3ea7ad37c461,
+one step hold_the_claim with delay_seconds 15.
 
-Everything the prediction is about — AckWait 30 s, max deliver 10, hold off 30 s,
-lease 120 s — is confirmed by the consumer's own configuration and by the busy
-answer's "retrying ... in 30000ms".
+Observed timeline:
+
+  14:48:33.577  run started
+  14:48:33.648  identity handler: "waiting 15s so the run can be observed"
+  14:48:33.680  CLAIM TAKEN        ores.workflow.service/993525  attempts=1
+  14:48:35.682  HOLDER SIGKILLED   (t0 + 2.0 s)
+  14:48:37.929  service auto-restarted (Restart=always), pids 993525 -> 994035
+  14:49:03.646  DELIVERY 2         "is held by another delivery; retrying ... in 30000ms"  (t0 + 30.0)
+  14:49:33.666  DELIVERY 3         same                                                  (t0 + 60.0)
+  14:50:03.685  DELIVERY 4         same                                                  (t0 + 90.0)
+  14:50:33.712  TAKEOVER           handler running again under pid 994035                (t0 + 120.0)
+  14:50:34.292  claim row          ores.workflow.service/994035  attempts=2
+  14:50:48.713  completion reported (the re-run's own 15 s delay)
+  14:50:49.261  STEP COMPLETED
+  14:50:48.888  Workflow COMPLETED: type=identity_workflow steps=1
+
+Held against the prediction: redeliveries at about 30, 60 and 90 seconds, each
+finding a live lease and naking with the 30 second hold off -- exact. Takeover at
+about 120 seconds, when the lease ended -- exact. No deadline failure. attempts
+went 1 -> 2 across the takeover, which is the counter doing its job.
+
+The one difference: the parent's note said completion "a little after 120". It
+was 135.6, because the fixture's delay_seconds 15 applies to the re-run as well
+as the first attempt, so the takeover at 120 was followed by 15 seconds of work.
+That is the fixture's own delay, not one of the four numbers.
+
+A note on the restart: the unit carries Restart=always, so the SIGKILL was
+followed by an automatic restart 2.2 seconds later. That is why deliveries 2-4
+had a consumer to come back to. Had the holder stayed down, the message would
+have waited, and the claim would still have been taken over when it finally
+returned -- the lease does not need a live consumer to expire.

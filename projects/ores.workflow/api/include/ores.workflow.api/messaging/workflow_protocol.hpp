@@ -257,6 +257,15 @@ struct workflow_instance_summary {
     std::string created_by;
     std::string created_at;
     std::optional<std::string> completed_at;
+    /**
+     * @brief When the run last did anything, whether or not it has finished.
+     *
+     * Every transition moves it, and so does the work between two of them, so a
+     * run still open whose timestamp is old is a run nothing is driving. That is
+     * the answer completed_at cannot give, because a run that never finished has
+     * none.
+     */
+    std::optional<std::string> last_event_at;
     std::string error;
     /**
      * @brief What the run acts on, and its identity, as the start message named

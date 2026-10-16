@@ -458,6 +458,22 @@ so they cross to TypeScript as strings.
 :cpp_type: std::optional<std::string>
 :END:
 
+*** last_event_at
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the run last did anything, whether or not it has finished.
+ *
+ * Every transition moves it, and so does the work between two of them, so a
+ * run still open whose timestamp is old is a run nothing is driving. That is
+ * the answer completed_at cannot give, because a run that never finished has
+ * none.
+ */
+#+end_src
+
 *** error
 :PROPERTIES:
 :cpp_type: std::string

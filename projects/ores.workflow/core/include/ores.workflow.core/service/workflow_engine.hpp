@@ -253,8 +253,8 @@ private:
      * the two timestamps a reader polls are written. =last_event_at= moves on
      * every transition, which is what tells a live run from an abandoned one.
      * =completed_at= is written on the first transition into a terminal state
-     * and left alone afterwards, so it names when the run finished rather than
-     * when its row was last touched.
+     * and cleared when the run goes back to work, so a resumed run carries the
+     * time it finished rather than the time it first stopped.
      */
     void set_instance_state(const boost::uuids::uuid& instance_id,
                             const boost::uuids::uuid& state_id,
@@ -270,9 +270,9 @@ private:
      * The transition is logged here, so every move of a step -- dispatched,
      * answered, compensated, retried, re-dispatched by a recovery and failed by
      * the deadline pass -- is one line a reader can follow. =started_at= is
-     * written when the step first goes to work and =completed_at= when it first
-     * reaches a state it will not leave; neither is rewritten afterwards, so a
-     * retry does not move the start of the step it resumes.
+     * written when the step first goes to work. =completed_at= is written when
+     * the step first settles and cleared when a retry puts it back to work, so
+     * a resumed step does not carry the time its earlier attempt stopped.
      *
      * @param step          The step, as the caller read it. Its identity, name
      *                      and position go to the log line.

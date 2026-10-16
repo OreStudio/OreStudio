@@ -83,7 +83,7 @@ and the commit it was measured at.
 | Current instances after a clean acme provision  | 34, all completed, all stamped     | =build/stamp-verify/check_timestamps.sql=                                                                                    | branch     |
 | Current steps after a clean acme provision      | 415, all completed, all stamped    | =build/stamp-verify/check_timestamps.sql=                                                                                    | branch     |
 | Terminal rows without a completion time, after  | 0 instances, 0 steps               | =build/stamp-verify/check_timestamps.sql=                                                                                    | branch     |
-| Workflow core suite                             | 48 cases, 360 assertions, green    | =./compass.sh test run -- -R "ores.workflow"=                                                                                | branch     |
+| Workflow core suite                             | 49 cases, 385 assertions, green    | =./compass.sh test run -- -R "ores.workflow"=                                                                                | branch     |
 
 * Notes
 
@@ -133,9 +133,12 @@ current steps, every one =completed= with =started_at= and =completed_at=.
 None of the 50 instance rows or 828 step rows the defect was measured on
 carried any of those times. The tenant reached =active= at =19:13:09.352572+01= and its
 =tenant_setup_workflow= wrote =completed_at= at =19:13:09.541359+01=, so the
-completion signal and the timestamp agree to a fifth of a second. The
-timestamps are whole seconds in psql's display because the domain type they
-are read into is a =time_point=; the column keeps microseconds.
+completion signal and the timestamp agree to the same second. Neither is
+finer than that in the store as it stands: the generated mapper writes a
+whole-second =Timestamp=, so a microsecond part read back is a round hundred
+thousand, which is what the earlier claim of a fifth of a second got wrong.
+The engine's writer and every other writer share that truncation, and no
+reader can see past it.
 
 Fifteen lines like this one carried the run from its first dispatch to its
 close, one per transition, with the step, the instance, both states and the
@@ -147,7 +150,7 @@ time:
 
 =./compass.sh test run -- -R "ores.workflow"= passed all three suites:
 =ores.workflow.api.tests= 10 cases and 32 assertions, =ores.workflow.core.tests=
-48 cases and 360 assertions, =ores.workflow.service.tests= 6 cases and 46
+49 cases and 385 assertions, =ores.workflow.service.tests= 6 cases and 46
 assertions.
 
 Left for another task: rows written before this change still carry no times,
@@ -155,11 +158,22 @@ including the runs the test suites leave in progress in a tenant they then
 drop. Nothing can recover the instant a past run finished, and the newer
 capture on those leftovers is the place to decide what to do with them.
 
-Also left: =workflow_instance_summary=, the message the shell's =workflow list=
-reads, carries =completed_at= but not =last_event_at=, so the abandoned-run
-answer is available on the database and on the entity read but not yet on that
-summary. Adding it means a model change in
-=ores.workflow.workflow_messages.org= and the codegen run that follows it,
-which is more than this task was asked for. =ores.workflow.workflow_instance=
-already carries both, so a reader that needs the activity time has a path
-today.
+Also left, and named rather than fixed here because each is its own defect:
+
+- =workflow_instance_summary=, the message the shell's =workflow list= reads,
+  carries =completed_at= but not =last_event_at=, so the abandoned-run answer
+  is available on the database and on the entity read but not yet on that
+  summary. Adding it means a model change in
+  =ores.workflow.workflow_messages.org= and the codegen run that follows it.
+  =ores.workflow.workflow_instance= carries both, so a reader that needs the
+  activity time has a path today.
+- The generated CRUD verbs for both entities treat =completed_at=,
+  =last_event_at= and =started_at= as caller-supplied: the write record
+  carries them, the shell's =set= commands require them, and the service
+  builds the new row from the record alone. So a caller that edits an instance
+  without re-stating the times erases them. They are the engine's to own; the
+  write record should stop carrying them.
+- A compensation step reaches =compensated= while the forward step it undid
+  keeps =in_progress=. That is pre-existing behaviour the deadline pass and
+  the shell both read, so changing it here would have been a second fix
+  wearing this one's clothes.

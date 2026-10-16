@@ -1819,9 +1819,13 @@ TEST_CASE("a finished run carries the times it ran and was last touched", tags) 
     CHECK(*finished.front().last_event_at >= completed_at);
 
     // A poll on the completion terminates for a run that finished. This is the
-    // query a shell polls with, and it found nothing at all before the engine
-    // wrote the column.
-    const auto page = instances.read_latest(f.h.context(), 0, 1000);
+    // query a shell polls with -- the list request's id filter -- and it found
+    // nothing at all before the engine wrote the column.
+    const ores::workflow::messaging::workflow_instances_filter mine{
+        .id_one_of = std::vector<boost::uuids::uuid>{
+            boost::uuids::string_generator{}(instance_id)}};
+    const auto page = instances.read_latest(
+        f.h.context(), 0, 1000, ores::utility::domain::order{}, mine, std::nullopt);
     const auto* const polled = [&]() -> const ores::workflow::domain::workflow_instance* {
         for (const auto& i : page)
             if (boost::uuids::to_string(i.id) == instance_id)
@@ -1897,4 +1901,83 @@ TEST_CASE("a live run's activity time moves on while it runs", tags) {
     CHECK_FALSE(now.front().completed_at.has_value());
 
     BOOST_LOG_SEV(lg, debug) << "Activity moved from the start to the second dispatch.";
+}
+
+TEST_CASE("a retry takes the failure's completion time off the step it resumes", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_retry_stamp_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    workflow_instance_repository instances;
+    workflow_step_repository steps;
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_stamp_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    const auto first_step_id = boost::uuids::to_string(rows.front().id);
+
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    const auto second_step_id = boost::uuids::to_string(rows.back().id);
+
+    // The second step fails, and the declaration says stop rather than roll
+    // back, so the run stops with the failure recorded.
+    f.engine->on_step_completed(as_message(
+        completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
+
+    auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    REQUIRE(instance.front().state_id == f.instance_states.require("failed"));
+    REQUIRE(instance.front().completed_at.has_value());
+    const auto stopped_at = *instance.front().completed_at;
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    REQUIRE(rows.back().completed_at.has_value());
+
+    // The retry puts the step back to work, so the state it was in when it
+    // stopped must go with it: a step that is running has not finished, and a
+    // reader must not read the failure's time as this attempt's.
+    const auto outcome = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
+    REQUIRE(outcome.resumed);
+    REQUIRE(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.back().state_id == f.step_states.require("in_progress"));
+    CHECK_FALSE(rows.back().completed_at.has_value());
+    CHECK(rows.back().started_at.has_value());
+
+    instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("in_progress"));
+    CHECK_FALSE(instance.front().completed_at.has_value());
+
+    // The second attempt answers, and now the run carries the time it actually
+    // finished rather than the time it first stopped.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, second_step_id, step_outcome::completed)));
+    instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("completed"));
+    REQUIRE(instance.front().completed_at.has_value());
+    CHECK(*instance.front().completed_at >= stopped_at);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.back().state_id == f.step_states.require("completed"));
+    REQUIRE(rows.back().completed_at.has_value());
+
+    BOOST_LOG_SEV(lg, debug) << "The retry cleared the stopped step's completion time.";
 }

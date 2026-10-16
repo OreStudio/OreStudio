@@ -335,11 +335,20 @@ void workflow_engine::set_instance_state(const boost::uuids::uuid& instance_id,
         instance.result_json = result_json;
     instance.error = error;
     // Every transition says the run was acted on, which is what a reader
-    // watching for silence polls. See the declaration for why completed_at is
-    // only ever set once.
+    // watching for silence polls.
     instance.last_event_at = std::chrono::system_clock::now();
-    if (is_instance_terminal(state_id) && !instance.completed_at)
-        instance.completed_at = instance.last_event_at;
+    if (is_instance_terminal(state_id)) {
+        // The first time the run stopped is the one that counts, so a later
+        // write to a run that has already stopped -- a redelivery, a recovery,
+        // a compensation that follows -- cannot move it on.
+        if (!instance.completed_at)
+            instance.completed_at = instance.last_event_at;
+    } else {
+        // A run that is going again has not finished. The retry is the case
+        // that matters: leaving the failure's completion time on a resumed run
+        // would have it say both that it stopped and that it is running.
+        instance.completed_at.reset();
+    }
     instance_repo_.write(ctx_, instance);
 }
 
@@ -348,6 +357,12 @@ void workflow_engine::note_instance_activity(const boost::uuids::uuid& instance_
     if (rows.empty())
         return;
     auto instance = rows.front();
+    // A run that has finished is not made live again by a late answer, a
+    // recovery pass or a rollback that follows it. What this column is for is
+    // telling work in flight from work abandoned, and a finished run is
+    // neither: it says when it stopped, and that is the whole answer.
+    if (instance.completed_at)
+        return;
     instance.last_event_at = std::chrono::system_clock::now();
     instance_repo_.write(ctx_, instance);
 }
@@ -409,13 +424,22 @@ void workflow_engine::set_step_state(const domain::workflow_step& step,
     if (!step_log_json.empty())
         updated.step_log_json = step_log_json;
     const auto now = std::chrono::system_clock::now();
-    // The first move to a state is the one that counts: a re-dispatch leaves a
-    // live step's start where it was, and a retry leaves the failure it resumes
-    // where it was.
-    if (state_id == step_states_.require("in_progress") && !updated.started_at)
-        updated.started_at = now;
-    if (is_step_terminal(state_id) && !updated.completed_at)
+    const auto in_progress = step_states_.require("in_progress");
+    if (state_id == in_progress) {
+        // A step that is running has not finished. The retry that puts a failed
+        // step back to work is the case that matters: leaving the failure's
+        // completion time on it would have the row say the step both stopped
+        // and is running, and the run's own completion would then be read off
+        // the wrong attempt. Its start stays, because the step's life is what
+        // that names.
+        updated.completed_at.reset();
+        if (!updated.started_at)
+            updated.started_at = now;
+    } else if (is_step_terminal(state_id) && !updated.completed_at) {
+        // The first settlement is the one that counts, so a later answer to a
+        // step the engine has already accounted for cannot move it.
         updated.completed_at = now;
+    }
     step_repo_.write(ctx_, updated);
 
     BOOST_LOG_SEV(lg(), info)
@@ -622,9 +646,9 @@ void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) 
         BOOST_LOG_SEV(lg(), info)
             << "step " << step.step_index << " (" << step.name << ")"
             << " workflow=" << id_str << " step_id=" << boost::uuids::to_string(new_id)
-            << " state=" << state_name(step_states_, step_states_.require("pending")) << "->"
-            << state_name(step_states_, step.state_id)
-            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*step.started_at);
+            << " state=" << state_name(step_states_, step.state_id)
+            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*step.started_at)
+            << " entered=created";
 
         note_awaiting(step, instance.id, instance.tenant_id.to_uuid());
         publish_command(step, instance.id, instance.tenant_id.to_uuid());
@@ -711,10 +735,10 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         BOOST_LOG_SEV(lg(), info)
             << "step " << comp_step.step_index << " (" << comp_step.name << ")"
             << " workflow=" << boost::uuids::to_string(instance.id)
-            << " step_id=" << boost::uuids::to_string(comp_id) << " state="
-            << state_name(step_states_, step_states_.require("pending")) << "->"
-            << state_name(step_states_, comp_step.state_id)
-            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*comp_step.started_at);
+            << " step_id=" << boost::uuids::to_string(comp_id)
+            << " state=" << state_name(step_states_, comp_step.state_id)
+            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*comp_step.started_at)
+            << " entered=created";
         BOOST_LOG_SEV(lg(), info) << "Dispatching compensation for step " << s.step_index << " ("
                                   << step_def.name << "_compensation)"
                                   << " workflow=" << boost::uuids::to_string(instance.id);
